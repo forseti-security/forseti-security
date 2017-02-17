@@ -1,0 +1,80 @@
+{
+    "rules": [
+        {
+            "name": "first rule whitelist",
+            "mode": "whitelist",
+            "resource": [
+                {
+                    "type": "project",
+                    "applies_to": "self",
+                    "resource_ids": [
+                        "my-project-123",
+                        "my-project-125"
+                    ]
+                },
+                {
+                    "type": "organization",
+                    "applies_to": "self_and_children",
+                    "resource_ids": [
+                        1234567890
+                    ]
+                }
+            ],
+
+            "inherit_from_parents": true,
+            "bindings": [
+                {
+                    "role": "roles/owner",
+                    "members": [
+                        "user:c@company.com"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "second rule whitelist",
+            "mode": "whitelist",
+
+            "resource": [
+                {
+                    "type": "project",
+                    "applies_to": "self",
+                    "resource_ids": [
+                        "my-project-124"
+                    ]
+                }
+            ],
+            "bindings": [
+                {
+                    "role": "roles/*",
+                    "members": [
+                        "user:c@company.com"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "third rule blacklist",
+            "mode": "blacklist",
+            "resource": [
+
+                {
+                    "type": "organization",
+                    "applies_to": "self_and_children",
+                    "resource_ids": [
+                        1234567890
+                    ]
+                }
+            ],
+
+            "bindings": [
+                {
+                    "role": "roles/*",
+                    "members": [
+                        "user:fired_employee@company.com"
+                    ]
+                }
+            ]
+        }
+    ]
+}

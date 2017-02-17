@@ -1,0 +1,28 @@
+rules:
+  - name: missing resource
+    mode: whitelist
+    resource:
+      - type: organization
+    bindings:
+      - role: roles/*
+        members:
+          - user:c@company.com
+  - name: second rule
+    mode: whitelist
+    resource:
+      - type: organization
+        resource_ids:
+          - 1111111111
+    bindings:
+      - role: roles/editor
+        members:
+          - user:c@company.com
+  - name: third rule
+    mode: whitelist
+    resource:
+      - type: project
+    apply_to: self
+    bindings:
+      - role: roles/owner
+        members:
+          - user:c@company.com

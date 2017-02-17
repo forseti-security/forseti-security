@@ -1,0 +1,11 @@
+rules:
+  - name: missing resource type
+    mode: whitelist
+    resource:
+      - resource_ids:
+          - some-resource-1
+    applies_to: self
+    bindings:
+      - role: roles/*
+        members:
+          - user:c@company.com

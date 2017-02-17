@@ -1,0 +1,6 @@
+# Organization ID in Google Cloud Platform
+organization_id: <organization id>
+
+# Cloud Resource Manager API has a default rate of 400 requests per 100 seconds.
+# If you have provisioned higher rate, it can be set here.
+max_crm_api_calls_per_100_seconds: 400

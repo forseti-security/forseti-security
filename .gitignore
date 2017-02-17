@@ -1,0 +1,22 @@
+# Eclipse metafile.
+.project
+
+# Compiled python
+*.pyc
+
+# Compiled protobuf
+*_pb2.py
+
+# Configurations
+config/*.yaml
+
+# Miscellaneous
+.DS_Store
+.*swp
+
+# Build/dist
+.eggs/
+*.egg-info*
+build/
+dist/
+out/

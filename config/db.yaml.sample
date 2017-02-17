@@ -1,0 +1,6 @@
+# Connection info for Cloud SQL.
+cloud_sql:
+  host: <ip address of your cloud sql instance>
+  user: <cloud sql user>
+  passwd: <cloud sql password>
+  database: cloud_inventory

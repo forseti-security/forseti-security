@@ -1,0 +1,52 @@
+{
+    "resources": [
+        {
+            "type": "organization",
+            "id": "1234567890"
+        },
+        {
+            "type": "project",
+            "id": "my-project-123",
+            "parent": {
+                "type": "organization",
+                "id": "1234567890"
+            }
+        },
+        {
+            "type": "project",
+            "id": "my-project-124",
+            "parent": {
+                "type": "organization",
+                "id": "1234567890"
+            }
+        },
+        {
+            "type": "project",
+            "id": "my-project-125",
+            "parent": {
+                "type": "organization",
+                "id": "1234567890"
+            }
+        },
+        {
+            "type": "organization",
+            "id": "778899"
+        },
+        {
+            "type": "project",
+            "id": "my-project-1",
+            "parent": {
+                "type": "organization",
+                "id": "778899"
+            }
+        },
+        {
+            "type": "project",
+            "id": "my-project-2",
+            "parent": {
+                "type": "organization",
+                "id": "778899"
+            }
+        }
+    ]
+}
