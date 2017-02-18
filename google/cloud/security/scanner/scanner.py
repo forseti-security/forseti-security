@@ -16,7 +16,7 @@
 
 Usage:
 
-  $ cloud_scanner --rules <rules path> \
+  $ forseti_scanner --rules <rules path> \
       --input_bucket <bucket name (opt)> \
       --output_path <output path (opt)>
 """

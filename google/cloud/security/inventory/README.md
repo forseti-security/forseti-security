@@ -45,7 +45,7 @@ If you haven't already, install the Forseti packages by using the setup.py in th
 After running setup.py, as long as your virtualenv is activated, then you can be in any directory to invoke the console script:
 
 ```sh
-$ cloud_inventory
+$ forseti_inventory
 ```
 
 ## How to Test

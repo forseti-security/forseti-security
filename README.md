@@ -93,9 +93,9 @@ configuration.
 
 You should now be able to run the following commandline scripts:
 
- - `cloud_inventory` ([README](google/cloud/security/inventory/README.md))
- - `cloud_scanner` ([README](google/cloud/security/scanner/README.md))
- - `cloud_enforcer` ([README](google/cloud/security/enforcer/README.md))
+ - `forseti_inventory` ([README](google/cloud/security/inventory/README.md))
+ - `forseti_scanner` ([README](google/cloud/security/scanner/README.md))
+ - `forseti_enforcer` ([README](google/cloud/security/enforcer/README.md))
 
 
 # Tests

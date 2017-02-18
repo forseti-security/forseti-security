@@ -24,17 +24,17 @@ https://github.com/tseaver/google-apputils-python/blob/master/google/apputils/ru
 from google.apputils import run_script_module
 
 
-def RunCloudInventory():
+def RunForsetiInventory():
     """Run Cloud Inventory module."""
-    import google.cloud.security.inventory.inventory_loader as cloud_inventory
-    run_script_module.RunScriptModule(cloud_inventory)
+    import google.cloud.security.inventory.inventory_loader as forseti_inventory
+    run_script_module.RunScriptModule(forseti_inventory)
 
-def RunCloudScanner():
+def RunForsetiScanner():
     """Run Cloud Scanner module."""
-    import google.cloud.security.scanner.scanner as cloud_scanner
-    run_script_module.RunScriptModule(cloud_scanner)
+    import google.cloud.security.scanner.scanner as forseti_scanner
+    run_script_module.RunScriptModule(forseti_scanner)
 
-def RunCloudEnforcer():
+def RunForsetiEnforcer():
     """Run Cloud Enforcer module."""
-    import google.cloud.security.enforcer.enforcer as cloud_enforcer
-    run_script_module.RunScriptModule(cloud_enforcer)
+    import google.cloud.security.enforcer.enforcer as forseti_enforcer
+    run_script_module.RunScriptModule(forseti_enforcer)

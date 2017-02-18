@@ -42,29 +42,29 @@ $ gcloud auth application-default login
 * To see all the available commandline flags for the scanner, run:
 
 ```sh
-$ cloud_scanner --helpfull
+$ forseti_scanner --helpfull
 ```
 
-If `cloud_scanner` is not found, you probably need to activate the virtualenv of
+If `forseti_scanner` is not found, you probably need to activate the virtualenv of
 your Forseti installation.
 
 To run the scanner with a local rules file:
 
 ```sh
-$ cloud_scanner --rules path/to/rules.yaml
+$ forseti_scanner --rules path/to/rules.yaml
 ```
 
 To run the scanner with a rules file stored in GCS, e.g.
 `gs://my-project-id/rules/rules.yaml`:
 
 ```sh
-$ cloud_scanner --rules "rules/rules.yaml" --input_bucket my-project-id
+$ forseti_scanner --rules "rules/rules.yaml" --input_bucket my-project-id
 ```
 
 To specify the output location for the violations:
 
 ```sh
-$ cloud_scanner --rules "rules/rules.yaml" --output_path path/for/output/
+$ forseti_scanner --rules "rules/rules.yaml" --output_path path/for/output/
 ```
 
 * By default, the scanner will save the csv output to `/tmp`. Specify an output bucket
