@@ -1,11 +1,11 @@
 # Forseti Security
 
-The Forseti Security suite provides tools to monitor your Google Cloud Platform
-environment. These are the available services:
+Forseti Security provides tools to monitor your Google Cloud Platform
+environment. These are the currently available services:
 
-* Cloud Inventory - caches resource data for use by other security tools.
-* Cloud Scanner - scans GCP resource policies for violations.
-* Cloud Enforcer - fixes policy violations found from the scanner.
+* Inventory - caches resource data for use by other tools.
+* Scanner - scans GCP resource policies for violations.
+* Enforcer - fixes policy violations found from the scanner.
 
 
 # Setup
