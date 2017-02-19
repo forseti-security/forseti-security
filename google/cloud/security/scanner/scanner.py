@@ -62,7 +62,7 @@ flags.DEFINE_string('output_path',
 
 
 def main(unused_argv=None):
-    """Run the cloud scanner."""
+    """Run the scanner."""
     logger = LogUtil.setup_logging(__name__)
 
     file_path = FLAGS.rules
