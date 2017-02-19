@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load IAM policies data into Cloud Inventory."""
+"""Pipeline to load IAM policies data into Inventory."""
 
 import json
 
