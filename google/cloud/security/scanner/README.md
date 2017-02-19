@@ -73,9 +73,4 @@ in order to save the csv there.
 
 ## Defining rules
 
-### Schema
-
-TBD
-
-```yaml
-```
+Refer to the [documentation](samples/rules.md) on the rules schema.
