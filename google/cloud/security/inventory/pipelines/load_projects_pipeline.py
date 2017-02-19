@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load projects data into Cloud Inventory."""
+"""Pipeline to load projects data into Inventory."""
 
 import logging
 import os
