@@ -25,16 +25,16 @@ from google.apputils import run_script_module
 
 
 def RunForsetiInventory():
-    """Run Cloud Inventory module."""
+    """Run Forseti Inventory module."""
     import google.cloud.security.inventory.inventory_loader as forseti_inventory
     run_script_module.RunScriptModule(forseti_inventory)
 
 def RunForsetiScanner():
-    """Run Cloud Scanner module."""
+    """Run Forseti Scanner module."""
     import google.cloud.security.scanner.scanner as forseti_scanner
     run_script_module.RunScriptModule(forseti_scanner)
 
 def RunForsetiEnforcer():
-    """Run Cloud Enforcer module."""
+    """Run Forseti Enforcer module."""
     import google.cloud.security.enforcer.enforcer as forseti_enforcer
     run_script_module.RunScriptModule(forseti_enforcer)
