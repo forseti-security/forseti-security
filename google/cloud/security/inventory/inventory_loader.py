@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Loads data into Cloud Inventory.
+"""Loads data into Inventory.
 
 Usage:
 
-  $ python inventory_loader.py
+  $ forseti_inventory
 
 """
 
@@ -152,7 +152,7 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
                 status, cycle_timestamp)
 
 def main(unused_argv=None):
-    """Runs the Cloud Inventory Loader."""
+    """Runs the Inventory Loader."""
     dao = Dao()
     cycle_timestamp = _start_snapshot_cycle(dao)
 

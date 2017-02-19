@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Errors for Cloud Inventory."""
+"""Errors for Inventory."""
 
 class Error(Exception):
-    """Base error class for Cloud Inventory."""
+    """Base error class for Inventory."""
     pass
 
 
