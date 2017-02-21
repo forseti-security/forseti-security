@@ -26,7 +26,7 @@ If you haven't already, install the Forseti packages by using the setup.py in th
     * Create a new user with [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges).
 3. Create New Database
     * Enter a name.
-4. Follow this instruction to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
+4. Follow these instructions to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
 
 ### Configure Data Access configs.yaml file.
 1. In the repo root's config/ directory, make a copy of db.yaml.sample.
