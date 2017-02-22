@@ -166,7 +166,6 @@ def main(unused_argv=None):
 
     cycle_timestamp = _start_snapshot_cycle(dao)
 
-    print CONFIG_FILE
     configs_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), CONFIG_FILE))
 

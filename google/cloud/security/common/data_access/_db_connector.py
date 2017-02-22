@@ -36,6 +36,11 @@ class _DbConnector(object):
     """Database connector."""
 
     def __init__(self):
+        """Initialize the db connector.
+
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
         with open(CONFIGS_FILE, 'r') as config_file:
             try:
                 configs = yaml.load(config_file)
