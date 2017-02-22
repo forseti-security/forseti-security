@@ -26,6 +26,8 @@ from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.util.log_util import LogUtil
 
 
+LOGGER = LogUtil.setup_logging(__name__)
+
 # TODO: Reference this by an absolute path so that it works locally
 # and on GCE.
 CONFIGS_FILE = os.path.abspath(
@@ -48,8 +50,9 @@ class _DbConnector(object):
                     configs = yaml.load(config_file)
                 except yaml.YAMLError as e:
                     logging.error(e)
-        except IOError:
-            raise
+        except IOError as e:
+            LOGGER.error('Unable to open/read db config file:\n{0}'.format(e))
+            raise MySQLError('DB Connector', e)
 
         try:
             self.conn = MySQLdb.connect(
@@ -59,6 +62,7 @@ class _DbConnector(object):
                 db=configs['cloud_sql']['database'],
                 local_infile=1)
         except OperationalError as e:
+            LOGGER.error('Unable to create mysql connector:\n{0}'.format(e))
             raise MySQLError('DB Connector', e)
 
     def __del__(self):
