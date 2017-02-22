@@ -18,9 +18,11 @@ import logging
 import os
 
 import MySQLdb
+from MySQLdb import OperationalError
 import yaml
 
 from google.cloud.security import FORSETI_SECURITY_HOME_ENV_VAR
+from google.cloud.security.common.data_access.errors import MySQLError
 
 
 # TODO: Reference this by an absolute path so that it works locally
@@ -40,12 +42,15 @@ class _DbConnector(object):
             except yaml.YAMLError as e:
                 logging.error(e)
 
-        self.conn = MySQLdb.connect(
-            host=configs['cloud_sql']['host'],
-            user=configs['cloud_sql']['user'],
-            passwd=configs['cloud_sql']['passwd'],
-            db=configs['cloud_sql']['database'],
-            local_infile=1)
+        try:
+            self.conn = MySQLdb.connect(
+                host=configs['cloud_sql']['host'],
+                user=configs['cloud_sql']['user'],
+                passwd=configs['cloud_sql']['passwd'],
+                db=configs['cloud_sql']['database'],
+                local_infile=1)
+        except OperationalError as e:
+            raise MySQLError('DB Connector', e)
 
     def __del__(self):
         """Closes the database connection."""
