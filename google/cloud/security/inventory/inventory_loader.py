@@ -153,9 +153,20 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
 
 def main(unused_argv=None):
     """Runs the Inventory Loader."""
-    dao = Dao()
+
+    try:
+        dao = Dao()
+    except IOError as e:
+        LOGGER.error('Encountered error to read config file. Abort.\n{0}'
+                     .format(e))
+        sys.exit()
+    except MySQLError as e:
+        LOGGER.error('Encountered error with Cloud SQL. Abort.\n{0}'.format(e))
+        sys.exit()
+
     cycle_timestamp = _start_snapshot_cycle(dao)
 
+    print CONFIG_FILE
     configs_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), CONFIG_FILE))
 
