@@ -16,16 +16,14 @@
 
 Loads YAML rules either from local file system or Cloud Storage bucket.
 """
+
 import json
 import os
-import StringIO
 import yaml
 
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.scanner.audit.errors import InvalidRuleDefinitionError
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseDownload
 
 
 class BaseRulesEngine(object):
@@ -101,22 +99,10 @@ class BaseRulesEngine(object):
         Returns:
             The parsed dict from the rule definitions file.
         """
-        storage_service = storage.StorageClient().service
+        storage_client = storage.StorageClient()
 
-        media_request = (storage_service.objects()
-                             .get_media(bucket=self.rules_bucket,
-                                        object=self.rules_file_path))
-        try:
-            out_stream = StringIO.StringIO()
-            downloader = MediaIoBaseDownload(out_stream, media_request)
-            done = False
-            while done is False:
-                _, done = downloader.next_chunk()
-            file_content = out_stream.getvalue()
-            out_stream.close()
-        except HttpError as http_error:
-            self.logger.error('Unable to download file: %s', http_error)
-            raise http_error
+        file_content = storage_client.get_textfile_object(
+            bucket=self.rules_bucket, object_name=self.rules_file_path)
 
         return self._parse_string(file_content)
 
