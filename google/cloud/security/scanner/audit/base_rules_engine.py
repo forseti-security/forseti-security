@@ -31,14 +31,11 @@ class BaseRulesEngine(object):
 
     def __init__(self,
                  rules_file_path=None,
-                 rules_bucket=None,
                  logger_name=None):
         """Initialize.
 
         Args:
             rules_file_path: The path to the rules file.
-            rules_bucket: The bucket where the rules file is stored,
-                if any.
             logger_name: The name of module for logger.
         """
         self.filetype_handlers = {
@@ -55,11 +52,19 @@ class BaseRulesEngine(object):
         if not rules_file_path:
             raise InvalidRuleDefinitionError(
                 'File path: {}'.format(rules_file_path))
-        self.rules_file_path = rules_file_path.strip()
+        self.full_rules_path = rules_file_path.strip()
+
+        if self.full_rules_path.startswith('gs://'):
+            file_parts = self.full_rules_path[5:].split('/')
+            self.rules_bucket = file_parts[0]
+            bucket_prefix = 5 + len(file_parts[0]) + 1
+            self.rules_file_path = self.full_rules_path[bucket_prefix:]
+        else:
+            self.rules_file_path = self.full_rules_path
+            self.rules_bucket = None
+
         self.filetype_handler = None
         self._setup_filetype_handler()
-
-        self.rules_bucket = rules_bucket
         if not logger_name:
             logger_name = __name__
         self.logger = LogUtil.setup_logging(logger_name)
@@ -102,7 +107,7 @@ class BaseRulesEngine(object):
         storage_client = storage.StorageClient()
 
         file_content = storage_client.get_textfile_object(
-            bucket=self.rules_bucket, object_name=self.rules_file_path)
+            full_bucket_path=self.full_rules_path)
 
         return self._parse_string(file_content)
 

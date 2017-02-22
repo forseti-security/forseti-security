@@ -17,7 +17,6 @@
 Usage:
 
   $ forseti_scanner --rules <rules path> \
-      --input_bucket <bucket name (opt)> \
       --output_path <output path (opt)>
 """
 
@@ -38,8 +37,6 @@ from google.cloud.security.common.data_access.project_dao import ProjectDao
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
-from googleapiclient.http import MediaIoBaseUpload
-
 
 FLAGS = flags.FLAGS
 
@@ -49,10 +46,8 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('rules',
                     None,
                     ('Path to rules file (yaml/json). '
-                     'If GCS bucket, do not include "gs://<bucketname>".'))
-flags.DEFINE_string('input_bucket',
-                    None,
-                    'Input bucket name. Do not include "gs://".')
+                     'If GCS bucket, include full path, e.g. '
+                     ' "gs://<bucketname>/path/to/file".'))
 
 flags.DEFINE_string('output_path',
                     None,
@@ -66,15 +61,12 @@ def main(unused_argv=None):
     logger = LogUtil.setup_logging(__name__)
 
     file_path = FLAGS.rules
-    rules_bucket = FLAGS.input_bucket
     output_path = FLAGS.output_path
 
     logger.info(('Initializing the rules engine: '
-                 '\n    rules: {}'
-                 '\n    bucket: {}').format(file_path, rules_bucket))
+                 '\n    rules: {}').format(file_path))
 
-    rules_engine = OrgRulesEngine(rules_file_path=file_path,
-                                  rules_bucket=rules_bucket)
+    rules_engine = OrgRulesEngine(rules_file_path=file_path)
     rules_engine.build_rule_book()
 
     snapshot_timestamp = _get_timestamp(logger)
@@ -111,22 +103,11 @@ def main(unused_argv=None):
         if output_path.startswith('gs://'):
             # An output path for GCS must be the full
             # `gs://bucket-name/path/for/output`
-            storage_service = storage.StorageClient().service
+            storage_client = storage.StorageClient()
+            full_output_path = os.path.join(output_path, output_filename)
 
-            output_bucket = output_path[5:].split('/')[0]
-            bucket_path = output_path[5 + len(output_bucket) + 1:]
-
-            full_output_path = os.path.join(bucket_path, output_filename)
-            req_body = {
-                'name': full_output_path
-            }
-            with open(csv_name, 'rb') as f:
-                req = storage_service.objects().insert(
-                    bucket=output_bucket,
-                    body=req_body,
-                    media_body=MediaIoBaseUpload(
-                        f, 'application/octet-stream'))
-                resp = req.execute()
+            storage_client.put_textfile_object(
+                csv_name, full_output_path)
         else:
             # Otherwise, just copy it to the output path.
             shutil.copy(csv_name, os.path.join(output_path, output_filename))
@@ -134,7 +115,7 @@ def main(unused_argv=None):
     logger.info('Done!')
 
 def _get_output_filename():
-    """Determine the output filename."""
+    """Create the output filename."""
     now_utc = datetime.utcnow()
     output_timestamp = now_utc.strftime('%Y%m%dT%H%M%SZ')
     output_filename = 'scanner_output.{}.csv'.format(output_timestamp)

@@ -14,9 +14,11 @@
 
 """Wrapper for Storage API client."""
 
+import os
 import StringIO
 
 from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseUpload
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
 from googleapiclient.errors import HttpError
 
@@ -30,21 +32,59 @@ class StorageClient(_BaseClient):
         super(StorageClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
 
-    def get_textfile_object(self, bucket, object_name):
+    def get_bucket_and_path_from(self, full_path):
+        """Get the bucket and object path.
+
+        Args:
+            full_path: The full GCS path.
+
+        Return:
+            The bucket name and object path.
+        """
+        if not full_path or not full_path.startswith('gs://'):
+            raise InvalidBucketPathError(
+                'Invalid bucket path: {}'.format(full_path))
+        parts = full_path[5:].split('/')
+        bucket_name = parts[0]
+        bucket_prefix = 5 + len(bucket_name) + 1
+        object_path = full_path[bucket_prefix:]
+        return bucket_name, object_path
+
+    def put_textfile_object(self, local_file_path, full_bucket_path):
+        """Put a text object into a bucket.
+
+        Args:
+            full_bucket_path: The full GCS path for the output.
+        """ 
+        storage_service = self.service
+        bucket, object_path = self.get_bucket_and_path_from(full_bucket_path)
+
+        req_body = {
+            'name': object_path
+        }
+        with open(local_file_path, 'rb') as f:
+            req = storage_service.objects().insert(
+                bucket=bucket,
+                body=req_body,
+                media_body=MediaIoBaseUpload(
+                    f, 'application/octet-stream'))
+            resp = req.execute()
+
+    def get_textfile_object(self, full_bucket_path):
         """Gets a text file object as a string.
 
         Args:
-            bucket: The name of the bucket.
-            object_name: The path to the file in Cloud Storage.
+            full_bucket_path: The full path of the bucket object.
 
         Returns:
             The object's content as a string.
         """
         file_content = ''
         storage_service = self.service
+        bucket, object_path = self.get_bucket_and_path_from(full_bucket_path)
         media_request = (storage_service.objects()
                          .get_media(bucket=bucket,
-                                    object=object_name))
+                                    object=object_path))
         try:
             out_stream = StringIO.StringIO()
             downloader = MediaIoBaseDownload(out_stream, media_request)
