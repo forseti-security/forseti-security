@@ -23,6 +23,7 @@ import yaml
 
 from google.cloud.security import FORSETI_SECURITY_HOME_ENV_VAR
 from google.cloud.security.common.data_access.errors import MySQLError
+from google.cloud.security.common.util.log_util import LogUtil
 
 
 # TODO: Reference this by an absolute path so that it works locally
@@ -41,11 +42,14 @@ class _DbConnector(object):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        with open(CONFIGS_FILE, 'r') as config_file:
-            try:
-                configs = yaml.load(config_file)
-            except yaml.YAMLError as e:
-                logging.error(e)
+        try:
+            with open(CONFIGS_FILE, 'r') as config_file:
+                try:
+                    configs = yaml.load(config_file)
+                except yaml.YAMLError as e:
+                    logging.error(e)
+        except IOError:
+            raise
 
         try:
             self.conn = MySQLdb.connect(
@@ -59,4 +63,9 @@ class _DbConnector(object):
 
     def __del__(self):
         """Closes the database connection."""
-        self.conn.close()
+        try:
+            self.conn.close()
+        except AttributeError:
+            # This happens when conn is not created in the first place,
+            # thus does not need to be cleaned up.
+            pass
