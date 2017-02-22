@@ -86,6 +86,7 @@ class _BaseClient(object):
         return request.execute()
 
 
+# Eventually, move these to the errors module
 class Error(Exception):
     """Base Error class."""
 

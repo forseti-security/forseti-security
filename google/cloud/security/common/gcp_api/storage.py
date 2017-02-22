@@ -17,10 +17,11 @@
 import os
 import StringIO
 
+from google.cloud.security.common.gcp_api._base_client import _BaseClient
+from google.cloud.security.common.gcp_api.errors import InvalidBucketPathError
+from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
 from googleapiclient.http import MediaIoBaseUpload
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
-from googleapiclient.errors import HttpError
 
 
 class StorageClient(_BaseClient):
