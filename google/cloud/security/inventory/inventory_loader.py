@@ -170,7 +170,8 @@ def main(unused_argv=None):
             try:
                 configs = yaml.load(config_file)
             except yaml.YAMLError as e:
-                LOGGER.error(e)
+                LOGGER.error('Unable to parse inventory config file:\n{0}'
+                             .format(e))
                 _complete_snapshot_cycle(dao, cycle_timestamp, 'FAILURE')
                 sys.exit()
     except IOError as e:

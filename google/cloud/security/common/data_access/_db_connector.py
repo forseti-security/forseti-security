@@ -14,7 +14,6 @@
 
 """Provides the database connector."""
 
-import logging
 import os
 
 import MySQLdb
@@ -49,7 +48,9 @@ class _DbConnector(object):
                 try:
                     configs = yaml.load(config_file)
                 except yaml.YAMLError as e:
-                    logging.error(e)
+                    LOGGER.error('Unable to parse db config file:\n{0}'
+                                 .format(e))
+                    raise MySQLError('DB Connector', e)
         except IOError as e:
             LOGGER.error('Unable to open/read db config file:\n{0}'.format(e))
             raise MySQLError('DB Connector', e)
