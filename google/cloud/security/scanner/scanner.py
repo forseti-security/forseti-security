@@ -106,7 +106,7 @@ def main(unused_argv=None):
             storage_client = storage.StorageClient()
             full_output_path = os.path.join(output_path, output_filename)
 
-            storage_client.put_textfile_object(
+            storage_client.put_text_file(
                 csv_name, full_output_path)
         else:
             # Otherwise, just copy it to the output path.

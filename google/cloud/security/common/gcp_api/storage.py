@@ -45,16 +45,16 @@ class StorageClient(_BaseClient):
         if not full_path or not full_path.startswith('gs://'):
             raise InvalidBucketPathError(
                 'Invalid bucket path: {}'.format(full_path))
-        parts = full_path[5:].split('/')
-        bucket_name = parts[0]
+        bucket_name = full_path[5:].split('/')[0]
         bucket_prefix = 5 + len(bucket_name) + 1
         object_path = full_path[bucket_prefix:]
         return bucket_name, object_path
 
-    def put_textfile_object(self, local_file_path, full_bucket_path):
+    def put_text_file(self, local_file_path, full_bucket_path):
         """Put a text object into a bucket.
 
         Args:
+            local_file_path: The local path of the file to upload.
             full_bucket_path: The full GCS path for the output.
         """ 
         storage_service = self.service
@@ -71,7 +71,7 @@ class StorageClient(_BaseClient):
                     f, 'application/octet-stream'))
             resp = req.execute()
 
-    def get_textfile_object(self, full_bucket_path):
+    def get_text_file(self, full_bucket_path):
         """Gets a text file object as a string.
 
         Args:
@@ -86,8 +86,8 @@ class StorageClient(_BaseClient):
         media_request = (storage_service.objects()
                          .get_media(bucket=bucket,
                                     object=object_path))
+        out_stream = StringIO.StringIO()
         try:
-            out_stream = StringIO.StringIO()
             downloader = MediaIoBaseDownload(out_stream, media_request)
             done = False
             while done is False:
