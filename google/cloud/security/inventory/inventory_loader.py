@@ -153,19 +153,31 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
 
 def main(unused_argv=None):
     """Runs the Inventory Loader."""
-    dao = Dao()
+
+    try:
+        dao = Dao()
+    except MySQLError as e:
+        LOGGER.error('Encountered error with Cloud SQL. Abort.\n{0}'.format(e))
+        sys.exit()
+
     cycle_timestamp = _start_snapshot_cycle(dao)
 
     configs_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), CONFIG_FILE))
 
-    with open(configs_path, 'r') as config_file:
-        try:
-            configs = yaml.load(config_file)
-        except yaml.YAMLError as e:
-            LOGGER.error(e)
-            _complete_snapshot_cycle(cycle_timestamp, 'FAILURE')
-            sys.exit()
+    try:
+        with open(configs_path, 'r') as config_file:
+            try:
+                configs = yaml.load(config_file)
+            except yaml.YAMLError as e:
+                LOGGER.error(e)
+                _complete_snapshot_cycle(dao, cycle_timestamp, 'FAILURE')
+                sys.exit()
+    except IOError as e:
+        LOGGER.error('Unable to open/read inventory config file:\n{0}'
+                     .format(e))
+        _complete_snapshot_cycle(dao, cycle_timestamp, 'FAILURE')
+        sys.exit()
 
     # It's better to build the ratelimiters once for each API
     # and reuse them across multiple instances of the Client.
