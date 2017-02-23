@@ -23,9 +23,7 @@ from google.cloud.security.common.gcp_api.storage import StorageClient
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 
 class StorageTest(basetest.TestCase):
-
-    def setUp(self):
-        pass
+    """Test the StorageClient."""
 
     @mock.patch.object(_BaseClient, '__init__', autospec=True)
     def test_get_bucket_and_path_from(self, mock_base):

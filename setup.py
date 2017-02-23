@@ -122,6 +122,7 @@ setup(
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     namespace_packages=NAMESPACE_PACKAGES,
+    google_test_dir='tests',
     license='Apache 2.0',
     keywords='gcp google cloud platform security tools',
     entry_points={
