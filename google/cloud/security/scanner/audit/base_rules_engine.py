@@ -106,7 +106,7 @@ class BaseRulesEngine(object):
         """
         storage_client = storage.StorageClient()
 
-        file_content = storage_client.get_textfile_object(
+        file_content = storage_client.get_text_file(
             full_bucket_path=self.full_rules_path)
 
         return self._parse_string(file_content)

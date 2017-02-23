@@ -51,7 +51,7 @@ class StorageClient(_BaseClient):
         object_path = full_path[bucket_prefix:]
         return bucket_name, object_path
 
-    def put_textfile_object(self, local_file_path, full_bucket_path):
+    def put_text_file(self, local_file_path, full_bucket_path):
         """Put a text object into a bucket.
 
         Args:
@@ -71,7 +71,7 @@ class StorageClient(_BaseClient):
                     f, 'application/octet-stream'))
             resp = req.execute()
 
-    def get_textfile_object(self, full_bucket_path):
+    def get_text_file(self, full_bucket_path):
         """Gets a text file object as a string.
 
         Args:
