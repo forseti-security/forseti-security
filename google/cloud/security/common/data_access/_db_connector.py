@@ -14,14 +14,17 @@
 
 """Provides the database connector."""
 
-import logging
 import os
 
 import MySQLdb
+from MySQLdb import OperationalError
 import yaml
 
 from google.cloud.security import FORSETI_SECURITY_HOME_ENV_VAR
+from google.cloud.security.common.data_access.errors import MySQLError
+from google.cloud.security.common.util.log_util import LogUtil
 
+LOGGER = LogUtil.setup_logging(__name__)
 
 CONFIGS_FILE = os.path.abspath(
     os.path.join(os.environ.get(FORSETI_SECURITY_HOME_ENV_VAR),
@@ -32,19 +35,39 @@ class _DbConnector(object):
     """Database connector."""
 
     def __init__(self):
-        with open(CONFIGS_FILE, 'r') as config_file:
-            try:
-                configs = yaml.load(config_file)
-            except yaml.YAMLError as e:
-                logging.error(e)
+        """Initialize the db connector.
 
-        self.conn = MySQLdb.connect(
-            host=configs['cloud_sql']['host'],
-            user=configs['cloud_sql']['user'],
-            passwd=configs['cloud_sql']['passwd'],
-            db=configs['cloud_sql']['database'],
-            local_infile=1)
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
+        try:
+            with open(CONFIGS_FILE, 'r') as config_file:
+                try:
+                    configs = yaml.load(config_file)
+                except yaml.YAMLError as e:
+                    LOGGER.error('Unable to parse db config file:\n{0}'
+                                 .format(e))
+                    raise MySQLError('DB Connector', e)
+        except IOError as e:
+            LOGGER.error('Unable to open/read db config file:\n{0}'.format(e))
+            raise MySQLError('DB Connector', e)
+
+        try:
+            self.conn = MySQLdb.connect(
+                host=configs['cloud_sql']['host'],
+                user=configs['cloud_sql']['user'],
+                passwd=configs['cloud_sql']['passwd'],
+                db=configs['cloud_sql']['database'],
+                local_infile=1)
+        except OperationalError as e:
+            LOGGER.error('Unable to create mysql connector:\n{0}'.format(e))
+            raise MySQLError('DB Connector', e)
 
     def __del__(self):
         """Closes the database connection."""
-        self.conn.close()
+        try:
+            self.conn.close()
+        except AttributeError:
+            # This happens when conn is not created in the first place,
+            # thus does not need to be cleaned up.
+            pass
