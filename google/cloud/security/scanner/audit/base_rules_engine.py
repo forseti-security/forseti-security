@@ -55,10 +55,9 @@ class BaseRulesEngine(object):
         self.full_rules_path = rules_file_path.strip()
 
         if self.full_rules_path.startswith('gs://'):
-            file_parts = self.full_rules_path[5:].split('/')
-            self.rules_bucket = file_parts[0]
-            bucket_prefix = 5 + len(file_parts[0]) + 1
-            self.rules_file_path = self.full_rules_path[bucket_prefix:]
+            self.rules_bucket, self.rules_file_path = (
+                storage.StorageClient.get_bucket_and_path_from(
+                    self.full_rules_path))
         else:
             self.rules_file_path = self.full_rules_path
             self.rules_bucket = None

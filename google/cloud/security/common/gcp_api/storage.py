@@ -33,7 +33,8 @@ class StorageClient(_BaseClient):
         super(StorageClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
 
-    def get_bucket_and_path_from(self, full_path):
+    @classmethod
+    def get_bucket_and_path_from(cls, full_path):
         """Get the bucket and object path.
 
         Args:
@@ -58,7 +59,8 @@ class StorageClient(_BaseClient):
             full_bucket_path: The full GCS path for the output.
         """ 
         storage_service = self.service
-        bucket, object_path = self.get_bucket_and_path_from(full_bucket_path)
+        bucket, object_path = StorageClient.get_bucket_and_path_from(
+            full_bucket_path)
 
         req_body = {
             'name': object_path
@@ -82,7 +84,8 @@ class StorageClient(_BaseClient):
         """
         file_content = ''
         storage_service = self.service
-        bucket, object_path = self.get_bucket_and_path_from(full_bucket_path)
+        bucket, object_path = StorageClient.get_bucket_and_path_from(
+            full_bucket_path)
         media_request = (storage_service.objects()
                          .get_media(bucket=bucket,
                                     object=object_path))
