@@ -184,8 +184,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         bucket_name = 'bucket-name'
         rules_path = 'input/test_rules_1.yaml'
-        rules_engine = OrgRulesEngine(rules_bucket=bucket_name,
-                                          rules_file_path=rules_path)
+        full_rules_path = 'gs://{}/{}'.format(bucket_name, rules_path)
+        rules_engine = OrgRulesEngine(rules_file_path=full_rules_path)
 
         # Read in the rules file
         file_content = None

@@ -24,11 +24,8 @@ from google.cloud.security import FORSETI_SECURITY_HOME_ENV_VAR
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.util.log_util import LogUtil
 
-
 LOGGER = LogUtil.setup_logging(__name__)
 
-# TODO: Reference this by an absolute path so that it works locally
-# and on GCE.
 CONFIGS_FILE = os.path.abspath(
     os.path.join(os.environ.get(FORSETI_SECURITY_HOME_ENV_VAR),
                  'config', 'db.yaml'))

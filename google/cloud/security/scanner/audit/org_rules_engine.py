@@ -36,10 +36,9 @@ from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 class OrgRulesEngine(BaseRulesEngine):
     """Rules engine for org resources."""
 
-    def __init__(self, rules_file_path, rules_bucket=None):
+    def __init__(self, rules_file_path):
         super(OrgRulesEngine, self).__init__(
             rules_file_path=rules_file_path,
-            rules_bucket=rules_bucket,
             logger_name=__name__)
         self.rule_book = None
 

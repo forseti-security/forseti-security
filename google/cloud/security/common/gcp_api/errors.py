@@ -12,4 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for the scanner."""
+"""Errors module."""
+
+
+class Error(Exception):
+    """Base error class for the module."""
+
+
+class InvalidBucketPathError(Error):
+    """Invalid GCS bucket path."""
+    pass
+
