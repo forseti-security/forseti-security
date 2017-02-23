@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Creates a Cloud SQL database template for forseti_inventory."""
 
 
@@ -22,6 +23,9 @@ def GenerateConfig(context):
   resources.append({
       "name": "inventory-database",
       "type": "sqladmin.v1beta4.database",
+      "metadata": {
+          "dependsOn": ["inventory-instance"]
+      },
       "properties": {
           "name": context.properties["database-name"],
           "project": context.env["project"],

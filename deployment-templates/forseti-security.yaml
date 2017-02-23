@@ -23,10 +23,8 @@ resources:
   type: inventory-instance.py
   properties:
     region: us-central1
-    database-name: forseti_security
 
 - name: inventory-database
   type: inventory-database.py
-  metadata:
-    dependsOn:
-      - inventory-instance
+  properties:
+    database-name: forseti_security
