@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = '1.0'
+imports:
+- path: py/inventory/cloudsql-instance.py
+  name: cloudsql-instance.py
+- path: py/inventory/cloudsql-database.py
+  name: cloudsql-database.py
 
-__import__('pkg_resources').declare_namespace(__name__)
+resources:
+- name: cloudsql-instance
+  type: cloudsql-instance.py
+  properties:
+    region: us-central1
+
+- name: cloudsql-database
+  type: cloudsql-database.py
+  properties:
+    database-name: forseti_security
+

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates a Cloud SQL instance tempalte for forseti_inventory."""
+"""Creates a Cloud SQL instance template for forseti_inventory."""
 
 
 def GenerateConfig(context):
@@ -21,10 +21,9 @@ def GenerateConfig(context):
   resources = []
 
   resources.append({
-      'name': 'inventory-instance',
+      'name': context.env['deployment'],
       'type': 'sqladmin.v1beta4.instance',
       'properties': {
-          'name': 'forseti-security-inventory',
           'project': context.env['project'],
           'backendType': 'SECOND_GEN',
           'databaseVersion': 'MYSQL_5_7',
@@ -48,10 +47,10 @@ def GenerateConfig(context):
           },
           'instanceType': 'CLOUD_SQL_INSTANCE',
           'replicaNames': [
-            'forseti-security-inventory-failover'
+            '{}-failover'.format(context.env['deployment'])
           ],
           'failoverReplica': {
-            'name': 'forseti-security-inventory-replica',
+            'name': '{}-replica'.format(context.env['deployment']),
             'available': True
           },
         }

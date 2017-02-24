@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = '1.0'
+# Wrapper script to run scanner in development mode.
 
-__import__('pkg_resources').declare_namespace(__name__)
+PYTHONPATH=./ python google/cloud/security/scanner/scanner.py \
+        --rules <rules_path> \
+        --db_host <database hostname/IP> \
+        --db_user <database user> \
+        --db_passwd <database password> \
+        --db_name <database name>
