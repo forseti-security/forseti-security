@@ -21,7 +21,7 @@ from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
 
-from google.cloud.security.common.util.errors import EmailError
+from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 
 
@@ -86,6 +86,9 @@ class EmailUtil(object):
         
         Returns:
             None.
+        
+        Raises:
+            EmailSendError: An error with sending email has occurred.
         """
         email = mail.Mail(
             mail.Email(email_sender),
@@ -99,8 +102,7 @@ class EmailUtil(object):
         except (URLError, HTTPError) as e:
             self.logger.error('Unable to send email: {0} {1}'
                 .format(e.code, e.reason))
-            raise EmailError
-            
+            raise EmailSendError
 
         if response.status_code == 202:
             self.logger.info('Email accepted for delivery:\n{0}'
@@ -111,4 +113,4 @@ class EmailUtil(object):
                         response.status_code,
                         response.body,
                         response.headers))
-            raise EmailError
+            raise EmailSendError

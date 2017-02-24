@@ -19,6 +19,6 @@ class Error(Exception):
     """Base error class for the module."""
 
 
-class EmailError(Error):
+class EmailSendError(Error):
     """Unable to send email."""
     pass

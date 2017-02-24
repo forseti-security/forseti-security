@@ -35,7 +35,7 @@ from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.common.util.errors import EmailError
+from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 from google.cloud.security.inventory.pipelines import load_iam_policies_pipeline
@@ -176,7 +176,7 @@ def _send_email(cycle_timestamp, status, email_content=None):
     try:
         EmailUtil().send(email_sender, email_recipient,
                          email_subject, email_content)
-    except EmailError:
+    except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
 def main(unused_argv=None):
