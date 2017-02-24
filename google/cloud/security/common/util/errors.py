@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email utility module."""
+"""Util Errors module."""
 
-def send_thru_sendgrid():
-  """Send alert email via SendGrid.
 
-  https://github.com/sendgrid/sendgrid-python
-  """
-  pass
+class Error(Exception):
+    """Base error class for the module."""
+
+
+class EmailSendError(Error):
+    """Unable to send email."""
+    pass

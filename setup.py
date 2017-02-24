@@ -43,6 +43,7 @@ INSTALL_REQUIRES = [
     'PyYAML==3.12',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
+    'sendgrid==3.6.3',
 ]
 
 SETUP_REQUIRES = [
