@@ -7,12 +7,12 @@
 # Compiled protobuf
 *_pb2.py
 
-# Configurations
-config/*.yaml
-
 # Miscellaneous
 .DS_Store
 .*swp
+
+# Dev scripts
+scripts/dev*.sh
 
 # Build/dist
 .eggs/

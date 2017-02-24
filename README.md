@@ -71,15 +71,6 @@ $ workon forseti-security
 $ python setup.py install
 ```
 
-### Set the `FORSETI_SECURITY_HOME` environment variable
-The setup script will add a line in the virtualenv postactivate script to export
-a variable, `FORSETI_SECURITY_HOME`. Reactivate your virtualenv to export the
-environment variable or copy-paste the one-liner at the end of the setup.py.
-
-```sh
-$ workon forseti-security
-```
-
 
 # Configuration
 In the `config` directory, there are sample configuration files. Make a copy of
