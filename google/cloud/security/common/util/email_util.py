@@ -33,12 +33,13 @@ RETRY_EXCEPTIONS = (
 def _http_retry(e):
     """Whether exception should be retried.
 
+    Args:
+        e: Exception object.
+
     Returns:
         True for exceptions to retry.  False otherwise.
     """
-    if isinstance(e, RETRY_EXCEPTIONS):
-        return True
-    return False
+    return isinstance(e, RETRY_EXCEPTIONS)
 
 
 class EmailUtil(object):
@@ -47,12 +48,9 @@ class EmailUtil(object):
     def __init__(self):
         """Initialize the email util."""
         # TODO: Store and read the sendgrid key from GCS.
-        # TODO: Read the email sender and recipient from configs.
         self.logger = LogUtil.setup_logging(__name__)
         api_key = 'my_secret_key'
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
-        self.email_sender = 'foo@baz.com'
-        self.email_recipient = 'bar@baz.com'
 
     @retry(retry_on_exception=_http_retry, wait_exponential_multiplier=1000,
            wait_exponential_max=10000, stop_max_attempt_number=1)
@@ -70,7 +68,7 @@ class EmailUtil(object):
         """
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
-    def send(self, email_subject, email_content):
+    def send(self, email_sender, email_recipient, email_subject, email_content):
         """Send an email.
 
         This uses SendGrid.
@@ -80,6 +78,8 @@ class EmailUtil(object):
         sender, recipient, subject, and content (the body)
         
         Args:
+            email_sender: String of the email sender.
+            email_recipient: String of the email recipient.
             email_subject: String of the email subject.
             email_content: String of the email content (aka, body).
         
@@ -87,9 +87,9 @@ class EmailUtil(object):
             None.
         """
         email = mail.Mail(
-            mail.Email(self.email_sender),
+            mail.Email(email_sender),
             email_subject,
-            mail.Email(self.email_recipient),
+            mail.Email(email_recipient),
             mail.Content('text/plain', email_content)
         )
 

@@ -163,12 +163,17 @@ def _send_email(cycle_timestamp, status, email_content=None):
     Returns:
          None
     """
+    # TODO: Read the email sender and recipient from configs.
+    email_sender = 'foo@baz.com'
+    email_recipient = 'bar@baz.com'
+    
     email_subject = 'Inventory loading {0}: {1}'.format(cycle_timestamp, status)
 
     if email_content is None:
         email_content = email_subject
 
-    EmailUtil().send(email_subject, email_content)
+    EmailUtil().send(email_sender, email_recipient,
+                     email_subject, email_content)
 
 def main(unused_argv=None):
     """Runs the Inventory Loader."""
