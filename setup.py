@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +43,7 @@ INSTALL_REQUIRES = [
     'PyYAML==3.12',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
+    'sendgrid==3.6.3',
 ]
 
 SETUP_REQUIRES = [
@@ -121,6 +123,7 @@ setup(
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     namespace_packages=NAMESPACE_PACKAGES,
+    google_test_dir='tests',
     license='Apache 2.0',
     keywords='gcp google cloud platform security tools',
     entry_points={

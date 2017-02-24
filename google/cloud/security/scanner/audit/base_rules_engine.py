@@ -16,16 +16,14 @@
 
 Loads YAML rules either from local file system or Cloud Storage bucket.
 """
+
 import json
 import os
-import StringIO
 import yaml
 
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.scanner.audit.errors import InvalidRuleDefinitionError
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseDownload
 
 
 class BaseRulesEngine(object):
@@ -33,14 +31,11 @@ class BaseRulesEngine(object):
 
     def __init__(self,
                  rules_file_path=None,
-                 rules_bucket=None,
                  logger_name=None):
         """Initialize.
 
         Args:
             rules_file_path: The path to the rules file.
-            rules_bucket: The bucket where the rules file is stored,
-                if any.
             logger_name: The name of module for logger.
         """
         self.filetype_handlers = {
@@ -57,11 +52,18 @@ class BaseRulesEngine(object):
         if not rules_file_path:
             raise InvalidRuleDefinitionError(
                 'File path: {}'.format(rules_file_path))
-        self.rules_file_path = rules_file_path.strip()
+        self.full_rules_path = rules_file_path.strip()
+
+        if self.full_rules_path.startswith('gs://'):
+            self.rules_bucket, self.rules_file_path = (
+                storage.StorageClient.get_bucket_and_path_from(
+                    self.full_rules_path))
+        else:
+            self.rules_file_path = self.full_rules_path
+            self.rules_bucket = None
+
         self.filetype_handler = None
         self._setup_filetype_handler()
-
-        self.rules_bucket = rules_bucket
         if not logger_name:
             logger_name = __name__
         self.logger = LogUtil.setup_logging(logger_name)
@@ -101,22 +103,10 @@ class BaseRulesEngine(object):
         Returns:
             The parsed dict from the rule definitions file.
         """
-        storage_service = storage.StorageClient().service
+        storage_client = storage.StorageClient()
 
-        media_request = (storage_service.objects()
-                             .get_media(bucket=self.rules_bucket,
-                                        object=self.rules_file_path))
-        try:
-            out_stream = StringIO.StringIO()
-            downloader = MediaIoBaseDownload(out_stream, media_request)
-            done = False
-            while done is False:
-                _, done = downloader.next_chunk()
-            file_content = out_stream.getvalue()
-            out_stream.close()
-        except HttpError as http_error:
-            self.logger.error('Unable to download file: %s', http_error)
-            raise http_error
+        file_content = storage_client.get_text_file(
+            full_bucket_path=self.full_rules_path)
 
         return self._parse_string(file_content)
 

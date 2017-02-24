@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email utility module."""
+"""Errors module."""
 
-def send_thru_sendgrid():
-  """Send alert email via SendGrid.
 
-  https://github.com/sendgrid/sendgrid-python
-  """
-  pass
+class Error(Exception):
+    """Base error class for the module."""
+
+
+class InvalidBucketPathError(Error):
+    """Invalid GCS bucket path."""
+    pass
+
