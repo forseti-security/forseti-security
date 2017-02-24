@@ -153,7 +153,7 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
                 status, cycle_timestamp)
 
 def _send_email(cycle_timestamp, status, email_content=None):
-    """Complete the snapshot cycle.
+    """Send an email.
 
     Args:
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
@@ -168,8 +168,7 @@ def _send_email(cycle_timestamp, status, email_content=None):
     if email_content is None:
         email_content = email_subject
 
-    email_util = EmailUtil()
-    email_util.send(email_subject, email_content)
+    EmailUtil().send(email_subject, email_content)
 
 def main(unused_argv=None):
     """Runs the Inventory Loader."""

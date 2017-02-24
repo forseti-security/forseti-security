@@ -27,7 +27,7 @@ from google.cloud.security.common.util.log_util import LogUtil
 # TODO: This is also used by gce enforcer and _base_client.
 # Move to common library.
 RETRY_EXCEPTIONS = (
-    URLError,  # no network connection
+    URLError,  # no network connection is included here
 )
 
 def _http_retry(e):
@@ -59,7 +59,7 @@ class EmailUtil(object):
     def _execute_send(self, email):
         """Executes the sending of the email.
 
-        This needs to be standalone method so that we can wrap it with retry,
+        This needs to be a standalone method so that we can wrap it with retry,
         and the final exception can be gracefully handled upstream.
 
         Args:
@@ -71,7 +71,7 @@ class EmailUtil(object):
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
     def send(self, email_subject, email_content):
-        """Send notification email.
+        """Send an email.
 
         This uses SendGrid.
         https://github.com/sendgrid/sendgrid-python
@@ -81,7 +81,7 @@ class EmailUtil(object):
         
         Args:
             email_subject: String of the email subject.
-            email_content: String of the email content (or body).
+            email_content: String of the email content (aka, body).
         
         Returns:
             None.
