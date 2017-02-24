@@ -21,40 +21,40 @@ def GenerateConfig(context):
   resources = []
 
   resources.append({
-      "name": "inventory-instance",
-      "type": "sqladmin.v1beta4.instance",
-      "properties": {
-          "name": "forseti-security-inventory",
-          "project": context.env["project"],
-          "backendType": "SECOND_GEN",
-          "databaseVersion": "MYSQL_5_7",
-          "region": context.properties["region"],
-          "settings": {
-            "tier": "db-n1-standard-1",
-            "backupConfiguration": {
-              "enabled": True,
-              "binaryLogEnabled": True
+      'name': 'inventory-instance',
+      'type': 'sqladmin.v1beta4.instance',
+      'properties': {
+          'name': 'forseti-security-inventory',
+          'project': context.env['project'],
+          'backendType': 'SECOND_GEN',
+          'databaseVersion': 'MYSQL_5_7',
+          'region': context.properties['region'],
+          'settings': {
+            'tier': 'db-n1-standard-1',
+            'backupConfiguration': {
+              'enabled': True,
+              'binaryLogEnabled': True
             },
-            "replicationType": "SYNCHRONOUS",
-            "activationPolicy": "ALWAYS",
-            "ipConfiguration": {
-              "ipv4Enabled": True,
-              "authorizedNetworks": [
+            'replicationType': 'SYNCHRONOUS',
+            'activationPolicy': 'ALWAYS',
+            'ipConfiguration': {
+              'ipv4Enabled': True,
+              'authorizedNetworks': [
               ],
-              "requireSsl": True
+              'requireSsl': True
             },
-            "dataDiskSizeGb": "25",
-            "dataDiskType": "PD_SSD",
+            'dataDiskSizeGb': '25',
+            'dataDiskType': 'PD_SSD',
           },
-          "instanceType": "CLOUD_SQL_INSTANCE",
-          "replicaNames": [
-            "forseti-security-inventory-failover"
+          'instanceType': 'CLOUD_SQL_INSTANCE',
+          'replicaNames': [
+            'forseti-security-inventory-failover'
           ],
-          "failoverReplica": {
-            "name": "forseti-security-inventory-replica",
-            "available": True
+          'failoverReplica': {
+            'name': 'forseti-security-inventory-replica',
+            'available': True
           },
         }
   })
 
-  return {"resources": resources}
+  return {'resources': resources}

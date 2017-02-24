@@ -21,16 +21,16 @@ def GenerateConfig(context):
   resources = []
 
   resources.append({
-      "name": "inventory-database",
-      "type": "sqladmin.v1beta4.database",
-      "metadata": {
-          "dependsOn": ["inventory-instance"]
+      'name': 'inventory-database',
+      'type': 'sqladmin.v1beta4.database',
+      'metadata': {
+          'dependsOn': ['inventory-instance']
       },
-      "properties": {
-          "name": context.properties["database-name"],
-          "project": context.env["project"],
-          "instance": "$(ref.inventory-instance.name)"
+      'properties': {
+          'name': context.properties['database-name'],
+          'project': context.env['project'],
+          'instance': '$(ref.inventory-instance.name)'
       }
   })
 
-  return {"resources": resources}
+  return {'resources': resources}
