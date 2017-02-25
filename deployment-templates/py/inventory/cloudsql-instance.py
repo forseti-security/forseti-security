@@ -16,44 +16,44 @@
 
 
 def GenerateConfig(context):
-  """Generate configuration."""
+    """Generate configuration."""
 
-  resources = []
+    resources = []
 
-  resources.append({
-      'name': context.env['deployment'],
-      'type': 'sqladmin.v1beta4.instance',
-      'properties': {
-          'project': context.env['project'],
-          'backendType': 'SECOND_GEN',
-          'databaseVersion': 'MYSQL_5_7',
-          'region': context.properties['region'],
-          'settings': {
-            'tier': 'db-n1-standard-1',
-            'backupConfiguration': {
-              'enabled': True,
-              'binaryLogEnabled': True
+    resources.append({
+        'name': context.env['deployment'],
+        'type': 'sqladmin.v1beta4.instance',
+        'properties': {
+            'project': context.env['project'],
+            'backendType': 'SECOND_GEN',
+            'databaseVersion': 'MYSQL_5_7',
+            'region': context.properties['region'],
+            'settings': {
+                'tier': 'db-n1-standard-1',
+                'backupConfiguration': {
+                    'enabled': True,
+                    'binaryLogEnabled': True
+                },
+                'replicationType': 'SYNCHRONOUS',
+                'activationPolicy': 'ALWAYS',
+                'ipConfiguration': {
+                    'ipv4Enabled': True,
+                        'authorizedNetworks': [
+                    ],
+                    'requireSsl': True
+                },
+                'dataDiskSizeGb': '25',
+                'dataDiskType': 'PD_SSD',
             },
-            'replicationType': 'SYNCHRONOUS',
-            'activationPolicy': 'ALWAYS',
-            'ipConfiguration': {
-              'ipv4Enabled': True,
-              'authorizedNetworks': [
-              ],
-              'requireSsl': True
+            'instanceType': 'CLOUD_SQL_INSTANCE',
+            'replicaNames': [
+                '{}-failover'.format(context.env['deployment'])
+            ],
+            'failoverReplica': {
+                'name': '{}-replica'.format(context.env['deployment']),
+                'available': True
             },
-            'dataDiskSizeGb': '25',
-            'dataDiskType': 'PD_SSD',
-          },
-          'instanceType': 'CLOUD_SQL_INSTANCE',
-          'replicaNames': [
-            '{}-failover'.format(context.env['deployment'])
-          ],
-          'failoverReplica': {
-            'name': '{}-replica'.format(context.env['deployment']),
-            'available': True
-          },
         }
-  })
+    })
 
-  return {'resources': resources}
+    return {'resources': resources}
