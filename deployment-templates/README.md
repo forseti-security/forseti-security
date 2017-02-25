@@ -79,6 +79,10 @@ $ gcloud beta sql users set-password forseti-user [HOST] \
 ### Setting up Forseti Security
 Now that you've set up your Cloud SQL instance, you can deploy Forseti Security in Compute Engine.
 
+* Create a copy of sample config, forseti-gce.yaml.sample, as `forseti-gce-yaml`.
+
+* Edit the config file and change the value for `YOUR_SERVICE_ACCOUNT` to a service account that you will use to access the Cloud APIs (Cloud Storage, Resource Manager, etc.). For now, you can probably use the default application credentials (`PROJECTNUMBER-compute@developer.gserviceaccount.com`).
+
 * Create a new deployment for the GCE instance.
 
 ```sh
