@@ -85,6 +85,8 @@ From the [docs](https://cloud.google.com/sql/docs/mysql/create-manage-users#crea
 ### Setting up Cloud Storage buckets
 Next, set up your Cloud Storage buckets. These are used by the Forseti Security tools to store data, such as configurations, rule definitions, and tool output.
 
+**Note**: The buckets created by these templates are created with the [bucket default permissions](https://cloud.google.com/storage/docs/access-control/lists#permissions), i.e. ["project-private" ACL](https://cloud.google.com/storage/docs/access-control/lists#predefined-project-private). This gives permission to the project team, based on their roles.
+
 * Create a copy of the sample config (forseti-storage.yaml.sample) and rename it (e.g. `forseti-storage.yaml`).
 
 * Edit the config file and change the bucket names accordingly.
