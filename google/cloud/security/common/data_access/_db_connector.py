@@ -27,10 +27,10 @@ from google.cloud.security.common.util.log_util import LogUtil
 LOGGER = LogUtil.setup_logging(__name__)
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('db_host', None, 'Database hostname/IP address')
-flags.DEFINE_string('db_name', None, 'Database name')
-flags.DEFINE_string('db_user', None, 'Database user')
-flags.DEFINE_string('db_passwd', None, 'Database password')
+flags.DEFINE_string('db_host', None, 'Cloud SQL instance hostname/IP address')
+flags.DEFINE_string('db_name', None, 'Cloud SQL database name')
+flags.DEFINE_string('db_user', None, 'Cloud SQL user')
+flags.DEFINE_string('db_passwd', None, 'Cloud SQL password')
 flags.mark_flag_as_required('db_host')
 flags.mark_flag_as_required('db_name')
 flags.mark_flag_as_required('db_user')
