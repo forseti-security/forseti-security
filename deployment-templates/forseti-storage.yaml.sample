@@ -13,17 +13,11 @@
 # limitations under the License.
 
 imports:
-- path: py/inventory/cloudsql-instance.py
-  name: cloudsql-instance.py
-- path: py/inventory/cloudsql-database.py
-  name: cloudsql-database.py
+- path: py/storage/bucket.py
+  name: bucket.py
 
 resources:
-- name: cloudsql-instance
-  type: cloudsql-instance.py
-  properties:
-    region: us-central1
-- name: cloudsql-database
-  type: cloudsql-database.py
-  properties:
-    database-name: forseti_security
+- name: SECRETS_BUCKET
+  type: bucket.py
+- name: SCANNER_BUCKET
+  type: bucket.py

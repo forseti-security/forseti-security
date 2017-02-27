@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-imports:
-- path: py/inventory/cloudsql-instance.py
-  name: cloudsql-instance.py
-- path: py/inventory/cloudsql-database.py
-  name: cloudsql-database.py
+"""Creates a Cloud Storage bucket template for Forseti Security."""
 
-resources:
-- name: cloudsql-instance
-  type: cloudsql-instance.py
-  properties:
-    region: us-central1
-- name: cloudsql-database
-  type: cloudsql-database.py
-  properties:
-    database-name: forseti_security
+def GenerateConfig(context):
+    """Generate configuration."""
+    resources = []
+
+    resources.append({
+        'name': context.env['name'],
+        'type': 'storage.v1.bucket',
+        'properties': {
+            'project': context.env['project'],
+            'name': context.properties['bucket-name']
+        }
+    })
+
+    return {'resources': resources}

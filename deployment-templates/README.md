@@ -76,15 +76,34 @@ $ gcloud beta sql users set-password forseti-user [HOST] \
    --instance=forseti-cloudsql-170224 --password=f0rs3t1Secur1ty
 ```
 
+### Setting up Cloud Storage buckets
+Next, set up your Cloud Storage buckets. These are used by the Forseti Security tools to store data, such as configurations, rule definitions, and tool output.
+
+* Create a copy of the sample config (forseti-storage.yaml.sample) and rename it (e.g. `forseti-storage.yaml`).
+
+* Edit the config file and change the bucket names accordingly.
+
+  * There are restrictions on bucket names (e.g. they must be unique). Refer to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming) for more information.
+  * You may opt to create more buckets than just the 2 in the sample. For example, you might want to store the output from the Forseti Scanner in one bucket and rule definitions in another.
+
+* Deploy the buckets.
+
 ### Setting up Forseti Security
 Now that you've set up your Cloud SQL instance, you can deploy Forseti Security in Compute Engine.
 
-* Create a copy of sample config, forseti-gce.yaml.sample, as `forseti-gce-yaml`.
+* Create a copy of the sample config (forseti-gce.yaml.sample) and rename it (e.g. `forseti-gce.yaml`).
 
 * Edit the config file and change the value for `YOUR_SERVICE_ACCOUNT` to a service account that you will use to access the Cloud APIs (Cloud Storage, Resource Manager, etc.). For now, you can probably use the default application credentials (`PROJECTNUMBER-compute@developer.gserviceaccount.com`).
 
 * Create a new deployment for the GCE instance.
 
 ```sh
-gcloud deployment-manager deployments create forseti-gce-170224 --config forseti-gce.yaml
+$ gcloud deployment-manager deployments create forseti-gce-170224 --config forseti-gce.yaml
+```
+
+* If you make any changes to the deployment template, then update your deployment and reset the VM:
+
+```sh
+$ gcloud deployment-manager deployments update forseti-gce-170224 --config forseti-gce.yaml
+$ gcloud compute instances reset forseti-gce-170224
 ```

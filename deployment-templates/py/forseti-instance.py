@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates a Cloud SQL instance template for forseti_inventory."""
+"""Creates a GCE instance template for Forseti Security."""
 
 
 def GenerateConfig(context):
@@ -68,6 +68,7 @@ sudo apt-get install -y python-pip python-dev
 FORSETI_INVENTORY_PATH=`which forseti_inventory`
 
 if [ -z "$FORSETI_INVENTORY_PATH" ]; then
+        sudo apt-get install -y libmysqlclient-dev
         gsutil cp {}/forseti-security-master.zip /home/ubuntu
         cd /home/ubuntu
         unzip forseti-security-master.zip
