@@ -14,34 +14,12 @@
 
 """Base GCP client which uses the discovery API."""
 
-import httplib
-import socket
-import ssl
-
 from apiclient import discovery
-import httplib2
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
 from google.cloud.security.common.gcp_api._supported_apis import SUPPORTED_APIS
-
-
-# What transient exceptions should be retried.
-# TODO: This is also used by gce enforcer.  Move to common library.
-RETRY_EXCEPTIONS = (
-    httplib.ResponseNotReady,
-    httplib.IncompleteRead,
-    httplib2.ServerNotFoundError,
-    socket.error,
-    ssl.SSLError,
-)
-
-
-def _http_retry(e):
-    """retry_on_exception for retry. Returns True for exceptions to retry."""
-    if isinstance(e, RETRY_EXCEPTIONS):
-        return True
-    return False
+from google.cloud.security.common.util import retry_util
 
 
 class _BaseClient(object):
@@ -67,8 +45,9 @@ class _BaseClient(object):
 
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
-    @retry(retry_on_exception=_http_retry, wait_exponential_multiplier=1000,
-           wait_exponential_max=10000, stop_max_attempt_number=5)
+    @retry(retry_on_exception=retry_util.http_retry,
+           wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def _execute(self, request):
         """Executes requests in a rate-limited way.
 
