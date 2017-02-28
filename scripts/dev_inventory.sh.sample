@@ -18,7 +18,6 @@
 PYTHONPATH=./ python google/cloud/security/inventory/inventory_loader.py \
         --organization_id <organization id> \
         --max_crm_api_calls_per_100_seconds 400 \
-        --db_host <database hostname/IP> \
-        --db_user <database user> \
-        --db_passwd <database password> \
+        --db_host 127.0.0.1 \
+        --db_user root \
         --db_name <database name>

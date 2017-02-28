@@ -19,10 +19,10 @@ Usage:
   $ forseti_inventory \
       --organization_id <organization_id> \
       --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \
-      --db_host <database hostname/IP> \
-      --db_user <database user> \
-      --db_passwd <database password> \
-      --db_name <database name>
+      --db_host <Cloud SQL database hostname/IP> \
+      --db_user <Cloud SQL database user> \
+      --db_passwd <Cloud SQL database password> \
+      --db_name <Cloud SQL database name (required)>
 
 """
 

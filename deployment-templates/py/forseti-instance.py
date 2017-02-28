@@ -18,10 +18,15 @@
 def GenerateConfig(context):
     """Generate configuration."""
 
+    CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
+        '$(ref.{}.region)'.format(context.env['deployment']),
+        context.env['deployment'])
+    SCANNER_BUCKET = '$(ref.scanner-bucket.name)'
+
     resources = []
 
     resources.append({
-        'name': context.env['deployment'],
+        'name': '{}-vm'.format(context.env['deployment']),
         'type': 'compute.v1.instance',
         'properties': {
             'zone': context.properties['zone'],
@@ -60,22 +65,105 @@ def GenerateConfig(context):
             'metadata': {
                 'items': [{
                     'key': 'startup-script',
-                    'value': """
-#!/bin/bash
+                    'value': """#!/bin/bash
 sudo apt-get install -y git unzip
-sudo apt-get install -y python-pip python-dev
+sudo apt-get install -y python-pip python-dev virtualenvwrapper
 
-FORSETI_INVENTORY_PATH=`which forseti_inventory`
+USER_HOME=/home/ubuntu
 
+# Check whether Cloud SQL proxy is installed
+CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
+if [ -z "$CLOUD_SQL_PROXY" ]; then
+        cd $USER_HOME
+        wget https://dl.google.com/cloudsql/cloud_sql_proxy.{}
+        mv cloud_sql_proxy.{} cloud_sql_proxy
+        chmod +x cloud_sql_proxy
+fi
+
+$USER_HOME/cloud_sql_proxy -instances={}=tcp:{} &
+
+# Check if rules.yaml exists
+RULES_FILE=$(gsutil ls gs://{}/rules/rules.yaml)
+if [ $? -eq 1 ]; then
+        cd $USER_HOME
+        read -d '' RULES_YAML << EOF
+rules:
+  - name: sample whitelist
+    mode: whitelist
+    resource:
+      - type: organization
+        applies_to: self_and_children
+        resource_ids:
+          - {}
+    inherit_from_parents: true
+    bindings:
+      - role: roles/*
+        members:
+          - serviceAccount:*@*.gserviceaccount.com
+EOF
+        echo "$RULES_YAML" > $USER_HOME/rules.yaml
+        gsutil cp $USER_HOME/rules.yaml gs://{}/rules/rules.yaml
+fi
+
+# Check whether protoc is installed
+PROTOC_PATH=$(which protoc)
+if [ -z "$PROTOC_PATH" ]; then
+        cd $USER_HOME
+        wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+        unzip protoc-3.2.0-linux-x86_64.zip
+        sudo cp bin/protoc /usr/local/bin
+fi
+
+# Check whether Forseti Security is installed
+FORSETI_INVENTORY_PATH=$(which forseti_inventory)
 if [ -z "$FORSETI_INVENTORY_PATH" ]; then
         sudo apt-get install -y libmysqlclient-dev
-        gsutil cp {}/forseti-security-master.zip /home/ubuntu
-        cd /home/ubuntu
+        gsutil cp {}/forseti-security-master.zip $USER_HOME
+        cd $USER_HOME
+
+        rm -rf forseti-env
+        virtualenv forseti-env
+        source forseti-env/bin/activate
+        pip install --upgrade pip
+        pip install --upgrade setuptools
+
+        cd $USER_HOME
         unzip forseti-security-master.zip
         cd forseti-security-master
         python setup.py install
+
+        echo #!/bin/bash > run_forseti.sh
+        echo forseti_inventory --organization_id {} --db_name {} >> run_forseti.sh
+        echo forseti_scanner --rules {} --db_name {} --output_path {} >> run_forseti.sh
+        chmod +x run_forseti.sh
 fi
-""".format(context.properties['src-path'])
+
+source $USER_HOME/forseti-env/bin/activate
+$USER_HOME/run_forseti.sh
+""".format(
+           # cloud_sql_proxy
+           context.properties['cloudsqlproxy-os-arch'],
+           context.properties['cloudsqlproxy-os-arch'],
+           CLOUDSQL_CONN_STRING,
+           context.properties['db-port'],
+
+           # rules.yaml
+           SCANNER_BUCKET,
+           context.properties['organization-id'],
+           SCANNER_BUCKET,
+
+           # download forseti src code
+           context.properties['src-path'],
+
+           # run_forseti.sh
+           # - forseti_inventory
+           context.properties['organization-id'],
+           '$(ref.cloudsql-database.name)',
+           # - forseti_scanner
+           'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
+           '$(ref.cloudsql-database.name)',
+           'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
+)
                 }]
             }
         }

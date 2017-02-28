@@ -17,7 +17,7 @@
 
 PYTHONPATH=./ python google/cloud/security/scanner/scanner.py \
         --rules <rules_path> \
-        --db_host <database hostname/IP> \
-        --db_user <database user> \
+        --db_host 127.0.0.1 \
+        --db_user root \
         --db_passwd <database password> \
         --db_name <database name>
