@@ -35,7 +35,6 @@ def GenerateConfig(context):
               'enabled': True,
               'binaryLogEnabled': True
             },
-            'replicationType': 'SYNCHRONOUS',
             'activationPolicy': 'ALWAYS',
             'ipConfiguration': {
               'ipv4Enabled': True,
@@ -46,14 +45,7 @@ def GenerateConfig(context):
             'dataDiskSizeGb': '25',
             'dataDiskType': 'PD_SSD',
           },
-          'instanceType': 'CLOUD_SQL_INSTANCE',
-          'replicaNames': [
-            'forseti-security-inventory-failover'
-          ],
-          'failoverReplica': {
-            'name': 'forseti-security-inventory-replica',
-            'available': True
-          },
+          'instanceType': 'CLOUD_SQL_INSTANCE'
         }
   })
 
