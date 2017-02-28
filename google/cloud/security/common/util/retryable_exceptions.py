@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utility to determine whether an exception should be retried."""
+"""Module to determine whether an exception should be retried."""
 
 import httplib
 import socket
@@ -22,7 +22,7 @@ import urllib2
 import httplib2
 
 
-RETRY_EXCEPTIONS = (
+RETRYABLE_EXCEPTIONS = (
     httplib.ResponseNotReady,
     httplib.IncompleteRead,
     httplib2.ServerNotFoundError,
@@ -32,7 +32,7 @@ RETRY_EXCEPTIONS = (
 )
 
 
-def http_retry(e):
+def is_retryable_exception(e):
     """Whether exception should be retried.
 
     Args:
@@ -41,4 +41,4 @@ def http_retry(e):
     Returns:
         True for exceptions to retry.  False otherwise.
     """
-    return isinstance(e, RETRY_EXCEPTIONS)
+    return isinstance(e, RETRYABLE_EXCEPTIONS)

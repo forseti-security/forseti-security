@@ -19,7 +19,7 @@ from oauth2client.client import GoogleCredentials
 from retrying import retry
 
 from google.cloud.security.common.gcp_api._supported_apis import SUPPORTED_APIS
-from google.cloud.security.common.util import retry_util
+from google.cloud.security.common.util import retryable_exceptions
 
 
 class _BaseClient(object):
@@ -45,7 +45,7 @@ class _BaseClient(object):
 
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
-    @retry(retry_on_exception=retry_util.http_retry,
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def _execute(self, request):

@@ -23,7 +23,7 @@ from sendgrid.helpers import mail
 
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
-from google.cloud.security.common.util import retry_util
+from google.cloud.security.common.util import retryable_exceptions
 
 
 class EmailUtil(object):
@@ -36,7 +36,7 @@ class EmailUtil(object):
         api_key = 'my_secret_key'
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
-    @retry(retry_on_exception=retry_util.http_retry,
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def _execute_send(self, email):
