@@ -21,9 +21,10 @@ def GenerateConfig(context):
     resources = []
 
     resources.append({
-        'name': context.env['deployment'],
+        'name': context.properties['database-name'],
         'type': 'sqladmin.v1beta4.instance',
         'properties': {
+            'name': context.properties['database-name'],
             'project': context.env['project'],
             'backendType': 'SECOND_GEN',
             'databaseVersion': 'MYSQL_5_7',
@@ -34,7 +35,6 @@ def GenerateConfig(context):
                     'enabled': True,
                     'binaryLogEnabled': True
                 },
-                'replicationType': 'SYNCHRONOUS',
                 'activationPolicy': 'ALWAYS',
                 'ipConfiguration': {
                     'ipv4Enabled': True,
@@ -44,14 +44,6 @@ def GenerateConfig(context):
                 },
                 'dataDiskSizeGb': '25',
                 'dataDiskType': 'PD_SSD',
-            },
-            'instanceType': 'CLOUD_SQL_INSTANCE',
-            'replicaNames': [
-                '{}-failover'.format(context.env['deployment'])
-            ],
-            'failoverReplica': {
-                'name': '{}-replica'.format(context.env['deployment']),
-                'available': True
             },
         }
     })
