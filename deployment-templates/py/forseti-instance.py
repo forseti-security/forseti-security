@@ -19,8 +19,8 @@ def GenerateConfig(context):
     """Generate configuration."""
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
-        '$(ref.{}.region)'.format(context.env['deployment']),
-        context.env['deployment'])
+        '$(ref.cloudsql-instance.region)',
+        '$(ref.cloudsql-instance.name)')
     SCANNER_BUCKET = '$(ref.scanner-bucket.name)'
 
     resources = []
@@ -66,7 +66,8 @@ def GenerateConfig(context):
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
-sudo apt-get install -y git unzip
+sudo apt-get install -y git unzip git
+sudo apt-get install -y libmysqlclient-dev
 sudo apt-get install -y python-pip python-dev virtualenvwrapper
 
 USER_HOME=/home/ubuntu
@@ -110,32 +111,33 @@ PROTOC_PATH=$(which protoc)
 if [ -z "$PROTOC_PATH" ]; then
         cd $USER_HOME
         wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
-        unzip protoc-3.2.0-linux-x86_64.zip
+        unzip -o protoc-3.2.0-linux-x86_64.zip
         sudo cp bin/protoc /usr/local/bin
 fi
 
 # Check whether Forseti Security is installed
 FORSETI_INVENTORY_PATH=$(which forseti_inventory)
 if [ -z "$FORSETI_INVENTORY_PATH" ]; then
-        sudo apt-get install -y libmysqlclient-dev
-        gsutil cp {}/forseti-security-master.zip $USER_HOME
         cd $USER_HOME
-
-        rm -rf forseti-env
+        rm -rf forseti-*
         virtualenv forseti-env
         source forseti-env/bin/activate
         pip install --upgrade pip
         pip install --upgrade setuptools
 
         cd $USER_HOME
-        unzip forseti-security-master.zip
+        gsutil cp {}/forseti-security-master.zip .
+        unzip -o forseti-security-master.zip
         cd forseti-security-master
         python setup.py install
 
-        echo #!/bin/bash > run_forseti.sh
-        echo forseti_inventory --organization_id {} --db_name {} >> run_forseti.sh
-        echo forseti_scanner --rules {} --db_name {} --output_path {} >> run_forseti.sh
-        chmod +x run_forseti.sh
+        read -d '' RUN_FORSETI << EOF
+#!/bin/bash
+forseti_inventory --organization_id {} --db_name {}
+forseti_scanner --rules {} --db_name {} --output_path {}
+EOF
+        echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
+        chmod +x $USER_HOME/run_forseti.sh
 fi
 
 source $USER_HOME/forseti-env/bin/activate

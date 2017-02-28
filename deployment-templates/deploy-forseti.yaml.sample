@@ -29,6 +29,7 @@ resources:
   type: cloudsql-instance.py
   properties:
     region: us-central1
+    instance-name: CLOUDSQL_INSTANCE_NAME
 - name: cloudsql-database
   type: cloudsql-database.py
   properties:
@@ -51,7 +52,7 @@ resources:
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1404-lts
     instance-type: f1-micro
-    zone: us-central1-c
+    zone: $(ref.cloudsql-instance.region)-c
     service-account: YOUR_SERVICE_ACCOUNT
     organization-id: YOUR_ORG_ID
     src-path: SRC_LOCATION

@@ -21,10 +21,10 @@ def GenerateConfig(context):
     resources = []
 
     resources.append({
-        'name': context.properties['database-name'],
+        'name': context.env['name'],
         'type': 'sqladmin.v1beta4.instance',
         'properties': {
-            'name': context.properties['database-name'],
+            'name': context.properties['instance-name'],
             'project': context.env['project'],
             'backendType': 'SECOND_GEN',
             'databaseVersion': 'MYSQL_5_7',
@@ -45,6 +45,7 @@ def GenerateConfig(context):
                 'dataDiskSizeGb': '25',
                 'dataDiskType': 'PD_SSD',
             },
+            'instanceType': 'CLOUD_SQL_INSTANCE',
         }
     })
 

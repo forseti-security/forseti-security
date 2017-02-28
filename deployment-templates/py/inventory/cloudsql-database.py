@@ -26,7 +26,7 @@ def GenerateConfig(context):
       'properties': {
           'name': context.properties['database-name'],
           'project': context.env['project'],
-          'instance': '$(ref.{}.name)'.format(context.env['deployment'])
+          'instance': '$(ref.cloudsql-instance.name)'
       }
   })
 

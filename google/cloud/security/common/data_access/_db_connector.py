@@ -29,10 +29,9 @@ LOGGER = LogUtil.setup_logging(__name__)
 FLAGS = flags.FLAGS
 flags.DEFINE_string('db_host', '127.0.0.1',
                     'Cloud SQL instance hostname/IP address')
-flags.DEFINE_string('db_name', None, 'Cloud SQL database name')
+flags.DEFINE_string('db_name', 'forseti_security', 'Cloud SQL database name')
 flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 flags.DEFINE_string('db_passwd', None, 'Cloud SQL password')
-flags.mark_flag_as_required('db_name')
 
 
 class _DbConnector(object):
@@ -47,6 +46,9 @@ class _DbConnector(object):
         configs = FLAGS.FlagValuesDict()
 
         try:
+            # If specifying the passwd argument, MySQL expects a string,
+            # which would not be correct if there is no password (i.e.
+            # using cloud_sql_proxy to connect without a db password).
             if 'db_passwd' in configs and configs['db_passwd']:
                 self.conn = MySQLdb.connect(
                     host=configs['db_host'],
