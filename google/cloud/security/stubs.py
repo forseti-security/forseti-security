@@ -18,7 +18,7 @@ Since the Forseti tools use google-apputils, the setuptools console script
 entry points are handled a little differently.  For more information on the
 apputils run_script_module, refer to:
 
-https://github.com/tseaver/google-apputils-python/blob/master/google/apputils/run_script_module.py
+https://github.com/google/google-apputils/blob/master/google/apputils/run_script_module.py
 """
 
 from google.apputils import run_script_module

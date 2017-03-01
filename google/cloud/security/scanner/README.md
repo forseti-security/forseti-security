@@ -70,6 +70,13 @@ $ forseti_scanner --rules "rules/rules.yaml" --output_path path/for/output/
 * By default, the scanner will save the csv output to `/tmp`. Specify an output bucket
 in order to save the csv there.
 
+* You can also use the convenience [dev_scanner.sh script](/scripts) to run scanner so you don't have to set PYTHONPATH manually.
+
+```sh
+$ cd path/to/forseti-security
+$ scripts/dev_scanner.sh
+```
+
 
 ## Defining rules
 

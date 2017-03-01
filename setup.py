@@ -25,8 +25,6 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-from google.cloud.security import FORSETI_SECURITY_HOME_ENV_VAR
-
 
 FORSETI_VERSION = google.cloud.security.__version__
 
@@ -65,41 +63,12 @@ def build_protos():
     """Build protos."""
     subprocess.check_call(['python', 'makefile.py', '--clean'])
 
-def set_venv_env_vars():
-    """Set environment variables in virtualenv postactivate."""
-    cwd = os.path.abspath(os.path.dirname(__file__))
-    venv_path = os.environ.get('VIRTUAL_ENV')
-    if venv_path:
-        # Check if postactivate already has the env vars
-        postactivate_script = os.path.join(venv_path, 'bin', 'postactivate')
-        p = subprocess.Popen(['grep', FORSETI_SECURITY_HOME_ENV_VAR,
-                              postactivate_script],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = p.communicate()
-        if not out:
-            lines = 'export {}={}'.format(FORSETI_SECURITY_HOME_ENV_VAR, cwd)
-            with open(postactivate_script, 'a') as venv_script:
-                venv_script.write(lines)
-            print ('\n\n*** Run the following line to set your '
-                   'environment variable:\n\n'
-                   'export {}={}\n\n'.format(
-                       FORSETI_SECURITY_HOME_ENV_VAR, cwd))
-    else:
-        print ('\nNot in a virtualenv. You need to set the {} '
-               'environment variable in order to run the '
-               'Forseti Security tools.\n\n'
-               '{}={}'.format(
-                   FORSETI_SECURITY_HOME_ENV_VAR,
-                   FORSETI_SECURITY_HOME_ENV_VAR,
-                   cwd))
-
 class PostInstallCommand(install):
     """Post installation command."""
 
     def run(self):
         install.do_egg_install(self)
         build_protos()
-        set_venv_env_vars()
 
 
 setup(
@@ -132,5 +101,6 @@ setup(
             'forseti_scanner = google.cloud.security.stubs:RunForsetiScanner',
             'forseti_enforcer = google.cloud.security.stubs:RunForsetiEnforcer',
         ]
-    }
+    },
+    zip_safe=False,   # Set to False: apputils doesn't like zip_safe eggs
 )
