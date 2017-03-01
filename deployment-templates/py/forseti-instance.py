@@ -21,8 +21,8 @@ def GenerateConfig(context):
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
         '$(ref.cloudsql-instance.region)',
         '$(ref.cloudsql-instance.name)')
-    SCANNER_BUCKET = '$(ref.forseti-scanner-123.name)'
-    DATABASE_NAME = 'forseti_security'
+    SCANNER_BUCKET = context.properties['scanner-bucket']
+    DATABASE_NAME = context.properties['database-name']
 
     resources = []
 

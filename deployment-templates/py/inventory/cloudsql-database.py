@@ -16,18 +16,18 @@
 
 
 def GenerateConfig(context):
-  """Generate configuration."""
+    """Generate configuration."""
 
-  resources = []
+    resources = []
 
-  resources.append({
-      'name': context.env['name'],
-      'type': 'sqladmin.v1beta4.database',
-      'properties': {
-          'name': context.env['name'],
-          'project': context.env['project'],
-          'instance': '$(ref.cloudsql-instance.name)'
-      }
-  })
+    resources.append({
+        'name': context.env['name'],
+        'type': 'sqladmin.v1beta4.database',
+        'properties': {
+            'name': context.env['name'],
+            'project': context.env['project'],
+            'instance': '$(ref.cloudsql-instance.name)'
+        }
+    })
 
-  return {'resources': resources}
+    return {'resources': resources}

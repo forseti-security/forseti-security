@@ -48,6 +48,8 @@ resources:
     instance-type: f1-micro
     zone: $(ref.cloudsql-instance.region)-c
     service-account: YOUR_SERVICE_ACCOUNT
+    scanner-bucket: SCANNER_BUCKET
+    database-name: forseti_security
     organization-id: YOUR_ORG_ID
     src-path: SRC_LOCATION
     cloudsqlproxy-os-arch: linux.amd64
