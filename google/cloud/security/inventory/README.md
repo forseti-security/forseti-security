@@ -28,24 +28,19 @@ If you haven't already, install the Forseti packages by using the setup.py in th
     * Enter a name.
 4. Follow these instructions to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
 
-### Configure Data Access configs.yaml file.
-1. In the repo root's config/ directory, make a copy of db.yaml.sample.
-2. Rename the copy to "db.yaml" and keep in the config/ directory.
-3. Fill in the indicated parameters for the Cloud SQL instance.
-4. Save a copy (e.g. Google Cloud Storage).
-
-### Configure Inventory configs.yaml file.
-1. In the repo root's config/ directory, make a copy of inventory.yaml.sample.
-2. Rename the copy to "inventory.yaml" and keep in the config/ directory.
-3. Fill in the indicated parameters in the configurations file.
-4. Save a copy (e.g. Google Cloud Storage).
-
 
 ## How to Run
 After running setup.py, as long as your virtualenv is activated, then you can be in any directory to invoke the console script:
 
 ```sh
 $ forseti_inventory
+```
+
+You can also use the convenience [dev_inventory.sh script](/scripts) to run forseti_inventory. Make a copy of dev_inventory.sh.sample as dev_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
+
+```sh
+$ cd path/to/forseti-security
+$ scripts/dev_inventory.sh
 ```
 
 ## How to Test

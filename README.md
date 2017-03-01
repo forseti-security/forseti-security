@@ -50,8 +50,9 @@ The MySql python connector requires `mysql_config` to be present in your system.
 *Ubuntu*
 
 ```sh
-$ sudo apt-get install mysql-server
+$ sudo apt-get install libmysqlclient-dev
 ```
+Note: If libmysqlclient-dev doesn't install mysql_config, then try also installing mysql_server.
 
 *OS X*
 
@@ -109,15 +110,6 @@ $ python setup.py install
 ```sh
 $ python setup.py install
 ```
-
-
-# Configuration
-In the `config` directory, there are sample configuration files. Make a copy of
-these and remove the `.sample` extension.
-
-Refer to the specific Forseti tools' READMEs for more information on
-configuration.
-
 
 # Running the tools
 
