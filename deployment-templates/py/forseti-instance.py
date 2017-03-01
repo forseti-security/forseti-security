@@ -21,7 +21,8 @@ def GenerateConfig(context):
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
         '$(ref.cloudsql-instance.region)',
         '$(ref.cloudsql-instance.name)')
-    SCANNER_BUCKET = '$(ref.scanner-bucket.name)'
+    SCANNER_BUCKET = '$(ref.forseti-scanner-123.name)'
+    DATABASE_NAME = 'forseti_security'
 
     resources = []
 
@@ -68,7 +69,7 @@ def GenerateConfig(context):
                     'value': """#!/bin/bash
 sudo apt-get install -y git unzip git
 sudo apt-get install -y libmysqlclient-dev
-sudo apt-get install -y python-pip python-dev virtualenvwrapper
+sudo apt-get install -y python-pip python-dev
 
 USER_HOME=/home/ubuntu
 
@@ -120,8 +121,6 @@ FORSETI_INVENTORY_PATH=$(which forseti_inventory)
 if [ -z "$FORSETI_INVENTORY_PATH" ]; then
         cd $USER_HOME
         rm -rf forseti-*
-        virtualenv forseti-env
-        source forseti-env/bin/activate
         pip install --upgrade pip
         pip install --upgrade setuptools
 
@@ -130,18 +129,18 @@ if [ -z "$FORSETI_INVENTORY_PATH" ]; then
         unzip -o forseti-security-master.zip
         cd forseti-security-master
         python setup.py install
+fi
 
-        read -d '' RUN_FORSETI << EOF
+# Create the startup run script
+read -d '' RUN_FORSETI << EOF
 #!/bin/bash
 forseti_inventory --organization_id {} --db_name {}
 forseti_scanner --rules {} --db_name {} --output_path {}
 EOF
-        echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
-        chmod +x $USER_HOME/run_forseti.sh
-fi
+echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
+chmod +x $USER_HOME/run_forseti.sh
 
-source $USER_HOME/forseti-env/bin/activate
-$USER_HOME/run_forseti.sh
+(crontab -l 2>/dev/null; echo "00 * * * * $USER_HOME/run_forseti.sh") | crontab -
 """.format(
            # cloud_sql_proxy
            context.properties['cloudsqlproxy-os-arch'],
@@ -160,10 +159,10 @@ $USER_HOME/run_forseti.sh
            # run_forseti.sh
            # - forseti_inventory
            context.properties['organization-id'],
-           '$(ref.cloudsql-database.name)',
+           DATABASE_NAME,
            # - forseti_scanner
            'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
-           '$(ref.cloudsql-database.name)',
+           DATABASE_NAME,
            'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
 )
                 }]

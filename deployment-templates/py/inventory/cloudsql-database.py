@@ -24,7 +24,7 @@ def GenerateConfig(context):
       'name': context.env['name'],
       'type': 'sqladmin.v1beta4.database',
       'properties': {
-          'name': context.properties['database-name'],
+          'name': context.env['name'],
           'project': context.env['project'],
           'instance': '$(ref.cloudsql-instance.name)'
       }

@@ -14,6 +14,9 @@
 # Dev scripts
 scripts/dev*.sh
 
+# User-edited configs
+deployment-templates/*.yaml
+
 # Build/dist
 .eggs/
 *.egg/
