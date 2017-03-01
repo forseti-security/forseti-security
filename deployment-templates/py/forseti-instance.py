@@ -134,8 +134,8 @@ fi
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
-forseti_inventory --organization_id {} --db_name {}
-forseti_scanner --rules {} --db_name {} --output_path {}
+/usr/local/bin/forseti_inventory --organization_id {} --db_name {}
+/usr/local/bin/forseti_scanner --rules {} --db_name {} --output_path {}
 EOF
 echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
 chmod +x $USER_HOME/run_forseti.sh
