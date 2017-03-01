@@ -109,11 +109,6 @@ def flatten_iam_policies(iam_policies_map):
                            'member_name': member_name,
                            'member_domain': member_domain}
                 else:
-                    print  {'org_id': iam_policy_map['org_id'],
-                           'role': role,
-                           'member_type': member_type,
-                           'member_name': member_name,
-                           'member_domain': member_domain}
                     yield {'org_id': iam_policy_map['org_id'],
                            'role': role,
                            'member_type': member_type,
