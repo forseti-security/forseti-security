@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = '1.0'
+"""Util Errors module."""
 
-__import__('pkg_resources').declare_namespace(__name__)
+
+class Error(Exception):
+    """Base error class for the module."""
+
+
+class EmailSendError(Error):
+    """Unable to send email."""
+    pass

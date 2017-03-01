@@ -12,11 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email utility module."""
+"""Creates a Cloud Storage bucket template for Forseti Security."""
 
-def send_thru_sendgrid():
-  """Send alert email via SendGrid.
+def GenerateConfig(context):
+    """Generate configuration."""
+    resources = []
 
-  https://github.com/sendgrid/sendgrid-python
-  """
-  pass
+    resources.append({
+        'name': context.env['name'],
+        'type': 'storage.v1.bucket',
+        'properties': {
+            'project': context.env['project']
+        }
+    })
+
+    return {'resources': resources}

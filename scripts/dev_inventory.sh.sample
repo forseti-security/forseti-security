@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates a Cloud SQL database template for forseti_inventory."""
+# Wrapper script to run inventory in development mode.
 
-
-def GenerateConfig(context):
-  """Generate configuration."""
-
-  resources = []
-
-  resources.append({
-      "name": "inventory-database",
-      "type": "sqladmin.v1beta4.database",
-      "metadata": {
-          "dependsOn": ["inventory-instance"]
-      },
-      "properties": {
-          "name": context.properties["database-name"],
-          "project": context.env["project"],
-          "instance": "$(ref.inventory-instance.name)"
-      }
-  })
-
-  return {"resources": resources}
+PYTHONPATH=./ python google/cloud/security/inventory/inventory_loader.py \
+        --organization_id <organization id> \
+        --max_crm_api_calls_per_100_seconds 400 \
+        --db_host 127.0.0.1 \
+        --db_user root \
+        --db_name <database name>
