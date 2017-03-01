@@ -80,7 +80,6 @@ $ pip install --upgrade virtualenvwrapper
 ```
 
 # Setup
-<<<<<<< HEAD
 
 
 ### Create a virtualenv and activate it, e.g.:
@@ -88,21 +87,6 @@ $ pip install --upgrade virtualenvwrapper
 ```sh
 $ mkvirtualenv forseti-security
 $ workon forseti-security
-=======
-
-
-### Create a virtualenv and activate it, e.g.:
-
-```sh
-$ mkvirtualenv forseti-security
-$ workon forseti-security
-```
-
-### Run the python setup:
-
-```sh
-$ python setup.py install
->>>>>>> f2681c282d4199a4d40f292ca59781c3f5c8548f
 ```
 
 ### Run the python setup:
