@@ -7,6 +7,7 @@ environment. These are the currently available services:
 * Scanner - scans GCP resource policies for violations.
 * Enforcer - fixes policy violations found from the scanner.
 
+This README guides you on how to run Forseti Security locally or on your own infrastructure. If you'd like to use [Cloud Deployment Manager](https://cloud.google.com/deployment-manager/) to manage your GCP deployment of Forseti Security, please refer to the [deployment manager README](/deployment-templates/README.md).
 
 # Prerequisites
 
