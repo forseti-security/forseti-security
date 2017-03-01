@@ -6,8 +6,6 @@ One of the goals of Forseti Security is to provide continuous scanning and enfor
 * Create a GCE instance for deploying Forseti Security.
 * Manage configuration for Forseti Security and automatically run the tools.
 
-We are also working on a way to deploy Forseti Security to GKE.
-
 # Getting started
 
 ### Prerequisites
@@ -28,6 +26,13 @@ Current Properties:
 
   ... more info ...
 
+```
+
+* Create a new project or use a project that is dedicated for Forseti Security.
+
+* Initialize your gcloud commandline environment.
+
+```sh
 $ gcloud init
 ```
 
@@ -47,71 +52,36 @@ $ gcloud beta service-management enable sqladmin.googleapis.com
 $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
 ```
 
-### A note about Deployment Templates
-The provided Deployment Templates are samples for you to use -- you may need to change them according to the needs of your deployment environment.
+### Using Deployment Templates
+The provided Deployment Templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the .yaml variables:
 
-### Setting up your Cloud SQL instance.
-* Create a new deployment for Cloud SQL. The deployment templates use the deployment name (e.g. `forseti-cloudsql-170224`) as the Cloud SQL instance name. As noted, you might also want to change the `region` property.  
-**NOTE**: If you delete your deployment (including the Cloud SQL instance) and re-create it, you must choose a new name, otherwise you'll get an error that the instance still exists. (The instance name cannot be reused for about 7 days.)
+* CLOUDSQL_INSTANCE_NAME
+* SECRETS_BUCKET
+  * This is just the bucket name; do not include "gs://".
+  * Subject to bucket naming restrictions (see below).
+  * If you create a separate service account for running your GCE instance, then store your credentials in a secrets bucket.
+* SCANNER_BUCKET
+  * This is just the bucket name; do not include "gs://".
+  * Subject to bucket naming restrictions (see below).
+* YOUR_SERVICE_ACCOUNT (this can be the application default service account, i.e. `PROJECTNUMBER-compute@developer.gserviceaccount.com`)
+* YOUR_ORG_ID (the organization id number)
 
-```sh
-$ gcloud deployment-manager deployments create forseti-cloudsql-170224 --config forseti-cloudsql.yaml
-```
+Note: There are restrictions on bucket names (e.g. they must be unique). Refer to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming) for more information.
 
-* The deployment may fail with a 403 error, "Operation failed because another operation was already in progress". ([Github issue](https://github.com/GoogleCloudPlatform/forseti-security/issues/11)). If you get that error, update the deployment:
+There are other templates that you can modify if you'd like:
 
-```sh
-$ gcloud deployment-manager deployments update forseti-cloudsql-170224 --config forseti-cloudsql.yaml
-```
+* `py/inventory/cloudsql-instance.py` - The template for the Cloud SQL instance.
+* `py/inventory/cloudsql-database.py` - The template for the Cloud SQL database.
+* `py/storage/bucket.py` - The template for the Cloud Storage buckets.
+* `py/forseti-instance.py` - The template for the Compute Engine instance where Forseti Security will run.
+   * You might want to tweak the startup script (more about [startup scripts in GCP docs](https://cloud.google.com/deployment-manager/docs/step-by-step-guide/setting-metadata-and-startup-scripts)).
+   * By default, the startup script will setup the environment to install the Forseti Security and run the tools every hour.
 
-* You should see the following output upon successful deployment:
-
-```
-NAME                TYPE                       STATE      ERRORS  INTENT
-inventory-database  sqladmin.v1beta4.database  COMPLETED  []  
-inventory-instance  sqladmin.v1beta4.instance  COMPLETED  []  
-```
-
-* Setup your Cloud SQL user, either by setting up the [default user's password](https://cloud.google.com/sql/docs/mysql/create-manage-users#user-root) or by creating a new Cloud SQL user.  
-To create a new Cloud SQL user, either use the [Cloud console](https://cloud.google.com/sql/docs/mysql/create-manage-users#creating) or the following `gcloud` command. (In the below example, the user's name is `forseti-user`.)
-
-```sh
-$ gcloud beta sql users set-password forseti-user [HOST] \
-   --instance=forseti-cloudsql-170224 --password=f0rs3t1Secur1ty
-```
-
-From the [docs](https://cloud.google.com/sql/docs/mysql/create-manage-users#creating): "Users created using Cloud SQL will have all privileges except FILE and SUPER."
-
-### Setting up Cloud Storage buckets
-Next, set up your Cloud Storage buckets. These are used by the Forseti Security tools to store data, such as configurations, rule definitions, and tool output.
-
-**Note**: The buckets created by these templates are created with the [bucket default permissions](https://cloud.google.com/storage/docs/access-control/lists#permissions), i.e. ["project-private" ACL](https://cloud.google.com/storage/docs/access-control/lists#predefined-project-private). This gives permission to the project team, based on their roles.
-
-* Create a copy of the sample config (forseti-storage.yaml.sample) and rename it (e.g. `forseti-storage.yaml`).
-
-* Edit the config file and change the bucket names accordingly.
-
-  * There are restrictions on bucket names (e.g. they must be unique). Refer to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming) for more information.
-  * You may opt to create more buckets than just the 2 in the sample. For example, you might want to store the output from the Forseti Scanner in one bucket and rule definitions in another.
-
-* Deploy the buckets.
-
-### Setting up Forseti Security
-Now that you've set up your Cloud SQL instance, you can deploy Forseti Security in Compute Engine.
-
-* Create a copy of the sample config (forseti-gce.yaml.sample) and rename it (e.g. `forseti-gce.yaml`).
-
-* Edit the config file and change the value for `YOUR_SERVICE_ACCOUNT` to a service account that you will use to access the Cloud APIs (Cloud Storage, Resource Manager, etc.). For now, you can probably use the default application credentials (`PROJECTNUMBER-compute@developer.gserviceaccount.com`).
-
-* Create a new deployment for the GCE instance.
+### Deploying Forseti Security
+After you set the deployment template variables, you can create a new deployment.
 
 ```sh
-$ gcloud deployment-manager deployments create forseti-gce-170224 --config forseti-gce.yaml
+$ gcloud deployment-manager deployments create forseti-security --config deploy-forseti.yaml
 ```
 
-* If you make any changes to the deployment template, then update your deployment and reset the VM:
-
-```sh
-$ gcloud deployment-manager deployments update forseti-gce-170224 --config forseti-gce.yaml
-$ gcloud compute instances reset forseti-gce-170224
-```
+When your deployment is complete, you can see your deployments in your Cloud Console [Deployment Manager dashboard](https://console.cloud.google.com/deployments). Also, if you're using the default startup script, Forseti Security should run on the top of the hour and drop a csv in `gs://SCANNER_BUCKET/scanner_violations/`.
