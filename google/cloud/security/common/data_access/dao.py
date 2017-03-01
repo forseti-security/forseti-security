@@ -39,10 +39,10 @@ from google.cloud.security.common.util.log_util import LogUtil
 LOGGER = LogUtil.setup_logging(__name__)
 
 CREATE_TABLE_MAP = {
+    'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
     'raw_project_iam_policies': create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
-    'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
     'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
 }
 

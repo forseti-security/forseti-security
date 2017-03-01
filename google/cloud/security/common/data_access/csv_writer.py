@@ -25,6 +25,15 @@ from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
 
+ORG_IAM_POLICIES_FIELDNAME = [
+   'org_id',
+   'role',
+   'member_type',
+   'member_name',
+   'member_domain'
+]
+
+
 POLICY_VIOLATION_FIELDNAMES = [
     'resource_id',
     'resource_type',
@@ -33,14 +42,6 @@ POLICY_VIOLATION_FIELDNAMES = [
     'violation_type',
     'role',
     'member'
-]
-
-ORG_IAM_POLICIES_FIELDNAME = [
-   'org_id',
-   'role',
-   'member_type',
-   'member_name',
-   'member_domain'
 ]
 
 PROJECTS_FIELDNAME = [

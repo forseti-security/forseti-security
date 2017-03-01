@@ -149,15 +149,16 @@ class CloudResourceManagerClient(_BaseClient):
         return None
 
     def get_org_iam_policies(self, resource_name, org_id):
-        """Get all the iam policies of given project numbers.
+        """Get all the iam policies of an org.
 
         Args:
             resource_name: String of the resource's name.
-            project_numbers: MySQLdb cursor object of project numbers.
+            org_id: Integer of the ord id.
 
         Yields:
-            An iterable of iam policies as per-project dictionary.
-            Example: {project_number: policy}
+            An iterable of iam policies as per-org dictionary.
+            Example: {org_id: org_id,
+                      iam_policy: iam_policy}
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
         Raises:

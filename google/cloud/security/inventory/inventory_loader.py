@@ -166,8 +166,8 @@ def _send_email(cycle_timestamp, status, email_content=None):
          None
     """
     # TODO: Read the email sender and recipient from configs.
-    email_sender = 'goldspin@gmail.com'
-    email_recipient = 'henryc@google.com'
+    email_sender = 'foo@baz.com'
+    email_recipient = 'bar@baz.com'
     
     email_subject = 'Inventory loading {0}: {1}'.format(cycle_timestamp, status)
 

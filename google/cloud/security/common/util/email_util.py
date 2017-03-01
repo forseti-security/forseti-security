@@ -33,7 +33,7 @@ class EmailUtil(object):
         """Initialize the email util."""
         # TODO: Store and read the sendgrid key from GCS.
         self.logger = LogUtil.setup_logging(__name__)
-        api_key = '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'
+        api_key = 'my_secret_key'
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,

@@ -56,8 +56,6 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
         iam_policies_map = crm_client.get_org_iam_policies(
             RESOURCE_NAME, org_id)
         iam_policies_map = list(iam_policies_map)
-        print iam_policies_map
-        print
 
         # Flatten and relationalize data for upload to cloud sql.
         flattened_iam_policies = (
@@ -74,7 +72,6 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
 
         for i in iam_policies_map:
             i['iam_policy'] = json.dumps(i['iam_policy'])
-        dao.load_data(RAW_ORG_IAM_POLICIES, cycle_timestamp,
-                      iam_policies_map)
+        dao.load_data(RAW_ORG_IAM_POLICIES, cycle_timestamp, iam_policies_map)
     except (CSVFileError, MySQLError) as e:
         raise LoadDataPipelineError(e)
