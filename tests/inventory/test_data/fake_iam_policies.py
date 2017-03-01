@@ -13,7 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FAKE_IAM_POLICY_MAP = [{
+
+FAKE_ORG_IAM_POLICY_MAP = [{
+    'org_id': 666666,
+    'iam_policy': {
+        'bindings': [
+            {'role': 'roles/billing.creator', 'members': [
+                'domain:foo.com'
+            ]},
+            {'role': 'roles/browser', 'members': [
+                'serviceAccount:55555-compute@developer.gserviceaccount.com',
+                'serviceAccount:99999-compute@developer.gserviceaccount.com',
+                ]},
+            {'role': 'roles/resourcemanager.folderAdmin',
+             'members': ['user:foo@foo.com']},
+            {'role': 'roles/resourcemanager.organizationAdmin', 'members': [
+                'user:foo@foo.com',
+                'user:bar@foo.com'
+                ]},
+            {'role': 'roles/resourcemanager.projectCreator', 'members': ['domain:foo.com']}
+            ], 'etag': 'BwVHXBMqO0k='}
+}]
+
+FAKE_PROJECT_IAM_POLICY_MAP = [{
     'project_number': 555555555555,
     'iam_policy': {
         'bindings': [
@@ -40,7 +62,44 @@ FAKE_IAM_POLICY_MAP = [{
             ], 'version': 1, 'etag': 'BwVHfUJ0Apc='}
 }]
 
-EXPECTED_FLATTENED_IAM_POLICY = [
+EXPECTED_FLATTENED_ORG_IAM_POLICY = [
+    {'org_id': 666666,
+     'role': 'billing.creator',
+     'member_domain': 'foo.com',
+     'member_type': 'domain',
+     'member_name': ''},
+    {'org_id': 666666,
+     'role': 'browser',
+     'member_domain': 'developer.gserviceaccount.com',
+     'member_type': 'serviceAccount',
+     'member_name': '55555-compute'},
+    {'org_id': 666666,
+     'role': 'browser',
+     'member_domain': 'developer.gserviceaccount.com',
+     'member_type': 'serviceAccount',
+     'member_name': '99999-compute'},
+    {'org_id': 666666,
+     'role': 'resourcemanager.folderAdmin',
+     'member_domain': 'foo.com',
+     'member_type': 'user',
+     'member_name': 'foo'},
+    {'org_id': 666666,
+     'role': 'resourcemanager.organizationAdmin',
+     'member_domain': 'foo.com',
+     'member_type': 'user',
+     'member_name': 'foo'},
+    {'org_id': 666666,
+     'role': 'resourcemanager.organizationAdmin',
+     'member_domain': 'foo.com',
+     'member_type': 'user',
+     'member_name': 'bar'},
+    {'org_id': 666666,
+     'role': 'resourcemanager.projectCreator',
+     'member_domain': 'foo.com',
+     'member_type': 'domain', 'member_name': ''},
+]
+
+EXPECTED_FLATTENED_PROJECT_IAM_POLICY = [
     {'project_number': 555555555555,
      'member_domain': 'henrychang.mygbiz.com',
      'member_name': 'policyscanner-foo-group',

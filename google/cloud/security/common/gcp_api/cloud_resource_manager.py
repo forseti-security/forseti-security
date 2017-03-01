@@ -147,3 +147,32 @@ class CloudResourceManagerClient(_BaseClient):
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(ApiExecutionError(org_name, e))
         return None
+
+    def get_org_iam_policies(self, resource_name, org_id):
+        """Get all the iam policies of an org.
+
+        Args:
+            resource_name: String of the resource's name.
+            org_id: Integer of the org id.
+
+        Yields:
+            An iterable of iam policies as per-org dictionary.
+            Example: {org_id: org_id,
+                      iam_policy: iam_policy}
+            https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        orgs_stub = self.service.organizations()
+        resource_id = 'organizations/' + str(org_id)
+
+        try:
+            with self.rate_limiter:
+                request = orgs_stub.getIamPolicy(
+                    resource=resource_id, body={})
+                response = self._execute(request)
+                yield {'org_id': org_id,
+                       'iam_policy': response}
+        except (HttpError, HttpLib2Error) as e:
+            raise ApiExecutionError(resource_name, e)

@@ -44,7 +44,8 @@ from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
-from google.cloud.security.inventory.pipelines import load_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 
@@ -211,7 +212,9 @@ def main(unused_argv=None):
     try:
         load_projects_pipeline.run(
             dao, cycle_timestamp, configs, crm_rate_limiter)
-        load_iam_policies_pipeline.run(
+        load_projects_iam_policies_pipeline.run(
+            dao, cycle_timestamp, configs, crm_rate_limiter)
+        load_org_iam_policies_pipeline.run(
             dao, cycle_timestamp, configs, crm_rate_limiter)
     except LoadDataPipelineError as e:
         LOGGER.error('Encountered error to load data. Abort.\n{0}'.format(e))
@@ -220,6 +223,7 @@ def main(unused_argv=None):
 
     _complete_snapshot_cycle(dao, cycle_timestamp, 'SUCCESS')
     _send_email(cycle_timestamp, 'SUCCESS')
+
 
 if __name__ == '__main__':
     app.run()
