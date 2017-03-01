@@ -153,7 +153,7 @@ class CloudResourceManagerClient(_BaseClient):
 
         Args:
             resource_name: String of the resource's name.
-            org_id: Integer of the ord id.
+            org_id: Integer of the org id.
 
         Yields:
             An iterable of iam policies as per-org dictionary.

@@ -45,6 +45,7 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
         LoadDataPipelineException: An error with loading data has occurred.
     """
     org_id = configs.get('organization_id')
+    # Check if the placeholder is replaced in the config/flag.
     if org_id == '<organization id>':
         raise LoadDataPipelineError('No organization id is specified.')
         
