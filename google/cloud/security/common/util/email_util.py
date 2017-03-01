@@ -23,24 +23,7 @@ from sendgrid.helpers import mail
 
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
-
-
-# TODO: This is also used by gce enforcer and _base_client.
-# Move to common library.
-RETRY_EXCEPTIONS = (
-    URLError,  # no network connection is included here
-)
-
-def _http_retry(e):
-    """Whether exception should be retried.
-
-    Args:
-        e: Exception object.
-
-    Returns:
-        True for exceptions to retry.  False otherwise.
-    """
-    return isinstance(e, RETRY_EXCEPTIONS)
+from google.cloud.security.common.util import retryable_exceptions
 
 
 class EmailUtil(object):
@@ -53,8 +36,9 @@ class EmailUtil(object):
         api_key = 'my_secret_key'
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
-    @retry(retry_on_exception=_http_retry, wait_exponential_multiplier=1000,
-           wait_exponential_max=10000, stop_max_attempt_number=1)
+    @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
+           wait_exponential_multiplier=1000, wait_exponential_max=10000,
+           stop_max_attempt_number=5)
     def _execute_send(self, email):
         """Executes the sending of the email.
 
