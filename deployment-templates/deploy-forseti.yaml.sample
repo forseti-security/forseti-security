@@ -30,20 +30,14 @@ resources:
   properties:
     region: us-central1
     instance-name: CLOUDSQL_INSTANCE_NAME
-- name: cloudsql-database
+- name: forseti_security
   type: cloudsql-database.py
-  properties:
-    database-name: forseti_security
 
 # Cloud Storage
-- name: secrets-bucket
+- name: SECRETS_BUCKET
   type: bucket.py
-  properties:
-    bucket-name: SECRETS_BUCKET
-- name: scanner-bucket
+- name: SCANNER_BUCKET
   type: bucket.py
-  properties:
-    bucket-name: SCANNER_OUTPUT_BUCKET
 
 # Compute Engine
 - name: forseti-instance
