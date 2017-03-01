@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-imports:
-- path: py/inventory/inventory-instance.py
-  name: inventory-instance.py
-- path: py/inventory/inventory-database.py
-  name: inventory-database.py
+"""Creates a Cloud Storage bucket template for Forseti Security."""
 
-resources:
-- name: inventory-instance
-  type: inventory-instance.py
-  properties:
-    region: us-central1
+def GenerateConfig(context):
+    """Generate configuration."""
+    resources = []
 
-- name: inventory-database
-  type: inventory-database.py
-  properties:
-    database-name: forseti_security
+    resources.append({
+        'name': context.env['name'],
+        'type': 'storage.v1.bucket',
+        'properties': {
+            'project': context.env['project']
+        }
+    })
+
+    return {'resources': resources}

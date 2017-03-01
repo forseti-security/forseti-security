@@ -12,6 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = '1.0'
+"""Creates a Cloud SQL database template for forseti_inventory."""
 
-__import__('pkg_resources').declare_namespace(__name__)
+
+def GenerateConfig(context):
+    """Generate configuration."""
+
+    resources = []
+
+    resources.append({
+        'name': context.env['name'],
+        'type': 'sqladmin.v1beta4.database',
+        'properties': {
+            'name': context.env['name'],
+            'project': context.env['project'],
+            'instance': '$(ref.cloudsql-instance.name)'
+        }
+    })
+
+    return {'resources': resources}

@@ -16,11 +16,18 @@
 
 Usage:
 
-  $ forseti_inventory
+  $ forseti_inventory \
+      --organization_id <organization_id> \
+      --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \
+      --db_host <Cloud SQL database hostname/IP> \
+      --db_user <Cloud SQL database user> \
+      --db_passwd <Cloud SQL database password> \
+      --db_name <Cloud SQL database name (required)>
 
 """
 
 from datetime import datetime
+import gflags as flags
 import logging
 import os
 import sys
@@ -29,7 +36,6 @@ from ratelimiter import RateLimiter
 import yaml
 
 from google.apputils import app
-from google.cloud.security import FORSETI_SECURITY_HOME_ENV_VAR
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
@@ -42,9 +48,11 @@ from google.cloud.security.inventory.pipelines import load_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 
-CONFIG_FILE = os.path.abspath(
-    os.path.join(os.environ.get(FORSETI_SECURITY_HOME_ENV_VAR),
-                 'config', 'inventory.yaml'))
+FLAGS = flags.FLAGS
+flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
+                     'Cloud Resource Manager queries per 100 seconds.')
+flags.DEFINE_string('organization_id', None, 'Organization ID.')
+flags.mark_flag_as_required('organization_id')
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -190,23 +198,7 @@ def main(unused_argv=None):
 
     cycle_timestamp = _start_snapshot_cycle(dao)
 
-    configs_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), CONFIG_FILE))
-
-    try:
-        with open(configs_path, 'r') as config_file:
-            try:
-                configs = yaml.load(config_file)
-            except yaml.YAMLError as e:
-                LOGGER.error('Unable to parse inventory config file:\n{0}'
-                             .format(e))
-                _complete_snapshot_cycle(dao, cycle_timestamp, 'FAILURE')
-                sys.exit()
-    except IOError as e:
-        LOGGER.error('Unable to open/read inventory config file:\n{0}'
-                     .format(e))
-        _complete_snapshot_cycle(dao, cycle_timestamp, 'FAILURE')
-        sys.exit()
+    configs = FLAGS.FlagValuesDict()
 
     # It's better to build the ratelimiters once for each API
     # and reuse them across multiple instances of the Client.

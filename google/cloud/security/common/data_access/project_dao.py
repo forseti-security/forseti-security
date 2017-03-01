@@ -28,9 +28,9 @@ from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
+from google.cloud.security.common.util.log_util import LogUtil
 
-LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.StreamHandler())
+LOGGER = LogUtil.setup_logging(__name__)
 
 
 class ProjectDao(_DbConnector):

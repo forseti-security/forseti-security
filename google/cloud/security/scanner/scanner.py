@@ -38,6 +38,7 @@ from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
 
+# Setup flags
 FLAGS = flags.FLAGS
 
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
@@ -48,13 +49,12 @@ flags.DEFINE_string('rules',
                     ('Path to rules file (yaml/json). '
                      'If GCS bucket, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
-
 flags.DEFINE_string('output_path',
                     None,
                     ('Output path (do not include filename). If GCS location, '
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
-
+flags.mark_flag_as_required('rules')
 
 def main(unused_argv=None):
     """Run the scanner."""
@@ -163,5 +163,4 @@ def _write_violations_output(logger, violations):
 
 
 if __name__ == '__main__':
-    flags.MarkFlagAsRequired('rules')
     app.run()
