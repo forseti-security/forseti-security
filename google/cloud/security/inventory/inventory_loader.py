@@ -38,7 +38,8 @@ from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
-from google.cloud.security.inventory.pipelines import load_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 
@@ -165,8 +166,8 @@ def _send_email(cycle_timestamp, status, email_content=None):
          None
     """
     # TODO: Read the email sender and recipient from configs.
-    email_sender = 'foo@baz.com'
-    email_recipient = 'bar@baz.com'
+    email_sender = 'goldspin@gmail.com'
+    email_recipient = 'henryc@google.com'
     
     email_subject = 'Inventory loading {0}: {1}'.format(cycle_timestamp, status)
 
@@ -219,7 +220,9 @@ def main(unused_argv=None):
     try:
         load_projects_pipeline.run(
             dao, cycle_timestamp, configs, crm_rate_limiter)
-        load_iam_policies_pipeline.run(
+        load_projects_iam_policies_pipeline.run(
+            dao, cycle_timestamp, configs, crm_rate_limiter)
+        load_org_iam_policies_pipeline.run(
             dao, cycle_timestamp, configs, crm_rate_limiter)
     except LoadDataPipelineError as e:
         LOGGER.error('Encountered error to load data. Abort.\n{0}'.format(e))
@@ -228,6 +231,7 @@ def main(unused_argv=None):
 
     _complete_snapshot_cycle(dao, cycle_timestamp, 'SUCCESS')
     _send_email(cycle_timestamp, 'SUCCESS')
+
 
 if __name__ == '__main__':
     app.run()

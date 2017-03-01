@@ -14,15 +14,19 @@
 
 """Provides the load data sql for resources."""
 
+from google.cloud.security.common.data_access.csv_writer import ORG_IAM_POLICIES_FIELDNAME
 from google.cloud.security.common.data_access.csv_writer import PROJECTS_FIELDNAME
 from google.cloud.security.common.data_access.csv_writer import PROJECT_IAM_POLICIES_FIELDNAME
+from google.cloud.security.common.data_access.csv_writer import RAW_ORG_IAM_POLICIES_FIELDNAME
 from google.cloud.security.common.data_access.csv_writer import RAW_PROJECT_IAM_POLICIES_FIELDNAME
 from google.cloud.security.common.data_access.sql_queries import load_data
 
 
 FIELDNAME_MAP = {
+    'org_iam_policies': ORG_IAM_POLICIES_FIELDNAME,
     'projects': PROJECTS_FIELDNAME,
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAME,
+    'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAME,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAME,
 }
 

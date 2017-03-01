@@ -92,7 +92,6 @@ def flatten_iam_policies(iam_policies_map):
         An iterable of flattened iam policies, as a per-project dictionary.
     """
     for iam_policy_map in iam_policies_map:
-        project_number = iam_policy_map['project_number']
         iam_policy = iam_policy_map['iam_policy']
         bindings = iam_policy.get('bindings', [])
         for binding in bindings:
@@ -103,8 +102,52 @@ def flatten_iam_policies(iam_policies_map):
                 role = binding.get('role', '')
                 if role.startswith('roles/'):
                     role = role.replace('roles/', '')
-                yield {'project_number': project_number,
+                if iam_policy_map.get('project_number'):
+                    yield {'project_number': iam_policy_map['project_number'],
+                           'role': role,
+                           'member_type': member_type,
+                           'member_name': member_name,
+                           'member_domain': member_domain}
+                else:
+                    print  {'org_id': iam_policy_map['org_id'],
+                           'role': role,
+                           'member_type': member_type,
+                           'member_name': member_name,
+                           'member_domain': member_domain}
+                    yield {'org_id': iam_policy_map['org_id'],
+                           'role': role,
+                           'member_type': member_type,
+                           'member_name': member_name,
+                           'member_domain': member_domain}                    
+
+'''
+def flatten_org_iam_policies(iam_policies_map):
+    """Yield an iterator of flattened iam policies.
+
+    Args:
+        iam_policies_map: An iterable of iam policies as per-project dictionary.
+            Example: {'project_number': 11111,
+                      'iam_policy': policy}
+            https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+
+    Yields:
+        An iterable of flattened iam policies, as a per-project dictionary.
+    """
+    for iam_policy_map in iam_policies_map:
+        org_id = iam_policy_map['org_id']
+        iam_policy = iam_policy_map['iam_policy']
+        bindings = iam_policy.get('bindings', [])
+        for binding in bindings:
+            members = binding.get('members', [])
+            for member in members:
+                member_type, member_name, member_domain = (
+                    _parse_member_info(member))
+                role = binding.get('role', '')
+                if role.startswith('roles/'):
+                    role = role.replace('roles/', '')
+                yield {'org_id': org_id,
                        'role': role,
                        'member_type': member_type,
                        'member_name': member_name,
                        'member_domain': member_domain}
+'''

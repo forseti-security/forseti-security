@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load IAM policies data into Inventory."""
+"""Pipeline to load org IAM policies data into Inventory."""
 
 import json
 
@@ -25,8 +25,8 @@ from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
-RESOURCE_NAME = 'project_iam_policies'
-RAW_PROJECT_IAM_POLICIES = 'raw_project_iam_policies'
+RESOURCE_NAME = 'org_iam_policies'
+RAW_ORG_IAM_POLICIES = 'raw_org_iam_policies'
 
 
 def run(dao, cycle_timestamp, configs, crm_rate_limiter):
@@ -44,21 +44,20 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
     Raises:
         LoadDataPipelineException: An error with loading data has occurred.
     """
-    # Get the projects for which we will retrieve the IAM policies.
-    try:
-        project_numbers = dao.select_project_numbers(RESOURCE_NAME,
-                                                     cycle_timestamp)
-    except MySQLError as e:
-        raise LoadDataPipelineError(e)
-
+    org_id = configs.get('organization_id')
+    if org_id == '<organization id>':
+        raise LoadDataPipelineError('No organization id is specified.')
+        
     crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
     try:
         # Retrieve data from GCP.
         # Flatten the iterator since we will use it twice, and it is faster
         # than cloning to 2 iterators.
-        iam_policies_map = crm_client.get_project_iam_policies(
-            RESOURCE_NAME, project_numbers)
+        iam_policies_map = crm_client.get_org_iam_policies(
+            RESOURCE_NAME, org_id)
         iam_policies_map = list(iam_policies_map)
+        print iam_policies_map
+        print
 
         # Flatten and relationalize data for upload to cloud sql.
         flattened_iam_policies = (
@@ -75,7 +74,7 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
 
         for i in iam_policies_map:
             i['iam_policy'] = json.dumps(i['iam_policy'])
-        dao.load_data(RAW_PROJECT_IAM_POLICIES, cycle_timestamp,
+        dao.load_data(RAW_ORG_IAM_POLICIES, cycle_timestamp,
                       iam_policies_map)
     except (CSVFileError, MySQLError) as e:
         raise LoadDataPipelineError(e)

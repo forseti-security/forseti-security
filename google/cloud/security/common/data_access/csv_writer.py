@@ -25,6 +25,24 @@ from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
 
+POLICY_VIOLATION_FIELDNAMES = [
+    'resource_id',
+    'resource_type',
+    'rule_index',
+    'rule_name',
+    'violation_type',
+    'role',
+    'member'
+]
+
+ORG_IAM_POLICIES_FIELDNAME = [
+   'org_id',
+   'role',
+   'member_type',
+   'member_name',
+   'member_domain'
+]
+
 PROJECTS_FIELDNAME = [
    'project_number',
    'project_id',
@@ -44,26 +62,23 @@ PROJECT_IAM_POLICIES_FIELDNAME = [
    'member_domain'
 ]
 
+RAW_ORG_IAM_POLICIES_FIELDNAME = [
+   'org_id',
+   'iam_policy'
+]
+
 RAW_PROJECT_IAM_POLICIES_FIELDNAME = [
    'project_number',
    'iam_policy'
 ]
 
-POLICY_VIOLATION_FIELDNAMES = [
-    'resource_id',
-    'resource_type',
-    'rule_index',
-    'rule_name',
-    'violation_type',
-    'role',
-    'member'
-]
-
 CSV_FIELDNAME_MAP = {
+    'org_iam_policies': ORG_IAM_POLICIES_FIELDNAME,
+    'policy_violations': POLICY_VIOLATION_FIELDNAMES,
     'projects': PROJECTS_FIELDNAME,
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAME,
+    'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAME,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAME,
-    'policy_violations': POLICY_VIOLATION_FIELDNAMES
 }
 
 

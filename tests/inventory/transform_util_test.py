@@ -17,8 +17,10 @@ import os
 
 from google.apputils import basetest
 from google.cloud.security.inventory import transform_util
-from tests.inventory.test_data.fake_iam_policies import EXPECTED_FLATTENED_IAM_POLICY
-from tests.inventory.test_data.fake_iam_policies import FAKE_IAM_POLICY_MAP
+from tests.inventory.test_data.fake_iam_policies import EXPECTED_FLATTENED_ORG_IAM_POLICY
+from tests.inventory.test_data.fake_iam_policies import EXPECTED_FLATTENED_PROJECT_IAM_POLICY
+from tests.inventory.test_data.fake_iam_policies import FAKE_ORG_IAM_POLICY_MAP
+from tests.inventory.test_data.fake_iam_policies import FAKE_PROJECT_IAM_POLICY_MAP
 
 
 class TransformUtilTest(basetest.TestCase):
@@ -57,10 +59,13 @@ class TransformUtilTest(basetest.TestCase):
         self.assertEquals('', member_name)
         self.assertEquals('foo.com', member_domain)
 
+    def test_can_flatten_org_iam_policies(self):
+        flattened_iam_policies = transform_util.flatten_iam_policies(FAKE_ORG_IAM_POLICY_MAP)
+        self.assertEquals(EXPECTED_FLATTENED_ORG_IAM_POLICY, list(flattened_iam_policies))
 
-    def test_can_flatten_iam_policies(self):
-        flattened_iam_policies = transform_util.flatten_iam_policies(FAKE_IAM_POLICY_MAP)
-        self.assertEquals(EXPECTED_FLATTENED_IAM_POLICY, list(flattened_iam_policies))
+    def test_can_flatten_project_iam_policies(self):
+        flattened_iam_policies = transform_util.flatten_iam_policies(FAKE_PROJECT_IAM_POLICY_MAP)
+        self.assertEquals(EXPECTED_FLATTENED_PROJECT_IAM_POLICY, list(flattened_iam_policies))
 
 
 if __name__ == '__main__':
