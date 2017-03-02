@@ -57,8 +57,6 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 FLAGS = flags.FLAGS
 
-
-
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
                      'Cloud Resource Manager queries per 100 seconds.')
 
@@ -196,7 +194,7 @@ def _send_email(cycle_timestamp, status, sendgrid_api_key,
     try:
         email_util = EmailUtil(sendgrid_api_key)
         email_util.send(email_sender, email_recipient,
-                         email_subject, email_content)
+                        email_subject, email_content)
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
