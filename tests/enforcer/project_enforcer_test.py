@@ -106,14 +106,14 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_no_changes(self):
         """Validate results when there are no firewall policies changed.
 
-    Setup:
-      * Set API calls to return the same networks and firewall rules listed in
-        the RAW_EXPECTED_JSON_POLICY.
+        Setup:
+          * Set API calls to return the same networks and firewall rules listed
+            in the RAW_EXPECTED_JSON_POLICY.
 
-    Expected Results:
-      A ProjectResult proto with status=SUCCESS and all rules listed in
-      rules_unchanged.
-    """
+        Expected Results:
+          A ProjectResult proto with status=SUCCESS and all rules listed in
+          rules_unchanged.
+        """
         self.gce_service.firewalls().list().execute.return_value = {
             'items': self.expected_rules
         }
@@ -130,16 +130,16 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_all_rules_changed(self):
         """Validate results when all firewall policies are changed.
 
-    Setup:
-      * Set API calls to return the different firewall rules from the new policy
-        on the first call, and the expected new firewall rules on the second
-        call.
+        Setup:
+          * Set API calls to return the different firewall rules from the new
+            policy on the first call, and the expected new firewall rules on the
+            second call.
 
-    Expected Results:
-      A ProjectResult proto showing status=SUCCESS, details on the rules
-      changed, all_rules_changed set to True, and a copy of the previous and
-      current firewall rules.
-    """
+        Expected Results:
+          A ProjectResult proto showing status=SUCCESS, details on the rules
+          changed, all_rules_changed set to True, and a copy of the previous and
+          current firewall rules.
+        """
         self.gce_service.firewalls().list().execute.side_effect = [
             constants.DEFAULT_FIREWALL_API_RESPONSE,
             {
@@ -163,19 +163,20 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_multiple_rules_changed(self):
         """Validate results when multiple firewall policies are changed.
 
-    Setup:
-      * Create a new set of rules that is a copy of the expected rules.
-        - Delete last rule so it will have to be re-added.
-        - Modify the first rule so it will have to be updated.
-        - Add a new rule from a different policy so it will have to be deleted.
+        Setup:
+          * Create a new set of rules that is a copy of the expected rules.
+            - Delete last rule so it will have to be re-added.
+            - Modify the first rule so it will have to be updated.
+            - Add a new rule from a different policy so it will have to be
+              deleted.
 
-      * Set API call to return the current firewall rules on the first call,
-        and the expected new firewall rules on the second call.
+          * Set API call to return the current firewall rules on the first call,
+            and the expected new firewall rules on the second call.
 
-    Expected Results:
-      A ProjectResult proto showing status=SUCCESS, details on the rules
-      changed, and a copy of the previous and current firewall rules.
-    """
+        Expected Results:
+          A ProjectResult proto showing status=SUCCESS, details on the rules
+          changed, and a copy of the previous and current firewall rules.
+        """
         # Make a deep copy of the expected rules
         current_fw_rules = copy.deepcopy(self.expected_rules)
 
@@ -213,15 +214,15 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_one_rule_updated(self):
         """Validate results when a firewall rule is changed.
 
-    Setup:
-      * Set API calls to return the different firewall rules from the new policy
-        on the first call, and the expected new firewall rules on the second
-        call.
+        Setup:
+          * Set API calls to return the different firewall rules from the new
+            policy on the first call, and the expected new firewall rules on the
+            second call.
 
-    Expected Results:
-      A ProjectResult proto showing status=SUCCESS, details on the rules
-      changed, and a copy of the previous and current firewall rules.
-    """
+        Expected Results:
+          A ProjectResult proto showing status=SUCCESS, details on the rules
+          changed, and a copy of the previous and current firewall rules.
+        """
         # Make a deep copy of the expected rules
         current_fw_rules = copy.deepcopy(self.expected_rules)
 
@@ -229,13 +230,8 @@ class ProjectEnforcerTest(basetest.TestCase):
         current_fw_rules[0]['sourceRanges'].append('10.0.0.0/8')
 
         self.gce_service.firewalls().list().execute.side_effect = [
-            {
-                'items': current_fw_rules
-            },
-            {
-                'items': self.expected_rules
-            },
-        ]
+            {'items': current_fw_rules},
+            {'items': self.expected_rules}]
 
         result = self.enforcer.enforce_firewall_policy(
             self.policy, compute_service=self.gce_service)
@@ -247,18 +243,113 @@ class ProjectEnforcerTest(basetest.TestCase):
 
         self.assertEqual(self.expected_proto, result)
 
+    def test_enforce_policy_all_rules_changed_with_retry(self):
+        """Validate results when a rule is added while the enforcer is running.
+
+        Setup:
+          * Set API calls to return the different firewall rules from the new
+            policy on the first call, the expected rules with an additional rule
+            added on the second and third calls, and the expected new firewall
+            rules on the forth call.
+          * Set retry_on_dry_run to True so that code path will be tested.
+
+        Expected Results:
+          A GceEnforcerResult proto showing status=SUCCESS, details on the rules
+          changed, all_rules_changed set to True, and a copy of the previous and
+          current firewall rules.
+        """
+        extra_rules = copy.deepcopy(self.expected_rules)
+        extra_rules.extend(
+            constants.DEFAULT_FIREWALL_API_RESPONSE['items'][:1])
+
+        self.gce_service.firewalls().list().execute.side_effect = [
+            constants.DEFAULT_FIREWALL_API_RESPONSE,
+            {'items': extra_rules},
+            {'items': extra_rules},
+            {'items': self.expected_rules}]
+
+        result = self.enforcer.enforce_firewall_policy(
+            self.policy, compute_service=self.gce_service,
+            retry_on_dry_run = True)
+
+        self.expected_proto.status = project_enforcer.STATUS_SUCCESS
+        self.expected_proto.gce_firewall_enforcement.all_rules_changed = True
+
+        added = get_rule_names(self.expected_rules)
+        deleted = get_rule_names(
+            constants.DEFAULT_FIREWALL_API_RESPONSE['items'])
+        deleted.extend(get_rule_names(
+            constants.DEFAULT_FIREWALL_API_RESPONSE['items'][:1]))
+
+        self.set_expected_audit_log(added=added, deleted=sorted(deleted))
+
+        self.assertEqual(self.expected_proto, result)
+
+    def test_enforce_policy_rules_changed_exceeds_maximum_retries(self):
+        """Validate error status if rule is constantly readded while enforcing.
+
+        Setup:
+          * Set API calls to return the different firewall rules from the new
+            policy on the first call, the expected rules with an additional rule
+            added on all subsequent calls.
+          * Set retry_on_dry_run to True so that code path will be tested.
+
+        Expected Results:
+          A GceEnforcerResult proto showing status=ERROR, details on the rules
+          changed, and a copy of the previous and current firewall rules.
+        """
+        extra_rules = copy.deepcopy(self.expected_rules)
+        extra_rules.extend(
+            constants.DEFAULT_FIREWALL_API_RESPONSE['items'][:1])
+
+        firewall_list = [constants.DEFAULT_FIREWALL_API_RESPONSE,
+                         {'items': extra_rules}]
+
+        maximum_retries = 3
+
+        # Return the same extra rule for each retry.
+        firewall_list.extend([{'items': extra_rules}] * maximum_retries * 2)
+
+        self.gce_service.firewalls().list().execute.side_effect = firewall_list
+
+        result = self.enforcer.enforce_firewall_policy(
+            self.policy, compute_service=self.gce_service,
+            retry_on_dry_run=True, maximum_retries=maximum_retries)
+
+        self.expected_proto.status = project_enforcer.STATUS_ERROR
+        self.expected_proto.status_reason = (
+            'New firewall rules do not match the expected rules enforced by '
+            'the policy')
+
+        added = get_rule_names(self.expected_rules)
+        deleted = get_rule_names(
+            constants.DEFAULT_FIREWALL_API_RESPONSE['items'])
+
+        # Rule is deleted 3 times, but always comes back.
+        for _ in range(maximum_retries):
+            deleted.extend(get_rule_names(
+                constants.DEFAULT_FIREWALL_API_RESPONSE['items'][:1]))
+
+        unchanged = get_rule_names(
+            constants.DEFAULT_FIREWALL_API_RESPONSE['items'][:1])
+
+        self.set_expected_audit_log(added=added, deleted=sorted(deleted),
+                                    unchanged=unchanged)
+
+        self.assertEqual(self.expected_proto, result)
+
     def test_enforce_policy_one_network(self):
         """Validate that running on a single network only changes that network.
 
-    Setup:
-      * Set API calls to return default rules on two networks for the first
-        call and the expected rules on the test network for the second
-        call.
+        Setup:
+          * Set API calls to return default rules on two networks for the first
+            call and the expected rules on the test network for the second
+            call.
 
-    Expected Results:
-      The rules on the test network are changed, but the rules on the default
-      network remain the same.
-    """
+        Expected Results:
+          The rules on the test network are changed, but the rules on the
+          default network remain the same.
+        """
         current_fw_rules_page1 = copy.deepcopy(
             constants.DEFAULT_FIREWALL_API_RESPONSE)
         current_fw_rules_page1['nextPageToken'] = 'page2'
@@ -293,14 +384,14 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_project_enforcer_empty_firewall_policy_exception(self):
         """Verifies that an empty firewall policy raises exception.
 
-    Setup:
-      * Set the firewall policy to an empty list.
-      * Set the current firewall rules.
-      * Enforce the expected policy which will raise an exception.
+        Setup:
+          * Set the firewall policy to an empty list.
+          * Set the current firewall rules.
+          * Enforce the expected policy which will raise an exception.
 
-    Expected Result:
-      A ProjectResult proto showing status=ERROR and a reason string.
-    """
+        Expected Result:
+          A ProjectResult proto showing status=ERROR and a reason string.
+        """
         firewall_policy = []
 
         self.gce_service.firewalls().list().execute.return_value = {
@@ -322,24 +413,22 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_project_enforcer_empty_firewall_policy_allowed(self):
         """Verifies that an empty firewall policy deletes all rules if allowed.
 
-    Setup:
-      * Set the firewall policy to an empty list.
-      * Set the current firewall rules.
-      * Set allow_empty_ruleset to True.
-      * Enforce the expected policy which deletes all rules.
+        Setup:
+          * Set the firewall policy to an empty list.
+          * Set the current firewall rules.
+          * Set allow_empty_ruleset to True.
+          * Enforce the expected policy which deletes all rules.
 
-    Expected Result:
-      A ProjectResult proto showing status=SUCCESS and the number of rules
-      changed in an audit_log, and a copy of the previous and current firewall
-      rules.
-    """
+        Expected Result:
+          A ProjectResult proto showing status=SUCCESS and the number of rules
+          changed in an audit_log, and a copy of the previous and current
+          firewall rules.
+        """
         firewall_policy = []
 
-        self.gce_service.firewalls().list().execute.side_effect = [{
-            'items': self.expected_rules
-        }, {
-            'items': []
-        }]
+        self.gce_service.firewalls().list().execute.side_effect = [
+            {'items': self.expected_rules},
+            {'items': []}]
 
         result = self.enforcer.enforce_firewall_policy(
             firewall_policy,
@@ -356,14 +445,15 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_firewall_enforcer_error(self):
         """Verifies that a firewall enforcer error returns a status=ERROR proto.
 
-    Setup:
-      * Switch the dry run response to a firewall change to be an error.
-      * Set the current firewall rules to something different from the policy.
-      * Enforce the expected policy which will force a firewall change.
+        Setup:
+          * Switch the dry run response to a firewall change to be an error.
+          * Set the current firewall rules to something different from the
+            policy.
+          * Enforce the expected policy which will force a firewall change.
 
-    Expected Result:
-      A ProjectResult proto showing status=ERROR and a reason string.
-    """
+        Expected Result:
+          A ProjectResult proto showing status=ERROR and a reason string.
+        """
         mock_dry_run = mock.patch.object(project_enforcer.fe.ComputeFirewallAPI,
                                          '_create_dry_run_response').start()
 
@@ -398,38 +488,39 @@ class ProjectEnforcerTest(basetest.TestCase):
         self.assertStartsWith(result.status_reason,
                               'error enforcing firewall for project')
 
-        # Copy reason string into expected proto. The reason includes a long error
-        # message, which would be ugly to replicate in the test.
+        # Copy reason string into expected proto. The reason includes a long
+        # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
         self.assertEqual(self.expected_proto, result)
 
     def test_enforce_policy_failure_during_enforcement(self):
-        """Forces an error in the middle of enforcing a policy to validate results.
+        """Forces an error in the middle of enforcing a policy.
 
-    Setup:
-      * Create a new set of rules that is a copy of the expected rules.
-        - Delete last rule so it will have to be re-added.
-        - Modify the first rule so it will have to be updated.
-        - Add a new rule from a different policy so it will have to be deleted.
+        Setup:
+          * Create a new set of rules that is a copy of the expected rules.
+            - Delete last rule so it will have to be re-added.
+            - Modify the first rule so it will have to be updated.
+            - Add a new rule from a different policy so it will have to be
+              deleted.
 
-      * Mock the update function so it returns an error. Updates are always
-        done after inserts and deletes.
+          * Mock the update function so it returns an error. Updates are always
+            done after inserts and deletes.
 
-      * Set API call to return the current firewall rules on the first call,
-        and the partially updated firewall rules on the second call.
+          * Set API call to return the current firewall rules on the first call,
+            and the partially updated firewall rules on the second call.
 
-    Expected Results:
-      A ProjectResult proto showing status=ERROR, the correct reason string,
-      the number of rules changed in an audit_log, and a copy of the previous
-      and current firewall rules.
-    """
-        # Make a change to the first rule so it should be updated. The update will
-        # fail so this rule will still not match the policy.
+        Expected Results:
+          A ProjectResult proto showing status=ERROR, the correct reason string,
+          the number of rules changed in an audit_log, and a copy of the
+          previous and current firewall rules.
+        """
+        # Make a change to the first rule so it should be updated. The update
+        # will fail so this rule will still not match the policy.
         self.expected_rules[0]['sourceRanges'].append('10.0.0.0/8')
 
-        # Start with the rules as they exist after enforce_firewall_policy is run
-        # and modify them.
+        # Start with the rules as they exist after enforce_firewall_policy is
+        # run and modify them.
         current_fw_rules = copy.deepcopy(self.expected_rules)
 
         # Delete the last rule, so it has to be re-added
@@ -476,8 +567,8 @@ class ProjectEnforcerTest(basetest.TestCase):
         self.assertStartsWith(result.status_reason,
                               'error enforcing firewall for project')
 
-        # Copy reason string into expected proto. The reason includes a long error
-        # message, which would be ugly to replicate in the test.
+        # Copy reason string into expected proto. The reason includes a long
+        # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
         self.assertEqual(self.expected_proto, result)
@@ -485,18 +576,18 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_error_fetching_updated_rules(self):
         """Forces an error when requesting firewall rules after enforcement.
 
-    Setup:
-      * Create a new set of rules that is a copy of the expected rules.
-        - Modify the first rule so it will have to be updated.
+        Setup:
+          * Create a new set of rules that is a copy of the expected rules.
+            - Modify the first rule so it will have to be updated.
 
-      * Set API call to return the current firewall rules on the first call,
-        and an error on the second call.
+          * Set API call to return the current firewall rules on the first call,
+            and an error on the second call.
 
-    Expected Results:
-      A ProjectResult proto showing status=ERROR, the correct reason string,
-      the number of rules changed in an audit_log, and a copy of the previous
-      firewall rules only.
-    """
+        Expected Results:
+          A ProjectResult proto showing status=ERROR, the correct reason string,
+          the number of rules changed in an audit_log, and a copy of the
+          previous firewall rules only.
+        """
         # Make a deep copy of the expected rules
         current_fw_rules = copy.deepcopy(self.expected_rules)
 
@@ -522,8 +613,8 @@ class ProjectEnforcerTest(basetest.TestCase):
         self.assertStartsWith(result.status_reason,
                               'error getting current firewall rules from API:')
 
-        # Copy reason string into expected proto. The reason includes a long error
-        # message, which would be ugly to replicate in the test.
+        # Copy reason string into expected proto. The reason includes a long
+        # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
         # Verify rules after json is an empty string
@@ -535,14 +626,15 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_error_listing_networks(self):
         """Forces an error when listing project networks.
 
-    Setup:
-      * Set the networks.list API call to return an error.
-      * Set the firewalls.list API call to return the current firewall rules.
+        Setup:
+          * Set the networks.list API call to return an error.
+          * Set the firewalls.list API call to return the current firewall
+            rules.
 
-    Expected Results:
-      A ProjectResult proto showing status=ERROR and the correct reason
-      string.
-    """
+        Expected Results:
+          A ProjectResult proto showing status=ERROR and the correct reason
+          string.
+        """
         self.gce_service.networks().list().execute.side_effect = self.error_403
 
         self.gce_service.firewalls().list().execute.return_value = {
@@ -560,13 +652,13 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_error_listing_firewalls(self):
         """Forces an error when listing project firewall rules.
 
-    Setup:
-      * Set the firewalls.list API call to return an error.
+        Setup:
+          * Set the firewalls.list API call to return an error.
 
-    Expected Results:
-      A ProjectResult proto showing status=ERROR and the correct reason
-      string.
-    """
+        Expected Results:
+          A ProjectResult proto showing status=ERROR and the correct reason
+          string.
+        """
         self.gce_service.firewalls().list().execute.side_effect = self.error_403
 
         result = self.enforcer.enforce_firewall_policy(
@@ -578,8 +670,8 @@ class ProjectEnforcerTest(basetest.TestCase):
         self.assertStartsWith(result.status_reason,
                               'error getting current firewall rules from API:')
 
-        # Copy reason string into expected proto. The reason includes a long error
-        # message, which would be ugly to replicate in the test.
+        # Copy reason string into expected proto. The reason includes a long
+        # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
         self.assertEqual(self.expected_proto, result)
@@ -587,13 +679,13 @@ class ProjectEnforcerTest(basetest.TestCase):
     def test_enforce_policy_error_adding_rules(self):
         """Forces an error when adding the expected firewall policy rules.
 
-    Setup:
-      * Set the first firewall policy rule to have a very long name.
+        Setup:
+          * Set the first firewall policy rule to have a very long name.
 
-    Expected Results:
-      A ProjectResult proto showing status=ERROR and the correct reason
-      string.
-    """
+        Expected Results:
+          A ProjectResult proto showing status=ERROR and the correct reason
+          string.
+        """
         # Set the first firewall policy rule to have a very long name
         self.policy[0]['name'] = 'long-name-' + 'x' * 54
 
@@ -612,23 +704,23 @@ class ProjectEnforcerTest(basetest.TestCase):
             'error adding the expected firewall rules from the '
             'policy:')
 
-        # Copy reason string into expected proto. The reason includes a long error
-        # message, which would be ugly to replicate in the test.
+        # Copy reason string into expected proto. The reason includes a long
+        # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
         self.assertEqual(self.expected_proto, result)
 
     def test_enforce_policy_firewall_enforcer_deleted_403(self):
-        """Verifies that a deleted project returns a status=PROJECT_DELETED proto.
+        """Verifies that a deleted project returns status=PROJECT_DELETED.
 
-    Setup:
-      * Switch the list_firewalls response to be a 403 error with the reason
-        string set to pending deletion.
+        Setup:
+          * Switch the list_firewalls response to be a 403 error with the reason
+            string set to pending deletion.
 
-    Expected Result:
-      A ProjectResult proto showing status=PROJECT_DELETED and the correct
-      reason string.
-    """
+        Expected Result:
+          A ProjectResult proto showing status=PROJECT_DELETED and the correct
+          reason string.
+        """
         deleted_403 = httplib2.Response({
             'status': '403',
             'content-type': 'application/json'
@@ -641,8 +733,8 @@ class ProjectEnforcerTest(basetest.TestCase):
         error_deleted_403 = project_enforcer.errors.HttpError(deleted_403, '',
                                                               '')
 
-        self.gce_service.firewalls().list(
-        ).execute.side_effect = error_deleted_403
+        self.gce_service.firewalls().list().execute.side_effect = (
+            error_deleted_403)
         result = self.enforcer.enforce_firewall_policy(
             self.policy, compute_service=self.gce_service)
 
@@ -652,23 +744,23 @@ class ProjectEnforcerTest(basetest.TestCase):
         self.assertStartsWith(result.status_reason,
                               'Project scheduled for deletion')
 
-        # Copy reason string into expected proto. The reason includes a long error
-        # message, which would be ugly to replicate in the test.
+        # Copy reason string into expected proto. The reason includes a long
+        # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
         self.assertEqual(self.expected_proto, result)
 
     def test_enforce_policy_firewall_enforcer_deleted_400(self):
-        """Verifies that a deleted project returns a status=PROJECT_DELETED proto.
+        """Verifies that a deleted project returns a status=PROJECT_DELETED.
 
-    Setup:
-      * Switch the ListFirewalls response to be a 400 error with the reason
-        string set to unknown project.
+        Setup:
+          * Switch the ListFirewalls response to be a 400 error with the reason
+            string set to unknown project.
 
-    Expected Result:
-      A ProjectResult proto showing status=PROJECT_DELETED and the correct
-      reason string.
-    """
+        Expected Result:
+          A ProjectResult proto showing status=PROJECT_DELETED and the correct
+          reason string.
+        """
         deleted_400 = httplib2.Response({
             'status': '400',
             'content-type': 'application/json'
@@ -677,8 +769,8 @@ class ProjectEnforcerTest(basetest.TestCase):
         error_deleted_400 = project_enforcer.errors.HttpError(deleted_400, '',
                                                               '')
 
-        self.gce_service.firewalls().list(
-        ).execute.side_effect = error_deleted_400
+        self.gce_service.firewalls().list().execute.side_effect = (
+            error_deleted_400)
         result = self.enforcer.enforce_firewall_policy(
             self.policy, compute_service=self.gce_service)
 
@@ -688,8 +780,49 @@ class ProjectEnforcerTest(basetest.TestCase):
         self.assertStartsWith(result.status_reason,
                               'Project scheduled for deletion')
 
-        # Copy reason string into expected proto. The reason includes a long error
-        # message, which would be ugly to replicate in the test.
+        # Copy reason string into expected proto. The reason includes a long
+        # error message, which would be ugly to replicate in the test.
+        self.expected_proto.status_reason = result.status_reason
+
+        self.assertEqual(self.expected_proto, result)
+
+    def test_enforce_policy_firewall_enforcer_gce_api_disabled(self):
+        """Project returns a status=PROJECT_DELETED if GCE API is disabled.
+
+        Setup:
+          * Switch the ListFirewalls response to be a 403 error with the reason
+            string set to GCE API disabled.
+
+        Expected Result:
+          A GceEnforcerResult proto showing status=PROJECT_DELETED and the
+          correct reason string.
+        """
+        api_disabled_403 = httplib2.Response(
+            {'status': '403',
+            'content-type': 'application/json'})
+        api_disabled_403.reason = (
+            'Access Not Configured. Compute Engine API has not been used in '
+            'project 1 before or it is disabled. Enable it by visiting '
+            'https://console.developers.google.com/apis/api/compute_component/'
+            'overview?project=1 then retry. If you enabled this API recently,'
+            'wait a few minutes for the action to propagate to our systems and '
+            'retry.')
+        error_api_disabled_403 = project_enforcer.errors.HttpError(
+            api_disabled_403, '', '')
+
+        self.gce_service.firewalls().list().execute.side_effect = (
+            error_api_disabled_403)
+        result = self.enforcer.enforce_firewall_policy(
+            self.policy, compute_service=self.gce_service)
+
+        self.expected_proto.status = project_enforcer.STATUS_DELETED
+
+        # Match first part of error reason string
+        self.assertStartsWith(result.status_reason,
+                              'Project has GCE API disabled')
+
+        # Copy reason string into expected proto. The reason includes a long
+        # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
         self.assertEqual(self.expected_proto, result)
