@@ -34,8 +34,8 @@ STATUS_ERROR = enforcer_log_pb2.ERROR
 STATUS_SKIPPED = enforcer_log_pb2.SKIPPED
 STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
 
-# Number of times to try applying the firewall policy to a project before
-# the status is changed to ERROR and the enforcement fails.
+# Default number of times to try applying the firewall policy to a project
+# before the status is changed to ERROR and the enforcement fails.
 MAX_ENFORCEMENT_RETRIES = 3
 
 LOGGER = LogUtil.setup_logging(__name__)
@@ -117,8 +117,8 @@ class ProjectEnforcer(object):
             gce_api = compute.ComputeClient()
             compute_service = gce_api.service
 
-        self.firewall_api = fe.ComputeFirewallAPI(
-            compute_service, dry_run=self._dry_run)
+        self.firewall_api = fe.ComputeFirewallAPI(compute_service,
+                                                  dry_run=self._dry_run)
         self.firewall_policy = firewall_policy
 
         if networks:
@@ -160,27 +160,26 @@ class ProjectEnforcer(object):
                 return self._set_error_status(
                     'error enforcing firewall for project: %s', e)
 
-            if change_count > 0:
-                try:
-                    self.rules_after_enforcement = self._get_current_fw_rules()
-                except EnforcementError as e:
-                    return self._set_error_status(e.reason())
+            try:
+                self.rules_after_enforcement = self._get_current_fw_rules()
+            except EnforcementError as e:
+                return self._set_error_status(e.reason())
 
-                if ((not self._dry_run or retry_on_dry_run) and
-                    self.rules_after_enforcement != self.expected_rules):
-                    retry_enforcement_count += 1
-                    if retry_enforcement_count <= maximum_retries:
-                        LOGGER.warn('New firewall rules do not match the '
-                                    'expected rules enforced by the policy '
-                                    'for project %s, retrying. (Retry #%d)',
-                                    self.project_id, retry_enforcement_count)
-                        self.enforcer.refresh_current_rules()
-                        continue
-                    else:
-                        return self._set_error_status(
-                            'New firewall rules do not match the '
-                            'expected rules enforced by the policy')
-            break
+            if ((self._dry_run and not retry_on_dry_run) or
+                self.rules_after_enforcement == self.expected_rules):
+                break
+
+            retry_enforcement_count += 1
+            if retry_enforcement_count <= maximum_retries:
+                LOGGER.warn('New firewall rules do not match the expected '
+                            'rules enforced by the policy for project %s, '
+                            'retrying. (Retry #%d)', self.project_id,
+                            retry_enforcement_count)
+                self.enforcer.refresh_current_rules()
+            else:
+                return self._set_error_status('New firewall rules do not match '
+                                              'the expected rules enforced by '
+                                              'the policy')
 
         self.result.status = STATUS_SUCCESS
         self._update_fw_results()
