@@ -79,6 +79,9 @@ $ xcode-select --install
 $ pip install --upgrade virtualenvwrapper
 ```
 
+**SendGrid API Key**  
+SendGrid is the email service provider.  To use it, you simply need to [create a General API Key with SendGrid](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html) and pass it as a template or flag value.
+
 # Setup
 
 
