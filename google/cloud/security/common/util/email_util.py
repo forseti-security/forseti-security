@@ -17,6 +17,7 @@
 from urllib2 import URLError
 from urllib2 import HTTPError
 
+import gflags as flags
 from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
@@ -26,14 +27,32 @@ from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.common.util import retryable_exceptions
 
 
+FLAGS = flags.FLAGS
+
+flags.DEFINE_string('email_recipient', None,
+                    'Recipient of the email for inventory notifications.')
+
+flags.DEFINE_string('email_sender', None,
+                    'Sender of the email for inventory notifications.')
+
+flags.DEFINE_string('sendgrid_api_key', None,
+                    'API key to auth SendGrid email service.')
+
+flags.mark_flag_as_required('email_recipient')
+flags.mark_flag_as_required('email_sender')
+flags.mark_flag_as_required('sendgrid_api_key')
+
+
 class EmailUtil(object):
     """Utility for sending emails."""
     
-    def __init__(self):
-        """Initialize the email util."""
-        # TODO: Store and read the sendgrid key from GCS.
+    def __init__(self, api_key):
+        """Initialize the email util.
+        
+        Args:
+            api_key: String of the sendgrid api key to auth email service.
+        """
         self.logger = LogUtil.setup_logging(__name__)
-        api_key = 'my_secret_key'
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,

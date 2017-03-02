@@ -17,13 +17,19 @@
 Usage:
 
   $ forseti_inventory \\
-      --organization_id <organization_id> \\
-      --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \\
+      --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_passwd <Cloud SQL database password> \\
-      --db_name <Cloud SQL database name (required)>
+      --db_name <Cloud SQL database name (required)> \\
+      --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \\
+      --sendgrid_api_key <API key to auth SendGrid email service (required)> \\
+      --email_sender <email address of the email sender> (required) \\
+      --email_recipient <email address of the email recipient> (required)
 
+To see all the dependent flags:
+
+  $ forseti_inventory --helpfull
 """
 
 from datetime import datetime
@@ -50,9 +56,14 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 
 FLAGS = flags.FLAGS
+
+
+
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
                      'Cloud Resource Manager queries per 100 seconds.')
+
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
+
 flags.mark_flag_as_required('organization_id')
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
@@ -162,27 +173,29 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(cycle_timestamp, status, email_content=None):
+def _send_email(cycle_timestamp, status, sendgrid_api_key, 
+                email_sender, email_recipient, email_content=None):
     """Send an email.
 
     Args:
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status: String of the current snapshot cycle.
+        sendgrid_api_key: String of the sendgrid api key to auth email service.
+        email_sender: String of the sender of the email.
+        email_recipient: String of the recipient of the email.
         email_content: String of the email content (aka, body).
 
     Returns:
          None
     """
-    email_sender = None
-    email_recipient = None
-    
     email_subject = 'Inventory loading {0}: {1}'.format(cycle_timestamp, status)
 
     if email_content is None:
         email_content = email_subject
 
     try:
-        EmailUtil().send(email_sender, email_recipient,
+        email_util = EmailUtil(sendgrid_api_key)
+        email_util.send(email_sender, email_recipient,
                          email_subject, email_content)
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
@@ -221,7 +234,8 @@ def main(unused_argv=None):
         sys.exit()
 
     _complete_snapshot_cycle(dao, cycle_timestamp, 'SUCCESS')
-    _send_email(cycle_timestamp, 'SUCCESS')
+    _send_email(cycle_timestamp, 'SUCCESS', configs.get('sendgrid_api_key'),
+                configs.get('email_sender'), configs.get('email_recipient'))
 
 
 if __name__ == '__main__':

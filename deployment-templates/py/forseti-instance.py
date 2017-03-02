@@ -24,6 +24,10 @@ def GenerateConfig(context):
     SCANNER_BUCKET = context.properties['scanner-bucket']
     DATABASE_NAME = context.properties['database-name']
 
+    SENDGRID_API_KEY = context.properties['sendgrid-api-key']
+    EMAIL_SENDER = context.properties['email-sender']
+    EMAIL_RECIPIENT = context.properties['email-recipient']
+
     resources = []
 
     resources.append({
@@ -134,7 +138,7 @@ fi
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
-/usr/local/bin/forseti_inventory --organization_id {} --db_name {}
+/usr/local/bin/forseti_inventory --organization_id {} --db_name {} --sendgrid_api_key {} --email_sender {} --email_recipient {}
 /usr/local/bin/forseti_scanner --rules {} --db_name {} --output_path {}
 EOF
 echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
@@ -160,6 +164,10 @@ chmod +x $USER_HOME/run_forseti.sh
            # - forseti_inventory
            context.properties['organization-id'],
            DATABASE_NAME,
+           SENDGRID_API_KEY,
+           EMAIL_SENDER,
+           EMAIL_RECIPIENT,
+
            # - forseti_scanner
            'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
            DATABASE_NAME,
