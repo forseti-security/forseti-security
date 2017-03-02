@@ -16,8 +16,13 @@
 
 Usage:
 
-  $ forseti_scanner --rules <rules path> \
-      --output_path <output path (opt)>
+  $ forseti_scanner --rules <rules path> \\
+      --output_path <output path (opt)> \\
+      --db_host <Cloud SQL hostname/IP> \\
+      --db_user <Cloud SQL user> \\
+      --db_passwd <Cloud SQL password> \\
+      --db_name <Cloud SQL database name> \\
+      --organization_id <Organization id>
 """
 
 import csv
@@ -33,6 +38,7 @@ from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
+from google.cloud.security.common.data_access.organization_dao import OrganizationDao
 from google.cloud.security.common.data_access.project_dao import ProjectDao
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util.log_util import LogUtil
@@ -54,7 +60,9 @@ flags.DEFINE_string('output_path',
                     ('Output path (do not include filename). If GCS location, '
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
+flags.DEFINE_string('organization_id', None, 'Organization id')
 flags.mark_flag_as_required('rules')
+flags.mark_flag_as_required('organization_id')
 
 def main(unused_argv=None):
     """Run the scanner."""
@@ -74,18 +82,28 @@ def main(unused_argv=None):
         logger.info('No snapshot timestamp found. Exiting.')
         sys.exit()
 
+    org_policies = _get_org_policies(logger, snapshot_timestamp)
     project_policies = _get_project_policies(logger, snapshot_timestamp)
-    if not project_policies:
+    if not org_policies and not project_policies:
         logger.info('No policies found. Exiting.')
         sys.exit()
 
     all_violations = []
+
+    logger.info('Find org policy violations...')
+    for (org, policy) in org_policies.iteritems():
+        logger.debug('{} => {}'.format(org, policy))
+        org_violations = rules_engine.find_policy_violations(
+            org, policy)
+        logger.debug(org_violations)
+        all_violations.extend(org_violations)
+
     logger.info('Find project policy violations...')
     for (project, policy) in project_policies.iteritems():
-        logger.info('{} => {}'.format(project, policy))
+        logger.debug('{} => {}'.format(project, policy))
         project_violations = rules_engine.find_policy_violations(
             project, policy)
-        logger.info(project_violations)
+        logger.debug(project_violations)
         all_violations.extend(project_violations)
 
     csv_name = csv_writer.write_csv(
@@ -133,6 +151,18 @@ def _get_timestamp(logger):
         logger.error('Error getting latest snapshot timestamp: {}'.format(err))
 
     return latest_timestamp
+
+def _get_org_policies(logger, timestamp):
+    """Get orgs from data source."""
+    org_dao = None
+    org_policies = []
+    try:
+        org_dao = OrganizationDao()
+        org_policies = org_dao.get_org_iam_policies(timestamp)
+    except MySQLError as err:
+        logger.error('Error getting org policies: {}'.format(err))
+
+    return org_policies
 
 def _get_project_policies(logger, timestamp):
     """Get projects from data source."""

@@ -18,13 +18,17 @@ PROJECT_NUMBERS = """
     SELECT project_number from projects_{0};
 """
 
-PROJECT_POLICIES = """SELECT p.project_number, p.project_id, p.project_name,
+PROJECT_IAM_POLICIES = """SELECT p.project_number, p.project_id, p.project_name,
     p.lifecycle_state as proj_lifecycle, p.parent_type, p.parent_id,
     pol.role, pol.member_type, pol.member_name, pol.member_domain
     FROM projects_{0} p INNER JOIN project_iam_policies_{1} pol
     ON p.project_number = pol.project_number
     ORDER BY p.project_number, pol.role, pol.member_type,
     pol.member_domain, pol.member_name
+"""
+
+ORG_IAM_POLICIES = """SELECT org_id, iam_policy
+    FROM raw_org_iam_policies_{0}
 """
 
 LATEST_SNAPSHOT_TIMESTAMP = """SELECT max(cycle_timestamp)

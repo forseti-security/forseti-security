@@ -20,4 +20,5 @@ PYTHONPATH=./ python google/cloud/security/scanner/scanner.py \
         --db_host 127.0.0.1 \
         --db_user root \
         --db_passwd <database password> \
-        --db_name <database name>
+        --db_name <database name> \
+        --organization_id <org id>

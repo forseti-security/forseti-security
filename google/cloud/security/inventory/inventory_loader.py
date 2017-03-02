@@ -16,12 +16,12 @@
 
 Usage:
 
-  $ forseti_inventory \
-      --organization_id <organization_id> \
-      --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \
-      --db_host <Cloud SQL database hostname/IP> \
-      --db_user <Cloud SQL database user> \
-      --db_passwd <Cloud SQL database password> \
+  $ forseti_inventory \\
+      --organization_id <organization_id> \\
+      --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \\
+      --db_host <Cloud SQL database hostname/IP> \\
+      --db_user <Cloud SQL database user> \\
+      --db_passwd <Cloud SQL database password> \\
       --db_name <Cloud SQL database name (required)>
 
 """
@@ -173,9 +173,8 @@ def _send_email(cycle_timestamp, status, email_content=None):
     Returns:
          None
     """
-    # TODO: Read the email sender and recipient from configs.
-    email_sender = 'foo@baz.com'
-    email_recipient = 'bar@baz.com'
+    email_sender = None
+    email_recipient = None
     
     email_subject = 'Inventory loading {0}: {1}'.format(cycle_timestamp, status)
 

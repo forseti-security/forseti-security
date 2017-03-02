@@ -46,7 +46,7 @@ class ProjectDao(_DbConnector):
             timestamp: The timestamp of the snapshot.
 
         Returns:
-            A list of tuples containing the projects (gcp_type.project.Project)
+            A dict containing the projects (gcp_type.project.Project)
             and their iam policies (dict).
         """
         project_policies = {}
@@ -54,7 +54,7 @@ class ProjectDao(_DbConnector):
         prev_proj = None
         try:
             cursor = self.conn.cursor()
-            cursor.execute(select_data.PROJECT_POLICIES.format(
+            cursor.execute(select_data.PROJECT_IAM_POLICIES.format(
                 timestamp, timestamp))
             rows = cursor.fetchall()
             for row in rows:

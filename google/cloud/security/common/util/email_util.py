@@ -53,7 +53,8 @@ class EmailUtil(object):
         """
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
-    def send(self, email_sender, email_recipient, email_subject, email_content):
+    def send(self, email_sender=None, email_recipient=None,
+             email_subject=None, email_content=None):
         """Send an email.
 
         This uses SendGrid.
@@ -74,6 +75,12 @@ class EmailUtil(object):
         Raises:
             EmailSendError: An error with sending email has occurred.
         """
+
+        if not email_sender or not email_recipient:
+            self.logger.warn('Unable to send email: sender={}, recipient={}'
+                .format(email_sender, email_recipient))
+            raise EmailSendError
+
         email = mail.Mail(
             mail.Email(email_sender),
             email_subject,
