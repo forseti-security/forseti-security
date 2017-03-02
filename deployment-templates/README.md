@@ -65,6 +65,9 @@ The provided Deployment Templates are samples for you to use. Make a copy of `de
   * Subject to bucket naming restrictions (see below).
 * YOUR_SERVICE_ACCOUNT (this can be the application default service account, i.e. `PROJECTNUMBER-compute@developer.gserviceaccount.com`)
 * YOUR_ORG_ID (the organization id number)
+* YOUR_SENDGRID_API_KEY (the api key for sendgrid email service)
+* EMAIL_ADDRESS_OF_YOUR_SENDER (email address of your email sender)
+* EMAIL_ADDRESS_OF_YOUR_RECIPIENT (email address of your email recipient)
 
 Note: There are restrictions on bucket names (e.g. they must be unique). Refer to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming) for more information.
 
