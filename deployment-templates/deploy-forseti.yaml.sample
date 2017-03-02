@@ -54,3 +54,6 @@ resources:
     src-path: SRC_LOCATION
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
+    sendgrid-api-key: YOUR_SENDGRID_API_KEY
+    email-sender: EMAIL_ADDRESS_OF_YOUR_SENDER
+    email-recipient: EMAIL_ADDRESS_OF_YOUR_RECIPIENT
