@@ -30,13 +30,13 @@ from google.cloud.security.common.util import retryable_exceptions
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('email_recipient', None,
-                    'Recipient of the email for inventory notifications.')
+                    'Email address of the notification recipient.')
 
 flags.DEFINE_string('email_sender', None,
-                    'Sender of the email for inventory notifications.')
+                    'Email address of the notification sender.')
 
 flags.DEFINE_string('sendgrid_api_key', None,
-                    'API key to auth SendGrid email service.')
+                    'API key to authenticate with SendGrid email service.')
 
 flags.mark_flag_as_required('email_recipient')
 flags.mark_flag_as_required('email_sender')
