@@ -433,3 +433,69 @@ DEFAULT_FIREWALL_RULES = {
             u"test-network-allow-ssh"
     }
 }
+
+SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
+  project_id: 'test-project'
+  timestamp_sec: 1234567890
+  batch_id: 1234567890
+  run_context: ENFORCER_BATCH
+  status: SUCCESS
+  gce_firewall_enforcement {
+    rules_before {
+      json: '[{"allowed": [{"IPProtocol": "icmp"}], "description": '
+            '"Allow ICMP from anywhere", "name": "test-network-allow-icmp", '
+            '"network": "https://www.googleapis.com/compute/v1/projects/'
+            'test-project/global/networks/test-network", "sourceRanges": '
+            '["0.0.0.0/0"]}, {"allowed": [{"IPProtocol": "icmp"}, '
+            '{"IPProtocol": "tcp", "ports": ["1-65535"]}, {"IPProtocol": '
+            '"udp", "ports": ["1-65535"]}], "description": "Allow internal '
+            'traffic on the default network.", "name": '
+            '"test-network-allow-internal", "network": '
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
+            'global/networks/test-network", "sourceRanges": ["10.240.0.0/16"]},'
+            ' {"allowed": [{"IPProtocol": "tcp", "ports": ["3389"]}], '
+            '"description": "Allow RDP from anywhere", "name": '
+            '"test-network-allow-rdp", "network": '
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
+            'global/networks/test-network", "sourceRanges": ["0.0.0.0/0"]}, '
+            '{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], '
+            '"description": "Allow SSH from anywhere", "name": '
+            '"test-network-allow-ssh", "network": '
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
+            'global/networks/test-network", "sourceRanges": ["0.0.0.0/0"]}]'
+      hash: "c14e53f0df0579f7f289b1feb46f1ceef6775af727ca5ad9cbda401cc20004e3"
+    }
+    rules_after {
+      json: '[{"allowed": [{"IPProtocol": "icmp"}, {"IPProtocol": "tcp", '
+            '"ports": ["1-65535"]}, {"IPProtocol": "udp", "ports": ["1-65535"]'
+            '}], "description": "Allow internal traffic from a range of IP '
+            'addresses.", "name": "test-network-allow-internal-0", "network": '
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
+            'global/networks/test-network", "sourceRanges": ["10.0.0.0/8"]}, '
+            '{"allowed": [{"IPProtocol": "icmp"}, {"IPProtocol": "tcp", '
+            '"ports": ["1-65535"]}, {"IPProtocol": "udp", "ports": ["1-65535"]'
+            '}], "description": "Allow communication between instances.", '
+            '"name": "test-network-allow-internal-1", "network": '
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
+            'global/networks/test-network", "sourceRanges": ["10.8.0.0/24"]}, '
+            '{"allowed": [{"IPProtocol": "ah"}, {"IPProtocol": "esp"}, '
+            '{"IPProtocol": "tcp", "ports": ["22"]}, {"IPProtocol": "udp", '
+            '"ports": ["9999"]}], "description": "Allow public traffic from '
+            'specific IP addresses.", "name": "test-network-allow-public-0", '
+            '"network": "https://www.googleapis.com/compute/v1/projects/'
+            'test-project/global/networks/test-network", "sourceRanges": '
+            '["127.0.0.1/32", "127.0.0.2/32"]}]'
+      hash: "509b5b4ffbff131563bb400758c26fb08fceed0ecfdfbaba741cb93707610393"
+    }
+    rules_added: "test-network-allow-internal-0"
+    rules_added: "test-network-allow-internal-1"
+    rules_added: "test-network-allow-public-0"
+    rules_removed: "test-network-allow-icmp"
+    rules_removed: "test-network-allow-internal"
+    rules_removed: "test-network-allow-rdp"
+    rules_removed: "test-network-allow-ssh"
+    rules_modified_count: 7
+    all_rules_changed: true
+  }
+"""
+

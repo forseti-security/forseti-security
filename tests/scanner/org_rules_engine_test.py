@@ -156,6 +156,85 @@ class OrgRulesEngineTest(basetest.TestCase):
             ]
         }
 
+        self.RULES3 = {
+            'rules': [
+                {
+                    'name': 'my whitelist rule',
+                    'mode': 'whitelist',
+                    'resource': [
+                        {
+                            'type': 'organization',
+                            'applies_to': 'self_and_children',
+                            'resource_ids': [
+                                '778899'
+                            ]
+                        },
+                        {
+                            'type': 'project',
+                            'applies_to': 'self',
+                            'resource_ids': [
+                                'my-project-1',
+                                'my-project-2',
+                            ]
+                        }
+                    ],
+                    'inherit_from_parent': False,
+                    'bindings': [
+                        {
+                            'role': 'roles/*',
+                            'members': [
+                                'user:*@company.com'
+                            ]
+                        }
+                    ]
+                },
+                {
+                    'name': 'my blacklist rule',
+                    'mode': 'blacklist',
+                    'resource': [
+                        {
+                            'type': 'organization',
+                            'applies_to': 'self_and_children',
+                            'resource_ids': [
+                                '778899'
+                            ]
+                        }
+                    ],
+                    'inherit_from_parent': False,
+                    'bindings': [
+                        {
+                            'role': 'roles/*',
+                            'members': [
+                                'user:baduser@company.com'
+                            ]
+                        }
+                    ]
+                },
+                {
+                    'name': 'my required rule',
+                    'mode': 'required',
+                    'resource': [
+                        {
+                            'type': 'project',
+                            'applies_to': 'self',
+                            'resource_ids': [
+                                'my-project-1',
+                            ]
+                        }
+                    ],
+                    'inherit_from_parent': False,
+                    'bindings': [
+                        {
+                            'role': 'roles/viewer',
+                            'members': [
+                                'user:project_viewer@company.com'
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
@@ -602,6 +681,131 @@ class OrgRulesEngineTest(basetest.TestCase):
                 role='roles/viewer',
                 members=[IamPolicyMember.create_from(
                     'user:project_viewer@company.com')])
+        ]
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_org_whitelist_rules_vs_policy_no_violations(self):
+        """Test ruleset on an org with whitelist with no rule violations.
+
+        Setup:
+            * Create a RulesEngine with RULES1 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find no rule violations.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = OrgRulesEngine(rules_local_path)
+        rules_engine.rule_book = OrgRuleBook(self.RULES1)
+
+        policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:okuser@company.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = []
+        actual_violations.extend(rules_engine.find_policy_violations(
+            self.org789, policy))
+
+        self.assertItemsEqual([], actual_violations)
+
+    def test_org_proj_rules_vs_policy_has_violations(self):
+        """Test rules on org and project with whitelist, blacklist, required.
+
+        Test whitelist, blacklist, and required rules against an org that has
+        1 blacklist violation and a project that has 1 whitelist violation and
+        1 required violation.
+
+        Setup:
+            * Create a RulesEngine with RULES3 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find 3 rule violations.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = OrgRulesEngine(rules_local_path)
+        rules_engine.rule_book = OrgRuleBook(self.RULES3)
+
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:okuser@company.com',
+                        'user:baduser@company.com',
+                    ]
+                }
+            ]
+        }
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:okuserr2@company.com',
+                        'user:user@other.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = []
+        actual_violations.extend(rules_engine.find_policy_violations(
+            self.org789, org_policy))
+        actual_violations.extend(rules_engine.find_policy_violations(
+            self.project1, project_policy))
+
+        # expected
+        expected_outstanding_org = {
+            'roles/editor': [
+                IamPolicyMember.create_from('user:baduser@company.com')
+            ]
+        }
+        expected_outstanding_project = {
+            'roles/editor': [
+                IamPolicyMember.create_from('user:user@other.com')
+            ],
+            'roles/viewer': [
+                IamPolicyMember.create_from('user:project_viewer@company.com')
+            ]
+        }
+
+        expected_violations = [
+            RuleViolation(
+                rule_index=1,
+                rule_name='my blacklist rule',
+                resource_id=self.org789.resource_id,
+                resource_type=self.org789.resource_type,
+                violation_type='ADDED',
+                role=org_policy['bindings'][0]['role'],
+                members=expected_outstanding_org['roles/editor']),
+            RuleViolation(
+                rule_index=0,
+                rule_name='my whitelist rule',
+                resource_id=self.project1.resource_id,
+                resource_type=self.project1.resource_type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=expected_outstanding_project['roles/editor']),
+            RuleViolation(
+                rule_index=2,
+                rule_name='my required rule',
+                resource_id=self.project1.resource_id,
+                resource_type=self.project1.resource_type,
+                violation_type='REMOVED',
+                role='roles/viewer',
+                members=expected_outstanding_project['roles/viewer']),
         ]
 
         self.assertItemsEqual(expected_violations, actual_violations)

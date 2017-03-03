@@ -17,6 +17,10 @@
 from urllib2 import URLError
 from urllib2 import HTTPError
 
+import base64
+import gflags as flags
+import jinja2
+import os
 from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
@@ -26,14 +30,32 @@ from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.common.util import retryable_exceptions
 
 
+FLAGS = flags.FLAGS
+
+flags.DEFINE_string('email_recipient', None,
+                    'Email address of the notification recipient.')
+
+flags.DEFINE_string('email_sender', None,
+                    'Email address of the notification sender.')
+
+flags.DEFINE_string('sendgrid_api_key', None,
+                    'API key to authenticate with SendGrid email service.')
+
+flags.mark_flag_as_required('email_recipient')
+flags.mark_flag_as_required('email_sender')
+flags.mark_flag_as_required('sendgrid_api_key')
+
+
 class EmailUtil(object):
     """Utility for sending emails."""
     
-    def __init__(self):
-        """Initialize the email util."""
-        # TODO: Store and read the sendgrid key from GCS.
+    def __init__(self, api_key):
+        """Initialize the email util.
+        
+        Args:
+            api_key: String of the sendgrid api key to auth email service.
+        """
         self.logger = LogUtil.setup_logging(__name__)
-        api_key = 'my_secret_key'
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -53,7 +75,9 @@ class EmailUtil(object):
         """
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
-    def send(self, email_sender, email_recipient, email_subject, email_content):
+    def send(self, email_sender=None, email_recipient=None,
+             email_subject=None, email_content=None, content_type='text/plain',
+             attachment=None):
         """Send an email.
 
         This uses SendGrid.
@@ -67,6 +91,8 @@ class EmailUtil(object):
             email_recipient: String of the email recipient.
             email_subject: String of the email subject.
             email_content: String of the email content (aka, body).
+            content_type: String of the email content type.
+            attachment: A SendGrid Attachment.
         
         Returns:
             None.
@@ -74,12 +100,21 @@ class EmailUtil(object):
         Raises:
             EmailSendError: An error with sending email has occurred.
         """
+
+        if not email_sender or not email_recipient:
+            self.logger.warn('Unable to send email: sender={}, recipient={}'
+                .format(email_sender, email_recipient))
+            raise EmailSendError
+
         email = mail.Mail(
             mail.Email(email_sender),
             email_subject,
             mail.Email(email_recipient),
-            mail.Content('text/plain', email_content)
+            mail.Content(content_type, email_content)
         )
+
+        if attachment:
+            email.add_attachment(attachment)
 
         try:
             response = self._execute_send(email)
@@ -98,3 +133,54 @@ class EmailUtil(object):
                         response.body,
                         response.headers))
             raise EmailSendError
+
+    @classmethod
+    def render_from_template(cls, template_file, template_vars):
+        """Fill out an email template with template variables.
+
+        Args:
+            template_file: The string location of email template in filesystem.
+            template_vars: The dict of template variables to fill into the
+                template.
+
+        Returns:
+            String of template content rendered with the provided variables.
+        """
+        template_searchpath = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), '../email_templates'))
+        template_loader = jinja2.FileSystemLoader(
+            searchpath=template_searchpath)
+        template_env = jinja2.Environment(loader=template_loader)
+        template = template_env.get_template(template_file)
+        return template.render(template_vars)
+
+    @classmethod
+    def create_attachment(cls, file_location, type, filename,
+                          disposition='attachment', content_id=None):
+        """Create a SendGrid attachment.
+
+        SendGrid attachments file content must be base64 encoded.
+
+        Args:
+            file_location: The string path of the file.
+            type: The content type string.
+            filename: The string filename of attachment.
+            disposition: Content disposition string, defaults to "attachment".
+            content_id: The content id string.
+
+        Returns:
+            A SendGrid Attachment.
+        """
+        file_content = ''
+        with open(file_location, 'rb') as file:
+            file_content = file.read()
+        content = base64.b64encode(file_content)
+
+        attachment = mail.Attachment()
+        attachment.set_content(content)
+        attachment.set_type(type)
+        attachment.set_filename(filename)
+        attachment.set_disposition(disposition)
+        attachment.set_content_id(content_id)
+
+        return attachment

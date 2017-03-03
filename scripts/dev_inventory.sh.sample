@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-imports:
-- path: py/inventory/inventory-instance.py
-  name: inventory-instance.py
-- path: py/inventory/inventory-database.py
-  name: inventory-database.py
+# Wrapper script to run inventory in development mode.
 
-resources:
-- name: inventory-instance
-  type: inventory-instance.py
-  properties:
-    region: us-central1
-
-- name: inventory-database
-  type: inventory-database.py
-  properties:
-    database-name: forseti_security
+PYTHONPATH=./ python google/cloud/security/inventory/inventory_loader.py \
+        --organization_id <organization id> \
+        --max_crm_api_calls_per_100_seconds 400 \
+        --db_host 127.0.0.1 \
+        --db_user root \
+        --db_name <database name> \
+        --sendgrid_api_key <Sendgrid API key> \
+        --email_sender <email sender> \
+        --email_recipient <email recipient>

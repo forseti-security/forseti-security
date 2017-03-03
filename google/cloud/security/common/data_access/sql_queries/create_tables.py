@@ -52,3 +52,24 @@ CREATE_RAW_PROJECT_IAM_POLICIES_TABLE = """
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
+
+CREATE_ORG_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `org_id` bigint(20) DEFAULT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `member_type` varchar(255) DEFAULT NULL,
+        `member_name` varchar(255) DEFAULT NULL,
+        `member_domain` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_RAW_ORG_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `org_id` bigint(20) DEFAULT NULL,
+        `iam_policy` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""

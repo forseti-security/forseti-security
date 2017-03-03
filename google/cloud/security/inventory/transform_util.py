@@ -92,7 +92,6 @@ def flatten_iam_policies(iam_policies_map):
         An iterable of flattened iam policies, as a per-project dictionary.
     """
     for iam_policy_map in iam_policies_map:
-        project_number = iam_policy_map['project_number']
         iam_policy = iam_policy_map['iam_policy']
         bindings = iam_policy.get('bindings', [])
         for binding in bindings:
@@ -103,8 +102,15 @@ def flatten_iam_policies(iam_policies_map):
                 role = binding.get('role', '')
                 if role.startswith('roles/'):
                     role = role.replace('roles/', '')
-                yield {'project_number': project_number,
-                       'role': role,
-                       'member_type': member_type,
-                       'member_name': member_name,
-                       'member_domain': member_domain}
+                if iam_policy_map.get('project_number'):
+                    yield {'project_number': iam_policy_map['project_number'],
+                           'role': role,
+                           'member_type': member_type,
+                           'member_name': member_name,
+                           'member_domain': member_domain}
+                else:
+                    yield {'org_id': iam_policy_map['org_id'],
+                           'role': role,
+                           'member_type': member_type,
+                           'member_name': member_name,
+                           'member_domain': member_domain}                    

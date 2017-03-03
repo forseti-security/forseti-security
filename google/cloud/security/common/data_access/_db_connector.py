@@ -15,20 +15,23 @@
 """Provides the database connector."""
 
 import os
+import gflags as flags
 
 import MySQLdb
 from MySQLdb import OperationalError
 import yaml
 
-from google.cloud.security import FORSETI_SECURITY_HOME_ENV_VAR
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
 
-CONFIGS_FILE = os.path.abspath(
-    os.path.join(os.environ.get(FORSETI_SECURITY_HOME_ENV_VAR),
-                 'config', 'db.yaml'))
+FLAGS = flags.FLAGS
+flags.DEFINE_string('db_host', '127.0.0.1',
+                    'Cloud SQL instance hostname/IP address')
+flags.DEFINE_string('db_name', 'forseti_security', 'Cloud SQL database name')
+flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
+flags.DEFINE_string('db_passwd', None, 'Cloud SQL password')
 
 
 class _DbConnector(object):
@@ -40,25 +43,25 @@ class _DbConnector(object):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        try:
-            with open(CONFIGS_FILE, 'r') as config_file:
-                try:
-                    configs = yaml.load(config_file)
-                except yaml.YAMLError as e:
-                    LOGGER.error('Unable to parse db config file:\n{0}'
-                                 .format(e))
-                    raise MySQLError('DB Connector', e)
-        except IOError as e:
-            LOGGER.error('Unable to open/read db config file:\n{0}'.format(e))
-            raise MySQLError('DB Connector', e)
+        configs = FLAGS.FlagValuesDict()
 
         try:
-            self.conn = MySQLdb.connect(
-                host=configs['cloud_sql']['host'],
-                user=configs['cloud_sql']['user'],
-                passwd=configs['cloud_sql']['passwd'],
-                db=configs['cloud_sql']['database'],
-                local_infile=1)
+            # If specifying the passwd argument, MySQL expects a string,
+            # which would not be correct if there is no password (i.e.
+            # using cloud_sql_proxy to connect without a db password).
+            if 'db_passwd' in configs and configs['db_passwd']:
+                self.conn = MySQLdb.connect(
+                    host=configs['db_host'],
+                    user=configs['db_user'],
+                    passwd=configs['db_passwd'],
+                    db=configs['db_name'],
+                    local_infile=1)
+            else:
+                self.conn = MySQLdb.connect(
+                    host=configs['db_host'],
+                    user=configs['db_user'],
+                    db=configs['db_name'],
+                    local_infile=1)
         except OperationalError as e:
             LOGGER.error('Unable to create mysql connector:\n{0}'.format(e))
             raise MySQLError('DB Connector', e)

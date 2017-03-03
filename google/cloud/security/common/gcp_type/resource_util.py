@@ -23,31 +23,55 @@ class ResourceUtil(object):
     """A utility for Resource operations."""
 
     resource_type_map = {
+        'UNDEFINED': {
+            'class': Resource,
+            'plural': 'UNDEFINED',
+            'level': 0
+        },
         ResourceType.ORGANIZATION: {
             'class': Organization,
+            'plural': 'Organizations',
             'level': 3
         },
         ResourceType.FOLDER: {
             'class': Folder,
+            'plural': 'Folders',
             'level': 2
         },
         ResourceType.PROJECT: {
             'class': Project,
+            'plural': 'Projects',
             'level': 1
         }
     }
 
     @classmethod
-    def create_resource(cls, resource_id, resource_type):
+    def create_resource(cls, resource_id, resource_type, **kwargs):
         """Factory to create a certain kind of Resource.
+
+        TODO: actually do something with the kwargs!
 
         Args:
             resource_id: The resource id.
             resource_type: The resource type.
+            **kwargs: Additional args.
 
         Returns:
             The new resource based on the type.
         """
         return cls.resource_type_map.get(
-            resource_type, Resource).get('class')(
+            resource_type, cls.resource_type_map['UNDEFINED']).get('class')(
             resource_id, resource_type)
+
+    @classmethod
+    def pluralize(cls, resource_type):
+        """Determine the pluralized form of the resource type.
+
+        Args:
+            resource_type: The resource type for which to get its plural form.
+
+        Returns:
+            The string pluralized version of the resource type.
+        """
+        return cls.resource_type_map.get(
+            resource_type, cls.resource_type_map['UNDEFINED']).get('plural')

@@ -12,25 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates a Cloud SQL database template for forseti_inventory."""
-
+"""Creates a Cloud Storage bucket template for Forseti Security."""
 
 def GenerateConfig(context):
-  """Generate configuration."""
+    """Generate configuration."""
+    resources = []
 
-  resources = []
+    resources.append({
+        'name': context.env['name'],
+        'type': 'storage.v1.bucket',
+        'properties': {
+            'project': context.env['project']
+        }
+    })
 
-  resources.append({
-      'name': 'inventory-database',
-      'type': 'sqladmin.v1beta4.database',
-      'metadata': {
-          'dependsOn': ['inventory-instance']
-      },
-      'properties': {
-          'name': context.properties['database-name'],
-          'project': context.env['project'],
-          'instance': '$(ref.inventory-instance.name)'
-      }
-  })
-
-  return {'resources': resources}
+    return {'resources': resources}
