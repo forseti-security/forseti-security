@@ -22,6 +22,7 @@ import os
 import yaml
 
 from google.cloud.security.common.gcp_api import storage
+from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.scanner.audit.errors import InvalidRuleDefinitionError
 
@@ -38,32 +39,11 @@ class BaseRulesEngine(object):
             rules_file_path: The path to the rules file.
             logger_name: The name of module for logger.
         """
-        self.filetype_handlers = {
-            'json': {
-                'string': self._parse_json_string,
-                'file': self._parse_json_file
-            },
-            'yaml': {
-                'string': self._parse_yaml_string,
-                'file': self._parse_yaml_file
-            }
-        }
-
         if not rules_file_path:
             raise InvalidRuleDefinitionError(
                 'File path: {}'.format(rules_file_path))
         self.full_rules_path = rules_file_path.strip()
 
-        if self.full_rules_path.startswith('gs://'):
-            self.rules_bucket, self.rules_file_path = (
-                storage.StorageClient.get_bucket_and_path_from(
-                    self.full_rules_path))
-        else:
-            self.rules_file_path = self.full_rules_path
-            self.rules_bucket = None
-
-        self.filetype_handler = None
-        self._setup_filetype_handler()
         if not logger_name:
             logger_name = __name__
         self.logger = LogUtil.setup_logging(logger_name)
@@ -76,86 +56,13 @@ class BaseRulesEngine(object):
         """Determine whether IAM policy violates rules."""
         raise NotImplementedError('Implement in a child class.')
 
-    def _setup_filetype_handler(self):
-        """Attach a file type handler for parsing the rule file."""
-        file_ext = self.rules_file_path.split('.')[-1]
-
-        if file_ext not in self.filetype_handlers:
-            raise InvalidRuleDefinitionError(
-                'Unsupported file type: {}'.format(file_ext))
-
-        self.filetype_handler = self.filetype_handlers[file_ext]
-
     def _load_rule_definitions(self):
         """Load the rule definitions file from GCS or local filesystem.
 
         Returns:
             The parsed dict from the rule definitions file.
         """
-        if self.rules_bucket:
-            return self._load_rules_from_gcs()
-        else:
-            return self._load_rules_from_local()
-
-    def _load_rules_from_gcs(self):
-        """Load rules file from GCS.
-
-        Returns:
-            The parsed dict from the rule definitions file.
-        """
-        storage_client = storage.StorageClient()
-
-        file_content = storage_client.get_text_file(
-            full_bucket_path=self.full_rules_path)
-
-        return self._parse_string(file_content)
-
-    def _load_rules_from_local(self):
-        """Load rules file from local path.
-
-        Returns:
-            The parsed dict from the rule definitions file.
-        """
-        with open(os.path.abspath(self.rules_file_path), 'r') as rules_file:
-            return self._parse_file(rules_file)
-
-    def _parse_string(self, data=None):
-        """Parse the rules from a string into a dict."""
-        return self.filetype_handler['string'](data)
-
-    def _parse_file(self, data=None):
-        """Parse the rules from a file into a dict."""
-        return self.filetype_handler['file'](data)
-
-    def _parse_json_string(self, data=None):
-        """Parse the rules from a string of json."""
-        try:
-            return json.loads(data)
-        except ValueError as json_error:
-            raise json_error
-
-    def _parse_json_file(self, data=None):
-        """Parse the rules from a json file."""
-        try:
-            return json.load(data)
-        except ValueError as json_error:
-            raise json_error
-
-    def _parse_yaml_string(self, data=None):
-        """Parse the rules from a string of yaml."""
-        try:
-            return yaml.safe_load(data)
-        except yaml.YAMLError as yaml_error:
-            self.logger.error(yaml_error)
-            raise yaml_error
-
-    def _parse_yaml_file(self, data=None):
-        """Parse the rules from a yaml file."""
-        try:
-            return yaml.load(data)
-        except yaml.YAMLError as yaml_error:
-            self.logger.error(yaml_error)
-            raise yaml_error
+        return file_loader.read_and_parse_file(self.full_rules_path)
 
 
 class BaseRuleBook(object):
