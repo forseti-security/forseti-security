@@ -86,7 +86,7 @@ the `--helpshort` or `--helpfull` flags.
 
  - `forseti_inventory` ([README](/google/cloud/security/inventory/README.md))
  - `forseti_scanner` ([README](/google/cloud/security/scanner/README.md))
- - `forseti_enforcer` ([README](google/cloud/security/enforcer/README.md))
+ - `forseti_enforcer` ([README](/google/cloud/security/enforcer/README.md))
 
 ### Tests
 There are unit tests in the `tests/` directory. To execute them, run:
