@@ -1,0 +1,52 @@
+[
+    {
+        "sourceRanges": ["0.0.0.0/0"],
+        "description": "Allow ICMP from anywhere",
+        "allowed": [
+            {
+                "IPProtocol": "icmp"
+            }
+        ],
+        "name": "allow-icmp"
+    },
+    {
+        "sourceRanges": ["10.0.0.0/8"],
+        "description": "Allow internal traffic on the default network.",
+        "allowed": [
+            {
+                "IPProtocol": "udp",
+                "ports": ["1-65535"]
+            },
+            {
+                "IPProtocol": "tcp",
+                "ports": ["1-65535"]
+            },
+            {
+                "IPProtocol": "icmp"
+            }
+        ],
+        "name": "allow-internal"
+    },
+    {
+        "sourceRanges": ["0.0.0.0/0"],
+        "description": "Allow RDP from anywhere",
+        "allowed": [
+            {
+                "IPProtocol": "tcp",
+                "ports": ["3389"]
+            }
+        ],
+        "name": "allow-rdp"
+    },
+    {
+        "sourceRanges": ["0.0.0.0/0"],
+        "description": "Allow SSH from anywhere",
+        "allowed": [
+            {
+                "IPProtocol": "tcp",
+                "ports": ["22"]
+            }
+        ],
+        "name": "allow-ssh"
+    }
+]
