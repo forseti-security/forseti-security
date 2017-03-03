@@ -18,9 +18,12 @@ import mock
 
 from google.apputils import basetest
 from google.cloud.security.common.gcp_type.errors import InvalidResourceTypeError
+from google.cloud.security.common.gcp_type.organization import Organization
+from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.gcp_type.resource import Resource
 from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 
 
 class ResourceTest(basetest.TestCase):
@@ -48,6 +51,25 @@ class ResourceTest(basetest.TestCase):
         """Test fake resource type raises exception."""
         with self.assertRaises(InvalidResourceTypeError):
             ResourceType.verify('fake')
+
+class ResourceUtilTest(basetest.TestCase):
+    """Test ResourceUtil."""
+
+    def test_create_resource_is_ok(self):
+        """Test the ResourceUtil.create_resource() creates the types."""
+        expect_org = Organization(12345, 'Org a')
+        actual_org = ResourceUtil.create_resource(12345, 'Org a')
+        self.assertEqual(expect_org, actual_org)
+        expect_proj = Project('abcd', 'Proj a')
+        actual_proj = ResourceUtil.create_resource('abcd', 'Proj a')
+        self.assertEqual(expect_proj, expect_proj)
+
+    def test_plural_is_correct(self):
+        """Test that the resource type is pluralized correctly."""
+        self.assertEqual('Organizations',
+            ResourceUtil.pluralize(ResourceType.ORGANIZATION))
+        self.assertEqual('Projects',
+            ResourceUtil.pluralize(ResourceType.PROJECT))
 
 
 if __name__ == '__main__':
