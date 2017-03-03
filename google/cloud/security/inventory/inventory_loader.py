@@ -238,13 +238,14 @@ def main(unused_argv=None):
                 'Encountered error to load data.\n{0}'.format(e))
             pipeline['status'] = 'FAILURE'
 
-    succeeded = filter(lambda p: p['status'] == 'SUCCESS', pipelines)
+    succeeded = [p['status'] == 'SUCCESS' for p in pipelines]
 
-    snapshot_cycle_status = 'SUCCESS'
-    if len(succeeded) == 0:
-        snapshot_cycle_status = 'FAILURE'
-    elif len(succeeded) < len(pipelines):
+    if all(succeeded):
+        snapshot_cycle_status = 'SUCCESS'
+    elif any(succeeded):
         snapshot_cycle_status = 'PARTIAL_SUCCESS'
+    else:
+        snapshot_cycle_status = 'FAILURE'
 
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
     _send_email(cycle_timestamp, snapshot_cycle_status,
