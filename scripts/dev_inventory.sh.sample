@@ -20,4 +20,7 @@ PYTHONPATH=./ python google/cloud/security/inventory/inventory_loader.py \
         --max_crm_api_calls_per_100_seconds 400 \
         --db_host 127.0.0.1 \
         --db_user root \
-        --db_name <database name>
+        --db_name <database name> \
+        --sendgrid_api_key <Sendgrid API key> \
+        --email_sender <email sender> \
+        --email_recipient <email recipient>

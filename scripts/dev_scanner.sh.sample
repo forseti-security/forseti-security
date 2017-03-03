@@ -21,4 +21,7 @@ PYTHONPATH=./ python google/cloud/security/scanner/scanner.py \
         --db_user root \
         --db_passwd <database password> \
         --db_name <database name> \
-        --organization_id <org id>
+        --organization_id <org id> \
+        --sendgrid_api_key <Sendgrid API key> \
+        --email_sender <email sender> \
+        --email_recipient <email recipient>

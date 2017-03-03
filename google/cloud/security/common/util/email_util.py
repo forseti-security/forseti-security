@@ -18,6 +18,8 @@ from urllib2 import URLError
 from urllib2 import HTTPError
 
 import gflags as flags
+import jinja2
+import os
 from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
@@ -73,7 +75,8 @@ class EmailUtil(object):
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
     def send(self, email_sender=None, email_recipient=None,
-             email_subject=None, email_content=None):
+             email_subject=None, email_content=None, content_type='text/plain',
+             attachment=None):
         """Send an email.
 
         This uses SendGrid.
@@ -87,6 +90,7 @@ class EmailUtil(object):
             email_recipient: String of the email recipient.
             email_subject: String of the email subject.
             email_content: String of the email content (aka, body).
+            content_type: String of the email content type.
         
         Returns:
             None.
@@ -104,8 +108,17 @@ class EmailUtil(object):
             mail.Email(email_sender),
             email_subject,
             mail.Email(email_recipient),
-            mail.Content('text/plain', email_content)
+            mail.Content(content_type, email_content)
         )
+
+        if isinstance(attachment, dict):
+            attachmt = mail.Attachment()
+            attachmt.set_content(attachment['content'])
+            attachmt.set_type(attachment['type'])
+            attachmt.set_filename(attachment['filename'])
+            attachmt.set_disposition(attachment['disposition'])
+            attachmt.set_content_id(attachment['content_id'])
+            email.add_attachment(attachmt)
 
         try:
             response = self._execute_send(email)
@@ -124,3 +137,25 @@ class EmailUtil(object):
                         response.body,
                         response.headers))
             raise EmailSendError
+
+    @classmethod
+    def render_from_template(cls, template_file, template_vars):
+        """Fill out an email template with template variables.
+
+        Args:
+            template_file: The string location of email template in filesystem.
+            template_vars: The dict of template variables to fill into the
+                template.
+
+        Returns:
+            String of template content rendered with the provided variables.
+        """
+        tpl_searchpath = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), '../templates/email'))
+        template_full_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__),
+                         '../templates/email', template_file))
+        tpl_loader = jinja2.FileSystemLoader(searchpath=tpl_searchpath)
+        tpl_env = jinja2.Environment(loader=tpl_loader)
+        template = tpl_env.get_template(template_file)
+        return template.render(template_vars)

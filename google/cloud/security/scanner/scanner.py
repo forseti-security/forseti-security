@@ -22,10 +22,13 @@ Usage:
       --db_user <Cloud SQL user> \\
       --db_passwd <Cloud SQL password> \\
       --db_name <Cloud SQL database name> \\
-      --organization_id <Organization id>
+      --organization_id <Organization id> \\
+      --sendgrid_api_key <SendGrid API key> \\
+      --email_sender <Email sender for notifications> \\
+      --email_recipient <Email recipient for notifications>
 """
 
-import csv
+import base64
 import gflags as flags
 import os
 import shutil
@@ -41,6 +44,9 @@ from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.organization_dao import OrganizationDao
 from google.cloud.security.common.data_access.project_dao import ProjectDao
 from google.cloud.security.common.gcp_api import storage
+from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
+from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
 
@@ -48,21 +54,23 @@ from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
 FLAGS = flags.FLAGS
 
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
-# example:
+# Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
-flags.DEFINE_string('rules',
-                    None,
+flags.DEFINE_string('rules', None,
                     ('Path to rules file (yaml/json). '
                      'If GCS bucket, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
-flags.DEFINE_string('output_path',
-                    None,
+
+flags.DEFINE_string('output_path', None,
                     ('Output path (do not include filename). If GCS location, '
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
+
 flags.DEFINE_string('organization_id', None, 'Organization id')
+
 flags.mark_flag_as_required('rules')
 flags.mark_flag_as_required('organization_id')
+
 
 def main(unused_argv=None):
     """Run the scanner."""
@@ -112,10 +120,13 @@ def main(unused_argv=None):
         write_header=True)
     logger.info('CSV filename: {}'.format(csv_name))
 
+    # scanner timestamp for output file and email
+    now_utc = datetime.utcnow()
+
     # If output path was specified, copy the csv temp file either to
     # a local file or upload it to Google Cloud Storage.
     if output_path:
-        output_filename = _get_output_filename()
+        output_filename = _get_output_filename(now_utc)
         logger.info('Output filename: {}'.format(output_filename))
 
         if output_path.startswith('gs://'):
@@ -130,11 +141,17 @@ def main(unused_argv=None):
             # Otherwise, just copy it to the output path.
             shutil.copy(csv_name, os.path.join(output_path, output_filename))
 
+    if all_violations:
+        scanned_resources = {
+            ResourceType.ORGANIZATION: org_policies.keys(),
+            ResourceType.PROJECT: project_policies.keys()
+        }
+        _send_email(csv_name, now_utc, all_violations, scanned_resources)
+
     logger.info('Done!')
 
-def _get_output_filename():
+def _get_output_filename(now_utc):
     """Create the output filename."""
-    now_utc = datetime.utcnow()
     output_timestamp = now_utc.strftime('%Y%m%dT%H%M%SZ')
     output_filename = 'scanner_output.{}.csv'.format(output_timestamp)
     return output_filename
@@ -190,6 +207,66 @@ def _write_violations_output(logger, violations):
                 'role': violation.role,
                 'member': '{}:{}'.format(member.type, member.name)
             }
+
+def _send_email(csv_name, now_utc, all_violations, scanned_resources):
+    """Send a summary email of the scan."""
+    mail_util = EmailUtil(FLAGS.sendgrid_api_key)
+    resource_summaries = {}
+    total_violations = 0
+    # resource summary:
+    # {
+    #     RESOURCE_TYPE: {
+    #         'total': TOTAL,
+    #         'ids': [...] # resource_ids
+    #     },
+    #     ...
+    # }
+    for violation in all_violations:
+        resource_type = violation.resource_type
+        if resource_type not in resource_summaries:
+            resource_summaries[resource_type] = {
+                'pluralized_resource_type': ResourceUtil.pluralize(
+                    resource_type),
+                'total': len(scanned_resources[resource_type]),
+                'violations': {}
+            }
+
+        if (violation.resource_id not in
+            resource_summaries[resource_type]['violations']):
+            resource_summaries[resource_type][
+                'violations'][violation.resource_id] = 0
+
+        for member in violation.members:
+            resource_summaries[resource_type][
+                'violations'][violation.resource_id] += 1
+
+            total_violations += 1
+
+    scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
+    email_content = EmailUtil.render_from_template(
+        'scanner_summary.jinja', {
+            'scan_date':  scan_date,
+            'resource_summaries': resource_summaries,
+        })
+    file_content = ''
+    with open(csv_name, 'rb') as file:
+        file_content = file.read()
+
+    attachment = {
+        'content': base64.b64encode(file_content),
+        'type': 'text/csv',
+        'filename': _get_output_filename(now_utc),
+        'disposition': 'attachment',
+        'content_id': 'Scanner Violations'
+    }
+    scanner_subject = 'Policy Scan Complete - {} violations found'.format(
+        total_violations)
+    mail_util.send(email_sender=FLAGS.email_sender,
+                   email_recipient=FLAGS.email_recipient,
+                   email_subject=scanner_subject,
+                   email_content=email_content,
+                   content_type='text/html',
+                   attachment=attachment)
 
 
 if __name__ == '__main__':
