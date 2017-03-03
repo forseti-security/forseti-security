@@ -1,23 +1,25 @@
 # Forseti Security
+Forseti Security is a toolset built with and shared with everyone.
 
-Forseti Security provides tools to monitor your Google Cloud Platform
-environment. These are the currently available services:
+The goal is to enable Organizations to secure their use of
+Google Cloud Platform (GCP) and collaborate with the rest of the
+security community. There are three key features to the toolset:
 
-* Inventory - caches resource data for use by other tools.
-* Scanner - scans GCP resource policies for violations.
-* Enforcer - fixes policy violations found from the scanner.
+* Visibility: Build and store an inventory of your GCP footprint.
+* Detection: Find policy violations across various resources in GCP.
+* Enforcement: When applicaible apply changes to enforce policy.
 
 ## Installation
-There are two ways to install Forset Security
+There are two ways to install Forseti Security.
 
 ### Google Cloud Platform installation
-
-Use this [README](/deployment-templates/README.md) to install Forseti Security on Google Cloud Platform quickly and easily using [Cloud Deployment Manager](https://cloud.google.com/deployment-manager/).
+Use this [README](/deployment-templates/README.md) to install
+Forseti Security on Google Cloud Platform quickly and easily
+using [Cloud Deployment Manager](https://cloud.google.com/deployment-manager/).
 
 ### Local installation
-
-Use this [README](/google/cloud/security/README.mD) to install and use Forseti Security
+Use this [README](/google/cloud/security/README.md) to install and use Forseti Security
 locally on your own infrastructure.
 
-# Disclaimer
+## Disclaimer
 This is not an official Google product.

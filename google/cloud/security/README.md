@@ -4,17 +4,17 @@
 
 ### Prerequisites
 
-**Python version**
+#### Python version
 Forseti Security currently works with Python 2.7.
 
-**`gcloud` tool**
+#### `gcloud` tool
 Download and install [gcloud](https://cloud.google.com/sdk/gcloud/) tool. If you already have it installed, it's recommended to update it to the latest version.
 
 ```sh
 $ gcloud components update
 ```
 
-**Protobuf compiler (`protoc`)**
+#### Protobuf compiler (`protoc`)
 Download the [protoc pre-built
 binary](https://github.com/google/protobuf/releases). Forseti Security has been tested with
 the protoc 3.0+ (the zip file is named something like
@@ -26,8 +26,6 @@ to somewhere like /usr/local/bin (or somewhere similar on your path). If `which
 protoc` doesn't bring up anything, you may need to change the permissions of the
 binary to be executable, i.e. `chmod 755 /path/to/protoc`.
 
-*Example:*
-
 ```sh
 $ mkdir ~/Downloads/protoc-3.2
 $ cd ~/Downloads/protoc-3.2
@@ -37,33 +35,28 @@ $ sudo cp bin/protoc /usr/local/bin/protoc
 $ sudo chmod 755 /usr/local/bin/protoc
 ```
 
-**MySql software**
+#### MySql software
 The MySql python connector requires `mysql_config` to be present in your system.
 
-*Ubuntu*
-
+##### Ubuntu
 ```sh
 $ sudo apt-get install libmysqlclient-dev
 ```
 Note: If libmysqlclient-dev doesn't install mysql_config, then try also installing mysql_server.
 
-*OS X*
-
+##### OS X
 ```sh
 $ brew install mysql
 ```
 
-**pip and virtualenvwrapper (suggested)**
-
-*Ubuntu*
-
+#### pip and virtualenvwrapper (suggested)
+##### Ubuntu
 ```sh
 $ sudo apt-get install python-pip
 $ pip install --upgrade virtualenvwrapper
 ```
 
-*OS X*
-
+##### OS X
 Make sure you have the XCode commandline tools installed. Then install
 virtualenvwrapper:
 
@@ -72,26 +65,22 @@ $ xcode-select --install
 $ pip install --upgrade virtualenvwrapper
 ```
 
-**SendGrid API Key**
+#### SendGrid API Key
 SendGrid is the email service provider.  To use it, you simply need to [create a General API Key with SendGrid](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html) and pass it as a template or flag value.
 
 ### Setup
-
 #### Create a virtualenv and activate it, e.g.:
-
 ```sh
 $ mkvirtualenv forseti-security
 $ workon forseti-security
 ```
 
 #### Run the python setup:
-
 ```sh
 $ python setup.py install
 ```
 
 #### Running the tools
-
 You should now be able to run the following commandline tools. To see the flag options for each, use the `--helpshort` or `--helpfull` flags.
 
  - `forseti_inventory` ([README](google/cloud/security/inventory/README.md))
@@ -106,13 +95,11 @@ There are unit tests in the `tests/` directory. To execute them, run:
 $ python setup.py google_test --test-dir <test dir>
 ```
 ## Forseti Security modules
-
 The Forseti Security modules are developed as modules under `google.cloud.security`.
 Each module has its own classes that encapsulate the tool's core functionality.
 There are also runner scripts that execute the tool.
 
 ### Adding new modules
-
 To add a new module, create it in this directory. Once you have a runner script
 that works, create a runner function in the `stubs.py` and plug it into the setup.py
 `entry_points['console_scripts']` dictionary.
