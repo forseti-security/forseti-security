@@ -84,9 +84,9 @@ $ python setup.py install
 You should now be able to run the following commandline tools. To see the flag options for each, use
 the `--helpshort` or `--helpfull` flags.
 
- - `forseti_inventory` ([README](/inventory/README.md))
- - `forseti_scanner` ([README](/scanner/README.md))
- - `forseti_enforcer` ([README](/enforcer/README.md))
+ - `forseti_inventory` ([README](/google/cloud/security/inventory/README.md))
+ - `forseti_scanner` ([README](/google/cloud/security/scanner/README.md))
+ - `forseti_enforcer` ([README](/google/cloud/security/enforcer/README.md))
 
 ### Tests
 There are unit tests in the `tests/` directory. To execute them, run:
