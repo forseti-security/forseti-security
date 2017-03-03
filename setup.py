@@ -37,6 +37,7 @@ NAMESPACE_PACKAGES = [
 INSTALL_REQUIRES = [
     'futures==3.0.5',
     'google-api-python-client==1.6.1',
+    'Jinja2==2.9.5',
     'MySQL-python==1.2.5',
     'protobuf==3.2.0',
     'PyYAML==3.12',
@@ -92,6 +93,10 @@ setup(
     tests_require=INSTALL_REQUIRES + SETUP_REQUIRES + TEST_REQUIRES,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
+    include_package_data=True,
+    package_data={
+        'email_templates': ['*.jinja']
+    },
     namespace_packages=NAMESPACE_PACKAGES,
     google_test_dir='tests',
     license='Apache 2.0',
