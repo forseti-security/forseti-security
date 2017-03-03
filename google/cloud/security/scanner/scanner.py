@@ -17,15 +17,15 @@
 Usage:
 
   $ forseti_scanner --rules <rules path> \\
-      --output_path <output path (opt)> \\
-      --db_host <Cloud SQL hostname/IP> \\
-      --db_user <Cloud SQL user> \\
-      --db_passwd <Cloud SQL password> \\
-      --db_name <Cloud SQL database name> \\
-      --organization_id <Organization id> \\
-      --sendgrid_api_key <SendGrid API key> \\
-      --email_sender <Email sender for notifications> \\
-      --email_recipient <Email recipient for notifications>
+      --output_path <output path (optional)> \\
+      --organization_id <organization_id> (required) \\
+      --db_host <Cloud SQL database hostname/IP> \\
+      --db_user <Cloud SQL database user> \\
+      --db_passwd <Cloud SQL database password> \\
+      --db_name <Cloud SQL database name (required)> \\
+      --sendgrid_api_key <API key to auth SendGrid email service (required)> \\
+      --email_sender <email address of the email sender> (required) \\
+      --email_recipient <email address of the email recipient> (required)
 """
 
 import gflags as flags
