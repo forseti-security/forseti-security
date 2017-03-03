@@ -21,5 +21,5 @@ using [Cloud Deployment Manager](https://cloud.google.com/deployment-manager/).
 Use this [README](/google/cloud/security/README.md) to install and use Forseti Security
 locally on your own infrastructure.
 
-## Disclaimer
+# Disclaimer
 This is not an official Google product.
