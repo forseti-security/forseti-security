@@ -91,6 +91,12 @@ class EmailUtil(object):
             email_subject: String of the email subject.
             email_content: String of the email content (aka, body).
             content_type: String of the email content type.
+            attachment: Dict of attachment properties:
+                - content: string, base64 encoded data.
+                - type: string, content type.
+                - filename: string, filename of attachment.
+                - disposition: string, usually set to "attachment".
+                - content_id: string, the content id string.
         
         Returns:
             None.
@@ -112,13 +118,13 @@ class EmailUtil(object):
         )
 
         if isinstance(attachment, dict):
-            attachmt = mail.Attachment()
-            attachmt.set_content(attachment['content'])
-            attachmt.set_type(attachment['type'])
-            attachmt.set_filename(attachment['filename'])
-            attachmt.set_disposition(attachment['disposition'])
-            attachmt.set_content_id(attachment['content_id'])
-            email.add_attachment(attachmt)
+            sg_attachment = mail.Attachment()
+            sg_attachment.set_content(attachment['content'])
+            sg_attachment.set_type(attachment['type'])
+            sg_attachment.set_filename(attachment['filename'])
+            sg_attachment.set_disposition(attachment['disposition'])
+            sg_attachment.set_content_id(attachment['content_id'])
+            email.add_attachment(sg_attachment)
 
         try:
             response = self._execute_send(email)
