@@ -150,12 +150,10 @@ class EmailUtil(object):
         Returns:
             String of template content rendered with the provided variables.
         """
-        tpl_searchpath = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), '../templates/email'))
-        template_full_path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__),
-                         '../templates/email', template_file))
-        tpl_loader = jinja2.FileSystemLoader(searchpath=tpl_searchpath)
-        tpl_env = jinja2.Environment(loader=tpl_loader)
-        template = tpl_env.get_template(template_file)
+        template_searchpath = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), '../email_templates'))
+        template_loader = jinja2.FileSystemLoader(
+            searchpath=template_searchpath)
+        template_env = jinja2.Environment(loader=template_loader)
+        template = template_env.get_template(template_file)
         return template.render(template_vars)

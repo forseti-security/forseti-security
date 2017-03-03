@@ -30,6 +30,7 @@ Usage:
 
 import base64
 import gflags as flags
+import itertools
 import os
 import shutil
 import sys
@@ -92,27 +93,15 @@ def main(unused_argv=None):
 
     org_policies = _get_org_policies(logger, snapshot_timestamp)
     project_policies = _get_project_policies(logger, snapshot_timestamp)
+
     if not org_policies and not project_policies:
         logger.info('No policies found. Exiting.')
         sys.exit()
 
-    all_violations = []
-
-    logger.info('Find org policy violations...')
-    for (org, policy) in org_policies.iteritems():
-        logger.debug('{} => {}'.format(org, policy))
-        org_violations = rules_engine.find_policy_violations(
-            org, policy)
-        logger.debug(org_violations)
-        all_violations.extend(org_violations)
-
-    logger.info('Find project policy violations...')
-    for (project, policy) in project_policies.iteritems():
-        logger.debug('{} => {}'.format(project, policy))
-        project_violations = rules_engine.find_policy_violations(
-            project, policy)
-        logger.debug(project_violations)
-        all_violations.extend(project_violations)
+    all_violations = _find_violations(logger,
+        itertools.chain(org_policies.iteritems(),
+                        project_policies.iteritems()),
+        rules_engine)
 
     csv_name = csv_writer.write_csv(
         resource_name='policy_violations',
@@ -122,33 +111,28 @@ def main(unused_argv=None):
 
     # scanner timestamp for output file and email
     now_utc = datetime.utcnow()
+    output_filename = _get_output_filename(now_utc)
 
-    # If output path was specified, copy the csv temp file either to
-    # a local file or upload it to Google Cloud Storage.
-    if output_path:
-        output_filename = _get_output_filename(now_utc)
-        logger.info('Output filename: {}'.format(output_filename))
+    _upload_csv_to_gcs(output_path, output_filename, csv_name)
 
-        if output_path.startswith('gs://'):
-            # An output path for GCS must be the full
-            # `gs://bucket-name/path/for/output`
-            storage_client = storage.StorageClient()
-            full_output_path = os.path.join(output_path, output_filename)
-
-            storage_client.put_text_file(
-                csv_name, full_output_path)
-        else:
-            # Otherwise, just copy it to the output path.
-            shutil.copy(csv_name, os.path.join(output_path, output_filename))
-
-    if all_violations:
-        scanned_resources = {
-            ResourceType.ORGANIZATION: org_policies.keys(),
-            ResourceType.PROJECT: project_policies.keys()
-        }
-        _send_email(csv_name, now_utc, all_violations, scanned_resources)
+    _send_email(csv_name, now_utc, all_violations, {
+        ResourceType.ORGANIZATION: org_policies.keys(),
+        ResourceType.PROJECT: project_policies.keys()
+    })
 
     logger.info('Done!')
+
+def _find_violations(logger, policies, rules_engine):
+    """Find violations in the policies."""
+    all_violations = []
+    logger.info('Find policy violations...')
+    for (resource, policy) in policies:
+        logger.debug('{} => {}'.format(resource, policy))
+        violations = rules_engine.find_policy_violations(
+            resource, policy)
+        logger.debug(violations)
+        all_violations.extend(violations)
+    return all_violations
 
 def _get_output_filename(now_utc):
     """Create the output filename."""
@@ -208,8 +192,31 @@ def _write_violations_output(logger, violations):
                 'member': '{}:{}'.format(member.type, member.name)
             }
 
+def _upload_csv_to_gcs(output_path, output_filename, csv_name):
+    """Upload CSV to Cloud Storage."""
+    # If output path was specified, copy the csv temp file either to
+    # a local file or upload it to Google Cloud Storage.
+    if not output_path:
+        return
+    logger.info('Output filename: {}'.format(output_filename))
+
+    if output_path.startswith('gs://'):
+        # An output path for GCS must be the full
+        # `gs://bucket-name/path/for/output`
+        storage_client = storage.StorageClient()
+        full_output_path = os.path.join(output_path, output_filename)
+
+        storage_client.put_text_file(
+            csv_name, full_output_path)
+    else:
+        # Otherwise, just copy it to the output path.
+        shutil.copy(csv_name, os.path.join(output_path, output_filename))
+
 def _send_email(csv_name, now_utc, all_violations, scanned_resources):
     """Send a summary email of the scan."""
+    if not all_violations:
+        return
+
     mail_util = EmailUtil(FLAGS.sendgrid_api_key)
     resource_summaries = {}
     total_violations = 0
