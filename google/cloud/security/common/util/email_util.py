@@ -17,6 +17,7 @@
 from urllib2 import URLError
 from urllib2 import HTTPError
 
+import base64
 import gflags as flags
 import jinja2
 import os
@@ -91,12 +92,7 @@ class EmailUtil(object):
             email_subject: String of the email subject.
             email_content: String of the email content (aka, body).
             content_type: String of the email content type.
-            attachment: Dict of attachment properties:
-                - content: string, base64 encoded data.
-                - type: string, content type.
-                - filename: string, filename of attachment.
-                - disposition: string, usually set to "attachment".
-                - content_id: string, the content id string.
+            attachment: A SendGrid Attachment.
         
         Returns:
             None.
@@ -117,14 +113,8 @@ class EmailUtil(object):
             mail.Content(content_type, email_content)
         )
 
-        if isinstance(attachment, dict):
-            sg_attachment = mail.Attachment()
-            sg_attachment.set_content(attachment['content'])
-            sg_attachment.set_type(attachment['type'])
-            sg_attachment.set_filename(attachment['filename'])
-            sg_attachment.set_disposition(attachment['disposition'])
-            sg_attachment.set_content_id(attachment['content_id'])
-            email.add_attachment(sg_attachment)
+        if attachment:
+            email.add_attachment(attachment)
 
         try:
             response = self._execute_send(email)
@@ -163,3 +153,34 @@ class EmailUtil(object):
         template_env = jinja2.Environment(loader=template_loader)
         template = template_env.get_template(template_file)
         return template.render(template_vars)
+
+    @classmethod
+    def create_attachment(cls, file_location, type, filename,
+                          disposition='attachment', content_id=None):
+        """Create a SendGrid attachment.
+
+        SendGrid attachments file content must be base64 encoded.
+
+        Args:
+            file_location: The string path of the file.
+            type: The content type string.
+            filename: The string filename of attachment.
+            disposition: Content disposition string, defaults to "attachment".
+            content_id: The content id string.
+
+        Returns:
+            A SendGrid Attachment.
+        """
+        file_content = ''
+        with open(file_location, 'rb') as file:
+            file_content = file.read()
+        content = base64.b64encode(file_content)
+
+        attachment = mail.Attachment()
+        attachment.set_content(content)
+        attachment.set_type(type)
+        attachment.set_filename(filename)
+        attachment.set_disposition(disposition)
+        attachment.set_content_id(content_id)
+
+        return attachment

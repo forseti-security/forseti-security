@@ -28,7 +28,6 @@ Usage:
       --email_recipient <Email recipient for notifications>
 """
 
-import base64
 import gflags as flags
 import itertools
 import os
@@ -73,7 +72,7 @@ flags.mark_flag_as_required('rules')
 flags.mark_flag_as_required('organization_id')
 
 
-def main(unused_argv=None):
+def main(_):
     """Run the scanner."""
     logger = LogUtil.setup_logging(__name__)
 
@@ -113,19 +112,30 @@ def main(unused_argv=None):
     now_utc = datetime.utcnow()
     output_filename = _get_output_filename(now_utc)
 
-    _upload_csv_to_gcs(output_path, output_filename, csv_name)
+    if output_path:
+        _upload_csv_to_gcs(logger, output_path, output_filename, csv_name)
 
-    _send_email(csv_name, now_utc, all_violations, {
-        ResourceType.ORGANIZATION: org_policies.keys(),
-        ResourceType.PROJECT: project_policies.keys()
-    })
+    if all_violations:
+        _send_email(csv_name, now_utc, all_violations, {
+            ResourceType.ORGANIZATION: len(org_policies.keys()),
+            ResourceType.PROJECT: len(project_policies.keys())
+        })
 
     logger.info('Done!')
 
 def _find_violations(logger, policies, rules_engine):
-    """Find violations in the policies."""
+    """Find violations in the policies.
+
+    Args:
+        logger: The logger.
+        policies: The list of policies to find violations in.
+        rules_engine: The rules engine to run.
+
+    Returns:
+        A list of violations.
+    """
     all_violations = []
-    logger.info('Find policy violations...')
+    logger.info('Finding policy violations...')
     for (resource, policy) in policies:
         logger.debug('{} => {}'.format(resource, policy))
         violations = rules_engine.find_policy_violations(
@@ -135,13 +145,27 @@ def _find_violations(logger, policies, rules_engine):
     return all_violations
 
 def _get_output_filename(now_utc):
-    """Create the output filename."""
+    """Create the output filename.
+
+    Args:
+        now_utc: The datetime now in UTC.
+
+    Returns:
+        The output filename for the csv, formatted with the now_utc timestamp.
+    """
     output_timestamp = now_utc.strftime('%Y%m%dT%H%M%SZ')
     output_filename = 'scanner_output.{}.csv'.format(output_timestamp)
     return output_filename
 
 def _get_timestamp(logger):
-    """Get latest snapshot timestamp."""
+    """Get latest snapshot timestamp.
+
+    Args:
+        logger: The logger.
+
+    Returns:
+        The latest snapshot timestamp string.
+    """
     dao = None
     latest_timestamp = None
     try:
@@ -154,7 +178,15 @@ def _get_timestamp(logger):
     return latest_timestamp
 
 def _get_org_policies(logger, timestamp):
-    """Get orgs from data source."""
+    """Get orgs from data source.
+
+    Args:
+        logger: The logger.
+        timestamp: The snapshot timestamp.
+
+    Returns:
+        The org policies.
+    """
     org_dao = None
     org_policies = []
     try:
@@ -166,7 +198,15 @@ def _get_org_policies(logger, timestamp):
     return org_policies
 
 def _get_project_policies(logger, timestamp):
-    """Get projects from data source."""
+    """Get projects from data source.
+
+    Args:
+        logger: The logger.
+        timestamp: The snapshot timestamp.
+
+    Returns:
+        The project policies.
+    """
     project_dao = None
     project_policies = []
     try:
@@ -178,7 +218,12 @@ def _get_project_policies(logger, timestamp):
     return project_policies
 
 def _write_violations_output(logger, violations):
-    """Write violations to csv output file and store in output bucket."""
+    """Write violations to csv output file and store in output bucket.
+
+    Args:
+        logger: The logger.
+        violations: The violations to write to the csv.
+    """
     logger.info('Writing violations to csv...')
     for violation in violations:
         for member in violation.members:
@@ -192,12 +237,17 @@ def _write_violations_output(logger, violations):
                 'member': '{}:{}'.format(member.type, member.name)
             }
 
-def _upload_csv_to_gcs(output_path, output_filename, csv_name):
-    """Upload CSV to Cloud Storage."""
+def _upload_csv_to_gcs(logger, output_path, output_filename, csv_name):
+    """Upload CSV to Cloud Storage.
+
+    Args:
+        logger: The logger.
+        output_path: The output path for the csv.
+        output_filename: The output file name.
+        csv_name: The csv_name.
+    """
     # If output path was specified, copy the csv temp file either to
     # a local file or upload it to Google Cloud Storage.
-    if not output_path:
-        return
     logger.info('Output filename: {}'.format(output_filename))
 
     if output_path.startswith('gs://'):
@@ -212,14 +262,57 @@ def _upload_csv_to_gcs(output_path, output_filename, csv_name):
         # Otherwise, just copy it to the output path.
         shutil.copy(csv_name, os.path.join(output_path, output_filename))
 
-def _send_email(csv_name, now_utc, all_violations, scanned_resources):
-    """Send a summary email of the scan."""
-    if not all_violations:
-        return
+def _send_email(csv_name, now_utc, all_violations, total_resources):
+    """Send a summary email of the scan.
 
+    Args:
+        csv_name: The full path of the csv.
+        now_utc: The UTC datetime right now.
+        all_violations: The list of violations.
+        total_resources: A dict of the resources and their count.
+    """
     mail_util = EmailUtil(FLAGS.sendgrid_api_key)
+    total_violations, resource_summaries = _build_scan_summary(
+        all_violations, total_resources)
+
+    # Render the email template with values.
+    scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
+    email_content = EmailUtil.render_from_template(
+        'scanner_summary.jinja', {
+            'scan_date':  scan_date,
+            'resource_summaries': resource_summaries,
+        })
+
+    # Create an attachment out of the csv file and base64 encode the content.
+    attachment = EmailUtil.create_attachment(
+        file_location=csv_name,
+        type='text/csv',
+        filename=_get_output_filename(now_utc),
+        disposition='attachment',
+        content_id='Scanner Violations'
+    )
+    scanner_subject = 'Policy Scan Complete - {} violations found'.format(
+        total_violations)
+    mail_util.send(email_sender=FLAGS.email_sender,
+                   email_recipient=FLAGS.email_recipient,
+                   email_subject=scanner_subject,
+                   email_content=email_content,
+                   content_type='text/html',
+                   attachment=attachment)
+
+def _build_scan_summary(all_violations, total_resources):
+    """Build the scan summary.
+
+    Args:
+        all_violations: List of violations.
+        total_resources: A dict of the resources and their count.
+
+    Returns:
+        Total counts and summaries.
+    """
     resource_summaries = {}
     total_violations = 0
+    # Build a summary of the violations and counts for the email.
     # resource summary:
     # {
     #     RESOURCE_TYPE: {
@@ -234,46 +327,24 @@ def _send_email(csv_name, now_utc, all_violations, scanned_resources):
             resource_summaries[resource_type] = {
                 'pluralized_resource_type': ResourceUtil.pluralize(
                     resource_type),
-                'total': len(scanned_resources[resource_type]),
+                'total': total_resources[resource_type],
                 'violations': {}
             }
 
+        # Keep track of # of violations per resource id.
         if (violation.resource_id not in
             resource_summaries[resource_type]['violations']):
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] = 0
 
+        # Make sure to count each member violation as a separate one.
         for member in violation.members:
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] += 1
 
             total_violations += 1
 
-    scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
-    email_content = EmailUtil.render_from_template(
-        'scanner_summary.jinja', {
-            'scan_date':  scan_date,
-            'resource_summaries': resource_summaries,
-        })
-    file_content = ''
-    with open(csv_name, 'rb') as file:
-        file_content = file.read()
-
-    attachment = {
-        'content': base64.b64encode(file_content),
-        'type': 'text/csv',
-        'filename': _get_output_filename(now_utc),
-        'disposition': 'attachment',
-        'content_id': 'Scanner Violations'
-    }
-    scanner_subject = 'Policy Scan Complete - {} violations found'.format(
-        total_violations)
-    mail_util.send(email_sender=FLAGS.email_sender,
-                   email_recipient=FLAGS.email_recipient,
-                   email_subject=scanner_subject,
-                   email_content=email_content,
-                   content_type='text/html',
-                   attachment=attachment)
+    return total_violations, resource_summaries
 
 
 if __name__ == '__main__':

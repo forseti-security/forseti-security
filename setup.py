@@ -92,6 +92,10 @@ setup(
     tests_require=INSTALL_REQUIRES + SETUP_REQUIRES + TEST_REQUIRES,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
+    include_package_data=True,
+    package_data={
+        'email_templates': ['*.jinja']
+    },
     namespace_packages=NAMESPACE_PACKAGES,
     google_test_dir='tests',
     license='Apache 2.0',

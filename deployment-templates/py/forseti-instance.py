@@ -120,26 +120,24 @@ if [ -z "$PROTOC_PATH" ]; then
         sudo cp bin/protoc /usr/local/bin
 fi
 
-# Check whether Forseti Security is installed
-FORSETI_INVENTORY_PATH=$(which forseti_inventory)
-if [ -z "$FORSETI_INVENTORY_PATH" ]; then
-        cd $USER_HOME
-        rm -rf forseti-*
-        pip install --upgrade pip
-        pip install --upgrade setuptools
+# Install Forseti Security
+cd $USER_HOME
+rm -rf forseti-*
+pip install --upgrade pip
+pip install --upgrade setuptools
 
-        cd $USER_HOME
-        gsutil cp {}/forseti-security-master.zip .
-        unzip -o forseti-security-master.zip
-        cd forseti-security-master
-        python setup.py install
-fi
+cd $USER_HOME
+gsutil cp {}/forseti-security-master.zip .
+unzip -o forseti-security-master.zip
+cd forseti-security-master
+python setup.py install
 
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
 /usr/local/bin/forseti_inventory --organization_id {} --db_name {} --sendgrid_api_key {} --email_sender {} --email_recipient {}
-/usr/local/bin/forseti_scanner --rules {} --db_name {} --output_path {}
+/usr/local/bin/forseti_scanner --rules {} --db_name {} --output_path {} --organization_id {} --sendgrid_api_key {} --email_sender {} --email_recipient {}
+
 EOF
 echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
 chmod +x $USER_HOME/run_forseti.sh
@@ -172,6 +170,10 @@ chmod +x $USER_HOME/run_forseti.sh
            'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
            DATABASE_NAME,
            'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
+           context.properties['organization-id'],
+           SENDGRID_API_KEY,
+           EMAIL_SENDER,
+           EMAIL_RECIPIENT,
 )
                 }]
             }

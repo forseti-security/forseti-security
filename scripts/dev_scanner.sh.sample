@@ -16,7 +16,8 @@
 # Wrapper script to run scanner in development mode.
 
 PYTHONPATH=./ python google/cloud/security/scanner/scanner.py \
-        --rules <rules_path> \
+        --rules <rules path> \
+        --output_path <output path> \
         --db_host 127.0.0.1 \
         --db_user root \
         --db_passwd <database password> \
