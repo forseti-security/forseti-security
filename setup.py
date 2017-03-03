@@ -69,8 +69,8 @@ class PostInstallCommand(install):
     """Post installation command."""
 
     def run(self):
-        install.do_egg_install(self)
         build_protos()
+        install.do_egg_install(self)
 
 
 setup(

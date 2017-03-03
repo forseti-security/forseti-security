@@ -219,21 +219,38 @@ def main(unused_argv=None):
     max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
 
-    try:
-        load_projects_pipeline.run(
-            dao, cycle_timestamp, configs, crm_rate_limiter)
-        load_projects_iam_policies_pipeline.run(
-            dao, cycle_timestamp, configs, crm_rate_limiter)
-        load_org_iam_policies_pipeline.run(
-            dao, cycle_timestamp, configs, crm_rate_limiter)
-    except LoadDataPipelineError as e:
-        LOGGER.error('Encountered error to load data. Abort.\n{0}'.format(e))
-        _complete_snapshot_cycle(dao, cycle_timestamp, 'FAILURE')
-        sys.exit()
+    pipelines = [
+        { 'pipeline': load_projects_pipeline,
+          'status': '' },
+        { 'pipeline': load_projects_iam_policies_pipeline,
+          'status': '' },
+        { 'pipeline': load_org_iam_policies_pipeline,
+          'status': '' },
+    ]
 
-    _complete_snapshot_cycle(dao, cycle_timestamp, 'SUCCESS')
-    _send_email(cycle_timestamp, 'SUCCESS', configs.get('sendgrid_api_key'),
-                configs.get('email_sender'), configs.get('email_recipient'))
+    for pipeline in pipelines:
+        try:
+            pipeline['pipeline'].run(
+                dao, cycle_timestamp, configs, crm_rate_limiter)
+            pipeline['status'] = 'SUCCESS'
+        except LoadDataPipelineError as e:
+            LOGGER.error(
+                'Encountered error to load data.\n{0}'.format(e))
+            pipeline['status'] = 'FAILURE'
+
+    succeeded = [p['status'] == 'SUCCESS' for p in pipelines]
+
+    if all(succeeded):
+        snapshot_cycle_status = 'SUCCESS'
+    elif any(succeeded):
+        snapshot_cycle_status = 'PARTIAL_SUCCESS'
+    else:
+        snapshot_cycle_status = 'FAILURE'
+
+    _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
+    _send_email(cycle_timestamp, snapshot_cycle_status,
+                configs.get('sendgrid_api_key'),
+                configs.get('email_sender'), configs.get('email_recipient')) 
 
 
 if __name__ == '__main__':
