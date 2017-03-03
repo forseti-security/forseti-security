@@ -127,9 +127,8 @@ pip install --upgrade pip
 pip install --upgrade setuptools
 
 cd $USER_HOME
-gsutil cp {}/forseti-security-master.zip .
-unzip -o forseti-security-master.zip
-cd forseti-security-master
+git clone {}
+cd forseti-security
 python setup.py install
 
 # Create the startup run script
