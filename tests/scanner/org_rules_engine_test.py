@@ -21,6 +21,7 @@ from google.apputils import basetest
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import Project
+from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRuleBook
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
@@ -249,8 +250,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         rules_engine.build_rule_book()
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
-    @mock.patch.object(OrgRulesEngine,
-                       '_load_rules_from_gcs', autospec=True)
+    @mock.patch.object(file_loader,
+                       '_read_file_from_gcs', autospec=True)
     def test_build_rule_book_from_gcs_works(self, mock_load_rules_from_gcs):
         """Test that a RuleBook is built correctly with a mocked gcs file.
 

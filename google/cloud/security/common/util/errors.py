@@ -22,3 +22,14 @@ class Error(Exception):
 class EmailSendError(Error):
     """Unable to send email."""
     pass
+
+
+class InvalidFileExtensionError(Error):
+    """No parser exists for the given file extension."""
+    pass
+
+
+class InvalidParserTypeError(Error):
+    """No parser exists for the given parser type."""
+    pass
+
