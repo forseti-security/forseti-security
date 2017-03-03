@@ -1,0 +1,78 @@
+[
+  {
+    "sourceRanges": [
+      "10.8.0.0/24"
+    ],
+    "description": "Allow communication between instances.",
+    "allowed": [
+      {
+        "IPProtocol": "udp",
+        "ports": [
+          "1-65535"
+        ]
+      },
+      {
+        "IPProtocol": "tcp",
+        "ports": [
+          "1-65535"
+        ]
+      },
+      {
+        "IPProtocol": "icmp"
+      }
+    ],
+    "name": "allow-internal-1"
+  },
+  {
+    "sourceRanges": [
+      "10.0.0.0/8"
+    ],
+    "description": "Allow internal traffic from a range of IP addresses.",
+    "allowed": [
+      {
+        "IPProtocol": "udp",
+        "ports": [
+          "1-65535"
+        ]
+      },
+      {
+        "IPProtocol": "tcp",
+        "ports": [
+          "1-65535"
+        ]
+      },
+      {
+        "IPProtocol": "icmp"
+      }
+    ],
+    "name": "allow-internal-0"
+  },
+  {
+    "sourceRanges": [
+      "127.0.0.1/32",
+      "127.0.0.2/32"
+    ],
+    "description": "Allow public traffic from specific IP addresses.",
+    "allowed": [
+      {
+        "IPProtocol": "tcp",
+        "ports": [
+          "22"
+        ]
+      },
+      {
+        "IPProtocol": "udp",
+        "ports": [
+          "9999"
+        ]
+      },
+      {
+        "IPProtocol": "esp"
+      },
+      {
+        "IPProtocol": "ah"
+      }
+    ],
+    "name": "allow-public-0"
+  }
+]
