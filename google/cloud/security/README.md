@@ -5,7 +5,8 @@
 Forseti Security currently works with Python 2.7.
 
 #### `gcloud` tool
-Download and install [gcloud](https://cloud.google.com/sdk/gcloud/) tool. If you already have it installed, it's recommended to update it to the latest version.
+Download and install [gcloud](https://cloud.google.com/sdk/gcloud/) tool. If you already have
+it installed, it's recommended to update it to the latest version.
 
 ```sh
 $ gcloud components update
@@ -63,7 +64,9 @@ $ pip install --upgrade virtualenvwrapper
 ```
 
 #### SendGrid API Key
-SendGrid is the email service provider.  To use it, you simply need to [create a General API Key with SendGrid](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html) and pass it as a template or flag value.
+SendGrid is the email service provider.  To use it, you simply need
+to [create a General API Key with SendGrid](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html)
+and pass it as a template or flag value.
 
 ### Setup
 #### Create a virtualenv and activate it, e.g.:
@@ -78,12 +81,12 @@ $ python setup.py install
 ```
 
 #### Running the tools
-You should now be able to run the following commandline tools. To see the flag options for each, use the `--helpshort` or `--helpfull` flags.
+You should now be able to run the following commandline tools. To see the flag options for each, use
+the `--helpshort` or `--helpfull` flags.
 
- - `forseti_inventory` ([README](google/cloud/security/inventory/README.md))
- - `forseti_scanner` ([README](google/cloud/security/scanner/README.md))
- - `forseti_enforcer` ([README](google/cloud/security/enforcer/README.md))
-
+ - `forseti_inventory` ([README](/inventory/README.md))
+ - `forseti_scanner` ([README](/scanner/README.md))
+ - `forseti_enforcer` ([README](/enforcer/README.md))
 
 ### Tests
 There are unit tests in the `tests/` directory. To execute them, run:
@@ -91,6 +94,7 @@ There are unit tests in the `tests/` directory. To execute them, run:
 ```sh
 $ python setup.py google_test --test-dir <test dir>
 ```
+
 ## Forseti Security modules
 The Forseti Security modules are developed as modules under `google.cloud.security`.
 Each module has its own classes that encapsulate the tool's core functionality.
