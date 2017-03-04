@@ -104,5 +104,5 @@ class ProjectDao(_DbConnector):
                 prev_proj = project
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
-            raise MySQLError('projects', e)
+            LOGGER.error(MySQLError('projects', e))
         return project_policies

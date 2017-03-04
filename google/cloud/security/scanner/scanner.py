@@ -171,7 +171,7 @@ def _get_timestamp(logger):
     try:
         dao = Dao()
         latest_timestamp = dao.select_latest_complete_snapshot_timestamp(
-            'SUCCESS')
+            ('SUCCESS', 'PARTIAL_SUCCESS'))
     except MySQLError as err:
         logger.error('Error getting latest snapshot timestamp: {}'.format(err))
 
