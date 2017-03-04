@@ -81,7 +81,7 @@ There are other templates that you can modify if you'd like:
    * By default, the startup script will setup the environment to install the Forseti Security and run the tools every hour.
 
 ### Deploying Forseti Security
-After you configure the deployment template variables, you can create a new deployment.
+After you configure the deployment template variables you can create a new deployment.
 
 ```sh
 $ gcloud deployment-manager deployments create forseti-security --config deploy-forseti.yaml
