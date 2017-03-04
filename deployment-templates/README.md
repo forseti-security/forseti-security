@@ -1,6 +1,6 @@
 # Deploying Forseti Security to Google Cloud
 
-One of the goals of Forseti Security is to provide continuous scanning and enforcement in your GCP environment. [Deployment Manager](https://cloud.google.com/deployment-manager/docs/) is a Google Cloud service that helps you automate the deployment and management of your GCP resources. We are using DM to do the following:
+One of the goals of Forseti Security is to provide continuous scanning and enforcement in your Google Cloud Platform (GCP) environment. [Deployment Manager](https://cloud.google.com/deployment-manager/docs/) (DM) is a Google Cloud service that helps you automate the deployment and management of your GCP resources. We are using DM to do the following:
 
 * Create a CloudSql instance and database for storing Forseti Inventory data.
 * Create a GCE instance for deploying Forseti Security.
@@ -9,7 +9,7 @@ One of the goals of Forseti Security is to provide continuous scanning and enfor
 # Getting started
 
 ### Prerequisites
-* Install and update `gcloud`. Check in the output of `gcloud info` whether your `gcloud` environment is using the right project and username; if not, login and init your environment.
+* Install and update `gcloud`. Verify the output of `gcloud info` to determine if your `gcloud` environment is using the right project and username; if not, login and init your environment.
 
 ```sh
 $ gcloud info
@@ -30,7 +30,7 @@ Current Properties:
 
 * Create a new project or use a project that is dedicated for Forseti Security.
 
-* Initialize your gcloud commandline environment.
+* Initialize your `gcloud` commandline environment.
 
 ```sh
 $ gcloud init
@@ -53,7 +53,7 @@ $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
 ```
 
 ### Using Deployment Templates
-The provided Deployment Templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the .yaml variables:
+The provided DM templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the following variables:
 
 * CLOUDSQL_INSTANCE_NAME
 * SECRETS_BUCKET
@@ -73,15 +73,15 @@ Note: There are restrictions on bucket names (e.g. they must be unique). Refer t
 
 There are other templates that you can modify if you'd like:
 
-* `py/inventory/cloudsql-instance.py` - The template for the Cloud SQL instance.
-* `py/inventory/cloudsql-database.py` - The template for the Cloud SQL database.
-* `py/storage/bucket.py` - The template for the Cloud Storage buckets.
-* `py/forseti-instance.py` - The template for the Compute Engine instance where Forseti Security will run.
+* `py/inventory/cloudsql-instance.py`:  The template for the Google Cloud SQL instance.
+* `py/inventory/cloudsql-database.py`: The template for the Google Cloud SQL database.
+* `py/storage/bucket.py`: The template for the Google Cloud Storage buckets.
+* `py/forseti-instance.py`: The template for the Compute Engine instance where Forseti Security will run.
    * You might want to tweak the startup script (more about [startup scripts in GCP docs](https://cloud.google.com/deployment-manager/docs/step-by-step-guide/setting-metadata-and-startup-scripts)).
    * By default, the startup script will setup the environment to install the Forseti Security and run the tools every hour.
 
 ### Deploying Forseti Security
-After you set the deployment template variables, you can create a new deployment.
+After you configure the deployment template variables, you can create a new deployment.
 
 ```sh
 $ gcloud deployment-manager deployments create forseti-security --config deploy-forseti.yaml
