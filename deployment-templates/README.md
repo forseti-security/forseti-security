@@ -56,10 +56,6 @@ $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
 The provided DM templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the following variables:
 
 * CLOUDSQL_INSTANCE_NAME
-* SECRETS_BUCKET
-  * This is just the bucket name; do not include "gs://".
-  * Subject to bucket naming restrictions (see below).
-  * If you create a separate service account for running your GCE instance, then store your credentials in a secrets bucket.
 * SCANNER_BUCKET
   * This is just the bucket name; do not include "gs://".
   * Subject to bucket naming restrictions (see below).
