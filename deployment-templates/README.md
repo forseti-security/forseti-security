@@ -66,7 +66,7 @@ In order to run Forseti Security, you must add a service account to your **organ
 ```sh
 $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
   --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-  --role=roles/Browser
+  --role=roles/browser
 ```
 
 ### Using Deployment Templates
