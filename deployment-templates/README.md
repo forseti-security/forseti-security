@@ -60,7 +60,9 @@ In order to run Forseti Security, you must add a service account to your organiz
 **Note**: If you also want to audit/enforce organization IAM policies, you'll need to assign the `Organization Administrator` role. Note that this is a very powerful role; if your GCE instance gets compromised, your entire account could also be compromised!
 
 ```sh
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID --member=serviceAccount:YOUR_SERVICE_ACCOUNT --role=roles/Browser
+$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --role=roles/Browser
 ```
 
 ### Using Deployment Templates
