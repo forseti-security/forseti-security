@@ -1,4 +1,11 @@
 # Forseti Security
+* [Installation](#installation)
+  *  [Prerequisites](#prerequisites)
+  *  [Setup](#setup)
+* [Execution](#execution)
+* [Tests](#tests)
+* [Forseti Security modules](#forseti-security-modules)
+
 ## Installation
 ### Prerequisites
 #### Python version
@@ -80,7 +87,7 @@ $ workon forseti-security
 $ python setup.py install
 ```
 
-#### Running the tools
+## Execution
 You should now be able to run the following commandline tools. To see the flag options for each, use
 the `--helpshort` or `--helpfull` flags.
 
@@ -88,7 +95,7 @@ the `--helpshort` or `--helpfull` flags.
  - `forseti_scanner` ([README](/google/cloud/security/scanner/README.md))
  - `forseti_enforcer` ([README](/google/cloud/security/enforcer/README.md))
 
-### Tests
+## Tests
 There are unit tests in the `tests/` directory. To execute them, run:
 
 ```sh
