@@ -19,7 +19,7 @@ using [Cloud Deployment Manager](https://cloud.google.com/deployment-manager/).
 
 ### Install to Local Environment
 Use this [README](/google/cloud/security/README.md) to install and use
-Forseti Security locally on your own server, workstation, or laptop.
+Forseti Security locally on your own machine.
 
 # Disclaimer
 This is not an official Google product.
