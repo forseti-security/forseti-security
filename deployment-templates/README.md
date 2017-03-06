@@ -30,7 +30,9 @@ Current Properties:
 
 ```
 
-* Create a new project in your Cloud Console or use a project that is dedicated for Forseti Security.
+* Create a new project in your Cloud Console.
+  * You can also re-use a project that is dedicated for Forseti Security.
+  * Enable Billing in your project, if you haven't already.
 
 * Initialize your `gcloud` commandline environment to select your project and auth your Google Cloud account.
 
