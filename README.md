@@ -18,7 +18,7 @@ Forseti Security to Google Cloud Platform quickly and easily.
 
 ### Install to Local Environment
 Use this [README](/google/cloud/security/README.md) to install and use
-Forseti Security locally on your own workstation or laptop.
+Forseti Security on your own machine.
 
 # Disclaimer
 This is not an official Google product.
