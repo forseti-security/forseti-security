@@ -4,9 +4,9 @@ One of the goals of Forseti Security is to provide continuous scanning and enfor
 
 * Create a CloudSql instance and database for storing Forseti Inventory data.
 * Create a GCE instance for deploying Forseti Security.
-* Manage configuration for Forseti Security and automatically run the inventory and scanner modules.
+* Manage configuration for Forseti Security and automatically run the [inventory](../google/cloud/security/inventory/README.md) and [scanner](../google/cloud/security/scanner/README.md) modules.
 
-**Note**: The DM templates currently do not schedule or execute the enforcer module.
+**Note**: The DM templates currently do not schedule or execute the [enforcer](../google/cloud/security/enforcer/README.md) module.
 
 # Getting started
 
@@ -32,7 +32,7 @@ Current Properties:
 
 * Create a new project or use a project that is dedicated for Forseti Security.
 
-* Initialize your `gcloud` commandline environment.
+* Initialize your `gcloud` commandline environment to select your project and auth your Google Cloud account.
 
 ```sh
 $ gcloud init
@@ -54,20 +54,25 @@ $ gcloud beta service-management enable sqladmin.googleapis.com
 $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
 ```
 
+### Assign roles to service account
+In order to run Forseti Security, you must add a service account to your organization's IAM policy with at least the `Browser` role. This allows Forseti Security to perform operations such as listing the projects within your organization.
+
+If you also want to audit/enforce organization IAM policies, you'll need to assign the `Organization Administrator` role. Note that this is a very powerful role and we do not recommend 
+
 ### Using Deployment Templates
 The provided DM templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the following variables:
 
 * CLOUDSQL_INSTANCE_NAME
 * SCANNER_BUCKET
   * This is just the bucket name; do not include "gs://".
-  * Subject to bucket naming restrictions (see below).
-* YOUR_SERVICE_ACCOUNT (this can be the application default service account, i.e. `PROJECTNUMBER-compute@developer.gserviceaccount.com`)
+  * The bucket name is subject to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming).
+* YOUR_SERVICE_ACCOUNT
+  * This can be the application default service account, i.e. `PROJECTNUMBER-compute@developer.gserviceaccount.com`.
+  * You must assign the `Browser` role to this service account on the **organization** IAM policy.
 * YOUR_ORG_ID (the organization id number)
 * YOUR_SENDGRID_API_KEY (the api key for sendgrid email service)
 * EMAIL_ADDRESS_OF_YOUR_SENDER (email address of your email sender)
 * EMAIL_ADDRESS_OF_YOUR_RECIPIENT (email address of your email recipient)
-
-Note: There are restrictions on bucket names (e.g. they must be unique). Refer to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming) for more information.
 
 There are other templates that you can modify if you'd like:
 
