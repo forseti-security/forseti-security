@@ -98,7 +98,7 @@ class BatchFirewallEnforcerTest(basetest.TestCase):
           * Set API calls to return the different firewall rules from the new
             policy on the first call, and the expected new firewall rules on the
             second call.
-          * Send a mock project and policy to GceEnforcer.Run().
+          * Send a mock project and policy to run().
 
         Expected results:
           An EnforcerLog proto showing 1 success, 1 project changed, and 1
@@ -125,10 +125,10 @@ class BatchFirewallEnforcerTest(basetest.TestCase):
           * Set API calls to return a firewall rule that doesn't match the
             expected policy.
           * Create a prechange callback function that always returns False.
-          * Send a mock project and policy to GceEnforcer.Run().
+          * Send a mock project and policy to run().
 
         Expected results:
-          A GceEnforcerResults proto showing 1 success, 1 project unchanged.
+          An EnforcerLog proto showing 1 success, 1 project unchanged.
         """
         self.gce_service.firewalls().list().execute.return_value = (
             constants.DEFAULT_FIREWALL_API_RESPONSE)
@@ -168,7 +168,7 @@ class BatchFirewallEnforcerTest(basetest.TestCase):
           * Set API calls to return the different firewall rules from the new
             policy on the first call, and the expected new firewall rules on the
             second call.
-          * Send a mock project and policy to GceEnforcer.Run().
+          * Send a mock project and policy to run().
 
         Expected Results:
           The callback function is called once with the correct result proto.
