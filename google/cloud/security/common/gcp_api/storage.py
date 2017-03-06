@@ -26,6 +26,7 @@ from googleapiclient.http import MediaIoBaseUpload
 
 LOGGER = LogUtil.setup_logging(__name__)
 
+
 class StorageClient(_BaseClient):
     """Storage Client."""
 

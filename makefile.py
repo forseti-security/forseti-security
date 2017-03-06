@@ -16,26 +16,23 @@
 """A script to prepare the source tree for building."""
 
 # Modeled after https://github.com/google/grr/blob/master/makefile.py
+# TODO: revisit whether this needs to use gflags/apputils. Running the
+# makefile from setup.py (even when the setup_requires has gflags/apputils)
+# does not work. If we pass a PYTHONPATH to include the gflags/apputils
+# eggs in the subprocess env, the makefile works, but the installed packages
+# do not include gflags or apputils.
 
-import gflags as flags
+import argparse
 import logging
 import os
 import subprocess
-
-from google.apputils import app
-
-
-FLAGS = flags.FLAGS
-flags.DEFINE_bool(
-    "clean",
-    False,
-    "Clean compiled protos.")
 
 
 def Clean():
   """Clean out compiled protos."""
   # Start running from one directory above the directory which is found by
   # this scripts's location as __file__.
+  logging.info("Cleaning out compiled protos.")
   cwd = os.path.dirname(os.path.abspath(__file__))
 
   # Find all the .proto files.
@@ -70,7 +67,9 @@ def MakeProto():
 
         protos_to_compile.append(full_filename)
 
-  if protos_to_compile:
+  if not protos_to_compile:
+    logging.info("No protos needed to be compiled.")
+  else:
     # Find the protoc compiler.
     protoc = os.environ.get("PROTOC", "protoc")
     try:
@@ -112,10 +111,16 @@ def main(unused_argv=None):
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
 
-    if FLAGS.clean:
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("--clean", dest="clean", action="store_true",
+                            help="Clean out compiled protos")
+    arg_parser.set_defaults(feature=False)
+    args = arg_parser.parse_args()
+
+    if args.clean:
       Clean()
     MakeProto()
 
 
 if __name__ == "__main__":
-    app.run()
+    main()
