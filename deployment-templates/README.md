@@ -4,7 +4,9 @@ One of the goals of Forseti Security is to provide continuous scanning and enfor
 
 * Create a CloudSql instance and database for storing Forseti Inventory data.
 * Create a GCE instance for deploying Forseti Security.
-* Manage configuration for Forseti Security and automatically run Forseti Inventory and Forseti Scanner. Currently, the DM templates do not run Forseti Enforcer.
+* Manage configuration for Forseti Security and automatically run the inventory and scanner modules.
+
+**Note**: The DM templates currently do not schedule or execute the enforcer module.
 
 # Getting started
 
