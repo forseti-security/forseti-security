@@ -12,10 +12,10 @@ security community. There are three key features to the toolset:
 ## Installation
 There are two ways to install Forseti Security.
 
-### Google Cloud Platform installation
+### Google Cloud Platform installation (recommended)
 Use this [README](/deployment-templates/README.md) to install
 Forseti Security on Google Cloud Platform quickly and easily
-using [Cloud Deployment Manager](https://cloud.google.com/deployment-manager/).
+using Google Cloud Deployment Manager.
 
 ### Local installation
 Use this [README](/google/cloud/security/README.md) to install and use Forseti Security
