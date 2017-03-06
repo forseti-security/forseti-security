@@ -166,11 +166,11 @@ class Dao(_DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
-    def select_latest_complete_snapshot_timestamp(self, status):
+    def select_latest_complete_snapshot_timestamp(self, statuses):
         """Select the latest timestamp of the completed snapshot.
 
         Args:
-            status: The snapshot status to filter on.
+            statuses: The tuple of snapshot statuses to filter on.
 
         Returns:
              The string timestamp of the latest complete snapshot.
@@ -178,10 +178,16 @@ class Dao(_DbConnector):
         Raises:
             MySQLError (NoResultsError) if no rows are found.
         """
+        # Build a dynamic parameterized query string for filtering the
+        # snapshot statuses
+        if not statuses:
+            statuses = ('SUCCESS')
+        status_params = ','.join(['%s' for s in statuses])
+        filter_clause = ' where status in ({})'.format(status_params)
         try:
             cursor = self.conn.cursor()
             cursor.execute(
-                select_data.LATEST_SNAPSHOT_TIMESTAMP, (status,))
+                select_data.LATEST_SNAPSHOT_TIMESTAMP + filter_clause, statuses)
             rows = cursor.fetchall()
             if rows and rows[0]:
                 return rows[0][0]
