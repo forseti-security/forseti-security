@@ -11,11 +11,11 @@ We are continually improving Forseti Security and invite you to submit feature r
 ## Installation
 There are two ways to install Forseti Security.
 
-### Install to Google Cloud Platform (recommended)
+### Google Cloud Platform (recommended for production)
 Use this [README](/deployment-templates/README.md) to install
 Forseti Security to Google Cloud Platform quickly and easily.
 
-### Install to Local Environment
+### Local Environment
 Use this [README](/google/cloud/security/README.md) to install and use
 Forseti Security on your own machine.
 
