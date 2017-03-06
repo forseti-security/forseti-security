@@ -63,5 +63,5 @@ class OrganizationDao(_DbConnector):
                     self.logging.warn('Error parsing json {}'.format(row[2]))
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
-            raise MySQLError('organizations', e)
+            LOGGER.error(MySQLError('organizations', e))
         return org_iam_policies

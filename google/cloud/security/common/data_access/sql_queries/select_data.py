@@ -32,5 +32,5 @@ ORG_IAM_POLICIES = """SELECT org_id, iam_policy
 """
 
 LATEST_SNAPSHOT_TIMESTAMP = """SELECT max(cycle_timestamp)
-    FROM snapshot_cycles where status = %s
+    FROM snapshot_cycles
 """
