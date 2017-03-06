@@ -20,7 +20,7 @@ Use this [README](/google/cloud/security/README.md) to install and use
 Forseti Security on your own machine.
 
 # Contact us
-Please reach out to us for informational requests by contacting
+Reach out to us with questions by contacting
 [forseti-security@google.com](mailto:forseti-security@google.com).
 
 For enhancements, bugs, or other similar items please open an
