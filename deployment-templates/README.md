@@ -30,7 +30,9 @@ Current Properties:
 
 ```
 
-* Create a new project or use a project that is dedicated for Forseti Security.
+* Create a new project in your Cloud Console.
+  * You can also re-use a project that is dedicated for Forseti Security.
+  * Enable Billing in your project, if you haven't already.
 
 * Initialize your `gcloud` commandline environment to select your project and auth your Google Cloud account.
 
@@ -39,19 +41,21 @@ $ gcloud init
 ```
 
 * Enable **Cloud SQL API**.
-
 ```sh
 $ gcloud beta service-management enable sql-component.googleapis.com
 ```
 * Enable **Cloud SQL Admin API**.
-
 ```sh
 $ gcloud beta service-management enable sqladmin.googleapis.com
 ```
 * Enable **Cloud Resource Manager API**.
-
 ```sh
 $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
+```
+
+* Enable **Deployment Manager API**.
+```sh
+$ gcloud beta service-management enable deploymentmanager.googleapis.com
 ```
 
 ### Assign roles to service account
@@ -93,7 +97,8 @@ There are other templates that you can modify if you'd like:
 After you configure the deployment template variables you can create a new deployment.
 
 ```sh
-$ gcloud deployment-manager deployments create forseti-security --config deploy-forseti.yaml
+$ gcloud deployment-manager deployments create forseti-security \
+  --config path/to/deploy-forseti.yaml
 ```
 
 When your deployment is complete, you can see your deployments in your Cloud Console [Deployment Manager dashboard](https://console.cloud.google.com/deployments). Also, if you're using the default startup script, Forseti Security should run on the top of the hour and drop a csv in `gs://SCANNER_BUCKET/scanner_violations/`.
