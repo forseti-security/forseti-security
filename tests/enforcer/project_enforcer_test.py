@@ -254,7 +254,7 @@ class ProjectEnforcerTest(basetest.TestCase):
           * Set retry_on_dry_run to True so that code path will be tested.
 
         Expected Results:
-          A GceEnforcerResult proto showing status=SUCCESS, details on the rules
+          A ProjectResult proto showing status=SUCCESS, details on the rules
           changed, all_rules_changed set to True, and a copy of the previous and
           current firewall rules.
         """
@@ -295,7 +295,7 @@ class ProjectEnforcerTest(basetest.TestCase):
           * Set retry_on_dry_run to True so that code path will be tested.
 
         Expected Results:
-          A GceEnforcerResult proto showing status=ERROR, details on the rules
+          A ProjectResult proto showing status=ERROR, details on the rules
           changed, and a copy of the previous and current firewall rules.
         """
         extra_rules = copy.deepcopy(self.expected_rules)
@@ -335,6 +335,37 @@ class ProjectEnforcerTest(basetest.TestCase):
 
         self.set_expected_audit_log(added=added, deleted=sorted(deleted),
                                     unchanged=unchanged)
+
+        self.assertEqual(self.expected_proto, result)
+
+    def test_enforce_policy_rules_changed_no_retry_if_skipped(self):
+        """Retry is not attempted when prechange callback returns false.
+
+        Setup:
+          * Set API calls to return the different firewall rules from the new
+            policy on all calls.
+          * Set retry_on_dry_run arg to True so that code path will be tested.
+          * Set prechange_callback arg to a function that always returns false.
+
+        Expected Results:
+          A ProjectResult proto showing status=SUCCESS, with no rules changed.
+        """
+        self.gce_service.firewalls().list().execute.return_value = (
+            constants.DEFAULT_FIREWALL_API_RESPONSE)
+
+        prechange_callback_func = lambda *unused_args: False
+
+        result = self.enforcer.enforce_firewall_policy(
+                self.policy, compute_service=self.gce_service,
+                prechange_callback=prechange_callback_func,
+                retry_on_dry_run=True)
+
+        self.expected_proto.status = project_enforcer.STATUS_SUCCESS
+
+        unchanged = get_rule_names(
+            constants.DEFAULT_FIREWALL_API_RESPONSE['items'])
+
+        self.set_expected_audit_log(added=[], deleted=[], unchanged=unchanged)
 
         self.assertEqual(self.expected_proto, result)
 
@@ -794,8 +825,8 @@ class ProjectEnforcerTest(basetest.TestCase):
             string set to GCE API disabled.
 
         Expected Result:
-          A GceEnforcerResult proto showing status=PROJECT_DELETED and the
-          correct reason string.
+          A ProjectResult proto showing status=PROJECT_DELETED and the correct
+          reason string.
         """
         api_disabled_403 = httplib2.Response(
             {'status': '403',

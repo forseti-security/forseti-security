@@ -165,6 +165,12 @@ class ProjectEnforcer(object):
             except EnforcementError as e:
                 return self._set_error_status(e.reason())
 
+            if not change_count:
+              # Don't attempt to retry if there were no changes. This can be
+              # caused by the prechange callback returning false or an
+              # exception.
+              break
+
             if ((self._dry_run and not retry_on_dry_run) or
                 self.rules_after_enforcement == self.expected_rules):
                 break
