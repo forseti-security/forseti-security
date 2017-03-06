@@ -94,7 +94,8 @@ After you configure the deployment template variables you can create a new deplo
 
 ```sh
 $ cd path/to/forseti-security
-$ gcloud deployment-manager deployments create forseti-security --config deployment-templates/deploy-forseti.yaml
+$ gcloud deployment-manager deployments create forseti-security \
+  --config deployment-templates/deploy-forseti.yaml
 ```
 
 When your deployment is complete, you can see your deployments in your Cloud Console [Deployment Manager dashboard](https://console.cloud.google.com/deployments). Also, if you're using the default startup script, Forseti Security should run on the top of the hour and drop a csv in `gs://SCANNER_BUCKET/scanner_violations/`.
