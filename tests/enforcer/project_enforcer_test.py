@@ -825,8 +825,8 @@ class ProjectEnforcerTest(basetest.TestCase):
             string set to GCE API disabled.
 
         Expected Result:
-          A GceEnforcerResult proto showing status=PROJECT_DELETED and the
-          correct reason string.
+          A ProjectResult proto showing status=PROJECT_DELETED and the correct
+          reason string.
         """
         api_disabled_403 = httplib2.Response(
             {'status': '403',
