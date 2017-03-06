@@ -16,6 +16,11 @@
 """A script to prepare the source tree for building."""
 
 # Modeled after https://github.com/google/grr/blob/master/makefile.py
+# TODO: revisit whether this needs to use gflags/apputils. Running the
+# makefile from setup.py (even when the setup_requires has gflags/apputils)
+# does not work. If we pass a PYTHONPATH to include the gflags/apputils
+# eggs in the subprocess env, the makefile works, but the installed packages
+# do not include gflags or apputils.
 
 import argparse
 import logging
