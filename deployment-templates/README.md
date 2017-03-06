@@ -55,7 +55,7 @@ $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
 ```
 
 ### Assign roles to service account
-In order to run Forseti Security, you must add a service account to your organization's IAM policy with at least the `Browser` role. This allows Forseti Security to perform operations such as listing the projects within your organization.
+In order to run Forseti Security, you must add a service account to your **organization-level** IAM policy with at least the `Browser` role. This allows Forseti Security to perform operations such as listing the projects within your organization.
 
 **Note**: If you also want to audit/enforce organization IAM policies, you'll need to assign the `Organization Administrator` role. Note that this is a very powerful role; if your GCE instance gets compromised, your entire account could also be compromised!
 
