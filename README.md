@@ -2,7 +2,7 @@
 Forseti Security helps you secure your Google Cloud Platform (GCP) environment. 
 
 It provides:
-* [Visibility](google/cloud/security/inventory/README.md): Builds and stores an inventory of your GCP footprint.
+* [Visibility](google/cloud/security/inventory/README.md): Builds and stores an inventory of your GCP resources.
 * [Detection](google/cloud/security/scanner/README.md): Finds policy violations across various resources in GCP.
 * [Enforcement](google/cloud/security/enforcer/README.md): Applies changes to enforce policy when needed.
 
