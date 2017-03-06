@@ -178,12 +178,12 @@ class Dao(_DbConnector):
         Raises:
             MySQLError (NoResultsError) if no rows are found.
         """
-        filter_clause = ' where status in ('
+        # Build a dynamic parameterized query string for filtering the
+        # snapshot statuses
         if not statuses:
-            statuses.append('SUCCESS')
-        for status in statuses:
-            filter_clause += '%s,'
-        filter_clause = filter_clause[:-1] + ')'
+            statuses = ('SUCCESS')
+        status_params = ','.join(['%s' for s in statuses])
+        filter_clause = ' where status in ({})'.format(status_params)
         try:
             cursor = self.conn.cursor()
             cursor.execute(
