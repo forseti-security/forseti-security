@@ -12,14 +12,13 @@ security community. There are three key features to the toolset:
 ## Installation
 There are two ways to install Forseti Security.
 
-### Install to Google Cloud Platform
+### Install to Google Cloud Platform (recommended)
 Use this [README](/deployment-templates/README.md) to install
-Forseti Security to Google Cloud Platform quickly and easily
-using [Cloud Deployment Manager](https://cloud.google.com/deployment-manager/).
+Forseti Security to Google Cloud Platform quickly and easily.
 
 ### Install to Local Environment
 Use this [README](/google/cloud/security/README.md) to install and use
-Forseti Security locally on your own workstation or laptop.
+Forseti Security on your own machine.
 
 # Disclaimer
 This is not an official Google product.
