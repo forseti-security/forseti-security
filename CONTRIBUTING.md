@@ -95,9 +95,6 @@ or bug fix.
 
 7. Commit your changes and push your development branch to your fork.
 
-    You don't need to worry about making sure you have one clean commit as we
-    have enabled "Squash and Commit" on GitHub UI.
-
     ```
     $ git push origin <my_development_branch>
     ```
