@@ -12,10 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A basic util that wraps logging."""
+"""A basic util that wraps logging.
 
+Setup logging for Forseti Security based on deployment environment and
+flags passed to the binaries.
+
+If there are no flags passed to the Forseti tools, default logging behavior
+is as follows:
+  - Stackdriver/Cloud Logging, if querying metadata server succeeds. This means
+    that Forseti is running on Compute Engine.
+  - Otherwise, fall back to local logging.
+
+If flags are passed, determine logging behavior as follows:
+  - For --use-cloud-logging, enable Stackdriver/Cloud Logging (if available),
+    otherwise fall back to local logging.
+  - For --nouse-cloud-logging, only use local logging.
+"""
+
+import gflags as flags
 import logging
 import os
+
+FLAGS = flags.FLAGS
+
+flags.DEFINE_boolean('use-cloud-logging', True,
+                  'Enable cloud logging, if available.')
+flags.DEFINE_boolean('nouse-cloud-logging', False, 'Do not use cloud logging.')
 
 class LogUtil(object):
     """Utility to wrap logging setup."""
@@ -26,6 +48,9 @@ class LogUtil(object):
 
         Args:
             module_name: The name of the module to describe the log entry.
+
+        Returns:
+            An instance of the configured logger.
         """
         formatter = logging.Formatter(
                     '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
