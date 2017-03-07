@@ -76,7 +76,7 @@ the upstream remote.
     A change should be a logical, self-contained unit of work, feature, or fix.
     This way, it is easier for troubleshooting and rollbacks.  In other words,
     please do not incorporate multiple changes in one PR.
-        
+
     [Instructions to execute the tools.]
 
 6. Create your test.
@@ -90,7 +90,7 @@ the upstream remote.
     
     [Instructions to run the tests.]
 
-7. Commit your changes and push the commits to your development branch.
+7. Commit your changes and push them to your development branch.
 
     ```
     $ git push origin <my_development_branch>
