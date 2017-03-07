@@ -19,6 +19,11 @@ Forseti Security to Google Cloud Platform quickly and easily.
 Use this [README](/google/cloud/security/README.md) to install and use
 Forseti Security on your own machine.
 
+## Contributing
+
+Use this [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md)
+to contribute your features, improvements, or fixes to Forseti Security.
+
 # Contact us
 Reach out to us with questions by contacting
 [forseti-security@google.com](mailto:forseti-security@google.com).
