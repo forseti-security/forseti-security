@@ -78,9 +78,10 @@ The provided DM templates are samples for you to use. Make a copy of `deploy-for
 * SCANNER_BUCKET
   * This is just the bucket name; do not include "gs://".
   * The bucket name is subject to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming).
+  * **Note**: use the same SCANNER_BUCKET name for both the "Cloud Storage" and "Compute Engine" sections in the template.
 * YOUR_SERVICE_ACCOUNT
   * This can be the application default service account, i.e. `PROJECTNUMBER-compute@developer.gserviceaccount.com`.
-  * You must assign the `Browser` role to this service account on the **organization** IAM policy.
+  * You must assign the `Browser` role to this service account on the **organization-level** IAM policy.
 * YOUR_ORG_ID (the organization id number)
 * YOUR_SENDGRID_API_KEY (the API key for SendGrid email service)
 * EMAIL_ADDRESS_OF_YOUR_SENDER (email address of your email sender)
