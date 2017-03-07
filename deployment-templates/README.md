@@ -3,7 +3,7 @@
 One of the goals of Forseti Security is to provide continuous scanning and enforcement in your Google Cloud Platform (GCP) environment. [Deployment Manager](https://cloud.google.com/deployment-manager/docs/) (DM) is a Google Cloud service that helps you automate the deployment and management of your GCP resources. We are using DM to do the following:
 
 * Create a Cloud SQL instance and database for storing Forseti Inventory data.
-* Create a Compute Engine instance for deploying and running Forseti Security.
+* Create a Google Compute Engine (GCE) instance for deploying and running Forseti Security.
 * Manage configuration for Forseti Security and automatically run the [inventory](../google/cloud/security/inventory/README.md) and [scanner](../google/cloud/security/scanner/README.md) modules.
 
 **Note**: The DM templates currently do not schedule or execute the [enforcer](../google/cloud/security/enforcer/README.md) module.
