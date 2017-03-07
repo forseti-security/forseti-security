@@ -76,27 +76,27 @@ or bug fix.
 
 5. Create your change.
 
-A change should be a logical, self-contained unit of work, feature, or fix.
-This way, it is easier for troubleshooting and rollbacks.  In other words,
-please do not incorporate multiple changes in one PR.
-
-[Instructions to execute the tools.]
+    A change should be a logical, self-contained unit of work, feature, or fix.
+    This way, it is easier for troubleshooting and rollbacks.  In other words,
+    please do not incorporate multiple changes in one PR.
+    
+    [Instructions to execute the tools.]
 
 6. Create your test.
 
-We strive to have high and useful coverage by unit tests.  If your change
-involves substantial logic, we will request that you write applicable unit
-tests.
-
-Our unit tests are written with google-apputils basetest framework.
-See a [basic example] of how to use it, in the "Google-Style Tests" section.
-
-[Instructions to run the tests.]
+    We strive to have high and useful coverage by unit tests.  If your change
+    involves substantial logic, we will request that you write applicable unit
+    tests.
+    
+    Our unit tests are written with google-apputils basetest framework.
+    See a [basic example] of how to use it, in the "Google-Style Tests" section.
+    
+    [Instructions to run the tests.]
 
 7. Commit your changes and push your development branch to your fork.
 
-You don't need to worry about making sure you have one clean commit as we
-have enabled "Squash and Commit" on GitHub UI.
+    You don't need to worry about making sure you have one clean commit as we
+    have enabled "Squash and Commit" on GitHub UI.
 
     ```
     $ git push origin <my_development_branch>
@@ -104,25 +104,25 @@ have enabled "Squash and Commit" on GitHub UI.
 
 8. Open a Pull Request.
 
-Use the GitHub UI to open a pull request.  The GitHub UI will show you
-dropdowns to select the destination of the pull request:
-* the base fork is the upstream
-* the head fork is the user's fork
-
-All tests must pass before we will review the PR.
+    Use the GitHub UI to open a pull request.  The GitHub UI will show you
+    dropdowns to select the destination of the pull request:
+    * the base fork is the upstream
+    * the head fork is the user's fork
+    
+    All tests must pass before we will review the PR.
 
 9. Code Reviews
 
-All submissions, including submissions by project members, require review.
-To begin the review process, create a new GitHub pull request.  The GitHub UI
-will show if there are any merge conflict(s) to be resolved.
+    All submissions, including submissions by project members, require review.
+    To begin the review process, create a new GitHub pull request.  The GitHub UI
+    will show if there are any merge conflict(s) to be resolved.
 
 10. Merging your PR.
 
-Once your PR is approved, we will merge your PR.  Make sure any merge
-conflict(s) is resolved, if necessary.  We will use the "Squash and Commit"
-option for merging your PR.  This allows us to squash down your commit
-histories, and merge with one clean commit.
+    Once your PR is approved, we will merge your PR.  Make sure any merge
+    conflict(s) is resolved, if necessary.  We will use the "Squash and Commit"
+    option for merging your PR.  This allows us to squash down your commit
+    histories, and merge with one clean commit.
 
 ## Contact Us
 Reach out to us with questions by contacting
