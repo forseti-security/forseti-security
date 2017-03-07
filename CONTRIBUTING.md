@@ -4,7 +4,7 @@ We'd love to accept your patches and contributions to this project. There are
 just a few small guidelines you need to follow.
 
 * [Contributor License Agreement](#contributor-license-agreement)
-* [Style Guideline & Conventions](#style-guideline-&-conventions)
+* [Style Guideline and Conventions](#style-guideline-and-conventions)
 * [How to Create A Pull Request](#how-to-create-a-pull-request)
 * [Contact Us](#contact-us)
 
@@ -20,7 +20,7 @@ You generally only need to submit a CLA once, so if you've already submitted one
 (even if it was for a different project), you probably don't need to do it
 again.
 
-## Style Guideline & Conventions
+## Style Guideline and Conventions
 
 In order to maintain consistency, style guidelines as suggested by the
 [Google Python Style Guide] should be followed, as well as conforming to
@@ -33,46 +33,46 @@ the existing styles in the current codebase.
 2. Fork the project, clone your fork to a local repository, and configure
 the upstream remote.
 
-```
-# Fork the project via GitHub UI.
+    ```
+    # Fork the project via GitHub UI.
 
-# Clone your forked repository into local directory.
-$ git clone <url of forked repository>
+    # Clone your forked repository into local directory.
+    $ git clone <url of forked repository>
 
-# Navigate to your newly cloned directory.
-$ cd <path to you local cloned repository>
-
-# Assign the original repository to a remote called "upstream".
-# Using HTTPS
-$ git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
-
-# Using SSH
-$ git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
-
-# Verify new upstream remote is added correctly.
-$ git remote -v
-
-origin  git@github.com:<my_fork> (fetch)
-origin  git@github.com:<my_fork> (push)
-upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
-upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
-```
+    # Navigate to your newly cloned directory.
+    $ cd <path to you local cloned repository>
+    
+    # Assign the original repository to a remote called "upstream".
+    # Using HTTPS
+    $ git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
+    
+    # Using SSH
+    $ git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
+    
+    # Verify new upstream remote is added correctly.
+    $ git remote -v
+    
+    origin  git@github.com:<my_fork> (fetch)
+    origin  git@github.com:<my_fork> (push)
+    upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
+    upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
+    ```
 
 3. Get the latest changes from the upstream origin into your
 cloned repository.
 
-```
-$ git fetch upstream
-$ git checkout master
-$ git merge upstream/master
-```
+    ```
+    $ git fetch upstream
+    $ git checkout master
+    $ git merge upstream/master
+    ```
 
 4. Create a new local development branch that will contain your feature,
 or bug fix.
 
-```
-$ git checkout -b <my_development_branch>
-```
+    ```
+    $ git checkout -b <my_development_branch>
+    ```
 
 5. Create your change.
 
@@ -98,25 +98,31 @@ See a [basic example] of how to use it, in the "Google-Style Tests" section.
 You don't need to worry about making sure you have one clean commit as we
 have enabled "Squash and Commit" on GitHub UI.
 
-```
-$ git push origin <my_development_branch>
-```
+    ```
+    $ git push origin <my_development_branch>
+    ```
 
 8. Open a Pull Request.
+
+Use the GitHub UI to open a pull request.  The GitHub UI will show you
+dropdowns to select the destination of the pull request:
+* the base fork is the upstream
+* the head fork is the user's fork
 
 All tests must pass before we will review the PR.
 
 9. Code Reviews
 
 All submissions, including submissions by project members, require review.
-To begin the review process, create a new GitHub pull request.
+To begin the review process, create a new GitHub pull request.  The GitHub UI
+will show if there are any merge conflict(s) to be resolved.
 
 10. Merging your PR.
 
-Once your PR is approved, merge your PR, resolving any merge conflict(s)
-if necessary.  Please use the "Squash and Commit" option for merging your PR.
-This allows you to squash down your commit histories, and you are merging
-with one clean commit.
+Once your PR is approved, we will merge your PR.  Make sure any merge
+conflict(s) is resolved, if necessary.  We will use the "Squash and Commit"
+option for merging your PR.  This allows us to squash down your commit
+histories, and merge with one clean commit.
 
 ## Contact Us
 Reach out to us with questions by contacting
