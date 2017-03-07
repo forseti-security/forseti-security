@@ -1,7 +1,12 @@
-# How to contribute
+# How to Contribute
 
 We'd love to accept your patches and contributions to this project. There are
 just a few small guidelines you need to follow.
+
+* [Contributor License Agreement](#contributor-license-agreement)
+* [Style Guideline & Conventions](#style-guideline-&-conventions)
+* [How to Create A Pull Request](#how-to-create-a-pull-request)
+* [Contact Us](#contact-us)
 
 ## Contributor License Agreement
 
@@ -21,28 +26,28 @@ In order to maintain consistency, style guidelines as suggested by the
 [Google Python Style Guide] should be followed, as well as conforming to
 the existing styles in the current codebase.
 
-## Life of A Pull Request
+## How to Create A Pull Request
 
-0. Consult [GitHub Help] for more information on using pull requests.
+1. Consult [GitHub Help] for more information on using pull requests.
 
-1. Fork the project, clone your fork to a local repo, and configure
+2. Fork the project, clone your fork to a local repository, and configure
 the upstream remote.
 
 ```
 # Fork the project via GitHub UI.
 
-# Clone your forked repo into local directory.
-git clone <url of cloned repo>
+# Clone your forked repository into local directory.
+$ git clone <url of forked repository>
 
 # Navigate to your newly cloned directory.
-cd <path to you local cloned repo>
+$ cd <path to you local cloned repository>
 
-# Assign the original repo to a remote called "upstream".
-# https
-git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
+# Assign the original repository to a remote called "upstream".
+# Using HTTPS
+$ git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
 
-# ssh
-git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
+# Using SSH
+$ git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
 
 # Verify new upstream remote is added correctly.
 $ git remote -v
@@ -53,60 +58,73 @@ upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
 upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
 ```
 
-2. Get the latest changes from upstream (the original repo) into your
-cloned repo.
+3. Get the latest changes from the upstream origin into your
+cloned repository.
 
 ```
-git fetch upstream
-git checkout master
-git merge upstream/master
+$ git fetch upstream
+$ git checkout master
+$ git merge upstream/master
 ```
 
-3. Create a new local development branch that will contain your feature,
+4. Create a new local development branch that will contain your feature,
 or bug fix.
 
 ```
-git checkout -b <my_development_branch>
+$ git checkout -b <my_development_branch>
 ```
 
-4. Create your change.
+5. Create your change.
 
 A change should be a logical, self-contained unit of work, feature, or fix.
 This way, it is easier for troubleshooting and rollbacks.  In other words,
 please do not incorporate multiple changes in one PR.
 
-5. Create your test.
+[Instructions to execute the tools.]
+
+6. Create your test.
 
 We strive to have high and useful coverage by unit tests.  If your change
-involves substantial logic, we will require that you write a unit test.
+involves substantial logic, we will request that you write applicable unit
+tests.
 
-6. Commit your changes and push your development branch to your fork.
+Our unit tests are written with google-apputils basetest framework.
+See a [basic example] of how to use it, in the "Google-Style Tests" section.
+
+[Instructions to run the tests.]
+
+7. Commit your changes and push your development branch to your fork.
 
 You don't need to worry about making sure you have one clean commit as we
 have enabled "Squash and Commit" on GitHub UI.
 
 ```
-git push origin <my_development_branch>
+$ git push origin <my_development_branch>
 ```
 
 8. Open a Pull Request.
 
-All tests must be passing before we will review the PR.
+All tests must pass before we will review the PR.
 
 9. Code Reviews
 
-All submissions, including submissions by project members, require review. We
-use GitHub pull requests for this purpose.
+All submissions, including submissions by project members, require review.
+To begin the review process, create a new GitHub pull request.
 
 10. Merging your PR.
 
-Once your PR is approved, merge your PR, resolving any merge conflict
-if necessary.  A nice feature that we have enabled on the GitHub UI is
-"Squash and Commit".  This allows you to squash down your commit histories,
-and you are merging with one clean commit.
+Once your PR is approved, merge your PR, resolving any merge conflict(s)
+if necessary.  Please use the "Squash and Commit" option for merging your PR.
+This allows you to squash down your commit histories, and you are merging
+with one clean commit.
 
-If you have any additional questions, please create an issue in this repo.
-
+## Contact Us
+Reach out to us with questions by contacting
+[forseti-security@google.com].
 
 [GitHub Help]: https://help.github.com/articles/about-pull-requests/
 [Google Python Style Guide]: https://google.github.io/styleguide/pyguide.html
+[Instructions to execute the tools.]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/README.md#execution
+[basic example]: https://pypi.python.org/pypi/google-apputils
+[Instructions to run the tests.]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/README.md#tests
+[forseti-security@google.com]: mailto:forseti-security@google.com
