@@ -33,7 +33,8 @@ If you are running in the local environment, you need to install and configure
 service account key.
 
 ### Install Service Account Key
-1. Create a key for the Compute Engine default service account.
+1. Create a key for your project's Compute Engine default service account
+in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
 2. Permission the service account with the following IAM policy:
     * Project Browser
     * Cloud SQL Editor 
