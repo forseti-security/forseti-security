@@ -73,7 +73,7 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 The provided DM templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the following variables:
 
 * CLOUDSQL_INSTANCE_NAME
-  * Instance name must be lowercase letters, numbers, and hyphens; must start with a letter. See [naming guidelines](https://cloud.google.com/sql/docs/mysql/instance-settings#settings-2ndgen) for more information.
+  * Instance name must be lowercase letters, numbers, and hyphens ("-", not underscores "_"); must start with a letter. See [naming guidelines](https://cloud.google.com/sql/docs/mysql/instance-settings#settings-2ndgen) for more information.
   * Instance name must also be unique. If you delete a Cloud SQL instance (either by deleting your deployment or manually through gcloud or the Cloud Console), you cannot reuse that instance name for up to 7 days.
 * SCANNER_BUCKET
   * This is just the bucket name; do not include "gs://".
