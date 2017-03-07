@@ -21,7 +21,7 @@ Forseti Security on your own machine.
 
 ## Contributing
 
-Use this [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md)
+Use this [CONTRIBUTING](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md)
 to contribute your features, improvements, or fixes to Forseti Security.
 
 # Contact us
