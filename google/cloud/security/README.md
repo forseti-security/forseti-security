@@ -59,7 +59,7 @@ $ brew install mysql
 ##### Ubuntu
 ```sh
 $ sudo apt-get install python-pip
-$ pip install --upgrade virtualenvwrapper
+$ sudo pip install --upgrade virtualenvwrapper
 ```
 
 ##### OS X
