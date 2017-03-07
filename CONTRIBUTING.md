@@ -6,7 +6,6 @@ just a few small guidelines you need to follow.
 * [Contributor License Agreement](#contributor-license-agreement)
 * [Style Guideline and Conventions](#style-guideline-and-conventions)
 * [How to Submit A Pull Request](#how-to-submit-a-pull-request)
-* [Contact Us](#contact-us)
 
 ## Contributor License Agreement
 
@@ -30,7 +29,7 @@ the existing styles in the current codebase.
 
 1. Consult [GitHub Help] for more information on using pull requests.
 
-2. Fork the project, clone your fork to a local repository, and configure
+2. Fork the project, clone your fork to your machine, and configure
 the upstream remote.
 
     ```
@@ -58,8 +57,7 @@ the upstream remote.
     upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
     ```
 
-3. Get the latest changes from the upstream origin into your
-cloned repository.
+3. Fetch the latest changes from upstream into your cloned repository.
 
     ```
     $ git fetch upstream
@@ -67,8 +65,7 @@ cloned repository.
     $ git merge upstream/master
     ```
 
-4. Create a new local development branch that will contain your feature,
-or bug fix.
+4. Create a new local development branch for your feature or bug fix.
 
     ```
     $ git checkout -b <my_development_branch>
@@ -79,7 +76,7 @@ or bug fix.
     A change should be a logical, self-contained unit of work, feature, or fix.
     This way, it is easier for troubleshooting and rollbacks.  In other words,
     please do not incorporate multiple changes in one PR.
-    
+        
     [Instructions to execute the tools.]
 
 6. Create your test.
@@ -93,37 +90,29 @@ or bug fix.
     
     [Instructions to run the tests.]
 
-7. Commit your changes and push your development branch to your fork.
+7. Commit your changes and push the commits to your development branch.
 
     ```
     $ git push origin <my_development_branch>
     ```
 
-8. Open a Pull Request.
+8. Open a Pull Request to begin the process for code review.
 
-    Use the GitHub UI to open a pull request.  The GitHub UI will show you
-    dropdowns to select the destination of the pull request:
-    * the base fork is the upstream
-    * the head fork is the user's fork
-    
-    All tests must pass before we will review the PR.
-
-9. Code Reviews
-
-    All submissions, including submissions by project members, require review.
-    To begin the review process, create a new GitHub pull request.  The GitHub UI
+    All submissions, including submissions by project members, require a code review.
+    To begin the review process, create a new GitHub pull request. The GitHub UI
     will show if there are any merge conflict(s) to be resolved.
+    
+    The GitHub Pull Request UI will show you dropdowns to select the destination of 
+    your pull request:
+    * the base fork is the upstream
+    * the head fork is your fork with your changes
+    
+    All tests must pass before we will review your PR.
 
-10. Merging your PR.
+9. Merging your PR.
 
-    Once your PR is approved, we will merge your PR.  Make sure any merge
-    conflict(s) is resolved, if necessary.  We will use the "Squash and Commit"
-    option for merging your PR.  This allows us to squash down your commit
-    histories, and merge with one clean commit.
+    Once your PR is approved and all merge conflicts are resolved, we will merge your PR.
 
-## Contact Us
-Reach out to us with questions by contacting
-[forseti-security@google.com].
 
 [GitHub Help]: https://help.github.com/articles/about-pull-requests/
 [Google Python Style Guide]: https://google.github.io/styleguide/pyguide.html
