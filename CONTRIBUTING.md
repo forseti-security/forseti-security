@@ -5,7 +5,7 @@ just a few small guidelines you need to follow.
 
 * [Contributor License Agreement](#contributor-license-agreement)
 * [Style Guideline and Conventions](#style-guideline-and-conventions)
-* [How to Create A Pull Request](#how-to-create-a-pull-request)
+* [How to Submit A Pull Request](#how-to-submit-a-pull-request)
 * [Contact Us](#contact-us)
 
 ## Contributor License Agreement
@@ -26,7 +26,7 @@ In order to maintain consistency, style guidelines as suggested by the
 [Google Python Style Guide] should be followed, as well as conforming to
 the existing styles in the current codebase.
 
-## How to Create A Pull Request
+## How to Submit A Pull Request
 
 1. Consult [GitHub Help] for more information on using pull requests.
 
