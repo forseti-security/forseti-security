@@ -2,8 +2,8 @@
 
 One of the goals of Forseti Security is to provide continuous scanning and enforcement in your Google Cloud Platform (GCP) environment. [Deployment Manager](https://cloud.google.com/deployment-manager/docs/) (DM) is a Google Cloud service that helps you automate the deployment and management of your GCP resources. We are using DM to do the following:
 
-* Create a CloudSql instance and database for storing Forseti Inventory data.
-* Create a GCE instance for deploying Forseti Security.
+* Create a Cloud SQL instance and database for storing Forseti Inventory data.
+* Create a Google Compute Engine (GCE) instance for deploying and running Forseti Security.
 * Manage configuration for Forseti Security and automatically run the [inventory](../google/cloud/security/inventory/README.md) and [scanner](../google/cloud/security/scanner/README.md) modules.
 
 **Note**: The DM templates currently do not schedule or execute the [enforcer](../google/cloud/security/enforcer/README.md) module.
@@ -11,7 +11,7 @@ One of the goals of Forseti Security is to provide continuous scanning and enfor
 # Getting started
 
 ### Prerequisites
-* Install and update `gcloud`. Verify the output of `gcloud info` to determine if your `gcloud` environment is using the right project and username; if not, login and init your environment.
+* Install and update `gcloud`. Verify the output of `gcloud info` to determine if your `gcloud` environment is using the right project and username; if not, login and init your environment (see following steps).
 
 ```sh
 $ gcloud info
@@ -73,14 +73,17 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 The provided DM templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the following variables:
 
 * CLOUDSQL_INSTANCE_NAME
+  * Instance name must be lowercase letters, numbers, and hyphens (e.g. "valid-instancename-1", NOT "1_invalid_instanceName.com"); must start with a letter. See [naming guidelines](https://cloud.google.com/sql/docs/mysql/instance-settings#settings-2ndgen) for more information.
+  * Instance name must also be unique. If you delete a Cloud SQL instance (either by deleting your deployment or manually through gcloud or the Cloud Console), you cannot reuse that instance name for up to 7 days.
 * SCANNER_BUCKET
   * This is just the bucket name; do not include "gs://".
   * The bucket name is subject to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming).
+  * **Note**: use the same SCANNER_BUCKET name for both the "Cloud Storage" and "Compute Engine" sections in the template.
 * YOUR_SERVICE_ACCOUNT
   * This can be the application default service account, i.e. `PROJECTNUMBER-compute@developer.gserviceaccount.com`.
-  * You must assign the `Browser` role to this service account on the **organization** IAM policy.
+  * You must assign the `Browser` role to this service account on the **organization-level** IAM policy.
 * YOUR_ORG_ID (the organization id number)
-* YOUR_SENDGRID_API_KEY (the api key for sendgrid email service)
+* YOUR_SENDGRID_API_KEY (the API key for SendGrid email service)
 * EMAIL_ADDRESS_OF_YOUR_SENDER (email address of your email sender)
 * EMAIL_ADDRESS_OF_YOUR_RECIPIENT (email address of your email recipient)
 
