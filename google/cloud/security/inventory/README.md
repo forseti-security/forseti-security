@@ -41,7 +41,7 @@ in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts)
 3. Download the key to your local env.
 4. Configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials)
 to env variable to reference this key.
-    ```sh
+    ```
     $ export GOOGLE_APPLICATION_CREDENTIALS="<path to your service account key>"
     ```
 
