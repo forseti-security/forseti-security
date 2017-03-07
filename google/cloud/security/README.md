@@ -50,6 +50,7 @@ $ sudo apt-get install libmysqlclient-dev
 Note: If libmysqlclient-dev doesn't install mysql_config, then try also installing mysql_server.
 
 ##### OS X
+[Homebrew](https://brew.sh) is required.
 ```sh
 $ brew install mysql
 ```
@@ -67,8 +68,10 @@ virtualenvwrapper:
 
 ```sh
 $ xcode-select --install
-$ pip install --upgrade virtualenvwrapper
+$ sudo pip install --upgrade virtualenvwrapper
 ```
+After installing, [run a couple of initialization steps](https://virtualenvwrapper.readthedocs.io/en/latest/)
+to export the WORKON_HOME env and source the virtualenvwrapper.sh.
 
 #### SendGrid API Key
 SendGrid is the email service provider.  To use it, you simply need
@@ -83,6 +86,8 @@ $ workon forseti-security
 ```
 
 #### Run the python setup:
+Navigate to your cloned repo.
+
 ```sh
 $ python setup.py install
 ```
