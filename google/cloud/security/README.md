@@ -87,7 +87,6 @@ $ workon forseti-security
 
 #### Run the python setup:
 Navigate to your cloned repo.
-
 ```sh
 $ python setup.py install
 ```
