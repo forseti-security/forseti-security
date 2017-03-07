@@ -8,7 +8,7 @@ It provides:
 
 We are continually improving Forseti Security and invite you to submit feature requests and bug reports under Issues. If you would like to contribute to our development efforts, please review our [contributing guidelines](/CONTRIBUTING.md) and submit a pull request.
 
-## Installation
+# Installation
 There are two ways to install Forseti Security.
 
 ### Google Cloud Platform (recommended)
