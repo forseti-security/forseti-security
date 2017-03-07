@@ -75,18 +75,23 @@ or bug fix.
     ```
 
 5. Create your change.
-A change should be a logical, self-contained unit of work, feature, or fix.
-This way, it is easier for troubleshooting and rollbacks.  In other words,
-please do not incorporate multiple changes in one PR.
-[Instructions to execute the tools.]
+
+    A change should be a logical, self-contained unit of work, feature, or fix.
+    This way, it is easier for troubleshooting and rollbacks.  In other words,
+    please do not incorporate multiple changes in one PR.
+    
+    [Instructions to execute the tools.]
 
 6. Create your test.
-We strive to have high and useful coverage by unit tests.  If your change
-involves substantial logic, we will request that you write applicable unit
-tests.
-Our unit tests are written with google-apputils basetest framework.
-See a [basic example] of how to use it, in the "Google-Style Tests" section.
-[Instructions to run the tests.]
+
+    We strive to have high and useful coverage by unit tests.  If your change
+    involves substantial logic, we will request that you write applicable unit
+    tests.
+    
+    Our unit tests are written with google-apputils basetest framework.
+    See a [basic example] of how to use it, in the "Google-Style Tests" section.
+    
+    [Instructions to run the tests.]
 
 7. Commit your changes and push your development branch to your fork.
 
