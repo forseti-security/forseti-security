@@ -142,7 +142,7 @@ EOF
 echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
 chmod +x $USER_HOME/run_forseti.sh
 
-(crontab -l 2>/dev/null; echo "00 * * * * $USER_HOME/run_forseti.sh") | crontab -
+(echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
 """.format(
            # cloud_sql_proxy
            context.properties['cloudsqlproxy-os-arch'],
