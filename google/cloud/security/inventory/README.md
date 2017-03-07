@@ -29,20 +29,10 @@ If you haven't already, install the Forseti packages by using the setup.py in th
 4. Follow these instructions to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
 
 ## How to Run
-If you are running in the local environment, you need to install and configure
-service account key.
-
-### Install Service Account Key
-1. Create a key for your project's Compute Engine default service account
-in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
-2. Permission the service account with the following IAM policy:
-    * Project Browser
-    * Cloud SQL Editor 
-3. Download the key to your local env.
-4. Configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials)
-to env variable to reference this key.
+If you are running in the local environment, you need to authenticate
+your application-default credentials:
 ```sh
-$ export GOOGLE_APPLICATION_CREDENTIALS="<path to your service account key>"
+$ gcloud auth application-default login
 ```
 
 After running setup.py, as long as your virtualenv is activated, then you can be in any directory to invoke the console script:
