@@ -29,11 +29,12 @@ If you haven't already, install the Forseti packages by using the setup.py in th
 4. Follow these instructions to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
 
 ## How to Run
-After running setup.py, you need to install and configure service account key.
+If you are running in the local environment, you need to install and configure
+service account key.
 
 ### Install Service Account Key
 1. Create a key for the Compute Engine default service account.
-2. Permission the service account the following IAM policy:
+2. Permission the service account with the following IAM policy:
     * Project Browser
     * Cloud SQL Editor 
 3. Download the key to your local env.
@@ -43,7 +44,7 @@ to env variable to reference this key.
     $ export GOOGLE_APPLICATION_CREDENTIALS="<path to your service account key>"
     ```
 
-As long as your virtualenv is activated, then you can be in any directory to invoke the console script:
+After running setup.py, as long as your virtualenv is activated, then you can be in any directory to invoke the console script:
 
 ```sh
 $ forseti_inventory
