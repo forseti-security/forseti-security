@@ -3,6 +3,7 @@
 * [Prerequisites](#prerequisites)
 * [Set up a service account](#set-up-a-service-account)
 * [Customize Deployment Templates](#customize-deployment-templates)
+* [Customze rules.yaml](#customize-rules-yaml)
 * [Deploy Forseti Security](#deploy-forseti-security)
 * [Troubleshooting](#troubleshooting)
 
@@ -105,6 +106,11 @@ There are other templates that you can modify:
 * `py/forseti-instance.py`: The template for the Compute Engine instance where Forseti Security will run.
    * You can customize the startup script (more about [startup scripts in GCP docs](https://cloud.google.com/deployment-manager/docs/step-by-step-guide/setting-metadata-and-startup-scripts)).
    * By default, the startup script will setup the environment to install the Forseti Security and run the tools every hour.
+
+## Customize rules.yaml
+By default, the DM template has a rules.yaml that will allow service accounts on the organization and its children (e.g. projects) IAM policies. For more information, refer to the [rules schema](/google/cloud/security/scanner/samples/rules.md) as well as the [scanner unit tests](/tests/scanner) for examples and explanations.
+
+Once you finish customizing rules.yaml, upload it to your SCANNER\_BUCKET. The `py/forseti_instance.py` template looks for the rules.yaml in gs://SCANNER\_BUCKET/rules, so if you have a different location for your rules.yaml, be sure to update the template accordingly (e.g. replace every instance of "rules/rules.yaml" with the appropriate path so the scanner knows where to find it).
 
 ## Deploy Forseti Security
 After you configure the deployment template variables you can create a new deployment.
