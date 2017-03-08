@@ -91,6 +91,20 @@ Navigate to your cloned repo.
 $ python setup.py install
 ```
 
+#### Install Service Account Key
+1. Create a custom service account.
+2 key for your project's Compute Engine default service account
+in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
+2. Permission the service account with the following IAM policy:
+    * Project Editor
+    * Cloud SQL Editor 
+3. Download the key to your local env.
+4. Configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials)
+to env variable to reference this key.
+```sh
+$ export GOOGLE_APPLICATION_CREDENTIALS="<path to your service account key>"
+```
+
 ## Execution
 You should now be able to run the following commandline tools. To see the flag options for each, use
 the `--helpshort` or `--helpfull` flags.

@@ -28,13 +28,8 @@ If you haven't already, install the Forseti packages by using the setup.py in th
     * Enter a name.
 4. Follow these instructions to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
 
-## How to Run
-If you are running in the local environment, you need to authenticate
-your application-default credentials:
-```sh
-$ gcloud auth application-default login
-```
 
+## How to Run
 After running setup.py, as long as your virtualenv is activated, then you can be in any directory to invoke the console script:
 
 ```sh
