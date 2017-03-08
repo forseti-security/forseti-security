@@ -18,6 +18,8 @@
 def GenerateConfig(context):
     """Generate configuration."""
 
+    FORSETI_SECURITY_VERSION = context.properties['forseti-version']
+
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
         '$(ref.cloudsql-instance.region)',
         '$(ref.cloudsql-instance.name)')
@@ -72,7 +74,6 @@ def GenerateConfig(context):
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
-sudo apt-get install -y git unzip git
 sudo apt-get install -y libmysqlclient-dev
 sudo apt-get install -y python-pip python-dev
 
@@ -128,8 +129,8 @@ pip install --upgrade pip
 pip install --upgrade setuptools
 
 cd $USER_HOME
-git clone {}
-cd forseti-security
+wget -qO- {} | tar xvz
+cd forseti-security-{}
 python setup.py install
 
 # Create the startup run script
@@ -157,6 +158,7 @@ chmod +x $USER_HOME/run_forseti.sh
 
            # download forseti src code
            context.properties['src-path'],
+           FORSETI_SECURITY_VERSION,
 
            # run_forseti.sh
            # - forseti_inventory
