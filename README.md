@@ -12,9 +12,7 @@ We are continually improving Forseti Security and invite you to submit feature r
 # Setup
 There are two ways to run Forseti Security.
 
-**Note**: This will only work if you have a GCP organization set up. You will need to take note of your organization ID, either by looking it up in your Cloud Console IAM settings or asking your Organization Admin.
-
-### GCP (recommended)
+### Google Cloud Platform (recommended)
 Use this [README](/deployment-templates/README.md) to deploy
 Forseti Security to GCP quickly and easily.
 

@@ -1,5 +1,11 @@
 # Deploying Forseti Security to Google Cloud
 
+* [Prerequisites](#prerequisites)
+* [Set up a service account](#set-up-a-service-account)
+* [Customize Deployment Templates](#customize-deployment-templates)
+* [Deploy Forseti Security](#deploy-forseti-security)
+* [Troubleshooting](#troubleshooting)
+
 One of the goals of Forseti Security is to provide continuous scanning and enforcement in your Google Cloud Platform (GCP) environment. [Deployment Manager](https://cloud.google.com/deployment-manager/docs/) (DM) is a Google Cloud service that helps you automate the deployment and management of your GCP resources. We are using DM to do the following:
 
 * Create a Cloud SQL instance and database for storing inventory data.
@@ -9,9 +15,7 @@ One of the goals of Forseti Security is to provide continuous scanning and enfor
 
 **Note**: The DM templates currently do not schedule or execute the [enforcer](../google/cloud/security/enforcer/README.md) module.
 
-# Getting started
-
-### Prerequisites
+## Prerequisites
 * Install and update `gcloud`. Verify whether the output of `gcloud info` shows the right project and account. If not, login and init your environment (see following steps).
 
   ```sh
@@ -64,7 +68,7 @@ One of the goals of Forseti Security is to provide continuous scanning and enfor
   $ gcloud beta service-management enable deploymentmanager.googleapis.com
   ```
 
-### Assign roles to service account
+## Set up a service account
 In order to run Forseti Security, you must add a service account to your **organization-level** IAM policy with at least the `Browser` role. This allows Forseti Security to perform operations such as listing the projects within your organization.
 
 **Note**: If you also want to audit/enforce organization IAM policies, you'll need to assign the `Organization Administrator` role. Note that this is a very powerful role; if your GCE instance gets compromised, your entire account could also be compromised!
@@ -75,11 +79,11 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
   --role=roles/browser
 ```
 
-### Using Deployment Templates
+## Customize Deployment Templates
 The provided DM templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the following variables:
 
 * CLOUDSQL\_INSTANCE\_NAME
-  * Instance name must be lowercase letters, numbers, and hyphens; must start with a letter (e.g. "valid-instancename-1", NOT "1\_invalid\_instanceName.com"). See [naming guidelines](https://cloud.google.com/sql/docs/mysql/instance-settings#settings-2ndgen) for more information.
+  * Instance name must start with a letter and consist of lowercase letters, numbers, and hyphens (e.g. "valid-instancename-1", NOT "1\_invalid\_instanceName.com"). See [naming guidelines](https://cloud.google.com/sql/docs/mysql/instance-settings#settings-2ndgen) for more information.
   * Instance name must also be unique. If you delete a Cloud SQL instance (either by deleting your deployment or manually through gcloud or the Cloud Console), you cannot reuse that instance name for up to 7 days.
 * SCANNER\_BUCKET
   * This is just the bucket name; do not include "gs://".
@@ -93,16 +97,16 @@ The provided DM templates are samples for you to use. Make a copy of `deploy-for
 * EMAIL\_ADDRESS\_OF_YOUR\_SENDER (email address of your email sender)
 * EMAIL\_ADDRESS\_OF\_YOUR\_RECIPIENT (email address of your email recipient)
 
-There are other templates that you can modify if you'd like:
+There are other templates that you can modify:
 
 * `py/inventory/cloudsql-instance.py`:  The template for the Google Cloud SQL instance.
 * `py/inventory/cloudsql-database.py`: The template for the Google Cloud SQL database.
 * `py/storage/bucket.py`: The template for the Google Cloud Storage buckets.
 * `py/forseti-instance.py`: The template for the Compute Engine instance where Forseti Security will run.
-   * You can customize the startup script (more about [startup scripts in GCP docs](https://cloud.google.com/deployment-manager/docs/step-by-step-guide/setting-metadata-and-startup-scripts)) if you'd like.
+   * You can customize the startup script (more about [startup scripts in GCP docs](https://cloud.google.com/deployment-manager/docs/step-by-step-guide/setting-metadata-and-startup-scripts)).
    * By default, the startup script will setup the environment to install the Forseti Security and run the tools every hour.
 
-### Deploying Forseti Security
+## Deploy Forseti Security
 After you configure the deployment template variables you can create a new deployment.
 
 ```sh
@@ -110,10 +114,10 @@ $ gcloud deployment-manager deployments create forseti-security \
   --config path/to/deploy-forseti.yaml
 ```
 
-When your deployment is complete, you can see it in your Cloud Console [Deployment Manager dashboard](https://console.cloud.google.com/deployments). Also, if you're using the default startup script, Forseti Security should run on the top of the hour, drop a csv in `gs://SCANNER_BUCKET/scanner_violations/`, and email you the inventory and scanner results.
+You can view the details of your deployment in the Cloud Console [Deployment Manager dashboard](https://console.cloud.google.com/deployments). Also, if you're using the default startup script, Forseti Security should run on the top of the hour, drop a csv in `gs://SCANNER_BUCKET/scanner_violations/`, and email you the inventory and scanner results.
 
-### Troubleshooting
+## Troubleshooting
 
-* Getting errors about invalid resources? Check that your bucket or Cloud SQL instance names are unique.
-* Getting errors about `MANIFEST_EXPANSION_USER_ERROR` something? The syntax in your template might be invalid. Refer to the error message for the line number and erroneous template.
-* If you need to delete your deployment and try again, make sure to rename your Cloud SQL instance (INSTANCE\_NAME) in the template to something new before creating a new deployment.
+* **Getting errors about invalid resources?** Check that your bucket or Cloud SQL instance names are unique.
+* **Getting errors about `MANIFEST_EXPANSION_USER_ERROR`?** The syntax in your template might be invalid. Refer to the error message for the line number and erroneous template.
+* **If you need to delete your deployment and try again,** make sure to rename your Cloud SQL instance (INSTANCE\_NAME) in the template to something new before creating a new deployment.

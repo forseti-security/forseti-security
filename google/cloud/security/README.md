@@ -74,7 +74,7 @@ After installing, [run a couple of initialization steps](https://virtualenvwrapp
 to export the WORKON_HOME env and source the virtualenvwrapper.sh.
 
 #### SendGrid API Key
-SendGrid is the email service provider. To use it, sign up for a [SendGrid account](https://sendgrid.com) and create a [General API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html). You will use this API key in the deployment templates or as a flag value for the Forseti Security commandline tools.
+SendGrid is currently the only supported email service provider. To use it, sign up for a [SendGrid account](https://sendgrid.com) and create a [General API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html). You will use this API key in the deployment templates or as a flag value for the Forseti Security commandline tools.
 
 ### Setup
 #### Create a virtualenv and activate it, e.g.:
@@ -88,6 +88,12 @@ Navigate to your cloned repo.
 ```sh
 $ python setup.py install
 ```
+
+#### Create a new project for Forseti Security
+
+Create a new GCP project in the [Cloud Console](https://console.cloud.google.com) and set up billing.
+
+**Note**: Forseti Security depends on having a GCP organization set up. Take note of your organization ID, either by looking it up in your Cloud Console IAM settings or asking your Organization Admin. You will need to use it as a flag value when running the individual tools.
 
 #### Create a Service Account
 In general, it's highly recommended to create a separate project that contains your service accounts and limited editors/owners. You can then use those service accounts in other projects. For more information, refer to some [best practices](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#best_practices) for service accounts.
