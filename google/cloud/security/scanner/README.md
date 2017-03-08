@@ -8,9 +8,7 @@ optionally writes it to a bucket in Google Cloud Storage.
 ## Running the scanner
 
 * Before running the scanner, make sure you've installed the forseti-security
-  package. See the [README](/README.md) in the top-level directory of this repo.
-
-* Create a new project and setup billing.
+  package and set up your Google Cloud project. Refer to this [README](/google/cloud/security/README.md) for instructions.
 
 * Update gcloud (the following gcloud commands have been tested with version
   1.3.8):

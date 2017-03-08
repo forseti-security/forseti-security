@@ -1,7 +1,8 @@
 # Forseti Security
 Forseti Security helps you secure your Google Cloud Platform (GCP) environment. 
 
-It provides:
+Features:
+
 * [Visibility](google/cloud/security/inventory/README.md): Builds and stores an inventory of your GCP resources.
 * [Detection](google/cloud/security/scanner/README.md): Finds policy violations across various resources in GCP.
 * [Enforcement](google/cloud/security/enforcer/README.md): Applies changes to enforce policy when needed.
@@ -11,9 +12,11 @@ We are continually improving Forseti Security and invite you to submit feature r
 # Setup
 There are two ways to run Forseti Security.
 
-### Google Cloud Platform (recommended)
+**Note**: This will only work if you have a GCP organization set up. You will need to take note of your organization ID, either by looking it up in your Cloud Console IAM settings or asking your Organization Admin.
+
+### GCP (recommended)
 Use this [README](/deployment-templates/README.md) to deploy
-Forseti Security to Google Cloud Platform quickly and easily.
+Forseti Security to GCP quickly and easily.
 
 ### Local Environment
 Use this [README](/google/cloud/security/README.md) to install and use
@@ -23,7 +26,7 @@ Forseti Security on your own machine.
 Reach out to us with questions by contacting
 [forseti-security@google.com](mailto:forseti-security@google.com).
 
-For enhancements, bugs, or other similar items please open an
+For enhancements, bugs, or other similar items, please open an
 [issue](https://github.com/GoogleCloudPlatform/forseti-security/issues).
 
 # Disclaimer

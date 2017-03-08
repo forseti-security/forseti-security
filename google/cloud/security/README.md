@@ -50,7 +50,7 @@ $ sudo apt-get install libmysqlclient-dev
 Note: If libmysqlclient-dev doesn't install mysql_config, then try also installing mysql_server.
 
 ##### OS X
-[Homebrew](https://brew.sh) is required.
+The easiest way to do this is with [Homebrew](https://brew.sh):
 ```sh
 $ brew install mysql
 ```
@@ -74,9 +74,7 @@ After installing, [run a couple of initialization steps](https://virtualenvwrapp
 to export the WORKON_HOME env and source the virtualenvwrapper.sh.
 
 #### SendGrid API Key
-SendGrid is the email service provider.  To use it, you simply need
-to [create a General API Key with SendGrid](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html)
-and pass it as a template or flag value.
+SendGrid is the email service provider. To use it, sign up for a [SendGrid account](https://sendgrid.com) and create a [General API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html). You will use this API key in the deployment templates or as a flag value for the Forseti Security commandline tools.
 
 ### Setup
 #### Create a virtualenv and activate it, e.g.:
@@ -91,20 +89,21 @@ Navigate to your cloned repo.
 $ python setup.py install
 ```
 
-#### Install Service Account Key
+#### Create a Service Account
+In general, it's highly recommended to create a separate project that contains your service accounts and limited editors/owners. You can then use those service accounts in other projects. For more information, refer to some [best practices](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#best_practices) for service accounts.
+
 1. Create a custom service account in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
 Having a custom service account with only the IAM permissions needed
 for testing would allow you to delete the service account when you are done,
-and delete the key when it is no longer needed. Unlike your user account
-which can be phished, or the default service account which is harder to
-clean up.
-[Best practices for service accounts.](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#best_practices)
-2. Permission the service account with the following IAM policy:
+and delete the key when it is no longer needed. A custom service
+account (separate from your user account) will be less likely to be phished
+and easier to clean up than the default service account.
+2. Grant the following IAM roles to the service account:
     * Project Editor
     * Cloud SQL Editor 
 3. Create and download the json key to your local environment.
-4. Configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials)
-to env variable to reference this key.
+4. Set an environment variable to configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials)
+to reference this key.
 ```sh
 $ export GOOGLE_APPLICATION_CREDENTIALS="<path to your service account key>"
 ```
