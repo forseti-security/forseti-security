@@ -118,6 +118,9 @@ You can view the details of your deployment in the Cloud Console [Deployment Man
 
 ## Troubleshooting
 
-* **Getting errors about invalid resources?** Check that your bucket or Cloud SQL instance names are unique.
-* **Getting errors about `MANIFEST_EXPANSION_USER_ERROR`?** The syntax in your template might be invalid. Refer to the error message for the line number and erroneous template.
-* **If you need to delete your deployment and try again,** make sure to rename your Cloud SQL instance (INSTANCE\_NAME) in the template to something new before creating a new deployment.
+* **Getting errors about invalid resources?**
+  Check that your bucket or Cloud SQL instance names are unique.
+* **Getting errors about `MANIFEST_EXPANSION_USER_ERROR`?**
+  The syntax in your template might be invalid. Refer to the error message for the line number and erroneous template.
+* **Need to delete your deployment and try again?**
+  Before you do so, make sure to rename your Cloud SQL instance (INSTANCE\_NAME) in the template to something new before creating a new deployment.
