@@ -102,7 +102,7 @@ $ python setup.py install
 2. Permission the service account with the following IAM policy:
     * Project Editor
     * Cloud SQL Editor 
-3. Download the key to your local env.
+3. Create and download the json key to your local environment.
 4. Configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials)
 to env variable to reference this key.
 ```sh
