@@ -26,16 +26,6 @@ $ gcloud components update
 $ gcloud init
 ```
 
-* Add the `PROJECTID-compute@developer.gserviceaccount.com` service account from
-  your project IAM onto your organization IAM settings. Grant it the `Browser`
-  role.
-
-* Authenticate your application-default credentials:
-
-```sh
-$ gcloud auth application-default login
-```
-
 * A sample rules file can be found in the samples/ directory. You should edit
   this to fit your environment.
 
