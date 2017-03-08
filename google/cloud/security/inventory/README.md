@@ -44,7 +44,7 @@ $ scripts/dev_inventory.sh
 ```
 
 ## How to Test
-Look at top-level [README](/README.md).
+Look at the test instruction in this [README](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/README.md#tests).
 
 ## Tips & Tricks
 * It is helpful to use a mysql GUI tool to inspect the table data.
