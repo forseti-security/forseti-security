@@ -92,9 +92,13 @@ $ python setup.py install
 ```
 
 #### Install Service Account Key
-1. Create a custom service account.
-2 key for your project's Compute Engine default service account
-in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
+1. Create a custom service account in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
+    Having a custom service accounts with only the IAM permissions needed
+    for testing would allow you to delete the service account when you are done,
+    and delete the key when it is no longer needed. Unlike your user account
+    which can be phished, or the default service account which is harder to
+    clean up.
+    [Best practices for service accounts.](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#best_practices)
 2. Permission the service account with the following IAM policy:
     * Project Editor
     * Cloud SQL Editor 
