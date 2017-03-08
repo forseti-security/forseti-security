@@ -83,8 +83,13 @@ $ mkvirtualenv forseti-security
 $ workon forseti-security
 ```
 
+### Get the source code
+Clone the repo, if you haven't already done so:
+
 #### Run the python setup:
-Navigate to your cloned repo.
+
+Navigate to your cloned repo, then run:
+
 ```sh
 $ python setup.py install
 ```
