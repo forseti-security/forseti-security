@@ -3,7 +3,7 @@
 * [Prerequisites](#prerequisites)
 * [Set up a service account](#set-up-a-service-account)
 * [Customize Deployment Templates](#customize-deployment-templates)
-* [Customze rules.yaml](#customize-rules-yaml)
+* [Customze rules.yaml](#customize-rulesyaml)
 * [Deploy Forseti Security](#deploy-forseti-security)
 * [Troubleshooting](#troubleshooting)
 
