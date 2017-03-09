@@ -122,6 +122,25 @@ $ gcloud deployment-manager deployments create forseti-security \
 
 You can view the details of your deployment in the Cloud Console [Deployment Manager dashboard](https://console.cloud.google.com/deployments). Also, if you're using the default startup script, Forseti Security should run on the top of the hour, drop a csv in `gs://SCANNER_BUCKET/scanner_violations/`, and email you the inventory and scanner results.
 
+## Making changes to your deployment
+If you need to make changes to your deployment, refer to the [documentation](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments) for more details.
+
+Most of the changes you will probably make will be around the deployment properties, such as the `src-path` (e.g. you want your deployment to run a certain version of Forseti Security), notification email addresses, or the instance type. There are a few steps involved to update your deployment:
+
+1. Edit the deploy-forseti.yaml.
+2. Run the update command:
+
+  ```sh
+  $ gcloud deployment-manager deployments update forseti-security \
+    --config path/to/deploy-forseti.yaml
+  ```
+
+3. If you made changes that affect the GCE instance's startup script, you may need to reset the instance to see the changes take effect:
+
+  ```sh
+  $ gcloud compute instances reset <GCE instance name>
+  ```
+
 ## Troubleshooting
 
 * **Getting errors about invalid resources?**
