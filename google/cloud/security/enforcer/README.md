@@ -66,9 +66,6 @@ If no network name is listed, then the rule will be applied to all networks
 configured on the project. The network name will be prepended to the rule name.
 
 Example rule:
-
-If this rule is used in a policy file, it must be wrapped in a list.
-
 ```json
 
     {
@@ -84,4 +81,9 @@ If this rule is used in a policy file, it must be wrapped in a list.
     }
 
 ```
+
+If this rule is used in a policy file, it needs to be wrapped in a list.
+See [default_allow_policy.json].
+
+[default_allow_policy.json]: (/google/cloud/security/enforcer/samples/default_allow_policy.json)
 
