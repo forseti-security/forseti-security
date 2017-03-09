@@ -66,8 +66,12 @@ If no network name is listed, then the rule will be applied to all networks
 configured on the project. The network name will be prepended to the rule name.
 
 Example rule:
+
+This is a single rule.  If this is used in a policy file, it must be wrapped
+in a list.
+
 ```json
-[
+
     {
         "sourceRanges": ["0.0.0.0/0"],
         "description": "Allow SSH from anywhere",
@@ -79,6 +83,6 @@ Example rule:
         ],
         "name": "allow-ssh"
     }
-]
+
 ```
 
