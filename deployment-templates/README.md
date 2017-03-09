@@ -135,7 +135,7 @@ Most of the changes you will probably make will be around the deployment propert
     --config path/to/deploy-forseti.yaml
   ```
 
-3. If you made changes that affect the GCE instance's startup script, you may need to reset the instance to see the changes take effect:
+3. If you made changes that affect the GCE instance's startup script (e.g. changing the properties of the "Compute Engine" section in deploy-forseti.yaml, the actual startup script in py/forseti-instance.py), you may need to reset the instance to see the changes take effect:
 
   ```sh
   $ gcloud compute instances reset <GCE instance name>
