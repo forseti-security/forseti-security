@@ -124,9 +124,9 @@ a, a:visited {
     <div class="diff-summary">
     {% for (resource_type, summary) in resource_summaries.iteritems() %}
     <div>{{ summary['pluralized_resource_type'] }}:
-         {{ summary['total'] }}
-         of
          {{ summary['violations']|length }}
+         of
+         {{ summary['total'] }}
     </div>
     {% endfor %}
     </div>
