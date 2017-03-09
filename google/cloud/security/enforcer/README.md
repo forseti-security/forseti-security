@@ -67,6 +67,7 @@ configured on the project. The network name will be prepended to the rule name.
 
 Example rule:
 ```json
+[
     {
         "sourceRanges": ["0.0.0.0/0"],
         "description": "Allow SSH from anywhere",
@@ -78,5 +79,6 @@ Example rule:
         ],
         "name": "allow-ssh"
     }
+]
 ```
 
