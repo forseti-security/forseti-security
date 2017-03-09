@@ -67,7 +67,7 @@ configured on the project. The network name will be prepended to the rule name.
 
 Example rule:
 
-If this is used in a policy file, it must be wrapped in a list.
+If this rule is used in a policy file, it must be wrapped in a list.
 
 ```json
 
