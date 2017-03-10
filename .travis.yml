@@ -1,5 +1,6 @@
 env:
- - "PROTOC=/usr/local/bin"
+ - "PROTOC_PATH=/usr/local/bin"
+ - "PROTOC=/usr/local/bin/protoc"
 language:
  - "python"
 python:
@@ -10,7 +11,7 @@ before_install:
   - "sudo apt-get install libmysqlclient-dev"
   - "wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip"
   - "unzip -d protoc protoc-3.2.0-linux-x86_64.zip"
-  - "sudo cp protoc/bin/protoc $PROTOC"
+  - "sudo cp protoc/bin/protoc $PROTOC_PATH"
 #  - "bash ./scripts/install_protobuf.sh"
 install:
   - "python setup.py install"
