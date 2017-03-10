@@ -1,6 +1,5 @@
 env:
- - "PROTOC_PATH=/usr/local/bin"
- - "PROTOC=/usr/local/bin/protoc"
+ - "PROTOC_PATH=/usr/local/bin PROTOC=/usr/local/bin/protoc"
 language:
  - "python"
 python:
