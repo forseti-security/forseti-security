@@ -19,7 +19,7 @@ set -e
 if [ ! -d "$HOME/protobuf/lib" ]; then
   wget https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-python-3.2.0.tar.gz
   tar -xzvf protobuf-python-3.2.0.tar.gz
-  cd protbuf-3.2.0/ && ./configure --prefix=$HOME/protobuf && make && make install
+  cd protobuf-3.2.0/ && ./configure --prefix=$HOME/protobuf && make && make install
 else
   echo "Using cached directory."
 fi
