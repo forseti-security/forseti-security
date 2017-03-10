@@ -16,10 +16,12 @@
 # A script to perform the download and installation of protobuf.
 
 set -e
-if [ ! -d "$HOME/protobuf/lib" ]; then
-  wget https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-python-3.2.0.tar.gz
-  tar -xzvf protobuf-python-3.2.0.tar.gz
-  cd protobuf-3.2.0/ && ./configure --prefix=$HOME/protobuf && make && make install
+
+if [ ! -d "/tmp/protoc" ]; then
+  wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+  unzip -d /tmp/protoc protoc-3.2.0-linux-x86_64.zip
+  sudo mv /tmp/protoc/bin/protoc $PROTOC_PATH
+  sudo chmod 755 $PROTOC
 else
-  echo "Using cached directory."
+  echo "Using cached protoc directory."
 fi
