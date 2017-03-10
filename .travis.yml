@@ -13,7 +13,7 @@
 # limitations under the License.
 
 env:
- - "PROTOC_PATH=/usr/local/bin PROTOC=/usr/local/bin/protoc"
+ - "PROTOC_PATH=/tmp/protoc/bin PROTOC=/tmp/protoc/bin/protoc"
 cache:
   directories:
     - "pip"
