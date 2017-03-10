@@ -7,8 +7,8 @@ python:
 install:
   - "sudo apt-get install libmysqlclient-dev"
   - "wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip"
-  - "unzip protoc-3.2.0-linux-x86_64.zip"
-  - "sudo mv bin/protoc $PROTOC_PATH"
+  - "unzip -d /tmp/protoc protoc-3.2.0-linux-x86_64.zip"
+  - "sudo mv /tmp/protoc/bin/protoc $PROTOC_PATH"
   - "sudo chmod 755 $PROTOC"
   - "python setup.py install"
 script:
