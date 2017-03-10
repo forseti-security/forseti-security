@@ -1,5 +1,5 @@
 env:
- - "PROTOC=/home/travis/protobuf/bin/"
+ - "PROTOC=/usr/local/bin"
 language:
  - "python"
 python:
