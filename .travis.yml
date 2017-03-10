@@ -4,13 +4,12 @@ language:
  - "python"
 python:
   - "2.7"
-before_install:
+install:
   - "sudo apt-get install libmysqlclient-dev"
   - "wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip"
   - "unzip -d protoc protoc-3.2.0-linux-x86_64.zip"
   - "sudo cp protoc/bin/protoc $PROTOC_PATH"
-#  - "bash ./scripts/install_protobuf.sh"
-install:
+  - "ls -lah /usr/local/bin"
   - "python setup.py install"
 script:
   - "python setup.py google_test --test-dir=tests/"
