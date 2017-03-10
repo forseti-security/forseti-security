@@ -12,7 +12,7 @@ install:
   - "sudo chmod 755 $PROTOC"
   - "ls -lah /usr/local/bin"
   - "echo $PROTOC"
-  - "./$PROTOC --version"
+  - "$PROTOC --version"
   - "python setup.py install"
 script:
   - "python setup.py google_test --test-dir=tests/"
