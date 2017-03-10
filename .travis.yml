@@ -10,6 +10,8 @@ install:
   - "unzip -d protoc protoc-3.2.0-linux-x86_64.zip"
   - "sudo cp protoc/bin/protoc $PROTOC_PATH"
   - "ls -lah /usr/local/bin"
+  - "echo $PROTOC"
+  - "./$PROTOC --version"
   - "python setup.py install"
 script:
   - "python setup.py google_test --test-dir=tests/"
