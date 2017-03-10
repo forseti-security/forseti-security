@@ -5,8 +5,9 @@ python:
 cache:
   - "$HOME/protbuf"
 before_install:
-  - "sudo apt-get install libmysqlclient-dev"
-  - "bash ./scripts/install_protobuf.sh"
+  - "apt-get install libmysqlclient-dev"
+  - "apt-get install protobuf-compiler"
+#  - "bash ./scripts/install_protobuf.sh"
 install:
   - "python setup.py install"
 script:
