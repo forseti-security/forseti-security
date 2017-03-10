@@ -13,6 +13,7 @@ install:
   - "ls -lah /usr/local/bin"
   - "echo $PROTOC"
   - "$PROTOC --version"
+  - "echo $PWD"
   - "python setup.py install"
 script:
   - "python setup.py google_test --test-dir=tests/"
