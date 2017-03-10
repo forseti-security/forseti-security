@@ -15,7 +15,6 @@
 
 # A script to perform the download and installation of protobuf.
 
-set -ex
 PROTOBUF_VERSION="3.2.0"
 wget https://github.com/google/protobuf/releases/download/v$PROTBUF_VERSION/protoc-$PROTOBUF_VERSION-linux-x86_64.zip
 unzip protoc-$PROTBUF_VERSION-linux-x86_64.zip
