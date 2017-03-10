@@ -4,8 +4,8 @@ python:
   - "2.7"
 before_install:
   - "sudo apt-get install libmysqlclient-dev"
-  - "pip install protobuf==3.2.0"
+  - "./scripts/install_protobuf.sh"
 install:
-  - "PYTHONPATH=./ python setup.py install"
+  - "python setup.py install"
 script:
   - "python setup.py google_test --test-dir=tests/"
