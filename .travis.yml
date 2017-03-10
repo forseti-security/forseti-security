@@ -14,8 +14,9 @@
 
 env:
  - "PROTOC_PATH=/usr/local/bin PROTOC=/usr/local/bin/protoc"
-cache: "pip"
+cache:
   directories:
+    - "pip"
     - "/tmp/protoc"
 language:
   - "python"
