@@ -1,3 +1,5 @@
+env:
+ - "PROTOC=/home/travis/protobuf/bin/protoc"
 language:
  - "python"
 python:
@@ -6,8 +8,7 @@ cache:
   - "$HOME/protbuf"
 before_install:
   - "sudo apt-get install libmysqlclient-dev"
-  - "sudo apt-get install protobuf-compiler"
-#  - "bash ./scripts/install_protobuf.sh"
+  - "bash ./scripts/install_protobuf.sh"
 install:
   - "python setup.py install"
 script:
