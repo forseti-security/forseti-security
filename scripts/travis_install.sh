@@ -17,15 +17,15 @@
 
 set -e
 
-#if [ ! -d $PROTOC_DOWNLOAD_PATH ]; then
-#else
-#  echo "Using cached protoc directory."
-#fi
+if [ ! -d /tmp/protoc/bin ]; then
+  mkdir -p $PROTOC_DOWNLOAD_PATH
+  cd $PROTOC_DOWNLOAD_PATH
+  wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+  unzip protoc-3.2.0-linux-x86_64.zip
+else
+  echo "Using cached protoc directory."
+fi
 
 echo "Installing protoc."
-mkdir -p $PROTOC_DOWNLOAD_PATH
-cd $PROTOC_DOWNLOAD_PATH
-wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
-unzip protoc-3.2.0-linux-x86_64.zip
 sudo mv /tmp/protoc/bin/protoc $PROTOC_PATH
 sudo chmod 755 $PROTOC
