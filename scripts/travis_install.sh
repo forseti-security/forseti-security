@@ -17,10 +17,10 @@
 
 set -e
 
-if [ ! -d $PROTOC_DOWNLOAD_PATH ]; then
-else
-  echo "Using cached protoc directory."
-fi
+#if [ ! -d $PROTOC_DOWNLOAD_PATH ]; then
+#else
+#  echo "Using cached protoc directory."
+#fi
 
 echo "Copying protoc to $PROTOC."
 wget -P $PROTOC_DOWNLOAD_PATH \
