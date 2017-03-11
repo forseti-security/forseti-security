@@ -22,9 +22,10 @@ set -e
 #  echo "Using cached protoc directory."
 #fi
 
-echo "Copying protoc to $PROTOC."
-wget -P $PROTOC_DOWNLOAD_PATH \
-  https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
-unzip -d $PROTOC_DOWNLOAD_PATH $PROTOC_DOWNLOAD_PATH/protoc-3.2.0-linux-x86_64.zip
-sudo cp $PROTOC_DOWNLOAD_PATH/bin/protoc $(echo dirname $PROTOC)
+echo "Installing protoc."
+mkdir -p $PROTOC_DOWNLOAD_PATH
+cd $PROTOC_DOWNLOAD_PATH
+wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+unzip protoc-3.2.0-linux-x86_64.zip
+sudo mv /tmp/protoc/bin/protoc $PROTOC_PATH
 sudo chmod 755 $PROTOC
