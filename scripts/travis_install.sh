@@ -18,13 +18,13 @@
 set -e
 
 if [ ! -d $PROTOC_DOWNLOAD_PATH ]; then
-  wget -P $PROTOC_DOWNLOAD_PATH \
-    https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
 else
   echo "Using cached protoc directory."
 fi
 
 echo "Copying protoc to $PROTOC."
-unzip -d $PROTOC_DOWNLOAD_PATH /tmp/protoc-3.2.0-linux-x86_64.zip
+wget -P $PROTOC_DOWNLOAD_PATH \
+  https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+unzip -d $PROTOC_DOWNLOAD_PATH $PROTOC_DOWNLOAD_PATH/protoc-3.2.0-linux-x86_64.zip
 sudo mv $PROTOC_DOWNLOAD_PATH/bin/protoc $(echo dirname $PROTOC)
 sudo chmod 755 $PROTOC
