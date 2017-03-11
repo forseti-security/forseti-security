@@ -27,5 +27,5 @@ else
 fi
 
 echo "Installing protoc."
-sudo mv /tmp/protoc/bin/protoc $PROTOC_PATH
+sudo cp /tmp/protoc/bin/protoc $PROTOC_PATH
 sudo chmod 755 $PROTOC
