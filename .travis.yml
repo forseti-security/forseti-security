@@ -26,6 +26,7 @@ install:
   - "sudo apt-get install libmysqlclient-dev"
   - "ls -lah /tmp"
   - "ls -lah /tmp/protoc"
+  - "ls -lah /tmp/protoc/bin"
   - "bash scripts/travis_install.sh"
   - "python setup.py install"
 script:
