@@ -16,6 +16,8 @@
 # A script to perform the download and installation of protobuf.
 
 set -e
+wget -P $PROTOC_DOWNLOAD_PATH \
+  https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
 
 if [ ! -d $PROTOC_DOWNLOAD_PATH ]; then
   wget -P $PROTOC_DOWNLOAD_PATH \

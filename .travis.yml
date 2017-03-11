@@ -16,7 +16,7 @@ env:
   - "PROTOC=/usr/local/bin/protoc PROTOC_DOWNLOAD_PATH=/tmp/protoc"
 cache:
   directories:
-    - "pip"
+    - "$HOME/.cache/pip"
     - "/tmp/protoc"
 language:
   - "python"
