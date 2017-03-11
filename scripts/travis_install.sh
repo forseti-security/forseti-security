@@ -26,5 +26,5 @@ echo "Copying protoc to $PROTOC."
 wget -P $PROTOC_DOWNLOAD_PATH \
   https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
 unzip -d $PROTOC_DOWNLOAD_PATH $PROTOC_DOWNLOAD_PATH/protoc-3.2.0-linux-x86_64.zip
-sudo mv $PROTOC_DOWNLOAD_PATH/bin/protoc $(echo dirname $PROTOC)
+sudo cp $PROTOC_DOWNLOAD_PATH/bin/protoc $(echo dirname $PROTOC)
 sudo chmod 755 $PROTOC
