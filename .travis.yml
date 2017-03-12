@@ -27,4 +27,4 @@ install:
   - "python setup.py install"
 script:
 #  - "python setup.py google_test --test-dir=tests/"
-  - "bash scripts/travis_pylint.sh"
+  - "bash scripts/travis_test_pylint.sh"
