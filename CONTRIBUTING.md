@@ -29,13 +29,13 @@ Style will be checked using pylint. To confirm your PR will pass the
 Travis pylint test this must run without any output.
 
 ```
-workon forseti-security # Replace forseti-security with your virtalenv.
+$ workon forseti-security # replace forseti-security with your virtalenv.
 
 # Optional
-pip install pylint
+$ pip install pylint
 
 # From the root of forseti-security using pylint >= 1.6.5
-PYTHONPATH=./ pylint --rcfile=./pylintrc
+$ PYTHONPATH=./ pylint --rcfile=./pylintrc
 ```
 
 ## How to Submit A Pull Request

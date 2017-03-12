@@ -15,9 +15,9 @@
 
 # A script to perform the linting of python code submits.
 
-echo "Running pylint."
+echo "Running pylint $(type pylint)."
+pylint --version
 
-echo "pylint version: $(pylint --version)"
 
 PYTHONPATH=./ \
   pylint google/ \
