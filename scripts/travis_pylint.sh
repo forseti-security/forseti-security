@@ -14,7 +14,8 @@
 # limitations under the License.
 
 # A script to perform the linting of python code submits.
-pylint --version
+
+echo "Running pylint ($(pylint --version))."
 
 PYTHONPATH=./ pylint --rcfile=./pylintrc google/ -E
 
