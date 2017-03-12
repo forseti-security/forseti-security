@@ -19,7 +19,7 @@ python:
   - "2.7"
 before_install:
 #  - "sudo apt-get install -y libmysqlclient-dev"
-  - "pip install -q libmysqlclient-dev"
+  - "pip install -q MySQL-python"
   - "pip install -q pylint==1.6.5"
   - "pip install -q protobuf==3.2.0"
 install:
