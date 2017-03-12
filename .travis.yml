@@ -24,7 +24,7 @@ before_install:
   - "pip install -q protobuf==3.2.0"
 install:
 #  - "bash scripts/travis_install_deps.sh"
-  - "python setup.py install"
+#  - "python setup.py install"
 script:
 #  - "python setup.py google_test --test-dir=tests/"
   - "bash scripts/travis_test_pylint.sh"
