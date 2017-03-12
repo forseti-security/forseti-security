@@ -59,8 +59,7 @@ class BaseRulesEngine(object):
         """
         return file_loader.read_and_parse_file(self.full_rules_path)
 
-#pylint: disable=too-few-public-methods
-#TODO(carise): Investigate not using a class for a storage object.
+# TODO(carise): Investigate not using a class for a storage object.
 class BaseRuleBook(object):
     """Base class for RuleBooks.
 
