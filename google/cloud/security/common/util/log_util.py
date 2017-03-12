@@ -18,7 +18,7 @@ Setup logging for Forseti Security based on deployment environment and
 flags passed to the binaries.
 
 If flags are passed, determine logging behavior as follows:
-  - For --use-cloud-logging, enable Stackdriver/Cloud Logging (if available),
+  - For --use-cloud-logging, use Stackdriver/Cloud Logging (if available),
     otherwise fall back to local logging.
   - For --nouse-cloud-logging, only use local logging.
 
@@ -33,22 +33,16 @@ import gflags as flags
 import logging
 import os
 
-from google.cloud import logging as cloud_logging
 from google.cloud.security.common.gcp_api import compute
 
 FLAGS = flags.FLAGS
-
-flags.DEFINE_boolean('use_cloud_logging', True,
+flags.DEFINE_boolean('use_cloud_logging', False,
                      'Use Cloud Logging, if available.')
 flags.DEFINE_boolean('nouse_cloud_logging', False, 'Do not use Cloud Logging.')
 
 
 class LogUtil(object):
     """Utility to wrap logging setup."""
-
-    def __init__(self, module_name):
-        self._name = module_name
-        self._logger = None
 
     @classmethod
     def get_logger(cls, module_name):
@@ -60,52 +54,27 @@ class LogUtil(object):
         Returns:
             An instance of the configured logger.
         """
-        logging_instance = cls(module_name)
-        if FLAGS.use_cloud_logging:
-            logging_instance._attempt_setup_cloud_logger(force=True)
-        elif FLAGS.nouse_cloud_logging:
-            logging_instance._setup_local_logger()
-        else:
-            logging_instance._attempt_setup_cloud_logger()
-        return logger_instance
+        is_gce = compute.ComputeClient.is_compute_engine_instance()
 
-    def _setup_local_logger(self, module_name):
-        """Set up the local logger.
+        # Default handler is local logger.
+        handler = logging.StreamHandler()
 
-        Args:
-            module_name: The name of the module to describe the log entry.
-        """
+        # Use Cloud Logging if flag is set or if on GCE instance.
+        if FLAGS.use_cloud_logging or is_gce:
+            pass
+
+        # Force local logger.
+        if FLAGS.nouse_cloud_logging:
+            handler = logging.StreamHandler()
+
         formatter = logging.Formatter(
                     '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler = logging.StreamHandler()
         handler.setFormatter(formatter)
-        local_logger = logging.getLogger(module_name)
-        local_logger.addHandler(handler)
+        logger_instance = logging.getLogger(module_name)
+        logger_instance.addHandler(handler)
         if os.getenv('DEBUG'):
-            local_logger.setLevel(logging.DEBUG)
+            logger_instance.setLevel(logging.DEBUG)
         else:
-            local_logger.setLevel(logging.INFO)
-        self._logger = local_logger
+            logger_instance.setLevel(logging.INFO)
 
-    def _attempt_setup_cloud_logger(self, module_name, force=False):
-        """Attempt to use the Cloud Logger.
-
-        Try to setup the Cloud Logger if any of the following are true:
-        1. force == True
-        2. Successful query of metadata server (indicates we're running on GCE)
-
-        If neither of the above are True, then setup the local logger.
-
-        Args:
-            module_name: The name of the module to describe the log entry.
-            force: No matter what environment (GCE vs local), try to use
-                Cloud Logger, if True.
-        """
-        is_gce = compute.ComputeClient.is_compute_engine_instance()
-        if force or is_gce:
-            logging_client = cloud_logging.Client()
-            log_name = module_name
-            instance_logger = logging_client.logger(log_name)
-        else:
-            instance_logger = cls._setup_local_logger(module_name)
-        self._logger = instance_logger
+        return logger_instance
