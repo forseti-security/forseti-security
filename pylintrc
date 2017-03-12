@@ -96,7 +96,7 @@ ignore-mixin-members=yes
 
 # List of classes names for which member attributes should not be checked
 # (useful for classes with attributes dynamically set).
-ignored-classes=SQLObject
+ignored-classes=SQLObject, MySQLdb
 
 # When zope mode is activated, add a predefined set of Zope acquired attributes
 # to generated-members.
@@ -105,7 +105,7 @@ zope=no
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E0201 when accessed. Python regular
 # expressions are accepted.
-generated-members=MySQLdb,REQUEST,acl_users,aq_parent,EnforcerLog,ProjectResult,Resource
+generated-members=REQUEST,acl_users,aq_parent
 
 
 [BASIC]
