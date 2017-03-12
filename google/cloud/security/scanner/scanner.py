@@ -285,7 +285,7 @@ def _send_email(csv_name, now_utc, all_violations, total_resources):
     # Create an attachment out of the csv file and base64 encode the content.
     attachment = EmailUtil.create_attachment(
         file_location=csv_name,
-        type='text/csv',
+        content_type='text/csv',
         filename=_get_output_filename(now_utc),
         disposition='attachment',
         content_id='Scanner Violations'
