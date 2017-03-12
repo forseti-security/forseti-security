@@ -90,7 +90,7 @@ comment=no
 
 [TYPECHECK]
 
-ignored-modules=MySQLdb
+ignored-modules=MySQLdb,enforcer_log_pb2
 
 # Tells whether missing members accessed in mixin class should be ignored. A
 # mixin class is detected if its name ends with "mixin" (case insensitive).

@@ -15,13 +15,19 @@
 
 # A script to perform the linting of python code submits.
 
+echo $(type protoc)
+echo $(which protoc)
+
 pip list
 
 echo "Running pylint."
 
 echo "pylint version: $(pylint --version)"
 
-PYTHONPATH=./ pylint --rcfile=./pylintrc google/
+PYTHONPATH=./ \
+  pylint google/ \
+  --rcfile=./pylintrc \
+  --disable=locally-disabled,locally-enabled
 
 if [ $(($? & 7)) -ne 0 ]; then
   echo "pylint had errors."
