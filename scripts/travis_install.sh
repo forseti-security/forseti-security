@@ -17,6 +17,10 @@
 
 set -e
 
+PROTOC_PATH="/usr/local/bin"
+PROTOC="/usr/local/bin/protoc"
+PROTOC_DOWNLOAD_PATH="/tmp/protoc"
+
 echo "Downloading protoc."
 mkdir -p $PROTOC_DOWNLOAD_PATH
 cd $PROTOC_DOWNLOAD_PATH
