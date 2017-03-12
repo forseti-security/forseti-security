@@ -28,7 +28,6 @@ Usage:
       --email_recipient <email address of the email recipient> (required)
 """
 
-import gflags as flags
 import itertools
 import os
 import shutil
@@ -36,10 +35,13 @@ import sys
 
 from datetime import datetime
 
+import gflags as flags
+
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
+# pylint: disable=line-too-long
 from google.cloud.security.common.data_access.organization_dao import OrganizationDao
 from google.cloud.security.common.data_access.project_dao import ProjectDao
 from google.cloud.security.common.gcp_api import storage
@@ -78,8 +80,8 @@ def main():
     file_path = FLAGS.rules
     output_path = FLAGS.output_path
 
-    logger.info(('Initializing the rules engine: '
-                 '\n    rules: {}').format(file_path))
+    logger.info('Initializing the rules engine:\n'
+                'Using rules: %s', file_path)
 
     rules_engine = OrgRulesEngine(rules_file_path=file_path)
     rules_engine.build_rule_book()
@@ -96,16 +98,18 @@ def main():
         logger.info('No policies found. Exiting.')
         sys.exit()
 
-    all_violations = _find_violations(logger,
-        itertools.chain(org_policies.iteritems(),
-                        project_policies.iteritems()),
+    all_violations = _find_violations(
+        logger,
+        itertools.chain(
+            org_policies.iteritems(),
+            project_policies.iteritems()),
         rules_engine)
 
     csv_name = csv_writer.write_csv(
         resource_name='policy_violations',
         data=_write_violations_output(logger, all_violations),
         write_header=True)
-    logger.info('CSV filename: {}'.format(csv_name))
+    logger.info('CSV filename: %s', csv_name)
 
     # scanner timestamp for output file and email
     now_utc = datetime.utcnow()
@@ -187,7 +191,7 @@ def _get_org_policies(logger, timestamp):
         The org policies.
     """
     org_dao = None
-    org_policies = []
+    org_policies = {}
     try:
         org_dao = OrganizationDao()
         org_policies = org_dao.get_org_iam_policies(timestamp)
@@ -207,7 +211,7 @@ def _get_project_policies(logger, timestamp):
         The project policies.
     """
     project_dao = None
-    project_policies = []
+    project_policies = {}
     try:
         project_dao = ProjectDao()
         project_policies = project_dao.get_project_policies(timestamp)
@@ -332,7 +336,7 @@ def _build_scan_summary(all_violations, total_resources):
 
         # Keep track of # of violations per resource id.
         if (violation.resource_id not in
-            resource_summaries[resource_type]['violations']):
+                resource_summaries[resource_type]['violations']):
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] = 0
 

@@ -14,8 +14,9 @@
 
 """Transform data from one format to another."""
 
-from dateutil import parser
 import json
+
+from dateutil import parser
 
 from google.cloud.security.common.util.log_util import LogUtil
 

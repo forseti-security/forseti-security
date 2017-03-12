@@ -43,7 +43,7 @@ LOGGER = LogUtil.setup_logging(__name__)
 class ProjectEnforcer(object):
     """Manages enforcement of policies for a single cloud project."""
 
-    #pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  project_id,
                  dry_run=False,
@@ -84,8 +84,8 @@ class ProjectEnforcer(object):
         self.rules_after_enforcement = None
         self.rules_before_enforcement = None
 
-    #pylint: disable=too-many-return-statements,too-many-branches
-    #TODO: Investigate not having to disable some of these messages.
+    # pylint: disable=too-many-return-statements,too-many-branches
+    # TODO: Investigate not having to disable some of these messages.
     def enforce_firewall_policy(self,
                                 firewall_policy,
                                 compute_service=None,
@@ -182,7 +182,7 @@ class ProjectEnforcer(object):
                 break
 
             if ((self._dry_run and not retry_on_dry_run) or
-                self.rules_after_enforcement == self.expected_rules):
+                    self.rules_after_enforcement == self.expected_rules):
                 break
 
             retry_enforcement_count += 1
@@ -282,8 +282,8 @@ class ProjectEnforcer(object):
                  ('Invalid value for project' in error_msg or
                   'Failed to find project' in error_msg))
                     or  # Error string changed
-                (e.resp.status == 403 and
-                 'scheduled for deletion' in error_msg)):
+                    (e.resp.status == 403 and
+                     'scheduled for deletion' in error_msg)):
                 raise ProjectDeletedError(error_msg)
             elif (e.resp.status == 403 and
                   'Compute Engine API has not been used' in error_msg):
@@ -304,17 +304,17 @@ class ProjectEnforcer(object):
         results.rules_modified_count = 0
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_inserted_rules()]):
+                [r['name'] for r in self.enforcer.get_inserted_rules()]):
             results.rules_added.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_deleted_rules()]):
+                [r['name'] for r in self.enforcer.get_deleted_rules()]):
             results.rules_removed.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_updated_rules()]):
+                [r['name'] for r in self.enforcer.get_updated_rules()]):
             results.rules_updated.append(rule)
             results.rules_modified_count += 1
 
@@ -410,4 +410,3 @@ class ProjectDeletedError(Error):
 
 class ComputeApiDisabledError(Error):
     """Error raised if a project to be enforced has the compute API disabled."""
-

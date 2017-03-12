@@ -37,8 +37,8 @@ class ProjectDao(_DbConnector):
     def __init__(self):
         super(ProjectDao, self).__init__()
 
-    #pylint: disable=too-many-locals
-    #TODO: Look into lowering variabls to remove pylint disable.
+    # pylint: disable=too-many-locals
+    # TODO: Look into lowering variabls to remove pylint disable.
     def get_project_policies(self, timestamp):
         """Get the project policies.
 

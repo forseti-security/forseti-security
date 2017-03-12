@@ -57,8 +57,9 @@ class ResourceUtil(object):
             The new resource based on the type.
         """
         return cls.resource_type_map.get(
-            resource_type, cls.resource_type_map['UNDEFINED']).get('class')(
-            resource_id, resource_type)
+            resource_type,
+            cls.resource_type_map['UNDEFINED']).get('class')(
+                resource_id, resource_type)
 
     @classmethod
     def pluralize(cls, resource_type):

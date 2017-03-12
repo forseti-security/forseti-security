@@ -24,11 +24,11 @@ from google.cloud.security.common.util.log_util import LogUtil
 LOGGER = LogUtil.setup_logging(__name__)
 
 ORG_IAM_POLICIES_FIELDNAMES = [
-   'org_id',
-   'role',
-   'member_type',
-   'member_name',
-   'member_domain'
+    'org_id',
+    'role',
+    'member_type',
+    'member_name',
+    'member_domain'
 ]
 
 
@@ -43,32 +43,32 @@ POLICY_VIOLATION_FIELDNAMES = [
 ]
 
 PROJECTS_FIELDNAMES = [
-   'project_number',
-   'project_id',
-   'project_name',
-   'lifecycle_state',
-   'parent_type',
-   'parent_id',
-   'raw_project',
-   'create_time'
+    'project_number',
+    'project_id',
+    'project_name',
+    'lifecycle_state',
+    'parent_type',
+    'parent_id',
+    'raw_project',
+    'create_time'
 ]
 
 PROJECT_IAM_POLICIES_FIELDNAMES = [
-   'project_number',
-   'role',
-   'member_type',
-   'member_name',
-   'member_domain'
+    'project_number',
+    'role',
+    'member_type',
+    'member_name',
+    'member_domain'
 ]
 
 RAW_ORG_IAM_POLICIES_FIELDNAMES = [
-   'org_id',
-   'iam_policy'
+    'org_id',
+    'iam_policy'
 ]
 
 RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
-   'project_number',
-   'iam_policy'
+    'project_number',
+    'iam_policy'
 ]
 
 CSV_FIELDNAME_MAP = {

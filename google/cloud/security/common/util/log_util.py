@@ -28,7 +28,7 @@ class LogUtil(object):
             module_name: The name of the module to describe the log entry.
         """
         formatter = logging.Formatter(
-                    '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+            '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         my_logger = logging.getLogger(module_name)

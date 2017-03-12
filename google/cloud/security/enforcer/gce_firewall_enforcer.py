@@ -242,7 +242,7 @@ class ComputeFirewallAPI(object):
         retry_on_exception=http_retry,
         wait_exponential_multiplier=1000,
         stop_max_attempt_number=4)
-    #pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals
     def wait_for_any_to_complete(self, project, responses, timeout=0):
         """Wait for one or more requests to complete.
 
@@ -349,8 +349,8 @@ class ComputeFirewallAPI(object):
 
         return completed_operations
 
-    #pylint: disable=no-self-use
-    #TODO: Investigate fixing the pylint issue.
+    # pylint: disable=no-self-use
+    # TODO: Investigate fixing the pylint issue.
     def is_successful(self, response):
         """Checks if the operation finished with no errors.
 
@@ -388,8 +388,8 @@ class ComputeFirewallAPI(object):
                 success = False
         return success
 
-    #pylint: disable=no-self-use
-    #TODO: Investigate fixing the pylint issue.
+    # pylint: disable=no-self-use
+    # TODO: Investigate fixing the pylint issue.
     def _create_dry_run_response(self, rule_name):
         """A fake successful completed response.
 
@@ -682,7 +682,7 @@ class FirewallRules(object):
                 'Rule name exceeds length limit of 63 chars: "%s".' %
                 rule['name'])
 
-        #TODO: Verify rule name matches regex of allowed
+        # TODO: Verify rule name matches regex of allowed
         # names from reference
 
         if rule['name'] in self.rules:
@@ -692,7 +692,7 @@ class FirewallRules(object):
 
         return True
 
-#pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 class FirewallEnforcer(object):
     """Enforce a set of firewall rules for use with GCE projects."""
 
@@ -981,8 +981,8 @@ class FirewallEnforcer(object):
 
         return change_count
 
-    #pylint: disable=too-many-statements,too-many-branches,too-many-locals
-    #TODO: Look at not having some of these disables.
+    # pylint: disable=too-many-statements,too-many-branches,too-many-locals
+    # TODO: Look at not having some of these disables.
     def _apply_change(self, firewall_function, rules):
         """Modify the firewall using the passed in function and rules.
 
@@ -1089,4 +1089,3 @@ class FirewallEnforcer(object):
                     '"%s": %s', operation_name, json.dumps(result))
 
         return (applied_rules, failed_rules, change_errors)
-

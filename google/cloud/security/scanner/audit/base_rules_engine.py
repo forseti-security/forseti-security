@@ -19,6 +19,7 @@ Loads YAML rules either from local file system or Cloud Storage bucket.
 
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util.log_util import LogUtil
+# pylint: disable=line-too-long
 from google.cloud.security.scanner.audit.errors import InvalidRuleDefinitionError
 
 
@@ -59,7 +60,8 @@ class BaseRulesEngine(object):
         """
         return file_loader.read_and_parse_file(self.full_rules_path)
 
-# TODO(carise): Investigate not using a class for a storage object.
+# TODO: Investigate not using a class for a storage object.
+# pylint: disable=too-few-public-methods
 class BaseRuleBook(object):
     """Base class for RuleBooks.
 

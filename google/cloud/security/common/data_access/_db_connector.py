@@ -31,7 +31,7 @@ flags.DEFINE_string('db_name', 'forseti_security', 'Cloud SQL database name')
 flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 flags.DEFINE_string('db_passwd', None, 'Cloud SQL password')
 
-#pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods
 class _DbConnector(object):
     """Database connector."""
 

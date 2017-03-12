@@ -14,12 +14,14 @@
 
 """Provides the load data sql for resources."""
 
+# pylint: disable=line-too-long
 from google.cloud.security.common.data_access.csv_writer import ORG_IAM_POLICIES_FIELDNAMES
 from google.cloud.security.common.data_access.csv_writer import PROJECTS_FIELDNAMES
 from google.cloud.security.common.data_access.csv_writer import PROJECT_IAM_POLICIES_FIELDNAMES
 from google.cloud.security.common.data_access.csv_writer import RAW_ORG_IAM_POLICIES_FIELDNAMES
 from google.cloud.security.common.data_access.csv_writer import RAW_PROJECT_IAM_POLICIES_FIELDNAMES
 from google.cloud.security.common.data_access.sql_queries import load_data
+# pylint: enable=line-too-long
 
 
 FIELDNAME_MAP = {

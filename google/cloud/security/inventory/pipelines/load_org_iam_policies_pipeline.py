@@ -55,7 +55,8 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
         # than cloning to 2 iterators.
         iam_policies_map = crm_client.get_org_iam_policies(
             RESOURCE_NAME, org_id)
-        iam_policies_map = list(iam_policies_map)
+         # pylint: disable=redefined-variable-type
+         iam_policies_map = list(iam_policies_map)
 
         # Flatten and relationalize data for upload to cloud sql.
         flattened_iam_policies = (

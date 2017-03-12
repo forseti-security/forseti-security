@@ -18,9 +18,11 @@ See: https://cloud.google.com/iam/reference/rest/v1/Policy
 
 import re
 
+# pylint: disable=line-too-long
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyBindingError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyMemberError
+# pylint: enable=line-too-long
 
 
 def _escape_and_globify(pattern_string):
@@ -174,8 +176,7 @@ class IamPolicyMember(object):
             member_type: The string member type (see `member_types`).
             member_name: The string member name.
         """
-        if (not member_type or
-            not self._member_type_exists(member_type)):
+        if not member_type or not self._member_type_exists(member_type):
             raise InvalidIamPolicyMemberError(
                 'Invalid policy member: {}'.format(member_type))
         self.type = member_type
@@ -233,4 +234,3 @@ class IamPolicyMember(object):
         return ((self.type == self.ALL_USERS) or
                 (self.type == other_member.type and
                  self.name_pattern.match(other_member.name)))
-

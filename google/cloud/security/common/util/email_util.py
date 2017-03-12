@@ -17,10 +17,11 @@
 from urllib2 import URLError
 from urllib2 import HTTPError
 
+import os
+
 import base64
 import gflags as flags
 import jinja2
-import os
 from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
@@ -102,8 +103,8 @@ class EmailUtil(object):
         """
 
         if not email_sender or not email_recipient:
-            self.logger.warn('Unable to send email: sender={}, recipient={}'
-                .format(email_sender, email_recipient))
+            self.logger.warn('Unable to send email: sender=%s, recipient=%s',
+                             email_sender, email_recipient)
             raise EmailSendError
 
         email = mail.Mail(
@@ -119,19 +120,17 @@ class EmailUtil(object):
         try:
             response = self._execute_send(email)
         except (URLError, HTTPError) as e:
-            self.logger.error('Unable to send email: {0} {1}'
-                .format(e.code, e.reason))
+            self.logger.error('Unable to send email: %s %s',
+                              e.code, e.reason)
             raise EmailSendError
 
         if response.status_code == 202:
-            self.logger.info('Email accepted for delivery:\n{0}'
-                .format(email_subject))
+            self.logger.info('Email accepted for delivery:\n%s',
+                             email_subject)
         else:
-            self.logger.error('Unable to send email:\n{0}\n{1}\n{2}\n{3}'
-                .format(email_subject,
-                        response.status_code,
-                        response.body,
-                        response.headers))
+            self.logger.error('Unable to send email:\n%s\n%s\n%s\n%s',
+                              email_subject, response.status_code,
+                              response.body, response.headers)
             raise EmailSendError
 
     @classmethod

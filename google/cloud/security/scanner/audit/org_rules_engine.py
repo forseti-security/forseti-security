@@ -23,6 +23,7 @@ import itertools
 import threading
 
 from collections import namedtuple
+# pylint: disable=line-too-long
 from google.cloud.security.common.gcp_type.errors import InvalidResourceTypeError
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.resource import ResourceType
@@ -30,6 +31,7 @@ from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.scanner.audit.base_rules_engine import BaseRuleBook
 from google.cloud.security.scanner.audit.base_rules_engine import BaseRulesEngine
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
+# pylint: enable=line-too-long
 
 
 class OrgRulesEngine(BaseRulesEngine):
@@ -256,10 +258,10 @@ class OrgRuleBook(BaseRuleBook):
                         resource_type=resource_type)
                     # Verify that this resource actually exists in GCP.
                     if (self.verify_resource_exists and
-                        not gcp_resource.exists()):
+                            not gcp_resource.exists()):
 
-                        self.logger.error(
-                            'Resource does not exist: {}'.format(gcp_resource))
+                        self.logger.error('Resource does not exist: %s',
+                                          gcp_resource)
                         continue
 
                     rule = Rule(rule_name=rule_def.get('name'),
@@ -317,6 +319,7 @@ class OrgRuleBook(BaseRuleBook):
             if not do_rules_check:
                 continue
 
+            # pylint: disable=redefined-variable-type
             violations = itertools.chain(
                 violations,
                 resource_rules.find_mismatches(resource, policy_binding))
@@ -373,8 +376,8 @@ class ResourceRules(object):
         """String representation of this node."""
         return ('ResourceRules<resource={}, rules={}, '
                 'applies_to={}, inherit_from_parents={}>').format(
-            self.resource, self.rules, self.applies_to,
-            self.inherit_from_parents)
+                    self.resource, self.rules, self.applies_to,
+                    self.inherit_from_parents)
 
     def find_mismatches(self, policy_resource, binding_to_match):
         """Determine if the policy binding matches this rule's criteria.
@@ -456,6 +459,8 @@ class ResourceRules(object):
             rule_members=rule_members,
             policy_members=policy_members)
 
+    # TODO: Investigate making a function, not a method.
+    # pylint: disable=no-self-use
     def _whitelist_member_check(self, rule_members=None,
                                 policy_members=None):
         """Whitelist: Check that policy members ARE in rule members.
@@ -482,6 +487,8 @@ class ResourceRules(object):
                 violating_members.append(policy_member)
         return violating_members
 
+    # TODO: Investigate making a function, not a method.
+    # pylint: disable=no-self-use
     def _blacklist_member_check(self, rule_members=None,
                                 policy_members=None):
         """Blacklist: Check that policy members ARE NOT in rule members.
@@ -505,6 +512,8 @@ class ResourceRules(object):
                     break
         return violating_members
 
+    # TODO: Investigate making a function, not a method.
+    # pylint: disable=no-self-use
     def _required_member_check(self, rule_members=None,
                                policy_members=None):
         """Required: Check that rule members are in policy members.
@@ -534,6 +543,7 @@ class ResourceRules(object):
         return violating_members
 
 
+# pylint: disable=too-few-public-methods
 class Rule(object):
     """Encapsulate Rule properties from the rule definition file.
 
@@ -581,6 +591,8 @@ class Rule(object):
         """
         return hash(self.rule_index)
 
+    # TODO: Investigate making a function, not a method.
+    # pylint: disable=no-self-use
     def __repr__(self):
         """Returns the string representation of this Rule."""
         return 'Rule <{}, name={}, mode={}, bindings={}>'.format(

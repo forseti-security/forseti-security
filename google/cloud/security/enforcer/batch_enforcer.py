@@ -153,7 +153,7 @@ class BatchFirewallEnforcer(object):
             for future in concurrent.futures.as_completed(future_to_key):
                 project_id = future_to_key[future]
                 LOGGER.debug('Project %s finished enforcement run.',
-                              project_id)
+                             project_id)
                 projects_enforced_count += 1
 
                 result = self.enforcement_log.results.add()
@@ -210,4 +210,3 @@ class BatchFirewallEnforcer(object):
         self.enforcement_log.summary.projects_unchanged = (
             self.enforcement_log.summary.projects_total -
             self.enforcement_log.summary.projects_changed)
-

@@ -20,9 +20,9 @@ Usage for enforcing a single project's firewall:
       --policy_file <policy file path>
 
 """
+import threading
 
 import gflags as flags
-import threading
 from google.apputils import app
 
 from google.cloud.security.common.util import file_loader
@@ -124,8 +124,8 @@ def main(argv):
     del argv
 
     enforcer = initialize_batch_enforcer(
-            FLAGS.concurrent_threads, FLAGS.maximum_project_writer_threads,
-            FLAGS.maximum_firewall_write_operations, FLAGS.dry_run)
+        FLAGS.concurrent_threads, FLAGS.maximum_project_writer_threads,
+        FLAGS.maximum_firewall_write_operations, FLAGS.dry_run)
 
     if FLAGS.enforce_project and FLAGS.policy_file:
         enforcer_results = enforce_single_project(enforcer,

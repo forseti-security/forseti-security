@@ -38,6 +38,7 @@ CREATE_TABLE_MAP = {
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
+    # pylint: disable=line-too-long
     'raw_project_iam_policies': create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
     'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
 }
@@ -162,8 +163,8 @@ class Dao(_DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
-    #pylint: disable=invalid-name
-    #TODO: Investigate improving as to remove pylint disable.
+    # pylint: disable=invalid-name
+    # TODO: Investigate improving as to remove pylint disable.
     def select_latest_complete_snapshot_timestamp(self, statuses):
         """Select the latest timestamp of the completed snapshot.
 
@@ -181,9 +182,9 @@ class Dao(_DbConnector):
         if not statuses:
             statuses = ('SUCCESS')
 
-        #TODO: Investigate improving to avoid the pylint disable.
+        # TODO: Investigate improving to avoid the pylint disable.
         status_params = ','.join(
-            ['%s' for s in statuses]) #pylint: disable=unused-variable
+            ['%s' for s in statuses]) # pylint: disable=unused-variable
         filter_clause = ' where status in ({})'.format(status_params)
         try:
             cursor = self.conn.cursor()
@@ -196,4 +197,3 @@ class Dao(_DbConnector):
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError, NoResultsError) as e:
             raise MySQLError('snapshot_cycles', e)
-

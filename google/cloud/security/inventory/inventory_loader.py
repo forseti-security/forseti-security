@@ -32,9 +32,10 @@ To see all the dependent flags:
   $ forseti_inventory --helpfull
 """
 
+import sys
+
 from datetime import datetime
 import gflags as flags
-import sys
 
 from ratelimiter import RateLimiter
 
@@ -42,6 +43,7 @@ from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
+# pylint: disable=line-too-long
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
@@ -50,7 +52,7 @@ from google.cloud.security.inventory.errors import LoadDataPipelineError
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
-
+# pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
 
@@ -201,7 +203,7 @@ def main():
     try:
         dao = Dao()
     except MySQLError as e:
-        LOGGER.error('Encountered error with Cloud SQL. Abort.\n{0}'.format(e))
+        LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
 
     cycle_timestamp = _start_snapshot_cycle(dao)
@@ -218,11 +220,11 @@ def main():
 
     pipelines = [
         {'pipeline': load_projects_pipeline,
-          'status': ''},
+         'status': ''},
         {'pipeline': load_projects_iam_policies_pipeline,
-          'status': ''},
+         'status': ''},
         {'pipeline': load_org_iam_policies_pipeline,
-          'status': ''},
+         'status': ''},
     ]
 
     for pipeline in pipelines:
@@ -232,7 +234,7 @@ def main():
             pipeline['status'] = 'SUCCESS'
         except LoadDataPipelineError as e:
             LOGGER.error(
-                'Encountered error to load data.\n{0}'.format(e))
+                'Encountered error to load data.\n%s', e)
             pipeline['status'] = 'FAILURE'
 
     succeeded = [p['status'] == 'SUCCESS' for p in pipelines]

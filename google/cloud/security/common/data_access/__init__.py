@@ -20,7 +20,7 @@
 # Modifying any table in a non-backwards compatible way needs to increment
 # the major number.
 
-#pylint: disable=invalid-name
+# pylint: disable=invalid-name
 db_schema_version = '1.0'
 
 # Change log
@@ -32,4 +32,3 @@ db_schema_version = '1.0'
 #
 # Version x.y:
 #   * ...
-
