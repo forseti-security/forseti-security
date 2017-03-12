@@ -18,9 +18,11 @@ language:
   - "python"
 python:
   - "2.7"
+before_install:
+  - "sudo apt-get -qq update"
+  - "sudo apt-get install -y libmysqlclient-dev pylint"
 install:
-  - "sudo apt-get install libmysqlclient-dev pylint"
-  - "bash scripts/travis_install.sh"
+  - "bash scripts/travis_install_deps.sh"
   - "python setup.py install"
 script:
 #  - "python setup.py google_test --test-dir=tests/"
