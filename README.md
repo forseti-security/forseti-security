@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)
+
 # Forseti Security
 Forseti Security helps you secure your Google Cloud Platform (GCP) environment.
 
