@@ -17,9 +17,9 @@
 
 echo "Running pylint."
 
-PYTHONPATH=./ pylint --rcfile=./pylintrc google/ -E
+PYTHONPATH=./ pylint --rcfile=./pylintrc google/
 
-if [ $(($? & 3)) -ne 0 ]; then
+if [ $(($? & 7)) -ne 0 ]; then
   echo "pylint had errors."
   exit 1
 else
