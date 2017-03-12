@@ -15,11 +15,11 @@
 
 # A script to perform the linting of python code submits.
 
-echo "Running pylint ($(pylint --version))."
+echo "Running pylint."
 
-ec=$(PYTHONPATH=./ pylint --rcfile=./pylintrc google/ -E)
+PYTHONPATH=./ pylint --rcfile=./pylintrc google/ -E
 
-if [ $(($ec & 3)) -ne 0 ]; then
+if [ $(($? & 3)) -ne 0 ]; then
   echo "pylint had errors."
   exit 1
 else
