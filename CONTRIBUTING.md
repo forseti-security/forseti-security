@@ -25,6 +25,19 @@ In order to maintain consistency, style guidelines as suggested by the
 [Google Python Style Guide] should be followed, as well as conforming to
 the existing styles in the current codebase.
 
+Style will be checked using pylint. To confirm your PR will pass the
+Travis pylint test this must run without any output.
+
+```
+workon forseti-security # Replace forseti-security with your virtalenv.
+
+# Optional
+pip install pylint
+
+# From the root of forseti-security using pylint >= 1.6.5
+PYTHONPATH=./ pylint --rcfile=./pylintrc
+```
+
 ## How to Submit A Pull Request
 
 1. Consult [GitHub Help] for more information on using pull requests.
@@ -40,17 +53,17 @@ the upstream remote.
 
     # Navigate to your newly cloned directory.
     $ cd <path to you local cloned repository>
-    
+
     # Assign the original repository to a remote called "upstream".
     # Using HTTPS
     $ git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
-    
+
     # Using SSH
     $ git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
-    
+
     # Verify new upstream remote is added correctly.
     $ git remote -v
-    
+
     origin  git@github.com:<my_fork> (fetch)
     origin  git@github.com:<my_fork> (push)
     upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
@@ -84,10 +97,10 @@ the upstream remote.
     We strive to have high and useful coverage by unit tests.  If your change
     involves substantial logic, we will request that you write applicable unit
     tests.
-    
+
     Our unit tests are written with google-apputils basetest framework.
     See a [basic example] of how to use it, in the "Google-Style Tests" section.
-    
+
     [Instructions to run the tests.]
 
 7. Commit your changes and push them to your development branch.
@@ -101,12 +114,12 @@ the upstream remote.
     All submissions, including submissions by project members, require a code review.
     To begin the review process, create a new GitHub pull request. The GitHub UI
     will show if there are any merge conflict(s) to be resolved.
-    
-    The GitHub Pull Request UI will show you dropdowns to select the destination of 
+
+    The GitHub Pull Request UI will show you dropdowns to select the destination of
     your pull request:
     * the base fork is the upstream
     * the head fork is your fork with your changes
-    
+
     All tests must pass before we will review your PR.
 
 9. Merging your PR.
