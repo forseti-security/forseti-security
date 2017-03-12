@@ -13,16 +13,15 @@
 # limitations under the License.
 
 env:
-  - "PROTOC_PATH=/usr/local/bin PROTOC=/usr/local/bin/protoc PROTOC_DOWNLOAD_PATH=/tmp/protoc"
 cache: "pip"
 language:
   - "python"
 python:
   - "2.7"
 install:
-  - "sudo apt-get install libmysqlclient-dev"
+  - "sudo apt-get install libmysqlclient-dev pylint"
   - "bash scripts/travis_install.sh"
   - "python setup.py install"
 script:
-  - "python setup.py google_test --test-dir=tests/"
+#  - "python setup.py google_test --test-dir=tests/"
   - "bash scripts/travis_pylint.sh"
