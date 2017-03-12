@@ -15,11 +15,6 @@
 
 # A script to perform the linting of python code submits.
 
-echo $(type protoc)
-echo $(which protoc)
-
-pip list
-
 echo "Running pylint."
 
 echo "pylint version: $(pylint --version)"
