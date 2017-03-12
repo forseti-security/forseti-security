@@ -14,8 +14,10 @@
 # limitations under the License.
 
 # A script to perform the linting of python code submits.
+echo $PWD
+echo ls -lah
 
-PYTHONPATH=./ pylint --rcfile=pylintrc google/ -E
+PYTHONPATH=./ pylint --rcfile=$HOME/pylintrc google/ -E
 
 if [ $(($rc & 3)) -ne 0]; then
   echo "pylint had errors."
