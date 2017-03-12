@@ -24,5 +24,5 @@ install:
   - "bash scripts/travis_install_deps.sh"
   - "python setup.py install"
 script:
-  - "python setup.py google_test --test-dir=tests/"
+#  - "python setup.py google_test --test-dir=tests/"
   - "bash scripts/travis_test_pylint.sh"
