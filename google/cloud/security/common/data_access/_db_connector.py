@@ -14,12 +14,10 @@
 
 """Provides the database connector."""
 
-import os
 import gflags as flags
 
 import MySQLdb
 from MySQLdb import OperationalError
-import yaml
 
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.util.log_util import LogUtil
@@ -33,7 +31,7 @@ flags.DEFINE_string('db_name', 'forseti_security', 'Cloud SQL database name')
 flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 flags.DEFINE_string('db_passwd', None, 'Cloud SQL password')
 
-
+#pylint: disable=too-few-public-methods
 class _DbConnector(object):
     """Database connector."""
 

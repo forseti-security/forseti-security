@@ -53,6 +53,8 @@ class ResourceType(object):
         return resource_type
 
 
+# pylint: disable=too-few-public-methods
+# TODO: Look into improving to prevent the pylint disable.
 class LifecycleState(object):
     """Resource lifecycle state."""
 

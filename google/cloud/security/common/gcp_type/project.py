@@ -22,6 +22,8 @@ from google.cloud.security.common.gcp_type.resource import Resource
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
 
+# pylint: disable=too-few-public-methods
+# TODO: Investigate improving to avoid the use of the pylint disable.
 class ProjectLifecycleState(LifecycleState):
     """Project lifecycle state.
 

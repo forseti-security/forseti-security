@@ -14,10 +14,6 @@
 
 """Pipeline to load projects data into Inventory."""
 
-import logging
-import os
-
-from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError

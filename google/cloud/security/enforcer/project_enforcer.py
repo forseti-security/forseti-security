@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import hashlib
-import logging
 import threading
 from googleapiclient import errors
 from google.apputils import datelib
@@ -44,6 +43,7 @@ LOGGER = LogUtil.setup_logging(__name__)
 class ProjectEnforcer(object):
     """Manages enforcement of policies for a single cloud project."""
 
+    #pylint: disable=too-many-instance-attributes
     def __init__(self,
                  project_id,
                  dry_run=False,
@@ -76,6 +76,16 @@ class ProjectEnforcer(object):
         else:
             self._operation_sema = None
 
+        self.enforcer = None
+        self.expected_rules = None
+        self.firewall_api = None
+        self.firewall_policy = None
+        self.project_networks = None
+        self.rules_after_enforcement = None
+        self.rules_before_enforcement = None
+
+    #pylint: disable=too-many-return-statements,too-many-branches
+    #TODO: Investigate not having to disable some of these messages.
     def enforce_firewall_policy(self,
                                 firewall_policy,
                                 compute_service=None,
@@ -166,10 +176,10 @@ class ProjectEnforcer(object):
                 return self._set_error_status(e.reason())
 
             if not change_count:
-              # Don't attempt to retry if there were no changes. This can be
-              # caused by the prechange callback returning false or an
-              # exception.
-              break
+                # Don't attempt to retry if there were no changes. This can be
+                # caused by the prechange callback returning false or an
+                # exception.
+                break
 
             if ((self._dry_run and not retry_on_dry_run) or
                 self.rules_after_enforcement == self.expected_rules):
@@ -383,9 +393,11 @@ class EnforcementError(Error):
         super(EnforcementError, self).__init__(str(self))
 
     def status(self):
+        """Return status."""
         return self._status
 
     def reason(self):
+        """Return reason."""
         return self._reason
 
     def __str__(self):

@@ -73,7 +73,7 @@ class IamPolicy(object):
         """Tests equality of IamPolicy."""
         if not isinstance(other, type(self)):
             return NotImplemented
-        return (self.bindings == other.bindings)
+        return self.bindings == other.bindings
 
     def __ne__(self, other):
         """Tests inequality of IamPolicy."""
@@ -95,7 +95,7 @@ class IamPolicy(object):
 class IamPolicyBinding(object):
     """IAM Policy Binding."""
 
-    def __init__(self, role_name, members=[]):
+    def __init__(self, role_name, members=None):
         """Initialize.
 
         Args:
@@ -140,6 +140,8 @@ class IamPolicyBinding(object):
             return binding
         return cls(binding.get('role'), binding.get('members'))
 
+    # pylint: disable=no-self-use
+    # TODO: Investigate if these could just be a function.
     def _get_members(self, members):
         """Get a list of this binding's members as IamPolicyMembers.
 

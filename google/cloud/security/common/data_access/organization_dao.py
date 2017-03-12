@@ -15,7 +15,6 @@
 """Provides the data access object (DAO) for Organizations."""
 
 import json
-import logging
 
 from MySQLdb import DataError
 from MySQLdb import IntegrityError
@@ -59,8 +58,8 @@ class OrganizationDao(_DbConnector):
                     org = Organization(organization_id=row[0])
                     iam_policy = json.loads(row[1])
                     org_iam_policies[org] = iam_policy
-                except ValueError as json_error:
-                    self.logging.warn('Error parsing json {}'.format(row[2]))
+                except ValueError as _:
+                    LOGGER.warn('Error parsing json {}'.format(row[2]))
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
             LOGGER.error(MySQLError('organizations', e))

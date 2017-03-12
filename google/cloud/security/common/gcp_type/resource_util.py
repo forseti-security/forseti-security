@@ -46,15 +46,12 @@ class ResourceUtil(object):
     }
 
     @classmethod
-    def create_resource(cls, resource_id, resource_type, **kwargs):
+    def create_resource(cls, resource_id, resource_type):
         """Factory to create a certain kind of Resource.
-
-        TODO: actually do something with the kwargs!
 
         Args:
             resource_id: The resource id.
             resource_type: The resource type.
-            **kwargs: Additional args.
 
         Returns:
             The new resource based on the type.

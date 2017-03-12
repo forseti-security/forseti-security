@@ -26,7 +26,6 @@ import threading
 from google.apputils import app
 
 from google.cloud.security.common.util import file_loader
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.enforcer import batch_enforcer
 from google.cloud.security.enforcer import enforcer_log_pb2
 
@@ -120,6 +119,8 @@ def enforce_single_project(enforcer, project_id, policy_filename):
 
 
 def main(argv):
+    """The main entry point for Forseti Security Enforcer runner."""
+
     del argv
 
     enforcer = initialize_batch_enforcer(
@@ -131,10 +132,10 @@ def main(argv):
                                                   FLAGS.enforce_project,
                                                   FLAGS.policy_file)
 
-        print(enforcer_results)
+        print enforcer_results
 
     else:
-        print('Batch mode not implemented yet.')
+        print 'Batch mode not implemented yet.'
 
 
 if __name__ == '__main__':

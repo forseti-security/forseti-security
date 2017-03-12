@@ -15,8 +15,6 @@
 """Writes the csv files for upload to Cloud SQL."""
 
 import csv
-import logging
-import os
 import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError

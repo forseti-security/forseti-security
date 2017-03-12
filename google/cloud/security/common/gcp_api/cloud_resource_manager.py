@@ -14,8 +14,6 @@
 
 """Wrapper for Resource Manager API client."""
 
-import logging
-
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
@@ -59,9 +57,9 @@ class CloudResourceManagerClient(_BaseClient):
 
         try:
             with self.rate_limiter:
-              request = projects_stub.get(projectId=project_id)
-              response = self._execute(request)
-              return response
+                request = projects_stub.get(projectId=project_id)
+                response = self._execute(request)
+                return response
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(ApiExecutionError(project_id, e))
         return None
@@ -83,6 +81,8 @@ class CloudResourceManagerClient(_BaseClient):
         """
         projects_stub = self.service.projects()
         # TODO: The filter may break once folders are implemented.
+        # pylint: disable=redefined-builtin
+        # TODO: Stop redefining a built-in to remove pylint disable.
         filter = 'parent.type:organization parent.id:%s' % organization_id
         request = projects_stub.list(filter=filter)
 

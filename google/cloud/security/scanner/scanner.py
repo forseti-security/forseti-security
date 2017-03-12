@@ -33,7 +33,6 @@ import itertools
 import os
 import shutil
 import sys
-import tempfile
 
 from datetime import datetime
 
@@ -72,7 +71,7 @@ flags.mark_flag_as_required('rules')
 flags.mark_flag_as_required('organization_id')
 
 
-def main(_):
+def main():
     """Run the scanner."""
     logger = LogUtil.setup_logging(__name__)
 
@@ -338,7 +337,7 @@ def _build_scan_summary(all_violations, total_resources):
                 'violations'][violation.resource_id] = 0
 
         # Make sure to count each member violation as a separate one.
-        for member in violation.members:
+        for _ in violation.members:
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] += 1
 

@@ -34,12 +34,9 @@ To see all the dependent flags:
 
 from datetime import datetime
 import gflags as flags
-import logging
-import os
 import sys
 
 from ratelimiter import RateLimiter
-import yaml
 
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
@@ -171,7 +168,7 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(cycle_timestamp, status, sendgrid_api_key, 
+def _send_email(cycle_timestamp, status, sendgrid_api_key,
                 email_sender, email_recipient, email_content=None):
     """Send an email.
 
@@ -198,7 +195,7 @@ def _send_email(cycle_timestamp, status, sendgrid_api_key,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
-def main(unused_argv=None):
+def main():
     """Runs the Inventory Loader."""
 
     try:
@@ -220,12 +217,12 @@ def main(unused_argv=None):
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
 
     pipelines = [
-        { 'pipeline': load_projects_pipeline,
-          'status': '' },
-        { 'pipeline': load_projects_iam_policies_pipeline,
-          'status': '' },
-        { 'pipeline': load_org_iam_policies_pipeline,
-          'status': '' },
+        {'pipeline': load_projects_pipeline,
+          'status': ''},
+        {'pipeline': load_projects_iam_policies_pipeline,
+          'status': ''},
+        {'pipeline': load_org_iam_policies_pipeline,
+          'status': ''},
     ]
 
     for pipeline in pipelines:
@@ -250,7 +247,7 @@ def main(unused_argv=None):
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
     _send_email(cycle_timestamp, snapshot_cycle_status,
                 configs.get('sendgrid_api_key'),
-                configs.get('email_sender'), configs.get('email_recipient')) 
+                configs.get('email_sender'), configs.get('email_recipient'))
 
 
 if __name__ == '__main__':

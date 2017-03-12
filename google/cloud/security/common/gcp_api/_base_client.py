@@ -21,7 +21,8 @@ from retrying import retry
 from google.cloud.security.common.gcp_api._supported_apis import SUPPORTED_APIS
 from google.cloud.security.common.util import retryable_exceptions
 
-
+# pylint: disable=too-few-public-methods
+# TODO: Look into improving to prevent using the disable.
 class _BaseClient(object):
     """Base client for a specified GCP API and credentials."""
 
@@ -48,6 +49,8 @@ class _BaseClient(object):
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
+    # pylint: disable=no-self-use
+    # TODO: Investigate if this could be a standalone methods to remove dsiable.
     def _execute(self, request):
         """Executes requests in a rate-limited way.
 

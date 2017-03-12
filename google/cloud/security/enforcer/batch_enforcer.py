@@ -64,6 +64,8 @@ class BatchFirewallEnforcer(object):
 
         self.compute = compute.ComputeClient()
 
+        self.batch_id = None
+
     def run(self, project_policies, prechange_callback=None,
             new_result_callback=None):
         """Runs the enforcer over all projects passed in to the function.

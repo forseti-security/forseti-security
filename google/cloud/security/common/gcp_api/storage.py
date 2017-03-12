@@ -14,7 +14,6 @@
 
 """Wrapper for Storage API client."""
 
-import os
 import StringIO
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
@@ -60,7 +59,7 @@ class StorageClient(_BaseClient):
         Args:
             local_file_path: The local path of the file to upload.
             full_bucket_path: The full GCS path for the output.
-        """ 
+        """
         storage_service = self.service
         bucket, object_path = StorageClient.get_bucket_and_path_from(
             full_bucket_path)
@@ -74,7 +73,7 @@ class StorageClient(_BaseClient):
                 body=req_body,
                 media_body=MediaIoBaseUpload(
                     f, 'application/octet-stream'))
-            resp = req.execute()
+            _ = req.execute()
 
     def get_text_file(self, full_bucket_path):
         """Gets a text file object as a string.

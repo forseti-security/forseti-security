@@ -27,7 +27,6 @@ from google.cloud.security.common.gcp_type.errors import InvalidResourceTypeErro
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.scanner.audit.base_rules_engine import BaseRuleBook
 from google.cloud.security.scanner.audit.base_rules_engine import BaseRulesEngine
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
@@ -74,7 +73,7 @@ class OrgRulesEngine(BaseRulesEngine):
     def add_rules(self, rules):
         """Add rules to the rule book."""
         if self.rule_book is not None:
-            self.rule_book._add_rules(rules)
+            self.rule_book.add_rules(rules)
 
 
 class RuleAppliesTo(object):
@@ -159,7 +158,7 @@ class OrgRuleBook(BaseRuleBook):
             self.rule_defs = {}
         else:
             self.rule_defs = rule_defs
-            self._add_rules(rule_defs)
+            self.add_rules(rule_defs)
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -172,7 +171,7 @@ class OrgRuleBook(BaseRuleBook):
     def __repr__(self):
         return 'OrgRuleBook <{}>'.format(self.resource_rules_map)
 
-    def _add_rules(self, rule_defs):
+    def add_rules(self, rule_defs):
         """Add rules to the rule book.
 
         Args:
@@ -180,9 +179,9 @@ class OrgRuleBook(BaseRuleBook):
                        definition file.
         """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
-            self._add_rule(rule, i)
+            self.add_rule(rule, i)
 
-    def _add_rule(self, rule_def, rule_index):
+    def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
 
         The rule supplied to this method is the dictionary parsed from

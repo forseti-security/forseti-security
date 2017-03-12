@@ -16,7 +16,6 @@
 
 import json
 
-from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
@@ -48,7 +47,7 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
     # Check if the placeholder is replaced in the config/flag.
     if org_id == '<organization id>':
         raise LoadDataPipelineError('No organization id is specified.')
-        
+
     crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
     try:
         # Retrieve data from GCP.

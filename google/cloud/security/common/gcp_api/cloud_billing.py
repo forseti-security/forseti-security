@@ -16,7 +16,7 @@
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
 
-
+#pylint: disable=too-few-public-methods
 class CloudBillingClient(_BaseClient):
     """Billing Client."""
 

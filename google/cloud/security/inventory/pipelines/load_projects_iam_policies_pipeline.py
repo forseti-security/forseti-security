@@ -16,7 +16,6 @@
 
 import json
 
-from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
@@ -28,7 +27,8 @@ from google.cloud.security.inventory.errors import LoadDataPipelineError
 RESOURCE_NAME = 'project_iam_policies'
 RAW_PROJECT_IAM_POLICIES = 'raw_project_iam_policies'
 
-
+#pylint: disable=unused-argument
+#TODO: Look into whether 'configs' is needed.
 def run(dao, cycle_timestamp, configs, crm_rate_limiter):
     """Runs the load IAM policies data pipeline.
 

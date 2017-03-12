@@ -19,7 +19,9 @@
 # to an existing table, should increment the minor number of the version.
 # Modifying any table in a non-backwards compatible way needs to increment
 # the major number.
-db_schema_version = 1.0
+
+#pylint: disable=invalid-name
+db_schema_version = '1.0'
 
 # Change log
 # Version 1.0:
@@ -30,3 +32,4 @@ db_schema_version = 1.0
 #
 # Version x.y:
 #   * ...
+

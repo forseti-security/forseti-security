@@ -13,12 +13,12 @@
 # limitations under the License.
 """A Folder Resource."""
 
-from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.gcp_type.resource import Resource
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
-
+# pylint: disable=too-few-public-methods
+# TODO: Investigate improving so as to not use the disable.
 class FolderLifecycleState(LifecycleState):
     """Represents the Folder's LifecycleState."""
     pass

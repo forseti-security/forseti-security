@@ -23,6 +23,7 @@ try:  # Python 2.7+
 except ImportError:
 
     class NullHandler(logging.Handler):
+        """Helper class for handling logging."""
 
         def emit(self, record):
             pass

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,4 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti Security Common."""
+# A script to perform the linting of python code submits.
+
+PYTHONPATH=./ pylint --rcfile=pylintrc google/ -E
+
+if [ $(($rc & 3)) -ne 0]; then
+  echo "pylint had errors."
+  exit 1
+else
+  echo "pylint had no errors."
+  exit 0
+fi

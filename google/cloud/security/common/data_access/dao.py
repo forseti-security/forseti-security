@@ -14,9 +14,6 @@
 
 """Provides the data access object (DAO)."""
 
-import json
-import logging
-
 from MySQLdb import DataError
 from MySQLdb import IntegrityError
 from MySQLdb import InternalError
@@ -28,7 +25,6 @@ from MySQLdb import cursors
 from google.cloud.security.common.data_access._db_connector import _DbConnector
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import load_data_sql_provider
-from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.errors import NoResultsError
 from google.cloud.security.common.data_access.sql_queries import create_tables
@@ -166,6 +162,8 @@ class Dao(_DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
+    #pylint: disable=invalid-name
+    #TODO: Investigate improving as to remove pylint disable.
     def select_latest_complete_snapshot_timestamp(self, statuses):
         """Select the latest timestamp of the completed snapshot.
 
@@ -182,7 +180,10 @@ class Dao(_DbConnector):
         # snapshot statuses
         if not statuses:
             statuses = ('SUCCESS')
-        status_params = ','.join(['%s' for s in statuses])
+
+        #TODO: Investigate improving to avoid the pylint disable.
+        status_params = ','.join(
+            ['%s' for s in statuses]) #pylint: disable=unused-variable
         filter_clause = ' where status in ({})'.format(status_params)
         try:
             cursor = self.conn.cursor()

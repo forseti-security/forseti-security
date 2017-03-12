@@ -20,7 +20,6 @@ Simplifies the interface with the compute API for managing firewall policies.
 import hashlib
 import httplib
 import json
-import logging
 import operator
 import socket
 import ssl
@@ -243,6 +242,7 @@ class ComputeFirewallAPI(object):
         retry_on_exception=http_retry,
         wait_exponential_multiplier=1000,
         stop_max_attempt_number=4)
+    #pylint: disable=too-many-locals
     def wait_for_any_to_complete(self, project, responses, timeout=0):
         """Wait for one or more requests to complete.
 
@@ -349,6 +349,8 @@ class ComputeFirewallAPI(object):
 
         return completed_operations
 
+    #pylint: disable=no-self-use
+    #TODO: Investigate fixing the pylint issue.
     def is_successful(self, response):
         """Checks if the operation finished with no errors.
 
@@ -386,6 +388,8 @@ class ComputeFirewallAPI(object):
                 success = False
         return success
 
+    #pylint: disable=no-self-use
+    #TODO: Investigate fixing the pylint issue.
     def _create_dry_run_response(self, rule_name):
         """A fake successful completed response.
 
@@ -669,7 +673,8 @@ class FirewallRules(object):
         for allow in rule['allowed']:
             if 'IPProtocol' not in allow:
                 raise InvalidFirewallRuleError(
-                    'Allow rule in %s missing required field "IPProtocol": "%s".'
+                    'Allow rule in %s missing required field '
+                    '"IPProtocol": "%s".'
                     % (rule['name'], allow))
 
         if len(rule['name']) > 63:
@@ -677,7 +682,8 @@ class FirewallRules(object):
                 'Rule name exceeds length limit of 63 chars: "%s".' %
                 rule['name'])
 
-        # TODO: Verify rule name matches regex of allowed names from reference
+        #TODO: Verify rule name matches regex of allowed
+        # names from reference
 
         if rule['name'] in self.rules:
             raise DuplicateFirewallRuleNameError(
@@ -686,7 +692,7 @@ class FirewallRules(object):
 
         return True
 
-
+#pylint: disable=too-many-instance-attributes
 class FirewallEnforcer(object):
     """Enforce a set of firewall rules for use with GCE projects."""
 
@@ -796,7 +802,7 @@ class FirewallEnforcer(object):
         self._rules_to_update = []
 
         if not self.current_rules:
-          self.refresh_current_rules()
+            self.refresh_current_rules()
 
         if not self.expected_rules.rules and not allow_empty_ruleset:
             raise FirewallEnforcementFailedError(
@@ -839,11 +845,11 @@ class FirewallEnforcer(object):
         return changed_count
 
     def refresh_current_rules(self):
-      """Updates the current rules for the project using the compute API."""
-      current_rules = FirewallRules(self.project)
-      current_rules.add_rules_from_api(self.firewall_api)
+        """Updates the current rules for the project using the compute API."""
+        current_rules = FirewallRules(self.project)
+        current_rules.add_rules_from_api(self.firewall_api)
 
-      self.current_rules = current_rules
+        self.current_rules = current_rules
 
     def get_deleted_rules(self):
         """Returns the list of deleted rules."""
@@ -975,6 +981,8 @@ class FirewallEnforcer(object):
 
         return change_count
 
+    #pylint: disable=too-many-statements,too-many-branches,too-many-locals
+    #TODO: Look at not having some of these disables.
     def _apply_change(self, firewall_function, rules):
         """Modify the firewall using the passed in function and rules.
 
