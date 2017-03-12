@@ -27,8 +27,6 @@ from google.cloud.security.inventory.errors import LoadDataPipelineError
 RESOURCE_NAME = 'project_iam_policies'
 RAW_PROJECT_IAM_POLICIES = 'raw_project_iam_policies'
 
-#pylint: disable=unused-argument
-#TODO: Look into whether 'configs' is needed.
 def run(dao, cycle_timestamp, configs, crm_rate_limiter):
     """Runs the load IAM policies data pipeline.
 
