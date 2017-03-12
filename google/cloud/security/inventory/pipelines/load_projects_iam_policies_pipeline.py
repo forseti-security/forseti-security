@@ -27,13 +27,12 @@ from google.cloud.security.inventory.errors import LoadDataPipelineError
 RESOURCE_NAME = 'project_iam_policies'
 RAW_PROJECT_IAM_POLICIES = 'raw_project_iam_policies'
 
-def run(dao, cycle_timestamp, configs, crm_rate_limiter):
+def run(dao, cycle_timestamp, crm_rate_limiter):
     """Runs the load IAM policies data pipeline.
 
     Args:
         dao: Data access object.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        configs: Dictionary of configurations.
         crm_rate_limiter: RateLimiter object for CRM API client.
 
     Returns:
