@@ -135,5 +135,5 @@ Please write a [test for this transform function].
 [end-to-end example loading of a resource]: https://github.com/GoogleCloudPlatform/forseti-security/pull/26
 [existing pipelines]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines
 [inventory_loader.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/inventory_loader.py
-[inventory_pipelines]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines
+[inventory/pipelines]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines
 [test for this transform function]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/tests/inventory/transform_util_test.py
