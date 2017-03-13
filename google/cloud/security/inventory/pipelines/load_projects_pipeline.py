@@ -14,13 +14,11 @@
 
 """Pipeline to load projects data into Inventory."""
 
-import logging
-import os
-
-from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+# TODO: Investigate improving so the pylint disable isn't needed.
+# pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory import transform_util

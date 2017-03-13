@@ -14,12 +14,10 @@
 
 """Provides the database connector."""
 
-import os
 import gflags as flags
 
 import MySQLdb
 from MySQLdb import OperationalError
-import yaml
 
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.util.log_util import LogUtil
@@ -33,7 +31,8 @@ flags.DEFINE_string('db_name', 'forseti_security', 'Cloud SQL database name')
 flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 flags.DEFINE_string('db_passwd', None, 'Cloud SQL password')
 
-
+# pylint: disable=too-few-public-methods
+# TODO: Investigate improving so we can avoid the pylint disable.
 class _DbConnector(object):
     """Database connector."""
 
@@ -63,7 +62,7 @@ class _DbConnector(object):
                     db=configs['db_name'],
                     local_infile=1)
         except OperationalError as e:
-            LOGGER.error('Unable to create mysql connector:\n{0}'.format(e))
+            LOGGER.error('Unable to create mysql connector:\n%s', e)
             raise MySQLError('DB Connector', e)
 
     def __del__(self):

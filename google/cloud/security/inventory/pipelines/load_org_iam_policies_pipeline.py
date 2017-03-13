@@ -16,10 +16,11 @@
 
 import json
 
-from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+# TODO: Investigate improving so the pylint disable isn't needed.
+# pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
@@ -48,7 +49,7 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
     # Check if the placeholder is replaced in the config/flag.
     if org_id == '<organization id>':
         raise LoadDataPipelineError('No organization id is specified.')
-        
+
     crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
     try:
         # Retrieve data from GCP.
@@ -56,6 +57,8 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
         # than cloning to 2 iterators.
         iam_policies_map = crm_client.get_org_iam_policies(
             RESOURCE_NAME, org_id)
+        # TODO: Investigate improving so the pylint disable isn't needed.
+        # pylint: disable=redefined-variable-type
         iam_policies_map = list(iam_policies_map)
 
         # Flatten and relationalize data for upload to cloud sql.

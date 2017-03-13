@@ -18,9 +18,12 @@ See: https://cloud.google.com/iam/reference/rest/v1/Policy
 
 import re
 
+# pylint: disable=line-too-long
+# TODO: Investigate improving so we can avoid the pylint disable.
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyBindingError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyMemberError
+# pylint: enable=line-too-long
 
 
 def _escape_and_globify(pattern_string):
@@ -73,7 +76,7 @@ class IamPolicy(object):
         """Tests equality of IamPolicy."""
         if not isinstance(other, type(self)):
             return NotImplemented
-        return (self.bindings == other.bindings)
+        return self.bindings == other.bindings
 
     def __ne__(self, other):
         """Tests inequality of IamPolicy."""
@@ -95,7 +98,7 @@ class IamPolicy(object):
 class IamPolicyBinding(object):
     """IAM Policy Binding."""
 
-    def __init__(self, role_name, members=[]):
+    def __init__(self, role_name, members=None):
         """Initialize.
 
         Args:
@@ -140,6 +143,8 @@ class IamPolicyBinding(object):
             return binding
         return cls(binding.get('role'), binding.get('members'))
 
+    # pylint: disable=no-self-use
+    # TODO: Investigate if these could just be a function.
     def _get_members(self, members):
         """Get a list of this binding's members as IamPolicyMembers.
 
@@ -172,8 +177,7 @@ class IamPolicyMember(object):
             member_type: The string member type (see `member_types`).
             member_name: The string member name.
         """
-        if (not member_type or
-            not self._member_type_exists(member_type)):
+        if not member_type or not self._member_type_exists(member_type):
             raise InvalidIamPolicyMemberError(
                 'Invalid policy member: {}'.format(member_type))
         self.type = member_type
@@ -231,4 +235,3 @@ class IamPolicyMember(object):
         return ((self.type == self.ALL_USERS) or
                 (self.type == other_member.type and
                  self.name_pattern.match(other_member.name)))
-

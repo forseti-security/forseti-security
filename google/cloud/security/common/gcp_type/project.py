@@ -16,12 +16,16 @@
 See: https://cloud.google.com/resource-manager/reference/rest/v1/projects
 """
 
+# pylint: disable=line-too-long
+# TODO: Investigate improving so we can avoid the pylint disable.
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.gcp_type.resource import Resource
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
 
+# pylint: disable=too-few-public-methods
+# TODO: Investigate improving to avoid the use of the pylint disable.
 class ProjectLifecycleState(LifecycleState):
     """Project lifecycle state.
 

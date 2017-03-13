@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cache: "pip"
-language:
-  - "python"
-python:
-  - "2.7"
-install:
-  - "sudo apt-get install -y libmysqlclient-dev"
-  - "bash scripts/travis_install_protoc.sh"
-  - "pip install -q pylint==1.6.5"
-  - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
-script:
-  - "python setup.py google_test --test-dir=tests/"
-  - "bash scripts/travis_test_pylint.sh"
+# A script to perform the download and installation of protobuf.
+
+set -e
+
+PROTOC_DOWNLOAD_PATH="/tmp/protoc"
+
+echo "Downloading protoc."
+mkdir -p $PROTOC_DOWNLOAD_PATH
+cd $PROTOC_DOWNLOAD_PATH
+wget -P $PROTOC_DOWNLOAD_PATH \
+  https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+unzip -d $PROTOC_DOWNLOAD_PATH protoc-3.2.0-linux-x86_64.zip

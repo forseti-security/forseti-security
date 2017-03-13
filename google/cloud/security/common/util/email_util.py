@@ -17,10 +17,11 @@
 from urllib2 import URLError
 from urllib2 import HTTPError
 
+import os
+
 import base64
 import gflags as flags
 import jinja2
-import os
 from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
@@ -48,10 +49,10 @@ flags.mark_flag_as_required('sendgrid_api_key')
 
 class EmailUtil(object):
     """Utility for sending emails."""
-    
+
     def __init__(self, api_key):
         """Initialize the email util.
-        
+
         Args:
             api_key: String of the sendgrid api key to auth email service.
         """
@@ -85,7 +86,7 @@ class EmailUtil(object):
 
         The minimum required info to send email are:
         sender, recipient, subject, and content (the body)
-        
+
         Args:
             email_sender: String of the email sender.
             email_recipient: String of the email recipient.
@@ -93,17 +94,17 @@ class EmailUtil(object):
             email_content: String of the email content (aka, body).
             content_type: String of the email content type.
             attachment: A SendGrid Attachment.
-        
+
         Returns:
             None.
-        
+
         Raises:
             EmailSendError: An error with sending email has occurred.
         """
 
         if not email_sender or not email_recipient:
-            self.logger.warn('Unable to send email: sender={}, recipient={}'
-                .format(email_sender, email_recipient))
+            self.logger.warn('Unable to send email: sender=%s, recipient=%s',
+                             email_sender, email_recipient)
             raise EmailSendError
 
         email = mail.Mail(
@@ -119,19 +120,17 @@ class EmailUtil(object):
         try:
             response = self._execute_send(email)
         except (URLError, HTTPError) as e:
-            self.logger.error('Unable to send email: {0} {1}'
-                .format(e.code, e.reason))
+            self.logger.error('Unable to send email: %s %s',
+                              e.code, e.reason)
             raise EmailSendError
 
         if response.status_code == 202:
-            self.logger.info('Email accepted for delivery:\n{0}'
-                .format(email_subject))
+            self.logger.info('Email accepted for delivery:\n%s',
+                             email_subject)
         else:
-            self.logger.error('Unable to send email:\n{0}\n{1}\n{2}\n{3}'
-                .format(email_subject,
-                        response.status_code,
-                        response.body,
-                        response.headers))
+            self.logger.error('Unable to send email:\n%s\n%s\n%s\n%s',
+                              email_subject, response.status_code,
+                              response.body, response.headers)
             raise EmailSendError
 
     @classmethod
@@ -155,7 +154,7 @@ class EmailUtil(object):
         return template.render(template_vars)
 
     @classmethod
-    def create_attachment(cls, file_location, type, filename,
+    def create_attachment(cls, file_location, content_type, filename,
                           disposition='attachment', content_id=None):
         """Create a SendGrid attachment.
 
@@ -163,7 +162,7 @@ class EmailUtil(object):
 
         Args:
             file_location: The string path of the file.
-            type: The content type string.
+            content_type: The content type string.
             filename: The string filename of attachment.
             disposition: Content disposition string, defaults to "attachment".
             content_id: The content id string.
@@ -172,13 +171,13 @@ class EmailUtil(object):
             A SendGrid Attachment.
         """
         file_content = ''
-        with open(file_location, 'rb') as file:
-            file_content = file.read()
+        with open(file_location, 'rb') as f:
+            file_content = f.read()
         content = base64.b64encode(file_content)
 
         attachment = mail.Attachment()
         attachment.set_content(content)
-        attachment.set_type(type)
+        attachment.set_type(content_type)
         attachment.set_filename(filename)
         attachment.set_disposition(disposition)
         attachment.set_content_id(content_id)

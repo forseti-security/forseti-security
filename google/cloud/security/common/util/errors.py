@@ -32,4 +32,3 @@ class InvalidFileExtensionError(Error):
 class InvalidParserTypeError(Error):
     """No parser exists for the given parser type."""
     pass
-
