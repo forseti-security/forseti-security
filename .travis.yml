@@ -23,8 +23,10 @@ before_install:
   - "pip show -f pylint"
   - "pip install -v protobuf==3.2.0"
   - "pip show -f protobuf"
+  - "protoc --version"
+  - "which protoc"
 install:
-  - "bash scripts/travis_install_deps.sh"
+#  - "bash scripts/travis_install_deps.sh"
 #  - "python setup.py install"
 script:
 #  - "python setup.py google_test --test-dir=tests/"
