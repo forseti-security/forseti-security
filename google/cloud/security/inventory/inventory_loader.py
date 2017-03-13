@@ -198,8 +198,10 @@ def _send_email(cycle_timestamp, status, sendgrid_api_key,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
-def main():
+def main(argv):
     """Runs the Inventory Loader."""
+    
+    del argv
 
     try:
         dao = Dao()
