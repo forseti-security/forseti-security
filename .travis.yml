@@ -21,7 +21,7 @@ before_install:
 #  - "sudo apt-get install -y libmysqlclient-dev"
   - "bash scripts/travis_install_protoc.sh"
 install:
-  - "python setup.py install"
+  - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
 script:
 #  - "python setup.py google_test --test-dir=tests/"
   - "bash scripts/travis_test_pylint.sh"

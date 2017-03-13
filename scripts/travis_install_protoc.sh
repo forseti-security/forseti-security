@@ -17,16 +17,11 @@
 
 set -e
 
-PROTOC_PATH="/usr/local/bin"
-PROTOC="/usr/local/bin/protoc"
 PROTOC_DOWNLOAD_PATH="/tmp/protoc"
 
 echo "Downloading protoc."
 mkdir -p $PROTOC_DOWNLOAD_PATH
 cd $PROTOC_DOWNLOAD_PATH
-wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
-
-echo "Installing protoc."
-unzip protoc-3.2.0-linux-x86_64.zip
-cp /tmp/protoc/bin/protoc $PROTOC_PATH
-chmod 755 $PROTOC
+wget -P $PROTOC_DOWNLOAD_PATH \
+  https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+unzip -d $PROTOC_DOWNLOAD_PATH protoc-3.2.0-linux-x86_64.zip
