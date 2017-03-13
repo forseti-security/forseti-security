@@ -242,6 +242,7 @@ class ComputeFirewallAPI(object):
         retry_on_exception=http_retry,
         wait_exponential_multiplier=1000,
         stop_max_attempt_number=4)
+    # TODO: Investigate improving so we can avoid the pylint disable.
     # pylint: disable=too-many-locals
     def wait_for_any_to_complete(self, project, responses, timeout=0):
         """Wait for one or more requests to complete.
@@ -693,6 +694,7 @@ class FirewallRules(object):
         return True
 
 # pylint: disable=too-many-instance-attributes
+# TODO: Investigate improving so we can avoid the pylint disable.
 class FirewallEnforcer(object):
     """Enforce a set of firewall rules for use with GCE projects."""
 
