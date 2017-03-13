@@ -46,5 +46,42 @@ $ scripts/dev_inventory.sh
 ## How to Test
 Look at the test instruction in this [README](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/README.md#tests).
 
+## How to Add New Resource to Inventory
+
+In general, it's straightforward to add new resource to inventory.
+The workflow is designed to be generic, with the main steps as:
+* define the database table schema to store the resource data
+* create a new pipeline worker, to process the new table and the table fieldnames
+* write a transformation to flatten the data returned by GCP APIs into a format
+that's ingestable by the database table
+
+Look at this PR for an end-to-end example loading of a resource.  
+
+Step-by-Step:
+1. Design the applicable database table schema.  This schema will reflect
+how data from GCP APIs will be flattened and stored in a database table.
+Besides the relational data, we also aim to store the raw API data as json
+to assist troubleshooting.  Create a PR for this to be reviewed first
+before rest of the code is written.  This will save a lot of work.
+
+2. Once the database PR is merged, create a loader pipeline for your resource.
+This loader pipeline will then be installed in the runner inventory_loader.py.
+
+3. Get the data from GCP.  [See if the API to get your data already exists.](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/common/gcp_api)
+If not, it's your chance to contribute a new one.
+
+4. Data from GCP api is not normalized and can not be fitted into the
+database table.  You will have to write a function to transform the data.
+Please write a [test for this transform function](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/tests/inventory/transform_util_test.py).
+
+5. Load the flattened data into database table, with the load_data() in [dao.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/dao.py).
+* add the new table to CREATE_TABLE_MAP
+* use the [csv_writer](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/csv_writer.py) to write the API data to csv
+* create a new map of the fieldnames that matches the CSV column to the database columns
+* add the new map to CSV_FIELDNAME_MAP
+* call the load_sql_provider to generate the sql to load the data for your
+resource
+* execute the load_data sql command
+
 ## Tips & Tricks
 * It is helpful to use a MySql GUI tool to inspect the table data.
