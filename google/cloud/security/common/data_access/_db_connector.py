@@ -32,6 +32,7 @@ flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 flags.DEFINE_string('db_passwd', None, 'Cloud SQL password')
 
 # pylint: disable=too-few-public-methods
+# TODO: Investigate improving so we can avoid the pylint disable.
 class _DbConnector(object):
     """Database connector."""
 
