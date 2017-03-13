@@ -59,11 +59,11 @@ that's ingestiable.
 Look at this PR for an [end-to-end example loading of a resource].
 
 Step-by-Step:
-1. Design the applicable database table schema.  This schema will reflect
-how data from GCP APIs will be flattened and stored in a database table.
-Besides the relational data, we also aim to store the raw API data as json
-to assist troubleshooting.  Create a PR for this to be reviewed first
-before rest of the code is written.
+1. Design a new table schema for the data you need to store in Inventory.
+Each field of data should correspond to a column in the table schema.
+Additionally, we aim to store the raw API data as json to assist
+troubleshooting.  Create a PR for this to be reviewed first before rest of the
+code is written.  See [create_tables.py] for examples.
 
 2. Once the database PR is merged, create a pipeline worker for your resource
 in [inventory/pipelines].  This pipeline worker will then be installed in
@@ -76,39 +76,39 @@ If not, it's your chance to contribute a new one.
 database table.  You will have to write a function to transform the data.
 Please write a [test for this transform function].
 
-```python
-Example API Data
-{
-    "projects": [
-      {
-        "name": "project1",
-        "parent": {
-          "type": "organization",
-          "id": "888888888888"
-        },
-        "projectId": "project1",
-        "projectNumber": "25621943694",
-        "lifecycleState": "ACTIVE",
-        "createTime": "2016-10-22T16:57:36.096Z"
-      },
-      {
-        "name": "project2",
-        "parent": {
-          "type": "organization",
-          "id": "888888888888"
-        },
-        "projectId": "project2",
-        "projectNumber": "94226340476",
-        "lifecycleState": "ACTIVE",
-        "createTime": "2016-11-13T05:32:10.930Z"
-      },
-    ]
-}
+    ```python
+    Example API Data
+    {
+        "projects": [
+          {
+            "name": "project1",
+            "parent": {
+              "type": "organization",
+              "id": "888888888888"
+            },
+            "projectId": "project1",
+            "projectNumber": "25621943694",
+            "lifecycleState": "ACTIVE",
+            "createTime": "2016-10-22T16:57:36.096Z"
+          },
+          {
+            "name": "project2",
+            "parent": {
+              "type": "organization",
+              "id": "888888888888"
+            },
+            "projectId": "project2",
+            "projectNumber": "94226340476",
+            "lifecycleState": "ACTIVE",
+            "createTime": "2016-11-13T05:32:10.930Z"
+          },
+        ]
+    }
 
-Example Transformed (Flattened) Data
-25621943694 project1  project1  ACTIVE  organization  888888888888  2016-10-22 16:57:36
-94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
-```
+    Example Transformed (Flattened) Data
+    25621943694 project1  project1  ACTIVE  organization  888888888888  2016-10-22 16:57:36
+    94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
+    ```
 
 5. Load the flattened data into database table, with the load_data() in [dao.py].
     * Add the new table to CREATE_TABLE_MAP in [dao.py].
@@ -123,6 +123,7 @@ Example Transformed (Flattened) Data
 
 [README]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/README.md#tests
 [See if the API to get your data already exists.]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/common/gcp_api
+[create_tables.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/sql_queries/create_tables.py
 [csv_writer]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/csv_writer.py
 [dao.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/dao.py
 [end-to-end example loading of a resource]: https://github.com/GoogleCloudPlatform/forseti-security/pull/26
