@@ -28,5 +28,5 @@ wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-li
 
 echo "Installing protoc."
 unzip protoc-3.2.0-linux-x86_64.zip
-sudo cp /tmp/protoc/bin/protoc $PROTOC_PATH
-sudo chmod 755 $PROTOC
+cp /tmp/protoc/bin/protoc $PROTOC_PATH
+chmod 755 $PROTOC
