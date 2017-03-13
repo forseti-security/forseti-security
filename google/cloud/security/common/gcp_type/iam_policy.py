@@ -19,6 +19,7 @@ See: https://cloud.google.com/iam/reference/rest/v1/Policy
 import re
 
 # pylint: disable=line-too-long
+# TODO: Investigate improving so we can avoid the pylint disable.
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyBindingError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyMemberError
