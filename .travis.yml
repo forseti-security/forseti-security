@@ -21,7 +21,7 @@ before_install:
 #  - "sudo apt-get install -y libmysqlclient-dev"
   - "pip install -q pylint==1.6.5"
   - "pip show -f pylint"
-  - "pip install -q protobuf==3.2.0"
+  - "pip install -v protobuf==3.2.0"
   - "pip show -f protobuf"
 install:
   - "bash scripts/travis_install_deps.sh"
