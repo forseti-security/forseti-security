@@ -19,10 +19,11 @@ echo "Running $(which pylint)."
 
 pylint --version
 
+# The disables specified allow us to have 'I' level messages, just
+# not the ones specified.
 PYTHONPATH=./ \
   pylint google/ \
   --rcfile=./pylintrc \
-# Allow 'I' level messages, but not these.
   --disable=locally-disabled,locally-enabled
 
 if [ $(($? & 7)) -ne 0 ]; then
