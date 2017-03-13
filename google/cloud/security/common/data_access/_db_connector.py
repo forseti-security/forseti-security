@@ -61,7 +61,7 @@ class _DbConnector(object):
                     db=configs['db_name'],
                     local_infile=1)
         except OperationalError as e:
-            LOGGER.error('Unable to create mysql connector:\n{0}'.format(e))
+            LOGGER.error('Unable to create mysql connector:\n%s', e)
             raise MySQLError('DB Connector', e)
 
     def __del__(self):
