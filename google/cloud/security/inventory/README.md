@@ -48,12 +48,13 @@ Look at the test instruction in this [README].
 
 ## How to Add New Resource to Inventory
 
-In general, it's straightforward to add new resource to inventory.
-The workflow is designed to be generic, with the main steps as:
+It's straightforward to add a new resource to inventory for collection.
+This workflow is designed to be generic across resource types.
+The main steps are:
 1. Define the database table schema to store the resource data.
 2. Create a new pipeline worker to process the new table and the table fieldnames.
 3. Write a transformation to flatten the data returned by GCP APIs into a format
-that's ingestable by the database table.
+that's ingestiable.
 
 Look at this PR for an [end-to-end example loading of a resource].
 
@@ -62,25 +63,60 @@ Step-by-Step:
 how data from GCP APIs will be flattened and stored in a database table.
 Besides the relational data, we also aim to store the raw API data as json
 to assist troubleshooting.  Create a PR for this to be reviewed first
-before rest of the code is written.  This will save a lot of work.
+before rest of the code is written.
 
-2. Once the database PR is merged, create a loader pipeline for your resource.
-This loader pipeline will then be installed in the runner inventory_loader.py.
+2. Once the database PR is merged, create a pipeline worker for your resource
+in [inventory/pipelines].  This pipeline worker will then be installed in
+[inventory_loader.py].
 
 3. Get the data from GCP.  [See if the API to get your data already exists.]
 If not, it's your chance to contribute a new one.
 
-4. Data from GCP api is not normalized and can not be fitted into the
+4. Data from GCP API is not normalized and can not be fitted into the
 database table.  You will have to write a function to transform the data.
 Please write a [test for this transform function].
 
+```python
+Example API Data
+{
+    "projects": [
+      {
+        "name": "project1",
+        "parent": {
+          "type": "organization",
+          "id": "888888888888"
+        },
+        "projectId": "project1",
+        "projectNumber": "25621943694",
+        "lifecycleState": "ACTIVE",
+        "createTime": "2016-10-22T16:57:36.096Z"
+      },
+      {
+        "name": "project2",
+        "parent": {
+          "type": "organization",
+          "id": "888888888888"
+        },
+        "projectId": "project2",
+        "projectNumber": "94226340476",
+        "lifecycleState": "ACTIVE",
+        "createTime": "2016-11-13T05:32:10.930Z"
+      },
+    ]
+}
+
+Example Transformed (Flattened) Data
+25621943694 project1  project1  ACTIVE  organization  888888888888  2016-10-22 16:57:36
+94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
+```
+
 5. Load the flattened data into database table, with the load_data() in [dao.py].
-    * add the new table to CREATE_TABLE_MAP in [dao.py]
-    * use the [csv_writer] to write the API data to csv
-    * create a new map in [csv_writer], of the fieldnames that matches the CSV column to the database columns
-    * add the new map in [csv_writer], to CSV_FIELDNAME_MAP
-    * call the load_sql_provider to generate the sql to load the data for your resource
-    * execute the load_data sql command
+    * Add the new table to CREATE_TABLE_MAP in [dao.py].
+    * Use the [csv_writer] to write the API data to CSV.
+    * Create a new map in [csv_writer], of the fieldnames that matches the CSV column to the database columns.
+    * Add the new map in [csv_writer], to CSV_FIELDNAME_MAP.
+    * Call the load_sql_provider to generate the SQL to load the data for your resource.
+    * Execute the load data SQL command.
 
 ## Tips & Tricks
 * It is helpful to use a MySql GUI tool to inspect the table data.
@@ -90,4 +126,7 @@ Please write a [test for this transform function].
 [csv_writer]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/csv_writer.py
 [dao.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/dao.py
 [end-to-end example loading of a resource]: https://github.com/GoogleCloudPlatform/forseti-security/pull/26
+[existing pipelines]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines
+[inventory_loader.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/inventory_loader.py
+[inventory_pipelines]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines
 [test for this transform function]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/tests/inventory/transform_util_test.py
