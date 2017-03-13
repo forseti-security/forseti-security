@@ -341,6 +341,7 @@ def _build_scan_summary(all_violations, total_resources):
                 'violations'][violation.resource_id] = 0
 
         # Make sure to count each member violation as a separate one.
+        # TODO: Refactor as the loop is not required.
         for _ in violation.members:
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] += 1
