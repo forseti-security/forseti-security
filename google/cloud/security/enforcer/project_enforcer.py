@@ -119,8 +119,13 @@ class ProjectEnforcer(object):
             gce_api = compute.ComputeClient()
             compute_service = gce_api.service
 
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         self.firewall_api = fe.ComputeFirewallAPI(compute_service,
                                                   dry_run=self._dry_run)
+
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         self.firewall_policy = firewall_policy
 
         if networks:
@@ -131,6 +136,8 @@ class ProjectEnforcer(object):
         self.result.timestamp_sec = datelib.Timestamp.now().AsMicroTimestamp()
 
         try:
+            # pylint: disable=attribute-defined-outside-init
+            # TODO: Investigate improving to avoid the pylint disable.
             self.enforcer = self._initialize_firewall_enforcer()
         except EnforcementError as e:
             return self._set_error_status(e.reason())
@@ -163,6 +170,8 @@ class ProjectEnforcer(object):
                     'error enforcing firewall for project: %s', e)
 
             try:
+                # pylint: disable=attribute-defined-outside-init
+                # TODO: Investigate improving to avoid the pylint disable.
                 self.rules_after_enforcement = self._get_current_fw_rules()
             except EnforcementError as e:
                 return self._set_error_status(e.reason())
@@ -208,11 +217,16 @@ class ProjectEnforcer(object):
           EnforcementError: Raised if there are any errors fetching the current
               firewall rules or building the expected rules from the policy.
         """
+
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         if not self.project_networks:
             raise EnforcementError(STATUS_ERROR,
                                    'no networks found for project')
 
         self.rules_before_enforcement = self._get_current_fw_rules()
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         self.expected_rules = fe.FirewallRules(self.project_id)
         try:
             for network_name in self.project_networks:
@@ -296,22 +310,24 @@ class ProjectEnforcer(object):
         results.rules_modified_count = 0
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_inserted_rules()]):
+              [r['name'] for r in self.enforcer.get_inserted_rules()]):
             results.rules_added.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_deleted_rules()]):
+              [r['name'] for r in self.enforcer.get_deleted_rules()]):
             results.rules_removed.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_updated_rules()]):
+              [r['name'] for r in self.enforcer.get_updated_rules()]):
             results.rules_updated.append(rule)
             results.rules_modified_count += 1
 
         # If an error occured during enforcement, rules_after_enforcement may
         # not exist yet.
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         if not hasattr(self, 'rules_after_enforcement'):
             try:
                 self.rules_after_enforcement = self._get_current_fw_rules()
