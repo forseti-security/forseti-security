@@ -18,7 +18,7 @@ language:
 python:
   - "2.7"
 install:
-#  - "sudo apt-get install -y libmysqlclient-dev"
+  - "sudo apt-get install -y libmysqlclient-dev"
   - "bash scripts/travis_install_protoc.sh"
   - "pip install -q pylint==1.6.5"
   - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
