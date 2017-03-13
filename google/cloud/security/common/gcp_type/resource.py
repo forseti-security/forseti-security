@@ -20,6 +20,7 @@ need to separate the classes depending on implementation.
 import abc
 
 # pylint: disable=line-too-long
+# TODO: Investigate improving so we can avoid the pylint disable.
 from google.cloud.security.common.gcp_type.errors import InvalidResourceTypeError
 
 
