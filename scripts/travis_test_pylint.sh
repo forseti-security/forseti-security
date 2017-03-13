@@ -23,8 +23,7 @@ pylint --version
 # not the ones specified.
 PYTHONPATH=./ \
   pylint google/ \
-  --rcfile=./pylintrc \
-  --disable=locally-disabled,locally-enabled
+  --rcfile=./pylintrc
 
 if [ $(($? & 7)) -ne 0 ]; then
   echo "pylint had errors."
