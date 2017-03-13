@@ -15,7 +15,7 @@
 
 # A script to perform the linting of python code submits.
 
-echo "Running pylint $(type pylint)."
+echo "Running $(which pylint)."
 pylint --version
 
 
