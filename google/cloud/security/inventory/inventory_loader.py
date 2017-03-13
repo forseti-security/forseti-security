@@ -200,7 +200,7 @@ def _send_email(cycle_timestamp, status, sendgrid_api_key,
 
 def main(argv):
     """Runs the Inventory Loader."""
-    
+
     del argv
 
     try:
