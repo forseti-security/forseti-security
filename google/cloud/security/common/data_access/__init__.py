@@ -21,6 +21,7 @@
 # the major number.
 
 # pylint: disable=invalid-name
+# TODO: Look at improving the naming so we don't have need the pylint disable.
 db_schema_version = '1.0'
 
 # Change log
