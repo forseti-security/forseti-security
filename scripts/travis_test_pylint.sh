@@ -16,12 +16,13 @@
 # A script to perform the linting of python code submits.
 
 echo "Running $(which pylint)."
-pylint --version
 
+pylint --version
 
 PYTHONPATH=./ \
   pylint google/ \
   --rcfile=./pylintrc \
+# Allow 'I' level messages, but not these.
   --disable=locally-disabled,locally-enabled
 
 if [ $(($? & 7)) -ne 0 ]; then
