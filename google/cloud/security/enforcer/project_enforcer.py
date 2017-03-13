@@ -310,17 +310,17 @@ class ProjectEnforcer(object):
         results.rules_modified_count = 0
 
         for rule in sorted(
-              [r['name'] for r in self.enforcer.get_inserted_rules()]):
+                [r['name'] for r in self.enforcer.get_inserted_rules()]):
             results.rules_added.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-              [r['name'] for r in self.enforcer.get_deleted_rules()]):
+                [r['name'] for r in self.enforcer.get_deleted_rules()]):
             results.rules_removed.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-              [r['name'] for r in self.enforcer.get_updated_rules()]):
+                [r['name'] for r in self.enforcer.get_updated_rules()]):
             results.rules_updated.append(rule)
             results.rules_modified_count += 1
 
