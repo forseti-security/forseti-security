@@ -111,6 +111,7 @@ Please write a [test for this transform function].
     }
 
     Example Transformed (Flattened) Data
+    project_number, project_id, project_name, lifecycle_status, parent_type, parent_id, create_time
     25621943694 project1  project1  ACTIVE  organization  888888888888  2016-10-22 16:57:36
     94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
     ```
