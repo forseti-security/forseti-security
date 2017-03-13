@@ -5,6 +5,8 @@ yaml) and uses it to audit your Google Cloud Platform resources (e.g.
 organizations, projects). After running the audit, it outputs a csv file and
 optionally writes it to a bucket in Google Cloud Storage.
 
+If you are interested in vulnerability scanning please see [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
+
 ## Running the scanner
 
 * Before running the scanner, make sure you've installed the forseti-security
