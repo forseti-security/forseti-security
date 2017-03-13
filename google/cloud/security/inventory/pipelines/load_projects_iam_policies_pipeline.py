@@ -19,6 +19,7 @@ import json
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+# TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.inventory import transform_util
@@ -56,6 +57,7 @@ def run(dao, cycle_timestamp, crm_rate_limiter):
         # than cloning to 2 iterators.
         iam_policies_map = crm_client.get_project_iam_policies(
             RESOURCE_NAME, project_numbers)
+        # TODO: Investigate improving so the pylint disable isn't needed.
         # pylint: disable=redefined-variable-type
         iam_policies_map = list(iam_policies_map)
 
