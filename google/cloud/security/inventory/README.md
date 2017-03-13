@@ -64,7 +64,7 @@ Look at this PR for an [end-to-end example loading of a resource].
 
 Step-by-Step:
 
-1. Design a new table schema for the data you need to store in Inventory.
+1. Define a new table schema for the data you need to store in Inventory.
 Each field of data should correspond to a column in the table schema.
 Additionally, we aim to store the raw API data as json to assist
 troubleshooting.  Create a PR for this to be reviewed first before rest of the
@@ -115,7 +115,7 @@ Please write a [test for this transform function].
     94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
     ```
 
-5. Load the flattened data into database table, with the load_data() in [dao.py].
+5. Load the flattened data into database table, with the load_data() in [dao.py].  See this [end-to-end example loading of a resource].
     * Add the new table to CREATE_TABLE_MAP in [dao.py].
     * Use the [csv_writer] to write the API data to CSV.
     * Create a new map in [csv_writer], of the fieldnames that matches the CSV column to the database columns.
