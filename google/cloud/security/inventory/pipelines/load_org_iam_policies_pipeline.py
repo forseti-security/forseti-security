@@ -57,6 +57,7 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
         # than cloning to 2 iterators.
         iam_policies_map = crm_client.get_org_iam_policies(
             RESOURCE_NAME, org_id)
+        # TODO: Investigate improving so the pylint disable isn't needed.
         # pylint: disable=redefined-variable-type
         iam_policies_map = list(iam_policies_map)
 
