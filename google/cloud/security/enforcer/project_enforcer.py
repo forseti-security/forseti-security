@@ -76,14 +76,6 @@ class ProjectEnforcer(object):
         else:
             self._operation_sema = None
 
-        self.enforcer = None
-        self.expected_rules = None
-        self.firewall_api = None
-        self.firewall_policy = None
-        self.project_networks = None
-        self.rules_after_enforcement = None
-        self.rules_before_enforcement = None
-
     # pylint: disable=too-many-return-statements,too-many-branches
     # TODO: Investigate not having to disable some of these messages.
     def enforce_firewall_policy(self,
