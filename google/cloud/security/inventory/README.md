@@ -52,7 +52,9 @@ It's straightforward to add a new resource to inventory for collection.
 This workflow is designed to be generic across resource types.
 The main steps are:
 1. Define the database table schema to store the resource data.
+
 2. Create a new pipeline worker to process the new table and the table fieldnames.
+
 3. Write a transformation to flatten the data returned by GCP APIs into a format
 that's ingestiable.
 
@@ -76,7 +78,7 @@ If not, it's your chance to contribute a new one.
 database table.  You will have to write a function to transform the data.
 Please write a [test for this transform function].
 
-    ```python
+    ```json
     Example API Data
     {
         "projects": [
