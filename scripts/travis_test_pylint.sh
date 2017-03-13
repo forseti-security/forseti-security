@@ -25,7 +25,7 @@ PYTHONPATH=./ \
   pylint google/ \
   --rcfile=./pylintrc
 
-if [ $(($? & 7)) -ne 0 ]; then
+if [ $? -ne 0 ]; then
   echo "pylint had errors."
   exit 1
 else
