@@ -492,7 +492,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rule_book = OrgRuleBook()
-        rule_book._add_rules(self.RULES1)
+        rule_book.add_rules(self.RULES1)
         policy_bindings = [{
             'role': 'roles/editor',
             'members': ['user:abc@company.com', 'user:def@goggle.com']
@@ -539,7 +539,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rule_book = OrgRuleBook()
-        rule_book._add_rules(self.RULES1)
+        rule_book.add_rules(self.RULES1)
         policy_bindings = [{
             'role': 'roles/editor',
             'members': ['user:abc@company.com', 'user:def@company.com']
