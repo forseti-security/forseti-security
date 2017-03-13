@@ -50,7 +50,9 @@ Look at the test instruction in this [README].
 
 It's straightforward to add a new resource to inventory for collection.
 This workflow is designed to be generic across resource types.
+
 The main steps are:
+
 1. Define the database table schema to store the resource data.
 
 2. Create a new pipeline worker to process the new table and the table fieldnames.
@@ -61,6 +63,7 @@ that's ingestiable.
 Look at this PR for an [end-to-end example loading of a resource].
 
 Step-by-Step:
+
 1. Design a new table schema for the data you need to store in Inventory.
 Each field of data should correspond to a column in the table schema.
 Additionally, we aim to store the raw API data as json to assist
