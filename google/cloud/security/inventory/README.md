@@ -50,10 +50,10 @@ Look at the test instruction in this [README].
 
 In general, it's straightforward to add new resource to inventory.
 The workflow is designed to be generic, with the main steps as:
-* define the database table schema to store the resource data
-* create a new pipeline worker, to process the new table and the table fieldnames
-* write a transformation to flatten the data returned by GCP APIs into a format
-that's ingestable by the database table
+1. Define the database table schema to store the resource data.
+2. Create a new pipeline worker to process the new table and the table fieldnames.
+3. Write a transformation to flatten the data returned by GCP APIs into a format
+that's ingestable by the database table.
 
 Look at this PR for an [end-to-end example loading of a resource].
 
@@ -89,5 +89,5 @@ Please write a [test for this transform function].
 [See if the API to get your data already exists.]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/common/gcp_api
 [csv_writer]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/csv_writer.py
 [dao.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/dao.py
-[end-to-end example loading of a resource](https://github.com/GoogleCloudPlatform/forseti-security/pull/26).
+[end-to-end example loading of a resource]: https://github.com/GoogleCloudPlatform/forseti-security/pull/26
 [test for this transform function]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/tests/inventory/transform_util_test.py
