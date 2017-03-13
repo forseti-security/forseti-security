@@ -43,6 +43,7 @@ LOGGER = LogUtil.setup_logging(__name__)
 class ProjectEnforcer(object):
     """Manages enforcement of policies for a single cloud project."""
 
+    # TODO: Investigate improving so we can avoid the pylint disable.
     # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  project_id,
