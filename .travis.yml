@@ -21,6 +21,7 @@ before_install:
 #  - "sudo apt-get install -y libmysqlclient-dev"
 install:
 #  - "bash scripts/travis_install_deps.sh"
+  - "echo $PYTHONPATH"
   - "python setup.py install"
 script:
 #  - "python setup.py google_test --test-dir=tests/"
