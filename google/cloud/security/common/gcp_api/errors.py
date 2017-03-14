@@ -22,4 +22,3 @@ class Error(Exception):
 class InvalidBucketPathError(Error):
     """Invalid GCS bucket path."""
     pass
-

@@ -19,6 +19,8 @@ need to separate the classes depending on implementation.
 
 import abc
 
+# pylint: disable=line-too-long
+# TODO: Investigate improving so we can avoid the pylint disable.
 from google.cloud.security.common.gcp_type.errors import InvalidResourceTypeError
 
 
@@ -53,6 +55,8 @@ class ResourceType(object):
         return resource_type
 
 
+# pylint: disable=too-few-public-methods
+# TODO: Look into improving to prevent the pylint disable.
 class LifecycleState(object):
     """Resource lifecycle state."""
 

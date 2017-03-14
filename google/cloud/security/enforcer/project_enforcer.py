@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import hashlib
-import logging
 import threading
 from googleapiclient import errors
 from google.apputils import datelib
@@ -44,6 +43,8 @@ LOGGER = LogUtil.setup_logging(__name__)
 class ProjectEnforcer(object):
     """Manages enforcement of policies for a single cloud project."""
 
+    # TODO: Investigate improving so we can avoid the pylint disable.
+    # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  project_id,
                  dry_run=False,
@@ -76,6 +77,8 @@ class ProjectEnforcer(object):
         else:
             self._operation_sema = None
 
+    # pylint: disable=too-many-return-statements,too-many-branches
+    # TODO: Investigate not having to disable some of these messages.
     def enforce_firewall_policy(self,
                                 firewall_policy,
                                 compute_service=None,
@@ -117,8 +120,13 @@ class ProjectEnforcer(object):
             gce_api = compute.ComputeClient()
             compute_service = gce_api.service
 
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         self.firewall_api = fe.ComputeFirewallAPI(compute_service,
                                                   dry_run=self._dry_run)
+
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         self.firewall_policy = firewall_policy
 
         if networks:
@@ -129,6 +137,8 @@ class ProjectEnforcer(object):
         self.result.timestamp_sec = datelib.Timestamp.now().AsMicroTimestamp()
 
         try:
+            # pylint: disable=attribute-defined-outside-init
+            # TODO: Investigate improving to avoid the pylint disable.
             self.enforcer = self._initialize_firewall_enforcer()
         except EnforcementError as e:
             return self._set_error_status(e.reason())
@@ -161,18 +171,20 @@ class ProjectEnforcer(object):
                     'error enforcing firewall for project: %s', e)
 
             try:
+                # pylint: disable=attribute-defined-outside-init
+                # TODO: Investigate improving to avoid the pylint disable.
                 self.rules_after_enforcement = self._get_current_fw_rules()
             except EnforcementError as e:
                 return self._set_error_status(e.reason())
 
             if not change_count:
-              # Don't attempt to retry if there were no changes. This can be
-              # caused by the prechange callback returning false or an
-              # exception.
-              break
+                # Don't attempt to retry if there were no changes. This can be
+                # caused by the prechange callback returning false or an
+                # exception.
+                break
 
             if ((self._dry_run and not retry_on_dry_run) or
-                self.rules_after_enforcement == self.expected_rules):
+                    self.rules_after_enforcement == self.expected_rules):
                 break
 
             retry_enforcement_count += 1
@@ -206,11 +218,16 @@ class ProjectEnforcer(object):
           EnforcementError: Raised if there are any errors fetching the current
               firewall rules or building the expected rules from the policy.
         """
+
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         if not self.project_networks:
             raise EnforcementError(STATUS_ERROR,
                                    'no networks found for project')
 
         self.rules_before_enforcement = self._get_current_fw_rules()
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         self.expected_rules = fe.FirewallRules(self.project_id)
         try:
             for network_name in self.project_networks:
@@ -272,8 +289,8 @@ class ProjectEnforcer(object):
                  ('Invalid value for project' in error_msg or
                   'Failed to find project' in error_msg))
                     or  # Error string changed
-                (e.resp.status == 403 and
-                 'scheduled for deletion' in error_msg)):
+                    (e.resp.status == 403 and
+                     'scheduled for deletion' in error_msg)):
                 raise ProjectDeletedError(error_msg)
             elif (e.resp.status == 403 and
                   'Compute Engine API has not been used' in error_msg):
@@ -294,22 +311,24 @@ class ProjectEnforcer(object):
         results.rules_modified_count = 0
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_inserted_rules()]):
+                [r['name'] for r in self.enforcer.get_inserted_rules()]):
             results.rules_added.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_deleted_rules()]):
+                [r['name'] for r in self.enforcer.get_deleted_rules()]):
             results.rules_removed.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-            [r['name'] for r in self.enforcer.get_updated_rules()]):
+                [r['name'] for r in self.enforcer.get_updated_rules()]):
             results.rules_updated.append(rule)
             results.rules_modified_count += 1
 
         # If an error occured during enforcement, rules_after_enforcement may
         # not exist yet.
+        # pylint: disable=attribute-defined-outside-init
+        # TODO: Investigate improving to avoid the pylint disable.
         if not hasattr(self, 'rules_after_enforcement'):
             try:
                 self.rules_after_enforcement = self._get_current_fw_rules()
@@ -383,9 +402,11 @@ class EnforcementError(Error):
         super(EnforcementError, self).__init__(str(self))
 
     def status(self):
+        """Return status."""
         return self._status
 
     def reason(self):
+        """Return reason."""
         return self._reason
 
     def __str__(self):
@@ -398,4 +419,3 @@ class ProjectDeletedError(Error):
 
 class ComputeApiDisabledError(Error):
     """Error raised if a project to be enforced has the compute API disabled."""
-

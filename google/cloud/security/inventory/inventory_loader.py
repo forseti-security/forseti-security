@@ -32,19 +32,19 @@ To see all the dependent flags:
   $ forseti_inventory --helpfull
 """
 
-from datetime import datetime
-import gflags as flags
-import logging
-import os
 import sys
 
+from datetime import datetime
+import gflags as flags
+
 from ratelimiter import RateLimiter
-import yaml
 
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
+# TODO: Investigate improving so we can avoid the pylint disable.
+# pylint: disable=line-too-long
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
@@ -53,7 +53,7 @@ from google.cloud.security.inventory.errors import LoadDataPipelineError
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
-
+# pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
 
@@ -171,7 +171,7 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(cycle_timestamp, status, sendgrid_api_key, 
+def _send_email(cycle_timestamp, status, sendgrid_api_key,
                 email_sender, email_recipient, email_content=None):
     """Send an email.
 
@@ -198,13 +198,15 @@ def _send_email(cycle_timestamp, status, sendgrid_api_key,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
-def main(unused_argv=None):
+def main(argv):
     """Runs the Inventory Loader."""
+
+    del argv
 
     try:
         dao = Dao()
     except MySQLError as e:
-        LOGGER.error('Encountered error with Cloud SQL. Abort.\n{0}'.format(e))
+        LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
 
     cycle_timestamp = _start_snapshot_cycle(dao)
@@ -220,12 +222,12 @@ def main(unused_argv=None):
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
 
     pipelines = [
-        { 'pipeline': load_projects_pipeline,
-          'status': '' },
-        { 'pipeline': load_projects_iam_policies_pipeline,
-          'status': '' },
-        { 'pipeline': load_org_iam_policies_pipeline,
-          'status': '' },
+        {'pipeline': load_projects_pipeline,
+         'status': ''},
+        {'pipeline': load_projects_iam_policies_pipeline,
+         'status': ''},
+        {'pipeline': load_org_iam_policies_pipeline,
+         'status': ''},
     ]
 
     for pipeline in pipelines:
@@ -235,7 +237,7 @@ def main(unused_argv=None):
             pipeline['status'] = 'SUCCESS'
         except LoadDataPipelineError as e:
             LOGGER.error(
-                'Encountered error to load data.\n{0}'.format(e))
+                'Encountered error to load data.\n%s', e)
             pipeline['status'] = 'FAILURE'
 
     succeeded = [p['status'] == 'SUCCESS' for p in pipelines]
@@ -250,7 +252,7 @@ def main(unused_argv=None):
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
     _send_email(cycle_timestamp, snapshot_cycle_status,
                 configs.get('sendgrid_api_key'),
-                configs.get('email_sender'), configs.get('email_recipient')) 
+                configs.get('email_sender'), configs.get('email_recipient'))
 
 
 if __name__ == '__main__':

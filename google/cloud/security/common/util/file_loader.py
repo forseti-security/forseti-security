@@ -123,4 +123,3 @@ def _parse_yaml_file(data):
     except yaml.YAMLError as yaml_error:
         LOGGER.error(yaml_error)
         raise yaml_error
-

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Util Errors module."""
+# A script to perform the linting of python code submits.
 
+echo "Running $(which pylint)."
 
-class Error(Exception):
-    """Base error class for the module."""
+pylint --version
 
+# The disables specified allow us to have 'I' level messages, just
+# not the ones specified.
+PYTHONPATH=./ \
+  pylint google/ \
+  --rcfile=./pylintrc
 
-class EmailSendError(Error):
-    """Unable to send email."""
-    pass
-
-
-class InvalidFileExtensionError(Error):
-    """No parser exists for the given file extension."""
-    pass
-
-
-class InvalidParserTypeError(Error):
-    """No parser exists for the given parser type."""
-    pass
+if [ $? -ne 0 ]; then
+  echo "pylint had errors."
+  exit 1
+else
+  echo "pylint had no errors."
+  exit 0
+fi

@@ -5,12 +5,12 @@ yaml) and uses it to audit your Google Cloud Platform resources (e.g.
 organizations, projects). After running the audit, it outputs a csv file and
 optionally writes it to a bucket in Google Cloud Storage.
 
+If you are interested in vulnerability scanning please see [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
+
 ## Running the scanner
 
 * Before running the scanner, make sure you've installed the forseti-security
-  package. See the [README](/README.md) in the top-level directory of this repo.
-
-* Create a new project and setup billing.
+  package and set up your Google Cloud project. Refer to this [README](/google/cloud/security/README.md) for instructions.
 
 * Update gcloud (the following gcloud commands have been tested with version
   1.3.8):
@@ -24,16 +24,6 @@ $ gcloud components update
 
 ```sh
 $ gcloud init
-```
-
-* Add the `PROJECTID-compute@developer.gserviceaccount.com` service account from
-  your project IAM onto your organization IAM settings. Grant it the `Browser`
-  role.
-
-* Authenticate your application-default credentials:
-
-```sh
-$ gcloud auth application-default login
 ```
 
 * A sample rules file can be found in the samples/ directory. You should edit

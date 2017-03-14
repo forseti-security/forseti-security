@@ -68,7 +68,8 @@ class LogUtil(object):
             handler = logging.StreamHandler()
 
         formatter = logging.Formatter(
-                    '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+            '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+        handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         logger_instance = logging.getLogger(module_name)
         logger_instance.addHandler(handler)

@@ -14,9 +14,9 @@
 
 """Transform data from one format to another."""
 
-from dateutil import parser
 import json
-import logging
+
+from dateutil import parser
 
 from google.cloud.security.common.util.log_util import LogUtil
 
@@ -113,4 +113,4 @@ def flatten_iam_policies(iam_policies_map):
                            'role': role,
                            'member_type': member_type,
                            'member_name': member_name,
-                           'member_domain': member_domain}                    
+                           'member_domain': member_domain}

@@ -28,19 +28,20 @@ Usage:
       --email_recipient <email address of the email recipient> (required)
 """
 
-import gflags as flags
 import itertools
 import os
 import shutil
 import sys
-import tempfile
 
 from datetime import datetime
+
+import gflags as flags
 
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
+# pylint: disable=line-too-long
 from google.cloud.security.common.data_access.organization_dao import OrganizationDao
 from google.cloud.security.common.data_access.project_dao import ProjectDao
 from google.cloud.security.common.gcp_api import storage
@@ -72,15 +73,15 @@ flags.mark_flag_as_required('rules')
 flags.mark_flag_as_required('organization_id')
 
 
-def main(_):
+def main():
     """Run the scanner."""
     logger = LogUtil.setup_logging(__name__)
 
     file_path = FLAGS.rules
     output_path = FLAGS.output_path
 
-    logger.info(('Initializing the rules engine: '
-                 '\n    rules: {}').format(file_path))
+    logger.info('Initializing the rules engine:\n'
+                'Using rules: %s', file_path)
 
     rules_engine = OrgRulesEngine(rules_file_path=file_path)
     rules_engine.build_rule_book()
@@ -97,16 +98,18 @@ def main(_):
         logger.info('No policies found. Exiting.')
         sys.exit()
 
-    all_violations = _find_violations(logger,
-        itertools.chain(org_policies.iteritems(),
-                        project_policies.iteritems()),
+    all_violations = _find_violations(
+        logger,
+        itertools.chain(
+            org_policies.iteritems(),
+            project_policies.iteritems()),
         rules_engine)
 
     csv_name = csv_writer.write_csv(
         resource_name='policy_violations',
         data=_write_violations_output(logger, all_violations),
         write_header=True)
-    logger.info('CSV filename: {}'.format(csv_name))
+    logger.info('CSV filename: %s', csv_name)
 
     # scanner timestamp for output file and email
     now_utc = datetime.utcnow()
@@ -188,7 +191,7 @@ def _get_org_policies(logger, timestamp):
         The org policies.
     """
     org_dao = None
-    org_policies = []
+    org_policies = {}
     try:
         org_dao = OrganizationDao()
         org_policies = org_dao.get_org_iam_policies(timestamp)
@@ -208,7 +211,7 @@ def _get_project_policies(logger, timestamp):
         The project policies.
     """
     project_dao = None
-    project_policies = []
+    project_policies = {}
     try:
         project_dao = ProjectDao()
         project_policies = project_dao.get_project_policies(timestamp)
@@ -286,7 +289,7 @@ def _send_email(csv_name, now_utc, all_violations, total_resources):
     # Create an attachment out of the csv file and base64 encode the content.
     attachment = EmailUtil.create_attachment(
         file_location=csv_name,
-        type='text/csv',
+        content_type='text/csv',
         filename=_get_output_filename(now_utc),
         disposition='attachment',
         content_id='Scanner Violations'
@@ -333,12 +336,13 @@ def _build_scan_summary(all_violations, total_resources):
 
         # Keep track of # of violations per resource id.
         if (violation.resource_id not in
-            resource_summaries[resource_type]['violations']):
+                resource_summaries[resource_type]['violations']):
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] = 0
 
         # Make sure to count each member violation as a separate one.
-        for member in violation.members:
+        # TODO: Refactor as the loop is not required.
+        for _ in violation.members:
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] += 1
 

@@ -20,13 +20,12 @@ Usage for enforcing a single project's firewall:
       --policy_file <policy file path>
 
 """
+import threading
 
 import gflags as flags
-import threading
 from google.apputils import app
 
 from google.cloud.security.common.util import file_loader
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.enforcer import batch_enforcer
 from google.cloud.security.enforcer import enforcer_log_pb2
 
@@ -120,21 +119,23 @@ def enforce_single_project(enforcer, project_id, policy_filename):
 
 
 def main(argv):
+    """The main entry point for Forseti Security Enforcer runner."""
+
     del argv
 
     enforcer = initialize_batch_enforcer(
-            FLAGS.concurrent_threads, FLAGS.maximum_project_writer_threads,
-            FLAGS.maximum_firewall_write_operations, FLAGS.dry_run)
+        FLAGS.concurrent_threads, FLAGS.maximum_project_writer_threads,
+        FLAGS.maximum_firewall_write_operations, FLAGS.dry_run)
 
     if FLAGS.enforce_project and FLAGS.policy_file:
         enforcer_results = enforce_single_project(enforcer,
                                                   FLAGS.enforce_project,
                                                   FLAGS.policy_file)
 
-        print(enforcer_results)
+        print enforcer_results
 
     else:
-        print('Batch mode not implemented yet.')
+        print 'Batch mode not implemented yet.'
 
 
 if __name__ == '__main__':

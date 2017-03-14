@@ -16,12 +16,16 @@
 See: https://cloud.google.com/resource-manager/reference/rest/v1/organizations
 """
 
+# TODO: Investigate improving so we can avoid the pylint disable.
+# pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.gcp_type.resource import Resource
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
 
+# pylint: disable=too-few-public-methods
+# TODO: Investigate improving to not use the disable.
 class OrgLifecycleState(LifecycleState):
     """Organization lifecycle state.
 

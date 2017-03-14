@@ -16,10 +16,11 @@
 
 import json
 
-from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+# TODO: Investigate improving so the pylint disable isn't needed.
+# pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
@@ -28,14 +29,12 @@ from google.cloud.security.inventory.errors import LoadDataPipelineError
 RESOURCE_NAME = 'project_iam_policies'
 RAW_PROJECT_IAM_POLICIES = 'raw_project_iam_policies'
 
-
-def run(dao, cycle_timestamp, configs, crm_rate_limiter):
+def run(dao, cycle_timestamp, crm_rate_limiter):
     """Runs the load IAM policies data pipeline.
 
     Args:
         dao: Data access object.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        configs: Dictionary of configurations.
         crm_rate_limiter: RateLimiter object for CRM API client.
 
     Returns:
@@ -58,6 +57,8 @@ def run(dao, cycle_timestamp, configs, crm_rate_limiter):
         # than cloning to 2 iterators.
         iam_policies_map = crm_client.get_project_iam_policies(
             RESOURCE_NAME, project_numbers)
+        # TODO: Investigate improving so the pylint disable isn't needed.
+        # pylint: disable=redefined-variable-type
         iam_policies_map = list(iam_policies_map)
 
         # Flatten and relationalize data for upload to cloud sql.

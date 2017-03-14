@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Util Errors module."""
+# A script to perform the download and installation of protobuf.
 
+set -e
 
-class Error(Exception):
-    """Base error class for the module."""
+echo "Downloading protoc."
+mkdir -p $PROTOC_DOWNLOAD_PATH
+cd $PROTOC_DOWNLOAD_PATH
+wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
 
-
-class EmailSendError(Error):
-    """Unable to send email."""
-    pass
-
-
-class InvalidFileExtensionError(Error):
-    """No parser exists for the given file extension."""
-    pass
-
-
-class InvalidParserTypeError(Error):
-    """No parser exists for the given parser type."""
-    pass
+echo "Installing protoc."
+unzip protoc-3.2.0-linux-x86_64.zip
+sudo cp /tmp/protoc/bin/protoc $PROTOC_PATH
+sudo chmod 755 $PROTOC
