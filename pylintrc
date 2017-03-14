@@ -114,7 +114,7 @@ generated-members=REQUEST,acl_users,aq_parent
 [BASIC]
 
 # Required attributes for module, separated by a comma
-required-attributes=
+#required-attributes=
 
 # List of builtins function names that should not be used, separated by a comma
 bad-functions=map,filter,apply,input
