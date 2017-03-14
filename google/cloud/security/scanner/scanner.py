@@ -76,14 +76,9 @@ flags.mark_flag_as_required('organization_id')
 def main(_):
     """Run the scanner."""
     logger = LogUtil.setup_logging(__name__)
+    logger.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
-    file_path = FLAGS.rules
-    output_path = FLAGS.output_path
-
-    logger.info('Initializing the rules engine:\n'
-                'Using rules: %s', file_path)
-
-    rules_engine = OrgRulesEngine(rules_file_path=file_path)
+    rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
     rules_engine.build_rule_book()
 
     snapshot_timestamp = _get_timestamp(logger)
@@ -105,24 +100,13 @@ def main(_):
             project_policies.iteritems()),
         rules_engine)
 
-    csv_name = csv_writer.write_csv(
-        resource_name='policy_violations',
-        data=_write_violations_output(logger, all_violations),
-        write_header=True)
-    logger.info('CSV filename: %s', csv_name)
-
-    # scanner timestamp for output file and email
-    now_utc = datetime.utcnow()
-    output_filename = _get_output_filename(now_utc)
-
-    if output_path:
-        _upload_csv_to_gcs(logger, output_path, output_filename, csv_name)
-
+    # If there are violations, send results.
     if all_violations:
-        _send_email(csv_name, now_utc, all_violations, {
-            ResourceType.ORGANIZATION: len(org_policies.keys()),
-            ResourceType.PROJECT: len(project_policies.keys())
-        })
+        resource_counts = {
+            ResourceType.ORGANIZATION: len(org_policies),
+            ResourceType.PROJECT: len(project_policies),
+        }
+        _output_results(logger, all_violations, resource_counts=resource_counts)
 
     logger.info('Done!')
 
@@ -240,15 +224,43 @@ def _write_violations_output(logger, violations):
                 'member': '{}:{}'.format(member.type, member.name)
             }
 
-def _upload_csv_to_gcs(logger, output_path, output_filename, csv_name):
+def _output_results(logger, all_violations, **kwargs):
+    """Send the output results.
+
+    Args:
+        logger: The logger.
+        all_violations: The list of violations to report.
+        **kwargs: The rest of the args.
+    """
+    # Write the CSV.
+    csv_name = csv_writer.write_csv(
+        resource_name='policy_violations',
+        data=_write_violations_output(logger, all_violations),
+        write_header=True)
+    logger.info('CSV filename: %s', csv_name)
+
+    # Scanner timestamp for output file and email.
+    now_utc = datetime.utcnow()
+
+    # If output_path specified, upload to GCS.
+    if FLAGS.output_path:
+        _upload_csv_to_gcs(logger, FLAGS.output_path, now_utc, csv_name)
+
+    # Send summary email.
+    resource_counts = kwargs.get('resource_counts', {})
+    _send_email(csv_name, now_utc, all_violations, resource_counts)
+
+def _upload_csv_to_gcs(logger, output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
 
     Args:
         logger: The logger.
         output_path: The output path for the csv.
-        output_filename: The output file name.
+        now_utc: The UTC timestamp of "now".
         csv_name: The csv_name.
     """
+    output_filename = _get_output_filename(now_utc)
+
     # If output path was specified, copy the csv temp file either to
     # a local file or upload it to Google Cloud Storage.
     logger.info('Output filename: {}'.format(output_filename))
@@ -340,13 +352,9 @@ def _build_scan_summary(all_violations, total_resources):
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] = 0
 
-        # Make sure to count each member violation as a separate one.
-        # TODO: Refactor as the loop is not required.
-        for _ in violation.members:
-            resource_summaries[resource_type][
-                'violations'][violation.resource_id] += 1
-
-            total_violations += 1
+        resource_summaries[resource_type][
+            'violations'][violation.resource_id] += len(violation.members)
+        total_violations += len(violation.members)
 
     return total_violations, resource_summaries
 
