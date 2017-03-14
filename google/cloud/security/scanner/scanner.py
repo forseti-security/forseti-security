@@ -73,7 +73,7 @@ flags.mark_flag_as_required('rules')
 flags.mark_flag_as_required('organization_id')
 
 
-def main():
+def main(_):
     """Run the scanner."""
     logger = LogUtil.setup_logging(__name__)
 

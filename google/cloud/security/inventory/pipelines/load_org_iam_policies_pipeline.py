@@ -30,7 +30,7 @@ RESOURCE_NAME = 'org_iam_policies'
 RAW_ORG_IAM_POLICIES = 'raw_org_iam_policies'
 
 
-def run(dao, cycle_timestamp, configs, crm_rate_limiter):
+def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     """Runs the load IAM policies data pipeline.
 
     Args:
