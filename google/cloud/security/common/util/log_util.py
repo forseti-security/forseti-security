@@ -41,41 +41,40 @@ flags.DEFINE_boolean('use_cloud_logging', False,
 flags.DEFINE_boolean('nouse_cloud_logging', False, 'Do not use Cloud Logging.')
 
 
-class LogUtil(object):
-    """Utility to wrap logging setup."""
+def setup_logging(module_name):
+    return get_logger(module_name)
 
-    @classmethod
-    def get_logger(cls, module_name):
-        """Setup logging configuration.
+def get_logger(module_name):
+    """Setup logging configuration.
 
-        Args:
-            module_name: The name of the module to describe the log entry.
+    Args:
+        module_name: The name of the module to describe the log entry.
 
-        Returns:
-            An instance of the configured logger.
-        """
-        is_gce = compute.ComputeClient.is_compute_engine_instance()
+    Returns:
+        An instance of the configured logger.
+    """
+    is_gce = compute.ComputeClient.is_compute_engine_instance()
 
-        # Default handler is local logger.
+    # Default handler is local logger.
+    handler = logging.StreamHandler()
+
+    # Use Cloud Logging if flag is set or if on GCE instance.
+    if FLAGS.use_cloud_logging or is_gce:
+        pass
+
+    # Force local logger.
+    if FLAGS.nouse_cloud_logging:
         handler = logging.StreamHandler()
 
-        # Use Cloud Logging if flag is set or if on GCE instance.
-        if FLAGS.use_cloud_logging or is_gce:
-            pass
+    formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logger_instance = logging.getLogger(module_name)
+    logger_instance.addHandler(handler)
+    if os.getenv('DEBUG'):
+        logger_instance.setLevel(logging.DEBUG)
+    else:
+        logger_instance.setLevel(logging.INFO)
 
-        # Force local logger.
-        if FLAGS.nouse_cloud_logging:
-            handler = logging.StreamHandler()
-
-        formatter = logging.Formatter(
-            '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler = logging.StreamHandler()
-        handler.setFormatter(formatter)
-        logger_instance = logging.getLogger(module_name)
-        logger_instance.addHandler(handler)
-        if os.getenv('DEBUG'):
-            logger_instance.setLevel(logging.DEBUG)
-        else:
-            logger_instance.setLevel(logging.INFO)
-
-        return logger_instance
+    return logger_instance

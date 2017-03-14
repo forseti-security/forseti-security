@@ -23,12 +23,11 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
 from googleapiclient.http import MediaIoBaseUpload
 
-LOGGER = LogUtil.setup_logging(__name__)
-
 
 class StorageClient(_BaseClient):
     """Storage Client."""
 
+    LOGGER = LogUtil.setup_logging(__name__)
     API_NAME = 'storage'
 
     def __init__(self, credentials=None):

@@ -22,7 +22,13 @@ from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util import errors
 from google.cloud.security.common.util.log_util import LogUtil
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = None
+
+def get_logger():
+    global LOGGER
+    if not LOGGER:
+        LOGGER = LogUtil.setup_logging(__name__)
+    return LOGGER
 
 
 def read_and_parse_file(file_path):
@@ -112,7 +118,7 @@ def _parse_yaml_string(data):
     try:
         return yaml.safe_load(data)
     except yaml.YAMLError as yaml_error:
-        LOGGER.error(yaml_error)
+        get_logger().error(yaml_error)
         raise yaml_error
 
 
@@ -121,5 +127,5 @@ def _parse_yaml_file(data):
     try:
         return yaml.load(data)
     except yaml.YAMLError as yaml_error:
-        LOGGER.error(yaml_error)
+        get_logger().error(yaml_error)
         raise yaml_error

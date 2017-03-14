@@ -28,11 +28,11 @@ from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util.log_util import LogUtil
 
-LOGGER = LogUtil.setup_logging(__name__)
-
 
 class ProjectDao(_DbConnector):
     """Data access object (DAO)."""
+
+    LOGGER = LogUtil.setup_logging(__name__)
 
     def __init__(self):
         super(ProjectDao, self).__init__()

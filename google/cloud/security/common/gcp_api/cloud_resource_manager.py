@@ -23,12 +23,11 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 from google.cloud.security.common.util.log_util import LogUtil
 
 
-LOGGER = LogUtil.setup_logging(__name__)
-
 
 class CloudResourceManagerClient(_BaseClient):
     """Resource Manager Client."""
 
+    LOGGER = LogUtil.setup_logging(__name__)
     API_NAME = 'cloudresourcemanager'
     DEFAULT_MAX_QUERIES = 400
 

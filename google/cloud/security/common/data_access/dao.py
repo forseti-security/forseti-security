@@ -29,10 +29,7 @@ from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.errors import NoResultsError
 from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.util.log_util import LogUtil
 
-
-LOGGER = LogUtil.setup_logging(__name__)
 
 CREATE_TABLE_MAP = {
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,

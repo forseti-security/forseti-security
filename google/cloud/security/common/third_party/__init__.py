@@ -12,29 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The APIs supported by the discovery service.
-
-Not intended to be an exhaustive list (which can be retrieved from
-discovery.get()).
-"""
-
-SUPPORTED_APIS = {
-    'cloudbilling': {
-        'version': 'v1'
-    },
-    'cloudresourcemanager': {
-        'version': 'v1'
-    },
-    'compute': {
-        'version': 'v1'
-    },
-    'iam': {
-        'version': 'v1'
-    },
-    'logging': {
-        'version': 'v2'
-    },
-    'storage': {
-        'version': 'v1'
-    },
-}
+"""Third party common modules."""

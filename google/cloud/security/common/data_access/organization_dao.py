@@ -29,11 +29,11 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.util.log_util import LogUtil
 
-LOGGER = LogUtil.setup_logging(__name__)
-
 
 class OrganizationDao(_DbConnector):
     """Data access object (DAO) for Organizations."""
+
+    LOGGER = LogUtil.setup_logging(__name__)
 
     def __init__(self):
         super(OrganizationDao, self).__init__()
