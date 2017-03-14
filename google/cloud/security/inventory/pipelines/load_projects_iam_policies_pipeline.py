@@ -43,6 +43,8 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     Raises:
         LoadDataPipelineException: An error with loading data has occurred.
     """
+    _ = configs
+
     # Get the projects for which we will retrieve the IAM policies.
     try:
         project_numbers = dao.select_project_numbers(RESOURCE_NAME,
