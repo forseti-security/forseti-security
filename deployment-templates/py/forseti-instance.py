@@ -18,7 +18,7 @@
 def GenerateConfig(context):
     """Generate configuration."""
 
-    FORSETI_SECURITY_VERSION = context.properties['forseti-version']
+    RELEASE_VERSION = context.properties['release-version']
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
         '$(ref.cloudsql-instance.region)',
@@ -159,7 +159,7 @@ chmod +x $USER_HOME/run_forseti.sh
 
            # download forseti src code
            context.properties['src-path'],
-           FORSETI_SECURITY_VERSION,
+           RELEASE_VERSION,
 
            # run_forseti.sh
            # - forseti_inventory
