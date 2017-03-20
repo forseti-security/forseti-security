@@ -108,9 +108,6 @@ class CloudResourceManagerClient(_BaseClient):
             An iterable of iam policies as per-project dictionary.
             Example: {project_number: policy}
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
-
-        Raises:
-            ApiExecutionError: An error has occurred when executing the API.
         """
         projects_stub = self.service.projects()
 
