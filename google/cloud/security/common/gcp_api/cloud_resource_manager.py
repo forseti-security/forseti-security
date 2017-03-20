@@ -117,7 +117,7 @@ class CloudResourceManagerClient(_BaseClient):
                     resource=project_number, body={})
                 response = self._execute(request)
                 return {'project_number': project_number,
-                       'iam_policy': response}
+                        'iam_policy': response}
         except (HttpError, HttpLib2Error) as e:
             raise ApiExecutionError(resource_name, e)
 
