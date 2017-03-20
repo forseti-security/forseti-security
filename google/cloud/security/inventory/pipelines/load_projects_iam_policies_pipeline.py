@@ -18,6 +18,7 @@ import json
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
+from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
@@ -52,18 +53,22 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
         raise LoadDataPipelineError(e)
 
     crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
+
     # Retrieve data from GCP.
-    # Flatten the iterator since we will use it twice, and it is faster
-    # than cloning to 2 iterators.
-    iam_policies_map = crm_client.get_project_iam_policies(
-        RESOURCE_NAME, project_numbers)
-    # TODO: Investigate improving so the pylint disable isn't needed.
-    # pylint: disable=redefined-variable-type
-    iam_policies_map = list(iam_policies_map)
+    # Not using iterator since we will use the iam_policy_maps twice.
+    iam_policy_maps = []
+    for project_number in project_numbers:
+        try:
+            iam_policy_map = crm_client.get_project_iam_policies(
+                RESOURCE_NAME, project_number)
+            iam_policy_maps.append(iam_policy_map)
+        except ApiExecutionError as e:
+            LOGGER.error('Unable to get IAM policies for project %s:\n%s',
+                         project_number, e)
 
     # Flatten and relationalize data for upload to cloud sql.
     flattened_iam_policies = (
-        transform_util.flatten_iam_policies(iam_policies_map))
+        transform_util.flatten_iam_policies(iam_policy_maps))
 
     # Load flattened iam policies into cloud sql.
     # Load raw iam policies into cloud sql.
@@ -72,9 +77,9 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     try:
         dao.load_data(RESOURCE_NAME, cycle_timestamp, flattened_iam_policies)
 
-        for i in iam_policies_map:
+        for i in iam_policy_maps:
             i['iam_policy'] = json.dumps(i['iam_policy'])
         dao.load_data(RAW_PROJECT_IAM_POLICIES, cycle_timestamp,
-                      iam_policies_map)
+                      iam_policy_maps)
     except (CSVFileError, MySQLError) as e:
         raise LoadDataPipelineError(e)
