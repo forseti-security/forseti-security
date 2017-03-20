@@ -44,7 +44,6 @@ resources:
 - name: forseti-instance
   type: forseti-instance.py
   properties:
-    forseti-version: "1.0"
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1404-lts
     instance-type: f1-micro
@@ -55,7 +54,8 @@ resources:
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
     organization-id: YOUR_ORG_ID
-    src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.tar.gz
+    release-version: "master"
+    src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/master.tar.gz
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
     sendgrid-api-key: YOUR_SENDGRID_API_KEY
