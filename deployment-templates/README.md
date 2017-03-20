@@ -97,9 +97,22 @@ The provided DM templates are samples for you to use. Make a copy of `deploy-for
 * YOUR\_SENDGRID\_API\_KEY (the API key for SendGrid email service)
 * EMAIL\_ADDRESS\_OF_YOUR\_SENDER (email address of your email sender)
 * EMAIL\_ADDRESS\_OF\_YOUR\_RECIPIENT (email address of your email recipient)
-* `src-path` and `release-version`: The default is to retrieve the "master" branch. If you want to get a release archive, e.g. v1.0, change the following:
-  * `src-path`: https://github.com/GoogleCloudPlatform/forseti-security/archive/{TAG_NAME}.tar.gz (you can find them from [this page](https://github.com/GoogleCloudPlatform/forseti-security/tags); the tag name starts with "v").
+* `src-path` and `release-version`: The default is to retrieve the latest stable branch (currently hardcoded). If you want to get a different release archive, e.g. master, change the following:
+  * `src-path`: https://github.com/GoogleCloudPlatform/forseti-security/archive/{TAG_NAME}.tar.gz (you can find the tag names from [this page](https://github.com/GoogleCloudPlatform/forseti-security/tags); the tag name starts with "v"). If you want to use master branch, then set "TAG_NAME" to "master".
   * `release-version`: Either "master" or the tag name, without the "v", e.g. "1.0". (The quotes are required in the yaml.)
+
+  Example:
+
+  ```yaml
+      # master release:
+      release-version: "master"
+      src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/master.tar.gz
+
+      # v1.0 release:
+      release-version: "1.0"
+      src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.tar.gz
+  ```
+  
 
 There are other templates that you can modify:
 
