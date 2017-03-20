@@ -98,8 +98,8 @@ The provided DM templates are samples for you to use. Make a copy of `deploy-for
 * EMAIL\_ADDRESS\_OF_YOUR\_SENDER (email address of your email sender)
 * EMAIL\_ADDRESS\_OF\_YOUR\_RECIPIENT (email address of your email recipient)
 * `src-path` and `release-version`: The default is to retrieve the latest stable branch (currently hardcoded). If you want to get a different release archive, e.g. master, change the following:
-  * `src-path`: https://github.com/GoogleCloudPlatform/forseti-security/archive/{TAG_NAME}.tar.gz (you can find the tag names from [this page](https://github.com/GoogleCloudPlatform/forseti-security/tags); the tag name starts with "v"). If you want to use master branch, then set "TAG_NAME" to "master".
-  * `release-version`: Either "master" or the tag name, without the "v", e.g. "1.0". (The quotes are required in the yaml.)
+  * `src-path`: This will be something like `https://github.com/GoogleCloudPlatform/forseti-security/archive/{TAG_NAME}.tar.gz`. You can find the tag names from [this page](https://github.com/GoogleCloudPlatform/forseti-security/tags); the tag name starts with "v". If you want to use master branch, then set "TAG_NAME" to "master".
+  * `release-version`: Either "master" or the tag name, without the "v", e.g. for the release with tag name "v1.0", the `release-version` will be "1.0". (The quotes are required in the yaml.)
 
   Example:
 
