@@ -54,8 +54,8 @@ resources:
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
     organization-id: YOUR_ORG_ID
-    release-version: "master"
-    src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/master.tar.gz
+    release-version: "1.0"
+    src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.tar.gz
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
     sendgrid-api-key: YOUR_SENDGRID_API_KEY
