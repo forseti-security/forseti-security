@@ -97,16 +97,15 @@ class CloudResourceManagerClient(_BaseClient):
         except (HttpError, HttpLib2Error) as e:
             raise ApiExecutionError(resource_name, e)
 
-    def get_project_iam_policies(self, resource_name, project_number):
+    def get_project_iam_policies(self, resource_name, project_identifier):
         """Get all the iam policies of given project numbers.
 
         Args:
             resource_name: String of the resource's name.
-            project_number: Integer of project number.
+            project_identifier: Either the project number or the project id.
 
         Returns:
-            Per-project dictionary of iam policies.
-            Example: {project_number: policy}
+            IAM policies of the project.
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
         """
         projects_stub = self.service.projects()
@@ -114,10 +113,8 @@ class CloudResourceManagerClient(_BaseClient):
         try:
             with self.rate_limiter:
                 request = projects_stub.getIamPolicy(
-                    resource=project_number, body={})
-                response = self._execute(request)
-                return {'project_number': project_number,
-                        'iam_policy': response}
+                    resource=project_identifier, body={})
+                return self._execute(request)
         except (HttpError, HttpLib2Error) as e:
             raise ApiExecutionError(resource_name, e)
 

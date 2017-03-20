@@ -62,8 +62,10 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     iam_policy_maps = []
     for project_number in project_numbers:
         try:
-            iam_policy_map = crm_client.get_project_iam_policies(
+            iam_policy = crm_client.get_project_iam_policies(
                 RESOURCE_NAME, project_number)
+            iam_policy_map = {'project_number': project_number,
+                              'iam_policy': iam_policy}
             iam_policy_maps.append(iam_policy_map)
         except ApiExecutionError as e:
             LOGGER.error('Unable to get IAM policies for project %s:\n%s',
