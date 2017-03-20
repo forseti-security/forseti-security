@@ -53,21 +53,18 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
         raise LoadDataPipelineError(e)
 
     crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
-    try:
-        # Retrieve data from GCP.
-        # Flatten the iterator since we will use it twice, and it is faster
-        # than cloning to 2 iterators.
-        iam_policies_map = crm_client.get_project_iam_policies(
-            RESOURCE_NAME, project_numbers)
-        # TODO: Investigate improving so the pylint disable isn't needed.
-        # pylint: disable=redefined-variable-type
-        iam_policies_map = list(iam_policies_map)
+    # Retrieve data from GCP.
+    # Flatten the iterator since we will use it twice, and it is faster
+    # than cloning to 2 iterators.
+    iam_policies_map = crm_client.get_project_iam_policies(
+        RESOURCE_NAME, project_numbers)
+    # TODO: Investigate improving so the pylint disable isn't needed.
+    # pylint: disable=redefined-variable-type
+    iam_policies_map = list(iam_policies_map)
 
-        # Flatten and relationalize data for upload to cloud sql.
-        flattened_iam_policies = (
-            transform_util.flatten_iam_policies(iam_policies_map))
-    except ApiExecutionError as e:
-        raise LoadDataPipelineError(e)
+    # Flatten and relationalize data for upload to cloud sql.
+    flattened_iam_policies = (
+        transform_util.flatten_iam_policies(iam_policies_map))
 
     # Load flattened iam policies into cloud sql.
     # Load raw iam policies into cloud sql.

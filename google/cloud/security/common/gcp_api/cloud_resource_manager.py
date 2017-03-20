@@ -114,16 +114,17 @@ class CloudResourceManagerClient(_BaseClient):
         """
         projects_stub = self.service.projects()
 
-        try:
-            for project_number in project_numbers:
+        for project_number in project_numbers:
+            try:
                 with self.rate_limiter:
                     request = projects_stub.getIamPolicy(
                         resource=project_number, body={})
                     response = self._execute(request)
                     yield {'project_number': project_number,
                            'iam_policy': response}
-        except (HttpError, HttpLib2Error) as e:
-            raise ApiExecutionError(resource_name, e)
+            except (HttpError, HttpLib2Error) as e:
+                LOGGER.error('Unable to get IAM policies for project %s:\n%s',
+                             project_number, e)
 
     def get_organization(self, org_name):
         """Get organizations.
