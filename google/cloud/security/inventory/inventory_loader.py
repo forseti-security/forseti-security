@@ -197,7 +197,10 @@ def _send_email(organization_id, cycle_timestamp, status, pipelines, dao,
                 pipeline['pipeline'].RESOURCE_NAME,
                 cycle_timestamp)
         except MySQLError as e:
-            LOGGER.error('Unable to retrieve record count for %s_%s:\n%s', e)
+            LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
+                        pipeline['pipeline'].RESOURCE_NAME,
+                        cycle_timestamp,
+                        e)
             pipeline['count'] = 'N/A'
 
     email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
@@ -215,7 +218,7 @@ def _send_email(organization_id, cycle_timestamp, status, pipelines, dao,
         email_util = EmailUtil(sendgrid_api_key)
         email_util.send(email_sender, email_recipient,
                         email_subject, email_content,
-                        content_type='text/html', attachment=None)
+                        content_type='text/html')
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
