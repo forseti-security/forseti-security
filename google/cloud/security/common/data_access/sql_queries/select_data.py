@@ -14,6 +14,10 @@
 
 """SQL queries to select data from snapshot tables."""
 
+RECORD_COUNT = """
+    SELECT COUNT(*) FROM {0}_{1};
+"""
+
 PROJECT_NUMBERS = """
     SELECT project_number from projects_{0};
 """

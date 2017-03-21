@@ -77,7 +77,7 @@ class EmailUtil(object):
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
     def send(self, email_sender=None, email_recipient=None,
-             email_subject=None, email_content=None, content_type='text/plain',
+             email_subject=None, email_content=None, content_type=None,
              attachment=None):
         """Send an email.
 

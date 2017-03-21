@@ -27,10 +27,10 @@ from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
-
 LOGGER = LogUtil.setup_logging(__name__)
 RESOURCE_NAME = 'project_iam_policies'
 RAW_PROJECT_IAM_POLICIES = 'raw_project_iam_policies'
+
 
 def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     """Runs the load IAM policies data pipeline.
