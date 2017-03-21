@@ -33,6 +33,7 @@ import gflags as flags
 import logging
 import os
 
+from google.cloud.security.common.gcp_api import cloud_logging
 from google.cloud.security.common.gcp_api import compute
 
 FLAGS = flags.FLAGS
@@ -60,18 +61,18 @@ def get_logger(module_name):
 
     # Use Cloud Logging if flag is set or if on GCE instance.
     if FLAGS.use_cloud_logging or is_gce:
-        pass
+        handler = cloud_logging.CloudLoggingHandler
 
     # Force local logger.
     if FLAGS.nouse_cloud_logging:
         handler = logging.StreamHandler()
+        formatter = logging.Formatter(
+            '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+        handler.setFormatter(formatter)
 
-    formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(handler)
+
     if os.getenv('DEBUG'):
         logger_instance.setLevel(logging.DEBUG)
     else:

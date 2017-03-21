@@ -1,11 +1,10 @@
 from google.apputils import app
 
-from google.cloud.security.common.gcp_api.cloud_logging import LoggingClient
+from google.cloud.security.common.util import log_util
 
 def main(_):
-    client = LoggingClient()
-    logger = client.get_logger()
-    logger.log_text('hi')
+    logger = log_util.get_logger(__name__)
+    logger.info('hi')
 
 if __name__ == '__main__':
     app.run()
