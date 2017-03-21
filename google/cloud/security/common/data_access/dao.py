@@ -97,6 +97,30 @@ class Dao(_DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
+    def select_record_count(self, resource_name, timestamp):
+        """Select the record count from a snapshot table.
+
+        Args:
+            resource_name: String of the resource name, which is embedded in
+                the table name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+             Integer of the record count in a snapshot table.
+
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
+        try:
+            record_count_sql = select_data.RECORD_COUNT.format(
+                resource_name, timestamp)
+            cursor = self.conn.cursor()
+            cursor.execute(record_count_sql)
+            return cursor.fetchone()[0]
+        except (DataError, IntegrityError, InternalError, NotSupportedError,
+                OperationalError, ProgrammingError) as e:
+            raise MySQLError(resource_name, e)
+
     def select_project_numbers(self, resource_name, timestamp):
         """Select the project numbers from a snapshot table.
 
