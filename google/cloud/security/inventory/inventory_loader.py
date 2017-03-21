@@ -198,9 +198,9 @@ def _send_email(organization_id, cycle_timestamp, status, pipelines, dao,
                 cycle_timestamp)
         except MySQLError as e:
             LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
-                        pipeline['pipeline'].RESOURCE_NAME,
-                        cycle_timestamp,
-                        e)
+                         pipeline['pipeline'].RESOURCE_NAME,
+                         cycle_timestamp,
+                         e)
             pipeline['count'] = 'N/A'
 
     email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
