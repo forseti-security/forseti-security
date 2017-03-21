@@ -33,8 +33,7 @@ securely creating a service account.
   ```sh
   $ gcloud components update
   ```
-Display the currently configured user and project in gcloud to ensure it
-is what you expected.
+Ensure gcloud is configured for your Forseti Security project.
 
   ```sh
   $ gcloud info
@@ -53,10 +52,6 @@ is what you expected.
 
 ## Enable required APIs
 Use `gcloud` to enable required APIs.
-
-  ```sh
-  $ gcloud init
-  ```
 
 * Enable **Cloud SQL API**.
 
@@ -77,17 +72,24 @@ Use `gcloud` to enable required APIs.
   ```
 
 ### Obtain a SendGrid API Key
-SendGrid is currently the only supported email service provider. To use it, sign
-up for a [SendGrid account](https://sendgrid.com) and create
-a [General API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html).
-You will use this API key in the deployment templates or as a flag value for
-the Forseti Security commandline tools.
+SendGrid is currently the only supported email service provider. To use it,
+sign up for a [SendGrid account](https://sendgrid.com) and create a
+[General API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html).
+You will use this API key in the deployment templates or as a flag value
+for the Forseti Security commandline tools.
+
+**Note:** By default, SendGrid includes an invisible tracking pixel in your emails,
+which may cause email warnings about opening images. To address this or if you
+don't want to be tracked, the tracking pixel can be
+[disabled here](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
 
 ## Installation specific prerequisites
 ### GCP installations
 #### Enable required APIs
 
 * Enable **Deployment Manager API**.
+In addittion to the APIs from [above](#enable-required-apis) you must enable the
+Deployment Manager API.
 
   ```sh
   $ gcloud beta service-management enable deploymentmanager.googleapis.com

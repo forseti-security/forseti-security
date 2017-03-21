@@ -1,13 +1,14 @@
 # Installing locally
-* [Installing](#installing)
+* [Prerequisites](#prerequisites)
+* [Create a virtualenv](#create-a-virtualenv)
+* [Get the source code](#get-the-source-code)
+* [Run the python setup](#run-the-python-setup)
 * [Execution](#execution)
-* [Tests](#tests)
-* [Forseti Security modules](#forseti-security-modules)
 
 ## Prerequisites
 See the [prerequisistes](/docs/prerequisites/README.md) for installing locally.
 
-## Create a virtualenv and activate it, e.g.:
+## Create a virtualenv
 ```sh
 $ mkvirtualenv forseti-security
 $ workon forseti-security

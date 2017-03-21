@@ -2,7 +2,7 @@
 
   1. [Create a Cloud SQL Instance](#create-cloud-sql-instance)
   1. [Install the protoc compiler](#install-the-protoc-compiler)
-  1. [Install mysql](#install-mysql-compiler)
+  1. [Install `mysql_config`](#install-mysql-compiler)
   1. [Install virtalenv](#install-virtual-env)
 
 ### Create Cloud SQL Instance
@@ -42,7 +42,7 @@ $ sudo cp bin/protoc /usr/local/bin/protoc
 $ sudo chmod 755 /usr/local/bin/protoc
 ```
 
-## Install mysql
+## Install `mysql_config`
 The MySql python connector requires `mysql_config` to be present in your system.
 
 ```sh
