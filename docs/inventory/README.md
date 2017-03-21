@@ -2,16 +2,20 @@
 This is the Inventory component of Forseti Security tool.
 
 ## Pre-requisites
-See the [PREREQUISITES](/docs/PREREQUISITES.md)
+See the [PREREQUISITES](docs/PREREQUISITES.md)
 
 ## How to Run
-After running setup.py, as long as your virtualenv is activated, then you can be in any directory to invoke the console script:
+After running setup.py, as long as your virtualenv is activated, then you can be in
+any directory to invoke the console script:
 
 ```sh
 $ forseti_inventory
 ```
 
-You can also use the convenience [dev_inventory.sh script](/scripts) to run forseti_inventory. Make a copy of dev_inventory.sh.sample as dev_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
+You can also use the convenience [dev_inventory.sh script](/scripts) to run
+forseti_inventory. Make a copy of dev_inventory.sh.sample
+as dev_inventory.sh, edit the script for the appropriate
+commandline flags, and invoke the script from the repo root to run inventory.
 
 ```sh
 $ cd path/to/forseti-security
