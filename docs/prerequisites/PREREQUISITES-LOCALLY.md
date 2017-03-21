@@ -1,12 +1,12 @@
 # Preqrequisites to installing locally
 
-  1 [Create a Cloud SQL Instance](#create-cloud-sql-instance)
-  1 [Install the protoc compiler](#install-the-protoc-compiler)
-  1 [Install mysql](#install-mysql-compiler)
-  1 [Install virtalenv](#install-virtual-env)
+  1. [Create a Cloud SQL Instance](#create-cloud-sql-instance)
+  1. [Install the protoc compiler](#install-the-protoc-compiler)
+  1. [Install mysql](#install-mysql-compiler)
+  1. [Install virtalenv](#install-virtual-env)
 
 ### Create Cloud SQL Instance
-  1 Create a new instance in the [SQL page of GCP console](https://console.cloud.google.com/sql).
+  1. Create a new instance in the [SQL page of GCP console](https://console.cloud.google.com/sql).
     * Select second generation.
     * Specify Instance ID.
     * Select MySQL 5.7 version.
@@ -14,13 +14,13 @@
     * Select 25GB storage capacity.
     * Fill in other details, as desired.
     * Click Create button.
-  1 Configure Users Access Control
+  1. Configure Users Access Control
     * Change password for root user.
     * Create a new user with
       [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges).
-  1 Create New Database
+  1. Create New Database
     * Enter a name.
-  1 Follow these instructions to establish a secure connection using
+  1. Follow these instructions to establish a secure connection using
     [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
 
 ## Install the `protoc` compiler

@@ -1,14 +1,14 @@
 # Prerequistes to isntalling Forseti Security
-  1 [Common steps](#common-steps)
-    1 [Create a GCP project](#create-a-gcp-project)
-    1 [Create a service account](#create-a-service-account)
-    1 [Install gcloud](#install-gcloud)
-    1 [Configure gcloud(#configure-gcloud)
-    1 [Enable required APIs](#enable-required-apis)
-    1 [Obtain a SendGrid API key](#obtain-a-sendgrid-api-key)
-  1 [Installation specific prerequisites](#installation-specific-prerequisites)
-    1 [GCP installations](#gcp-installations)
-    1 [Local installations](#local-installations)
+  1. [Common steps](#common-steps)
+    1. [Create a GCP project](#create-a-gcp-project)
+    1. [Create a service account](#create-a-service-account)
+    1. [Install gcloud](#install-gcloud)
+    1. [Configure gcloud](#configure-gcloud)
+    1. [Enable required APIs](#enable-required-apis)
+    1. [Obtain a SendGrid API key](#obtain-a-sendgrid-api-key)
+  1. [Installation specific prerequisites](#installation-specific-prerequisites)
+    1. [GCP installations](#gcp-installations)
+    1. [Local installations](#local-installations)
 
 ## Common steps
 ### Create a GCP project
@@ -44,8 +44,7 @@ is what you expected.
   Account: [user@company.com]
   Project: [my-forseti-security-project]
 
-  Current Properties:
-    [core]
+  Current Properties: [core]
       project: [my-forseti-security-project]
       account: [user@company.com]
 
