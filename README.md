@@ -11,16 +11,8 @@ Features:
 
 We are continually improving Forseti Security and invite you to submit feature requests and bug reports under Issues. If you would like to contribute to our development efforts, please review our [contributing guidelines](/CONTRIBUTING.md) and submit a pull request.
 
-# Setup
-There are two ways to run Forseti Security.
-
-### Google Cloud Platform (recommended)
-Use this [README](/deployment-templates/README.md) to deploy
-Forseti Security to GCP quickly and easily.
-
-### Local Environment
-Use this [README](/google/cloud/security/README.md) to install and use
-Forseti Security on your own machine.
+# Installation
+Follow the [installation guide](/docs/INSTALLING.MD).
 
 # Contact us
 Reach out to us with questions by contacting

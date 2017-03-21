@@ -1,7 +1,5 @@
 # Deploying Forseti Security to Google Cloud
-
 * [Prerequisites](#prerequisites)
-* [Set up a service account](#set-up-a-service-account)
 * [Customize Deployment Templates](#customize-deployment-templates)
 * [Customze rules.yaml](#customize-rulesyaml)
 * [Deploy Forseti Security](#deploy-forseti-security)
@@ -17,68 +15,7 @@ One of the goals of Forseti Security is to provide continuous scanning and enfor
 **Note**: The DM templates currently do not schedule or execute the [enforcer](../google/cloud/security/enforcer/README.md) module.
 
 ## Prerequisites
-* Install and update `gcloud`. Verify whether the output of `gcloud info` shows the right project and account. If not, login and init your environment (see following steps).
-
-  ```sh
-  $ gcloud info
-
-    ... some info ...
-
-  Account: [user@company.com]
-  Project: [my-forseti-security-project]
-
-  Current Properties:
-    [core]
-      project: [my-forseti-security-project]
-      account: [user@company.com]
-
-    ... more info ...
-```
-
-* Create a new project in your Cloud Console.
-  * You can also re-use a project that is dedicated for Forseti Security.
-  * Enable Billing in your project, if you haven't already.
-
-* Initialize your `gcloud` commandline environment to select your project and auth your Google Cloud account.
-
-  ```sh
-  $ gcloud init
-  ```
-
-* Enable **Cloud SQL API**.
-
-  ```sh
-  $ gcloud beta service-management enable sql-component.googleapis.com
-  ```
-
-* Enable **Cloud SQL Admin API**.
-
-  ```sh
-  $ gcloud beta service-management enable sqladmin.googleapis.com
-  ```
-
-* Enable **Cloud Resource Manager API**.
-
-  ```sh
-  $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
-  ```
-
-* Enable **Deployment Manager API**.
-
-  ```sh
-  $ gcloud beta service-management enable deploymentmanager.googleapis.com
-  ```
-
-## Set up a service account
-In order to run Forseti Security, you must add a service account to your **organization-level** IAM policy with at least the `Browser` role. This allows Forseti Security to perform operations such as listing the projects within your organization.
-
-**Note**: If you also want to audit/enforce organization IAM policies, you'll need to assign the `Organization Administrator` role. Note that this is a very powerful role; if your GCE instance gets compromised, your entire account could also be compromised!
-
-```sh
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-  --role=roles/browser
-```
+See the [PREREQUISITES](/docs/PREREQUISITES-GCP.md) for installing on GCP.
 
 ## Customize Deployment Templates
 The provided DM templates are samples for you to use. Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the following variables:
@@ -112,8 +49,6 @@ The provided DM templates are samples for you to use. Make a copy of `deploy-for
       release-version: "1.0"
       src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.tar.gz
   ```
-  
-
 There are other templates that you can modify:
 
 * `py/inventory/cloudsql-instance.py`:  The template for the Google Cloud SQL instance.
@@ -156,9 +91,7 @@ Most of the changes you will probably make will be around the deployment propert
   ```sh
   $ gcloud compute instances reset <GCE instance name>
   ```
-
 ## Troubleshooting
-
 * **Getting errors about invalid resources?**
   Check that your bucket or Cloud SQL instance names are unique.
 * **Getting errors about `MANIFEST_EXPANSION_USER_ERROR`?**

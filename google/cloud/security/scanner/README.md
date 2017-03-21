@@ -67,7 +67,6 @@ $ cd path/to/forseti-security
 $ scripts/dev_scanner.sh
 ```
 
-
 ## Defining rules
 
 Refer to the [documentation](samples/rules.md) on the rules schema.
