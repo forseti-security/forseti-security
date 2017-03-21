@@ -222,12 +222,12 @@ def main(argv):
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
 
     pipelines = [
-        {'pipeline': load_projects_pipeline,
-         'status': ''},
-        {'pipeline': load_projects_iam_policies_pipeline,
-         'status': ''},
-        {'pipeline': load_org_iam_policies_pipeline,
-         'status': ''},
+        { 'pipeline': load_projects_pipeline,
+          'status': '' },
+        { 'pipeline': load_projects_iam_policies_pipeline,
+          'status': '' },
+        { 'pipeline': load_org_iam_policies_pipeline,
+          'status': '' },
     ]
 
     for pipeline in pipelines:
@@ -237,17 +237,16 @@ def main(argv):
             pipeline['status'] = 'SUCCESS'
         except LoadDataPipelineError as e:
             LOGGER.error(
-                'Encountered error to load data.\n%s', e)
+                'Encountered error to load data.\n{0}'.format(e))
             pipeline['status'] = 'FAILURE'
 
-    succeeded = [p['status'] == 'SUCCESS' for p in pipelines]
+    succeeded = filter(lambda p: p['status'] == 'SUCCESS', pipelines)
 
-    if all(succeeded):
-        snapshot_cycle_status = 'SUCCESS'
-    elif any(succeeded):
-        snapshot_cycle_status = 'PARTIAL_SUCCESS'
-    else:
+    snapshot_cycle_status = 'SUCCESS'
+    if len(succeeded) == 0:
         snapshot_cycle_status = 'FAILURE'
+    elif len(succeeded) < len(pipelines):
+        snapshot_cycle_status = 'PARTIAL_SUCCESS'
 
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
     _send_email(cycle_timestamp, snapshot_cycle_status,
