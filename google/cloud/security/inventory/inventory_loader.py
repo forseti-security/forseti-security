@@ -112,20 +112,21 @@ def _create_snapshot_cycles_table(dao):
         LOGGER.error('Unable to create snapshot cycles table: %s', e)
         sys.exit()
 
-def _start_snapshot_cycle(dao):
+def _start_snapshot_cycle(cycle_time, cycle_timestamp, dao):
     """Start snapshot cycle.
 
     Args:
+        cycle_time: Datetime object of the cycle, in UTC.
+        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         dao: Data access object.
 
     Returns:
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+        None
 
     Raises:
         MySQLError: An error with MySQL has occurred.
     """
-    cycle_time = datetime.utcnow()
-    cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
+
 
     if not _exists_snapshot_cycles_table(dao):
         LOGGER.info('snapshot_cycles is not created yet.')
@@ -141,7 +142,6 @@ def _start_snapshot_cycle(dao):
         sys.exit()
 
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
-    return cycle_timestamp
 
 def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     """Complete the snapshot cycle.
@@ -171,13 +171,14 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(organization_id, cycle_timestamp, status, pipelines, dao,
-                sendgrid_api_key, email_sender, email_recipient,
+def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
+                dao, sendgrid_api_key, email_sender, email_recipient,
                 email_content=None):
     """Send an email.
 
     Args:
         organization_id: String of the organization id
+        cycle_time: Datetime object of the cycle, in UTC.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status: String of the overall status of current snapshot cycle.
         pipelines: List of pipelines and their statuses.
@@ -209,6 +210,7 @@ def _send_email(organization_id, cycle_timestamp, status, pipelines, dao,
     email_content = EmailUtil.render_from_template(
         'inventory_snapshot_summary.jinja', {
             'organization_id': organization_id,
+            'cycle_time': cycle_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
             'cycle_timestamp': cycle_timestamp,
             'status_summary': status,
             'pipelines': pipelines,
@@ -233,7 +235,9 @@ def main(argv):
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
 
-    cycle_timestamp = _start_snapshot_cycle(dao)
+    cycle_time = datetime.utcnow()
+    cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
+    _start_snapshot_cycle(cycle_time, cycle_timestamp, dao)
 
     configs = FLAGS.FlagValuesDict()
 
@@ -275,6 +279,7 @@ def main(argv):
 
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
     _send_email(configs.get('organization_id'),
+                cycle_time,
                 cycle_timestamp,
                 snapshot_cycle_status,
                 pipelines,
