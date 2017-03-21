@@ -79,6 +79,7 @@ sudo apt-get install -y libmysqlclient-dev
 sudo apt-get install -y python-pip python-dev
 
 USER_HOME=/home/ubuntu
+FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc
 
 # Check whether Cloud SQL proxy is installed
 CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
@@ -118,8 +119,9 @@ fi
 PROTOC_PATH=$(which protoc)
 if [ -z "$PROTOC_PATH" ]; then
         cd $USER_HOME
-        wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
-        unzip -o protoc-3.2.0-linux-x86_64.zip
+        PROTOC_DOWNLOAD_URL=$(curl -s $FORSETI_PROTOC_URL)
+        wget $PROTOC_DOWNLOAD_URL
+        unzip -o $(basename $PROTOC_DOWNLOAD_URL)
         sudo cp bin/protoc /usr/local/bin
 fi
 
