@@ -14,6 +14,11 @@ We are continually improving Forseti Security and invite you to submit feature r
 # Installation
 Follow the [installation README](docs/installing/README.md).
 
+## Contributing
+
+Use this [CONTRIBUTING](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md)
+to contribute your features, improvements, or fixes to Forseti Security.
+
 # Contact us
 Reach out to us with questions by contacting [forseti-security@google.com](mailto:forseti-security@google.com).
 
