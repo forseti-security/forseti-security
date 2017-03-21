@@ -171,13 +171,17 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(cycle_timestamp, status, sendgrid_api_key,
-                email_sender, email_recipient, email_content=None):
+def _send_email(organization_id, cycle_timestamp, status, pipelines, dao,
+                sendgrid_api_key, email_sender, email_recipient,
+                email_content=None):
     """Send an email.
 
     Args:
+        organization_id: String of the organization id
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        status: String of the current snapshot cycle.
+        status: String of the overall status of current snapshot cycle.
+        pipelines: List of pipelines and their statuses.
+        dao: Data access object.
         sendgrid_api_key: String of the sendgrid api key to auth email service.
         email_sender: String of the sender of the email.
         email_recipient: String of the recipient of the email.
@@ -186,15 +190,32 @@ def _send_email(cycle_timestamp, status, sendgrid_api_key,
     Returns:
          None
     """
-    email_subject = 'Inventory loading {0}: {1}'.format(cycle_timestamp, status)
 
-    if email_content is None:
-        email_content = email_subject
+    for pipeline in pipelines:
+        try:
+            pipeline['count'] = dao.select_record_count(
+                pipeline['pipeline'].RESOURCE_NAME,
+                cycle_timestamp)
+        except MySQLError as e:
+            LOGGER.error('Unable to retrieve record count for %s_%s:\n%s', e)
+            pipeline['count'] = 'N/A'
+
+    email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
+        cycle_timestamp, status)
+
+    email_content = EmailUtil.render_from_template(
+        'inventory_snapshot_summary.jinja', {
+            'organization_id': organization_id,
+            'cycle_timestamp': cycle_timestamp,
+            'status_summary': status,
+            'pipelines': pipelines,
+        })
 
     try:
         email_util = EmailUtil(sendgrid_api_key)
         email_util.send(email_sender, email_recipient,
-                        email_subject, email_content)
+                        email_subject, email_content,
+                        content_type='text/html', attachment=None)
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
@@ -250,9 +271,14 @@ def main(argv):
         snapshot_cycle_status = 'FAILURE'
 
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
-    _send_email(cycle_timestamp, snapshot_cycle_status,
+    _send_email(configs.get('organization_id'),
+                cycle_timestamp,
+                snapshot_cycle_status,
+                pipelines,
+                dao,
                 configs.get('sendgrid_api_key'),
-                configs.get('email_sender'), configs.get('email_recipient'))
+                configs.get('email_sender'),
+                configs.get('email_recipient'))
 
 
 if __name__ == '__main__':
