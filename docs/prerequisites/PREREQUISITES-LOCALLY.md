@@ -16,19 +16,17 @@
     * Click Create button.
   1. Configure Users Access Control
     * Change password for root user.
-    * Create a new user with
-      [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges).
+    * Create a new user with [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges).
   1. Create New Database
     * Enter a name.
-  1. Follow these instructions to establish a secure connection using
-    [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
+  1. Follow these instructions to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
 
 ## Install the `protoc` compiler
-Download the [protoc pre-built
-binary](https://github.com/google/protobuf/releases). Forseti Security has been tested with
-the protoc 3.0+ (the zip file is named something like
-`protoc-VERSION-OS-ARCH.zip`). It's recommended to use an updated version of
-protoc (e.g. 3.2.0 fixed a lot of bugs).
+Download the [protoc pre-built binary](https://github.com/google/protobuf/releases).
+Forseti Security has been tested with the protoc 3.0+
+(the zip file is named something like `protoc-VERSION-OS-ARCH.zip`).
+It's recommended to use an updated version of protoc
+(e.g. 3.2.0 fixed a lot of bugs).
 
 Unzip the file and copy the `protoc` binary from the extracted`bin/` directory
 to somewhere like /usr/local/bin (or somewhere similar on your path). If `which

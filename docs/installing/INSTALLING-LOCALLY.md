@@ -5,7 +5,7 @@
 * [Forseti Security modules](#forseti-security-modules)
 
 ## Prerequisites
-See the [prerequisistes](/docs/PREREQUISITES-LOCALLY.md)for installing locally.
+See the [prerequisistes](/docs/prerequisites/README.md)for installing locally.
 
 ## Create a virtualenv and activate it, e.g.:
 ```sh
@@ -30,22 +30,3 @@ the `--helpshort` or `--helpfull` flags.
  * `forseti_inventory` ([README](/docs/inventory/README.md))
  * `forseti_scanner` ([README](/docs/scanner/README.md))
  * `forseti_enforcer` ([README](/docs/enforcer/README.md))
-
-## Tests
-There are unit tests in the `tests/` directory. To execute them, run:
-
-```sh
-$ python setup.py google_test --test-dir <test dir>
-```
-
-## Forseti Security modules
-The Forseti Security modules are developed as modules under `google.cloud.security`.
-Each module has its own classes that encapsulate the tool's core functionality.
-There are also runner scripts that execute the tool.
-
-## Adding new modules
-To add a new module, create it in this directory. Once you have a runner script
-that works, create a runner function in the `stubs.py` and plug it into the setup.py
-`entry_points['console_scripts']` dictionary.
-
-Re-run `python setup.py install` to install the new console script.

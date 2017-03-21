@@ -21,7 +21,7 @@ management of your GCP resources. We are using DM to do the following:
 **enforcer** module.
 
 ## Prerequisites
-See the [README](docs/PREREQUISITES-GCP.md) for prerequisites for installation.
+See the [README](/docs/prerequisites/README.md) for prerequisites for installation.
 
 ## Customize Deployment Templates
 The provided DM templates are samples for you to use. Make a copy of

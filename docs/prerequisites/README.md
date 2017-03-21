@@ -22,7 +22,7 @@ your Cloud Console IAM settings or asking your Organization Admin.
 You will need to use it as a flag value when running the individual tools.
 
 ### Create a service account
-See [SERVICE-ACCOUNT](docs/common/SERVICE-ACCOUNT.md) guide for properly and
+See [SERVICE-ACCOUNT](/docs/common/SERVICE-ACCOUNT.md) guide for properly and
 securely creating a service account.
 
 ### Install `gcloud`
@@ -94,4 +94,4 @@ the Forseti Security commandline tools.
   ```
 
 ### Local installations
-See [PREREQUISITES-LOCALLY](docs/PREREQUISITES-LOCALLY.md)
+See [PREREQUISITES-LOCALLY](/docs/prerequisites/PREREQUISITES-LOCALLY.md)

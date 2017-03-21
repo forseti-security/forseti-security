@@ -2,7 +2,7 @@
 This is the Inventory component of Forseti Security tool.
 
 ## Pre-requisites
-See the [PREREQUISITES](docs/PREREQUISITES.md)
+See the [PREREQUISITES](/docs/prerequisites/README.md) guide.
 
 ## How to Run
 After running setup.py, as long as your virtualenv is activated, then you can be in
