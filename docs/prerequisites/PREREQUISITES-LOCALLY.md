@@ -2,8 +2,8 @@
 
   1. [Create a Cloud SQL Instance](#create-cloud-sql-instance)
   1. [Install the protoc compiler](#install-the-protoc-compiler)
-  1. [Install `mysql_config`](#install-mysql-compiler)
-  1. [Install virtalenv](#install-virtual-env)
+  1. [Install `mysql_config`](#install-mysql_config)
+  1. [Install virtualenv](#install-virtualenv)
 
 ### Create Cloud SQL Instance
   1. Create a new instance in the [SQL page of GCP console](https://console.cloud.google.com/sql).

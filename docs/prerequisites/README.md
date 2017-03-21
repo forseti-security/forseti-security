@@ -88,7 +88,7 @@ don't want to be tracked, the tracking pixel can be
 #### Enable required APIs
 
 * Enable **Deployment Manager API**.
-In addittion to the APIs from [above](#enable-required-apis) you must enable the
+In addition to the APIs from [above](#enable-required-apis) you must enable the
 Deployment Manager API.
 
   ```sh
