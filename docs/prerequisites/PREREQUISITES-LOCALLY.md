@@ -1,4 +1,4 @@
-# Preqrequisites to installing locally
+# Prerequisites to installing locally
 
   1. [Create a Cloud SQL Instance](#create-cloud-sql-instance)
   1. [Install the protoc compiler](#install-the-protoc-compiler)

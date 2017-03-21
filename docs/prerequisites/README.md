@@ -1,4 +1,4 @@
-# Prerequistes to isntalling Forseti Security
+# Prerequisites to installing Forseti Security
   1. [Common steps](#common-steps)
     1. [Create a GCP project](#create-a-gcp-project)
     1. [Create a service account](#create-a-service-account)

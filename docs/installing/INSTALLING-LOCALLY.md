@@ -5,7 +5,7 @@
 * [Forseti Security modules](#forseti-security-modules)
 
 ## Prerequisites
-See the [prerequisistes](/docs/prerequisites/README.md)for installing locally.
+See the [prerequisistes](/docs/prerequisites/README.md) for installing locally.
 
 ## Create a virtualenv and activate it, e.g.:
 ```sh
@@ -14,7 +14,7 @@ $ workon forseti-security
 ```
 
 ## Get the source code
-Clone the repo, if you haven't already done so:
+Clone the repo, if you haven't already done so.
 
 ## Run the python setup
 Navigate to your cloned repo, then run:
