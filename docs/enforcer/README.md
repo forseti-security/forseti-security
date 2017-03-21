@@ -50,7 +50,7 @@ To run the enforcer with a policy file stored in GCS, e.g.
 
 ```sh
 $ forseti_enforcer --enforce_project <project_id> \
-    --policy_file gs://my-project-id/firewall-policies/default.json 
+    --policy_file gs://my-project-id/firewall-policies/default.json
 ```
 
 The result of the enforcement will be output to stdout.
@@ -86,4 +86,3 @@ If this rule is used in a policy file, it needs to be wrapped in a list.
 See [default_allow_policy.json].
 
 [default_allow_policy.json]: samples/default_allow_policy.json
-
