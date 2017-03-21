@@ -74,7 +74,15 @@ After installing, [run a couple of initialization steps](https://virtualenvwrapp
 to export the WORKON_HOME env and source the virtualenvwrapper.sh.
 
 #### SendGrid API Key
-SendGrid is currently the only supported email service provider. To use it, sign up for a [SendGrid account](https://sendgrid.com) and create a [General API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html). You will use this API key in the deployment templates or as a flag value for the Forseti Security commandline tools.
+SendGrid is currently the only supported email service provider. To use it,
+sign up for a [SendGrid account](https://sendgrid.com) and create a
+[General API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html).
+You will use this API key in the deployment templates or as a flag value
+for the Forseti Security commandline tools.
+
+Tip: By default, SendGrid includes an invisible tracking pixel in your emails,
+which may cause email warnings about opening images.  To address this or if you
+don't want to be tracked, the tracking pixel can be [disabled here](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
 
 ### Setup
 #### Create a virtualenv and activate it, e.g.:
