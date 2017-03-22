@@ -486,6 +486,9 @@ class FirewallRules(object):
           InvalidFirewallRuleError: One or more rules failed validation.
         """
         for rule in rules:
+            if not isinstance(rule, dict):
+                raise InvalidFirewallRuleError(
+                    'Invalid rule type. Found %s expected %s', type(rule), dict)
             self.add_rule(rule, network_name=network_name)
 
     def add_rule(self, rule, network_name=None):
