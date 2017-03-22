@@ -244,7 +244,7 @@ class FirewallRulesTest(basetest.TestCase):
         rule_types_to_try = [[], '', 1]
 
         for rule in rule_types_to_try:
-          self.assertRaise(
+          self.assertRaises(
               fe.InvalidFirewallRuleError,
               self.firewall_rules.add_rule(
                   rule, network_name=constants.TEST_NETWORK))
