@@ -18,7 +18,7 @@
 set -e
 
 PROTOC_DOWNLOAD_PATH="/tmp/protoc"
-FORSETI_PROTOC_URL="https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc"
+FORSETI_PROTOC_URL="https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt"
 
 echo "Downloading protoc."
 mkdir -p $PROTOC_DOWNLOAD_PATH

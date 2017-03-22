@@ -41,7 +41,7 @@ def GenerateConfig(context):
             'machineType': (
                 'https://www.googleapis.com/compute/v1/projects/{}'
                 '/zones/{}/machineTypes/{}'.format(
-                context.env['project'], context.properties['zone'], 
+                context.env['project'], context.properties['zone'],
                 context.properties['instance-type'])),
             'disks': [{
                 'deviceName': 'boot',
@@ -78,7 +78,7 @@ sudo apt-get install -y unzip
 sudo apt-get install -y libmysqlclient-dev
 sudo apt-get install -y python-pip python-dev
 
-USER_HOME=/home/ubuntu
+USER_HOME=/home/ubuhttps://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
 FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc
 
 # Check whether Cloud SQL proxy is installed
@@ -118,11 +118,18 @@ fi
 # Check whether protoc is installed
 PROTOC_PATH=$(which protoc)
 if [ -z "$PROTOC_PATH" ]; then
+
         cd $USER_HOME
         PROTOC_DOWNLOAD_URL=$(curl -s $FORSETI_PROTOC_URL)
-        wget $PROTOC_DOWNLOAD_URL
-        unzip -o $(basename $PROTOC_DOWNLOAD_URL)
-        sudo cp bin/protoc /usr/local/bin
+
+        if [ -z "$PROTOC_DOWNLOAD_URL" ]; then
+            echo "No PROTOC_DOWNLOAD_URL set: $PROTOC_DOWNLOAD_URL"
+            exit 1
+        else
+            wget $PROTOC_DOWNLOAD_URL
+            unzip -o $(basename $PROTOC_DOWNLOAD_URL)
+            sudo cp bin/protoc /usr/local/bin
+        fi
 fi
 
 # Install Forseti Security
