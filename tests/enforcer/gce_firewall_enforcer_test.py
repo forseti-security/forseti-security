@@ -232,6 +232,23 @@ class FirewallRulesTest(basetest.TestCase):
         self.firewall_api = fe.ComputeFirewallAPI(self.gce_service)
         self.firewall_rules = fe.FirewallRules(constants.TEST_PROJECT)
 
+    def test_add_rule_for_an_invalid_rule_type(self):
+        """Validate that invalid rules raises an exception.
+
+        Setup:
+          * Knowing that add_rule is expecting a dict
+
+        Expected Results:
+          * add_rules should raise InvalidFirewallRuleError
+        """
+        rule_types_to_try = [[], '', 1]
+
+        for rule in rule_types_to_try:
+          self.assertRaise(
+              fe.InvalidFirewallRuleError,
+              self.firewall_rules.add_rule(
+                  rule, network_name=constants.TEST_NETWORK))
+
     def test_add_rules_from_api(self):
         """Validate that add_rules_from_api adds appropriate rules.
 
