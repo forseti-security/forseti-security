@@ -58,7 +58,7 @@ class OrgRulesEngine(BaseRulesEngine):
                 the rules definition file and add the rules to the book.
 
         Returns:
-            A list of tuples containing the policy diffs.
+            A generator of rule violations.
         """
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
@@ -66,9 +66,9 @@ class OrgRulesEngine(BaseRulesEngine):
         violations = []
 
         for binding in policy.get('bindings', []):
-            binding_violations = (
+            violations = itertools.chain(
+                violations,
                 self.rule_book.find_violations(resource, binding))
-            violations.extend(binding_violations)
 
         return violations
 
@@ -269,21 +269,45 @@ class OrgRuleBook(BaseRuleBook):
                                 bindings=rule_def.get('bindings', []),
                                 mode=rule_def.get('mode'))
 
+                    applies_to = resource.get('applies_to')
+
                     # See if we have a mapping of the resource and rule
-                    resource_rules = self.resource_rules_map.get(gcp_resource)
+                    resource_rules = self.resource_rules_map.get(
+                        (gcp_resource, applies_to))
 
                     # If no mapping exists, create it.
                     if not resource_rules:
                         resource_rules = ResourceRules(
                             resource=gcp_resource,
-                            applies_to=resource.get('applies_to'),
+                            applies_to=applies_to,
                             inherit_from_parents=rule_def.get(
                                 'inherit_from_parents', False))
-                        self.resource_rules_map[gcp_resource] = resource_rules
+                        self.resource_rules_map[
+                            (gcp_resource, applies_to)] = resource_rules
 
                     # If the rule isn't in the mapping, add it.
                     if rule not in resource_rules.rules:
                         resource_rules.rules.add(rule)
+
+    def _get_resource_rules(self, resource):
+        """Get all the resource rules for (resource, RuleAppliesTo.*).
+
+        Args:
+            resource: The resource to find in the ResourceRules map.
+
+        Returns:
+            A list of ResourceRules.
+        """
+        resource_rules = []
+        resource_rules.append(
+            self.resource_rules_map.get((resource, RuleAppliesTo.SELF))),
+        resource_rules.append(
+            self.resource_rules_map.get((resource,
+                                         RuleAppliesTo.SELF_AND_CHILDREN))),
+        resource_rules.append(
+            self.resource_rules_map.get((resource, RuleAppliesTo.CHILDREN)))
+
+        return filter(lambda rr: rr, resource_rules)
 
     def find_violations(self, resource, policy_binding):
         """Find policy binding violations in the rule book.
@@ -300,33 +324,31 @@ class OrgRuleBook(BaseRuleBook):
         """
         violations = []
         for curr_resource in resource.get_ancestors():
-            resource_rules = self.resource_rules_map.get(curr_resource)
+            resource_rules = self._get_resource_rules(curr_resource)
 
-            if not resource_rules:
-                continue
+            for resource_rule in resource_rules:
+                # Check whether rules match if the applies_to condition is met:
+                # SELF: check rules if the starting resource == current resource
+                # CHILDREN: check rules if starting resource != current resource
+                # SELF_AND_CHILDREN: always check rules
+                do_rules_check = (
+                    (resource_rule.applies_to == RuleAppliesTo.SELF and
+                     resource == curr_resource) or
+                    (resource_rule.applies_to == RuleAppliesTo.CHILDREN and
+                     resource != curr_resource) or
+                    (resource_rule.applies_to == RuleAppliesTo.SELF_AND_CHILDREN))
+                if not do_rules_check:
+                    continue
 
-            # Check whether rules match if the applies_to condition is met:
-            # SELF: check rules if the starting resource == current resource
-            # CHILDREN: check rules if starting resource != current resource
-            # SELF_AND_CHILDREN: always check rules
-            do_rules_check = (
-                (resource_rules.applies_to == RuleAppliesTo.SELF and
-                 resource == curr_resource) or
-                (resource_rules.applies_to == RuleAppliesTo.CHILDREN and
-                 resource != curr_resource) or
-                (resource_rules.applies_to == RuleAppliesTo.SELF_AND_CHILDREN))
+                # pylint: disable=redefined-variable-type
+                violations = itertools.chain(
+                    violations,
+                    resource_rule.find_mismatches(resource, policy_binding))
 
-            if not do_rules_check:
-                continue
+                # If the rule does not inherit the parents' rules, stop.
+                if not resource_rule.inherit_from_parents:
+                    break
 
-            # pylint: disable=redefined-variable-type
-            violations = itertools.chain(
-                violations,
-                resource_rules.find_mismatches(resource, policy_binding))
-
-            # If the rule does not inherit the parents' rules, stop.
-            if not resource_rules.inherit_from_parents:
-                break
         return violations
 
 
@@ -352,13 +374,13 @@ class ResourceRules(object):
             rules = set([])
         self.resource = resource
         self.rules = rules
-        self.applies_to = applies_to
+        self.applies_to = RuleAppliesTo.verify(applies_to)
         self.inherit_from_parents = inherit_from_parents
 
         self._rule_mode_methods = {
-            RuleMode.WHITELIST: self._whitelist_member_check,
-            RuleMode.BLACKLIST: self._blacklist_member_check,
-            RuleMode.REQUIRED: self._required_member_check,
+            RuleMode.WHITELIST: ResourceRules._whitelist_member_check,
+            RuleMode.BLACKLIST: ResourceRules._blacklist_member_check,
+            RuleMode.REQUIRED: ResourceRules._required_member_check,
         }
 
     def __eq__(self, other):
@@ -399,7 +421,6 @@ class ResourceRules(object):
         policy_binding = IamPolicyBinding.create_from(binding_to_match)
 
         for rule in self.rules:
-            # TODO: transform the policy binding into a {role: members} dict
             found_role = False
             for binding in rule.bindings:
                 policy_role_name = policy_binding.role_name
@@ -429,7 +450,7 @@ class ResourceRules(object):
                             violation_type=RULE_VIOLATION_TYPE.get(
                                 rule.mode, RULE_VIOLATION_TYPE['UNSPECIFIED']),
                             role=role_name,
-                            members=violating_members)
+                            members=tuple(violating_members))
 
             # Extra check if the role did not match in the REQUIRED case.
             if not found_role and rule.mode == RuleMode.REQUIRED:
@@ -442,7 +463,7 @@ class ResourceRules(object):
                         violation_type=RULE_VIOLATION_TYPE.get(
                             rule.mode, RULE_VIOLATION_TYPE['UNSPECIFIED']),
                         role=binding.role_name,
-                        members=binding.members)
+                        members=tuple(binding.members))
 
     def _dispatch_rule_mode_check(self, mode, rule_members=None,
                                   policy_members=None):
@@ -459,10 +480,8 @@ class ResourceRules(object):
             rule_members=rule_members,
             policy_members=policy_members)
 
-    # TODO: Investigate making a function, not a method.
-    # pylint: disable=no-self-use
-    def _whitelist_member_check(self, rule_members=None,
-                                policy_members=None):
+    @staticmethod
+    def _whitelist_member_check(rule_members=None, policy_members=None):
         """Whitelist: Check that policy members ARE in rule members.
 
         If a policy member is NOT found in the rule members, add it to
@@ -487,10 +506,8 @@ class ResourceRules(object):
                 violating_members.append(policy_member)
         return violating_members
 
-    # TODO: Investigate making a function, not a method.
-    # pylint: disable=no-self-use
-    def _blacklist_member_check(self, rule_members=None,
-                                policy_members=None):
+    @staticmethod
+    def _blacklist_member_check(rule_members=None, policy_members=None):
         """Blacklist: Check that policy members ARE NOT in rule members.
 
         If a policy member is found in the rule members, add it to the
@@ -512,10 +529,8 @@ class ResourceRules(object):
                     break
         return violating_members
 
-    # TODO: Investigate making a function, not a method.
-    # pylint: disable=no-self-use
-    def _required_member_check(self, rule_members=None,
-                               policy_members=None):
+    @staticmethod
+    def _required_member_check(rule_members=None, policy_members=None):
         """Required: Check that rule members are in policy members.
 
         If a required rule member is NOT found in the policy members, add
@@ -562,7 +577,7 @@ class Rule(object):
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
-        self.bindings = self._get_bindings(bindings)
+        self.bindings = Rule._get_bindings(bindings)
         self.mode = RuleMode.verify(mode)
 
     def __eq__(self, other):
@@ -591,14 +606,13 @@ class Rule(object):
         """
         return hash(self.rule_index)
 
-    # TODO: Investigate making a function, not a method.
-    # pylint: disable=no-self-use
     def __repr__(self):
         """Returns the string representation of this Rule."""
         return 'Rule <{}, name={}, mode={}, bindings={}>'.format(
             self.rule_index, self.rule_name, self.mode, self.bindings)
 
-    def _get_bindings(self, bindings):
+    @staticmethod
+    def _get_bindings(bindings):
         """Get a list of this Rule's bindings as IamPolicyBindings.
 
         Args:
@@ -611,6 +625,13 @@ class Rule(object):
 
 
 # Rule violation.
+# resource_type: string
+# resource_id: string
+# rule_name: string
+# rule_index: int
+# violation_type: RULE_VIOLATION_TYPE
+# role: string
+# members: tuple of IamPolicyBindings
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'rule_name',
                             'rule_index', 'violation_type', 'role', 'members'])
