@@ -244,11 +244,9 @@ class FirewallRulesTest(basetest.TestCase):
         rule_types_to_try = [[], '', 1]
 
         for rule in rule_types_to_try:
-          self.assertRaises(
-              fe.InvalidFirewallRuleError,
-              self.firewall_rules.add_rule,
-              rule,
-              network_name=constants.TEST_NETWORK)
+          with self.assertRaises(fe.InvalidFirewallRuleError) as r:
+              self.firewall_rules.add_rule(
+                  rule, network_name=constants.TEST_NETWORK)
 
     def test_add_rules_from_api(self):
         """Validate that add_rules_from_api adds appropriate rules.
