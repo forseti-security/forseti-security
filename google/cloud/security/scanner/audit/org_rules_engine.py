@@ -64,7 +64,7 @@ class OrgRulesEngine(BaseRulesEngine):
             self.build_rule_book()
 
         violations = []
-
+        # pylint: disable=redefined-variable-type
         for binding in policy.get('bindings', []):
             violations = itertools.chain(
                 violations,
@@ -299,15 +299,14 @@ class OrgRuleBook(BaseRuleBook):
             A list of ResourceRules.
         """
         resource_rules = []
-        resource_rules.append(
-            self.resource_rules_map.get((resource, RuleAppliesTo.SELF))),
-        resource_rules.append(
-            self.resource_rules_map.get((resource,
-                                         RuleAppliesTo.SELF_AND_CHILDREN))),
-        resource_rules.append(
-            self.resource_rules_map.get((resource, RuleAppliesTo.CHILDREN)))
+        resource_rules.append(self.resource_rules_map.get(
+            (resource, RuleAppliesTo.SELF)))
+        resource_rules.append(self.resource_rules_map.get(
+            (resource, RuleAppliesTo.SELF_AND_CHILDREN)))
+        resource_rules.append(self.resource_rules_map.get(
+            (resource, RuleAppliesTo.CHILDREN)))
 
-        return filter(lambda rr: rr, resource_rules)
+        return [r for r in resource_rules if r]
 
     def find_violations(self, resource, policy_binding):
         """Find policy binding violations in the rule book.
@@ -336,7 +335,8 @@ class OrgRuleBook(BaseRuleBook):
                      resource == curr_resource) or
                     (resource_rule.applies_to == RuleAppliesTo.CHILDREN and
                      resource != curr_resource) or
-                    (resource_rule.applies_to == RuleAppliesTo.SELF_AND_CHILDREN))
+                    (resource_rule.applies_to ==
+                     RuleAppliesTo.SELF_AND_CHILDREN))
                 if not do_rules_check:
                     continue
 
