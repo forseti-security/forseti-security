@@ -78,8 +78,8 @@ sudo apt-get install -y unzip
 sudo apt-get install -y libmysqlclient-dev
 sudo apt-get install -y python-pip python-dev
 
-USER_HOME=/home/ubuhttps://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
-FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc
+USER_HOME=/home/ubuntu
+FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
 
 # Check whether Cloud SQL proxy is installed
 CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
