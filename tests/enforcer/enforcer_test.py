@@ -117,7 +117,6 @@ class EnforcerTest(basetest.TestCase):
 
         Expected Results:
           * Enforcer should raise InvalidParsedPolicyFileError
-
         """
         policy_filename = get_datafile_path(__file__, 'invalid_sample_policy.json')
         with self.assertRaises(enforcer.InvalidParsedPolicyFileError) as r:
