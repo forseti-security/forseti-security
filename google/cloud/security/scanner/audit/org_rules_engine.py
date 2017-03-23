@@ -23,18 +23,15 @@ import itertools
 import threading
 
 from collections import namedtuple
-# pylint: disable=line-too-long
-from google.cloud.security.common.gcp_type.errors import InvalidResourceTypeError
+from google.cloud.security.common.gcp_type import errors as gcp_type_errors
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
-from google.cloud.security.scanner.audit.base_rules_engine import BaseRuleBook
-from google.cloud.security.scanner.audit.base_rules_engine import BaseRulesEngine
+from google.cloud.security.scanner.audit import base_rules_engine
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-# pylint: enable=line-too-long
 
 
-class OrgRulesEngine(BaseRulesEngine):
+class OrgRulesEngine(base_rules_engine.BaseRulesEngine):
     """Rules engine for org resources."""
 
     def __init__(self, rules_file_path):
@@ -63,8 +60,7 @@ class OrgRulesEngine(BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        violations = []
-        # pylint: disable=redefined-variable-type
+        violations = itertools.chain()
         for binding in policy.get('bindings', []):
             violations = itertools.chain(
                 violations,
@@ -113,7 +109,7 @@ class RuleMode(object):
         return mode
 
 
-class OrgRuleBook(BaseRuleBook):
+class OrgRuleBook(base_rules_engine.BaseRuleBook):
     """The RuleBook for organization resources.
 
     Rules from the rules definition file are parsed and placed into a
@@ -242,7 +238,7 @@ class OrgRuleBook(BaseRuleBook):
                 # possible.
                 try:
                     resource_type = ResourceType.verify(resource.get('type'))
-                except InvalidResourceTypeError:
+                except gcp_type_errors.InvalidResourceTypeError:
                     raise InvalidRulesSchemaError(
                         'Missing resource type in rule {}'.format(rule_index))
 
@@ -299,14 +295,13 @@ class OrgRuleBook(BaseRuleBook):
             A list of ResourceRules.
         """
         resource_rules = []
-        resource_rules.append(self.resource_rules_map.get(
-            (resource, RuleAppliesTo.SELF)))
-        resource_rules.append(self.resource_rules_map.get(
-            (resource, RuleAppliesTo.SELF_AND_CHILDREN)))
-        resource_rules.append(self.resource_rules_map.get(
-            (resource, RuleAppliesTo.CHILDREN)))
 
-        return [r for r in resource_rules if r]
+        for rule_applies_to in RuleAppliesTo.apply_types:
+            if (resource, rule_applies_to) in self.resource_rules_map:
+                resource_rules.append(self.resource_rules_map.get(
+                    (resource, rule_applies_to)))
+
+        return resource_rules
 
     def find_violations(self, resource, policy_binding):
         """Find policy binding violations in the rule book.
@@ -321,7 +316,7 @@ class OrgRuleBook(BaseRuleBook):
         Returns:
             A generator of the rule violations.
         """
-        violations = []
+        violations = itertools.chain()
         for curr_resource in resource.get_ancestors():
             resource_rules = self._get_resource_rules(curr_resource)
 
@@ -330,17 +325,17 @@ class OrgRuleBook(BaseRuleBook):
                 # SELF: check rules if the starting resource == current resource
                 # CHILDREN: check rules if starting resource != current resource
                 # SELF_AND_CHILDREN: always check rules
-                do_rules_check = (
+                rule_applies_to_resource = (
                     (resource_rule.applies_to == RuleAppliesTo.SELF and
                      resource == curr_resource) or
                     (resource_rule.applies_to == RuleAppliesTo.CHILDREN and
                      resource != curr_resource) or
                     (resource_rule.applies_to ==
                      RuleAppliesTo.SELF_AND_CHILDREN))
-                if not do_rules_check:
+
+                if not rule_applies_to_resource:
                     continue
 
-                # pylint: disable=redefined-variable-type
                 violations = itertools.chain(
                     violations,
                     resource_rule.find_mismatches(resource, policy_binding))
