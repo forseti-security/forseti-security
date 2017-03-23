@@ -31,6 +31,81 @@ from google.cloud.security.scanner.audit import base_rules_engine
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 
 
+def _check_whitelist_members(rule_members=None, policy_members=None):
+    """Whitelist: Check that policy members ARE in rule members.
+
+    If a policy member is NOT found in the rule members, add it to
+    the violating members.
+
+    Args:
+        rule_members: A list of IamPolicyMembers allowed in the rule.
+        policy_members: A list of IamPolicyMembers in the policy.
+
+    Return:
+        A list of the violating members: policy members NOT found in
+        the whitelist (rule members).
+    """
+    violating_members = []
+    for policy_member in policy_members:
+        found_in_rules = False
+        for rule_member in rule_members:
+            found_in_rules = rule_member.matches(policy_member)
+            if found_in_rules:
+                break
+        if not found_in_rules:
+            violating_members.append(policy_member)
+    return violating_members
+
+def _check_blacklist_members(rule_members=None, policy_members=None):
+    """Blacklist: Check that policy members ARE NOT in rule members.
+
+    If a policy member is found in the rule members, add it to the
+    violating members.
+
+    Args:
+        rule_members: A list of IamPolicyMembers allowed in the rule.
+        policy_members: A list of IamPolicyMembers in the policy.
+
+    Return:
+        A list of the violating members: policy members found in
+        the blacklist (rule members).
+    """
+    violating_members = []
+    for policy_member in policy_members:
+        for rule_member in rule_members:
+            if rule_member.matches(policy_member):
+                violating_members.append(policy_member)
+                break
+    return violating_members
+
+def _check_required_members(rule_members=None, policy_members=None):
+    """Required: Check that rule members are in policy members.
+
+    If a required rule member is NOT found in the policy members, add
+    it to the violating members. Note that the check is different:
+    it's reversed from the whitelist/blacklist (policy as a subset of
+    rules vs rules as subset of policy).
+
+    Args:
+        rule_members: A list of IamPolicyMembers allowed in the rule.
+        policy_members: A list of IamPolicyMembers in the policy.
+
+    Return:
+        A list of the violating members: rule members not found in the
+        policy (required-whitelist).
+    """
+    violating_members = []
+    for rule_member in rule_members:
+        found_in_rules = False
+        for policy_member in policy_members:
+            found_in_rules = rule_member.matches(policy_member)
+            if found_in_rules:
+                break
+        if not found_in_rules:
+            violating_members.append(rule_member)
+    return violating_members
+
+
 class OrgRulesEngine(base_rules_engine.BaseRulesEngine):
     """Rules engine for org resources."""
 
@@ -373,9 +448,9 @@ class ResourceRules(object):
         self.inherit_from_parents = inherit_from_parents
 
         self._rule_mode_methods = {
-            RuleMode.WHITELIST: ResourceRules._whitelist_member_check,
-            RuleMode.BLACKLIST: ResourceRules._blacklist_member_check,
-            RuleMode.REQUIRED: ResourceRules._required_member_check,
+            RuleMode.WHITELIST: _check_whitelist_members,
+            RuleMode.BLACKLIST: _check_blacklist_members,
+            RuleMode.REQUIRED: _check_required_members,
         }
 
     def __eq__(self, other):
@@ -475,83 +550,6 @@ class ResourceRules(object):
             rule_members=rule_members,
             policy_members=policy_members)
 
-    @staticmethod
-    def _whitelist_member_check(rule_members=None, policy_members=None):
-        """Whitelist: Check that policy members ARE in rule members.
-
-        If a policy member is NOT found in the rule members, add it to
-        the violating members.
-
-        Args:
-            rule_members: A list of IamPolicyMembers allowed in the rule.
-            policy_members: A list of IamPolicyMembers in the policy.
-
-        Return:
-            A list of the violating members: policy members NOT found in
-            the whitelist (rule members).
-        """
-        violating_members = []
-        for policy_member in policy_members:
-            found_in_rules = False
-            for rule_member in rule_members:
-                found_in_rules = rule_member.matches(policy_member)
-                if found_in_rules:
-                    break
-            if not found_in_rules:
-                violating_members.append(policy_member)
-        return violating_members
-
-    @staticmethod
-    def _blacklist_member_check(rule_members=None, policy_members=None):
-        """Blacklist: Check that policy members ARE NOT in rule members.
-
-        If a policy member is found in the rule members, add it to the
-        violating members.
-
-        Args:
-            rule_members: A list of IamPolicyMembers allowed in the rule.
-            policy_members: A list of IamPolicyMembers in the policy.
-
-        Return:
-            A list of the violating members: policy members found in
-            the blacklist (rule members).
-        """
-        violating_members = []
-        for policy_member in policy_members:
-            for rule_member in rule_members:
-                if rule_member.matches(policy_member):
-                    violating_members.append(policy_member)
-                    break
-        return violating_members
-
-    @staticmethod
-    def _required_member_check(rule_members=None, policy_members=None):
-        """Required: Check that rule members are in policy members.
-
-        If a required rule member is NOT found in the policy members, add
-        it to the violating members. Note that the check is different:
-        it's reversed from the whitelist/blacklist (policy as a subset of
-        rules vs rules as subset of policy).
-
-        Args:
-            rule_members: A list of IamPolicyMembers allowed in the rule.
-            policy_members: A list of IamPolicyMembers in the policy.
-
-        Return:
-            A list of the violating members: rule members not found in the
-            policy (required-whitelist).
-        """
-        violating_members = []
-        for rule_member in rule_members:
-            found_in_rules = False
-            for policy_member in policy_members:
-                found_in_rules = rule_member.matches(policy_member)
-                if found_in_rules:
-                    break
-            if not found_in_rules:
-                violating_members.append(rule_member)
-        return violating_members
-
 
 # pylint: disable=too-few-public-methods
 class Rule(object):
@@ -572,7 +570,7 @@ class Rule(object):
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
-        self.bindings = Rule._get_bindings(bindings)
+        self.bindings = [IamPolicyBinding.create_from(b) for b in bindings]
         self.mode = RuleMode.verify(mode)
 
     def __eq__(self, other):
@@ -605,18 +603,6 @@ class Rule(object):
         """Returns the string representation of this Rule."""
         return 'Rule <{}, name={}, mode={}, bindings={}>'.format(
             self.rule_index, self.rule_name, self.mode, self.bindings)
-
-    @staticmethod
-    def _get_bindings(bindings):
-        """Get a list of this Rule's bindings as IamPolicyBindings.
-
-        Args:
-            bindings: A list of bindings (dict).
-
-        Returns:
-            A list of IamPolicyBindings.
-        """
-        return [IamPolicyBinding.create_from(b) for b in bindings]
 
 
 # Rule violation.
