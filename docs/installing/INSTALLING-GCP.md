@@ -91,7 +91,7 @@ There are other templates that you can modify:
 ## Customize rules.yaml
 By default, the DM template has a rules.yaml that will allow service accounts on
 the organization and its children (e.g. projects) IAM policies. For more
-information, refer to the [rules schema](/google/cloud/security/scanner/samples/rules.md)
+information, refer to the [rules schema](scanner/rules.md)
 as well as the [scanner unit tests](/tests/scanner) for examples and explanations.
 
 Once you finish customizing rules.yaml, upload it to your SCANNER\_BUCKET.
