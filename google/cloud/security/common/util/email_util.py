@@ -42,10 +42,6 @@ flags.DEFINE_string('email_sender', None,
 flags.DEFINE_string('sendgrid_api_key', None,
                     'API key to authenticate with SendGrid email service.')
 
-flags.mark_flag_as_required('email_recipient')
-flags.mark_flag_as_required('email_sender')
-flags.mark_flag_as_required('sendgrid_api_key')
-
 
 class EmailUtil(object):
     """Utility for sending emails."""

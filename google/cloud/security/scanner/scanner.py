@@ -247,8 +247,9 @@ def _output_results(logger, all_violations, **kwargs):
         _upload_csv_to_gcs(logger, FLAGS.output_path, now_utc, csv_name)
 
     # Send summary email.
-    resource_counts = kwargs.get('resource_counts', {})
-    _send_email(csv_name, now_utc, all_violations, resource_counts)
+    if FLAGS.email_recipient is not None:
+        resource_counts = kwargs.get('resource_counts', {})
+        _send_email(csv_name, now_utc, all_violations, resource_counts)
 
 def _upload_csv_to_gcs(logger, output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
