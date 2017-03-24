@@ -89,8 +89,6 @@ class CloudResourceManagerClient(_BaseClient):
         for filter_key in filterargs:
             project_filter.add('%s:%s' % (filter_key, filterargs[filter_key]))
 
-        print ' '.join(project_filter)
-        
         request = projects_stub.list(filter=' '.join(project_filter))
 
         try:
