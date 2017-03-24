@@ -280,7 +280,7 @@ def main(argv):
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
 
     if (configs.get('email_recipient') is not None
-        and configs.get('email_recipient') != 'None'):
+            and configs.get('email_recipient') != 'None'):
         _send_email(configs.get('organization_id'),
                     cycle_time,
                     cycle_timestamp,
