@@ -25,7 +25,7 @@ body {
   background-color: #eee;
 }
 
-.content {
+div.forseti-content {
   background-color: #fff;
   margin-top: 40px;
   padding: 20px;
@@ -33,11 +33,11 @@ body {
   margin-right: 20%;
 }
 
-.message {
+div.message {
   margin: 10px 10px 15px 10px;
 }
 
-.summary .header {
+div.summary > .header {
   font-weight: bold;
   font-size: 16px;
   margin-bottom: 5px;
@@ -91,29 +91,29 @@ a, a:visited {
   border-bottom: 1px solid #ddd;
 }
 
-.resource-violations th {
+th {
   font-size: 16px;
   font-weight: bold;
   padding: 4px;
   text-align: left;
 }
 
+td {
+  padding: 4px;
+}
+
 .resource-violations th.left {
-  width: 80%;
+  width: 40%;
 }
 
 .resource-violations th.left > a {
   font-weight: normal;
 }
 
-.resource-violations td.numeric {
-  padding-left: 18px;
-}
-
 </style>
 </head>
 <body>
-<div class="content">
+<div class="forseti-content">
   <div class="message">
     Forseti Security found some issues during the scan on {{ scan_date }}.
   </div>
@@ -135,10 +135,12 @@ a, a:visited {
     </div>
   </div>
 
+  <br/>
+
   <div class="details">
     {% for (resource_type, summary) in resource_summaries.iteritems() %}
     <div class="resource">
-      <table class="resource-violations" width="100%">
+      <table class="resource-violations" width="80%">
         <tr>
           <th class="left">{{ resource_type.title() }}</th>
           <th># Violations</th>
@@ -146,7 +148,7 @@ a, a:visited {
         {% for resource_id, count in summary['violations'].iteritems() %}
         <tr>
           <td>{{ resource_id}}</td>
-          <td class="numeric">{{ count }}</td>
+          <td>{{ count }}</td>
         </tr>
         {% endfor %}
       </table>
