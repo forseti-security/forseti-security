@@ -32,6 +32,26 @@ def GenerateConfig(context):
     EMAIL_SENDER = context.properties.get('email-sender')
     EMAIL_RECIPIENT = context.properties.get('email-recipient')
 
+    # constructe the commands, based on whether email is required
+    inventory_command = '/usr/local/bin/forseti_inventory --organization_id {} --db_name {} '.format(
+           context.properties['organization-id'],
+           DATABASE_NAME,
+    )
+    scanner_command = '/usr/local/bin/forseti_scanner --rules {} --output_path {} --organization_id {} --db_name {} '.format(
+           'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
+           'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
+           context.properties['organization-id'],
+           DATABASE_NAME,
+    )
+    if EMAIL_RECIPIENT is not None:
+        email_flags = '--sendgrid_api_key {} --email_sender {} --email_recipient {}'.format(
+           SENDGRID_API_KEY,
+           EMAIL_SENDER,
+           EMAIL_RECIPIENT,
+        )
+        inventory_command = inventory_command + email_flags
+        scanner_command = scanner_command + email_flags
+
     resources = []
 
     resources.append({
@@ -147,8 +167,10 @@ python setup.py install
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
-/usr/local/bin/forseti_inventory --organization_id {} --db_name {} --sendgrid_api_key {} --email_sender {} --email_recipient {}
-/usr/local/bin/forseti_scanner --rules {} --output_path {} --organization_id {} --db_name {} --sendgrid_api_key {} --email_sender {} --email_recipient {}
+# inventory command
+{}
+# scanner command
+{}
 
 EOF
 echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
@@ -173,20 +195,10 @@ chmod +x $USER_HOME/run_forseti.sh
 
            # run_forseti.sh
            # - forseti_inventory
-           context.properties['organization-id'],
-           DATABASE_NAME,
-           SENDGRID_API_KEY,
-           EMAIL_SENDER,
-           EMAIL_RECIPIENT,
+           inventory_command,
 
            # - forseti_scanner
-           'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
-           'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
-           context.properties['organization-id'],
-           DATABASE_NAME,
-           SENDGRID_API_KEY,
-           EMAIL_SENDER,
-           EMAIL_RECIPIENT,
+           scanner_command,
 )
                 }]
             }
