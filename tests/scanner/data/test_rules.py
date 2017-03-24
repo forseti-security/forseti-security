@@ -41,7 +41,7 @@ RULES1 = {
                     ]
                 }
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/*',
@@ -93,7 +93,7 @@ RULES2 = {
                     ]
                 }
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/*',
@@ -115,7 +115,7 @@ RULES2 = {
                     ]
                 }
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/*',
@@ -137,7 +137,7 @@ RULES2 = {
                     ]
                 }
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/viewer',
@@ -178,7 +178,7 @@ RULES3 = {
                     ]
                 }
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/*',
@@ -200,7 +200,7 @@ RULES3 = {
                     ]
                 }
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/*',
@@ -222,7 +222,7 @@ RULES3 = {
                     ]
                 }
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/viewer',
@@ -254,7 +254,7 @@ RULES4 = {
                     ]
                 },
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/owner',
@@ -276,7 +276,60 @@ RULES4 = {
                     ]
                 }
             ],
-            'inherit_from_parent': False,
+            'inherit_from_parents': False,
+            'bindings': [
+                {
+                    'role': 'roles/*',
+                    'members': [
+                        'user:*@company.com'
+                    ]
+                }
+            ]
+        },
+    ]
+}
+
+# Blacklist/whitelist combination
+# * org 778899 blacklist for self and children
+#   "Don't allow `user:owner@company.com` to have roles/owner."
+# * project my-project-1 for self
+#   "Allow `user:*@company.com` to have any role in this project."
+RULES5 = {
+    'rules': [
+        {
+            'name': 'org blacklist',
+            'mode': 'blacklist',
+            'resource': [
+                {
+                    'type': 'organization',
+                    'applies_to': 'self_and_children',
+                    'resource_ids': [
+                        '778899'
+                    ]
+                },
+            ],
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com'
+                    ]
+                }
+            ]
+        },
+        {
+            'name': 'project whitelist',
+            'mode': 'whitelist',
+            'resource': [
+                {
+                    'type': 'project',
+                    'applies_to': 'self',
+                    'resource_ids': [
+                        'my-project-1'
+                    ]
+                }
+            ],
+            'inherit_from_parents': False,
             'bindings': [
                 {
                     'role': 'roles/*',

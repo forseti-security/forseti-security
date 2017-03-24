@@ -47,12 +47,12 @@ def _check_whitelist_members(rule_members=None, policy_members=None):
     """
     violating_members = []
     for policy_member in policy_members:
-        found_in_rules = False
+        is_whitelisted = False
         for rule_member in rule_members:
-            found_in_rules = rule_member.matches(policy_member)
-            if found_in_rules:
+            is_whitelisted = rule_member.matches(policy_member)
+            if is_whitelisted:
                 break
-        if not found_in_rules:
+        if not is_whitelisted:
             violating_members.append(policy_member)
     return violating_members
 
@@ -70,12 +70,12 @@ def _check_blacklist_members(rule_members=None, policy_members=None):
         A list of the violating members: policy members found in
         the blacklist (rule members).
     """
-    violating_members = []
-    for policy_member in policy_members:
-        for rule_member in rule_members:
-            if rule_member.matches(policy_member):
-                violating_members.append(policy_member)
-                break
+    violating_members = [
+        policy_member
+        for policy_member in policy_members
+        for rule_member in rule_members
+        if rule_member.matches(policy_member)
+    ]
     return violating_members
 
 def _check_required_members(rule_members=None, policy_members=None):
@@ -96,12 +96,12 @@ def _check_required_members(rule_members=None, policy_members=None):
     """
     violating_members = []
     for rule_member in rule_members:
-        found_in_rules = False
+        found_required_member = False
         for policy_member in policy_members:
-            found_in_rules = rule_member.matches(policy_member)
-            if found_in_rules:
+            found_required_member = rule_member.matches(policy_member)
+            if found_required_member:
                 break
-        if not found_in_rules:
+        if not found_required_member:
             violating_members.append(rule_member)
     return violating_members
 
@@ -335,26 +335,28 @@ class OrgRuleBook(base_rules_engine.BaseRuleBook):
                                           gcp_resource)
                         continue
 
+                    rule_bindings = [IamPolicyBinding.create_from(b)
+                        for b in rule_def.get('bindings')]
                     rule = Rule(rule_name=rule_def.get('name'),
                                 rule_index=rule_index,
-                                bindings=rule_def.get('bindings', []),
+                                bindings=rule_bindings,
                                 mode=rule_def.get('mode'))
 
-                    applies_to = resource.get('applies_to')
+                    rule_applies_to = resource.get('applies_to')
+                    rule_key = (gcp_resource, rule_applies_to)
 
                     # See if we have a mapping of the resource and rule
                     resource_rules = self.resource_rules_map.get(
-                        (gcp_resource, applies_to))
+                        rule_key)
 
                     # If no mapping exists, create it.
                     if not resource_rules:
                         resource_rules = ResourceRules(
                             resource=gcp_resource,
-                            applies_to=applies_to,
+                            applies_to=rule_applies_to,
                             inherit_from_parents=rule_def.get(
                                 'inherit_from_parents', False))
-                        self.resource_rules_map[
-                            (gcp_resource, applies_to)] = resource_rules
+                        self.resource_rules_map[rule_key] = resource_rules
 
                     # If the rule isn't in the mapping, add it.
                     if rule not in resource_rules.rules:
@@ -394,6 +396,11 @@ class OrgRuleBook(base_rules_engine.BaseRuleBook):
         violations = itertools.chain()
         for curr_resource in resource.get_ancestors():
             resource_rules = self._get_resource_rules(curr_resource)
+            # Set to None, because if the direct resource (e.g. project)
+            # doesn't have a specific rule, we still should check the
+            # ancestry to see if the resource's parents have any rules
+            # that apply to the children.
+            inherit_from_parents = None
 
             for resource_rule in resource_rules:
                 # Check whether rules match if the applies_to condition is met:
@@ -415,9 +422,15 @@ class OrgRuleBook(base_rules_engine.BaseRuleBook):
                     violations,
                     resource_rule.find_mismatches(resource, policy_binding))
 
-                # If the rule does not inherit the parents' rules, stop.
-                if not resource_rule.inherit_from_parents:
-                    break
+                inherit_from_parents = resource_rule.inherit_from_parents
+
+            # If the rule does not inherit the parents' rules, stop.
+            # Due to the way rules are structured, we only define the
+            # "inherit" property once per rule. So even though a rule
+            # may apply to multiple resources, it will only have one
+            # value for "inherit_from_parents".
+            if inherit_from_parents is False:
+                break
 
         return violations
 
@@ -570,7 +583,7 @@ class Rule(object):
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
-        self.bindings = [IamPolicyBinding.create_from(b) for b in bindings]
+        self.bindings = bindings
         self.mode = RuleMode.verify(mode)
 
     def __eq__(self, other):

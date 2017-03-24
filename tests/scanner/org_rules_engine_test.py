@@ -19,6 +19,7 @@ import mock
 import yaml
 
 from google.apputils import basetest
+from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import Project
@@ -108,7 +109,9 @@ class OrgRulesEngineTest(basetest.TestCase):
         rule_bindings = [{
             'role': 'roles/*', 'members': ['user:*@company.com']
         }]
-        rule = Rule('my rule', 0, rule_bindings, mode='whitelist')
+        rule = Rule('my rule', 0,
+            [IamPolicyBinding.create_from(b) for b in rule_bindings],
+            mode='whitelist')
         expected_org_rules = ResourceRules(self.org789,
                                            rules=set([rule]),
                                            applies_to='self_and_children')
@@ -168,8 +171,9 @@ class OrgRulesEngineTest(basetest.TestCase):
             }
         ]
 
-        rule = Rule('test rule', 0, rule_bindings,
-                    mode='whitelist')
+        rule = Rule('test rule', 0,
+            [IamPolicyBinding.create_from(b) for b in rule_bindings],
+            mode='whitelist')
         resource_rule = ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
@@ -205,8 +209,9 @@ class OrgRulesEngineTest(basetest.TestCase):
             }
         ]
 
-        rule = Rule('test rule', 0, rule_bindings,
-                    mode='blacklist')
+        rule = Rule('test rule', 0,
+            [IamPolicyBinding.create_from(b) for b in rule_bindings],
+            mode='blacklist')
         resource_rule = ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
@@ -243,8 +248,9 @@ class OrgRulesEngineTest(basetest.TestCase):
             }
         ]
 
-        rule = Rule('test rule', 0, rule_bindings,
-                    mode='required')
+        rule = Rule('test rule', 0,
+            [IamPolicyBinding.create_from(b) for b in rule_bindings],
+            mode='required')
         resource_rule = ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
@@ -280,8 +286,9 @@ class OrgRulesEngineTest(basetest.TestCase):
             }
         ]
 
-        rule = Rule('test rule', 0, rule_bindings,
-                    mode='required')
+        rule = Rule('test rule', 0,
+            [IamPolicyBinding.create_from(b) for b in rule_bindings],
+            mode='required')
         resource_rule = ResourceRules(resource=self.project1)
         resource_rule.rules.add(rule)
         results = list(resource_rule.find_mismatches(
@@ -312,19 +319,17 @@ class OrgRulesEngineTest(basetest.TestCase):
                 'members': ['user:abc@company.com', 'user:def@goggle.com']
             }]}
 
-        a_v = list(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_policy_violations(
             self.project1, policy))
-
-        tmp_av = set()
-        tmp_av.update([a_v[0], a_v[1]])
-        actual_violations = set(a_v)
 
         # expected
         rule_bindings = [{
             'role': 'roles/*',
             'members': ['user:*@company.com']
         }]
-        rule = Rule('my rule', 0, rule_bindings, mode='whitelist')
+        rule = Rule('my rule', 0,
+            [IamPolicyBinding.create_from(b) for b in rule_bindings],
+            mode='whitelist')
         expected_outstanding = {
             'roles/editor': [
                 IamPolicyMember.create_from('user:def@goggle.com')
@@ -693,6 +698,92 @@ class OrgRulesEngineTest(basetest.TestCase):
             RuleViolation(
                 rule_index=0,
                 rule_name='org whitelist',
+                resource_id=self.org789.resource_id,
+                resource_type=self.org789.resource_type,
+                violation_type='ADDED',
+                role=org_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding_org['roles/owner'])),
+            RuleViolation(
+                rule_index=1,
+                rule_name='project whitelist',
+                resource_id=self.project1.resource_id,
+                resource_type=self.project1.resource_type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding_proj['roles/editor'])),
+        ])
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_org_project_noinherit_project_overrides_org_rule(self):
+        """Test org with blacklist and child with whitelist, no inherit.
+
+        Test that the project whitelist rule overrides the org blacklist rule
+        when the project does not inherit from parent.
+
+        Setup:
+            * Create a RulesEngine with RULES5 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find 3 rule violations.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = OrgRulesEngine(rules_local_path)
+        rules_engine.rule_book = OrgRuleBook(test_rules.RULES5)
+
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                        'user:baduser@company.com',
+                    ]
+                }
+            ]
+        }
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:okuser2@company.com',
+                        'user:user@other.com',
+                    ]
+                },
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(self.org789, org_policy),
+            rules_engine.find_policy_violations(self.project1, project_policy)
+        ))
+
+        # expected
+        expected_outstanding_org = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:owner@company.com')
+            ]
+        }
+        expected_outstanding_proj = {
+            'roles/editor': [
+                IamPolicyMember.create_from('user:user@other.com')
+            ]
+        }
+
+        expected_violations = set([
+            RuleViolation(
+                rule_index=0,
+                rule_name='org blacklist',
                 resource_id=self.org789.resource_id,
                 resource_type=self.org789.resource_type,
                 violation_type='ADDED',
