@@ -45,9 +45,9 @@ def GenerateConfig(context):
     EMAIL_RECIPIENT = context.properties.get('email-recipient')
     if EMAIL_RECIPIENT is not None:
         email_flags = '--sendgrid_api_key {} --email_sender {} --email_recipient {}'.format(
-           SENDGRID_API_KEY,
-           EMAIL_SENDER,
-           EMAIL_RECIPIENT,
+            SENDGRID_API_KEY,
+            EMAIL_SENDER,
+            EMAIL_RECIPIENT,
         )
         inventory_command = inventory_command + email_flags
         scanner_command = scanner_command + email_flags
