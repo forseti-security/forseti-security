@@ -58,6 +58,7 @@ resources:
     src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.tar.gz
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
+    # Remove or comment out the email properties if you do not want to send email.
     sendgrid-api-key: YOUR_SENDGRID_API_KEY
     email-sender: EMAIL_ADDRESS_OF_YOUR_SENDER
     email-recipient: EMAIL_ADDRESS_OF_YOUR_RECIPIENT
