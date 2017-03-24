@@ -108,6 +108,21 @@ class EnforcerTest(basetest.TestCase):
 
       self.assertEqual(expected_results, project_result)
 
+    def test_enforcer_raises_exception_with_invalid_json_policy(self):
+        """Verifies json parsed correct as a list of dictionaries.
+
+        Setup:
+          * Load an invalid json file (no list).
+          * Give it to enforcer to parse and load
+
+        Expected Results:
+          * Enforcer should raise InvalidParsedPolicyFileError
+        """
+        policy_filename = get_datafile_path(__file__, 'invalid_sample_policy.json')
+        with self.assertRaises(enforcer.InvalidParsedPolicyFileError) as r:
+            enforcer.enforce_single_project(
+                self.enforcer, self.project, policy_filename)
+
 
 if __name__ == '__main__':
     basetest.main()

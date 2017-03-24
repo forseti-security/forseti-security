@@ -1,0 +1,24 @@
+  {
+    "sourceRanges": [
+      "10.8.0.0/24"
+    ],
+    "description": "Allow communication between instances.",
+    "allowed": [
+      {
+        "IPProtocol": "udp",
+        "ports": [
+          "1-65535"
+        ]
+      },
+      {
+        "IPProtocol": "tcp",
+        "ports": [
+          "1-65535"
+        ]
+      },
+      {
+        "IPProtocol": "icmp"
+      }
+    ],
+    "name": "allow-internal-1"
+  }

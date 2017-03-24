@@ -64,6 +64,13 @@ flags.DEFINE_integer('maximum_project_writer_threads', 1,
 FLAGS = flags.FLAGS
 
 
+class Error(Exception):
+    """Base error class for the module."""
+
+class InvalidParsedPolicyFileError(Error):
+    """An invalid policy file was parsed."""
+
+
 def initialize_batch_enforcer(concurrent_threads, max_write_threads,
                               max_running_operations, dry_run):
     """Initialize and return a BatchFirewallEnforcer object.
@@ -107,6 +114,12 @@ def enforce_single_project(enforcer, project_id, policy_filename):
       the enforced project, and a summary of the run.
     """
     policy = file_loader.read_and_parse_file(policy_filename)
+
+    if not isinstance(policy, list):
+        raise InvalidParsedPolicyFileError(
+            'Invalid parsed policy file: found %s expected %s',
+            type(policy), list)
+
     project_policies = [(project_id, policy)]
 
     enforcer_results = enforcer.run(project_policies)
