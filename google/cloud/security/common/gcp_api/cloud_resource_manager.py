@@ -88,7 +88,7 @@ class CloudResourceManagerClient(_BaseClient):
             'parent.id:%s' % organization_id,
         ]
         lifecycle_state = filterargs.get('lifecycleState')
-        if 'lifecycleState' in filterargs:
+        if lifecycle_state:
             project_filter.append('lifecycleState:%s' % lifecycle_state)
 
         for filter_key in filterargs:
