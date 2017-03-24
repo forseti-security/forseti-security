@@ -335,7 +335,8 @@ class OrgRuleBook(base_rules_engine.BaseRuleBook):
                                           gcp_resource)
                         continue
 
-                    rule_bindings = [IamPolicyBinding.create_from(b)
+                    rule_bindings = [
+                        IamPolicyBinding.create_from(b)
                         for b in rule_def.get('bindings')]
                     rule = Rule(rule_name=rule_def.get('name'),
                                 rule_index=rule_index,
