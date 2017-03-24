@@ -27,9 +27,10 @@ def GenerateConfig(context):
     DATABASE_NAME = context.properties['database-name']
 
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    SENDGRID_API_KEY = context.properties['sendgrid-api-key']
-    EMAIL_SENDER = context.properties['email-sender']
-    EMAIL_RECIPIENT = context.properties['email-recipient']
+
+    SENDGRID_API_KEY = context.properties.get('sendgrid-api-key')
+    EMAIL_SENDER = context.properties.get('email-sender')
+    EMAIL_RECIPIENT = context.properties.get('email-recipient')
 
     resources = []
 

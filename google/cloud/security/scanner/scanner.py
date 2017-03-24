@@ -23,9 +23,9 @@ Usage:
       --db_user <Cloud SQL database user> \\
       --db_passwd <Cloud SQL database password> \\
       --db_name <Cloud SQL database name (required)> \\
-      --sendgrid_api_key <API key to auth SendGrid email service (required)> \\
-      --email_sender <email address of the email sender> (required) \\
-      --email_recipient <email address of the email recipient> (required)
+      --sendgrid_api_key <API key to auth SendGrid email service> \\
+      --email_sender <email address of the email sender> \\
+      --email_recipient <email address of the email recipient>
 """
 
 import itertools
@@ -247,7 +247,8 @@ def _output_results(logger, all_violations, **kwargs):
         _upload_csv_to_gcs(logger, FLAGS.output_path, now_utc, csv_name)
 
     # Send summary email.
-    if FLAGS.email_recipient is not None:
+    if (FLAGS.email_recipient is not None
+        and FLAGS.email_recipient != 'None'):
         resource_counts = kwargs.get('resource_counts', {})
         _send_email(csv_name, now_utc, all_violations, resource_counts)
 

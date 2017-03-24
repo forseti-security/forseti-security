@@ -23,9 +23,9 @@ Usage:
       --db_passwd <Cloud SQL database password> \\
       --db_name <Cloud SQL database name (required)> \\
       --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \\
-      --sendgrid_api_key <API key to auth SendGrid email service (required)> \\
-      --email_sender <email address of the email sender> (required) \\
-      --email_recipient <email address of the email recipient> (required)
+      --sendgrid_api_key <API key to auth SendGrid email service> \\
+      --email_sender <email address of the email sender> \\
+      --email_recipient <email address of the email recipient>
 
 To see all the dependent flags:
 
@@ -279,7 +279,8 @@ def main(argv):
 
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
 
-    if configs.get('email_recipient') is not None:
+    if (configs.get('email_recipient') is not None
+        and configs.get('email_recipient') != 'None'):
         _send_email(configs.get('organization_id'),
                     cycle_time,
                     cycle_timestamp,
