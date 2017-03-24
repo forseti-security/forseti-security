@@ -64,13 +64,14 @@ class CloudResourceManagerClient(_BaseClient):
             LOGGER.error(ApiExecutionError(project_id, e))
         return None
 
-    def get_projects(self, resource_name, organization_id):
+    def get_projects(self, resource_name, organization_id, **filterargs):
         """Get all the projects from organization.
 
         Args:
             resource_name: String of the resource's name.
             organization_id: String of the organization id
-                in Google Cloud Platform
+                in Google Cloud Platform.
+            filterargs: Extra project filter args.
 
         Yields:
             An iterable of resource manager project list response.
@@ -80,17 +81,30 @@ class CloudResourceManagerClient(_BaseClient):
             ApiExecutionError: An error has occurred when executing the API.
         """
         projects_stub = self.service.projects()
-        # TODO: The filter may break once folders are implemented.
-        # pylint: disable=redefined-builtin
-        # TODO: Stop redefining a built-in to remove pylint disable.
-        filter = 'parent.type:organization parent.id:%s' % organization_id
-        request = projects_stub.list(filter=filter)
+        # TODO: The filter currently does not get projects under folders.
+        project_filter = [
+            'parent.type:organization',
+            'parent.id:%s' % organization_id,
+        ]
+        for filter_key in filterargs:
+            project_filter.add('%s:%s' % (filter_key, filterargs[filter_key]))
+
+        print ' '.join(project_filter)
+        
+        request = projects_stub.list(filter=' '.join(project_filter))
 
         try:
             with self.rate_limiter:
                 while request is not None:
                     response = self._execute(request)
-                    yield response
+
+                    # TODO: once CRM API allows for direct filtering on
+                    # lifecycleState, add it to the project_filter list
+                    # and don't manually filter here.
+                    lifecycle_state = response.get('lifecycleState')
+                    if lifecycle_state == 'ACTIVE':
+                        yield response
+
                     request = projects_stub.list_next(
                         previous_request=request,
                         previous_response=response)
