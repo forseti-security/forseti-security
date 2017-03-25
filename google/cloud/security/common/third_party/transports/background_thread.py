@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# pylint: disable=line-too-long
 """Transport for Python logging handler
 
 Uses a background worker to log to Stackdriver Logging asynchronously.
 
 From: https://github.com/GoogleCloudPlatform/google-cloud-python/blob/master/logging/google/cloud/logging/handlers/transports/background_thread.py
 """
-# pylint: skip-file
 
 import atexit
-import copy
 import threading
 
 from google.cloud.security.common.third_party.transports.base import Transport
@@ -41,6 +40,7 @@ class _Worker(object):
     it) and enqueuing :class:`Logger` (record, message) pairs.
     """
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, logger):
         self.started = False
         self.stopping = False

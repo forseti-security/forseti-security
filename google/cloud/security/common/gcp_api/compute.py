@@ -15,6 +15,7 @@
 """Wrapper for Compute API client."""
 
 import httplib
+import socket
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
 
@@ -36,7 +37,7 @@ def is_compute_engine_instance():
             is_gce_instance = True
         else:
             error_msg = res.reason
-    except:
+    except socket.error:
         error_msg = 'Unable to query metadata server'
     finally:
         conn.close()

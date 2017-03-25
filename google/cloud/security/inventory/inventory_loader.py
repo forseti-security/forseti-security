@@ -46,6 +46,7 @@ from google.cloud.security.common.data_access.errors import MySQLError
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.inventory.errors import LoadDataPipelineError
@@ -222,7 +223,6 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
 
 def main(_):
     """Runs the Inventory Loader."""
-    from google.cloud.security.common.util import log_util
     from google.cloud.security.inventory.pipelines import \
         load_org_iam_policies_pipeline
     from google.cloud.security.inventory.pipelines import \

@@ -18,12 +18,14 @@ Most of this code has been lifted from:
 
 https://github.com/GoogleCloudPlatform/google-cloud-python/blob/master/logging/google/cloud/logging
 """
-# pylint: skip-file
 
+import json
 import logging
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
+# pylint: disable=line-too-long
 from google.cloud.security.common.third_party.transports.background_thread import BackgroundThreadTransport
+from google.protobuf.json_format import MessageToJson
 
 
 _RFC3339_MICROS = '%Y-%m-%dT%H:%M:%S.%fZ'
@@ -60,6 +62,7 @@ class LoggingClient(_BaseClient):
             credentials=credentials, api_name=self.API_NAME)
 
     def get_logger(self, name=__name__):
+        """Get the Logger."""
         return CloudLogger(name, self)
 
     def write_entries(self, entries, logger_name=None, resource=None,
@@ -100,6 +103,7 @@ class LoggingClient(_BaseClient):
 
 
 class CloudLoggingHandler(logging.StreamHandler):
+    # pylint: disable=line-too-long
     """Cloud Logging Handler.
 
     See: https://github.com/GoogleCloudPlatform/google-cloud-python/blob/master/logging/google/cloud/logging/handlers/handlers.py
