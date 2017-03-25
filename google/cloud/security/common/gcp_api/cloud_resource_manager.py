@@ -20,6 +20,7 @@ from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
 
 
@@ -62,13 +63,14 @@ class CloudResourceManagerClient(_BaseClient):
             self.logger.error(ApiExecutionError(project_id, e))
         return None
 
-    def get_projects(self, resource_name, organization_id):
+    def get_projects(self, resource_name, organization_id, **filterargs):
         """Get all the projects from organization.
 
         Args:
             resource_name: String of the resource's name.
             organization_id: String of the organization id
-                in Google Cloud Platform
+                in Google Cloud Platform.
+            filterargs: Extra project filter args.
 
         Yields:
             An iterable of resource manager project list response.
@@ -78,17 +80,37 @@ class CloudResourceManagerClient(_BaseClient):
             ApiExecutionError: An error has occurred when executing the API.
         """
         projects_stub = self.service.projects()
-        # TODO: The filter may break once folders are implemented.
-        # pylint: disable=redefined-builtin
-        # TODO: Stop redefining a built-in to remove pylint disable.
-        filter = 'parent.type:organization parent.id:%s' % organization_id
-        request = projects_stub.list(filter=filter)
+        # TODO: The filter currently does not get projects under folders.
+        project_filter = [
+            'parent.type:organization',
+            'parent.id:%s' % organization_id,
+        ]
+        lifecycle_state = filterargs.get('lifecycleState')
+        if lifecycle_state:
+            project_filter.append('lifecycleState:%s' % lifecycle_state)
+
+        for filter_key in filterargs:
+            project_filter.append('%s:%s' %
+                                  (filter_key, filterargs[filter_key]))
+        request = projects_stub.list(filter=' '.join(project_filter))
 
         try:
             with self.rate_limiter:
                 while request is not None:
                     response = self._execute(request)
-                    yield response
+
+                    # TODO: once CRM API allows for direct filtering on
+                    # lifecycleState, add it to the project_filter list
+                    # and don't manually filter here.
+                    if lifecycle_state == LifecycleState.ACTIVE:
+                        yield {
+                            'projects': [
+                                p for p in response.get('projects')
+                                if (p.get('lifecycleState') ==
+                                    LifecycleState.ACTIVE)
+                            ]
+                        }
+
                     request = projects_stub.list_next(
                         previous_request=request,
                         previous_response=response)

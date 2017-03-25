@@ -42,10 +42,6 @@ flags.DEFINE_string('email_sender', None,
 flags.DEFINE_string('sendgrid_api_key', None,
                     'API key to authenticate with SendGrid email service.')
 
-flags.mark_flag_as_required('email_recipient')
-flags.mark_flag_as_required('email_sender')
-flags.mark_flag_as_required('sendgrid_api_key')
-
 
 class EmailUtil(object):
     """Utility for sending emails."""
@@ -77,7 +73,7 @@ class EmailUtil(object):
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
     def send(self, email_sender=None, email_recipient=None,
-             email_subject=None, email_content=None, content_type='text/plain',
+             email_subject=None, email_content=None, content_type=None,
              attachment=None):
         """Send an email.
 
