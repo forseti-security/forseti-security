@@ -152,9 +152,10 @@ class BackgroundThreadTransport(Transport):
     """
 
     def __init__(self, client, name):
-        http = copy.deepcopy(client._http)
-        self.client = client.__class__(
-            client.project, client._credentials, http)
+        #http = copy.deepcopy(client._http)
+        #self.client = client.__class__(
+        #    client.project, client._credentials, http)
+        self.client = client
         logger = self.client.get_logger(name)
         self.worker = _Worker(logger)
 

@@ -57,8 +57,8 @@ class LoggingClient(_BaseClient):
         super(LoggingClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
 
-    def get_logger(self):
-        return CloudLogger(__name__, self)
+    def get_logger(self, name=__name__):
+        return CloudLogger(name, self)
 
     def write_entries(self, entries, logger_name=None, resource=None,
                       labels=None):
@@ -151,6 +151,18 @@ class CloudLogger(object):
     def full_name(self):
         """The full log name."""
         return 'projects/%s/logs/%s' % (self.project, self.name)
+
+    def batch(self, client=None):
+        """Return a batch to use as a context manager.
+        :type client: :class:`~google.cloud.logging.client.Client` or
+                      ``NoneType``
+        :param client: the client to use.  If not passed, falls back to the
+                       ``client`` stored on the current topic.
+        :rtype: :class:`Batch`
+        :returns: A batch to use as a context manager.
+        """
+        client = self.client
+        return Batch(self, client)
 
     def _make_entry_resource(self, text=None, info=None, message=None,
                              labels=None, insert_id=None, severity=None,
@@ -263,3 +275,133 @@ class CloudLogger(object):
             text=text, labels=labels, insert_id=insert_id, severity=severity,
             http_request=http_request, timestamp=timestamp)
         logger_client.write_entries([entry_resource])
+
+class Batch(object):
+    """Context manager:  collect entries to log via a single API call.
+
+    Helper returned by :meth:`Logger.batch`
+
+    :type logger: :class:`google.cloud.logging.logger.Logger`
+    :param logger: the logger to which entries will be logged.
+    :type client: :class:`google.cloud.logging.client.Client`
+    :param client: The client to use.
+    """
+    def __init__(self, logger, client):
+        self.logger = logger
+        self.entries = []
+        self.client = client
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            self.commit()
+
+    def log_text(self, text, labels=None, insert_id=None, severity=None,
+                 http_request=None, timestamp=None):
+        """Add a text entry to be logged during :meth:`commit`.
+        :type text: str
+        :param text: the text entry
+        :type labels: dict
+        :param labels: (optional) mapping of labels for the entry.
+        :type insert_id: str
+        :param insert_id: (optional) unique ID for log entry.
+        :type severity: str
+        :param severity: (optional) severity of event being logged.
+        :type http_request: dict
+        :param http_request: (optional) info about HTTP request associated with
+                             the entry.
+        :type timestamp: :class:`datetime.datetime`
+        :param timestamp: (optional) timestamp of event being logged.
+        """
+        self.entries.append(
+            ('text', text, labels, insert_id, severity, http_request,
+             timestamp))
+
+    def log_struct(self, info, labels=None, insert_id=None, severity=None,
+                   http_request=None, timestamp=None):
+        """Add a struct entry to be logged during :meth:`commit`.
+        :type info: dict
+        :param info: the struct entry
+        :type labels: dict
+        :param labels: (optional) mapping of labels for the entry.
+        :type insert_id: str
+        :param insert_id: (optional) unique ID for log entry.
+        :type severity: str
+        :param severity: (optional) severity of event being logged.
+        :type http_request: dict
+        :param http_request: (optional) info about HTTP request associated with
+                             the entry.
+        :type timestamp: :class:`datetime.datetime`
+        :param timestamp: (optional) timestamp of event being logged.
+        """
+        self.entries.append(
+            ('struct', info, labels, insert_id, severity, http_request,
+             timestamp))
+
+    def log_proto(self, message, labels=None, insert_id=None, severity=None,
+                  http_request=None, timestamp=None):
+        """Add a protobuf entry to be logged during :meth:`commit`.
+        :type message: protobuf message
+        :param message: the protobuf entry
+        :type labels: dict
+        :param labels: (optional) mapping of labels for the entry.
+        :type insert_id: str
+        :param insert_id: (optional) unique ID for log entry.
+        :type severity: str
+        :param severity: (optional) severity of event being logged.
+        :type http_request: dict
+        :param http_request: (optional) info about HTTP request associated with
+                             the entry.
+        :type timestamp: :class:`datetime.datetime`
+        :param timestamp: (optional) timestamp of event being logged.
+        """
+        self.entries.append(
+            ('proto', message, labels, insert_id, severity, http_request,
+             timestamp))
+
+    def commit(self, client=None):
+        """Send saved log entries as a single API call.
+        :type client: :class:`~google.cloud.logging.client.Client` or
+                      ``NoneType``
+        :param client: the client to use.  If not passed, falls back to the
+                       ``client`` stored on the current batch.
+        """
+        if client is None:
+            client = self.client
+
+        kwargs = {
+            'logger_name': self.logger.full_name,
+            'resource': {'type': 'global'},
+        }
+        if self.logger.labels is not None:
+            kwargs['labels'] = self.logger.labels
+
+        entries = []
+        for (entry_type, entry, labels, iid, severity, http_req,
+             timestamp) in self.entries:
+            if entry_type == 'text':
+                info = {'textPayload': entry}
+            elif entry_type == 'struct':
+                info = {'jsonPayload': entry}
+            elif entry_type == 'proto':
+                as_json_str = MessageToJson(entry)
+                as_json = json.loads(as_json_str)
+                info = {'protoPayload': as_json}
+            else:
+                raise ValueError('Unknown entry type: %s' % (entry_type,))
+            if labels is not None:
+                info['labels'] = labels
+            if iid is not None:
+                info['insertId'] = iid
+            if severity is not None:
+                info['severity'] = severity
+            if http_req is not None:
+                info['httpRequest'] = http_req
+            if timestamp is not None:
+                info['timestamp'] = _datetime_to_rfc3339(timestamp)
+            entries.append(info)
+
+        client.write_entries(entries, **kwargs)
+        del self.entries[:]
