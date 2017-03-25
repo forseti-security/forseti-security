@@ -48,11 +48,7 @@ from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
-from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -67,7 +63,7 @@ flags.mark_flag_as_required('organization_id')
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = None
 
 
 def _exists_snapshot_cycles_table(dao):
@@ -198,10 +194,15 @@ def _send_email(cycle_timestamp, status, sendgrid_api_key,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
-def main(argv):
+def main(_):
     """Runs the Inventory Loader."""
+    from google.cloud.security.common.util import log_util
+    from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
+    from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
+    from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
-    del argv
+    global LOGGER
+    LOGGER = log_util.get_logger(__name__)
 
     try:
         dao = Dao()

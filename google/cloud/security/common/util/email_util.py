@@ -26,9 +26,9 @@ from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
 
-from google.cloud.security.common.util.errors import EmailSendError
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
+from google.cloud.security.common.util.errors import EmailSendError
 
 
 FLAGS = flags.FLAGS
@@ -56,7 +56,7 @@ class EmailUtil(object):
         Args:
             api_key: String of the sendgrid api key to auth email service.
         """
-        self.logger = LogUtil.setup_logging(__name__)
+        self.logger = log_util.get_logger(__name__)
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,

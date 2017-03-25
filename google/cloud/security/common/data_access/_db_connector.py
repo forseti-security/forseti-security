@@ -20,7 +20,7 @@ import MySQLdb
 from MySQLdb import OperationalError
 
 from google.cloud.security.common.data_access.errors import MySQLError
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('db_host', '127.0.0.1',
@@ -30,11 +30,8 @@ flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 flags.DEFINE_string('db_passwd', None, 'Cloud SQL password')
 
 # pylint: disable=too-few-public-methods
-# TODO: Investigate improving so we can avoid the pylint disable.
 class _DbConnector(object):
     """Database connector."""
-
-    LOGGER = LogUtil.setup_logging(__name__)
 
     def __init__(self):
         """Initialize the db connector.
@@ -42,6 +39,7 @@ class _DbConnector(object):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
+        self.LOGGER = log_util.get_logger(__name__)
         configs = FLAGS.FlagValuesDict()
 
         try:
@@ -62,7 +60,7 @@ class _DbConnector(object):
                     db=configs['db_name'],
                     local_infile=1)
         except OperationalError as e:
-            LOGGER.error('Unable to create mysql connector:\n%s', e)
+            self.LOGGER.error('Unable to create mysql connector:\n%s', e)
             raise MySQLError('DB Connector', e)
 
     def __del__(self):

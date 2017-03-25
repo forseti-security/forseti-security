@@ -18,6 +18,7 @@ Uses a background worker to log to Stackdriver Logging asynchronously.
 
 From: https://github.com/GoogleCloudPlatform/google-cloud-python/blob/master/logging/google/cloud/logging/handlers/transports/background_thread.py
 """
+# pylint: disable-all
 
 import atexit
 import copy
@@ -152,9 +153,6 @@ class BackgroundThreadTransport(Transport):
     """
 
     def __init__(self, client, name):
-        #http = copy.deepcopy(client._http)
-        #self.client = client.__class__(
-        #    client.project, client._credentials, http)
         self.client = client
         logger = self.client.get_logger(name)
         self.worker = _Worker(logger)
@@ -162,11 +160,12 @@ class BackgroundThreadTransport(Transport):
     def send(self, record, message):
         """Overrides Transport.send().
 
-        :type record: :class:`logging.LogRecord`
-        :param record: Python log record that the handler was called with.
+        Args:
+            :type record: :class:`logging.LogRecord`
+            :param record: Python log record that the handler was called with.
 
-        :type message: str
-        :param message: The message from the ``LogRecord`` after being
-                        formatted by the associated log formatters.
+            :type message: str
+            :param message: The message from the ``LogRecord`` after being
+                            formatted by the associated log formatters.
         """
         self.worker.enqueue(record, message)

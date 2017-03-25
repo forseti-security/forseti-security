@@ -19,9 +19,7 @@ need to separate the classes depending on implementation.
 
 import abc
 
-# pylint: disable=line-too-long
-# TODO: Investigate improving so we can avoid the pylint disable.
-from google.cloud.security.common.gcp_type.errors import InvalidResourceTypeError
+from google.cloud.security.common.gcp_type import errors
 
 
 class ResourceType(object):
@@ -50,7 +48,7 @@ class ResourceType(object):
             InvalidResourceTypeError if resource type is not recognized.
         """
         if resource_type not in cls.resource_types:
-            raise InvalidResourceTypeError(
+            raise errors.InvalidResourceTypeError(
                 'Invalid resource type: {}'.format(resource_type))
         return resource_type
 

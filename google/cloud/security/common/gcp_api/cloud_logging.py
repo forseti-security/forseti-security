@@ -14,10 +14,11 @@
 
 """Logging API Client.
 
-Some of the code has been lifted from:
+Most of this code has been lifted from:
 
 https://github.com/GoogleCloudPlatform/google-cloud-python/blob/master/logging/google/cloud/logging
 """
+# pylint: disable-all
 
 import logging
 
@@ -31,15 +32,16 @@ _RFC3339_MICROS = '%Y-%m-%dT%H:%M:%S.%fZ'
 def _datetime_to_rfc3339(value, ignore_zone=True):
     """Convert a timestamp to a string.
 
-    :type value: :class:`datetime.datetime`
-    :param value: The datetime object to be converted to a string.
+    Args:
+        :type value: :class:`datetime.datetime`
+        :param value: The datetime object to be converted to a string.
 
-    :type ignore_zone: bool
-    :param ignore_zone: If True, then the timezone (if any) of the datetime
-                        object is ignored.
+        :type ignore_zone: bool
+        :param ignore_zone: If True, then the timezone (if any) of the datetime
+                            object is ignored.
 
-    :rtype: str
-    :returns: The string representing the datetime stamp.
+        :rtype: str
+        :returns: The string representing the datetime stamp.
     """
     if not ignore_zone and value.tzinfo is not None:
         # Convert to UTC and remove the time zone info.
@@ -67,20 +69,21 @@ class LoggingClient(_BaseClient):
         See:
         https://cloud.google.com/logging/docs/api/reference/rest/v2/entries/write
 
-        :type entries: sequence of mapping
-        :param entries: the log entry resources to log.
+        Args:
+            :type entries: sequence of mapping
+            :param entries: the log entry resources to log.
 
-        :type logger_name: str
-        :param logger_name: name of default logger to which to log the entries;
-                            individual entries may override.
+            :type logger_name: str
+            :param logger_name: name of default logger to which to log the
+                                entries; individual entries may override.
 
-        :type resource: mapping
-        :param resource: default resource to associate with entries;
-                         individual entries may override.
+            :type resource: mapping
+            :param resource: default resource to associate with entries;
+                             individual entries may override.
 
-        :type labels: mapping
-        :param labels: default labels to associate with entries;
-                       individual entries may override.
+            :type labels: mapping
+            :param labels: default labels to associate with entries;
+                           individual entries may override.
         """
         data = {'entries': list(entries)}
 
@@ -120,8 +123,9 @@ class CloudLoggingHandler(logging.StreamHandler):
 
         See: https://docs.python.org/2/library/logging.html#handler-objects
 
-        :type record: :class:`logging.LogRecord`
-        :param record: The record to be logged.
+        Args:
+            :type record: :class:`logging.LogRecord`
+            :param record: The record to be logged.
         """
         message = super(CloudLoggingHandler, self).format(record)
         self.transport.send(record, message)
@@ -154,12 +158,14 @@ class CloudLogger(object):
 
     def batch(self, client=None):
         """Return a batch to use as a context manager.
-        :type client: :class:`~google.cloud.logging.client.Client` or
-                      ``NoneType``
-        :param client: the client to use.  If not passed, falls back to the
-                       ``client`` stored on the current topic.
-        :rtype: :class:`Batch`
-        :returns: A batch to use as a context manager.
+
+        Args:
+            :type client: :class:`~google.cloud.logging.client.Client` or
+                          ``NoneType``
+            :param client: the client to use.  If not passed, falls back to the
+                           ``client`` stored on the current topic.
+            :rtype: :class:`Batch`
+            :returns: A batch to use as a context manager.
         """
         client = self.client
         return Batch(self, client)
@@ -173,33 +179,34 @@ class CloudLogger(object):
 
         Only one of ``text``, ``info``, or ``message`` should be passed.
 
-        :type text: str
-        :param text: (Optional) text payload
+        Args:
+            :type text: str
+            :param text: (Optional) text payload
 
-        :type info: dict
-        :param info: (Optional) struct payload
+            :type info: dict
+            :param info: (Optional) struct payload
 
-        :type message: Protobuf message or :class:`NoneType`
-        :param message: protobuf payload
+            :type message: Protobuf message or :class:`NoneType`
+            :param message: protobuf payload
 
-        :type labels: dict
-        :param labels: (Optional) labels passed in to calling method.
+            :type labels: dict
+            :param labels: (Optional) labels passed in to calling method.
 
-        :type insert_id: str
-        :param insert_id: (optional) unique ID for log entry.
+            :type insert_id: str
+            :param insert_id: (optional) unique ID for log entry.
 
-        :type severity: str
-        :param severity: (optional) severity of event being logged.
+            :type severity: str
+            :param severity: (optional) severity of event being logged.
 
-        :type http_request: dict
-        :param http_request: (optional) info about HTTP request associated with
-                             the entry
+            :type http_request: dict
+            :param http_request: (optional) info about HTTP request associated
+                                 with the entry
 
-        :type timestamp: :class:`datetime.datetime`
-        :param timestamp: (optional) timestamp of event being logged.
+            :type timestamp: :class:`datetime.datetime`
+            :param timestamp: (optional) timestamp of event being logged.
 
-        :rtype: dict
-        :returns: The JSON resource created.
+            :rtype: dict
+            :returns: The JSON resource created.
         """
         resource = {
             'logName': self.full_name,
@@ -244,29 +251,30 @@ class CloudLogger(object):
         See:
         https://cloud.google.com/logging/docs/api/reference/rest/v2/entries/write
 
-        :type text: str
-        :param text: the log message.
+        Args:
+            :type text: str
+            :param text: the log message.
 
-        :type client: :class:`~google.cloud.logging.client.Client` or
-                      ``NoneType``
-        :param client: the client to use.  If not passed, falls back to the
-                       ``client`` stored on the current logger.
+            :type client: :class:`~google.cloud.logging.client.Client` or
+                          ``NoneType``
+            :param client: the client to use.  If not passed, falls back to the
+                           ``client`` stored on the current logger.
 
-        :type labels: dict
-        :param labels: (optional) mapping of labels for the entry.
+            :type labels: dict
+            :param labels: (optional) mapping of labels for the entry.
 
-        :type insert_id: str
-        :param insert_id: (optional) unique ID for log entry.
+            :type insert_id: str
+            :param insert_id: (optional) unique ID for log entry.
 
-        :type severity: str
-        :param severity: (optional) severity of event being logged.
+            :type severity: str
+            :param severity: (optional) severity of event being logged.
 
-        :type http_request: dict
-        :param http_request: (optional) info about HTTP request associated with
-                             the entry
+            :type http_request: dict
+            :param http_request: (optional) info about HTTP request associated
+                                 with the entry
 
-        :type timestamp: :class:`datetime.datetime`
-        :param timestamp: (optional) timestamp of event being logged.
+            :type timestamp: :class:`datetime.datetime`
+            :param timestamp: (optional) timestamp of event being logged.
         """
         logger_client = self.client
         if client:
@@ -281,10 +289,12 @@ class Batch(object):
 
     Helper returned by :meth:`Logger.batch`
 
-    :type logger: :class:`google.cloud.logging.logger.Logger`
-    :param logger: the logger to which entries will be logged.
-    :type client: :class:`google.cloud.logging.client.Client`
-    :param client: The client to use.
+    Args:
+        :type logger: :class:`google.cloud.logging.logger.Logger`
+        :param logger: the logger to which entries will be logged.
+
+        :type client: :class:`google.cloud.logging.client.Client`
+        :param client: The client to use.
     """
     def __init__(self, logger, client):
         self.logger = logger
@@ -301,19 +311,26 @@ class Batch(object):
     def log_text(self, text, labels=None, insert_id=None, severity=None,
                  http_request=None, timestamp=None):
         """Add a text entry to be logged during :meth:`commit`.
-        :type text: str
-        :param text: the text entry
-        :type labels: dict
-        :param labels: (optional) mapping of labels for the entry.
-        :type insert_id: str
-        :param insert_id: (optional) unique ID for log entry.
-        :type severity: str
-        :param severity: (optional) severity of event being logged.
-        :type http_request: dict
-        :param http_request: (optional) info about HTTP request associated with
-                             the entry.
-        :type timestamp: :class:`datetime.datetime`
-        :param timestamp: (optional) timestamp of event being logged.
+
+        Args:
+            :type text: str
+            :param text: the text entry
+
+            :type labels: dict
+            :param labels: (optional) mapping of labels for the entry.
+
+            :type insert_id: str
+            :param insert_id: (optional) unique ID for log entry.
+
+            :type severity: str
+            :param severity: (optional) severity of event being logged.
+
+            :type http_request: dict
+            :param http_request: (optional) info about HTTP request associated
+                                 with the entry.
+
+            :type timestamp: :class:`datetime.datetime`
+            :param timestamp: (optional) timestamp of event being logged.
         """
         self.entries.append(
             ('text', text, labels, insert_id, severity, http_request,
@@ -322,19 +339,26 @@ class Batch(object):
     def log_struct(self, info, labels=None, insert_id=None, severity=None,
                    http_request=None, timestamp=None):
         """Add a struct entry to be logged during :meth:`commit`.
-        :type info: dict
-        :param info: the struct entry
-        :type labels: dict
-        :param labels: (optional) mapping of labels for the entry.
-        :type insert_id: str
-        :param insert_id: (optional) unique ID for log entry.
-        :type severity: str
-        :param severity: (optional) severity of event being logged.
-        :type http_request: dict
-        :param http_request: (optional) info about HTTP request associated with
-                             the entry.
-        :type timestamp: :class:`datetime.datetime`
-        :param timestamp: (optional) timestamp of event being logged.
+
+        Args:
+            :type info: dict
+            :param info: the struct entry
+
+            :type labels: dict
+            :param labels: (optional) mapping of labels for the entry.
+
+            :type insert_id: str
+            :param insert_id: (optional) unique ID for log entry.
+
+            :type severity: str
+            :param severity: (optional) severity of event being logged.
+
+            :type http_request: dict
+            :param http_request: (optional) info about HTTP request
+                                 associated with the entry.
+
+            :type timestamp: :class:`datetime.datetime`
+            :param timestamp: (optional) timestamp of event being logged.
         """
         self.entries.append(
             ('struct', info, labels, insert_id, severity, http_request,
@@ -343,19 +367,25 @@ class Batch(object):
     def log_proto(self, message, labels=None, insert_id=None, severity=None,
                   http_request=None, timestamp=None):
         """Add a protobuf entry to be logged during :meth:`commit`.
-        :type message: protobuf message
-        :param message: the protobuf entry
-        :type labels: dict
-        :param labels: (optional) mapping of labels for the entry.
-        :type insert_id: str
-        :param insert_id: (optional) unique ID for log entry.
-        :type severity: str
-        :param severity: (optional) severity of event being logged.
-        :type http_request: dict
-        :param http_request: (optional) info about HTTP request associated with
-                             the entry.
-        :type timestamp: :class:`datetime.datetime`
-        :param timestamp: (optional) timestamp of event being logged.
+
+        Args:
+          :type message: protobuf message
+          :param message: the protobuf entry
+
+          :type labels: dict
+          :param labels: (optional) mapping of labels for the entry.
+
+          :type insert_id: str
+          :param insert_id: (optional) unique ID for log entry.
+
+          :type severity: str
+          :param severity: (optional) severity of event being logged.
+
+          :type http_request: dict
+          :param http_request: (optional) info about HTTP request associated
+                               with the entry.
+          :type timestamp: :class:`datetime.datetime`
+          :param timestamp: (optional) timestamp of event being logged.
         """
         self.entries.append(
             ('proto', message, labels, insert_id, severity, http_request,
@@ -363,10 +393,12 @@ class Batch(object):
 
     def commit(self, client=None):
         """Send saved log entries as a single API call.
-        :type client: :class:`~google.cloud.logging.client.Client` or
-                      ``NoneType``
-        :param client: the client to use.  If not passed, falls back to the
-                       ``client`` stored on the current batch.
+
+        Args:
+            :type client: :class:`~google.cloud.logging.client.Client` or
+                          ``NoneType``
+            :param client: the client to use.  If not passed, falls back to the
+                           ``client`` stored on the current batch.
         """
         if client is None:
             client = self.client

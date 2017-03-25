@@ -19,6 +19,7 @@ from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource import Resource
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
+
 class ResourceUtil(object):
     """A utility for Resource operations."""
 

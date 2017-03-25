@@ -20,12 +20,12 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 RESOURCE_NAME = 'projects'
 

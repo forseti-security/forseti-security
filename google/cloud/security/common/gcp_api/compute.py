@@ -18,9 +18,32 @@ import httplib
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
 
+def is_compute_engine_instance():
+    """Attempt to query the metadata server to determine if GCE instance.
+
+    Returns:
+        Tuple of (is_gce_instance, error_msg)
+    """
+    conn = httplib.HTTPConnection('metadata.google.internal')
+    error_msg = None
+    is_gce_instance = False
+    try:
+        conn.request('GET', '/computeMetadata/v1/instance/id',
+                     None, {'Metadata-Flavor': 'Google'})
+        res = conn.getresponse()
+
+        if res and res.status == 200:
+            is_gce_instance = True
+        else:
+            error_msg = res.reason
+    except:
+        error_msg = 'Unable to query metadata server'
+    finally:
+        conn.close()
+
+    return (is_gce_instance, error_msg)
 
 # pylint: disable=too-few-public-methods
-# TODO: Look at investigating improving to remove pylint disable.
 class ComputeClient(_BaseClient):
     """Compute Client."""
 
@@ -33,28 +56,3 @@ class ComputeClient(_BaseClient):
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
 
-    @staticmethod
-    def is_compute_engine_instance():
-        """Attempt to query the metadata server to determine if GCE instance.
-
-        Returns:
-            Tuple of (is_gce_instance, error_msg)
-        """
-        conn = httplib.HTTPConnection('metadata.google.internal')
-        error_msg = ''
-        is_gce_instance = False
-        try:
-            conn.request('GET', '/computeMetadata/v1/instance/id',
-                         None, {'Metadata-Flavor': 'Google'})
-            res = req.getresponse()
-
-            if res and res.status == 200:
-                is_gce_instance = True
-            else:
-                error_msg = res.reason
-        except:
-            error_msg = 'Unable to query metadata server'
-        finally:
-            conn.close()
-
-        return (is_gce_instance, error_msg)

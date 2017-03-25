@@ -20,14 +20,12 @@ from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
-from google.cloud.security.common.util.log_util import LogUtil
-
+from google.cloud.security.common.util import log_util
 
 
 class CloudResourceManagerClient(_BaseClient):
     """Resource Manager Client."""
 
-    LOGGER = LogUtil.setup_logging(__name__)
     API_NAME = 'cloudresourcemanager'
     DEFAULT_MAX_QUERIES = 400
 
@@ -39,6 +37,7 @@ class CloudResourceManagerClient(_BaseClient):
         else:
             self.rate_limiter = RateLimiter(self.DEFAULT_MAX_QUERIES, 100)
 
+        self.LOGGER = log_util.get_logger(__name__)
 
     def get_project(self, project_id):
         """Get all the projects from organization.
@@ -60,7 +59,7 @@ class CloudResourceManagerClient(_BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(ApiExecutionError(project_id, e))
+            self.LOGGER.error(ApiExecutionError(project_id, e))
         return None
 
     def get_projects(self, resource_name, organization_id):
@@ -137,7 +136,7 @@ class CloudResourceManagerClient(_BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(ApiExecutionError(org_name, e))
+            self.LOGGER.error(ApiExecutionError(org_name, e))
         return None
 
     def get_org_iam_policies(self, resource_name, org_id):

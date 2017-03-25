@@ -29,7 +29,7 @@ from googleapiclient import errors
 import httplib2
 from retrying import retry
 from google.apputils import datelib
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 
 # The name of the GCE API.
 API_NAME = 'compute'
@@ -43,7 +43,7 @@ API_VERSION = 'v1'
 # The compute engine scope.
 SCOPE = 'https://www.googleapis.com/auth/compute'
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 # What transient exceptions should be retried.
 RETRY_EXCEPTIONS = (httplib.ResponseNotReady, httplib.IncompleteRead,

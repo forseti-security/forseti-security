@@ -20,14 +20,14 @@ import yaml
 
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util import errors
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 
 LOGGER = None
 
 def get_logger():
     global LOGGER
     if not LOGGER:
-        LOGGER = LogUtil.setup_logging(__name__)
+        LOGGER = log_util.get_logger(__name__)
     return LOGGER
 
 

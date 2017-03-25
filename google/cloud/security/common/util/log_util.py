@@ -41,11 +41,8 @@ flags.DEFINE_boolean('use_cloud_logging', False,
                      'Use Cloud Logging, if available.')
 flags.DEFINE_boolean('nouse_cloud_logging', False, 'Do not use Cloud Logging.')
 
-LOCAL_FORMATTER = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
 
-
-def setup_logging(module_name):
-    return get_logger(module_name)
 
 def get_logger(module_name):
     """Setup logging configuration.
@@ -56,14 +53,12 @@ def get_logger(module_name):
     Returns:
         An instance of the configured logger.
     """
-    (is_gce, err_msg) = compute.ComputeClient.is_compute_engine_instance()
-
-    logging_client = cloud_logging.LoggingClient()
+    (is_gce, err_msg) = compute.is_compute_engine_instance()
     handler = None
 
     # Use Cloud Logging if flag is set or if on GCE instance.
     if FLAGS.use_cloud_logging:
-        handler = cloud_logging.CloudLoggingHandler(logging_client)
+        handler = cloud_logging.CloudLoggingHandler(_get_cloud_logger())
 
     # Force local logger.
     if FLAGS.nouse_cloud_logging:
@@ -71,11 +66,11 @@ def get_logger(module_name):
 
     if handler is None:
         if is_gce:
-            handler = cloud_logging.CloudLoggingHandler(logging_client)
+            handler = cloud_logging.CloudLoggingHandler(_get_cloud_logger())
         else:
             handler = logging.StreamHandler()
 
-    formatter = logging.Formatter(LOCAL_FORMATTER)
+    formatter = logging.Formatter(LOG_FORMAT)
     handler.setFormatter(formatter)
 
     logger_instance = logging.getLogger(module_name)
@@ -88,5 +83,5 @@ def get_logger(module_name):
 
     return logger_instance
 
-def _setup_local_logger():
-    return 
+def _get_cloud_logger():
+    return cloud_logging.LoggingClient()

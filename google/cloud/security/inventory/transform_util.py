@@ -18,10 +18,10 @@ import json
 
 from dateutil import parser
 
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 

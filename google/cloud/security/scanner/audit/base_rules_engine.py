@@ -17,10 +17,11 @@
 Loads YAML rules either from local file system or Cloud Storage bucket.
 """
 
+import abc
+
 from google.cloud.security.common.util import file_loader
-from google.cloud.security.common.util.log_util import LogUtil
-# pylint: disable=line-too-long
-from google.cloud.security.scanner.audit.errors import InvalidRuleDefinitionError
+from google.cloud.security.common.util import log_util
+from google.cloud.security.scanner.audit import errors
 
 
 class BaseRulesEngine(object):
@@ -36,13 +37,13 @@ class BaseRulesEngine(object):
             logger_name: The name of module for logger.
         """
         if not rules_file_path:
-            raise InvalidRuleDefinitionError(
+            raise errors.InvalidRuleDefinitionError(
                 'File path: {}'.format(rules_file_path))
         self.full_rules_path = rules_file_path.strip()
 
         if not logger_name:
             logger_name = __name__
-        self.logger = LogUtil.setup_logging(logger_name)
+        self.logger = log_util.get_logger(logger_name)
 
     def build_rule_book(self):
         """Build RuleBook from the rules definition file."""
@@ -60,8 +61,6 @@ class BaseRulesEngine(object):
         """
         return file_loader.read_and_parse_file(self.full_rules_path)
 
-# TODO: Investigate not using a class for a storage object.
-# pylint: disable=too-few-public-methods
 class BaseRuleBook(object):
     """Base class for RuleBooks.
 
@@ -70,8 +69,15 @@ class BaseRuleBook(object):
     the RuleBook depends on how rules should be applied. For example,
     Organization resource rules would be applied in a hierarchical manner.
     """
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, logger_name=None):
         if not logger_name:
             logger_name = __name__
-        self.logger = LogUtil.setup_logging(logger_name)
+        self.logger = log_util.get_logger(logger_name)
+
+    @abc.abstractmethod
+    def add_rule(self, rule_def, rule_index):
+        """Add rule to rule book."""
+        raise NotImplementedError('Implement add_rule() in subclass')
+
