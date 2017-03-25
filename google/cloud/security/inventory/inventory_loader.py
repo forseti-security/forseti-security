@@ -23,9 +23,9 @@ Usage:
       --db_passwd <Cloud SQL database password> \\
       --db_name <Cloud SQL database name (required)> \\
       --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \\
-      --sendgrid_api_key <API key to auth SendGrid email service (required)> \\
-      --email_sender <email address of the email sender> (required) \\
-      --email_recipient <email address of the email recipient> (required)
+      --sendgrid_api_key <API key to auth SendGrid email service> \\
+      --email_sender <email address of the email sender> \\
+      --email_recipient <email address of the email recipient>
 
 To see all the dependent flags:
 
@@ -278,15 +278,17 @@ def main(argv):
         snapshot_cycle_status = 'FAILURE'
 
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
-    _send_email(configs.get('organization_id'),
-                cycle_time,
-                cycle_timestamp,
-                snapshot_cycle_status,
-                pipelines,
-                dao,
-                configs.get('sendgrid_api_key'),
-                configs.get('email_sender'),
-                configs.get('email_recipient'))
+
+    if configs.get('email_recipient') is not None:
+        _send_email(configs.get('organization_id'),
+                    cycle_time,
+                    cycle_timestamp,
+                    snapshot_cycle_status,
+                    pipelines,
+                    dao,
+                    configs.get('sendgrid_api_key'),
+                    configs.get('email_sender'),
+                    configs.get('email_recipient'))
 
 
 if __name__ == '__main__':

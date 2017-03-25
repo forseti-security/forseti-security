@@ -1,4 +1,4 @@
-# Prerequisites to installing Forseti Security
+# Installation prerequisites
   1. [Common steps](#common-steps)
     1. [Create a GCP project](#create-a-gcp-project)
     1. [Create a service account](#create-a-service-account)
@@ -83,11 +83,11 @@ which may cause email warnings about opening images. To address this or if you
 don't want to be tracked, the tracking pixel can be
 [disabled here](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
 
-## Installation specific prerequisites
-### GCP installations
+## Deployment-specific prerequisites
+### GCP
 #### Enable required APIs
 
-* Enable **Deployment Manager API**.
+Enable **Deployment Manager API**.
 In addition to the APIs from [above](#enable-required-apis) you must enable the
 Deployment Manager API.
 

@@ -7,18 +7,18 @@
 
 ### Create Cloud SQL Instance
   1. Create a new instance in the [SQL page of GCP console](https://console.cloud.google.com/sql).
-    * Select second generation.
-    * Specify Instance ID.
-    * Select MySQL 5.7 version.
-    * Select db-n1-standard-1 machine type.
-    * Select 25GB storage capacity.
-    * Fill in other details, as desired.
-    * Click Create button.
+     * Select second generation.
+     * Specify Instance ID.
+     * Select MySQL 5.7 version.
+     * Select db-n1-standard-1 machine type.
+     * Select 25GB storage capacity.
+     * Fill in other details, as desired.
+     * Click Create button.
   1. Configure Users Access Control
-    * Change password for root user.
-    * Create a new user with [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges).
+     * Change password for root user.
+     * Create a new user with [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges).
   1. Create New Database
-    * Enter a name.
+     * Enter a name.
   1. Follow these instructions to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
 
 ## Install the `protoc` compiler

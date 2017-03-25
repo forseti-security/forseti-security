@@ -6,7 +6,7 @@
 * [Execution](#execution)
 
 ## Prerequisites
-See the [prerequisistes](/docs/prerequisites/README.md) for installing locally.
+Install or set up the Forseti Security [prerequisites](/docs/prerequisites/README.md).
 
 ## Create a virtualenv
 ```sh
