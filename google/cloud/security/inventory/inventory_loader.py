@@ -230,6 +230,7 @@ def main(_):
     from google.cloud.security.inventory.pipelines import \
         load_projects_pipeline
 
+    # pylint: disable=global-statement
     global LOGGER
     LOGGER = log_util.get_logger(__name__)
 

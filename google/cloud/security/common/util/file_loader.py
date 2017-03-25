@@ -26,6 +26,7 @@ LOGGER = None
 
 def get_logger():
     """Get the logger."""
+    # pylint: disable=global-statement
     global LOGGER
     if not LOGGER:
         LOGGER = log_util.get_logger(__name__)

@@ -73,6 +73,7 @@ LOGGER = None
 
 def main(_):
     """Run the scanner."""
+    # pylint: disable=global-statement
     global LOGGER
     LOGGER = log_util.get_logger(__name__)
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
