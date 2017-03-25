@@ -54,27 +54,32 @@ def get_logger(module_name):
         An instance of the configured logger.
     """
     (is_gce, err_msg) = compute.is_compute_engine_instance()
-    handler = None
+    should_use_cloud_logger = None
+    root_handler = logging.StreamHandler()
+    cloud_handler = None
 
     # Use Cloud Logging if flag is set or if on GCE instance.
     if FLAGS.use_cloud_logging:
-        handler = cloud_logging.CloudLoggingHandler(_get_cloud_logger())
+        should_use_cloud_logger = True
 
     # Force local logger.
     if FLAGS.nouse_cloud_logging:
-        handler = logging.StreamHandler()
+        should_use_cloud_logger = False
 
-    if handler is None:
-        if is_gce:
-            handler = cloud_logging.CloudLoggingHandler(_get_cloud_logger())
-        else:
-            handler = logging.StreamHandler()
+    # Determine whether to use cloud logger based on environment.
+    if should_use_cloud_logger is None:
+        should_use_cloud_logger = is_gce
 
     formatter = logging.Formatter(LOG_FORMAT)
-    handler.setFormatter(formatter)
+    root_handler.setFormatter(formatter)
 
     logger_instance = logging.getLogger(module_name)
-    logger_instance.addHandler(handler)
+    logger_instance.addHandler(root_handler)
+
+    if should_use_cloud_logger:
+        cloud_handler = cloud_logging.CloudLoggingHandler(_get_cloud_logger())
+        cloud_handler.setFormatter(formatter)
+        logger_instance.addHandler(cloud_handler)
 
     if os.getenv('DEBUG'):
         logger_instance.setLevel(logging.DEBUG)
