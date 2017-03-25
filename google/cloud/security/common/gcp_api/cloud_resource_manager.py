@@ -37,7 +37,7 @@ class CloudResourceManagerClient(_BaseClient):
         else:
             self.rate_limiter = RateLimiter(self.DEFAULT_MAX_QUERIES, 100)
 
-        self.LOGGER = log_util.get_logger(__name__)
+        self.logger = log_util.get_logger(__name__)
 
     def get_project(self, project_id):
         """Get all the projects from organization.
@@ -59,7 +59,7 @@ class CloudResourceManagerClient(_BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            self.LOGGER.error(ApiExecutionError(project_id, e))
+            self.logger.error(ApiExecutionError(project_id, e))
         return None
 
     def get_projects(self, resource_name, organization_id):
@@ -136,7 +136,7 @@ class CloudResourceManagerClient(_BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            self.LOGGER.error(ApiExecutionError(org_name, e))
+            self.logger.error(ApiExecutionError(org_name, e))
         return None
 
     def get_org_iam_policies(self, resource_name, org_id):

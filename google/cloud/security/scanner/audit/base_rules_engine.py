@@ -80,4 +80,3 @@ class BaseRuleBook(object):
     def add_rule(self, rule_def, rule_index):
         """Add rule to rule book."""
         raise NotImplementedError('Implement add_rule() in subclass')
-

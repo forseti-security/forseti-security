@@ -29,9 +29,10 @@ is as follows:
   - Otherwise, fall back to local logging.
 """
 
-import gflags as flags
 import logging
 import os
+
+import gflags as flags
 
 from google.cloud.security.common.gcp_api import cloud_logging
 from google.cloud.security.common.gcp_api import compute
@@ -53,7 +54,7 @@ def get_logger(module_name):
     Returns:
         An instance of the configured logger.
     """
-    (is_gce, err_msg) = compute.is_compute_engine_instance()
+    (is_gce, _) = compute.is_compute_engine_instance()
     should_use_cloud_logger = None
     root_handler = logging.StreamHandler()
     cloud_handler = None
@@ -89,4 +90,5 @@ def get_logger(module_name):
     return logger_instance
 
 def _get_cloud_logger():
+    """Gets the Cloud Logging Client."""
     return cloud_logging.LoggingClient()

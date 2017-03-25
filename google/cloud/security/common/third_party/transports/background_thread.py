@@ -18,7 +18,7 @@ Uses a background worker to log to Stackdriver Logging asynchronously.
 
 From: https://github.com/GoogleCloudPlatform/google-cloud-python/blob/master/logging/google/cloud/logging/handlers/transports/background_thread.py
 """
-# pylint: disable-all
+# pylint: skip-file
 
 import atexit
 import copy

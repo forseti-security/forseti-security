@@ -33,10 +33,9 @@ from google.cloud.security.common.util import log_util
 class OrganizationDao(_DbConnector):
     """Data access object (DAO) for Organizations."""
 
-    LOGGER = log_util.get_logger(__name__)
-
     def __init__(self):
         super(OrganizationDao, self).__init__()
+        self.logger = log_util.get_logger(__name__)
 
     def get_org_iam_policies(self, timestamp):
         """Get the organization policies.
@@ -59,8 +58,8 @@ class OrganizationDao(_DbConnector):
                     iam_policy = json.loads(row[1])
                     org_iam_policies[org] = iam_policy
                 except ValueError:
-                    LOGGER.warn('Error parsing json:\n %s', row[2])
+                    self.logger.warn('Error parsing json:\n %s', row[2])
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
-            LOGGER.error(MySQLError('organizations', e))
+            self.logger.error(MySQLError('organizations', e))
         return org_iam_policies

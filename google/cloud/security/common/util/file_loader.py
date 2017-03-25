@@ -25,6 +25,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = None
 
 def get_logger():
+    """Get the logger."""
     global LOGGER
     if not LOGGER:
         LOGGER = log_util.get_logger(__name__)

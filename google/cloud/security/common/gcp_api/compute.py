@@ -55,4 +55,3 @@ class ComputeClient(_BaseClient):
 
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
-

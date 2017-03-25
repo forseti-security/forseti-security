@@ -39,7 +39,7 @@ class _DbConnector(object):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        self.LOGGER = log_util.get_logger(__name__)
+        self.logger = log_util.get_logger(__name__)
         configs = FLAGS.FlagValuesDict()
 
         try:
@@ -60,7 +60,7 @@ class _DbConnector(object):
                     db=configs['db_name'],
                     local_infile=1)
         except OperationalError as e:
-            self.LOGGER.error('Unable to create mysql connector:\n%s', e)
+            self.logger.error('Unable to create mysql connector:\n%s', e)
             raise MySQLError('DB Connector', e)
 
     def __del__(self):

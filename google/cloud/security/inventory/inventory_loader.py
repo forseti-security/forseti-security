@@ -197,9 +197,12 @@ def _send_email(cycle_timestamp, status, sendgrid_api_key,
 def main(_):
     """Runs the Inventory Loader."""
     from google.cloud.security.common.util import log_util
-    from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
-    from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
-    from google.cloud.security.inventory.pipelines import load_projects_pipeline
+    from google.cloud.security.inventory.pipelines import \
+        load_org_iam_policies_pipeline
+    from google.cloud.security.inventory.pipelines import \
+        load_projects_iam_policies_pipeline
+    from google.cloud.security.inventory.pipelines import \
+        load_projects_pipeline
 
     global LOGGER
     LOGGER = log_util.get_logger(__name__)

@@ -14,12 +14,11 @@
 
 """Base GCP client which uses the discovery API."""
 
-import google.auth
-
 from apiclient import discovery
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
+import google.auth
 from google.cloud.security.common.gcp_api._supported_apis import SUPPORTED_APIS
 from google.cloud.security.common.util import retryable_exceptions
 

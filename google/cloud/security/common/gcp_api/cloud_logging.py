@@ -18,7 +18,7 @@ Most of this code has been lifted from:
 
 https://github.com/GoogleCloudPlatform/google-cloud-python/blob/master/logging/google/cloud/logging
 """
-# pylint: disable-all
+# pylint: skip-file
 
 import logging
 
