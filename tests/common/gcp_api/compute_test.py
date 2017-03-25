@@ -16,6 +16,7 @@
 
 import httplib
 import mock
+import socket
 
 from google.apputils import basetest
 from google.cloud.security.common.gcp_api import compute
@@ -27,7 +28,7 @@ def _default_side_effect(*args, **kwargs):
     return mock.DEFAULT
 
 
-class _MockHttpError(Exception):
+class _MockHttpError(socket.error):
     """Mock Http Error"""
     pass
 
