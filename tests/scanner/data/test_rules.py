@@ -341,3 +341,105 @@ RULES5 = {
         },
     ]
 }
+
+# Org children whitelist allows any roles/members with
+# Org children blacklist blocks particular user
+RULES6 = {
+    'rules': [
+        {
+            'name': 'org whitelist',
+            'mode': 'whitelist',
+            'resource': [
+                {
+                    'type': 'organization',
+                    'applies_to': 'children',
+                    'resource_ids': [
+                        '778899'
+                    ]
+                },
+            ],
+            'bindings': [
+                {
+                    'role': 'roles/*',
+                    'members': [
+                        'user:*@company.com'
+                    ]
+                }
+            ]
+        },
+        {
+            'name': 'project blacklist',
+            'mode': 'blacklist',
+            'resource': [
+                {
+                    'type': 'organization',
+                    'applies_to': 'children',
+                    'resource_ids': [
+                        '778899'
+                    ]
+                }
+            ],
+            'inherit_from_parents': False,
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com'
+                    ]
+                }
+            ]
+        },
+    ]
+}
+
+# Org children blacklist blocks user@company.com with
+# Project self whitelist allows *@company.com
+RULES7 = {
+    'rules': [
+        {
+            'name': 'org blacklist',
+            'mode': 'blacklist',
+            'resource': [
+                {
+                    'type': 'organization',
+                    'applies_to': 'children',
+                    'resource_ids': [
+                        '778899'
+                    ]
+                },
+            ],
+            'bindings': [
+                {
+                    'role': 'roles/*',
+                    'members': [
+                        'user:user@company.com'
+                    ]
+                }
+            ]
+        },
+        {
+            'name': 'project whitelist',
+            'mode': 'whitelist',
+            'resource': [
+                {
+                    'type': 'project',
+                    'applies_to': 'self',
+                    'resource_ids': [
+                        'my-project-1'
+                    ]
+                }
+            ],
+            'inherit_from_parents': False,
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:user@company.com'
+                    ]
+                }
+            ]
+        },
+    ]
+}
+
+
