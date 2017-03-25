@@ -47,12 +47,8 @@ def _check_whitelist_members(rule_members=None, policy_members=None):
     """
     violating_members = []
     for policy_member in policy_members:
-        is_whitelisted = False
-        for rule_member in rule_members:
-            is_whitelisted = rule_member.matches(policy_member)
-            if is_whitelisted:
-                break
-        if not is_whitelisted:
+        # check if policy_member is found in rule_members
+        if not any(r.matches(policy_member) for r in rule_members):
             violating_members.append(policy_member)
     return violating_members
 
@@ -96,12 +92,8 @@ def _check_required_members(rule_members=None, policy_members=None):
     """
     violating_members = []
     for rule_member in rule_members:
-        found_required_member = False
-        for policy_member in policy_members:
-            found_required_member = rule_member.matches(policy_member)
-            if found_required_member:
-                break
-        if not found_required_member:
+        # check if rule_member is found in policy_members
+        if not any(rule_member.matches(m) for m in policy_members):
             violating_members.append(rule_member)
     return violating_members
 
