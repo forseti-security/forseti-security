@@ -869,6 +869,113 @@ class OrgRulesEngineTest(basetest.TestCase):
 
         self.assertItemsEqual(expected_violations, actual_violations)
 
+    def test_org_self_bl_proj_noinherit_wl_no_violation(self):
+        """Test proj policy doesn't violate rule b/l user (org), w/l (project).
+
+        Test that an org with a blacklist on the org level plus a project
+        whitelist with no rule inheritance allows the user blacklisted by
+        the org, on the project level.
+
+        Setup:
+            * Create a RulesEngine with RULES5 rule set.
+            * Tweak the rules to make the org blacklist apply to "self".
+            * Create policy.
+
+        Expected result:
+            * Find 0 rule violations.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = OrgRulesEngine(rules_local_path)
+        rules5 = copy.deepcopy(test_rules.RULES5)
+        rules5['rules'][0]['resource'][0]['applies_to'] = 'self'
+        rules_engine.rule_book = OrgRuleBook(rules5)
+
+        project_policy = {
+            'bindings': [{
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }]
+        }
+
+        actual_violations = set(
+            rules_engine.find_policy_violations(self.project1, project_policy)
+        )
+
+        # expected
+        expected_violations = set([])
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_org_self_wl_proj_noinherit_bl_has_violation(self):
+        """Test org allowing user + proj blacklisting user has violation.
+
+        Test that org children whitelist with org children blacklist rules
+        report violation.
+
+        Setup:
+            * Create a RulesEngine with RULES6 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find 1 rule violation.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = OrgRulesEngine(rules_local_path)
+        rules6 = copy.deepcopy(test_rules.RULES6)
+        rules6['rules'][0]['resource'][0]['applies_to'] = 'self'
+        rules_engine.rule_book = OrgRuleBook(rules6)
+
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(self.org789, org_policy),
+            rules_engine.find_policy_violations(self.project1, project_policy)
+        ))
+
+        # expected
+        expected_outstanding_proj = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:owner@company.com')
+            ]
+        }
+
+        expected_violations = set([
+            RuleViolation(
+                rule_index=1,
+                rule_name='project blacklist',
+                resource_id=self.project1.resource_id,
+                resource_type=self.project1.resource_type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding_proj['roles/owner'])),
+        ])
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
 
 if __name__ == '__main__':
     basetest.main()

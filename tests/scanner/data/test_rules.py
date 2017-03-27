@@ -20,38 +20,27 @@
 # No inheritance of rules
 # Allow members of any role and pattern "user:*@company.com"
 RULES1 = {
-    'rules': [
-        {
+    'rules': [{
             'name': 'my rule',
             'mode': 'whitelist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'self_and_children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                },
-                {
+                    'resource_ids': ['778899']
+                }, {
                     'type': 'project',
                     'applies_to': 'self',
                     'resource_ids': [
                         'my-project-1',
                         'my-project-2',
                     ]
-                }
-            ],
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:*@company.com'
-                    ]
-                }
-            ]
-        }
-    ]
+                    'members': ['user:*@company.com']
+                }]
+        }]
 }
 
 # Whitelist, blacklist, and required list
@@ -76,76 +65,51 @@ RULES2 = {
         {
             'name': 'my rule',
             'mode': 'whitelist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'self_and_children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                },
-                {
+                    'resource_ids': ['778899']
+                }, {
                     'type': 'project',
                     'applies_to': 'self',
                     'resource_ids': [
                         'my-project-1',
                         'my-project-2',
                     ]
-                }
-            ],
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:*@company.com'
-                    ]
-                }
-            ]
-        },
-        {
+                    'members': ['user:*@company.com']
+                }]
+        }, {
             'name': 'my other rule',
             'mode': 'blacklist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'project',
                     'applies_to': 'self',
-                    'resource_ids': [
-                        'my-project-2',
-                    ]
-                }
-            ],
+                    'resource_ids': ['my-project-2',]
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:baduser@company.com'
-                    ]
-                }
-            ]
-        },
-        {
+                    'members': ['user:baduser@company.com']
+                }]
+        }, {
             'name': 'required rule',
             'mode': 'required',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'project',
                     'applies_to': 'self',
                     'resource_ids': [
                         'my-project-1',
                     ]
-                }
-            ],
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/viewer',
-                    'members': [
-                        'user:project_viewer@company.com'
-                    ]
-                }
-            ]
+                    'members': ['user:project_viewer@company.com']
+                }]
         }
     ]
 }
@@ -161,76 +125,49 @@ RULES3 = {
         {
             'name': 'my whitelist rule',
             'mode': 'whitelist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'self_and_children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                },
-                {
+                    'resource_ids': ['778899']
+                }, {
                     'type': 'project',
                     'applies_to': 'self',
                     'resource_ids': [
                         'my-project-1',
                         'my-project-2',
                     ]
-                }
-            ],
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:*@company.com'
-                    ]
-                }
-            ]
-        },
-        {
+                    'members': ['user:*@company.com']
+                }]
+        }, {
             'name': 'my blacklist rule',
             'mode': 'blacklist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'self_and_children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                }
-            ],
+                    'resource_ids': ['778899']
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:baduser@company.com'
-                    ]
-                }
-            ]
-        },
-        {
+                    'members': ['user:baduser@company.com']
+                }]
+        }, {
             'name': 'my required rule',
             'mode': 'required',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'project',
                     'applies_to': 'self',
-                    'resource_ids': [
-                        'my-project-1',
-                    ]
-                }
-            ],
+                    'resource_ids': ['my-project-1',]
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/viewer',
-                    'members': [
-                        'user:project_viewer@company.com'
-                    ]
-                }
-            ]
+                    'members': ['user:project_viewer@company.com']
+                }]
         }
     ]
 }
@@ -245,46 +182,29 @@ RULES4 = {
         {
             'name': 'org whitelist',
             'mode': 'whitelist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'self',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                },
-            ],
+                    'resource_ids': ['778899']
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/owner',
-                    'members': [
-                        'user:owner@company.com'
-                    ]
-                }
-            ]
-        },
-        {
+                    'members': ['user:owner@company.com']
+                }]
+        }, {
             'name': 'project whitelist',
             'mode': 'whitelist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                }
-            ],
+                    'resource_ids': ['778899']
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:*@company.com'
-                    ]
-                }
-            ]
+                    'members': ['user:*@company.com']
+                }]
         },
     ]
 }
@@ -299,45 +219,29 @@ RULES5 = {
         {
             'name': 'org blacklist',
             'mode': 'blacklist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'self_and_children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                },
-            ],
-            'bindings': [
-                {
+                    'resource_ids': ['778899']
+                }],
+            'bindings': [{
                     'role': 'roles/owner',
-                    'members': [
-                        'user:owner@company.com'
-                    ]
-                }
-            ]
-        },
-        {
+                    'members': ['user:owner@company.com']
+                }]
+        }, {
             'name': 'project whitelist',
             'mode': 'whitelist',
             'resource': [
                 {
                     'type': 'project',
                     'applies_to': 'self',
-                    'resource_ids': [
-                        'my-project-1'
-                    ]
-                }
-            ],
+                    'resource_ids': ['my-project-1']
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:*@company.com'
-                    ]
-                }
-            ]
+                    'members': ['user:*@company.com']
+                }]
         },
     ]
 }
@@ -349,45 +253,28 @@ RULES6 = {
         {
             'name': 'org whitelist',
             'mode': 'whitelist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                },
-            ],
-            'bindings': [
-                {
+                    'resource_ids': ['778899']
+                }],
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:*@company.com'
-                    ]
-                }
-            ]
-        },
-        {
+                    'members': ['user:*@company.com']
+                }]
+        }, {
             'name': 'project blacklist',
             'mode': 'blacklist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                }
-            ],
+                    'resource_ids': ['778899']
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/owner',
-                    'members': [
-                        'user:owner@company.com'
-                    ]
-                }
-            ]
+                    'members': ['user:owner@company.com']
+                }]
         },
     ]
 }
@@ -399,47 +286,28 @@ RULES7 = {
         {
             'name': 'org blacklist',
             'mode': 'blacklist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'organization',
                     'applies_to': 'children',
-                    'resource_ids': [
-                        '778899'
-                    ]
-                },
-            ],
-            'bindings': [
-                {
+                    'resource_ids': ['778899']
+                }],
+            'bindings': [{
                     'role': 'roles/*',
-                    'members': [
-                        'user:user@company.com'
-                    ]
-                }
-            ]
-        },
-        {
+                    'members': ['user:user@company.com']
+                }]
+        }, {
             'name': 'project whitelist',
             'mode': 'whitelist',
-            'resource': [
-                {
+            'resource': [{
                     'type': 'project',
                     'applies_to': 'self',
-                    'resource_ids': [
-                        'my-project-1'
-                    ]
-                }
-            ],
+                    'resource_ids': ['my-project-1']
+                }],
             'inherit_from_parents': False,
-            'bindings': [
-                {
+            'bindings': [{
                     'role': 'roles/owner',
-                    'members': [
-                        'user:user@company.com'
-                    ]
-                }
-            ]
+                    'members': ['user:user@company.com']
+                }]
         },
     ]
 }
-
-
