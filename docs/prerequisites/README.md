@@ -78,7 +78,7 @@ sign up for a [SendGrid account](https://sendgrid.com) and create a
 You will use this API key in the deployment templates or as a flag value
 for the Forseti Security commandline tools.
 
-If you do not want to send email notification, just do not specify the
+If you do not want to send email notification, do not specify the
 email recipient in the flag or the Deployment Manager yaml.
 
 **Note:** By default, SendGrid includes an invisible tracking pixel in your emails,
