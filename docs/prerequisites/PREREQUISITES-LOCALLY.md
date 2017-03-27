@@ -17,9 +17,20 @@
   1. Configure Users Access Control
      * Change password for root user.
      * Create a new user with [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges).
+     * Do not set password for the new user, as the permissioning will be provided by the sqlproxy.
   1. Create New Database
      * Enter a name.
-  1. Follow these instructions to establish a secure connection using [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
+  1. For local development, we recommend authenticating the
+     [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
+     with gcloud using your own credential.
+
+     ```sh
+     # in separate terminal
+     $ gcloud auth application-default login
+     $ <path_to_cloud_sql_proxy>/cloud_sql_proxy -instances=<my_cloud_sql_instance_name>=tcp:3306
+
+     # --db_host will now point to 127.0.0.1
+     ```
 
 ## Install the `protoc` compiler
 Download the [protoc pre-built binary](https://github.com/google/protobuf/releases).

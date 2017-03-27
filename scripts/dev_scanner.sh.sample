@@ -20,7 +20,6 @@ PYTHONPATH=./ python google/cloud/security/scanner/scanner.py \
         --output_path <output path> \
         --db_host 127.0.0.1 \
         --db_user root \
-        --db_passwd <database password> \
         --db_name <database name> \
         --organization_id <org id> \
         --sendgrid_api_key <Sendgrid API key> \

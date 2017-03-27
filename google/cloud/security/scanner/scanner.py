@@ -21,7 +21,6 @@ Usage:
       --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
-      --db_passwd <Cloud SQL database password> \\
       --db_name <Cloud SQL database name (required)> \\
       --sendgrid_api_key <API key to auth SendGrid email service> \\
       --email_sender <email address of the email sender> \\
