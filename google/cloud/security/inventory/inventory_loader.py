@@ -49,6 +49,7 @@ from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
+from google.cloud.security.inventory.pipelines import load_gsuite_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
@@ -254,6 +255,8 @@ def main(argv):
         {'pipeline': load_projects_iam_policies_pipeline,
          'status': ''},
         {'pipeline': load_org_iam_policies_pipeline,
+         'status': ''},
+        {'pipeline': load_gsuite_groups_pipeline,
          'status': ''},
     ]
 

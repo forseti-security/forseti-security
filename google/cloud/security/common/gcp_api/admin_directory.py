@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Wrapper for Resource Manager API client."""
+"""Wrapper for Admin Directory  API client."""
 
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
@@ -32,8 +32,8 @@ class AdminDirectoryClient(_BaseClient):
     API_NAME = 'admin'
     DEFAULT_MAX_QUERIES = 400
 
-    def __init__(sefl, credentials=None, rate_limiter=None):
-      super(AdminDirectoryManagerClient,self).__init__(
+    def __init__(self, credentials=None, rate_limiter=None):
+      super(AdminDirectoryClient, self).__init__(
           credentials=credentials, api_name=self.API_NAME)
       if rate_limiter:
           self.rate_limiter = rate_limiter
@@ -60,9 +60,9 @@ class AdminDirectoryClient(_BaseClient):
             try:
                 with self.rate_limiter:
                     response = self._execute(request)
-                    results.extend(response.items('groups', [])
+                    results.extend(response.items('groups', []))
                     request = groups_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
-                LOGGER.error(ApiExecutionError(project_id, e))
+                raise ApiExecutionError(groups_stub, e)
 
         return results
