@@ -50,9 +50,9 @@ from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
-from google.cloud.security.inventory.pipelines.load_org_iam_policies_pipeline import LoadOrgIamPoliciesPipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
+from google.cloud.security.inventory.pipelines.load_org_iam_policies_pipeline import LoadOrgIamPoliciesPipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS

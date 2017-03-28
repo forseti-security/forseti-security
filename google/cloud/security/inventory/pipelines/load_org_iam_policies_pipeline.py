@@ -22,9 +22,9 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
-from google.cloud.security.inventory.pipelines._base_pipeline import _BasePipeline
 from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
+from google.cloud.security.inventory.pipelines._base_pipeline import _BasePipeline
 
 
 class LoadOrgIamPoliciesPipeline(_BasePipeline):
@@ -33,6 +33,20 @@ class LoadOrgIamPoliciesPipeline(_BasePipeline):
     raw_org_iam_policies = 'raw_org_iam_policies'
     
     def __init__(self, cycle_timestamp, configs, crm_rate_limiter, dao):
+        """Constructor for the data pipeline.
+
+        Args:
+            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            configs: Dictionary of configurations.
+            crm_rate_limiter: RateLimiter object for CRM API client.
+            dao: Data access object.
+
+        Returns:
+            None
+
+        Raises:
+            LoadDataPipelineException: An error with loading data has occurred.
+        """
         super(LoadOrgIamPoliciesPipeline, self).__init__(
             'org_iam_policies', cycle_timestamp, configs,
             CloudResourceManagerClient(rate_limiter=crm_rate_limiter),
