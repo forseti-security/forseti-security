@@ -31,7 +31,7 @@ class LoadOrgIamPoliciesPipeline(_BasePipeline):
     """Pipeline to load org IAM policies data into Inventory."""
 
     raw_org_iam_policies = 'raw_org_iam_policies'
-    
+
     def __init__(self, cycle_timestamp, configs, crm_rate_limiter, dao):
         """Constructor for the data pipeline.
 
@@ -84,7 +84,7 @@ class LoadOrgIamPoliciesPipeline(_BasePipeline):
                 self.transform_util.flatten_iam_policies(iam_policies_map))
         except ApiExecutionError as e:
             raise LoadDataPipelineError(e)
-    
+
         # Load flattened iam policies into cloud sql.
         # Load raw iam policies into cloud sql.
         # A separate table is used to store the raw iam policies because it is
@@ -92,7 +92,7 @@ class LoadOrgIamPoliciesPipeline(_BasePipeline):
         try:
             self.dao.load_data(self.name, self.cycle_timestamp,
                                flattened_iam_policies)
-    
+
             for i in iam_policies_map:
                 i['iam_policy'] = json.dumps(i['iam_policy'])
             self.dao.load_data(self.raw_org_iam_policies, self.cycle_timestamp,
