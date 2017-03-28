@@ -25,7 +25,7 @@ def is_compute_engine_instance():
     Returns:
         Tuple of (is_gce_instance, error_msg)
     """
-    conn = httplib.HTTPConnection('metadata.google.internal')
+    conn = httplib.HTTPConnection('metadata.google.internal', timeout=2)
     error_msg = None
     is_gce_instance = False
     try:

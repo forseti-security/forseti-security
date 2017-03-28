@@ -39,6 +39,8 @@ import gflags as flags
 
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
+from google.cloud.security.common.data_access import organization_dao
+from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.gcp_type.resource import ResourceType
@@ -70,9 +72,13 @@ flags.mark_flag_as_required('organization_id')
 
 LOGGER = log_util.get_logger(__name__)
 
+
 def main(_):
     """Run the scanner."""
-    log_util.setup_logger(__name__)
+
+    log_util.configure_logger(__name__)
+    log_util.configure_logger('google.cloud.security')
+
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
@@ -85,9 +91,6 @@ def main(_):
 
     org_policies = _get_org_policies(snapshot_timestamp)
     project_policies = _get_project_policies(snapshot_timestamp)
-
-    print org_policies
-    print project_policies
 
     if not org_policies and not project_policies:
         LOGGER.info('No policies found. Exiting.')
@@ -124,7 +127,7 @@ def _find_violations(policies, rules_engine):
     all_violations = []
     LOGGER.info('Finding policy violations...')
     for (resource, policy) in policies:
-        LOGGER.debug('{} => {}'.format(resource, policy))
+        LOGGER.debug('%s => %s', resource, policy)
         violations = rules_engine.find_policy_violations(
             resource, policy)
         LOGGER.debug(violations)
@@ -157,7 +160,7 @@ def _get_timestamp():
         latest_timestamp = dao.select_latest_complete_snapshot_timestamp(
             ('SUCCESS', 'PARTIAL_SUCCESS'))
     except MySQLError as err:
-        LOGGER.error('Error getting latest snapshot timestamp: {}'.format(err))
+        LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
     return latest_timestamp
 
@@ -170,15 +173,12 @@ def _get_org_policies(timestamp):
     Returns:
         The org policies.
     """
-    from google.cloud.security.common.data_access.organization_dao \
-        import OrganizationDao
-    org_dao = None
     org_policies = {}
     try:
-        org_dao = OrganizationDao()
+        org_dao = organization_dao.OrganizationDao()
         org_policies = org_dao.get_org_iam_policies(timestamp)
     except MySQLError as err:
-        LOGGER.error('Error getting org policies: {}'.format(err))
+        LOGGER.error('Error getting org policies: %s', err)
 
     return org_policies
 
@@ -191,14 +191,12 @@ def _get_project_policies(timestamp):
     Returns:
         The project policies.
     """
-    from google.cloud.security.common.data_access.project_dao import ProjectDao
-    project_dao = None
     project_policies = {}
     try:
-        project_dao = ProjectDao()
-        project_policies = project_dao.get_project_policies(timestamp)
+        dao = project_dao.ProjectDao()
+        project_policies = dao.get_project_policies(timestamp)
     except MySQLError as err:
-        LOGGER.error('Error getting project policies: {}'.format(err))
+        LOGGER.error('Error getting project policies: %s', err)
 
     return project_policies
 
@@ -261,7 +259,7 @@ def _upload_csv_to_gcs(output_path, now_utc, csv_name):
 
     # If output path was specified, copy the csv temp file either to
     # a local file or upload it to Google Cloud Storage.
-    LOGGER.info('Output filename: {}'.format(output_filename))
+    LOGGER.info('Output filename: %s', output_filename)
 
     if output_path.startswith('gs://'):
         # An output path for GCS must be the full

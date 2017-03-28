@@ -101,7 +101,7 @@ class EmailUtil(object):
 
         if not email_sender or not email_recipient:
             LOGGER.warn('Unable to send email: sender=%s, recipient=%s',
-                             email_sender, email_recipient)
+                        email_sender, email_recipient)
             raise EmailSendError
 
         email = mail.Mail(
@@ -118,16 +118,16 @@ class EmailUtil(object):
             response = self._execute_send(email)
         except (URLError, HTTPError) as e:
             LOGGER.error('Unable to send email: %s %s',
-                              e.code, e.reason)
+                         e.code, e.reason)
             raise EmailSendError
 
         if response.status_code == 202:
             LOGGER.info('Email accepted for delivery:\n%s',
-                             email_subject)
+                        email_subject)
         else:
             LOGGER.error('Unable to send email:\n%s\n%s\n%s\n%s',
-                              email_subject, response.status_code,
-                              response.body, response.headers)
+                         email_subject, response.status_code,
+                         response.body, response.headers)
             raise EmailSendError
 
     @classmethod

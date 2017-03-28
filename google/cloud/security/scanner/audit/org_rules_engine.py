@@ -260,7 +260,7 @@ class OrgRuleBook(base_rules_engine.BaseRuleBook):
                             not gcp_resource.exists()):
 
                         LOGGER.error('Resource does not exist: %s',
-                            gcp_resource)
+                                     gcp_resource)
                         continue
 
                     rule = Rule(rule_name=rule_def.get('name'),

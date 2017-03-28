@@ -226,7 +226,9 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
 
 def main(_):
     """Runs the Inventory Loader."""
-    log_util.setup_logger(__name__)
+
+    log_util.configure_logger(__name__)
+    log_util.configure_logger('google.cloud.security')
 
     try:
         dao = Dao()
