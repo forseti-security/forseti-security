@@ -14,7 +14,6 @@
 
 """Pipeline to load GSuite Account Groups into Inventory."""
 
-import json
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
@@ -23,7 +22,6 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
 from google.cloud.security.common.util.log_util import LogUtil
-from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
@@ -58,4 +56,3 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
         dao.load_data(RESOURCE_NAME, cycle_timestamp, customer_groups)
     except (CSVFileError, MySQLError) as e:
         raise LoadDataPipelineError(e)
-

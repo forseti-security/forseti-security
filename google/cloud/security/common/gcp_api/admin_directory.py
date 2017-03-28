@@ -33,12 +33,12 @@ class AdminDirectoryClient(_BaseClient):
     DEFAULT_MAX_QUERIES = 400
 
     def __init__(self, credentials=None, rate_limiter=None):
-      super(AdminDirectoryClient, self).__init__(
-          credentials=credentials, api_name=self.API_NAME)
-      if rate_limiter:
-          self.rate_limiter = rate_limiter
-      else:
-          self.rate_limiter = RateLimiter(self.DEFAULT_MAX_QUERIES, 100)
+        super(AdminDirectoryClient, self).__init__(
+            credentials=credentials, api_name=self.API_NAME)
+        if rate_limiter:
+            self.rate_limiter = rate_limiter
+        else:
+            self.rate_limiter = RateLimiter(self.DEFAULT_MAX_QUERIES, 100)
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
