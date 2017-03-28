@@ -23,7 +23,7 @@ $ scripts/dev_inventory.sh
 ```
 
 ## How to Test
-Look at the test instruction in this [README].
+Look at the test instructions in the tests [README](/docs/tests/README.md).
 
 ## How to add a new resource to the inventory
 
