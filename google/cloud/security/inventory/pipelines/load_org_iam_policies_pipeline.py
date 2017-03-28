@@ -22,60 +22,66 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
+from google.cloud.security.inventory.pipelines._base_pipeline import _BasePipeline
 from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
-RESOURCE_NAME = 'org_iam_policies'
-RAW_ORG_IAM_POLICIES = 'raw_org_iam_policies'
+class LoadOrgIamPoliciesPipeline(_BasePipeline):
+    """Pipeline to load org IAM policies data into Inventory."""
 
+    raw_org_iam_policies = 'raw_org_iam_policies'
+    
+    def __init__(self, cycle_timestamp, configs, crm_rate_limiter, dao):
+        super(LoadOrgIamPoliciesPipeline, self).__init__(
+            'org_iam_policies', cycle_timestamp, configs,
+            CloudResourceManagerClient(rate_limiter=crm_rate_limiter),
+            dao, transform_util)
 
-def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
-    """Runs the load IAM policies data pipeline.
+    def run(self):
+        """Runs the data pipeline.
 
-    Args:
-        dao: Data access object.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        configs: Dictionary of configurations.
-        crm_rate_limiter: RateLimiter object for CRM API client.
+        Args:
+            None
 
-    Returns:
-        None
+        Returns:
+            None
 
-    Raises:
-        LoadDataPipelineException: An error with loading data has occurred.
-    """
-    org_id = configs.get('organization_id')
-    # Check if the placeholder is replaced in the config/flag.
-    if org_id == '<organization id>':
-        raise LoadDataPipelineError('No organization id is specified.')
+        Raises:
+            LoadDataPipelineException: An error with loading data has occurred.
+        """
+        org_id = self.configs.get('organization_id')
+        # Check if the placeholder is replaced in the config/flag.
+        if org_id == '<organization id>':
+            raise LoadDataPipelineError('No organization id is specified.')
 
-    crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
-    try:
-        # Retrieve data from GCP.
-        # Flatten the iterator since we will use it twice, and it is faster
-        # than cloning to 2 iterators.
-        iam_policies_map = crm_client.get_org_iam_policies(
-            RESOURCE_NAME, org_id)
-        # TODO: Investigate improving so the pylint disable isn't needed.
-        # pylint: disable=redefined-variable-type
-        iam_policies_map = list(iam_policies_map)
+        try:
+            # Retrieve data from GCP.
+            # Flatten the iterator since we will use it twice, and it is faster
+            # than cloning to 2 iterators.
+            iam_policies_map = self.gcp_api_client.get_org_iam_policies(
+                self.name, org_id)
+            # TODO: Investigate improving so the pylint disable isn't needed.
+            # pylint: disable=redefined-variable-type
+            iam_policies_map = list(iam_policies_map)
 
-        # Flatten and relationalize data for upload to cloud sql.
-        flattened_iam_policies = (
-            transform_util.flatten_iam_policies(iam_policies_map))
-    except ApiExecutionError as e:
-        raise LoadDataPipelineError(e)
-
-    # Load flattened iam policies into cloud sql.
-    # Load raw iam policies into cloud sql.
-    # A separate table is used to store the raw iam policies because it is
-    # much faster than updating these individually into the projects table.
-    try:
-        dao.load_data(RESOURCE_NAME, cycle_timestamp, flattened_iam_policies)
-
-        for i in iam_policies_map:
-            i['iam_policy'] = json.dumps(i['iam_policy'])
-        dao.load_data(RAW_ORG_IAM_POLICIES, cycle_timestamp, iam_policies_map)
-    except (CSVFileError, MySQLError) as e:
-        raise LoadDataPipelineError(e)
+            # Flatten and relationalize data for upload to cloud sql.
+            flattened_iam_policies = (
+                self.transform_util.flatten_iam_policies(iam_policies_map))
+        except ApiExecutionError as e:
+            raise LoadDataPipelineError(e)
+    
+        # Load flattened iam policies into cloud sql.
+        # Load raw iam policies into cloud sql.
+        # A separate table is used to store the raw iam policies because it is
+        # much faster than updating these individually into the projects table.
+        try:
+            self.dao.load_data(self.name, self.cycle_timestamp,
+                               flattened_iam_policies)
+    
+            for i in iam_policies_map:
+                i['iam_policy'] = json.dumps(i['iam_policy'])
+            self.dao.load_data(self.raw_org_iam_policies, self.cycle_timestamp,
+                               iam_policies_map)
+        except (CSVFileError, MySQLError) as e:
+            raise LoadDataPipelineError(e)

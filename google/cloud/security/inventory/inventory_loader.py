@@ -50,7 +50,7 @@ from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
-from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines.load_org_iam_policies_pipeline import LoadOrgIamPoliciesPipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 # pylint: enable=line-too-long
@@ -194,15 +194,15 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
 
     for pipeline in pipelines:
         try:
-            pipeline['count'] = dao.select_record_count(
-                pipeline['pipeline'].RESOURCE_NAME,
+            pipeline.count = dao.select_record_count(
+                pipeline.name,
                 cycle_timestamp)
         except MySQLError as e:
             LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
-                         pipeline['pipeline'].RESOURCE_NAME,
+                         pipeline.name,
                          cycle_timestamp,
                          e)
-            pipeline['count'] = 'N/A'
+            pipeline.count = 'N/A'
 
     email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
         cycle_timestamp, status)
@@ -250,25 +250,22 @@ def main(argv):
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
 
     pipelines = [
-        {'pipeline': load_projects_pipeline,
-         'status': ''},
-        {'pipeline': load_projects_iam_policies_pipeline,
-         'status': ''},
-        {'pipeline': load_org_iam_policies_pipeline,
-         'status': ''},
+        LoadOrgIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_rate_limiter, dao),
+        # TODO: add load projects pipeline
+        # TODO: add load project policies pipeline
     ]
 
+    succeeded = []
     for pipeline in pipelines:
         try:
-            pipeline['pipeline'].run(
-                dao, cycle_timestamp, configs, crm_rate_limiter)
-            pipeline['status'] = 'SUCCESS'
+            pipeline.run()
+            pipeline.status = 'SUCCESS'
         except LoadDataPipelineError as e:
             LOGGER.error(
                 'Encountered error to load data.\n%s', e)
-            pipeline['status'] = 'FAILURE'
-
-    succeeded = [p['status'] == 'SUCCESS' for p in pipelines]
+            pipeline.status = 'FAILURE'
+        succeeded.append(pipeline.status == 'SUCCESS')
 
     if all(succeeded):
         snapshot_cycle_status = 'SUCCESS'

@@ -32,9 +32,9 @@ limitations under the License.
         </tr>
         {% for pipeline in pipelines %}
         <tr>
-            <td>{{ pipeline['pipeline'].RESOURCE_NAME }}</td>
-            <td>{{ pipeline['status'] }}</td>
-            <td>{{ pipeline['count'] }}</td>
+            <td>{{ pipeline.name }}</td>
+            <td>{{ pipeline.status }}</td>
+            <td>{{ pipeline.count }}</td>
         </tr>
         {% endfor %}
     </table>
