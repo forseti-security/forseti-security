@@ -30,7 +30,6 @@ is as follows:
 """
 
 import logging
-import os
 
 import gflags as flags
 
