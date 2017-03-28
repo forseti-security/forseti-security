@@ -18,14 +18,11 @@ import json
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
+from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
-# TODO: Investigate improving so the pylint disable isn't needed.
-# pylint: disable=line-too-long
-from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -56,7 +53,7 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     except MySQLError as e:
         raise LoadDataPipelineError(e)
 
-    crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
+    crm_client = crm.CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
 
     # Retrieve data from GCP.
     # Not using iterator since we will use the iam_policy_maps twice.

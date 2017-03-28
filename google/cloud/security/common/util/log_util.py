@@ -41,22 +41,39 @@ FLAGS = flags.FLAGS
 flags.DEFINE_boolean('use_cloud_logging', False,
                      'Use Cloud Logging, if available.')
 flags.DEFINE_boolean('nouse_cloud_logging', False, 'Do not use Cloud Logging.')
+flags.DEFINE_boolean('debug', False,
+                     'Show DEBUG level logs.')
 
 LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
 
-
 def get_logger(module_name):
-    """Setup logging configuration.
+    """Setup the basic logger.
 
     Args:
-        module_name: The name of the module to describe the log entry.
+        module_name: The name of the mdule to describe the log entry.
 
     Returns:
         An instance of the configured logger.
     """
+    root_handler = logging.StreamHandler()
+
+    formatter = logging.Formatter(LOG_FORMAT)
+    root_handler.setFormatter(formatter)
+
+    logger_instance = logging.getLogger(module_name)
+    logger_instance.addHandler(root_handler)
+    logger_instance.setLevel(logging.INFO)
+
+    return logger_instance
+
+def setup_logger(module_name):
+    """Additional logging configuration based on flags.
+
+    Args:
+        module_name: The name of the module.
+    """
     (is_gce, _) = compute.is_compute_engine_instance()
     should_use_cloud_logger = None
-    root_handler = logging.StreamHandler()
     cloud_handler = None
 
     # Use Cloud Logging if flag is set or if on GCE instance.
@@ -71,23 +88,15 @@ def get_logger(module_name):
     if should_use_cloud_logger is None:
         should_use_cloud_logger = is_gce
 
-    formatter = logging.Formatter(LOG_FORMAT)
-    root_handler.setFormatter(formatter)
-
-    logger_instance = logging.getLogger(module_name)
-    logger_instance.addHandler(root_handler)
-
     if should_use_cloud_logger:
+        logger_instance = logging.getLogger(module_name)
         cloud_handler = cloud_logging.CloudLoggingHandler(_get_cloud_logger())
+        formatter = logging.Formatter(LOG_FORMAT)
         cloud_handler.setFormatter(formatter)
         logger_instance.addHandler(cloud_handler)
 
-    if os.getenv('DEBUG'):
-        logger_instance.setLevel(logging.DEBUG)
-    else:
-        logger_instance.setLevel(logging.INFO)
-
-    return logger_instance
+        if FLAGS.debug:
+            logger_instance.setLevel(logging.DEBUG)
 
 def _get_cloud_logger():
     """Gets the Cloud Logging Client."""

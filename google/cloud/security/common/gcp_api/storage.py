@@ -22,6 +22,8 @@ from google.cloud.security.common.util import log_util
 from googleapiclient import http
 from googleapiclient.errors import HttpError
 
+LOGGER = log_util.get_logger(__name__)
+
 
 class StorageClient(_BaseClient):
     """Storage Client."""
@@ -31,7 +33,6 @@ class StorageClient(_BaseClient):
     def __init__(self, credentials=None):
         super(StorageClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
-        self.logger = log_util.get_logger(__name__)
 
     @classmethod
     def get_bucket_and_path_from(cls, full_path):
@@ -98,6 +99,6 @@ class StorageClient(_BaseClient):
             file_content = out_stream.getvalue()
             out_stream.close()
         except HttpError as http_error:
-            self.logger.error('Unable to download file: %s', http_error)
+            LOGGER.error('Unable to download file: %s', http_error)
             raise http_error
         return file_content

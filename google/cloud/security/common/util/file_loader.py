@@ -22,15 +22,7 @@ from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util import errors
 from google.cloud.security.common.util import log_util
 
-LOGGER = None
-
-def get_logger():
-    """Get the logger."""
-    # pylint: disable=global-statement
-    global LOGGER
-    if not LOGGER:
-        LOGGER = log_util.get_logger(__name__)
-    return LOGGER
+LOGGER = log_util.get_logger(__name__)
 
 
 def read_and_parse_file(file_path):
@@ -120,7 +112,7 @@ def _parse_yaml_string(data):
     try:
         return yaml.safe_load(data)
     except yaml.YAMLError as yaml_error:
-        get_logger().error(yaml_error)
+        LOGGER.error(yaml_error)
         raise yaml_error
 
 
@@ -129,5 +121,5 @@ def _parse_yaml_file(data):
     try:
         return yaml.load(data)
     except yaml.YAMLError as yaml_error:
-        get_logger().error(yaml_error)
+        LOGGER.error(yaml_error)
         raise yaml_error

@@ -28,14 +28,14 @@ from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 
+LOGGER = log_util.get_logger(__name__)
+
 
 class ProjectDao(_DbConnector):
     """Data access object (DAO)."""
 
-
     def __init__(self):
         super(ProjectDao, self).__init__()
-        self.logger = log_util.get_logger(__name__)
 
     # pylint: disable=too-many-locals
     # TODO: Look into lowering variabls to remove pylint disable.
@@ -104,5 +104,5 @@ class ProjectDao(_DbConnector):
                 prev_proj = project
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
-            self.logger.error(MySQLError('projects', e))
+            LOGGER.error(MySQLError('projects', e))
         return project_policies

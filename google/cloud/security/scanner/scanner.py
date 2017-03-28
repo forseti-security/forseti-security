@@ -41,7 +41,6 @@ from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.errors import MySQLError
-# pylint: disable=line-too-long
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
@@ -56,7 +55,7 @@ FLAGS = flags.FLAGS
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
 flags.DEFINE_string('rules', None,
                     ('Path to rules file (yaml/json). '
-                     'If GCS bucket, include full path, e.g. '
+                     'If GCS object, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
 
 flags.DEFINE_string('output_path', None,
@@ -69,13 +68,11 @@ flags.DEFINE_string('organization_id', None, 'Organization id')
 flags.mark_flag_as_required('rules')
 flags.mark_flag_as_required('organization_id')
 
-LOGGER = None
+LOGGER = log_util.get_logger(__name__)
 
 def main(_):
     """Run the scanner."""
-    # pylint: disable=global-statement
-    global LOGGER
-    LOGGER = log_util.get_logger(__name__)
+    log_util.setup_logger(__name__)
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
@@ -89,6 +86,9 @@ def main(_):
     org_policies = _get_org_policies(snapshot_timestamp)
     project_policies = _get_project_policies(snapshot_timestamp)
 
+    print org_policies
+    print project_policies
+
     if not org_policies and not project_policies:
         LOGGER.info('No policies found. Exiting.')
         sys.exit()
@@ -98,6 +98,8 @@ def main(_):
             org_policies.iteritems(),
             project_policies.iteritems()),
         rules_engine)
+
+    LOGGER.info('%s violations found', len(all_violations))
 
     # If there are violations, send results.
     if all_violations:

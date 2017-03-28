@@ -23,27 +23,23 @@ from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import errors
 
+LOGGER = log_util.get_logger(__name__)
+
 
 class BaseRulesEngine(object):
     """The base class for the rules engine."""
 
     def __init__(self,
-                 rules_file_path=None,
-                 logger_name=None):
+                 rules_file_path=None):
         """Initialize.
 
         Args:
             rules_file_path: The path to the rules file.
-            logger_name: The name of module for logger.
         """
         if not rules_file_path:
             raise errors.InvalidRuleDefinitionError(
                 'File path: {}'.format(rules_file_path))
         self.full_rules_path = rules_file_path.strip()
-
-        if not logger_name:
-            logger_name = __name__
-        self.logger = log_util.get_logger(logger_name)
 
     def build_rule_book(self):
         """Build RuleBook from the rules definition file."""
@@ -70,11 +66,6 @@ class BaseRuleBook(object):
     Organization resource rules would be applied in a hierarchical manner.
     """
     __metaclass__ = abc.ABCMeta
-
-    def __init__(self, logger_name=None):
-        if not logger_name:
-            logger_name = __name__
-        self.logger = log_util.get_logger(logger_name)
 
     @abc.abstractmethod
     def add_rule(self, rule_def, rule_index):

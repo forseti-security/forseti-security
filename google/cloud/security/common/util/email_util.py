@@ -42,6 +42,8 @@ flags.DEFINE_string('email_sender', None,
 flags.DEFINE_string('sendgrid_api_key', None,
                     'API key to authenticate with SendGrid email service.')
 
+LOGGER = log_util.get_logger(__name__)
+
 
 class EmailUtil(object):
     """Utility for sending emails."""
@@ -52,7 +54,6 @@ class EmailUtil(object):
         Args:
             api_key: String of the sendgrid api key to auth email service.
         """
-        self.logger = log_util.get_logger(__name__)
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -99,7 +100,7 @@ class EmailUtil(object):
         """
 
         if not email_sender or not email_recipient:
-            self.logger.warn('Unable to send email: sender=%s, recipient=%s',
+            LOGGER.warn('Unable to send email: sender=%s, recipient=%s',
                              email_sender, email_recipient)
             raise EmailSendError
 
@@ -116,15 +117,15 @@ class EmailUtil(object):
         try:
             response = self._execute_send(email)
         except (URLError, HTTPError) as e:
-            self.logger.error('Unable to send email: %s %s',
+            LOGGER.error('Unable to send email: %s %s',
                               e.code, e.reason)
             raise EmailSendError
 
         if response.status_code == 202:
-            self.logger.info('Email accepted for delivery:\n%s',
+            LOGGER.info('Email accepted for delivery:\n%s',
                              email_subject)
         else:
-            self.logger.error('Unable to send email:\n%s\n%s\n%s\n%s',
+            LOGGER.error('Unable to send email:\n%s\n%s\n%s\n%s',
                               email_subject, response.status_code,
                               response.body, response.headers)
             raise EmailSendError

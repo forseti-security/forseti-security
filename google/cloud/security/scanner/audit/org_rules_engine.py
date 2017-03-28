@@ -23,24 +23,23 @@ import itertools
 import threading
 
 from collections import namedtuple
-# pylint: disable=line-too-long
-from google.cloud.security.common.gcp_type.errors import InvalidResourceTypeError
+from google.cloud.security.common.gcp_type import errors as resource_errors
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
-from google.cloud.security.scanner.audit.base_rules_engine import BaseRuleBook
-from google.cloud.security.scanner.audit.base_rules_engine import BaseRulesEngine
-from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-# pylint: enable=line-too-long
+from google.cloud.security.common.util import log_util
+from google.cloud.security.scanner.audit import base_rules_engine
+from google.cloud.security.scanner.audit import errors as audit_errors
+
+LOGGER = log_util.get_logger(__name__)
 
 
-class OrgRulesEngine(BaseRulesEngine):
+class OrgRulesEngine(base_rules_engine.BaseRulesEngine):
     """Rules engine for org resources."""
 
     def __init__(self, rules_file_path):
         super(OrgRulesEngine, self).__init__(
-            rules_file_path=rules_file_path,
-            logger_name=__name__)
+            rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self):
@@ -90,7 +89,7 @@ class RuleAppliesTo(object):
     def verify(cls, applies_to):
         """Verify whether the applies_to is valid."""
         if applies_to not in cls.apply_types:
-            raise InvalidRulesSchemaError(
+            raise audit_errors.InvalidRulesSchemaError(
                 'Invalid applies_to: {}'.format(applies_to))
         return applies_to
 
@@ -108,12 +107,12 @@ class RuleMode(object):
     def verify(cls, mode):
         """Verify whether the mode is valid."""
         if mode not in cls.modes:
-            raise InvalidRulesSchemaError(
+            raise audit_errors.InvalidRulesSchemaError(
                 'Invalid rule mode: {}'.format(mode))
         return mode
 
 
-class OrgRuleBook(BaseRuleBook):
+class OrgRuleBook(base_rules_engine.BaseRuleBook):
     """The RuleBook for organization resources.
 
     Rules from the rules definition file are parsed and placed into a
@@ -152,7 +151,7 @@ class OrgRuleBook(BaseRuleBook):
             rule_defs: The parsed dictionary of rules from the YAML
                        definition file.
         """
-        super(OrgRuleBook, self).__init__(logger_name=__name__)
+        super(OrgRuleBook, self).__init__()
         self._lock = threading.Lock()
         self.resource_rules_map = {}
         self.verify_resource_exists = verify_resource_exists
@@ -242,12 +241,12 @@ class OrgRuleBook(BaseRuleBook):
                 # possible.
                 try:
                     resource_type = ResourceType.verify(resource.get('type'))
-                except InvalidResourceTypeError:
-                    raise InvalidRulesSchemaError(
+                except resource_errors.InvalidResourceTypeError:
+                    raise audit_errors.InvalidRulesSchemaError(
                         'Missing resource type in rule {}'.format(rule_index))
 
                 if not resource_ids or len(resource_ids) < 1:
-                    raise InvalidRulesSchemaError(
+                    raise audit_errors.InvalidRulesSchemaError(
                         'Missing resource ids in rule {}'.format(rule_index))
 
                 # For each resource id associated with the rule, create a
@@ -260,8 +259,8 @@ class OrgRuleBook(BaseRuleBook):
                     if (self.verify_resource_exists and
                             not gcp_resource.exists()):
 
-                        self.logger.error('Resource does not exist: %s',
-                                          gcp_resource)
+                        LOGGER.error('Resource does not exist: %s',
+                            gcp_resource)
                         continue
 
                     rule = Rule(rule_name=rule_def.get('name'),

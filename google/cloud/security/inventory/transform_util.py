@@ -20,7 +20,6 @@ from dateutil import parser
 
 from google.cloud.security.common.util import log_util
 
-
 LOGGER = log_util.get_logger(__name__)
 
 MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -83,13 +82,13 @@ def flatten_iam_policies(iam_policies_map):
     """Yield an iterator of flattened iam policies.
 
     Args:
-        iam_policies_map: An iterable of iam policies as per-project dictionary.
+        iam_policies_map: An iterable of iam policies as per-resource dict.
             Example: {'project_number': 11111,
                       'iam_policy': policy}
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
     Yields:
-        An iterable of flattened iam policies, as a per-project dictionary.
+        An iterable of flattened iam policies, as a per-resource dict.
     """
     for iam_policy_map in iam_policies_map:
         iam_policy = iam_policy_map['iam_policy']

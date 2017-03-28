@@ -29,13 +29,14 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.util import log_util
 
+LOGGER = log_util.get_logger(__name__)
+
 
 class OrganizationDao(_DbConnector):
     """Data access object (DAO) for Organizations."""
 
     def __init__(self):
         super(OrganizationDao, self).__init__()
-        self.logger = log_util.get_logger(__name__)
 
     def get_org_iam_policies(self, timestamp):
         """Get the organization policies.
@@ -58,8 +59,8 @@ class OrganizationDao(_DbConnector):
                     iam_policy = json.loads(row[1])
                     org_iam_policies[org] = iam_policy
                 except ValueError:
-                    self.logger.warn('Error parsing json:\n %s', row[2])
+                    LOGGER.warn('Error parsing json:\n %s', row[2])
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
-            self.logger.error(MySQLError('organizations', e))
+            LOGGER.error(MySQLError('organizations', e))
         return org_iam_policies

@@ -50,6 +50,9 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.inventory.errors import LoadDataPipelineError
+from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -64,7 +67,7 @@ flags.mark_flag_as_required('organization_id')
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
 
-LOGGER = None
+LOGGER = log_util.get_logger(__name__)
 
 
 def _exists_snapshot_cycles_table(dao):
@@ -223,16 +226,7 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
 
 def main(_):
     """Runs the Inventory Loader."""
-    from google.cloud.security.inventory.pipelines import \
-        load_org_iam_policies_pipeline
-    from google.cloud.security.inventory.pipelines import \
-        load_projects_iam_policies_pipeline
-    from google.cloud.security.inventory.pipelines import \
-        load_projects_pipeline
-
-    # pylint: disable=global-statement
-    global LOGGER
-    LOGGER = log_util.get_logger(__name__)
+    log_util.setup_logger(__name__)
 
     try:
         dao = Dao()
