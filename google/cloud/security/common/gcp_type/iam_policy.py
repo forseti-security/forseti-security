@@ -18,12 +18,7 @@ See: https://cloud.google.com/iam/reference/rest/v1/Policy
 
 import re
 
-# pylint: disable=line-too-long
-# TODO: Investigate improving so we can avoid the pylint disable.
-from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyError
-from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyBindingError
-from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyMemberError
-# pylint: enable=line-too-long
+from google.cloud.security.common.gcp_type import errors
 
 
 def _escape_and_globify(pattern_string):
@@ -64,7 +59,7 @@ class IamPolicy(object):
         policy = cls()
 
         if not policy_json:
-            raise InvalidIamPolicyError(
+            raise errors.InvalidIamPolicyError(
                 'Invalid policy {}'.format(policy_json))
 
         policy.bindings = [IamPolicyBinding.create_from(b)
@@ -106,7 +101,7 @@ class IamPolicyBinding(object):
             members: The role members of the policy binding.
         """
         if not role_name or not members:
-            raise InvalidIamPolicyBindingError(
+            raise errors.InvalidIamPolicyBindingError(
                 ('Invalid IAM policy binding: '
                  'role={}, members={}'.format(role_name, members)))
         self.role_name = role_name
@@ -178,7 +173,7 @@ class IamPolicyMember(object):
             member_name: The string member name.
         """
         if not member_type or not self._member_type_exists(member_type):
-            raise InvalidIamPolicyMemberError(
+            raise errors.InvalidIamPolicyMemberError(
                 'Invalid policy member: {}'.format(member_type))
         self.type = member_type
         self.name = member_name
@@ -196,6 +191,10 @@ class IamPolicyMember(object):
     def __ne__(self, other):
         """Tests inequality of IamPolicyMember."""
         return not self == other
+
+    def __hash__(self):
+        """Hash function for IamPolicyMember."""
+        return hash((self.type, self.name))
 
     def __repr__(self):
         """String representation of IamPolicyMember."""
