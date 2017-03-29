@@ -257,7 +257,6 @@ def _should_inventory_google_groups(configs):
 def main(argv):
     """Runs the Inventory Loader."""
 
-
     del argv
 
     try:
