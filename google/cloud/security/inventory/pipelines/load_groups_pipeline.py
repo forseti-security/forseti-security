@@ -76,11 +76,13 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
                                         rate_limiter=crm_rate_limiter)
 
     try:
+        print groups
         groups_map = admin_client.get_groups()
     except ApiExecutionError as e:
         raise LoadDataPipelineError(e)
 
     flattended_groups = transform_util.flatten_groups(groups_map)
+    print flatten_groups
 
     try:
         dao.load_data(RESOURCE_NAME, cycle_timestamp, flattended_groups)

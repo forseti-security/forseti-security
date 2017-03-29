@@ -17,10 +17,10 @@
 Usage:
 
   $ forseti_inventory \\
-      --inventory_gsuite_groups \\
+      --inventory_groups \\
       --service_account_email <email of the service account> \\
       --service_account_credentials_file \\
-      --gsuite_domain_super_admin_email \\
+      --_domain_super_admin_email \\
       --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
@@ -54,7 +54,7 @@ from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
-from google.cloud.security.inventory.pipelines import load_gsuite_groups_pipeline
+from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
@@ -62,9 +62,9 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_bool('inventory_gsuite_groups', False,
+flags.DEFINE_bool('inventory_groups', False,
                   'Wether to or not inventory GSuite Groups.')
-flags.DEFINE_string('gsuite_domain_super_admin_email', None,
+flags.DEFINE_string('domain_super_admin_email', None,
                     'An email address of a super-admin in the GSuite domain.')
 flags.DEFINE_string('service_account_email', None,
                     'The email of the service account.')
@@ -257,7 +257,7 @@ def _should_inventory_google_groups(configs):
         LOGGER.error('Unable to inventory groups without a credentials file.')
         return False
 
-    if not configs.get('gsuite_domain_super_admin_email'):
+    if not configs.get('domain_super_admin_email'):
         LOGGER.error(
             'Unable to inventory groups without an email to impersonate.')
         return False
@@ -298,10 +298,10 @@ def main(argv):
          'status': ''},
     ]
 
-    if configs.get('inventory_gsuite_groups'):
+    if configs.get('inventory_groups'):
         if _should_inventory_google_groups(configs):
             pipelines.append(
-                {'pipeline': load_gsuite_groups_pipeline,
+                {'pipeline': load_groups_pipeline,
                  'status': ''}
             )
         else:
