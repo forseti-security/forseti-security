@@ -16,6 +16,7 @@
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
+from google.cloud.security.common.data_access.csv_writer import GROUPS_FIELDNAMES
 from google.cloud.security.common.data_access.csv_writer import ORG_IAM_POLICIES_FIELDNAMES
 from google.cloud.security.common.data_access.csv_writer import PROJECTS_FIELDNAMES
 from google.cloud.security.common.data_access.csv_writer import PROJECT_IAM_POLICIES_FIELDNAMES
@@ -26,6 +27,7 @@ from google.cloud.security.common.data_access.sql_queries import load_data
 
 
 FIELDNAME_MAP = {
+    'groups': GROUPS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,

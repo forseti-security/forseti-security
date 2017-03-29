@@ -20,6 +20,7 @@ Usage:
       --inventory_gsuite_groups \\
       --service_account_email <email of the service account> \\
       --service_account_credentials_file \\
+      --gsuite_domain_super_admin_email \\
       --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
@@ -48,6 +49,7 @@ from google.cloud.security.common.data_access.errors import MySQLError
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.security.common.util import metadata_server
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
@@ -62,6 +64,8 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_bool('inventory_gsuite_groups', False,
                   'Wether to or not inventory GSuite Groups.')
+flags.DEFINE_string('gsuite_domain_super_admin_email', None,
+                    'An email address of a super-admin in the GSuite domain.')
 flags.DEFINE_string('service_account_email', None,
                     'The email of the service account.')
 flags.DEFINE_string('service_account_credentials_file', None,
@@ -239,20 +243,26 @@ def _should_inventory_google_groups(configs):
     Args:
         configs: Dictionary of configurations built from our flags.
 
-
     Returns:
         Boolean
     """
     if not configs.get('service_account_email'):
-      LOGGER.error('Unable to inventory groups without a service account.')
-      return False
+        LOGGER.error('Unable to inventory groups with a service accoutn email.')
+        return False
 
     if metadata_server.can_reach_metadata_server():
-      return True
+        return True
 
     if not configs.get('service_account_credentials_file'):
-      LOGGER.error('Unable to inventory groups without a credentials file.')
-      return False
+        LOGGER.error('Unable to inventory groups without a credentials file.')
+        return False
+
+    if not configs.get('gsuite_domain_super_admin_email'):
+        LOGGER.error(
+            'Unable to inventory groups without an email to impersonate.')
+        return False
+
+    return True
 
 def main(argv):
     """Runs the Inventory Loader."""
@@ -295,7 +305,8 @@ def main(argv):
                  'status': ''}
             )
         else:
-            LOGGER.error('Unable to inventory groups without a service account.')
+            LOGGER.error(
+                'Unable to inventory groups without a service account.')
             sys.exit()
 
     for pipeline in pipelines:

@@ -60,7 +60,7 @@ class AdminDirectoryClient(_BaseClient):
             try:
                 with self.rate_limiter:
                     response = self._execute(request)
-                    results.extend(response.items('groups', []))
+                    results.extend(response.get('groups', []))
                     request = groups_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
                 raise ApiExecutionError(groups_stub, e)

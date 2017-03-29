@@ -23,8 +23,9 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.common.util import metadata_server
+from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
@@ -43,17 +44,17 @@ def _build_proper_credentials(configs):
     Returns:
         Credentials as built by oauth2client.
     """
-    scopes = ','.join(REQUIRED_SCOPES)
 
     if metadata_server.can_reach_metadata_server():
-        LOGGER.info('Detected we are running on GCE, using those credentials')
-        return AppAssertionCredentials(scopes)
+        return AppAssertionCredentials(REQUIRED_SCOPES)
 
-    LOGGER.info('We\'re not on GCE and need to load the credentials file.')
-
-    return ServiceAccountCredentials.from_json_keyfile_name(
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(
         configs.get('service_account_credentials_file'),
-        scopes=scopes)
+        scopes=REQUIRED_SCOPES)
+
+    return credentials.create_delegated(
+        configs.get('gsuite_domain_super_admin_email'))
+
 
 def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     """Runs the load GSuite account groups pipeline.
@@ -70,16 +71,18 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     Raises:
         LoadDataPipelineException: An error with loading data has occurred.
     """
-    credentials = _build_proper_credentials()
+    credentials = _build_proper_credentials(configs)
     admin_client = AdminDirectoryClient(credentials=credentials,
                                         rate_limiter=crm_rate_limiter)
 
     try:
-        customer_groups = admin_client.get_groups()
+        groups_map = admin_client.get_groups()
     except ApiExecutionError as e:
         raise LoadDataPipelineError(e)
 
+    flattended_groups = transform_util.flatten_groups(groups_map)
+
     try:
-        dao.load_data(RESOURCE_NAME, cycle_timestamp, customer_groups)
+        dao.load_data(RESOURCE_NAME, cycle_timestamp, flattended_groups)
     except (CSVFileError, MySQLError) as e:
         raise LoadDataPipelineError(e)
