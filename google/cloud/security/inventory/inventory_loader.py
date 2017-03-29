@@ -18,8 +18,9 @@ Usage:
 
   $ forseti_inventory \\
       --inventory_gsuite_groups \\
-      --organization_id <organization_id> (required) \\
       --service_account_email <email of the service account> \\
+      --service_account_credentials_file \\
+      --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
