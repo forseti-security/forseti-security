@@ -16,21 +16,20 @@
 
 import json
 
-from google.cloud.security.common.data_access.errors import CSVFileError
-from google.cloud.security.common.data_access.errors import MySQLError
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
-from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
-from google.cloud.security.inventory import transform_util
-from google.cloud.security.inventory.errors import LoadDataPipelineError
-from google.cloud.security.inventory.pipelines._base_pipeline import _BasePipeline
+from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import base_pipeline
+# pylint: enable=line-too-long
 
 
-class LoadOrgIamPoliciesPipeline(_BasePipeline):
+class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
     """Pipeline to load org IAM policies data into Inventory."""
 
-    raw_org_iam_policies = 'raw_org_iam_policies'
+    RAW_ORG_IAM_POLICIES = 'raw_org_iam_policies'
 
     def __init__(self, cycle_timestamp, configs, crm_rate_limiter, dao):
         """Constructor for the data pipeline.
@@ -49,8 +48,88 @@ class LoadOrgIamPoliciesPipeline(_BasePipeline):
         """
         super(LoadOrgIamPoliciesPipeline, self).__init__(
             'org_iam_policies', cycle_timestamp, configs,
-            CloudResourceManagerClient(rate_limiter=crm_rate_limiter),
-            dao, transform_util)
+            crm.CloudResourceManagerClient(rate_limiter=crm_rate_limiter),
+            dao)
+
+    def _load(self, iam_policies_map, flattened_iam_policies):
+        """ Load iam policies into cloud sql.
+
+        A separate table is used to store the raw iam policies because it is
+        much faster than updating these individually into the projects table.
+        
+        Args:
+            iam_policies_map: List of IAM policies as per-org dictionary.
+                Example: {org_id: org_id,
+                          iam_policy: iam_policy}
+                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+            flattened_iam_policies: An iterable of flattened iam policies,
+                as a per-org dictionary.
+
+        Returns:
+            None
+        """
+        try:
+            self.dao.load_data(self.name, self.cycle_timestamp,
+                               flattened_iam_policies)
+
+            for i in iam_policies_map:
+                i['iam_policy'] = json.dumps(i['iam_policy'])
+            self.dao.load_data(self.RAW_ORG_IAM_POLICIES, self.cycle_timestamp,
+                               iam_policies_map)
+
+        except (data_access_errors.CSVFileError,
+                data_access_errors.MySQLError) as e:
+            raise inventory_errors.LoadDataPipelineError(e)
+
+    def _flatten(self, iam_policies_map):
+        """Yield an iterator of flattened iam policies.
+    
+        Args:
+            iam_policies_map: An iterable of iam policies as per-project dictionary.
+                Example: {'project_number': 11111,
+                          'iam_policy': policy}
+                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+    
+        Yields:
+            An iterable of flattened iam policies, as a per-org dictionary.
+        """
+        for iam_policy_map in iam_policies_map:
+            iam_policy = iam_policy_map['iam_policy']
+            bindings = iam_policy.get('bindings', [])
+            for binding in bindings:
+                members = binding.get('members', [])
+                for member in members:
+                    member_type, member_name, member_domain = (
+                        self._parse_member_info(member))
+                    role = binding.get('role', '')
+                    if role.startswith('roles/'):
+                        role = role.replace('roles/', '')
+                    yield {'org_id': iam_policy_map['org_id'],
+                           'role': role,
+                           'member_type': member_type,
+                           'member_name': member_name,
+                           'member_domain': member_domain}
+
+    def _retrieve(self, org_id):
+        """Retrieve the org IAM policies from GCP.
+        
+        Args:
+            org_id: String of the organization id
+        
+        Returns:
+            iam_policies_map: List of IAM policies as per-org dictionary.
+                Example: {org_id: org_id,
+                          iam_policy: iam_policy}
+                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+        """
+        try:
+            # Retrieve data from GCP.
+            # Flatten the iterator since we will use it twice, and it is faster
+            # than cloning to 2 iterators.
+            return list(self.gcp_api_client.get_org_iam_policies(
+                self.name, org_id))
+        except ApiExecutionError as e:
+            raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):
         """Runs the data pipeline.
@@ -60,42 +139,17 @@ class LoadOrgIamPoliciesPipeline(_BasePipeline):
 
         Returns:
             None
-
-        Raises:
-            LoadDataPipelineException: An error with loading data has occurred.
         """
         org_id = self.configs.get('organization_id')
         # Check if the placeholder is replaced in the config/flag.
         if org_id == '<organization id>':
-            raise LoadDataPipelineError('No organization id is specified.')
+            raise inventory_errors.LoadDataPipelineError(
+                'No organization id is specified.')
 
-        try:
-            # Retrieve data from GCP.
-            # Flatten the iterator since we will use it twice, and it is faster
-            # than cloning to 2 iterators.
-            iam_policies_map = self.gcp_api_client.get_org_iam_policies(
-                self.name, org_id)
-            # TODO: Investigate improving so the pylint disable isn't needed.
-            # pylint: disable=redefined-variable-type
-            iam_policies_map = list(iam_policies_map)
+        iam_policies_map = self._retrieve(org_id)
 
-            # Flatten and relationalize data for upload to cloud sql.
-            flattened_iam_policies = (
-                self.transform_util.flatten_iam_policies(iam_policies_map))
-        except ApiExecutionError as e:
-            raise LoadDataPipelineError(e)
+        flattened_iam_policies = self._flatten(iam_policies_map)
 
-        # Load flattened iam policies into cloud sql.
-        # Load raw iam policies into cloud sql.
-        # A separate table is used to store the raw iam policies because it is
-        # much faster than updating these individually into the projects table.
-        try:
-            self.dao.load_data(self.name, self.cycle_timestamp,
-                               flattened_iam_policies)
+        self._load(iam_policies_map, flattened_iam_policies)
 
-            for i in iam_policies_map:
-                i['iam_policy'] = json.dumps(i['iam_policy'])
-            self.dao.load_data(self.raw_org_iam_policies, self.cycle_timestamp,
-                               iam_policies_map)
-        except (CSVFileError, MySQLError) as e:
-            raise LoadDataPipelineError(e)
+        super(LoadOrgIamPoliciesPipeline, self)._get_loaded_count()

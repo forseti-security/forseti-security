@@ -34,7 +34,11 @@ limitations under the License.
         <tr>
             <td>{{ pipeline.name }}</td>
             <td>{{ pipeline.status }}</td>
-            <td>{{ pipeline.count }}</td>
+            {% if pipeline.count is not none %}
+              <td>{{ pipeline.count }}</td>
+            {% else %}
+              <td>Unknown</td>
+            {% endif %}
         </tr>
         {% endfor %}
     </table>

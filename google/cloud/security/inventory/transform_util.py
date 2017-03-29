@@ -102,15 +102,8 @@ def flatten_iam_policies(iam_policies_map):
                 role = binding.get('role', '')
                 if role.startswith('roles/'):
                     role = role.replace('roles/', '')
-                if iam_policy_map.get('project_number'):
-                    yield {'project_number': iam_policy_map['project_number'],
-                           'role': role,
-                           'member_type': member_type,
-                           'member_name': member_name,
-                           'member_domain': member_domain}
-                else:
-                    yield {'org_id': iam_policy_map['org_id'],
-                           'role': role,
-                           'member_type': member_type,
-                           'member_name': member_name,
-                           'member_domain': member_domain}
+                yield {'project_number': iam_policy_map['project_number'],
+                       'role': role,
+                       'member_type': member_type,
+                       'member_name': member_name,
+                       'member_domain': member_domain}
