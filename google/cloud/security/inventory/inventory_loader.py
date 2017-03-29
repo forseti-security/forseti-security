@@ -249,8 +249,10 @@ def main(argv):
     configs = FLAGS.FlagValuesDict()
 
     if FLAGS.inventory_gsuite_groups:
-        if not FLAGS.service_account_email or configs.get('service_account_email'):
-            LOGGER.error('Asked to inventory GSuite groups with a service account email.')
+        if not FLAGS.service_account_email or
+        configs.get('service_account_email'):
+            LOGGER.error(
+                'Unable to inventory GSuite groups without a service account.')
             sys.exit()
 
     # It's better to build the ratelimiters once for each API
