@@ -112,10 +112,10 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
 
     def _retrieve(self, org_id):
         """Retrieve the org IAM policies from GCP.
-        
+
         Args:
             org_id: String of the organization id
-        
+
         Returns:
             iam_policies_map: List of IAM policies as per-org dictionary.
                 Example: {org_id: org_id,
@@ -132,14 +132,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):
-        """Runs the data pipeline.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
+        """Runs the data pipeline."""
         org_id = self.configs.get('organization_id')
         # Check if the placeholder is replaced in the config/flag.
         if org_id == '<organization id>':
