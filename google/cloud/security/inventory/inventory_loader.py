@@ -17,7 +17,9 @@
 Usage:
 
   $ forseti_inventory \\
+      --inventory_gsuite_groups \\
       --organization_id <organization_id> (required) \\
+      --service_account_email <email of the service account> \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
@@ -57,6 +59,10 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 FLAGS = flags.FLAGS
 
+flags.DEFINE_bool('inventory_gsuite_groups', False,
+                  'Wether to or not inventory GSuite Groups.')
+flags.DEFINE_string('service_account_email', None,
+                    'The email of the service account.')
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
                      'Cloud Resource Manager queries per 100 seconds.')
 
@@ -227,6 +233,7 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
 def main(argv):
     """Runs the Inventory Loader."""
 
+
     del argv
 
     try:
@@ -240,6 +247,11 @@ def main(argv):
     _start_snapshot_cycle(cycle_time, cycle_timestamp, dao)
 
     configs = FLAGS.FlagValuesDict()
+
+    if FLAGS.inventory_gsuite_groups:
+        if not FLAGS.service_account_email or configs.get('service_account_email'):
+            LOGGER.error('Asked to inventory GSuite groups with a service account email.')
+            sys.exit()
 
     # It's better to build the ratelimiters once for each API
     # and reuse them across multiple instances of the Client.

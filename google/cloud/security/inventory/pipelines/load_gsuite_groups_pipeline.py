@@ -14,6 +14,7 @@
 
 """Pipeline to load GSuite Account Groups into Inventory."""
 
+from oauth2client.contrib.gce import AppAssertionCredentials
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
@@ -27,6 +28,9 @@ from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 LOGGER = LogUtil.setup_logging(__name__)
 RESOURCE_NAME = 'groups'
+REQUIRED_SCOPES = ['https://www.googleapis.com/auth/admin.directory.user',
+                   'https://www.googleapis.com/auth/admin.directory.group']
+
 
 def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     """Runs the load GSuite account groups pipeline.
@@ -45,7 +49,10 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     """
 
     _ = configs
-    admin_client = AdminDirectoryClient(rate_limiter=crm_rate_limiter)
+
+    credentials = AppAssertionCredentials(','.join(REQUIRED_SCOPES))
+    admin_client = AdminDirectoryClient(credentials=credentials,
+                                        rate_limiter=crm_rate_limiter)
 
     try:
         customer_groups = admin_client.get_groups()
