@@ -20,7 +20,7 @@ Usage:
       --inventory_groups \\
       --service_account_email <email of the service account> \\
       --service_account_credentials_file \\
-      --_domain_super_admin_email \\
+      --domain_super_admin_email \\
       --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
