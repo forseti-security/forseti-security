@@ -75,25 +75,3 @@ class _BasePipeline(object):
             self.logger.error('Unable to retrieve record count for %s_%s:\n%s',
                 self.name, self.cycle_timestamp, e)
             self.count = None
-
-    def _parse_member_info(self, member):
-        """Parse out the component info in the member string.
-
-        Args:
-            member: String of a member.  Example: user:foo@bar.com
-    
-        Returns:
-            member_type: String of the member type.
-            member_name: String of the name portion of the member.
-            member_domain: String of the domain of the member.
-        """
-        member_type, email = member.split(":", 1)
-    
-        if '@' in email:
-            member_name, member_domain = email.split('@', 1)
-        else:
-            # member is really something like domain:google.com
-            member_name = ''
-            member_domain = email
-    
-        return member_type, member_name, member_domain

@@ -21,6 +21,7 @@ import json
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
@@ -50,6 +51,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
             'org_iam_policies', cycle_timestamp, configs,
             crm.CloudResourceManagerClient(rate_limiter=crm_rate_limiter),
             dao)
+        self.parser = parser
 
     def _load(self, iam_policies_map, flattened_iam_policies):
         """ Load iam policies into cloud sql.
@@ -100,7 +102,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
                 members = binding.get('members', [])
                 for member in members:
                     member_type, member_name, member_domain = (
-                        self._parse_member_info(member))
+                        self.parser.parse_member_info(member))
                     role = binding.get('role', '')
                     if role.startswith('roles/'):
                         role = role.replace('roles/', '')
@@ -145,4 +147,4 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
 
         self._load(iam_policies_map, flattened_iam_policies)
 
-        super(LoadOrgIamPoliciesPipeline, self)._get_loaded_count()
+        self._get_loaded_count()
