@@ -80,7 +80,7 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     except ApiExecutionError as e:
         raise LoadDataPipelineError(e)
 
-    flattened_groups= transform_util.flatten_groups(groups_map)
+    flattened_groups = transform_util.flatten_groups(groups_map)
 
     try:
         dao.load_data(RESOURCE_NAME, cycle_timestamp, flattened_groups)
