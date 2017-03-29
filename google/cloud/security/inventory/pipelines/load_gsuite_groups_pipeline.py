@@ -15,6 +15,7 @@
 """Pipeline to load GSuite Account Groups into Inventory."""
 
 from oauth2client.contrib.gce import AppAssertionCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 from google.cloud.security.common.data_access.errors import MySQLError
@@ -23,6 +24,7 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
 from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import metadata_server
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
@@ -31,6 +33,27 @@ RESOURCE_NAME = 'groups'
 REQUIRED_SCOPES = ['https://www.googleapis.com/auth/admin.directory.user',
                    'https://www.googleapis.com/auth/admin.directory.group']
 
+
+def _build_proper_credentials(configs):
+    """Build proper credentials required for accessing the directory API.
+
+    Args:
+        configs: Dictionary of configurations.
+
+    Returns:
+        Credentials as built by oauth2client.
+    """
+    scopes = ','.join(REQUIRED_SCOPES)
+
+    if metadata_server.can_reach_metadata_server():
+        LOGGER.info('Detected we are running on GCE, using those credentials')
+        return AppAssertionCredentials(scopes)
+
+    LOGGER.info('We\'re not on GCE and need to load the credentials file.')
+
+    return ServiceAccountCredentials.from_json_keyfile_name(
+        configs.get('service_account_credentials_file'),
+        scopes=scopes)
 
 def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     """Runs the load GSuite account groups pipeline.
@@ -47,10 +70,7 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     Raises:
         LoadDataPipelineException: An error with loading data has occurred.
     """
-
-    _ = configs
-
-    credentials = AppAssertionCredentials(','.join(REQUIRED_SCOPES))
+    credentials = _build_proper_credentials()
     admin_client = AdminDirectoryClient(credentials=credentials,
                                         rate_limiter=crm_rate_limiter)
 

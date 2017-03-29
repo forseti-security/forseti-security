@@ -63,6 +63,8 @@ flags.DEFINE_bool('inventory_gsuite_groups', False,
                   'Wether to or not inventory GSuite Groups.')
 flags.DEFINE_string('service_account_email', None,
                     'The email of the service account.')
+flags.DEFINE_string('service_account_credentials_file', None,
+                    'The file with credentials for the service account.')
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
                      'Cloud Resource Manager queries per 100 seconds.')
 
@@ -230,6 +232,27 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
+def _should_inventory_google_groups(configs):
+    """A simple function that validates required inputs for inventorying groups.
+
+    Args:
+        configs: Dictionary of configurations built from our flags.
+
+
+    Returns:
+        Boolean
+    """
+    if not configs.get('service_account_email'):
+      LOGGER.error('Unable to inventory groups without a service account.')
+      return False
+
+    if metadata_server.can_reach_metadata_server():
+      return True
+
+    if not configs.get('service_account_credentials_file'):
+      LOGGER.error('Unable to inventory groups without a credentials file.')
+      return False
+
 def main(argv):
     """Runs the Inventory Loader."""
 
@@ -248,13 +271,6 @@ def main(argv):
 
     configs = FLAGS.FlagValuesDict()
 
-    if FLAGS.inventory_gsuite_groups:
-        if not FLAGS.service_account_email or
-        configs.get('service_account_email'):
-            LOGGER.error(
-                'Unable to inventory GSuite groups without a service account.')
-            sys.exit()
-
     # It's better to build the ratelimiters once for each API
     # and reuse them across multiple instances of the Client.
     # Otherwise, there is a gap where the ratelimiter from one pipeline
@@ -270,9 +286,17 @@ def main(argv):
          'status': ''},
         {'pipeline': load_org_iam_policies_pipeline,
          'status': ''},
-        {'pipeline': load_gsuite_groups_pipeline,
-         'status': ''},
     ]
+
+    if configs.get('inventory_gsuite_groups'):
+        if _should_inventory_google_groups(configs):
+            pipelines.append(
+                {'pipeline': load_gsuite_groups_pipeline,
+                 'status': ''}
+            )
+        else:
+            LOGGER.error('Unable to inventory groups without a service account.')
+            sys.exit()
 
     for pipeline in pipelines:
         try:
