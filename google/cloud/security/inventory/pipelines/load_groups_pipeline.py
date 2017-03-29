@@ -53,7 +53,7 @@ def _build_proper_credentials(configs):
         scopes=REQUIRED_SCOPES)
 
     return credentials.create_delegated(
-        configs.get('gsuite_domain_super_admin_email'))
+        configs.get('domain_super_admin_email'))
 
 
 def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
@@ -76,8 +76,8 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
                                         rate_limiter=crm_rate_limiter)
 
     try:
-        print groups
         groups_map = admin_client.get_groups()
+        print groups_map
     except ApiExecutionError as e:
         raise LoadDataPipelineError(e)
 

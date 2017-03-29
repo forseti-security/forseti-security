@@ -63,7 +63,7 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 FLAGS = flags.FLAGS
 
 flags.DEFINE_bool('inventory_groups', False,
-                  'Wether to or not inventory GSuite Groups.')
+                  'Whether to inventory GSuite Groups.')
 flags.DEFINE_string('domain_super_admin_email', None,
                     'An email address of a super-admin in the GSuite domain.')
 flags.DEFINE_string('service_account_email', None,
@@ -316,8 +316,9 @@ def main(argv):
             pipeline['status'] = 'SUCCESS'
         except LoadDataPipelineError as e:
             LOGGER.error(
-                'Encountered error to load data.\n%s', e)
+                'Error loading data (%s).\n%s', pipeline, e)
             pipeline['status'] = 'FAILURE'
+            LOGGER.info('Continuing on.')
 
     succeeded = [p['status'] == 'SUCCESS' for p in pipelines]
 
