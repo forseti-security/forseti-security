@@ -89,6 +89,7 @@ class Dao(_DbConnector):
             csv_filename = csv_writer.write_csv(resource_name, data)
             load_data_sql = load_data_sql_provider.provide_load_data_sql(
                 resource_name, csv_filename, snapshot_table_name)
+            print load_data_sql
             cursor = self.conn.cursor()
             cursor.execute(load_data_sql)
             self.conn.commit()

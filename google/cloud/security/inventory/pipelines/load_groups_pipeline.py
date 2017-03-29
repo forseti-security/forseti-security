@@ -77,14 +77,12 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
 
     try:
         groups_map = admin_client.get_groups()
-        print groups_map
     except ApiExecutionError as e:
         raise LoadDataPipelineError(e)
 
-    flattended_groups = transform_util.flatten_groups(groups_map)
-    print flatten_groups
+    flattened_groups= transform_util.flatten_groups(groups_map)
 
     try:
-        dao.load_data(RESOURCE_NAME, cycle_timestamp, flattended_groups)
+        dao.load_data(RESOURCE_NAME, cycle_timestamp, flattened_groups)
     except (CSVFileError, MySQLError) as e:
         raise LoadDataPipelineError(e)
