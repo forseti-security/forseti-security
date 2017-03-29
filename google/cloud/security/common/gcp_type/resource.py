@@ -141,6 +141,9 @@ class Resource(object):
 
         while curr:
             yield curr
+            # TODO: in each respective resource's class, implement a .parent
+            # property that will query the database for the actual parent
+            # resource properties. This is a must for getting folders to work.
             curr = curr.parent
 
     @abc.abstractmethod
