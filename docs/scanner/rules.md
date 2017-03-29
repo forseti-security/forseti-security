@@ -33,7 +33,7 @@ rules:
  * "folder" (coming soon)
  * "project"
 
-`applies_to` is a string of  one of the following values:
+`applies_to` is a string of one of the following values:
  * "self" - the rule only applies to the specified resource
  * "children" - the rule only applies to the child resources of this resource
  * "self_and_children" - the rule applies to all
