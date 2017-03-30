@@ -96,9 +96,7 @@ don't want to be tracked, the tracking pixel can be
 [disabled here](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
 
 ## Deployment-specific prerequisites
-### GCP
-#### Enable required APIs
-
+### GCP installations
 Enable **Deployment Manager API**.
 In addition to the APIs from [above](#enable-required-apis) you must enable the
 Deployment Manager API.
