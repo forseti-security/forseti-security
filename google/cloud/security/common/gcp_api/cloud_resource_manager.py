@@ -41,7 +41,7 @@ class CloudResourceManagerClient(_BaseClient):
         else:
             self.rate_limiter = get_rate_limiter()
 
-    @classmethod
+    @staticmethod
     def get_rate_limiter():
         DEFAULT_MAX_QUERIES = 100
         DEFAULT_RATE_BUCKET_SECONDS = 100
