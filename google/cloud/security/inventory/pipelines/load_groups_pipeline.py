@@ -50,6 +50,8 @@ def _can_inventory_google_groups(config):
     Returns:
         Boolean
     """
+    # TODO: We should fetch service_account_email (when on GCE) from the
+    # metadata server and not require the flag.
     required_gcp_execution_config = [
         config.get('service_account_email'),
         config.get('domain_super_admin_email')]
@@ -80,7 +82,9 @@ def _build_proper_credentials(config):
     """
 
     if metadata_server.can_reach_metadata_server():
-        return AppAssertionCredentials(REQUIRED_SCOPES)
+        # The GCE version of AppAssertionCredentials does not accept scopes
+        # passed to it. Scopes for GCE credential are set at instance creation.
+        return AppAssertionCredentials()
 
     try:
         credentials = ServiceAccountCredentials.from_json_keyfile_name(

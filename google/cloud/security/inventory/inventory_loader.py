@@ -20,14 +20,14 @@ Usage:
       --inventory_groups \\
       --service_account_email <email of the service account> \\
       --service_account_credentials_file \\
-      --domain_super_admin_email \\
+      --domain_super_admin_email (required if inventory_groups is set) \\
       --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
-      --sendgrid_api_key <API key to auth SendGrid email service> \\
-      --email_sender <email address of the email sender> \\
-      --email_recipient <email address of the email recipient>
+      --sendgrid_api_key <API key to auth SendGrid email service> (optional) \\
+      --email_sender <email address of the email sender> (optional)  \\
+      --email_recipient <email address of the email recipient> (optional)
 
 To see all the dependent flags:
 
