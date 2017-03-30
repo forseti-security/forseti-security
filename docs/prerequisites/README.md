@@ -5,6 +5,7 @@
     1. [Install gcloud](#install-gcloud)
     1. [Configure gcloud](#configure-gcloud)
     1. [Enable required APIs](#enable-required-apis)
+      1. [Enable required APIs to check GSuite Groups in IAM ACLs](#enable-required-apis-to-check-gsuite-groups-in-iam-acls)
     1. [Obtain a SendGrid API key](#obtain-a-sendgrid-api-key)
   1. [Installation specific prerequisites](#installation-specific-prerequisites)
     1. [GCP installations](#gcp-installations)
@@ -69,6 +70,14 @@ Use `gcloud` to enable required APIs.
 
   ```sh
   $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
+  ```
+  
+### Enable required APIs to check GSuite Groups in IAM ACLs
+
+* Enable the **Admin SDK API**
+
+  ```sh
+  $ gcloud beta service-management list enable admin.googleapis.com
   ```
 
 ### Obtain a SendGrid API Key (optional)
