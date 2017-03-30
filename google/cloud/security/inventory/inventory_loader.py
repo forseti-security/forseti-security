@@ -25,7 +25,6 @@ Usage:
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
-      --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \\
       --sendgrid_api_key <API key to auth SendGrid email service> \\
       --email_sender <email address of the email sender> \\
       --email_recipient <email address of the email recipient>
@@ -49,6 +48,8 @@ from google.cloud.security.common.data_access.errors import MySQLError
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.securit.common.gcp_api import admin_directory
+from google.cloud.securit.common.gcp_api import cloud_resource_manager
 from google.cloud.security.common.util import metadata_server
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
@@ -70,9 +71,6 @@ flags.DEFINE_string('service_account_email', None,
                     'The email of the service account.')
 flags.DEFINE_string('service_account_credentials_file', None,
                     'The file with credentials for the service account.')
-flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager queries per 100 seconds.')
-
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
 
 flags.mark_flag_as_required('organization_id')
@@ -237,33 +235,6 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
-def _should_inventory_google_groups(configs):
-    """A simple function that validates required inputs for inventorying groups.
-
-    Args:
-        configs: Dictionary of configurations built from our flags.
-
-    Returns:
-        Boolean
-    """
-    if not configs.get('service_account_email'):
-        LOGGER.error('Unable to inventory groups with a service accoutn email.')
-        return False
-
-    if metadata_server.can_reach_metadata_server():
-        return True
-
-    if not configs.get('service_account_credentials_file'):
-        LOGGER.error('Unable to inventory groups without a credentials file.')
-        return False
-
-    if not configs.get('domain_super_admin_email'):
-        LOGGER.error(
-            'Unable to inventory groups without an email to impersonate.')
-        return False
-
-    return True
-
 def main(argv):
     """Runs the Inventory Loader."""
 
@@ -286,33 +257,28 @@ def main(argv):
     # Otherwise, there is a gap where the ratelimiter from one pipeline
     # is not used for the next pipeline using the same API. This could
     # lead to unnecessary quota errors.
-    max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
-    crm_rate_limiter = RateLimiter(max_crm_calls, 100)
+    crm_rate_limiter = cloud_resource_manager.get_rate_limiter()
+    admin_directory_rate_limiter = admin_directory.get_rate_limiter()
 
     pipelines = [
         {'pipeline': load_projects_pipeline,
+         'rate_limiter': crm_rate_limiter,
          'status': ''},
         {'pipeline': load_projects_iam_policies_pipeline,
+         'rate_limiter': crm_rate_limiter,
          'status': ''},
         {'pipeline': load_org_iam_policies_pipeline,
+         'rate_limiter': crm_rate_limiter,
          'status': ''},
+        {'pipeline': load_groups_pipeline,
+         'rate_limiter': admin_directory_rate_limiter,
+         'status': ''}
     ]
-
-    if configs.get('inventory_groups'):
-        if _should_inventory_google_groups(configs):
-            pipelines.append(
-                {'pipeline': load_groups_pipeline,
-                 'status': ''}
-            )
-        else:
-            LOGGER.error(
-                'Unable to inventory groups without a service account.')
-            sys.exit()
 
     for pipeline in pipelines:
         try:
             pipeline['pipeline'].run(
-                dao, cycle_timestamp, configs, crm_rate_limiter)
+                dao, cycle_timestamp, configs, pipeline['rate_limiter'])
             pipeline['status'] = 'SUCCESS'
         except LoadDataPipelineError as e:
             LOGGER.error(

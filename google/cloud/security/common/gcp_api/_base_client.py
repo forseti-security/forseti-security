@@ -16,7 +16,6 @@
 
 from apiclient import discovery
 from oauth2client.client import GoogleCredentials
-
 from retrying import retry
 
 from google.cloud.security.common.gcp_api._supported_apis import SUPPORTED_APIS

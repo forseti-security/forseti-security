@@ -35,11 +35,35 @@ REQUIRED_SCOPES = ['https://www.googleapis.com/auth/admin.directory.user',
                    'https://www.googleapis.com/auth/admin.directory.group']
 
 
-def _build_proper_credentials(configs):
+def _can_inventory_google_groups(config):
+    """A simple function that validates required inputs for inventorying groups.
+
+    Args:
+        config: Dictionary of configurations built from our config.
+
+    Returns:
+        Boolean
+    """
+    required_gcp_execution_config = [config.get('service_account_email'),
+                                    config.get('domain_super_admin_email')]
+
+    required_local_execution_config = [
+        config.get('service_account_email'),
+        config.get('service_account_credentials_file'),
+        config.get('domain_super_admin_email')]
+
+    if metadata_server.can_reach_metadata_server():
+      return False if Flase in required_gcp_execution_config:
+    else:
+      return False if False in required_local_execution_config:
+
+    return True
+
+def _build_proper_credentials(config):
     """Build proper credentials required for accessing the directory API.
 
     Args:
-        configs: Dictionary of configurations.
+        config: Dictionary of configurations.
 
     Returns:
         Credentials as built by oauth2client.
@@ -49,21 +73,21 @@ def _build_proper_credentials(configs):
         return AppAssertionCredentials(REQUIRED_SCOPES)
 
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        configs.get('service_account_credentials_file'),
+        config.get('service_account_credentials_file'),
         scopes=REQUIRED_SCOPES)
 
     return credentials.create_delegated(
-        configs.get('domain_super_admin_email'))
+        config.get('domain_super_admin_email'))
 
 
-def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
+def run(dao=None, cycle_timestamp=None, config=None, rate_limiter=None):
     """Runs the load GSuite account groups pipeline.
 
     Args:
         dao: Data access object.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        configs: Dictionary of configurations.
-        crm_rate_limiter: RateLimiter object for CRM API client.
+        config: Dictionary of configurations.
+        rate_limiter: RateLimiter object for the API client.
 
     Returns:
         None
@@ -71,9 +95,12 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     Raises:
         LoadDataPipelineException: An error with loading data has occurred.
     """
-    credentials = _build_proper_credentials(configs)
+    if not _can_inventory_google_groups(config):
+        raise LoadDataPipelineError('Unable to inventory groups with specified arguments:\n%s', config)
+
+    credentials = _build_proper_credentials(config)
     admin_client = AdminDirectoryClient(credentials=credentials,
-                                        rate_limiter=crm_rate_limiter)
+                                        rate_limiter=rate_limiter)
 
     try:
         groups_map = admin_client.get_groups()
