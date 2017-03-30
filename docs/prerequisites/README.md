@@ -1,15 +1,15 @@
 # Installation prerequisites
   1. [Common steps](#common-steps)
-    1. [Create a GCP project](#create-a-gcp-project)
-    1. [Create a service account](#create-a-service-account)
-    1. [Install gcloud](#install-gcloud)
-    1. [Configure gcloud](#configure-gcloud)
-    1. [Enable required APIs](#enable-required-apis)
-      1. [Enable required APIs to check GSuite Groups in IAM ACLs](#enable-required-apis-to-check-gsuite-groups-in-iam-acls)
-    1. [Obtain a SendGrid API key](#obtain-a-sendgrid-api-key)
+     1. [Create a GCP project](#create-a-gcp-project)
+     1. [Create a service account](#create-a-service-account)
+     1. [Install gcloud](#install-gcloud)
+     1. [Configure gcloud](#configure-gcloud)
+     1. [Enable required APIs](#enable-required-apis)
+        1. [Enable required APIs to check GSuite Groups in IAM ACLs](#enable-required-apis-to-check-gsuite-groups-in-iam-acls)
+     1. [Obtain a SendGrid API key](#obtain-a-sendgrid-api-key)
   1. [Installation specific prerequisites](#installation-specific-prerequisites)
-    1. [GCP installations](#gcp-installations)
-    1. [Local installations](#local-installations)
+     1. [GCP installations](#gcp-installations)
+     1. [Local installations](#local-installations)
 
 ## Common steps
 ### Create a GCP project
