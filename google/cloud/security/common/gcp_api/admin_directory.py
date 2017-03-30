@@ -46,7 +46,7 @@ class AdminDirectoryClient(_BaseClient):
     def get_rate_limiter():
         """Return an appriopriate rate limiter."""
         return RateLimiter(
-            DEFAULT_DAILY_MAX_QUERIES,
+            DEFAULT_MAX_QUERIES,
             DEFAULT_RATE_BUCKET_SECONDS)
 
     def get_groups(self, customer_id='my_customer'):
