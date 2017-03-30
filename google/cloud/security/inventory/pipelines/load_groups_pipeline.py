@@ -53,9 +53,9 @@ def _can_inventory_google_groups(config):
         config.get('domain_super_admin_email')]
 
     if metadata_server.can_reach_metadata_server():
-      return False if Flase in required_gcp_execution_config:
+      return False if Flase in required_gcp_execution_config
     else:
-      return False if False in required_local_execution_config:
+      return False if False in required_local_execution_config
 
     return True
 

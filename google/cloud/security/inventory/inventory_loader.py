@@ -39,7 +39,6 @@ import sys
 from datetime import datetime
 import gflags as flags
 
-from ratelimiter import RateLimiter
 
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
@@ -48,9 +47,8 @@ from google.cloud.security.common.data_access.errors import MySQLError
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
-from google.cloud.securit.common.gcp_api import admin_directory
-from google.cloud.securit.common.gcp_api import cloud_resource_manager
-from google.cloud.security.common.util import metadata_server
+from google.cloud.security.common.gcp_api import admin_directory
+from google.cloud.security.common.gcp_api import cloud_resource_manager
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil

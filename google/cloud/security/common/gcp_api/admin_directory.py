@@ -25,27 +25,28 @@ from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
 
-def get_rate_limiter():
-    DEFAULT_MAX_QUERIES = 150000
-    DEFAULT_RATE_BUCKET_SECONDS = 86400
-
-    return RateLimiter(
-        DEFAULT_DAILY_MAX_QUERIES,
-        DEFAULT_RATE_BUCKET_SECONDS)
-
 
 class AdminDirectoryClient(_BaseClient):
     """GSuite Admin Directory API Client."""
 
     API_NAME = 'admin'
 
-    def __init__(self, credentials=None, rate_limiter):
+    def __init__(self, credentials=None, rate_limiter=None):
         super(AdminDirectoryClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
         if rate_limiter:
             self.rate_limiter = rate_limiter
         else:
             self.rate_limiter = get_rate_limiter()
+
+    @staticmethod
+    def get_rate_limiter():
+        DEFAULT_MAX_QUERIES = 150000
+        DEFAULT_RATE_BUCKET_SECONDS = 86400
+
+        return RateLimiter(
+            DEFAULT_DAILY_MAX_QUERIES,
+            DEFAULT_RATE_BUCKET_SECONDS)
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.

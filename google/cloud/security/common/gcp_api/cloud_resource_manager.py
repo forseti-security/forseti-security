@@ -26,14 +26,6 @@ from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
 
-def get_rate_limiter()
-    DEFAULT_MAX_QUERIES = 100
-    DEFAULT_RATE_BUCKET_SECONDS = 100
-
-    return RateLimiter(
-        DEFAULT_MAX_QUERIES,
-        DEFAULT_RATE_BUCKET_SECONDS)
-
 
 class CloudResourceManagerClient(_BaseClient):
     """Resource Manager Client."""
@@ -47,8 +39,16 @@ class CloudResourceManagerClient(_BaseClient):
         if rate_limiter:
             self.rate_limiter = rate_limiter
         else:
-            self.rate_limiter = get_rate_limiter() 
+            self.rate_limiter = get_rate_limiter()
 
+    @classmethod
+    def get_rate_limiter():
+        DEFAULT_MAX_QUERIES = 100
+        DEFAULT_RATE_BUCKET_SECONDS = 100
+
+        return RateLimiter(
+            DEFAULT_MAX_QUERIES,
+            DEFAULT_RATE_BUCKET_SECONDS)
 
     def get_project(self, project_id):
         """Get all the projects from organization.
