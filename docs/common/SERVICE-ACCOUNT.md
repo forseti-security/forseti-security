@@ -4,6 +4,7 @@ to your **organization-level** IAM policy.
 
  * [Create a service account](#create-a-service-account)
  * [Enable the required GCP IAM roles](#enable-the-required-gcp-iam-roles)
+ * [Enable scanning of GSuite Groups](#enable-scanning-of-gsuite-groups)
 
 ## Create a Service Account
 In general, it's highly recommended to create a separate project that
