@@ -62,7 +62,7 @@ def _can_inventory_google_groups(config):
         required_execution_config = required_local_execution_config
 
     if False in required_execution_config:
-      return False
+        return False
 
     return True
 
