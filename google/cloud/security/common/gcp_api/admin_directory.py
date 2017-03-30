@@ -71,6 +71,7 @@ class AdminDirectoryClient(_BaseClient):
         request = groups_stub.list(customer=customer_id)
         results = []
 
+        # TODO: Investigate yeilding results to handle large group lists.
         while request is not None:
             try:
                 with self.rate_limiter:

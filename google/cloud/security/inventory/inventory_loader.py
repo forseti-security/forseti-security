@@ -68,7 +68,8 @@ flags.DEFINE_string('domain_super_admin_email', None,
 flags.DEFINE_string('service_account_email', None,
                     'The email of the service account.')
 flags.DEFINE_string('service_account_credentials_file', None,
-                    'The file with credentials for the service account.')
+                    'The file with credentials for the service account.'
+                    'NOTE: This is only required when running locally.')
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
 
 flags.mark_flag_as_required('organization_id')

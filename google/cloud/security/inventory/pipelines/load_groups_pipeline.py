@@ -23,6 +23,7 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
+# pylint: enable=line-too-long
 from google.cloud.security.common.util import metadata_server
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory import transform_util
@@ -31,8 +32,9 @@ from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 LOGGER = LogUtil.setup_logging(__name__)
 RESOURCE_NAME = 'groups'
-REQUIRED_SCOPES = ['https://www.googleapis.com/auth/admin.directory.user',
-                   'https://www.googleapis.com/auth/admin.directory.group']
+REQUIRED_SCOPES = frozenset([
+    'https://www.googleapis.com/auth/admin.directory.group.readonly'
+])
 
 
 def _is_our_environment_gce():
@@ -72,14 +74,20 @@ def _build_proper_credentials(config):
 
     Returns:
         Credentials as built by oauth2client.
+
+    Raises:
+        LoadDataPipelineException: An error with loading data has occurred.
     """
 
     if metadata_server.can_reach_metadata_server():
         return AppAssertionCredentials(REQUIRED_SCOPES)
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        config.get('service_account_credentials_file'),
-        scopes=REQUIRED_SCOPES)
+    try:
+      credentials = ServiceAccountCredentials.from_json_keyfile_name(
+          config.get('service_account_credentials_file'),
+          scopes=REQUIRED_SCOPES)
+    except (ValueError, KeyError) as e:
+      raise LoadDataPipelineError(e)
 
     return credentials.create_delegated(
         config.get('domain_super_admin_email'))
@@ -101,7 +109,8 @@ def run(dao=None, cycle_timestamp=None, config=None, rate_limiter=None):
         LoadDataPipelineException: An error with loading data has occurred.
     """
     if not _can_inventory_google_groups(config):
-        raise LoadDataPipelineError('Unable to inventory groups with specified arguments:\n%s', config)
+        raise LoadDataPipelineError(
+            'Unable to inventory groups with specified arguments:\n%s', config)
 
     credentials = _build_proper_credentials(config)
     admin_client = AdminDirectoryClient(credentials=credentials,
