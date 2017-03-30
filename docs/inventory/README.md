@@ -91,4 +91,29 @@ Here's an example of [flattening the data structure](https://github.com/GoogleCl
 For an example of steps 3 through 6 see this [PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/165)
 
 ## Collecting GSuite Google Groups
-TBD
+To enable this ability see [GSUITE-GROUPS](/docs/common/GSUITE-GROUPS.md).
+
+Once you've enabled the ability for Forseti Security to inventory GSuite groups you can follow the steps below.
+
+`Inventory` exposes three flags to collecting GSuite groups as part of it's execution. Use of these flags depend on your installation type.
+
+### GCP installations
+You must configure these variables in the [deployment template](/deployment-templates/deploy-forseti.yaml.sample) ([details](/docs/installing/INSTALLING-GCP.md#customize-deployment-templates)
+
+**INVENTORY_GROUPS**: To enable set this to True.
+
+**DOMAIN_SUPER_ADMIN_EMAIL**: To inventory GSuite Groups requires using domain-wide delegation (DWD). To do this you must specify a super-admin in the GSuite account to impersonate, e.g. bob@mydomain.com
+
+### Local installations
+
+ **--inventory_groups**: By default this flag is set to False or no. You can enable this by just passing the flag.
+ 
+ ```sh
+ $ forseti_inventory --inventory_groups
+ ```
+ 
+ **--domain_super_admin_email**: To inventory GSuite Groups requires using domain-wide delegation (DWD). To do this you must specify a super-admin in the GSuite account to impersonate, e.g. bob@mydomain.com
+ 
+ **--service_account_email**: This normally already required.
+ 
+ **--service_account_credentials_file**: To use DWD you must download the credentials file in `JSON` format and specify the full-path to the file with this flag.
