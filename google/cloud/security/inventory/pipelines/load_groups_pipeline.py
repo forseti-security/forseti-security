@@ -48,8 +48,9 @@ def _can_inventory_google_groups(config):
     Returns:
         Boolean
     """
-    required_gcp_execution_config = [config.get('service_account_email'),
-                                     config.get('domain_super_admin_email')]
+    required_gcp_execution_config = [
+        config.get('service_account_email'),
+        config.get('domain_super_admin_email')]
 
     required_local_execution_config = [
         config.get('service_account_email'),
@@ -61,11 +62,7 @@ def _can_inventory_google_groups(config):
     else:
         required_execution_config = required_local_execution_config
 
-    if False or None in required_execution_config:
-        return False
-
-    return True
-
+    return all(required_execution_config)
 
 def _build_proper_credentials(config):
     """Build proper credentials required for accessing the directory API.

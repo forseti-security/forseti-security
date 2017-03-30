@@ -14,25 +14,17 @@
 
 """Provides the load data sql for resources."""
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
-from google.cloud.security.common.data_access.csv_writer import GROUPS_FIELDNAMES
-from google.cloud.security.common.data_access.csv_writer import ORG_IAM_POLICIES_FIELDNAMES
-from google.cloud.security.common.data_access.csv_writer import PROJECTS_FIELDNAMES
-from google.cloud.security.common.data_access.csv_writer import PROJECT_IAM_POLICIES_FIELDNAMES
-from google.cloud.security.common.data_access.csv_writer import RAW_ORG_IAM_POLICIES_FIELDNAMES
-from google.cloud.security.common.data_access.csv_writer import RAW_PROJECT_IAM_POLICIES_FIELDNAMES
+from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access.sql_queries import load_data
-# pylint: enable=line-too-long
 
 
 FIELDNAME_MAP = {
-    'groups': GROUPS_FIELDNAMES,
-    'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
-    'projects': PROJECTS_FIELDNAMES,
-    'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
-    'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAMES,
-    'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
+    'groups': csv_writer.GROUPS_FIELDNAMES,
+    'org_iam_policies': csv_writer.ORG_IAM_POLICIES_FIELDNAMES,
+    'projects': csv_writer.PROJECTS_FIELDNAMES,
+    'project_iam_policies': csv_writer.PROJECT_IAM_POLICIES_FIELDNAMES,
+    'raw_org_iam_policies': csv_writer.RAW_ORG_IAM_POLICIES_FIELDNAMES,
+    'raw_project_iam_policies': csv_writer.RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
 }
 
 
