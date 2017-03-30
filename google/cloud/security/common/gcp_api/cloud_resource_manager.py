@@ -48,8 +48,8 @@ class CloudResourceManagerClient(_BaseClient):
     def get_rate_limiter():
         """Return an appriopriate rate limiter."""
         return RateLimiter(
-          DEFAULT_MAX_QUERIES,
-          DEFAULT_RATE_BUCKET_SECONDS)
+            DEFAULT_MAX_QUERIES,
+            DEFAULT_RATE_BUCKET_SECONDS)
 
     def get_project(self, project_id):
         """Get all the projects from organization.
