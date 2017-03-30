@@ -2,6 +2,8 @@
 In order to run Forseti Security, you must add a service account
 to your **organization-level** IAM policy.
 
+ * [Create a service account](#create-a-service-account)
+ * [Enable the required GCP IAM roles](#enable-the-required-gcp-iam-roles)
 
 ## Create a Service Account
 In general, it's highly recommended to create a separate project that
@@ -26,8 +28,12 @@ for service accounts.
 ```sh
 $ export GOOGLE_APPLICATION_CREDENTIALS="<path to your service account key>"
 ```
-## Enabling required roles
+## Enable the required GCP IAM roles
 Grant the required roles to the service account.
+
+* Project browser
+* Security Reviewer
+* Project editor
 
 ```sh
 $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
@@ -36,3 +42,17 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
   --role=roles/iam.securityReviewer \
   --role=roles/editor
 ```
+
+## Enable scanning of GSuite Groups
+Forseti supports the scanning GCP projects for granted users that might be a GSuite Google group. Doing this requires taking special steps on the previously created service account and within the GSuite domain.
+
+ 1. When creating or editing a previously created service account you must enable Domain-wide Delegation "DWD" ([details](https://cloud.google.com/appengine/docs/flexible/python/authorizing-apps#google_apps_domain-wide_delegation_of_authority)].
+ 
+ * If you intend to run Forseti Security on GCP*
+ 
+ 1. You must collect and specify an email address of a super-admin in your GSuite account in the deployment template (details)
+ 
+ * If you intend to run Forseti Security locally*
+ 
+ 1. You must pass the an email address of a super-admin in your GSuite account to `inventory` (details)
+ 1. You must pass the path to the downloaded JSON file of the credentials for the service account to `inventory` (details)
