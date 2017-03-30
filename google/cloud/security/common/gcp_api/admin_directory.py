@@ -25,6 +25,9 @@ from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
 
+DEFAULT_MAX_QUERIES = 150000
+DEFAULT_RATE_BUCKET_SECONDS = 86400
+
 
 class AdminDirectoryClient(_BaseClient):
     """GSuite Admin Directory API Client."""
@@ -37,13 +40,11 @@ class AdminDirectoryClient(_BaseClient):
         if rate_limiter:
             self.rate_limiter = rate_limiter
         else:
-            self.rate_limiter = get_rate_limiter()
+            self.rate_limiter = self.get_rate_limiter()
 
     @staticmethod
     def get_rate_limiter():
-        DEFAULT_MAX_QUERIES = 150000
-        DEFAULT_RATE_BUCKET_SECONDS = 86400
-
+        """Return an appriopriate rate limiter."""
         return RateLimiter(
             DEFAULT_DAILY_MAX_QUERIES,
             DEFAULT_RATE_BUCKET_SECONDS)
@@ -51,10 +52,11 @@ class AdminDirectoryClient(_BaseClient):
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
 
-        A note on customer_id='my_customer'. This is a magic string instead
-        of using the real customer id.
+        A note on customer_id='my_customer'.
+        This is a magic string instead of using the real
+        customer id. See:
 
-        See: https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
+        https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
 
         Args:
             customer_id: The customer id to scope the request to

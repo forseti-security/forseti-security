@@ -26,6 +26,9 @@ from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
 
+DEFAULT_MAX_QUERIES = 100
+DEFAULT_RATE_BUCKET_SECONDS = 100
+
 
 class CloudResourceManagerClient(_BaseClient):
     """Resource Manager Client."""
@@ -39,13 +42,11 @@ class CloudResourceManagerClient(_BaseClient):
         if rate_limiter:
             self.rate_limiter = rate_limiter
         else:
-            self.rate_limiter = get_rate_limiter()
+            self.rate_limiter = self.get_rate_limiter()
 
     @staticmethod
     def get_rate_limiter():
-        DEFAULT_MAX_QUERIES = 100
-        DEFAULT_RATE_BUCKET_SECONDS = 100
-
+      """Return an appriopriate rate limiter."""
         return RateLimiter(
             DEFAULT_MAX_QUERIES,
             DEFAULT_RATE_BUCKET_SECONDS)
