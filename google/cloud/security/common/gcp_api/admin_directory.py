@@ -20,10 +20,7 @@ from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
 from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
-from google.cloud.security.common.util.log_util import LogUtil
 
-
-LOGGER = LogUtil.setup_logging(__name__)
 
 DEFAULT_MAX_QUERIES = 150000
 DEFAULT_RATE_BUCKET_SECONDS = 86400

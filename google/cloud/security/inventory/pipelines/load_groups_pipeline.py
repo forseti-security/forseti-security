@@ -25,12 +25,10 @@ from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
 from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import metadata_server
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory import transform_util
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
-LOGGER = LogUtil.setup_logging(__name__)
 RESOURCE_NAME = 'groups'
 REQUIRED_SCOPES = frozenset([
     'https://www.googleapis.com/auth/admin.directory.group.readonly'
