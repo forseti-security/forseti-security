@@ -44,16 +44,8 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
   --role=roles/editor
 ```
 
-## Enable scanning of GSuite Groups
+## Supporting scanning of GSuite Groups
 Forseti supports the scanning GCP projects for granted users that might be a GSuite Google group. Doing this requires taking special steps on the previously created service account and within the GSuite domain.
 
- 1. When creating or editing a previously created service account you must enable Domain-wide Delegation "DWD" ([details](https://cloud.google.com/appengine/docs/flexible/python/authorizing-apps#google_apps_domain-wide_delegation_of_authority)].
+To do this you must enable Domain-wide Delegation "DWD" ([details](https://cloud.google.com/appengine/docs/flexible/python/authorizing-apps#google_apps_domain-wide_delegation_of_authority)] for the previously created service account.
  
- * If you intend to run Forseti Security on GCP*
- 
- 1. You must collect and specify an email address of a super-admin in your GSuite account in the deployment template (details)
- 
- * If you intend to run Forseti Security locally*
- 
- 1. You must pass the an email address of a super-admin in your GSuite account to `inventory` (details)
- 1. You must pass the path to the downloaded JSON file of the credentials for the service account to `inventory` (details)
