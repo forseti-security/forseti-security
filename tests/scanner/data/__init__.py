@@ -12,8 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti Security."""
-
-__version__ = '1.0.1'
-
-__import__('pkg_resources').declare_namespace(__name__)
+"""Data for scanner unit tests."""
