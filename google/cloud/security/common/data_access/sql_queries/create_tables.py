@@ -74,7 +74,7 @@ CREATE_RAW_ORG_IAM_POLICIES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
-CREATE_GSUITE_ACCOUNT_GROUPS_TABLE = """
+CREATE_GROUPS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `group_id` varchar(255) DEFAULT NULL,
