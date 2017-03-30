@@ -11,6 +11,9 @@
 .DS_Store
 .*swp
 
+# Possible credentials
+/*.json
+
 # Dev scripts
 scripts/dev*.sh
 
