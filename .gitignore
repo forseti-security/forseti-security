@@ -12,7 +12,7 @@
 .*swp
 
 # Possible credentials
-*.json/
+/*.json
 
 # Dev scripts
 scripts/dev*.sh
