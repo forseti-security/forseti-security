@@ -35,6 +35,10 @@ REQUIRED_SCOPES = ['https://www.googleapis.com/auth/admin.directory.user',
                    'https://www.googleapis.com/auth/admin.directory.group']
 
 
+def _is_our_environment_gce():
+    """A simple function that returns a boolean if we're running in GCE."""
+    return metadata_server.can_reach_metadata_server()
+
 def _can_inventory_google_groups(config):
     """A simple function that validates required inputs for inventorying groups.
 
@@ -52,10 +56,15 @@ def _can_inventory_google_groups(config):
         config.get('service_account_credentials_file'),
         config.get('domain_super_admin_email')]
 
-    if metadata_server.can_reach_metadata_server():
-        return False if False in required_gcp_execution_config else True
+    if _is_our_environment_gce():
+        required_execution_config = required_gcp_execution_config
     else:
-        return False if False in required_local_execution_config else True
+        required_execution_config = required_local_execution_config
+
+    if False in required_execution_config:
+      return False
+
+    return True
 
 
 def _build_proper_credentials(config):
