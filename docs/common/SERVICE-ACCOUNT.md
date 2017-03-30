@@ -4,7 +4,7 @@ to your **organization-level** IAM policy.
 
  * [Create a service account](#create-a-service-account)
  * [Enable the required GCP IAM roles](#enable-the-required-gcp-iam-roles)
- * [Enable scanning of GSuite Groups](#enable-scanning-of-gsuite-groups)
+ * [Supporting scanning of GSuite Groups](#supporting-scanning-of-gsuite-groups)
 
 ## Create a Service Account
 In general, it's highly recommended to create a separate project that
@@ -45,7 +45,4 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 ```
 
 ## Supporting scanning of GSuite Groups
-Forseti supports the scanning GCP projects for granted users that might be a GSuite Google group. Doing this requires taking special steps on the previously created service account and within the GSuite domain.
-
-To do this you must enable Domain-wide Delegation "DWD" ([details](https://cloud.google.com/appengine/docs/flexible/python/authorizing-apps#google_apps_domain-wide_delegation_of_authority)) for the previously created service account.
- 
+See [GSUITE-GROUPS](/docs/common/GSUITE-GROUPS.md) for the required steps to enable this capability.
