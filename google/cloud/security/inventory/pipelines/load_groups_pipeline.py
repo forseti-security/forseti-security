@@ -83,11 +83,11 @@ def _build_proper_credentials(config):
         return AppAssertionCredentials(REQUIRED_SCOPES)
 
     try:
-      credentials = ServiceAccountCredentials.from_json_keyfile_name(
-          config.get('service_account_credentials_file'),
-          scopes=REQUIRED_SCOPES)
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(
+            config.get('service_account_credentials_file'),
+            scopes=REQUIRED_SCOPES)
     except (ValueError, KeyError) as e:
-      raise LoadDataPipelineError(e)
+        raise LoadDataPipelineError(e)
 
     return credentials.create_delegated(
         config.get('domain_super_admin_email'))
