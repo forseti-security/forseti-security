@@ -47,8 +47,8 @@ from google.cloud.security.common.data_access.errors import MySQLError
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
-from google.cloud.security.common.gcp_api import admin_directory
-from google.cloud.security.common.gcp_api import cloud_resource_manager
+from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
+from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
@@ -255,8 +255,8 @@ def main(argv):
     # Otherwise, there is a gap where the ratelimiter from one pipeline
     # is not used for the next pipeline using the same API. This could
     # lead to unnecessary quota errors.
-    crm_rate_limiter = cloud_resource_manager.get_rate_limiter()
-    admin_directory_rate_limiter = admin_directory.get_rate_limiter()
+    crm_rate_limiter = CloudResourceManagerClient.get_rate_limiter()
+    admin_directory_rate_limiter = AdminDirectoryClient.get_rate_limiter()
 
     pipelines = [
         {'pipeline': load_projects_pipeline,

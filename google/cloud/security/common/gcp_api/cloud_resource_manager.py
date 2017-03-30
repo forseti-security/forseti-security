@@ -46,8 +46,8 @@ class CloudResourceManagerClient(_BaseClient):
 
     @staticmethod
     def get_rate_limiter():
-      """Return an appriopriate rate limiter."""
-      return RateLimiter(
+        """Return an appriopriate rate limiter."""
+        return RateLimiter(
           DEFAULT_MAX_QUERIES,
           DEFAULT_RATE_BUCKET_SECONDS)
 

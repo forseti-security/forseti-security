@@ -45,7 +45,7 @@ def _can_inventory_google_groups(config):
         Boolean
     """
     required_gcp_execution_config = [config.get('service_account_email'),
-                                    config.get('domain_super_admin_email')]
+                                     config.get('domain_super_admin_email')]
 
     required_local_execution_config = [
         config.get('service_account_email'),
@@ -53,9 +53,9 @@ def _can_inventory_google_groups(config):
         config.get('domain_super_admin_email')]
 
     if metadata_server.can_reach_metadata_server():
-      return False if False in required_gcp_execution_config else True
+        return False if False in required_gcp_execution_config else True
     else:
-      return False if False in required_local_execution_config else True
+        return False if False in required_local_execution_config else True
 
 
 def _build_proper_credentials(config):
