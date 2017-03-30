@@ -74,10 +74,6 @@ LOGGER = log_util.get_logger(__name__)
 
 def main(_):
     """Run the scanner."""
-
-    log_util.configure_logger(__name__)
-    log_util.configure_logger('google.cloud.security')
-
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)

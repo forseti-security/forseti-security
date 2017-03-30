@@ -100,7 +100,6 @@ def _check_required_members(rule_members=None, policy_members=None):
             violating_members.append(rule_member)
     return violating_members
 
->>>>>>> master
 
 class OrgRulesEngine(base_rules_engine.BaseRulesEngine):
     """Rules engine for org resources."""
