@@ -17,11 +17,14 @@
 Usage:
 
   $ forseti_inventory \\
+      --inventory_groups \\
+      --service_account_email <email of the service account> \\
+      --service_account_credentials_file \\
+      --domain_super_admin_email \\
       --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
-      --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \\
       --sendgrid_api_key <API key to auth SendGrid email service> \\
       --email_sender <email address of the email sender> \\
       --email_recipient <email address of the email recipient>
@@ -36,7 +39,6 @@ import sys
 from datetime import datetime
 import gflags as flags
 
-from ratelimiter import RateLimiter
 
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
@@ -45,10 +47,13 @@ from google.cloud.security.common.data_access.errors import MySQLError
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
+from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.inventory.errors import LoadDataPipelineError
+from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
@@ -56,9 +61,15 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager queries per 100 seconds.')
-
+flags.DEFINE_bool('inventory_groups', False,
+                  'Whether to inventory GSuite Groups.')
+flags.DEFINE_string('domain_super_admin_email', None,
+                    'An email address of a super-admin in the GSuite domain.')
+flags.DEFINE_string('service_account_email', None,
+                    'The email of the service account.')
+flags.DEFINE_string('service_account_credentials_file', None,
+                    'The file with credentials for the service account.'
+                    'NOTE: This is only required when running locally.')
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
 
 flags.mark_flag_as_required('organization_id')
@@ -242,27 +253,34 @@ def main(_):
     # Otherwise, there is a gap where the ratelimiter from one pipeline
     # is not used for the next pipeline using the same API. This could
     # lead to unnecessary quota errors.
-    max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
-    crm_rate_limiter = RateLimiter(max_crm_calls, 100)
+    crm_rate_limiter = CloudResourceManagerClient.get_rate_limiter()
+    admin_directory_rate_limiter = AdminDirectoryClient.get_rate_limiter()
 
     pipelines = [
         {'pipeline': load_projects_pipeline,
+         'rate_limiter': crm_rate_limiter,
          'status': ''},
         {'pipeline': load_projects_iam_policies_pipeline,
+         'rate_limiter': crm_rate_limiter,
          'status': ''},
         {'pipeline': load_org_iam_policies_pipeline,
+         'rate_limiter': crm_rate_limiter,
          'status': ''},
+        {'pipeline': load_groups_pipeline,
+         'rate_limiter': admin_directory_rate_limiter,
+         'status': ''}
     ]
 
     for pipeline in pipelines:
         try:
             pipeline['pipeline'].run(
-                dao, cycle_timestamp, configs, crm_rate_limiter)
+                dao, cycle_timestamp, configs, pipeline['rate_limiter'])
             pipeline['status'] = 'SUCCESS'
         except LoadDataPipelineError as e:
             LOGGER.error(
-                'Encountered error to load data.\n%s', e)
+                'Error loading data (%s).\n%s', pipeline, e)
             pipeline['status'] = 'FAILURE'
+            LOGGER.info('Continuing on.')
 
     succeeded = [p['status'] == 'SUCCESS' for p in pipelines]
 

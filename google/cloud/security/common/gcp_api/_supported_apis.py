@@ -37,4 +37,7 @@ SUPPORTED_APIS = {
     'storage': {
         'version': 'v1'
     },
+    'admin': {
+        'version': 'directory_v1'
+    },
 }

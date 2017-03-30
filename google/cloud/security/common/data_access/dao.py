@@ -32,6 +32,7 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 
 
 CREATE_TABLE_MAP = {
+    'groups': create_tables.CREATE_GROUPS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,

@@ -20,6 +20,11 @@ import tempfile
 from google.cloud.security.common.data_access.errors import CSVFileError
 
 
+GROUPS_FIELDNAMES = [
+    'group_id',
+    'group_email'
+]
+
 ORG_IAM_POLICIES_FIELDNAMES = [
     'org_id',
     'role',
@@ -69,6 +74,7 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
 ]
 
 CSV_FIELDNAME_MAP = {
+    'groups': GROUPS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
