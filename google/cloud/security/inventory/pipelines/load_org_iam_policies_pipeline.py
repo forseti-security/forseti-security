@@ -19,9 +19,7 @@ import json
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.util import parser
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
@@ -32,25 +30,21 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
 
     RAW_ORG_IAM_POLICIES = 'raw_org_iam_policies'
 
-    def __init__(self, cycle_timestamp, configs, crm_rate_limiter, dao):
+    def __init__(self, cycle_timestamp, configs, crm_client, dao, parser):
         """Constructor for the data pipeline.
 
         Args:
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
             configs: Dictionary of configurations.
-            crm_rate_limiter: RateLimiter object for CRM API client.
+            crm_client: CRM API client.
             dao: Data access object.
+            parser: Forseti parser utility object.
 
         Returns:
             None
-
-        Raises:
-            LoadDataPipelineException: An error with loading data has occurred.
         """
         super(LoadOrgIamPoliciesPipeline, self).__init__(
-            'org_iam_policies', cycle_timestamp, configs,
-            crm.CloudResourceManagerClient(rate_limiter=crm_rate_limiter),
-            dao)
+            'org_iam_policies', cycle_timestamp, configs, crm_client, dao)
         self.parser = parser
 
     def _load(self, iam_policies_map, flattened_iam_policies):
@@ -130,7 +124,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
             # than cloning to 2 iterators.
             return list(self.gcp_api_client.get_org_iam_policies(
                 self.name, org_id))
-        except ApiExecutionError as e:
+        except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):

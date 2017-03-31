@@ -31,25 +31,26 @@ To see all the dependent flags:
   $ forseti_inventory --helpfull
 """
 
+from datetime import datetime
 import sys
 
-from datetime import datetime
 import gflags as flags
-
+from google.apputils import app
 from ratelimiter import RateLimiter
 
-from google.apputils import app
-from google.cloud.security.common.data_access import db_schema_version
-from google.cloud.security.common.data_access.dao import Dao
-from google.cloud.security.common.data_access.errors import MySQLError
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
+from google.cloud.security.common.data_access import db_schema_version
+from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
-from google.cloud.security.inventory.pipelines.load_org_iam_policies_pipeline import LoadOrgIamPoliciesPipeline
+from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -83,7 +84,7 @@ def _exists_snapshot_cycles_table(dao):
         sql = snapshot_cycles_sql.SELECT_SNAPSHOT_CYCLES_TABLE
         result = dao.execute_sql_with_fetch(snapshot_cycles_sql.RESOURCE_NAME,
                                             sql, values=None)
-    except MySQLError as e:
+    except data_access_errors.MySQLError as e:
         LOGGER.error('Error in attempt to find snapshot_cycles table: %s', e)
         sys.exit()
 
@@ -105,7 +106,7 @@ def _create_snapshot_cycles_table(dao):
         sql = snapshot_cycles_sql.CREATE_TABLE
         dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
                                     sql, values=None)
-    except MySQLError as e:
+    except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to create snapshot cycles table: %s', e)
         sys.exit()
 
@@ -134,7 +135,7 @@ def _start_snapshot_cycle(cycle_time, cycle_timestamp, dao):
         values = (cycle_timestamp, cycle_time, 'RUNNING', db_schema_version)
         dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
                                     sql, values)
-    except MySQLError as e:
+    except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to insert new snapshot cycle: %s', e)
         sys.exit()
 
@@ -161,7 +162,7 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
         sql = snapshot_cycles_sql.UPDATE_CYCLE
         dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
                                     sql, values)
-    except MySQLError as e:
+    except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to complete update snapshot cycle: %s', e)
         sys.exit()
 
@@ -215,7 +216,7 @@ def main(argv):
 
     try:
         dao = Dao()
-    except MySQLError as e:
+    except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
 
@@ -233,9 +234,11 @@ def main(argv):
     max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
 
+    crm_api_client = crm.CloudResourceManagerClient(
+        rate_limiter=crm_rate_limiter)
     pipelines = [
-        LoadOrgIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_rate_limiter, dao),
+        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_api_client, dao, parser),
         # TODO: add load projects pipeline
         # TODO: add load project policies pipeline
     ]

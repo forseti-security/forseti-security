@@ -18,6 +18,7 @@ from apiclient import discovery
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api._supported_apis import SUPPORTED_APIS
 from google.cloud.security.common.util import retryable_exceptions
 
@@ -31,11 +32,12 @@ class _BaseClient(object):
             credentials = GoogleCredentials.get_application_default()
         self._credentials = credentials
         if not kwargs or not kwargs.get('api_name'):
-            raise UnsupportedApiError('Unsupported API {}'.format(kwargs))
+            raise api_errors.UnsupportedApiError(
+                'Unsupported API {}'.format(kwargs))
         self.name = kwargs['api_name']
         if not SUPPORTED_APIS[self.name] or \
             not SUPPORTED_APIS[self.name]['version']:
-            raise UnsupportedApiVersionError(
+            raise api_errors.UnsupportedApiVersionError(
                 'Unsupported version {}'.format(SUPPORTED_APIS[self.name]))
         self.version = SUPPORTED_APIS[self.name]['version']
         self.service = discovery.build(self.name, self.version,
@@ -66,29 +68,3 @@ class _BaseClient(object):
             upstream.
         """
         return request.execute()
-
-
-# Eventually, move these to the errors module
-class Error(Exception):
-    """Base Error class."""
-
-
-class ApiExecutionError(Error):
-    """Error for API executions."""
-
-    CUSTOM_ERROR_MESSAGE = 'GCP API Error: unable to get {0} from GCP:\n{1}'
-
-
-    def __init__(self, resource_name, e):
-        super(ApiExecutionError, self).__init__(
-            self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
-
-
-class UnsupportedApiError(Error):
-    """Error for unsupported API."""
-    pass
-
-
-class UnsupportedApiVersionError(Error):
-    """Error for unsupported API version."""
-    pass

@@ -19,7 +19,7 @@ from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util.log_util import LogUtil
 
@@ -62,7 +62,7 @@ class CloudResourceManagerClient(_BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(ApiExecutionError(project_id, e))
+            LOGGER.error(api_errors.ApiExecutionError(project_id, e))
         return None
 
     def get_projects(self, resource_name, organization_id, **filterargs):
@@ -117,7 +117,7 @@ class CloudResourceManagerClient(_BaseClient):
                         previous_request=request,
                         previous_response=response)
         except (HttpError, HttpLib2Error) as e:
-            raise ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_project_iam_policies(self, resource_name, project_identifier):
         """Get all the iam policies of given project numbers.
@@ -138,7 +138,7 @@ class CloudResourceManagerClient(_BaseClient):
                     resource=project_identifier, body={})
                 return self._execute(request)
         except (HttpError, HttpLib2Error) as e:
-            raise ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_organization(self, org_name):
         """Get organizations.
@@ -160,7 +160,7 @@ class CloudResourceManagerClient(_BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(ApiExecutionError(org_name, e))
+            LOGGER.error(api_errors.ApiExecutionError(org_name, e))
         return None
 
     def get_org_iam_policies(self, resource_name, org_id):
@@ -190,4 +190,4 @@ class CloudResourceManagerClient(_BaseClient):
                 yield {'org_id': org_id,
                        'iam_policy': response}
         except (HttpError, HttpLib2Error) as e:
-            raise ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(resource_name, e)
