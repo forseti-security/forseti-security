@@ -73,7 +73,6 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
 
         for i in iam_policies_map:
             i['iam_policy'] = json.dumps(i['iam_policy'])
-
         dao.load_data(RAW_ORG_IAM_POLICIES, cycle_timestamp, iam_policies_map)
     except (CSVFileError, MySQLError) as e:
         raise LoadDataPipelineError(e)
