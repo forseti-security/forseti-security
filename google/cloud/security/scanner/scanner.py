@@ -97,8 +97,6 @@ def main(_):
             project_policies.iteritems()),
         rules_engine)
 
-    LOGGER.info('%s violations found', len(all_violations))
-
     # If there are violations, send results.
     if all_violations:
         resource_counts = {

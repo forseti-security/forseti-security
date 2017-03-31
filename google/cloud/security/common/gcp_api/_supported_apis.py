@@ -31,9 +31,6 @@ SUPPORTED_APIS = {
     'iam': {
         'version': 'v1'
     },
-    'logging': {
-        'version': 'v2'
-    },
     'storage': {
         'version': 'v1'
     },

@@ -37,7 +37,6 @@ NAMESPACE_PACKAGES = [
 INSTALL_REQUIRES = [
     'futures==3.0.5',
     'google-api-python-client==1.6.1',
-    'google-auth==0.8.0',
     'Jinja2==2.9.5',
     'MySQL-python==1.2.5',
     'protobuf==3.2.0',

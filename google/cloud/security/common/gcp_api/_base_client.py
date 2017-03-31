@@ -18,7 +18,6 @@ from apiclient import discovery
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
-import google.auth
 from google.cloud.security.common.gcp_api._supported_apis import SUPPORTED_APIS
 from google.cloud.security.common.util import retryable_exceptions
 
@@ -42,7 +41,6 @@ class _BaseClient(object):
         self.service = discovery.build(self.name, self.version,
                                        credentials=self._credentials,
                                        cache_discovery=False)
-        _, self.project = google.auth.default()
 
     def __repr__(self):
         return 'API: name={}, version={}'.format(self.name, self.version)
