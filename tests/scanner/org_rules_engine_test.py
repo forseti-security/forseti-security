@@ -977,9 +977,9 @@ class OrgRulesEngineTest(basetest.TestCase):
         self.assertItemsEqual(expected_violations, actual_violations)
 
     def test_ignore_case_works(self):
-        """Test blacklisted user still found on project, ignoring case.
+        """Test blacklisted user with different case still violates rule.
 
-        Test that a project's user with a multi-case identification still
+        Test that a project's user with a multi-case identifier still
         violates the blacklist.
 
         Setup:
