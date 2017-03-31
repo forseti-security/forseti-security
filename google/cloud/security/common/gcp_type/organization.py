@@ -16,26 +16,18 @@
 See: https://cloud.google.com/resource-manager/reference/rest/v1/organizations
 """
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
-from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
-from google.cloud.security.common.gcp_type.resource import LifecycleState
-from google.cloud.security.common.gcp_type.resource import Resource
-from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_type import resource
 
 
 # pylint: disable=too-few-public-methods
-# TODO: Investigate improving to not use the disable.
-class OrgLifecycleState(LifecycleState):
-    """Organization lifecycle state.
-
-    See: https://cloud.google.com/resource-manager/reference/rest/v1/organizations#lifecyclestate
-    """
+class OrgLifecycleState(resource.LifecycleState):
+    """Organization lifecycle state."""
 
     DELETED_REQUESTED = 'DELETE_REQUESTED'
 
 
-class Organization(Resource):
+class Organization(resource.Resource):
     """Organization resource."""
 
     def __init__(self, organization_id, org_name=None,
@@ -49,7 +41,7 @@ class Organization(Resource):
         """
         super(Organization, self).__init__(
             resource_id=organization_id,
-            resource_type=ResourceType.ORGANIZATION,
+            resource_type=resource.ResourceType.ORGANIZATION,
             resource_name=org_name,
             parent=None,
             lifecycle_state=lifecycle_state)
@@ -60,7 +52,7 @@ class Organization(Resource):
         Returns:
             True if we can get the org from GCP, otherwise False.
         """
-        crm_client = CloudResourceManagerClient()
+        crm_client = crm.CloudResourceManagerClient()
         org = crm_client.get_organization(
             'organizations/{}'.format(self.resource_id))
 
