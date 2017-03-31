@@ -54,10 +54,13 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
         # than cloning to 2 iterators.
         iam_policies_map = crm_client.get_org_iam_policies(
             RESOURCE_NAME, org_id)
+        # TODO: Investigate improving so the pylint disable isn't needed.
+        # pylint: disable=redefined-variable-type
+        iam_policies_map = list(iam_policies_map)
 
         # Flatten and relationalize data for upload to cloud sql.
         flattened_iam_policies = (
-            transform_util.flatten_iam_policies(list(iam_policies_map)))
+            transform_util.flatten_iam_policies(iam_policies_map))
     except ApiExecutionError as e:
         raise LoadDataPipelineError(e)
 
@@ -70,6 +73,7 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
 
         for i in iam_policies_map:
             i['iam_policy'] = json.dumps(i['iam_policy'])
+
         dao.load_data(RAW_ORG_IAM_POLICIES, cycle_timestamp, iam_policies_map)
     except (CSVFileError, MySQLError) as e:
         raise LoadDataPipelineError(e)
