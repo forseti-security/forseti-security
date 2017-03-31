@@ -14,10 +14,8 @@
 
 """Wrapper for Compute API client."""
 
-import httplib
-import socket
-
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
+
 
 # pylint: disable=too-few-public-methods
 class ComputeClient(_BaseClient):
