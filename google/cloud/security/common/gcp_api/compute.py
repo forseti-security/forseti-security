@@ -19,31 +19,6 @@ import socket
 
 from google.cloud.security.common.gcp_api._base_client import _BaseClient
 
-def is_compute_engine_instance():
-    """Attempt to query the metadata server to determine if GCE instance.
-
-    Returns:
-        Tuple of (is_gce_instance, error_msg)
-    """
-    conn = httplib.HTTPConnection('metadata.google.internal', timeout=2)
-    error_msg = None
-    is_gce_instance = False
-    try:
-        conn.request('GET', '/computeMetadata/v1/instance/id',
-                     None, {'Metadata-Flavor': 'Google'})
-        res = conn.getresponse()
-
-        if res and res.status == 200:
-            is_gce_instance = True
-        else:
-            error_msg = res.reason
-    except socket.error:
-        error_msg = 'Unable to query metadata server'
-    finally:
-        conn.close()
-
-    return (is_gce_instance, error_msg)
-
 # pylint: disable=too-few-public-methods
 class ComputeClient(_BaseClient):
     """Compute Client."""
