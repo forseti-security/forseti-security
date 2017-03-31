@@ -13,18 +13,16 @@
 # limitations under the License.
 """A Folder Resource."""
 
-from google.cloud.security.common.gcp_type.resource import LifecycleState
-from google.cloud.security.common.gcp_type.resource import Resource
-from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.gcp_type import resource
+
 
 # pylint: disable=too-few-public-methods
-# TODO: Investigate improving so as to not use the disable.
-class FolderLifecycleState(LifecycleState):
+class FolderLifecycleState(resource.LifecycleState):
     """Represents the Folder's LifecycleState."""
     pass
 
 
-class Folder(Resource):
+class Folder(resource.Resource):
     """Folder Resource."""
 
     def __init__(self, folder_id, folder_name=None,
@@ -38,7 +36,7 @@ class Folder(Resource):
         """
         super(Folder, self).__init__(
             resource_id=folder_id,
-            resource_type=ResourceType.FOLDER,
+            resource_type=resource.ResourceType.FOLDER,
             resource_name=folder_name,
             parent=None,
             lifecycle_state=lifecycle_state)

@@ -18,8 +18,8 @@ from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
 
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util.log_util import LogUtil
 
 
@@ -29,7 +29,7 @@ DEFAULT_MAX_QUERIES = 150000
 DEFAULT_RATE_BUCKET_SECONDS = 86400
 
 
-class AdminDirectoryClient(_BaseClient):
+class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""
 
     API_NAME = 'admin'
@@ -71,7 +71,7 @@ class AdminDirectoryClient(_BaseClient):
         request = groups_stub.list(customer=customer_id)
         results = []
 
-        # TODO: Investigate yeilding results to handle large group lists.
+        # TODO: Investigate yielding results to handle large group lists.
         while request is not None:
             try:
                 with self.rate_limiter:
@@ -79,6 +79,6 @@ class AdminDirectoryClient(_BaseClient):
                     results.extend(response.get('groups', []))
                     request = groups_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
-                raise ApiExecutionError(groups_stub, e)
+                raise api_errors.ApiExecutionError(groups_stub, e)
 
         return results
