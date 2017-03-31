@@ -976,6 +976,59 @@ class OrgRulesEngineTest(basetest.TestCase):
 
         self.assertItemsEqual(expected_violations, actual_violations)
 
+    def test_ignore_case_works(self):
+        """Test blacklisted user still found on project, ignoring case.
+
+        Test that a project's user with a multi-case identification still
+        violates the blacklist.
+
+        Setup:
+            * Create a RulesEngine with RULES6 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find 1 rule violation.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = OrgRulesEngine(rules_local_path)
+        rules_engine.rule_book = OrgRuleBook(test_rules.RULES6)
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:OWNER@company.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(self.project1, project_policy)
+        ))
+
+        # expected
+        expected_outstanding_proj = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:OWNER@company.com')
+            ]
+        }
+
+        expected_violations = set([
+            RuleViolation(
+                rule_index=1,
+                rule_name='project blacklist',
+                resource_id=self.project1.resource_id,
+                resource_type=self.project1.resource_type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding_proj['roles/owner'])),
+        ])
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
 
 if __name__ == '__main__':
     basetest.main()
