@@ -26,7 +26,7 @@ from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
 
-DEFAULT_MAX_QUERIES = 100
+DEFAULT_MAX_QUERIES = 400
 DEFAULT_RATE_BUCKET_SECONDS = 100
 
 
@@ -34,7 +34,6 @@ class CloudResourceManagerClient(_BaseClient):
     """Resource Manager Client."""
 
     API_NAME = 'cloudresourcemanager'
-    DEFAULT_MAX_QUERIES = 400
 
     def __init__(self, credentials=None, rate_limiter=None):
         super(CloudResourceManagerClient, self).__init__(
