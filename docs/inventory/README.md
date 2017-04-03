@@ -1,10 +1,14 @@
 # Inventory
 This is the Inventory component of Forseti Security tool.
-
+  * [Pre-requisites](#pre-requisites)
+  * [Executing inventory](#executing-inventory)
+  * [Developing on inventory](#developing-on-inventory)
+    * [Collecting and storing new data with inventory](#collecting-and-storing-new-data-with-inventory)
+  
 ## Pre-requisites
 See the [PREREQUISITES](/docs/prerequisites/README.md) guide.
 
-## How to Run
+## Executing inventory
 After running setup.py, as long as your virtualenv is activated, then you can be in
 any directory to invoke the console script:
 
@@ -12,53 +16,33 @@ any directory to invoke the console script:
 $ forseti_inventory
 ```
 
-You can also use the convenience [dev_inventory.sh script](/scripts) to run
-forseti_inventory. Make a copy of dev_inventory.sh.sample
-as dev_inventory.sh, edit the script for the appropriate
-commandline flags, and invoke the script from the repo root to run inventory.
+You can also use the convenience [dev_inventory.sh script](/scripts) to run forseti_inventory. Make a copy of dev_inventory.sh.sampleas dev_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
 
 ```sh
 $ cd path/to/forseti-security
 $ scripts/dev_inventory.sh
 ```
+## Developing on inventory
+### Collecting and storing new data with inventory
 
-## How to Test
-Look at the test instructions in the tests [README](/docs/tests/README.md).
+It's straightforward to add a new resource to inventory for collection. This workflow is designed to be generic across resource types.
 
-## How to add a new resource to the inventory
+1. Define a new table schema for the 'flattended' data you need to store.
+Each relevant field of data you retrieve from an API should correspond to a column in the table schema.
 
-It's straightforward to add a new resource to inventory for collection.
-This workflow is designed to be generic across resource types.
+2. Define a new table schema for the 'raw data you need to store.
+Additionally, we aim to store the raw API data as json to assist troubleshooting.
 
-The main steps are:
+Once you've completed these steps create a Pull Request ([example](https://github.com/GoogleCloudPlatform/forseti-security/pull/159)).
 
-1. Define the database table schema to store the resource data.
+3. Once the database PR is merged create a [pipeline](/google/cloud/security/inventory/pipelines/) to fetch your data.
+This possibly requires adding new API support, and different authentication. If your change does not require adding new API support you can skip step 4.
 
-2. Create a new pipeline worker to process the new table and the table fieldnames.
+4. Add your pipeline to [`inventory_loader.py`](/google/cloud_securit/inventory/inventory_loader.py).
+Doing this might require protecting the processing of this pipeline with new flags.
 
-3. Write a transformation to flatten the data returned by GCP APIs into a format
-that's ingestiable.
-
-Look at this PR for an [end-to-end example loading of a resource].
-
-Step-by-Step:
-
-1. Define a new table schema for the data you need to store in Inventory.
-Each field of data should correspond to a column in the table schema.
-Additionally, we aim to store the raw API data as json to assist
-troubleshooting.  Create a PR for this to be reviewed first before rest of the
-code is written.  See [create_tables.py] for examples.
-
-2. Once the database PR is merged, create a pipeline worker for your resource
-in [inventory/pipelines].  This pipeline worker will then be installed in
-[inventory_loader.py].
-
-3. Get the data from GCP.  [See if the API to get your data already exists.]
-If not, it's your chance to contribute a new one.
-
-4. Data from GCP API is not normalized and can not be fitted into the
-database table.  You will have to write a function to transform the data.
-Please write a [test for this transform function].
+5. Flattening the data collected from your API
+Data retrieved from the Google Cloud APIs can have nested and repeating children, e.g. JSON.
 
     ```json
     Example API Data
@@ -88,31 +72,17 @@ Please write a [test for this transform function].
           },
         ]
     }
+    ```
+    
+To store this data in CSV or in a normalized storage system requires flattening the data into rows.
 
+    ```
     Example Transformed (Flattened) Data
     project_number, project_id, project_name, lifecycle_status, parent_type, parent_id, create_time
     25621943694 project1  project1  ACTIVE  organization  888888888888  2016-10-22 16:57:36
     94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
     ```
+Here's an example of [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/transform_util.py#L29)
 
-5. Load the flattened data into database table, with the load_data() in [dao.py].  See this [end-to-end example loading of a resource].
-    * Add the new table to CREATE_TABLE_MAP in [dao.py].
-    * Use the [csv_writer] to write the API data to CSV.
-    * Create a new map in [csv_writer], of the fieldnames that matches the CSV column to the database columns.
-    * Add the new map in [csv_writer], to CSV_FIELDNAME_MAP.
-    * Call the load_sql_provider to generate the SQL to load the data for your resource.
-    * Execute the load data SQL command.
-
-## Tips & Tricks
-* It is helpful to use a MySql GUI tool to inspect the table data.
-
-[README]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/README.md#tests
-[See if the API to get your data already exists.]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/common/gcp_api
-[create_tables.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/sql_queries/create_tables.py
-[csv_writer]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/csv_writer.py
-[dao.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/common/data_access/dao.py
-[end-to-end example loading of a resource]: https://github.com/GoogleCloudPlatform/forseti-security/pull/26
-[existing pipelines]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines
-[inventory_loader.py]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/inventory_loader.py
-[inventory/pipelines]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines
-[test for this transform function]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/tests/inventory/transform_util_test.py
+6. Load the flattened data into database table
+For an example of steps 3 through 6 see this [PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/165)

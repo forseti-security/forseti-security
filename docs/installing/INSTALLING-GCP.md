@@ -48,6 +48,8 @@ The provided DM templates are samples for you to use. Make a copy of
     the **organization-level** IAM policy.
 * YOUR\_ORG\_ID (the organization id number; get it from the Organization
   IAM settings or ask your Organization Administrator)
+* INVENTORY\_GROUPS and DOMAIN\_SUPER\_ADMIN\_EMAIL
+  * See the [GSUITE-GROUPS](/docs/common/GSUITE-GROUPS.md) guide for an explanation on the use of these variables.
 * YOUR\_SENDGRID\_API\_KEY (the API key for SendGrid email service)
 * EMAIL\_ADDRESS\_OF_YOUR\_SENDER (email address of your email sender)
 * EMAIL\_ADDRESS\_OF\_YOUR\_RECIPIENT (email address of your email recipient)

@@ -6,7 +6,7 @@
 * [Execution](#execution)
 
 ## Prerequisites
-Install or set up the Forseti Security [prerequisites](/docs/prerequisites/README.md).
+Complete the Forseti Security prequisites [README](/docs/prerequisites/README.md).
 
 ## Create a virtualenv
 ```sh
@@ -16,6 +16,10 @@ $ workon forseti-security
 
 ## Get the source code
 Clone the repo, if you haven't already done so.
+
+```sh
+$ (forseti-secuirty): git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+```
 
 ## Run the python setup
 Navigate to your cloned repo, then run:
