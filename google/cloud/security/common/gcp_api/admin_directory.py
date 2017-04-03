@@ -55,24 +55,24 @@ class AdminDirectoryClient(_base_client.BaseClient):
         return RateLimiter(
             DEFAULT_MAX_QUERIES,
             DEFAULT_RATE_BUCKET_SECONDS)
-        
+
     @staticmethod
     def build_proper_credentials(configs):
         """Build proper credentials required for accessing the directory API.
-    
+
         Args:
             configs: Dictionary of configurations.
-    
+
         Returns:
             Credentials as built by oauth2client.
-    
+
         Raises:
             LoadDataPipelineException: An error with loading data has occurred.
         """
-    
+
         if metadata_server.can_reach_metadata_server():
             return AppAssertionCredentials(REQUIRED_SCOPES)
-    
+
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 configs.get('service_account_credentials_file'),
