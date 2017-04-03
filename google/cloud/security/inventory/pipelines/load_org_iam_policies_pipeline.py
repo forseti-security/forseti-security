@@ -86,7 +86,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
                 Example: {'project_number': 11111,
                           'iam_policy': policy}
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
-    
+
         Yields:
             An iterable of loadable iam policies, as a per-org dictionary.
         """
@@ -107,11 +107,11 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
                            'member_name': member_name,
                            'member_domain': member_domain}
 
-    def _retrieve(self, org_id):
+    def _retrieve(self):
         """Retrieve the org IAM policies from GCP.
 
         Args:
-            org_id: String of the organization id
+            None
 
         Returns:
             iam_policies_map: List of IAM policies as per-org dictionary.
@@ -120,11 +120,10 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
         """
         try:
-            # Retrieve data from GCP.
             # Flatten the iterator since we will use it twice, and it is faster
             # than cloning to 2 iterators.
             return list(self.api_client.get_org_iam_policies(
-                self.name, org_id))
+                self.name, self.configs.get('organization_id')))
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 

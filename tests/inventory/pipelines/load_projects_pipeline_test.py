@@ -85,7 +85,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
 
     def test_api_is_called_to_retrieve_projects(self):
         """Test that api is called to retrieve projects."""
-        self.pipeline._retrieve(self.pipeline.configs['organization_id'])
+        self.pipeline._retrieve()
 
         self.pipeline.api_client.get_projects.assert_called_once_with(
             self.pipeline.name,
@@ -99,8 +99,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
         self.assertRaises(inventory_errors.LoadDataPipelineError,
-                          self.pipeline._retrieve,
-                          self.pipeline.configs['organization_id'])
+                          self.pipeline._retrieve)
 
     @mock.patch.object(
         load_projects_pipeline.LoadProjectsPipeline,
@@ -122,8 +121,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         mock_transform.return_value = EXPECTED_LOADABLE_PROJECTS
         self.pipeline.run()
 
-        mock_retrieve.assert_called_once_with(
-            self.configs.get('organization_id'))
+        mock_retrieve.assert_called_once_with()
 
         mock_transform.assert_called_once_with(FAKE_PROJECTS)
 

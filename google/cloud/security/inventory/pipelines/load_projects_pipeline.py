@@ -109,11 +109,11 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
                    'raw_project': project_json,
                    'create_time': formatted_project_create_time}
 
-    def _retrieve(self, org_id):
+    def _retrieve(self):
         """Retrieve the project resources from GCP.
 
         Args:
-            org_id: String of the organization id
+            None
 
         Returns:
             An iterable of resource manager project list response.
@@ -146,7 +146,7 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
             raise inventory_errors.LoadDataPipelineError(
                 'No organization id is specified.')
 
-        projects_map = self._retrieve(org_id)
+        projects_map = self._retrieve()
 
         loadable_projects = self._transform(projects_map)
 

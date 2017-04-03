@@ -38,11 +38,11 @@ from datetime import datetime
 import sys
 
 import gflags as flags
-from google.apputils import app
 from ratelimiter import RateLimiter
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
+from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access.dao import Dao
@@ -262,17 +262,17 @@ def main(argv):
                 configs))
         admin_api_client = admin_directory.AdminDirectoryClient(
             credentials=credentials, rate_limiter=admin_directory_rate_limiter)
-    except api_errors:
+    except api_errors.ApiExecutionError:
         LOGGER.error('Unable to build api client.\n%s', e)
         sys.exit()
 
     pipelines = [
-#        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-#            cycle_timestamp, configs, crm_api_client, dao, parser),
-#        load_projects_pipeline.LoadProjectsPipeline(
-#            cycle_timestamp, configs, crm_api_client, dao),
-#        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-#            cycle_timestamp, configs, crm_api_client, dao, parser),
+        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_api_client, dao, parser),
+        load_projects_pipeline.LoadProjectsPipeline(
+            cycle_timestamp, configs, crm_api_client, dao),
+        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_api_client, dao, parser),
         load_groups_pipeline.LoadGroupsPipeline(
             cycle_timestamp, configs, admin_api_client, dao),
     ]

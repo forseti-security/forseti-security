@@ -119,7 +119,7 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
 
     def test_api_is_called_to_retrieve_org_policies(self):
         """Test that api is called to retrieve org policies."""
-        self.pipeline._retrieve(self.pipeline.configs['organization_id'])
+        self.pipeline._retrieve()
 
         self.pipeline.api_client.get_org_iam_policies.assert_called_once_with(
             self.pipeline.name, self.pipeline.configs['organization_id'])
@@ -131,8 +131,7 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
         self.assertRaises(inventory_errors.LoadDataPipelineError,
-                          self.pipeline._retrieve,
-                          self.pipeline.configs['organization_id'])
+                          self.pipeline._retrieve)
 
     @mock.patch.object(
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline,
