@@ -96,8 +96,6 @@ don't want to be tracked, the tracking pixel can be
 ## Deployment-specific prerequisites
 ### GCP installations
 Enable **Deployment Manager API**.
-In addition to the APIs from [above](#enable-required-apis) you must enable the
-Deployment Manager API.
 
   ```sh
   $ gcloud beta service-management enable deploymentmanager.googleapis.com
