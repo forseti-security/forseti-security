@@ -9,3 +9,9 @@ To do this you must enable Domain-wide Delegation "DWD" ([details](https://cloud
   ```sh
   $ gcloud beta service-management list enable admin.googleapis.com
   ```
+
+Store the created service account keys on the meta-data server for your GCE instance.
+
+ ```sh
+ $ gcloud compute instances create <instance-name> --metadata dwd-key=`cat <key-file.json>`
+ ```
