@@ -121,7 +121,7 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
 
         """
         try:
-            return self.gcp_api_client.get_projects(
+            return self.api_client.get_projects(
                 self.RESOURCE_NAME,
                 self.configs['organization_id'],
                 lifecycleState=LifecycleState.ACTIVE)

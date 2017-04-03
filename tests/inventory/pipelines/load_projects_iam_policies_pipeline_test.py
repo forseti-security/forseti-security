@@ -126,13 +126,13 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
             self.pipeline.name, self.pipeline.cycle_timestamp)
 
 
-        self.assertEquals(2, self.pipeline.gcp_api_client.get_project_iam_policies.call_count)        
-        called_args, called_kwargs = self.pipeline.gcp_api_client.get_project_iam_policies.call_args_list[0]
+        self.assertEquals(2, self.pipeline.api_client.get_project_iam_policies.call_count)        
+        called_args, called_kwargs = self.pipeline.api_client.get_project_iam_policies.call_args_list[0]
         expected_args = (self.pipeline.name,
                          self.FAKE_PROJECT_NUMBERS[0])
         self.assertEquals(expected_args, called_args)        
 
-        called_args, called_kwargs = self.pipeline.gcp_api_client.get_project_iam_policies.call_args_list[1]
+        called_args, called_kwargs = self.pipeline.api_client.get_project_iam_policies.call_args_list[1]
         expected_args = (self.pipeline.name,
                          self.FAKE_PROJECT_NUMBERS[1])
         self.assertEquals(expected_args, called_args)        
@@ -155,7 +155,7 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         """
         self.pipeline.logger = mock.create_autospec(LogUtil).setup_logging('foo')
         self.pipeline.dao.select_project_numbers.return_value = self.FAKE_PROJECT_NUMBERS
-        self.pipeline.gcp_api_client.get_project_iam_policies.side_effect = (
+        self.pipeline.api_client.get_project_iam_policies.side_effect = (
             api_errors.ApiExecutionError('error error', mock.MagicMock()))
 
         self.pipeline._retrieve()

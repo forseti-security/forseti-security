@@ -133,7 +133,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
         iam_policy_maps = []
         for project_number in project_numbers:
             try:
-                iam_policy = self.gcp_api_client.get_project_iam_policies(
+                iam_policy = self.api_client.get_project_iam_policies(
                     self.name, project_number)
                 iam_policy_map = {'project_number': project_number,
                                   'iam_policy': iam_policy}

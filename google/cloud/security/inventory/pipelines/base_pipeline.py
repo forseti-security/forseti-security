@@ -25,14 +25,14 @@ class _BasePipeline(object):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, name, cycle_timestamp, configs, gcp_api_client, dao):
+    def __init__(self, name, cycle_timestamp, configs, api_client, dao):
         """Constructor for the base pipeline.
 
         Args:
             name: String of the resource loaded by the pipeline.
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
             configs: Dictionary of configurations.
-            gcp_api_client: GCP API client object.
+            api_client: API client object.
             dao: Data access object.
 
         Returns:
@@ -42,7 +42,7 @@ class _BasePipeline(object):
         self.name = name
         self.cycle_timestamp = cycle_timestamp
         self.configs = configs
-        self.gcp_api_client = gcp_api_client
+        self.api_client = api_client
         self.dao = dao
 
     @abc.abstractmethod

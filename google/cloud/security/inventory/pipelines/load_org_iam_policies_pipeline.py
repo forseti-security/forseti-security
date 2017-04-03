@@ -122,7 +122,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
             # Retrieve data from GCP.
             # Flatten the iterator since we will use it twice, and it is faster
             # than cloning to 2 iterators.
-            return list(self.gcp_api_client.get_org_iam_policies(
+            return list(self.api_client.get_org_iam_policies(
                 self.name, org_id))
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)

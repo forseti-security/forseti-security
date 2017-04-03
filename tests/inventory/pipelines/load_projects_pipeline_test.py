@@ -87,7 +87,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         """Test that api is called to retrieve projects."""
         self.pipeline._retrieve(self.pipeline.configs['organization_id'])
 
-        self.pipeline.gcp_api_client.get_projects.assert_called_once_with(
+        self.pipeline.api_client.get_projects.assert_called_once_with(
             self.pipeline.name,
             self.pipeline.configs['organization_id'],
             lifecycleState=LifecycleState.ACTIVE)
@@ -95,7 +95,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
     def test_retrieve_errors_are_handled(self):
         """Test that errors are handled when retrieving."""
 
-        self.pipeline.gcp_api_client.get_projects.side_effect = (
+        self.pipeline.api_client.get_projects.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
         self.assertRaises(inventory_errors.LoadDataPipelineError,

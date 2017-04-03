@@ -108,7 +108,7 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
             A list of group objects returned from the API.
         """
         try:
-            return self.gcp_api_client.get_groups()
+            return self.api_client.get_groups()
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
