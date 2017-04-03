@@ -71,9 +71,6 @@ Use `gcloud` to enable required APIs.
   ```sh
   $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
   ```
-  
-### Enable required APIs to check GSuite Groups in IAM ACLs
-See the [GSUITE-GROUPS](/docs/common/GSUITE-GROUPS.md) guide on completing the required steps.
 
 ### Obtain a SendGrid API Key (optional)
 SendGrid is currently the only supported email service provider. To use it,
