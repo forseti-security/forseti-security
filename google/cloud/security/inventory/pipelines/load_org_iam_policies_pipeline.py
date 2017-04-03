@@ -52,7 +52,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
 
         A separate table is used to store the raw iam policies because it is
         much faster than updating these individually into the projects table.
-        
+
         Args:
             iam_policies_map: List of IAM policies as per-org dictionary.
                 Example: {org_id: org_id,
@@ -79,7 +79,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
 
     def _transform(self, iam_policies_map):
         """Yield an iterator of loadable iam policies.
-    
+
         Args:
             iam_policies_map: An iterable of iam policies as per-project
                 dictionary.
