@@ -51,7 +51,7 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
         super(LoadProjectsPipeline, self).__init__(
             self.RESOURCE_NAME, cycle_timestamp, configs, crm_client, dao)
 
-    def _load(self, flattened_projects):
+    def _load(self, loadable_projects):
         """ Load iam policies into cloud sql.
 
         A separate table is used to store the raw iam policies because it is
@@ -62,7 +62,7 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
                 Example: {org_id: org_id,
                           iam_policy: iam_policy}
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
-            flattened_iam_policies: An iterable of flattened iam policies,
+            loadable_iam_policies: An iterable of loadable iam policies,
                 as a per-org dictionary.
 
         Returns:
@@ -72,20 +72,20 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
         # Load projects data into cloud sql.
         try:
             self.dao.load_data(self.RESOURCE_NAME, self.cycle_timestamp,
-                               flattened_projects)
+                               loadable_projects)
         except (data_access_errors.CSVFileError,
                 data_access_errors.MySQLError) as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
-    def _flatten(self, projects):
-        """Yield an iterator of flattened iam policies.
+    def _transform(self, projects):
+        """Yield an iterator of loadable iam policies.
     
         Args:
             projects: An iterable of resource manager project list response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
     
         Yields:
-            An iterable of flattened projects, as a per-project dictionary.
+            An iterable of loadable projects, as a per-project dictionary.
         """
         for project in (project for d in projects \
                         for project in d.get('projects', [])):
@@ -140,8 +140,8 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
 
         projects_map = self._retrieve(org_id)
 
-        flattened_projects = self._flatten(projects_map)
+        loadable_projects = self._transform(projects_map)
 
-        self._load(flattened_projects)
+        self._load(loadable_projects)
 
         self._get_loaded_count()

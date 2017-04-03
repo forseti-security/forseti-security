@@ -98,7 +98,7 @@ FAKE_PROJECTS = [
 ]
 
 
-EXPECTED_FLATTENED_PROJECTS = [
+EXPECTED_LOADABLE_PROJECTS = [
     {
         'project_name': 'project1',
         'create_time': '2016-10-22 16:57:36',

@@ -27,7 +27,7 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
-from tests.inventory.pipelines.test_data.fake_projects import EXPECTED_FLATTENED_PROJECTS
+from tests.inventory.pipelines.test_data.fake_projects import EXPECTED_LOADABLE_PROJECTS
 from tests.inventory.pipelines.test_data.fake_projects import FAKE_PROJECTS
 # pylint: enable=line-too-long
 
@@ -57,12 +57,12 @@ class LoadProjectsPipelineTest(basetest.TestCase):
 
     def test_data_are_loaded(self):
         """Test that data are loaded."""
-        self.pipeline._load(EXPECTED_FLATTENED_PROJECTS)
+        self.pipeline._load(EXPECTED_LOADABLE_PROJECTS)
 
         self.mock_dao.load_data.assert_called_once_with(
             self.pipeline.name,
             self.pipeline.cycle_timestamp,
-            EXPECTED_FLATTENED_PROJECTS)
+            EXPECTED_LOADABLE_PROJECTS)
 
     def test_exceptions_are_handled_when_loading(self):
         """Test that exceptions are handled when loading."""
@@ -71,17 +71,17 @@ class LoadProjectsPipelineTest(basetest.TestCase):
             data_access_errors.MySQLError('11111', '22222'))
         self.assertRaises(inventory_errors.LoadDataPipelineError,
                           self.pipeline._load,
-                          EXPECTED_FLATTENED_PROJECTS)
+                          EXPECTED_LOADABLE_PROJECTS)
 
-    def test_can_flatten_projects(self):
-        """Test that projects can be flattened."""
+    def test_can_transform_projects(self):
+        """Test that projects can be transformed."""
 
-        projects = self.pipeline._flatten(FAKE_PROJECTS)
+        projects = self.pipeline._transform(FAKE_PROJECTS)
         for (i, project) in enumerate(projects):
             # Normalize to python representation.
             project['raw_project'] = json.loads(project['raw_project'])
             project = json.loads(json.dumps(project))
-            self.assertEquals(EXPECTED_FLATTENED_PROJECTS[i], project)
+            self.assertEquals(EXPECTED_LOADABLE_PROJECTS[i], project)
 
     def test_api_is_called_to_retrieve_projects(self):
         """Test that api is called to retrieve projects."""
@@ -110,24 +110,24 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         '_load')    
     @mock.patch.object(
         load_projects_pipeline.LoadProjectsPipeline,
-        '_flatten')
+        '_transform')
     @mock.patch.object(
         load_projects_pipeline.LoadProjectsPipeline,
         '_retrieve')
-    def test_subroutines_are_called_by_run(self, mock_retrieve, mock_flatten,
+    def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
             mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""
 
         mock_retrieve.return_value = FAKE_PROJECTS
-        mock_flatten.return_value = EXPECTED_FLATTENED_PROJECTS
+        mock_transform.return_value = EXPECTED_LOADABLE_PROJECTS
         self.pipeline.run()
 
         mock_retrieve.assert_called_once_with(
             self.configs.get('organization_id'))
 
-        mock_flatten.assert_called_once_with(FAKE_PROJECTS)
+        mock_transform.assert_called_once_with(FAKE_PROJECTS)
 
-        mock_load.assert_called_once_with(EXPECTED_FLATTENED_PROJECTS)
+        mock_load.assert_called_once_with(EXPECTED_LOADABLE_PROJECTS)
         
         mock_get_loaded_count.assert_called_once
 

@@ -47,7 +47,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
             'org_iam_policies', cycle_timestamp, configs, crm_client, dao)
         self.parser = parser
 
-    def _load(self, iam_policies_map, flattened_iam_policies):
+    def _load(self, iam_policies_map, loadable_iam_policies):
         """ Load iam policies into cloud sql.
 
         A separate table is used to store the raw iam policies because it is
@@ -58,7 +58,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
                 Example: {org_id: org_id,
                           iam_policy: iam_policy}
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
-            flattened_iam_policies: An iterable of flattened iam policies,
+            loadable_iam_policies: An iterable of loadable iam policies,
                 as a per-org dictionary.
 
         Returns:
@@ -66,7 +66,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
         """
         try:
             self.dao.load_data(self.name, self.cycle_timestamp,
-                               flattened_iam_policies)
+                               loadable_iam_policies)
 
             for i in iam_policies_map:
                 i['iam_policy'] = json.dumps(i['iam_policy'])
@@ -77,8 +77,8 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
                 data_access_errors.MySQLError) as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
-    def _flatten(self, iam_policies_map):
-        """Yield an iterator of flattened iam policies.
+    def _transform(self, iam_policies_map):
+        """Yield an iterator of loadable iam policies.
     
         Args:
             iam_policies_map: An iterable of iam policies as per-project dictionary.
@@ -87,7 +87,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
     
         Yields:
-            An iterable of flattened iam policies, as a per-org dictionary.
+            An iterable of loadable iam policies, as a per-org dictionary.
         """
         for iam_policy_map in iam_policies_map:
             iam_policy = iam_policy_map['iam_policy']
@@ -137,8 +137,8 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
 
         iam_policies_map = self._retrieve(org_id)
 
-        flattened_iam_policies = self._flatten(iam_policies_map)
+        loadable_iam_policies = self._transform(iam_policies_map)
 
-        self._load(iam_policies_map, flattened_iam_policies)
+        self._load(iam_policies_map, loadable_iam_policies)
 
         self._get_loaded_count()

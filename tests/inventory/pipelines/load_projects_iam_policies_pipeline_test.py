@@ -27,7 +27,7 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
-from tests.inventory.pipelines.test_data.fake_iam_policies import EXPECTED_FLATTENED_PROJECT_IAM_POLICY
+from tests.inventory.pipelines.test_data.fake_iam_policies import EXPECTED_LOADABLE_PROJECT_IAM_POLICY
 from tests.inventory.pipelines.test_data.fake_iam_policies import FAKE_PROJECT_IAM_POLICY_MAP
 # pylint: enable=line-too-long
 
@@ -59,11 +59,11 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
                 self.mock_dao,
                 self.mock_parser))
 
-    def test_flattened_data_and_raw_data_are_loaded(self):
-        """Test that both flattened data and raw data are loaded."""
+    def test_data_are_loaded(self):
+        """Test that both transformed data and raw data are loaded."""
         
         self.pipeline._load(FAKE_PROJECT_IAM_POLICY_MAP,
-                            EXPECTED_FLATTENED_PROJECT_IAM_POLICY)
+                            EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
 
         self.assertEquals(2, self.mock_dao.load_data.call_count)
 
@@ -72,7 +72,7 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         expected_args = (
             self.pipeline.name,
             self.pipeline.cycle_timestamp,
-            EXPECTED_FLATTENED_PROJECT_IAM_POLICY)
+            EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
         self.assertEquals(expected_args, called_args)
 
         # The raw json data is loaded.
@@ -91,17 +91,17 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         self.assertRaises(inventory_errors.LoadDataPipelineError,
                           self.pipeline._load,
                           FAKE_PROJECT_IAM_POLICY_MAP,
-                          EXPECTED_FLATTENED_PROJECT_IAM_POLICY)
+                          EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
      
         self.pipeline.dao.load_data.side_effect = (
             data_access_errors.CSVFileError('11111', mock.MagicMock()))
         self.assertRaises(inventory_errors.LoadDataPipelineError,
                           self.pipeline._load,
                           FAKE_PROJECT_IAM_POLICY_MAP,
-                          EXPECTED_FLATTENED_PROJECT_IAM_POLICY)
+                          EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
 
-    def test_can_flatten_project_iam_policies(self):
-        """Test that project iam policies can be flattened."""
+    def test_can_transform_project_iam_policies(self):
+        """Test that project iam policies can be tranformed."""
 
         # Real parser is needed for this test.
         self.parser = parser
@@ -113,9 +113,9 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
                 self.mock_dao,
                 self.parser))
         
-        flattened_iam_policies = self.pipeline._flatten(FAKE_PROJECT_IAM_POLICY_MAP)
-        self.assertEquals(EXPECTED_FLATTENED_PROJECT_IAM_POLICY,
-                          list(flattened_iam_policies))
+        loadable_iam_policies = self.pipeline._transform(FAKE_PROJECT_IAM_POLICY_MAP)
+        self.assertEquals(EXPECTED_LOADABLE_PROJECT_IAM_POLICY,
+                          list(loadable_iam_policies))
 
     def test_api_is_called_to_retrieve_org_policies(self):
         """Test that api is called to retrieve org policies."""
@@ -171,23 +171,23 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         '_load')    
     @mock.patch.object(
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline,
-        '_flatten')
+        '_transform')
     @mock.patch.object(
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline,
         '_retrieve')
-    def test_subroutines_are_called_by_run(self, mock_retrieve, mock_flatten,
+    def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
             mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""
         mock_retrieve.return_value = FAKE_PROJECT_IAM_POLICY_MAP
-        mock_flatten.return_value = EXPECTED_FLATTENED_PROJECT_IAM_POLICY
+        mock_transform.return_value = EXPECTED_LOADABLE_PROJECT_IAM_POLICY
         self.pipeline.run()
 
         mock_retrieve.assert_called_once_with()
 
-        mock_flatten.assert_called_once_with(FAKE_PROJECT_IAM_POLICY_MAP)
+        mock_transform.assert_called_once_with(FAKE_PROJECT_IAM_POLICY_MAP)
 
         mock_load.assert_called_once_with(
             FAKE_PROJECT_IAM_POLICY_MAP,
-            EXPECTED_FLATTENED_PROJECT_IAM_POLICY)
+            EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
         
         mock_get_loaded_count.assert_called_once

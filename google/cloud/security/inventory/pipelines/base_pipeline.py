@@ -56,8 +56,8 @@ class _BasePipeline(object):
         pass
 
     @abc.abstractmethod
-    def _flatten(self):
-        """Transformation to flatten data into loadable format."""
+    def _transform(self):
+        """Transform data into loadable format."""
         pass
 
     @abc.abstractmethod
