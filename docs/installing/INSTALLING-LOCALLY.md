@@ -6,7 +6,7 @@
 * [Execution](#execution)
 
 ## Prerequisites
-Install or set up the Forseti Security [prerequisites](/docs/prerequisites/README.md).
+Complete the Forseti Security prequisites [README](/docs/prerequisites/README.md).
 
 ## Create a virtualenv
 ```sh
