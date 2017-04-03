@@ -105,7 +105,7 @@ Enable **Deployment Manager API**.
 See [PREREQUISITES-LOCALLY](/docs/prerequisites/PREREQUISITES-LOCALLY.md)
 
 ## Finish installation
-Once completed continue with the the installation steps
+Once you've completed the prerequisite steps continue with the installation guide for your deployment type:
 
  * [GCP installations](/docs/installing/INSTALLING-GCP.md#customize-deployment-templates)
  * [Local installations](/docs/installing/INSTALLING-LOCALLY.md#create-a-virtualenv)
