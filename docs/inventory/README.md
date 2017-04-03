@@ -91,20 +91,42 @@ Here's an example of [flattening the data structure](https://github.com/GoogleCl
 For an example of steps 3 through 6 see this [PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/165)
 
 ## Collecting GSuite Google Groups
-To enable this ability see [GSUITE-GROUPS](/docs/common/GSUITE-GROUPS.md).
+Forseti supports scanning GCP project ACLs for granted users that might be a GSuite Google group. Doing this requires taking special steps on the previously created service account and within the GSuite domain.
 
-Once you've enabled the ability for Forseti Security to inventory GSuite groups you can follow the steps below.
+If you have an organization id for GCP then you have a Gsuite account. You can administer your GSuite account at [admin.google.com](admin.google.com).
+
+### Enabling checking of GSuite Google Groups
+At a high level these things most be done to enable GSuite Google Group support.
+
+  1. [Enable](https://console.cloud.google.com/iam-admin/serviceaccounts/) Domain-Wide Delegation on the previously created service account. More details on this can be found ([here](https://cloud.google.com/appengine/docs/flexible/python/authorizing-apps#google_apps_domain-wide_delegation_of_authority)).
+
+
+* Enable the **Admin SDK API**
+
+  ```sh
+  $ gcloud beta service-management list enable admin.googleapis.com
+  ```
+
+Store the created service account keys on the meta-data server for your GCE instance.
+
+ ```sh
+ $ gcloud compute instances create <instance-name> --metadata dwd-key=`cat <key-file.json>`
+ ```
+ 
+### Configuring your installation type
 
 `Inventory` exposes three flags to collecting GSuite groups as part of it's execution. Use of these flags depend on your installation type.
 
-### GCP installations
+#### GCP installations
 You must configure these variables in the [deployment template](/deployment-templates/deploy-forseti.yaml.sample) ([details](/docs/installing/INSTALLING-GCP.md#customize-deployment-templates)
 
 **INVENTORY_GROUPS**: To enable set this to True.
 
 **DOMAIN_SUPER_ADMIN_EMAIL**: To inventory GSuite Groups requires using domain-wide delegation (DWD). To do this you must specify a super-admin in the GSuite account to impersonate, e.g. bob@mydomain.com
 
-### Local installations
+**DOMAIN_WIDE_DELEGATION_KEY_NAME**: The name of the key/value pair containing the 
+
+#### Local installations
 
  **--inventory_groups**: By default this flag is set to False or no. You can enable this by just passing the flag.
  
