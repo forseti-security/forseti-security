@@ -57,8 +57,8 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
 
         Args:
             iam_policy_maps: List of IAM policies as per-org dictionary.
-                Example: {org_id: org_id,
-                          iam_policy: iam_policy}
+                Example: {'project_number': 11111,
+                          'iam_policy': policy}
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
             loadable_iam_policies: An iterable of loadable iam policies,
                 as a per-org dictionary.
