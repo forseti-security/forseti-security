@@ -1,35 +1,26 @@
 # Service account
-In order to run Forseti Security, you must add a service account
-to your **organization-level** IAM policy.
+There are two service accounts that need created:
 
- * [Create a service account](#create-a-service-account)
- * [Enable the required GCP IAM roles](#enable-the-required-gcp-iam-roles)
- * [Supporting scanning of GSuite Groups](#supporting-scanning-of-gsuite-groups)
+ 1. A service account with special roles added for peforming scanning and enforcement
+ 1. A service account with no special role but domain-wide delegation to fetch GSuite Google Group information
 
-## Create a Service Account
-In general, it's highly recommended to create a separate project that
-contains your service accounts and limited editors/owners. You can
-then use those service accounts in other projects. For more
-information, refer to some
-[best practices](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#best_practices)
+ * [Create a service account for scanning and enforcement](#create-a-service-account-for-scanning-and-enforcement)
+   * [Enable the required GCP IAM roles for the service account](#enable-the-required-gcp-iam-roles-for-the-service-account)
+ * [Create a service account for inventorying GSuite Google Groups](#create-a-service-account-for-inventorying-gsuite-google-groups)
+
+## Create a service account for scanning and enforcement
+In general, it's highly recommended to create a separate project that contains your service accounts and limited editors/owners. You can then use those service accounts in other projects. For more information, refer to some [best practices](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#best_practices)
 for service accounts.
 
-1. Create a custom service account in the
-  [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
-  Having a custom service account with only the IAM permissions needed
-  for testing would allow you to delete the service account when you are done,
-  and delete the key when it is no longer needed. A custom service
-  account (separate from your user account) will be less likely to be phished
-  and easier to clean up than the default service account.
+1. Create a custom service account in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
 1. Create and download the json key to your local environment.
-1. Set an environment variable to configure the
-  [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials)
-  to reference this key.
+1. Set an environment variable to configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials) to reference this key.
 
 ```sh
 $ export GOOGLE_APPLICATION_CREDENTIALS="<path to your service account key>"
 ```
-## Enable the required GCP IAM roles
+
+### Enable the required GCP IAM roles for the service account
 Grant the required roles to the service account.
 
 * Project browser
@@ -44,5 +35,5 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
   --role=roles/editor
 ```
 
-## Supporting scanning of GSuite Groups
+## Create a service account for inventorying of GSuite Google Groups
 See [GSUITE-GROUPS](/docs/common/GSUITE-GROUPS.md) for the required steps to enable this capability.
