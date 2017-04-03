@@ -21,7 +21,7 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-class LoadGroupsPipeline(base_pipeline._BasePipeline):
+class LoadGroupsPipeline(base_pipeline.BasePipeline):
     """Pipeline to load groups data into Inventory."""
     # TODO: Add unit tests.
 

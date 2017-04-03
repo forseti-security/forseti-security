@@ -28,7 +28,7 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
 
 
-class LoadProjectsPipeline(base_pipeline._BasePipeline):
+class LoadProjectsPipeline(base_pipeline.BasePipeline):
     """Pipeline to load org IAM policies data into Inventory."""
 
     RESOURCE_NAME = 'projects'

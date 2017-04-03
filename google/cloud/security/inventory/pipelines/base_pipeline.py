@@ -23,7 +23,7 @@ from google.cloud.security.common.util.log_util import LogUtil
 # pylint: enable=line-too-long
 
 
-class _BasePipeline(object):
+class BasePipeline(object):
     """Base client for a specified GCP API and credentials."""
 
     __metaclass__ = abc.ABCMeta
