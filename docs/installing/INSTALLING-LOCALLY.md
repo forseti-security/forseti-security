@@ -17,6 +17,10 @@ $ workon forseti-security
 ## Get the source code
 Clone the repo, if you haven't already done so.
 
+```sh
+$ (forseti-secuirty): git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+```
+
 ## Run the python setup
 Navigate to your cloned repo, then run:
 
