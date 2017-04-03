@@ -108,4 +108,4 @@ See [PREREQUISITES-LOCALLY](/docs/prerequisites/PREREQUISITES-LOCALLY.md)
 Once completed continue with the the installation steps
 
  * [GCP installations](/docs/installing/INSTALLING-GCP.md#customize-deployment-templates)
- * [Local isntallations](/docs/installing/INSTALLING-LOCALLY.md#create-a-virtualenv)
+ * [Local installations](/docs/installing/INSTALLING-LOCALLY.md#create-a-virtualenv)
