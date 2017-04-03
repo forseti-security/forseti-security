@@ -77,4 +77,4 @@ class _BasePipeline(object):
                 self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             self.logger.error('Unable to retrieve record count for %s_%s:\n%s',
-                self.name, self.cycle_timestamp, e)
+                              self.name, self.cycle_timestamp, e)
