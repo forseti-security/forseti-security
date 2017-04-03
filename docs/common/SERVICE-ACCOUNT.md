@@ -7,6 +7,7 @@ There are two service accounts that need created:
  * [Create a service account for scanning and enforcement](#create-a-service-account-for-scanning-and-enforcement)
    * [Enable the required GCP IAM roles for the service account](#enable-the-required-gcp-iam-roles-for-the-service-account)
  * [Create a service account for inventorying GSuite Google Groups](#create-a-service-account-for-inventorying-gsuite-google-groups)
+   * [Enable the service account in the GSuite admin control panel](#enable-the-service-account-in-the-gsuite-admin-control-panel)
 
 ## Create a service account for scanning and enforcement
 In general, it's highly recommended to create a separate project that contains your service accounts and limited editors/owners. You can then use those service accounts in other projects. For more information, refer to some [best practices](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#best_practices)
@@ -41,7 +42,7 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 1. Create and download the json key to your local environment.
 1. Note the domain-wide client-id, e.g. 1111111111111111111
 
-### Enable service account in the GSuite admin control panel
+### Enable the service account in the GSuite admin control panel
 1. Visit the [advanced settings](https://admin.google.com/ManageOauthClients) portion of the control panel
  1. Specify the domain-wide client-id from above
  1. Specify the scope `https://www.googleapis.com/auth/admin.directory.group.readonly`
