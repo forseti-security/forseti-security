@@ -128,7 +128,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                 self.name, self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
-    
+
         # Retrieve data from GCP.
         # Not using iterator since we will use the iam_policy_maps twice.
         iam_policy_maps = []
