@@ -60,8 +60,8 @@ class BasePipeline(object):
         pass
 
     @abc.abstractmethod
-    def _transform(self):
-        """Transform data into loadable format."""
+    def _transform(self, resource_from_api):
+        """Transform api resource data into loadable format."""
         pass
 
     @abc.abstractmethod
