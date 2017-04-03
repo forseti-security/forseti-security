@@ -17,11 +17,14 @@
 Usage:
 
   $ forseti_inventory \\
+      --inventory_groups \\
+      --service_account_email <email of the service account> \\
+      --service_account_credentials_file \\
+      --domain_super_admin_email \\
       --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
-      --max_crm_api_calls_per_100_seconds <QPS * 100, default 400> \\
       --sendgrid_api_key <API key to auth SendGrid email service> \\
       --email_sender <email address of the email sender> \\
       --email_recipient <email address of the email recipient>
@@ -44,12 +47,14 @@ from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.security.common.gcp_api import admin_directory
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory.errors import LoadDataPipelineError
+from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
@@ -57,9 +62,15 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager queries per 100 seconds.')
-
+flags.DEFINE_bool('inventory_groups', False,
+                  'Whether to inventory GSuite Groups.')
+flags.DEFINE_string('domain_super_admin_email', None,
+                    'An email address of a super-admin in the GSuite domain.')
+flags.DEFINE_string('service_account_email', None,
+                    'The email of the service account.')
+flags.DEFINE_string('service_account_credentials_file', None,
+                    'The file with credentials for the service account.'
+                    'NOTE: This is only required when running locally.')
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
 
 flags.mark_flag_as_required('organization_id')
@@ -238,6 +249,11 @@ def main(argv):
     crm_api_client = crm.CloudResourceManagerClient(
         rate_limiter=crm_rate_limiter)
 
+    # TODO: Make this configurable.
+    admin_directory_rate_limiter = admin_directory.AdminDirectoryClient.get_rate_limiter()
+    admin_api_client = admin_directory.AdminDirectoryClient(
+        rate_limiter=admin_directory_rate_limiter)
+
     pipelines = [
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
             cycle_timestamp, configs, crm_api_client, dao, parser),
@@ -245,6 +261,8 @@ def main(argv):
             cycle_timestamp, configs, crm_api_client, dao),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
             cycle_timestamp, configs, crm_api_client, dao, parser),
+        load_groups_pipeline.LoadGroupsPipeline(
+            cycle_timestamp, configs, admin_api_client, dao, parser),
     ]
 
     succeeded = []
@@ -256,6 +274,7 @@ def main(argv):
             LOGGER.error(
                 'Encountered error to load data.\n%s', e)
             pipeline.status = 'FAILURE'
+            LOGGER.info('Continuing on.')
         succeeded.append(pipeline.status == 'SUCCESS')
 
     if all(succeeded):

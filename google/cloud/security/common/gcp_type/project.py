@@ -16,27 +16,19 @@
 See: https://cloud.google.com/resource-manager/reference/rest/v1/projects
 """
 
-# pylint: disable=line-too-long
-# TODO: Investigate improving so we can avoid the pylint disable.
-from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
-from google.cloud.security.common.gcp_type.resource import LifecycleState
-from google.cloud.security.common.gcp_type.resource import Resource
-from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_type import resource
 
 
 # pylint: disable=too-few-public-methods
-# TODO: Investigate improving to avoid the use of the pylint disable.
-class ProjectLifecycleState(LifecycleState):
-    """Project lifecycle state.
-
-    See: https://cloud.google.com/resource-manager/reference/rest/v1/projects#LifecycleState
-    """
+class ProjectLifecycleState(resource.LifecycleState):
+    """Project lifecycle state."""
 
     DELETE_REQUESTED = 'DELETE_REQUESTED'
     DELETE_IN_PROGRESS = 'DELETE_IN_PROGRESS'
 
 
-class Project(Resource):
+class Project(resource.Resource):
     """Project resource."""
 
     def __init__(self, project_id, project_number,
@@ -53,7 +45,7 @@ class Project(Resource):
         """
         super(Project, self).__init__(
             resource_id=project_id,
-            resource_type=ResourceType.PROJECT,
+            resource_type=resource.ResourceType.PROJECT,
             resource_name=project_name,
             parent=parent,
             lifecycle_state=lifecycle_state)
@@ -69,7 +61,7 @@ class Project(Resource):
         Returns:
             True if we can get the project from GCP, otherwise False.
         """
-        crm_client = CloudResourceManagerClient()
+        crm_client = crm.CloudResourceManagerClient()
         project = crm_client.get_project(self.resource_id)
 
         return project is not None

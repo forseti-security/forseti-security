@@ -14,19 +14,18 @@
 
 """Email utility module."""
 
-from urllib2 import URLError
-from urllib2 import HTTPError
-
-import os
-
 import base64
+import os
+import urllib2
+
 import gflags as flags
 import jinja2
+
 from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
 
-from google.cloud.security.common.util.errors import EmailSendError
+from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.common.util import retryable_exceptions
 
@@ -101,7 +100,7 @@ class EmailUtil(object):
         if not email_sender or not email_recipient:
             self.logger.warn('Unable to send email: sender=%s, recipient=%s',
                              email_sender, email_recipient)
-            raise EmailSendError
+            raise util_errors.EmailSendError
 
         email = mail.Mail(
             mail.Email(email_sender),
@@ -115,10 +114,10 @@ class EmailUtil(object):
 
         try:
             response = self._execute_send(email)
-        except (URLError, HTTPError) as e:
+        except (urllib2.URLError, urllib2.HTTPError) as e:
             self.logger.error('Unable to send email: %s %s',
                               e.code, e.reason)
-            raise EmailSendError
+            raise util_errors.EmailSendError
 
         if response.status_code == 202:
             self.logger.info('Email accepted for delivery:\n%s',
@@ -127,7 +126,7 @@ class EmailUtil(object):
             self.logger.error('Unable to send email:\n%s\n%s\n%s\n%s',
                               email_subject, response.status_code,
                               response.body, response.headers)
-            raise EmailSendError
+            raise util_errors.EmailSendError
 
     @classmethod
     def render_from_template(cls, template_file, template_vars):

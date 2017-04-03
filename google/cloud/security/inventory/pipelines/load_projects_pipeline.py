@@ -109,7 +109,6 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
                    'raw_project': project_json,
                    'create_time': formatted_project_create_time}
 
-
     def _retrieve(self, org_id):
         """Retrieve the project resources from GCP.
 

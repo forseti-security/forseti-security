@@ -18,13 +18,12 @@ from apiclient import discovery
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
+from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_api._supported_apis import SUPPORTED_APIS
 from google.cloud.security.common.util import retryable_exceptions
 
 # pylint: disable=too-few-public-methods
-# TODO: Look into improving to prevent using the disable.
-class _BaseClient(object):
+class BaseClient(object):
     """Base client for a specified GCP API and credentials."""
 
     def __init__(self, credentials=None, **kwargs):
@@ -35,11 +34,12 @@ class _BaseClient(object):
             raise api_errors.UnsupportedApiError(
                 'Unsupported API {}'.format(kwargs))
         self.name = kwargs['api_name']
-        if not SUPPORTED_APIS[self.name] or \
-            not SUPPORTED_APIS[self.name]['version']:
+        if not _supported_apis.SUPPORTED_APIS[self.name] or \
+            not _supported_apis.SUPPORTED_APIS[self.name]['version']:
             raise api_errors.UnsupportedApiVersionError(
-                'Unsupported version {}'.format(SUPPORTED_APIS[self.name]))
-        self.version = SUPPORTED_APIS[self.name]['version']
+                'Unsupported version {}'.format(
+                    _supported_apis.SUPPORTED_APIS[self.name]))
+        self.version = _supported_apis.SUPPORTED_APIS[self.name]['version']
         self.service = discovery.build(self.name, self.version,
                                        credentials=self._credentials)
 
