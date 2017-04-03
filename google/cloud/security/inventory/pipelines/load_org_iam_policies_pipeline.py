@@ -145,7 +145,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
             raise inventory_errors.LoadDataPipelineError(
                 'No organization id is specified.')
 
-        iam_policies_map = self._retrieve(org_id)
+        iam_policies_map = self._retrieve()
 
         loadable_iam_policies = self._transform(iam_policies_map)
 
