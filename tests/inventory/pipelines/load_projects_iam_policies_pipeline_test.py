@@ -65,10 +65,10 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         self.pipeline._load(FAKE_PROJECT_IAM_POLICY_MAP,
                             EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
 
-        self.assertEquals(2, self.mock_dao.load_data.call_count)
+        self.assertEquals(2, self.pipeline.dao.load_data.call_count)
 
         # The regular data is loaded.
-        called_args, called_kwargs = self.mock_dao.load_data.call_args_list[0]
+        called_args, called_kwargs = self.pipeline.dao.load_data.call_args_list[0]
         expected_args = (
             self.pipeline.name,
             self.pipeline.cycle_timestamp,
@@ -76,7 +76,7 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         self.assertEquals(expected_args, called_args)
 
         # The raw json data is loaded.
-        called_args, called_kwargs = self.mock_dao.load_data.call_args_list[1]
+        called_args, called_kwargs = self.pipeline.dao.load_data.call_args_list[1]
         expected_args = (
             self.pipeline.RAW_RESOURCE_NAME,
             self.pipeline.cycle_timestamp,

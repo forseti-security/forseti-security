@@ -59,7 +59,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         """Test that data are loaded."""
         self.pipeline._load(EXPECTED_LOADABLE_PROJECTS)
 
-        self.mock_dao.load_data.assert_called_once_with(
+        self.pipeline.dao.load_data.assert_called_once_with(
             self.pipeline.name,
             self.pipeline.cycle_timestamp,
             EXPECTED_LOADABLE_PROJECTS)
@@ -87,7 +87,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         """Test that api is called to retrieve projects."""
         self.pipeline._retrieve(self.pipeline.configs['organization_id'])
 
-        self.mock_crm.get_projects.assert_called_once_with(
+        self.pipeline.gcp_api_client.get_projects.assert_called_once_with(
             self.pipeline.name,
             self.pipeline.configs['organization_id'],
             lifecycleState=LifecycleState.ACTIVE)
