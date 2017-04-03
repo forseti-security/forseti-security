@@ -128,7 +128,6 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
-
     def run(self):
         """Runs the data pipeline.
 

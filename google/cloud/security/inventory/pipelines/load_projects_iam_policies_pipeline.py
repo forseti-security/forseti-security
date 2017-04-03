@@ -146,7 +146,6 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
                     project_number, e)
         return iam_policy_maps
 
-
     def run(self):
         """Runs the load IAM policies data pipeline.
 
