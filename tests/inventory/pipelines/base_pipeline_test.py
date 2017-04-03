@@ -32,7 +32,7 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 
 
 class BasePipelineTest(basetest.TestCase):
-    """Tests for the load_org_iam_policies_pipeline.
+    """Tests for the base pipeline.
     
     Because base pipeline is an abstract class, there is no way to instantiate
     it for testing directly.  So, will test it by a pipeline that implements it.
