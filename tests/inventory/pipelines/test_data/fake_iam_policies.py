@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test IAM policies data."""
 
 FAKE_ORG_IAM_POLICY_MAP = [{
     'org_id': 666666,
