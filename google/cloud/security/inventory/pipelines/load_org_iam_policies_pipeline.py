@@ -128,7 +128,17 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):
-        """Runs the data pipeline."""
+        """Runs the data pipeline.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            LoadDataPipelineException: An error with loading data has occurred.
+        """
         org_id = self.configs.get('organization_id')
         # Check if the placeholder is replaced in the config/flag.
         if org_id == '<organization id>':

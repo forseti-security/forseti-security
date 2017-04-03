@@ -49,6 +49,7 @@ from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
@@ -244,15 +245,21 @@ def main(argv):
     # Otherwise, there is a gap where the ratelimiter from one pipeline
     # is not used for the next pipeline using the same API. This could
     # lead to unnecessary quota errors.
+    # TODO: Provide the api client from the api client module instead of here.
     max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
     crm_api_client = crm.CloudResourceManagerClient(
         rate_limiter=crm_rate_limiter)
 
     # TODO: Make this configurable.
-    admin_directory_rate_limiter = admin_directory.AdminDirectoryClient.get_rate_limiter()
-    admin_api_client = admin_directory.AdminDirectoryClient(
-        rate_limiter=admin_directory_rate_limiter)
+    try:
+        admin_directory_rate_limiter = admin_directory.AdminDirectoryClient.get_rate_limiter()
+        credentials = admin_directory.build_proper_credentials(configs)
+        admin_api_client = admin_directory.AdminDirectoryClient(
+            credentials=credentials, rate_limiter=admin_directory_rate_limiter)
+    except api_errors:
+        LOGGER.error('Unable to build api client.\n%s', e)
+        sys.exit()
 
     pipelines = [
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(

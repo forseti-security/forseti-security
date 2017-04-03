@@ -66,11 +66,6 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
         Returns:
             None
         """
-
-        # Load loadable iam policies into cloud sql.
-        # Load raw iam policies into cloud sql.
-        # A separate table is used to store the raw iam policies because it is
-        # much faster than updating these individually into the projects table.
         try:
             self.dao.load_data(self.name, self.cycle_timestamp,
                                loadable_iam_policies)
@@ -118,7 +113,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
         """Retrieve the org IAM policies from GCP.
 
         Args:
-            org_id: String of the organization id
+            None
 
         Returns:
             iam_policy_maps: List of IAM policies as per-org dictionary.
@@ -153,18 +148,16 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
     def run(self):
         """Runs the load IAM policies data pipeline.
     
+
         Args:
-            dao: Data access object.
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            crm_rate_limiter: RateLimiter object for CRM API client.
-    
+            None
+
         Returns:
             None
-    
+
         Raises:
             LoadDataPipelineException: An error with loading data has occurred.
         """
-    
         iam_policy_maps = self._retrieve()
     
         loadable_iam_policies = self._transform(iam_policy_maps)
