@@ -41,7 +41,7 @@ class BasePipelineTest(basetest.TestCase):
     def setUp(self):
         """Set up."""
         self.cycle_timestamp = '20001225T120000Z'
-        self.configs = {'organization_id': '660570133860',
+        self.configs = {'organization_id': '66666',
                         'max_crm_api_calls_per_100_seconds': 400,
                         'db_name': 'forseti_security',
                         'db_user': 'sqlproxy',
@@ -60,12 +60,14 @@ class BasePipelineTest(basetest.TestCase):
                 self.mock_dao))
 
     def test_get_loaded_count(self):
+        """Test the loaded count is gotten."""
         self.pipeline.dao.select_record_count.return_value = 55555
 
         self.pipeline._get_loaded_count()
         self.assertEquals(55555, self.pipeline.count)
 
-    def test_exception_is_handled_in_get_loaded_count(self):
+    def test_error_is_handled_in_get_loaded_count(self):
+        """Test error from get_loaded_count is handled."""
         self.pipeline.logger = mock.create_autospec(LogUtil).setup_logging('foo')
         self.pipeline.dao.select_record_count.side_effect = (
             data_access_errors.MySQLError('11111', '22222'))

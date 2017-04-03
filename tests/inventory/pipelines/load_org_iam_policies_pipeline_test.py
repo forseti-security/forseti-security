@@ -37,7 +37,7 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
     def setUp(self):
         """Set up."""
         self.cycle_timestamp = '20001225T120000Z'
-        self.configs = {'organization_id': '660570133860',
+        self.configs = {'organization_id': '66666',
                         'max_crm_api_calls_per_100_seconds': 400,
                         'db_name': 'forseti_security',
                         'db_user': 'sqlproxy',
@@ -80,8 +80,8 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
             FAKE_ORG_IAM_POLICY_MAP)
         self.assertEquals(expected_args, called_args)        
 
-    def test_exceptions_are_handled_when_loading(self):
-        """Test that exceptions are handled when loading."""
+    def test_load_errors_are_handled(self):
+        """Test that errors are handled when loading."""
 
         self.pipeline.dao.load_data.side_effect = (
             data_access_errors.MySQLError('11111', '22222'))
@@ -121,8 +121,8 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
         self.pipeline.gcp_api_client.get_org_iam_policies.assert_called_once_with(
             self.pipeline.name, self.pipeline.configs['organization_id'])
 
-    def test_exceptions_are_handled_when_retrieving(self):
-        """Test that exceptions are handled when retrieving."""
+    def test_retrieve_errors_are_handled(self):
+        """Test that errors are handled when retrieving."""
 
         self.pipeline.gcp_api_client.get_org_iam_policies.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
