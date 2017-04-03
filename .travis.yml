@@ -24,8 +24,8 @@ install:
   - "pip install -q pylint==1.6.5"
   - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
 script:
-  - "python setup.py google_test --test-dir=tests/"
-  - "PYTHONPATH=./ coverage run --source='google.cloud.security' -m unittest discover -s tests/ -p '*_test.py'"
+  - "python setup.py google_test"
+  - "coverage run --source='google.cloud.security' --omit='__init__.py' setup.py google_test"
   - "bash scripts/travis_test_pylint.sh"
 after_success:
   - "coveralls"
