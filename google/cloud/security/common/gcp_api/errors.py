@@ -30,27 +30,6 @@ class ApiExecutionError(Error):
             self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
 
 
-class UnsupportedApiError(Error):
-    """Error for unsupported API."""
-    pass
-
-
-class UnsupportedApiVersionError(Error):
-    """Error for unsupported API version."""
-    pass
-
-
-class ApiExecutionError(Error):
-    """Error for API executions."""
-
-    CUSTOM_ERROR_MESSAGE = 'GCP API Error: unable to get {0} from GCP:\n{1}'
-
-
-    def __init__(self, resource_name, e):
-        super(ApiExecutionError, self).__init__(
-            self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
-
-
 class InvalidBucketPathError(Error):
     """Invalid GCS bucket path."""
     pass
