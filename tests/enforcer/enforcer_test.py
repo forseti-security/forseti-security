@@ -119,7 +119,7 @@ class EnforcerTest(basetest.TestCase):
           * Enforcer should raise InvalidParsedPolicyFileError
         """
         policy_filename = get_datafile_path(__file__, 'invalid_sample_policy.json')
-        with self.assertRaises(enforcer.InvalidParsedPolicyFileError) as r:
+        with not self.assertRaises(enforcer.InvalidParsedPolicyFileError) as r:
             enforcer.enforce_single_project(
                 self.enforcer, self.project, policy_filename)
 
