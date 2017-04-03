@@ -54,7 +54,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
 
         A separate table is used to store the raw iam policies because it is
         much faster than updating these individually into the projects table.
-        
+
         Args:
             iam_policy_maps: List of IAM policies as per-org dictionary.
                 Example: {org_id: org_id,
@@ -69,7 +69,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
         try:
             self.dao.load_data(self.name, self.cycle_timestamp,
                                loadable_iam_policies)
-    
+
             for i in iam_policy_maps:
                 i['iam_policy'] = json.dumps(i['iam_policy'])
             self.dao.load_data(self.RAW_RESOURCE_NAME, self.cycle_timestamp,
@@ -79,10 +79,9 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
             raise inventory_errors.LoadDataPipelineError(e)
 
 
-
     def _transform(self, iam_policy_maps):
         """Yield an iterator of loadable iam policies.
-    
+
         Args:
             iam_policy_maps: An iterable of iam policies as per-project
                 dictionary.
@@ -159,9 +158,9 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
             LoadDataPipelineException: An error with loading data has occurred.
         """
         iam_policy_maps = self._retrieve()
-    
+
         loadable_iam_policies = self._transform(iam_policy_maps)
-    
+
         self._load(iam_policy_maps, loadable_iam_policies)
 
         self._get_loaded_count()

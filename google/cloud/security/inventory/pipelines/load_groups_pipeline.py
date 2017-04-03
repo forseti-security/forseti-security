@@ -47,28 +47,28 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
         return metadata_server.can_reach_metadata_server()
 
     def _can_inventory_google_groups(self):
-        """A simple function that validates required inputs for inventorying groups.
-    
+        """A simple function that validates required inputs to inventory groups.
+
         Args:
             None
-    
+
         Returns:
             Boolean
         """
         required_gcp_execution_config = [
             self.configs.get('service_account_email'),
             self.configs.get('domain_super_admin_email')]
-    
+
         required_local_execution_config = [
             self.configs.get('service_account_email'),
             self.configs.get('service_account_credentials_file'),
             self.configs.get('domain_super_admin_email')]
-    
+
         if self._is_our_environment_gce():
             required_execution_config = required_gcp_execution_config
         else:
             required_execution_config = required_local_execution_config
-    
+
         return all(required_execution_config)
 
     def _load(self, loadable_groups):
@@ -97,7 +97,7 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
         """
         for group in groups_map:
             yield {'group_id': group.get('id'),
-                   'group_email': group.get('email')}        
+                   'group_email': group.get('email')}
 
     def _retrieve(self):
         """Retrieve the org IAM policies from GCP.
@@ -115,16 +115,16 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
 
     def run(self):
         """Runs the load GSuite account groups pipeline.
-    
+
         Args:
             dao: Data access object.
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
             config: Dictionary of configurations.
             rate_limiter: RateLimiter object for the API client.
-    
+
         Returns:
             None
-    
+
         Raises:
             LoadDataPipelineException: An error with loading data has occurred.
         """
@@ -132,9 +132,9 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
             raise inventory_errors.LoadDataPipelineError(
                 'Unable to inventory groups with specified arguments:\n%s',
                 self.configs)
-   
+
         groups_map = self._retrieve()
-    
+
         loadable_groups = self._transform(groups_map)
 
         self._load(loadable_groups)

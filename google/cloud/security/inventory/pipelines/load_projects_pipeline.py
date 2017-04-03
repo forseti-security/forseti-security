@@ -56,7 +56,7 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
 
         A separate table is used to store the raw iam policies because it is
         much faster than updating these individually into the projects table.
-        
+
         Args:
             iam_policies_map: List of IAM policies as per-org dictionary.
                 Example: {org_id: org_id,
@@ -79,11 +79,11 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
 
     def _transform(self, projects):
         """Yield an iterator of loadable iam policies.
-    
+
         Args:
             projects: An iterable of resource manager project list response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
-    
+
         Yields:
             An iterable of loadable projects, as a per-project dictionary.
         """
@@ -99,7 +99,7 @@ class LoadProjectsPipeline(base_pipeline._BasePipeline):
                     'Unable to parse create_time from project: %s\n%s',
                     project.get('createTime', ''), e)
                 formatted_project_create_time = '0000-00-00 00:00:00'
-    
+
             yield {'project_number': project.get('projectNumber'),
                    'project_id': project.get('projectId'),
                    'project_name': project.get('name'),
