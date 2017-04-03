@@ -162,7 +162,6 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
 
         self.assertEquals(2, self.pipeline.logger.error.call_count)
 
-
     @mock.patch.object(
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline,
         '_get_loaded_count')
