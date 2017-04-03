@@ -19,9 +19,13 @@ python:
   - "2.7"
 install:
   - "sudo apt-get install -y libmysqlclient-dev"
+  - "pip install -q coveralls"
   - "bash scripts/travis_install_protoc.sh"
   - "pip install -q pylint==1.6.5"
   - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
 script:
+  - "coverage run --source=google.cloud.security setup.py google_test --test-dir=tests/"
   - "python setup.py google_test --test-dir=tests/"
   - "bash scripts/travis_test_pylint.sh"
+after_success:
+  - "coveralls"
