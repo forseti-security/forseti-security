@@ -99,7 +99,7 @@ If you have an organization id for GCP then you have a Gsuite account. You can a
 At a high level these things most be done to enable GSuite Google Group support.
 
   1. [Enable](https://console.cloud.google.com/iam-admin/serviceaccounts/) Domain-Wide Delegation on the previously created service account. More details on this can be found ([here](https://cloud.google.com/appengine/docs/flexible/python/authorizing-apps#google_apps_domain-wide_delegation_of_authority)).
-  1. Enable the service account ID for access within the GSuite account with the proper scope.
+  1. Enable the service account ID for access within the GSuite account with the proper scope [here](https://admin.google.com/ManageOauthClients).
 
 * Enable the **Admin SDK API**
 
