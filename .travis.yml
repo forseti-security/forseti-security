@@ -25,7 +25,7 @@ install:
   - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
 script:
   - "python setup.py google_test --test-dir=tests/"
-  - "coverage run --source='google.cloud.security' python -m unittest discover -s tests/ -p '*_test.py'
+  - "coverage run --source='google.cloud.security' python -m unittest discover -s tests/ -p '*_test.py'"
   - "bash scripts/travis_test_pylint.sh"
 after_success:
   - "coveralls"
