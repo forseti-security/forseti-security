@@ -14,12 +14,11 @@
 
 """Wrapper for IAM API client."""
 
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
+from google.cloud.security.common.gcp_api import _base_client
 
 
 # pylint: disable=too-few-public-methods
-# TODO: Look at investigating improving to remove pylint disable.
-class IamClient(_BaseClient):
+class IamClient(_base_client.BaseClient):
     """IAM Client."""
 
     API_NAME = 'iam'

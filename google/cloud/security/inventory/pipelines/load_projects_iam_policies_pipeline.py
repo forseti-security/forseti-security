@@ -16,15 +16,12 @@
 
 import json
 
-from google.cloud.security.common.data_access.errors import CSVFileError
-from google.cloud.security.common.data_access.errors import MySQLError
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
-# TODO: Investigate improving so the pylint disable isn't needed.
-# pylint: disable=line-too-long
-from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
+from google.cloud.security.common.data_access import errors as data_errors
+from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import transform_util
-from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
 LOGGER = LogUtil.setup_logging(__name__)
@@ -52,10 +49,10 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
     try:
         project_numbers = dao.select_project_numbers(RESOURCE_NAME,
                                                      cycle_timestamp)
-    except MySQLError as e:
-        raise LoadDataPipelineError(e)
+    except data_errors.MySQLError as e:
+        raise inventory_errors.LoadDataPipelineError(e)
 
-    crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
+    crm_client = crm.CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
 
     # Retrieve data from GCP.
     # Not using iterator since we will use the iam_policy_maps twice.
@@ -67,7 +64,7 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
             iam_policy_map = {'project_number': project_number,
                               'iam_policy': iam_policy}
             iam_policy_maps.append(iam_policy_map)
-        except ApiExecutionError as e:
+        except api_errors.ApiExecutionError as e:
             LOGGER.error('Unable to get IAM policies for project %s:\n%s',
                          project_number, e)
 
@@ -86,5 +83,5 @@ def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
             i['iam_policy'] = json.dumps(i['iam_policy'])
         dao.load_data(RAW_PROJECT_IAM_POLICIES, cycle_timestamp,
                       iam_policy_maps)
-    except (CSVFileError, MySQLError) as e:
-        raise LoadDataPipelineError(e)
+    except (data_errors.CSVFileError, data_errors.MySQLError) as e:
+        raise inventory_errors.LoadDataPipelineError(e)

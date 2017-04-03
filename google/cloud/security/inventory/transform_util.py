@@ -26,6 +26,21 @@ LOGGER = LogUtil.setup_logging(__name__)
 MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
+def flatten_groups(groups):
+    """Yield an iterator of flattened groups.
+
+    Args:
+        groups: An iterable of Admin SDK Directory API Groups.
+        https://google-api-client-libraries.appspot.com/documentation/admin/directory_v1/python/latest/admin_directory_v1.groups.html#list
+
+    Yields:
+        An iterable of flattened groups as a per-group dictionary.
+    """
+    # Currently there is nothing to flatten.
+    for group in groups:
+        yield {'group_id': group.get('id'),
+               'group_email': group.get('email')}
+
 def flatten_projects(projects):
     """Yield an iterator of flattened projects.
 

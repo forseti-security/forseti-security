@@ -39,6 +39,18 @@ def _escape_and_globify(pattern_string):
     return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
 
 
+def _get_iam_members(members):
+    """Get a list of this binding's members as IamPolicyMembers.
+
+    Args:
+        members: A list of members (strings).
+
+    Returns:
+        A list of IamPolicyMembers.
+    """
+    return [IamPolicyMember.create_from(m) for m in members]
+
+
 class IamPolicy(object):
     """GCP IAM Policy."""
 
@@ -105,8 +117,9 @@ class IamPolicyBinding(object):
                 ('Invalid IAM policy binding: '
                  'role={}, members={}'.format(role_name, members)))
         self.role_name = role_name
-        self.members = self._get_members(members)
-        self.role_pattern = re.compile(_escape_and_globify(role_name))
+        self.members = _get_iam_members(members)
+        self.role_pattern = re.compile(_escape_and_globify(role_name),
+                                       flags=re.IGNORECASE)
 
     def __eq__(self, other):
         """Tests equality of IamPolicyBinding."""
@@ -138,19 +151,6 @@ class IamPolicyBinding(object):
             return binding
         return cls(binding.get('role'), binding.get('members'))
 
-    # pylint: disable=no-self-use
-    # TODO: Investigate if these could just be a function.
-    def _get_members(self, members):
-        """Get a list of this binding's members as IamPolicyMembers.
-
-        Args:
-            members: A list of members (strings).
-
-        Returns:
-            A list of IamPolicyMembers.
-        """
-        return [IamPolicyMember.create_from(m) for m in members]
-
 
 class IamPolicyMember(object):
     """IAM Policy Member.
@@ -179,7 +179,8 @@ class IamPolicyMember(object):
         self.name = member_name
         self.name_pattern = None
         if member_name:
-            self.name_pattern = re.compile(_escape_and_globify(self.name))
+            self.name_pattern = re.compile(_escape_and_globify(self.name),
+                                           flags=re.IGNORECASE)
 
     def __eq__(self, other):
         """Tests equality of IamPolicyMember."""

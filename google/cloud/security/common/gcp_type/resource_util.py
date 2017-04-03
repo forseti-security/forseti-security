@@ -13,33 +13,32 @@
 # limitations under the License.
 """Util for generic operations for Resources."""
 
-from google.cloud.security.common.gcp_type.folder import Folder
-from google.cloud.security.common.gcp_type.organization import Organization
-from google.cloud.security.common.gcp_type.project import Project
-from google.cloud.security.common.gcp_type.resource import Resource
-from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.gcp_type import folder
+from google.cloud.security.common.gcp_type import organization as org
+from google.cloud.security.common.gcp_type import project
+from google.cloud.security.common.gcp_type import resource
 
 class ResourceUtil(object):
     """A utility for Resource operations."""
 
     resource_type_map = {
         'UNDEFINED': {
-            'class': Resource,
+            'class': resource.Resource,
             'plural': 'UNDEFINED',
             'level': 0
         },
-        ResourceType.ORGANIZATION: {
-            'class': Organization,
+        resource.ResourceType.ORGANIZATION: {
+            'class': org.Organization,
             'plural': 'Organizations',
             'level': 3
         },
-        ResourceType.FOLDER: {
-            'class': Folder,
+        resource.ResourceType.FOLDER: {
+            'class': folder.Folder,
             'plural': 'Folders',
             'level': 2
         },
-        ResourceType.PROJECT: {
-            'class': Project,
+        resource.ResourceType.PROJECT: {
+            'class': project.Project,
             'plural': 'Projects',
             'level': 1
         }
