@@ -81,7 +81,8 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
         """Yield an iterator of loadable iam policies.
     
         Args:
-            iam_policies_map: An iterable of iam policies as per-project dictionary.
+            iam_policies_map: An iterable of iam policies as per-project
+                dictionary.
                 Example: {'project_number': 11111,
                           'iam_policy': policy}
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy

@@ -22,8 +22,8 @@ from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.common.util import metadata_server
+from google.cloud.security.common.util.log_util import LogUtil
 
 
 LOGGER = LogUtil.setup_logging(__name__)
@@ -82,7 +82,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
                 'Error building admin api credential', e)
 
         return credentials.create_delegated(
-            self.config.get('domain_super_admin_email'))
+            configs.get('domain_super_admin_email'))
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.

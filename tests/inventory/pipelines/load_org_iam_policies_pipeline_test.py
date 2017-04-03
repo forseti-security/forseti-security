@@ -65,7 +65,8 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
         self.assertEquals(2, self.pipeline.dao.load_data.call_count)
 
         # The regular data is loaded.
-        called_args, called_kwargs = self.pipeline.dao.load_data.call_args_list[0]
+        called_args, called_kwargs = (
+            self.pipeline.dao.load_data.call_args_list[0])
         expected_args = (
             self.pipeline.name,
             self.pipeline.cycle_timestamp,
@@ -73,7 +74,8 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
         self.assertEquals(expected_args, called_args)
 
         # The raw json data is loaded.
-        called_args, called_kwargs = self.pipeline.dao.load_data.call_args_list[1]
+        called_args, called_kwargs = (
+            self.pipeline.dao.load_data.call_args_list[1])
         expected_args = (
             self.pipeline.RAW_ORG_IAM_POLICIES,
             self.pipeline.cycle_timestamp,
@@ -89,7 +91,7 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
                           self.pipeline._load,
                           FAKE_ORG_IAM_POLICY_MAP,
                           EXPECTED_LOADABLE_ORG_IAM_POLICY)
-     
+
         self.pipeline.dao.load_data.side_effect = (
             data_access_errors.CSVFileError('11111', mock.MagicMock()))
         self.assertRaises(inventory_errors.LoadDataPipelineError,
@@ -110,7 +112,8 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
                 self.mock_dao,
                 self.parser))
         
-        loadable_iam_policies = self.pipeline._transform(FAKE_ORG_IAM_POLICY_MAP)
+        loadable_iam_policies = self.pipeline._transform(
+            FAKE_ORG_IAM_POLICY_MAP)
         self.assertEquals(EXPECTED_LOADABLE_ORG_IAM_POLICY,
                           list(loadable_iam_policies))
 

@@ -50,10 +50,10 @@ from google.cloud.security.common.data_access.sql_queries import snapshot_cycles
 from google.cloud.security.common.gcp_api import admin_directory
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
-from google.cloud.security.common.util import parser
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
@@ -73,6 +73,8 @@ flags.DEFINE_string('service_account_credentials_file', None,
                     'The file with credentials for the service account.'
                     'NOTE: This is only required when running locally.')
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
+flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
+                     'Cloud Resource Manager queries per 100 seconds.')
 
 flags.mark_flag_as_required('organization_id')
 
@@ -253,8 +255,11 @@ def main(argv):
 
     # TODO: Make this configurable.
     try:
-        admin_directory_rate_limiter = admin_directory.AdminDirectoryClient.get_rate_limiter()
-        credentials = admin_directory.build_proper_credentials(configs)
+        admin_directory_rate_limiter = (
+            admin_directory.AdminDirectoryClient.get_rate_limiter())
+        credentials = (
+            admin_directory.AdminDirectoryClient.build_proper_credentials(
+                configs))
         admin_api_client = admin_directory.AdminDirectoryClient(
             credentials=credentials, rate_limiter=admin_directory_rate_limiter)
     except api_errors:
@@ -262,14 +267,14 @@ def main(argv):
         sys.exit()
 
     pipelines = [
-        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao, parser),
-        load_projects_pipeline.LoadProjectsPipeline(
-            cycle_timestamp, configs, crm_api_client, dao),
-        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao, parser),
+#        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
+#            cycle_timestamp, configs, crm_api_client, dao, parser),
+#        load_projects_pipeline.LoadProjectsPipeline(
+#            cycle_timestamp, configs, crm_api_client, dao),
+#        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
+#            cycle_timestamp, configs, crm_api_client, dao, parser),
         load_groups_pipeline.LoadGroupsPipeline(
-            cycle_timestamp, configs, admin_api_client, dao, parser),
+            cycle_timestamp, configs, admin_api_client, dao),
     ]
 
     succeeded = []

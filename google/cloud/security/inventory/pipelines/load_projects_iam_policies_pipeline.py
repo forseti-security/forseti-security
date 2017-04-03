@@ -84,7 +84,8 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
         """Yield an iterator of loadable iam policies.
     
         Args:
-            iam_policy_maps: An iterable of iam policies as per-project dictionary.
+            iam_policy_maps: An iterable of iam policies as per-project
+                dictionary.
                 Example: {'project_number': 11111,
                           'iam_policy': policy}
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
@@ -103,11 +104,12 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
                     role = binding.get('role', '')
                     if role.startswith('roles/'):
                         role = role.replace('roles/', '')
-                        yield {'project_number': iam_policy_map['project_number'],
-                           'role': role,
-                           'member_type': member_type,
-                           'member_name': member_name,
-                           'member_domain': member_domain}
+                        yield {
+                            'project_number': iam_policy_map['project_number'],
+                            'role': role,
+                            'member_type': member_type,
+                            'member_name': member_name,
+                            'member_domain': member_domain}
 
     def _retrieve(self):
         """Retrieve the org IAM policies from GCP.
@@ -147,7 +149,6 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline._BasePipeline):
 
     def run(self):
         """Runs the load IAM policies data pipeline.
-    
 
         Args:
             None

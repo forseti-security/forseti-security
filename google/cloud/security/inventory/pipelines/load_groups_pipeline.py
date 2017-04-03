@@ -16,12 +16,14 @@
 
 from google.cloud.security.common.data_access import errors as data_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import metadata_server
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
 class LoadGroupsPipeline(base_pipeline._BasePipeline):
     """Pipeline to load groups data into Inventory."""
+    # TODO: Add unit tests.
 
     RESOURCE_NAME = 'groups'
 
@@ -33,7 +35,6 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
             configs: Dictionary of configurations.
             admin_client: Admin API client.
             dao: Data access object.
-            parser: Forseti parser utility object.
 
         Returns:
             None
@@ -55,13 +56,13 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
             Boolean
         """
         required_gcp_execution_config = [
-            self.config.get('service_account_email'),
-            self.config.get('domain_super_admin_email')]
+            self.configs.get('service_account_email'),
+            self.configs.get('domain_super_admin_email')]
     
         required_local_execution_config = [
-            self.config.get('service_account_email'),
-            self.config.get('service_account_credentials_file'),
-            self.config.get('domain_super_admin_email')]
+            self.configs.get('service_account_email'),
+            self.configs.get('service_account_credentials_file'),
+            self.configs.get('domain_super_admin_email')]
     
         if self._is_our_environment_gce():
             required_execution_config = required_gcp_execution_config
@@ -81,7 +82,7 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
             None
         """
         try:
-            dao.load_data(self.name, cycle_timestamp, loadable_groups)
+            self.dao.load_data(self.name, self.cycle_timestamp, loadable_groups)
         except (data_errors.CSVFileError, data_errors.MySQLError) as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
@@ -94,7 +95,7 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
         Yields:
             An iterable of loadable groups as a per-group dictionary.
         """
-        for group in groups:
+        for group in groups_map:
             yield {'group_id': group.get('id'),
                    'group_email': group.get('email')}        
 
@@ -132,9 +133,9 @@ class LoadGroupsPipeline(base_pipeline._BasePipeline):
                 'Unable to inventory groups with specified arguments:\n%s',
                 self.configs)
    
-        groups_map = self.retrieve()
+        groups_map = self._retrieve()
     
-        loadable_groups = transform_util.flatten_groups(groups_map)
+        loadable_groups = self._transform(groups_map)
 
         self._load(loadable_groups)
 
