@@ -1,5 +1,5 @@
 # Service accounts
-There are two service accounts that need created:
+There are two service accounts that need to be created:
 
  1. A service account with special roles added for peforming scanning and enforcement
  1. A service account with no special role but domain-wide delegation to fetch GSuite Google Group information
@@ -38,11 +38,11 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 
 ## Create a service account for inventorying of GSuite Google Groups
 1. Create a custom service account in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
- 1. Enable domain-wide delegation.
+ 1. Enable `domain-wide delegation`.
 1. Create and download the json key to your local environment.
-1. Note the domain-wide client-id, e.g. 1111111111111111111
+1. Note the `domain-wide client-id`, e.g. 1111111111111111111
 
 ### Enable the service account in the GSuite admin control panel
 1. Visit the [advanced settings](https://admin.google.com/ManageOauthClients) portion of the control panel
- 1. Specify the domain-wide client-id from above
+ 1. Specify the `domain-wide client-id` from above
  1. Specify the scope `https://www.googleapis.com/auth/admin.directory.group.readonly`
