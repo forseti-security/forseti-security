@@ -72,6 +72,12 @@ Use `gcloud` to enable required APIs.
   $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
   ```
 
+* Enable the **Admin SDK API**
+
+  ```sh
+  $ gcloud beta service-management list enable admin.googleapis.com
+  ```
+
 ### Obtain a SendGrid API Key (optional)
 SendGrid is currently the only supported email service provider. To use it,
 sign up for a [SendGrid account](https://sendgrid.com) and create a
