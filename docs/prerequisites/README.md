@@ -5,11 +5,11 @@
      1. [Install gcloud](#install-gcloud)
      1. [Configure gcloud](#configure-gcloud)
      1. [Enable required APIs](#enable-required-apis)
-        1. [Enable required APIs to check GSuite Groups in IAM ACLs](#enable-required-apis-to-check-gsuite-groups-in-iam-acls)
      1. [Obtain a SendGrid API key](#obtain-a-sendgrid-api-key)
   1. [Installation specific prerequisites](#installation-specific-prerequisites)
      1. [GCP installations](#gcp-installations)
      1. [Local installations](#local-installations)
+  1. [Finish installation](#finish-installation) 
 
 ## Common steps
 ### Create a GCP project
@@ -104,7 +104,7 @@ Enable **Deployment Manager API**.
 ### Local installations
 See [PREREQUISITES-LOCALLY](/docs/prerequisites/PREREQUISITES-LOCALLY.md)
 
-## Once completed
+## Finish installation
 Once completed continue with the the installation steps
 
  * [GCP installations](/docs/installing/INSTALLING-GCP.md#customize-deployment-templates)
