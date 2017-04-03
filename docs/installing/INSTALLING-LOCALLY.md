@@ -18,7 +18,7 @@ $ workon forseti-security
 Clone the repo, if you haven't already done so.
 
 ```sh
-$ (forseti-secuirty): git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+$ (forseti-security): git clone https://github.com/GoogleCloudPlatform/forseti-security.git
 ```
 
 ## Run the python setup
