@@ -56,33 +56,16 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
                 self.mock_dao,
                 self.mock_parser))
 
-    def test_can_flatten_org_iam_policies(self):
-        """Test that org iam policies can be flattened."""
-
-        # Real parser is needed for this test.
-        self.parser = parser
-        self.pipeline = (
-            load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-                self.cycle_timestamp,
-                self.configs,
-                self.mock_crm,
-                self.mock_dao,
-                self.parser))
-        
-        flattened_iam_policies = self.pipeline._flatten(FAKE_ORG_IAM_POLICY_MAP)
-        self.assertEquals(EXPECTED_FLATTENED_ORG_IAM_POLICY,
-                          list(flattened_iam_policies))
-
     def test_flattened_data_and_raw_data_are_loaded(self):
         """Test that both flattened data and raw data are loaded."""
         
         self.pipeline._load(FAKE_ORG_IAM_POLICY_MAP,
                             EXPECTED_FLATTENED_ORG_IAM_POLICY)
 
-        self.assertEquals(2, self.mock_dao.load_data.call_count)
+        self.assertEquals(2, self.pipeline.dao.load_data.call_count)
 
         # The regular data is loaded.
-        called_args, called_kwargs = self.mock_dao.load_data.call_args_list[0]
+        called_args, called_kwargs = self.pipeline.dao.load_data.call_args_list[0]
         expected_args = (
             self.pipeline.name,
             self.pipeline.cycle_timestamp,
@@ -90,7 +73,7 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
         self.assertEquals(expected_args, called_args)
 
         # The raw json data is loaded.
-        called_args, called_kwargs = self.mock_dao.load_data.call_args_list[1]
+        called_args, called_kwargs = self.pipeline.dao.load_data.call_args_list[1]
         expected_args = (
             self.pipeline.RAW_ORG_IAM_POLICIES,
             self.pipeline.cycle_timestamp,
@@ -114,11 +97,28 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
                           FAKE_ORG_IAM_POLICY_MAP,
                           EXPECTED_FLATTENED_ORG_IAM_POLICY)
 
+    def test_can_flatten_org_iam_policies(self):
+        """Test that org iam policies can be flattened."""
+
+        # Real parser is needed for this test.
+        self.parser = parser
+        self.pipeline = (
+            load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
+                self.cycle_timestamp,
+                self.configs,
+                self.mock_crm,
+                self.mock_dao,
+                self.parser))
+        
+        flattened_iam_policies = self.pipeline._flatten(FAKE_ORG_IAM_POLICY_MAP)
+        self.assertEquals(EXPECTED_FLATTENED_ORG_IAM_POLICY,
+                          list(flattened_iam_policies))
+
     def test_api_is_called_to_retrieve_org_policies(self):
         """Test that api is called to retrieve org policies."""
         self.pipeline._retrieve(self.pipeline.configs['organization_id'])
 
-        self.mock_crm.get_org_iam_policies.assert_called_once_with(
+        self.pipeline.gcp_api_client.get_org_iam_policies.assert_called_once_with(
             self.pipeline.name, self.pipeline.configs['organization_id'])
 
     def test_exceptions_are_handled_when_retrieving(self):
@@ -144,14 +144,11 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline,
         '_retrieve')
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_flatten,
-                mock_load, mock_get_loaded_count):
+            mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""
         mock_retrieve.return_value = FAKE_ORG_IAM_POLICY_MAP
         mock_flatten.return_value = EXPECTED_FLATTENED_ORG_IAM_POLICY
         self.pipeline.run()
-
-        mock_retrieve.assert_called_once_with(
-            self.configs.get('organization_id'))
 
         mock_flatten.assert_called_once_with(FAKE_ORG_IAM_POLICY_MAP)
 

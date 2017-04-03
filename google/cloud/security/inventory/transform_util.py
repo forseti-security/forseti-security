@@ -26,36 +26,6 @@ LOGGER = LogUtil.setup_logging(__name__)
 MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
-def flatten_projects(projects):
-    """Yield an iterator of flattened projects.
-
-    Args:
-        projects: An iterable of resource manager project list response.
-        https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
-
-    Yields:
-        An iterable of flattened projects as a per-project dictionary.
-    """
-    for project in (project for d in projects \
-                    for project in d.get('projects', [])):
-        project_json = json.dumps(project)
-        try:
-            formatted_project_create_time = \
-                parser.parse(project.get('createTime'))\
-                    .strftime(MYSQL_DATETIME_FORMAT)
-        except (TypeError, ValueError) as e:
-            LOGGER.error('Unable to parse create_time from project: %s\n%s',
-                         project.get('createTime', ''), e)
-            formatted_project_create_time = '0000-00-00 00:00:00'
-
-        yield {'project_number': project.get('projectNumber'),
-               'project_id': project.get('projectId'),
-               'project_name': project.get('name'),
-               'lifecycle_state': project.get('lifecycleState'),
-               'parent_type': project.get('parent', {}).get('type'),
-               'parent_id': project.get('parent', {}).get('id'),
-               'raw_project': project_json,
-               'create_time': formatted_project_create_time}
 
 def _parse_member_info(member):
     """Parse out the component info in the member string.

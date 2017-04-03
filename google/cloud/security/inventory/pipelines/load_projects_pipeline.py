@@ -14,52 +14,134 @@
 
 """Pipeline to load projects data into Inventory."""
 
-from google.cloud.security.common.data_access.errors import CSVFileError
-from google.cloud.security.common.data_access.errors import MySQLError
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+import json
+
+from dateutil import parser as dateutil_parser
+
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=line-too-long
-from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
+from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
-from google.cloud.security.common.util.log_util import LogUtil
-from google.cloud.security.inventory import transform_util
-from google.cloud.security.inventory.errors import LoadDataPipelineError
+from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import base_pipeline
+# pylint: enable=line-too-long
 
 
-LOGGER = LogUtil.setup_logging(__name__)
+class LoadProjectsPipeline(base_pipeline._BasePipeline):
+    """Pipeline to load org IAM policies data into Inventory."""
 
-RESOURCE_NAME = 'projects'
+    RESOURCE_NAME = 'projects'
+
+    MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+    def __init__(self, cycle_timestamp, configs, crm_client, dao):
+        """Constructor for the data pipeline.
+
+        Args:
+            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            configs: Dictionary of configurations.
+            crm_client: CRM API client.
+            dao: Data access object.
+            parser: Forseti parser utility object.
+
+        Returns:
+            None
+        """
+        super(LoadProjectsPipeline, self).__init__(
+            self.RESOURCE_NAME, cycle_timestamp, configs, crm_client, dao)
+
+    def _load(self, flattened_projects):
+        """ Load iam policies into cloud sql.
+
+        A separate table is used to store the raw iam policies because it is
+        much faster than updating these individually into the projects table.
+        
+        Args:
+            iam_policies_map: List of IAM policies as per-org dictionary.
+                Example: {org_id: org_id,
+                          iam_policy: iam_policy}
+                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+            flattened_iam_policies: An iterable of flattened iam policies,
+                as a per-org dictionary.
+
+        Returns:
+            None
+        """
+
+        # Load projects data into cloud sql.
+        try:
+            self.dao.load_data(self.RESOURCE_NAME, self.cycle_timestamp,
+                               flattened_projects)
+        except (data_access_errors.CSVFileError,
+                data_access_errors.MySQLError) as e:
+            raise inventory_errors.LoadDataPipelineError(e)
+
+    def _flatten(self, projects):
+        """Yield an iterator of flattened iam policies.
+    
+        Args:
+            projects: An iterable of resource manager project list response.
+                https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
+    
+        Yields:
+            An iterable of flattened projects, as a per-project dictionary.
+        """
+        for project in (project for d in projects \
+                        for project in d.get('projects', [])):
+            project_json = json.dumps(project)
+            try:
+                parsed_time = dateutil_parser.parse(project.get('createTime'))
+                formatted_project_create_time = (
+                    parsed_time.strftime(self.MYSQL_DATETIME_FORMAT))
+            except (TypeError, ValueError) as e:
+                self.logger.error(
+                    'Unable to parse create_time from project: %s\n%s',
+                    project.get('createTime', ''), e)
+                formatted_project_create_time = '0000-00-00 00:00:00'
+    
+            yield {'project_number': project.get('projectNumber'),
+                   'project_id': project.get('projectId'),
+                   'project_name': project.get('name'),
+                   'lifecycle_state': project.get('lifecycleState'),
+                   'parent_type': project.get('parent', {}).get('type'),
+                   'parent_id': project.get('parent', {}).get('id'),
+                   'raw_project': project_json,
+                   'create_time': formatted_project_create_time}
 
 
-def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
-    """Runs the load projects data pipeline.
+    def _retrieve(self, org_id):
+        """Retrieve the project resources from GCP.
 
-    Args:
-        dao: Data access object.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        configs: Dictionary of configurations.
-        crm_rate_limiter: RateLimiter object for CRM API client.
+        Args:
+            org_id: String of the organization id
 
-    Returns:
-        None
+        Returns:
+            An iterable of resource manager project list response.
+            https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
 
-    Raises:
-        LoadDataPipelineException: An error with loading data has occurred.
-    """
+        """
+        try:
+            return self.gcp_api_client.get_projects(
+                self.RESOURCE_NAME,
+                self.configs['organization_id'],
+                lifecycleState=LifecycleState.ACTIVE)
+        except api_errors.ApiExecutionError as e:
+            raise inventory_errors.LoadDataPipelineError(e)
 
-    # Retrieve data from GCP.
-    crm_client = CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
-    try:
-        projects = crm_client.get_projects(RESOURCE_NAME,
-                                           configs['organization_id'],
-                                           lifecycleState=LifecycleState.ACTIVE)
-        # Flatten and relationalize data for upload to cloud sql.
-        flattened_projects = transform_util.flatten_projects(projects)
-    except ApiExecutionError as e:
-        raise LoadDataPipelineError(e)
 
-    # Load projects data into cloud sql.
-    try:
-        dao.load_data(RESOURCE_NAME, cycle_timestamp, flattened_projects)
-    except (CSVFileError, MySQLError) as e:
-        raise LoadDataPipelineError(e)
+    def run(self):
+        """Runs the data pipeline."""
+        org_id = self.configs.get('organization_id')
+        # Check if the placeholder is replaced in the config/flag.
+        if org_id == '<organization id>':
+            raise inventory_errors.LoadDataPipelineError(
+                'No organization id is specified.')
+
+        projects_map = self._retrieve(org_id)
+
+        flattened_projects = self._flatten(projects_map)
+
+        self._load(flattened_projects)
+
+        self._get_loaded_count()

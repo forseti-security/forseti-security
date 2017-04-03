@@ -38,7 +38,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline._BasePipeline):
             configs: Dictionary of configurations.
             crm_client: CRM API client.
             dao: Data access object.
-            parser: Forseti parser utility object.
+            parser: Forseti parser object.
 
         Returns:
             None

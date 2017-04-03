@@ -51,6 +51,8 @@ from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -233,14 +235,16 @@ def main(argv):
     # lead to unnecessary quota errors.
     max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
-
     crm_api_client = crm.CloudResourceManagerClient(
         rate_limiter=crm_rate_limiter)
+
     pipelines = [
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
             cycle_timestamp, configs, crm_api_client, dao, parser),
-        # TODO: add load projects pipeline
-        # TODO: add load project policies pipeline
+        load_projects_pipeline.LoadProjectsPipeline(
+            cycle_timestamp, configs, crm_api_client, dao),
+        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_api_client, dao, parser),
     ]
 
     succeeded = []
