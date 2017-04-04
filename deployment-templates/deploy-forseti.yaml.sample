@@ -51,7 +51,6 @@ resources:
     service-account: YOUR_SERVICE_ACCOUNT
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
-      - https://www.googleapis.com/auth/admin.directory.domain.readonly
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
     organization-id: YOUR_ORG_ID
