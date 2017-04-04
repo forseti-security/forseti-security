@@ -1,14 +1,15 @@
 # Installation prerequisites
   1. [Common steps](#common-steps)
-    1. [Create a GCP project](#create-a-gcp-project)
-    1. [Create a service account](#create-a-service-account)
-    1. [Install gcloud](#install-gcloud)
-    1. [Configure gcloud](#configure-gcloud)
-    1. [Enable required APIs](#enable-required-apis)
-    1. [Obtain a SendGrid API key](#obtain-a-sendgrid-api-key)
+     1. [Create a GCP project](#create-a-gcp-project)
+     1. [Create a service account](#create-a-service-account)
+     1. [Install gcloud](#install-gcloud)
+     1. [Configure gcloud](#configure-gcloud)
+     1. [Enable required APIs](#enable-required-apis)
+     1. [Obtain a SendGrid API key](#obtain-a-sendgrid-api-key)
   1. [Installation specific prerequisites](#installation-specific-prerequisites)
-    1. [GCP installations](#gcp-installations)
-    1. [Local installations](#local-installations)
+     1. [GCP installations](#gcp-installations)
+     1. [Local installations](#local-installations)
+  1. [Finish installation](#finish-installation) 
 
 ## Common steps
 ### Create a GCP project
@@ -71,6 +72,12 @@ Use `gcloud` to enable required APIs.
   $ gcloud beta service-management enable cloudresourcemanager.googleapis.com
   ```
 
+* Enable the **Admin SDK API**
+
+  ```sh
+  $ gcloud beta service-management list enable admin.googleapis.com
+  ```
+
 ### Obtain a SendGrid API Key (optional)
 SendGrid is currently the only supported email service provider. To use it,
 sign up for a [SendGrid account](https://sendgrid.com) and create a
@@ -87,12 +94,8 @@ don't want to be tracked, the tracking pixel can be
 [disabled here](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
 
 ## Deployment-specific prerequisites
-### GCP
-#### Enable required APIs
-
+### GCP installations
 Enable **Deployment Manager API**.
-In addition to the APIs from [above](#enable-required-apis) you must enable the
-Deployment Manager API.
 
   ```sh
   $ gcloud beta service-management enable deploymentmanager.googleapis.com
@@ -100,3 +103,9 @@ Deployment Manager API.
 
 ### Local installations
 See [PREREQUISITES-LOCALLY](/docs/prerequisites/PREREQUISITES-LOCALLY.md)
+
+## Finish installation
+Once you've completed the prerequisite steps continue with the installation guide for your deployment type:
+
+ * [GCP installations](/docs/installing/INSTALLING-GCP.md#customize-deployment-templates)
+ * [Local installations](/docs/installing/INSTALLING-LOCALLY.md#create-a-virtualenv)
