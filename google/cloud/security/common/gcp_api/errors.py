@@ -30,6 +30,11 @@ class ApiExecutionError(Error):
             self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
 
 
+class InvalidBucketPathError(Error):
+    """Invalid GCS bucket path."""
+    pass
+
+
 class UnsupportedApiError(Error):
     """Error for unsupported API."""
     pass
@@ -37,9 +42,4 @@ class UnsupportedApiError(Error):
 
 class UnsupportedApiVersionError(Error):
     """Error for unsupported API version."""
-    pass
-
-
-class InvalidBucketPathError(Error):
-    """Invalid GCS bucket path."""
     pass

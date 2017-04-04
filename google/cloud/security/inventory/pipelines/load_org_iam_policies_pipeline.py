@@ -16,64 +16,102 @@
 
 import json
 
-from google.cloud.security.common.data_access import errors as data_errors
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory import transform_util
+from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-RESOURCE_NAME = 'org_iam_policies'
-RAW_ORG_IAM_POLICIES = 'raw_org_iam_policies'
+class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
+    """Pipeline to load org IAM policies data into Inventory."""
 
+    RESOURCE_NAME = 'org_iam_policies'
+    RAW_RESOURCE_NAME = 'raw_org_iam_policies'
 
-def run(dao=None, cycle_timestamp=None, configs=None, crm_rate_limiter=None):
-    """Runs the load IAM policies data pipeline.
+    def __init__(self, cycle_timestamp, configs, crm_client, dao):
+        """Constructor for the data pipeline.
 
-    Args:
-        dao: Data access object.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        configs: Dictionary of configurations.
-        crm_rate_limiter: RateLimiter object for CRM API client.
+        Args:
+            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            configs: Dictionary of configurations.
+            crm_client: CRM API client.
+            dao: Data access object.
 
-    Returns:
-        None
+        Returns:
+            None
+        """
+        super(LoadOrgIamPoliciesPipeline, self).__init__(
+            cycle_timestamp, configs, crm_client, dao)
 
-    Raises:
-        LoadDataPipelineException: An error with loading data has occurred.
-    """
-    org_id = configs.get('organization_id')
-    # Check if the placeholder is replaced in the config/flag.
-    if org_id == '<organization id>':
-        raise inventory_errors.LoadDataPipelineError(
-            'No organization id is specified.')
+    def _transform(self, iam_policies_map):
+        """Yield an iterator of loadable iam policies.
 
-    crm_client = crm.CloudResourceManagerClient(rate_limiter=crm_rate_limiter)
-    try:
-        # Retrieve data from GCP.
-        # Flatten the iterator since we will use it twice, and it is faster
-        # than cloning to 2 iterators.
-        iam_policies_map = crm_client.get_org_iam_policies(
-            RESOURCE_NAME, org_id)
-        # TODO: Investigate improving so the pylint disable isn't needed.
-        # pylint: disable=redefined-variable-type
-        iam_policies_map = list(iam_policies_map)
+        Args:
+            iam_policies_map: An iterable of iam policies as per-project
+                dictionary.
+                Example: {'project_number': 11111,
+                          'iam_policy': policy}
+                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
-        # Flatten and relationalize data for upload to cloud sql.
-        flattened_iam_policies = (
-            transform_util.flatten_iam_policies(iam_policies_map))
-    except api_errors.ApiExecutionError as e:
-        raise inventory_errors.LoadDataPipelineError(e)
+        Yields:
+            An iterable of loadable iam policies, as a per-org dictionary.
+        """
+        for iam_policy_map in iam_policies_map:
+            iam_policy = iam_policy_map['iam_policy']
+            bindings = iam_policy.get('bindings', [])
+            for binding in bindings:
+                members = binding.get('members', [])
+                for member in members:
+                    member_type, member_name, member_domain = (
+                        parser.parse_member_info(member))
+                    role = binding.get('role', '')
+                    if role.startswith('roles/'):
+                        role = role.replace('roles/', '')
+                    yield {'org_id': iam_policy_map['org_id'],
+                           'role': role,
+                           'member_type': member_type,
+                           'member_name': member_name,
+                           'member_domain': member_domain}
 
-    # Load flattened iam policies into cloud sql.
-    # Load raw iam policies into cloud sql.
-    # A separate table is used to store the raw iam policies because it is
-    # much faster than updating these individually into the projects table.
-    try:
-        dao.load_data(RESOURCE_NAME, cycle_timestamp, flattened_iam_policies)
+    def _retrieve(self):
+        """Retrieve the org IAM policies from GCP.
 
+        Returns:
+            iam_policies_map: List of IAM policies as per-org dictionary.
+                Example: {org_id: org_id,
+                          iam_policy: iam_policy}
+                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+
+        Raises:
+            LoadDataPipelineException: An error with loading data has occurred.
+        """
+        try:
+            # Flatten the iterator since we will use it twice, and it is faster
+            # than cloning to 2 iterators.
+            return list(self.api_client.get_org_iam_policies(
+                self.RESOURCE_NAME, self.configs.get('organization_id')))
+        except api_errors.ApiExecutionError as e:
+            raise inventory_errors.LoadDataPipelineError(e)
+
+    def run(self):
+        """Runs the data pipeline."""
+        org_id = self.configs.get('organization_id')
+        # Check if the placeholder is replaced in the config/flag.
+        if org_id == '<organization id>':
+            raise inventory_errors.LoadDataPipelineError(
+                'No organization id is specified.')
+
+        iam_policies_map = self._retrieve()
+
+        loadable_iam_policies = self._transform(iam_policies_map)
+
+        self._load(self.RESOURCE_NAME, loadable_iam_policies)
+
+        # A separate table is used to store the raw iam policies json
+        # because it is much faster than updating these individually
+        # into the orgs table.
         for i in iam_policies_map:
             i['iam_policy'] = json.dumps(i['iam_policy'])
-        dao.load_data(RAW_ORG_IAM_POLICIES, cycle_timestamp, iam_policies_map)
-    except (data_errors.CSVFileError, data_errors.MySQLError) as e:
-        raise inventory_errors.LoadDataPipelineError(e)
+        self._load(self.RAW_RESOURCE_NAME, iam_policies_map)
+
+        self._get_loaded_count()
