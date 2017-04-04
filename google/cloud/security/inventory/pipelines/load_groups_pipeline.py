@@ -17,17 +17,13 @@
 from oauth2client.contrib.gce import AppAssertionCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 
-from google.cloud.security.common.data_access.errors import CSVFileError
-from google.cloud.security.common.data_access.errors import MySQLError
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
-# TODO: Investigate improving so the pylint disable isn't needed.
-# pylint: disable=line-too-long
-from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
-# pylint: enable=line-too-long
+from google.cloud.security.common.data_access import errors as data_errors
+from google.cloud.security.common.gcp_api import admin_directory
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import metadata_server
 from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import transform_util
-from google.cloud.security.inventory.errors import LoadDataPipelineError
 
 
 LOGGER = LogUtil.setup_logging(__name__)
@@ -91,7 +87,7 @@ def _build_proper_credentials(config):
             config.get('service_account_credentials_file'),
             scopes=REQUIRED_SCOPES)
     except (ValueError, KeyError) as e:
-        raise LoadDataPipelineError(e)
+        raise inventory_errors.LoadDataPipelineError(e)
 
     return credentials.create_delegated(
         config.get('domain_super_admin_email'))
@@ -113,21 +109,21 @@ def run(dao=None, cycle_timestamp=None, config=None, rate_limiter=None):
         LoadDataPipelineException: An error with loading data has occurred.
     """
     if not _can_inventory_google_groups(config):
-        raise LoadDataPipelineError(
+        raise inventory_errors.LoadDataPipelineError(
             'Unable to inventory groups with specified arguments:\n%s', config)
 
     credentials = _build_proper_credentials(config)
-    admin_client = AdminDirectoryClient(credentials=credentials,
-                                        rate_limiter=rate_limiter)
+    admin_client = admin_directory.AdminDirectoryClient(
+        credentials=credentials, rate_limiter=rate_limiter)
 
     try:
         groups_map = admin_client.get_groups()
-    except ApiExecutionError as e:
-        raise LoadDataPipelineError(e)
+    except api_errors.ApiExecutionError as e:
+        raise inventory_errors.LoadDataPipelineError(e)
 
     flattened_groups = transform_util.flatten_groups(groups_map)
 
     try:
         dao.load_data(RESOURCE_NAME, cycle_timestamp, flattened_groups)
-    except (CSVFileError, MySQLError) as e:
-        raise LoadDataPipelineError(e)
+    except (data_errors.CSVFileError, data_errors.MySQLError) as e:
+        raise inventory_errors.LoadDataPipelineError(e)

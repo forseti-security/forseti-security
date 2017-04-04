@@ -14,12 +14,11 @@
 
 """Wrapper for Compute API client."""
 
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
+from google.cloud.security.common.gcp_api import _base_client
 
 
 # pylint: disable=too-few-public-methods
-# TODO: Look at investigating improving to remove pylint disable.
-class ComputeClient(_BaseClient):
+class ComputeClient(_base_client.BaseClient):
     """Compute Client."""
 
     API_NAME = 'compute'

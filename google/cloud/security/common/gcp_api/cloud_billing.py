@@ -14,11 +14,10 @@
 
 """Wrapper for Billing API client."""
 
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
+from google.cloud.security.common.gcp_api import _base_client
 
 # pylint: disable=too-few-public-methods
-# TODO: Investigate improving so we can avoid the pylint disable.
-class CloudBillingClient(_BaseClient):
+class CloudBillingClient(_base_client.BaseClient):
     """Billing Client."""
 
     API_NAME = 'cloudbilling'

@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common Google Cloud Platfor type definitions."""
+"""Common Google Cloud Platform type definitions."""
