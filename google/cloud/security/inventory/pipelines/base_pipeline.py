@@ -28,7 +28,7 @@ class BasePipeline(object):
     """Base client for a specified GCP API and credentials."""
 
     __metaclass__ = abc.ABCMeta
-    
+
     RESOURCE_NAME = None
 
     def __init__(self, cycle_timestamp, configs, api_client, dao):
