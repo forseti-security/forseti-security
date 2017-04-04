@@ -67,21 +67,6 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
         return all(required_execution_config)
 
-    def _load(self, loadable_groups):
-        """ Load groups into cloud sql.
-
-        Args:
-            groups_map: An iterable of Admin SDK Directory API Groups.
-            https://google-api-client-libraries.appspot.com/documentation/admin/directory_v1/python/latest/admin_directory_v1.groups.html#list
-
-        Returns:
-            None
-        """
-        try:
-            self.dao.load_data(self.name, self.cycle_timestamp, loadable_groups)
-        except (data_errors.CSVFileError, data_errors.MySQLError) as e:
-            raise inventory_errors.LoadDataPipelineError(e)
-
     def _transform(self, groups_map):
         """Yield an iterator of loadable groups.
         Args:
@@ -133,6 +118,6 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
         loadable_groups = self._transform(groups_map)
 
-        self._load(loadable_groups)
+        self._load(self.name, loadable_groups)
 
         self._get_loaded_count()
