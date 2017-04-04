@@ -32,7 +32,7 @@ limitations under the License.
         </tr>
         {% for pipeline in pipelines %}
         <tr>
-            <td>{{ pipeline.name }}</td>
+            <td>{{ pipeline.RESOURCE_NAME }}</td>
             <td>{{ pipeline.status }}</td>
             {% if pipeline.count is not none %}
               <td>{{ pipeline.count }}</td>
