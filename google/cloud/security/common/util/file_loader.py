@@ -19,7 +19,7 @@ import os
 import yaml
 
 from google.cloud.security.common.gcp_api import storage
-from google.cloud.security.common.util import errors
+from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.common.util.log_util import LogUtil
 
 LOGGER = LogUtil.setup_logging(__name__)
@@ -56,11 +56,11 @@ def _get_filetype_parser(file_path, parser_type):
     file_ext = file_path.split('.')[-1]
 
     if file_ext not in filetype_handlers:
-        raise errors.InvalidFileExtensionError(
+        raise util_errors.InvalidFileExtensionError(
             'Unsupported file type: {}'.format(file_ext))
 
     if parser_type not in filetype_handlers[file_ext]:
-        raise errors.InvalidParserTypeError(
+        raise util_errors.InvalidParserTypeError(
             'Unsupported parser type: {}'.format(parser_type))
 
     return filetype_handlers[file_ext][parser_type]
