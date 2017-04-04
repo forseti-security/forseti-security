@@ -6,7 +6,7 @@ There are two service accounts that need to be created:
 
  * [Create a service account for scanning and enforcement](#create-a-service-account-for-scanning-and-enforcement)
    * [Enable the required GCP IAM roles for the service account](#enable-the-required-gcp-iam-roles-for-the-service-account)
- * [Create a service account for inventorying GSuite Google Groups](#create-a-service-account-for-inventorying-gsuite-google-groups)
+ * [Create a service account for inventorying GSuite Google Groups](#create-a-service-account-for-inventorying-of-gsuite-google-groups)
    * [Enable the service account in the GSuite admin control panel](#enable-the-service-account-in-the-gsuite-admin-control-panel)
 
 ## Create a service account for scanning and enforcement
