@@ -27,7 +27,7 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
-
+from tests.inventory.pipelines.test_data.fake_projects import EXPECTED_LOADABLE_PROJECTS
 # pylint: enable=line-too-long
 
 
@@ -40,6 +40,7 @@ class BasePipelineTest(basetest.TestCase):
 
     def setUp(self):
         """Set up."""
+
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = {'organization_id': '66666',
                         'max_crm_api_calls_per_100_seconds': 400,
@@ -59,8 +60,32 @@ class BasePipelineTest(basetest.TestCase):
                 self.mock_crm,
                 self.mock_dao))
 
+    def test_data_are_loaded(self):
+        """Test that data are loaded."""
+
+        resource_name = 'foo_resource'
+        self.pipeline._load(resource_name,
+                            EXPECTED_LOADABLE_PROJECTS)
+
+        self.pipeline.dao.load_data.assert_called_once_with(
+            resource_name,
+            self.pipeline.cycle_timestamp,
+            EXPECTED_LOADABLE_PROJECTS)       
+
+    def test_load_errors_are_handled(self):
+        """Test that errors are handled when loading."""
+
+        self.pipeline.dao.load_data.side_effect = (
+            data_access_errors.MySQLError('error error', mock.MagicMock()))
+
+        self.assertRaises(inventory_errors.LoadDataPipelineError,
+                          self.pipeline._load,
+                          self.pipeline.name,
+                          EXPECTED_LOADABLE_PROJECTS)
+     
     def test_get_loaded_count(self):
         """Test the loaded count is gotten."""
+
         self.pipeline.dao.select_record_count.return_value = 55555
 
         self.pipeline._get_loaded_count()
@@ -68,6 +93,7 @@ class BasePipelineTest(basetest.TestCase):
 
     def test_error_is_handled_in_get_loaded_count(self):
         """Test error from get_loaded_count is handled."""
+
         self.pipeline.logger = mock.create_autospec(LogUtil).setup_logging('foo')
         self.pipeline.dao.select_record_count.side_effect = (
             data_access_errors.MySQLError('11111', '22222'))

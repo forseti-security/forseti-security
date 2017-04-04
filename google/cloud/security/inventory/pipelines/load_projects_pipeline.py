@@ -51,28 +51,21 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         super(LoadProjectsPipeline, self).__init__(
             self.RESOURCE_NAME, cycle_timestamp, configs, crm_client, dao)
 
-    def _load(self, loadable_projects):
+    def _load(self, resource_name, data):
         """ Load iam policies into cloud sql.
 
-        A separate table is used to store the raw iam policies because it is
-        much faster than updating these individually into the projects table.
-
         Args:
-            iam_policies_map: List of IAM policies as per-org dictionary.
-                Example: {org_id: org_id,
-                          iam_policy: iam_policy}
-                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
-            loadable_iam_policies: An iterable of loadable iam policies,
-                as a per-org dictionary.
+            resource_name: String of the resource name.
+            data: An iterable or a list of data to be uploaded.
 
         Returns:
             None
-        """
 
-        # Load projects data into cloud sql.
+        Raises:
+            LoadDataPipelineError: An error with loading data has occurred.
+        """
         try:
-            self.dao.load_data(self.RESOURCE_NAME, self.cycle_timestamp,
-                               loadable_projects)
+            self.dao.load_data(resource_name, self.cycle_timestamp, data)
         except (data_access_errors.CSVFileError,
                 data_access_errors.MySQLError) as e:
             raise inventory_errors.LoadDataPipelineError(e)
@@ -150,6 +143,6 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
 
         loadable_projects = self._transform(projects_map)
 
-        self._load(loadable_projects)
+        self._load(self.name, loadable_projects)
 
         self._get_loaded_count()

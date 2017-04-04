@@ -67,7 +67,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             Credentials as built by oauth2client.
 
         Raises:
-            LoadDataPipelineException: An error with loading data has occurred.
+            ApiExecutionError: When an error has occurred executing the API.
         """
 
         if metadata_server.can_reach_metadata_server():
@@ -100,7 +100,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             A list of group objects returned from the API.
 
         Raises:
-            ApiExecutionError: When an error has occured executing the API.
+            ApiExecutionError: When an error has occurred executing the API.
         """
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)

@@ -37,6 +37,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
 
     def setUp(self):
         """Set up."""
+
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = {'organization_id': '66666',
                         'max_crm_api_calls_per_100_seconds': 400,
@@ -55,24 +56,6 @@ class LoadProjectsPipelineTest(basetest.TestCase):
                 self.mock_crm,
                 self.mock_dao))
 
-    def test_data_are_loaded(self):
-        """Test that data are loaded."""
-        self.pipeline._load(EXPECTED_LOADABLE_PROJECTS)
-
-        self.pipeline.dao.load_data.assert_called_once_with(
-            self.pipeline.name,
-            self.pipeline.cycle_timestamp,
-            EXPECTED_LOADABLE_PROJECTS)
-
-    def test_load_errors_are_handled(self):
-        """Test that errors are handled when loading."""
-
-        self.pipeline.dao.load_data.side_effect = (
-            data_access_errors.MySQLError('11111', '22222'))
-        self.assertRaises(inventory_errors.LoadDataPipelineError,
-                          self.pipeline._load,
-                          EXPECTED_LOADABLE_PROJECTS)
-
     def test_can_transform_projects(self):
         """Test that projects can be transformed."""
 
@@ -85,6 +68,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
 
     def test_api_is_called_to_retrieve_projects(self):
         """Test that api is called to retrieve projects."""
+
         self.pipeline._retrieve()
 
         self.pipeline.api_client.get_projects.assert_called_once_with(
@@ -125,7 +109,8 @@ class LoadProjectsPipelineTest(basetest.TestCase):
 
         mock_transform.assert_called_once_with(FAKE_PROJECTS)
 
-        mock_load.assert_called_once_with(EXPECTED_LOADABLE_PROJECTS)
+        mock_load.assert_called_once_with(self.pipeline.name,
+                                          EXPECTED_LOADABLE_PROJECTS)
         
         mock_get_loaded_count.assert_called_once
 

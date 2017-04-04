@@ -36,6 +36,7 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
 
     def setUp(self):
         """Set up."""
+
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = {'organization_id': '66666',
                         'max_crm_api_calls_per_100_seconds': 400,
@@ -56,48 +57,6 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
                 self.mock_dao,
                 self.mock_parser))
 
-    def test_data_are_loaded(self):
-        """Test that data are loaded."""
-        
-        self.pipeline._load(FAKE_ORG_IAM_POLICY_MAP,
-                            EXPECTED_LOADABLE_ORG_IAM_POLICY)
-
-        self.assertEquals(2, self.pipeline.dao.load_data.call_count)
-
-        # The regular data is loaded.
-        called_args, called_kwargs = (
-            self.pipeline.dao.load_data.call_args_list[0])
-        expected_args = (
-            self.pipeline.name,
-            self.pipeline.cycle_timestamp,
-            EXPECTED_LOADABLE_ORG_IAM_POLICY)
-        self.assertEquals(expected_args, called_args)
-
-        # The raw json data is loaded.
-        called_args, called_kwargs = (
-            self.pipeline.dao.load_data.call_args_list[1])
-        expected_args = (
-            self.pipeline.RAW_ORG_IAM_POLICIES,
-            self.pipeline.cycle_timestamp,
-            FAKE_ORG_IAM_POLICY_MAP)
-        self.assertEquals(expected_args, called_args)        
-
-    def test_load_errors_are_handled(self):
-        """Test that errors are handled when loading."""
-
-        self.pipeline.dao.load_data.side_effect = (
-            data_access_errors.MySQLError('11111', '22222'))
-        self.assertRaises(inventory_errors.LoadDataPipelineError,
-                          self.pipeline._load,
-                          FAKE_ORG_IAM_POLICY_MAP,
-                          EXPECTED_LOADABLE_ORG_IAM_POLICY)
-
-        self.pipeline.dao.load_data.side_effect = (
-            data_access_errors.CSVFileError('11111', mock.MagicMock()))
-        self.assertRaises(inventory_errors.LoadDataPipelineError,
-                          self.pipeline._load,
-                          FAKE_ORG_IAM_POLICY_MAP,
-                          EXPECTED_LOADABLE_ORG_IAM_POLICY)
 
     def test_can_transform_org_iam_policies(self):
         """Test that org iam policies can be transformed."""
@@ -119,6 +78,7 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
 
     def test_api_is_called_to_retrieve_org_policies(self):
         """Test that api is called to retrieve org policies."""
+
         self.pipeline._retrieve()
 
         self.pipeline.api_client.get_org_iam_policies.assert_called_once_with(
@@ -148,14 +108,27 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
             mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""
+
         mock_retrieve.return_value = FAKE_ORG_IAM_POLICY_MAP
         mock_transform.return_value = EXPECTED_LOADABLE_ORG_IAM_POLICY
         self.pipeline.run()
 
         mock_transform.assert_called_once_with(FAKE_ORG_IAM_POLICY_MAP)
 
-        mock_load.assert_called_once_with(
-            FAKE_ORG_IAM_POLICY_MAP,
+        self.assertEquals(2, mock_load.call_count)
+
+        # The regular data is loaded.
+        called_args, called_kwargs = mock_load.call_args_list[0]
+        expected_args = (
+            self.pipeline.name,
             EXPECTED_LOADABLE_ORG_IAM_POLICY)
+        self.assertEquals(expected_args, called_args)
+
+        # The raw json data is loaded.
+        called_args, called_kwargs = mock_load.call_args_list[1]
+        expected_args = (
+            self.pipeline.RAW_RESOURCE_NAME,
+            FAKE_ORG_IAM_POLICY_MAP)
+        self.assertEquals(expected_args, called_args)         
         
         mock_get_loaded_count.assert_called_once

@@ -28,7 +28,8 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
     """Pipeline to load org IAM policies data into Inventory."""
 
-    RAW_ORG_IAM_POLICIES = 'raw_org_iam_policies'
+    RESOURCE_NAME = 'org_iam_policies'
+    RAW_RESOURCE_NAME = 'raw_org_iam_policies'
 
     def __init__(self, cycle_timestamp, configs, crm_client, dao, parser):
         """Constructor for the data pipeline.
@@ -44,38 +45,8 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
             None
         """
         super(LoadOrgIamPoliciesPipeline, self).__init__(
-            'org_iam_policies', cycle_timestamp, configs, crm_client, dao)
+            self.RESOURCE_NAME, cycle_timestamp, configs, crm_client, dao)
         self.parser = parser
-
-    def _load(self, iam_policies_map, loadable_iam_policies):
-        """ Load iam policies into cloud sql.
-
-        A separate table is used to store the raw iam policies because it is
-        much faster than updating these individually into the projects table.
-
-        Args:
-            iam_policies_map: List of IAM policies as per-org dictionary.
-                Example: {org_id: org_id,
-                          iam_policy: iam_policy}
-                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
-            loadable_iam_policies: An iterable of loadable iam policies,
-                as a per-org dictionary.
-
-        Returns:
-            None
-        """
-        try:
-            self.dao.load_data(self.name, self.cycle_timestamp,
-                               loadable_iam_policies)
-
-            for i in iam_policies_map:
-                i['iam_policy'] = json.dumps(i['iam_policy'])
-            self.dao.load_data(self.RAW_ORG_IAM_POLICIES, self.cycle_timestamp,
-                               iam_policies_map)
-
-        except (data_access_errors.CSVFileError,
-                data_access_errors.MySQLError) as e:
-            raise inventory_errors.LoadDataPipelineError(e)
 
     def _transform(self, iam_policies_map):
         """Yield an iterator of loadable iam policies.
@@ -149,6 +120,13 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
 
         loadable_iam_policies = self._transform(iam_policies_map)
 
-        self._load(iam_policies_map, loadable_iam_policies)
+        self._load(self.name, loadable_iam_policies)
+
+        # A separate table is used to store the raw iam policies json
+        # because it is much faster than updating these individually
+        # into the orgs table.
+        for i in iam_policies_map:
+            i['iam_policy'] = json.dumps(i['iam_policy'])
+        self._load(self.RAW_RESOURCE_NAME, iam_policies_map)
 
         self._get_loaded_count()

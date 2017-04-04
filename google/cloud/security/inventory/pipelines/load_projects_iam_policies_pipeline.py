@@ -48,37 +48,6 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
             self.RESOURCE_NAME, cycle_timestamp, configs, crm_client, dao)
         self.parser = parser
 
-
-    def _load(self, iam_policy_maps, loadable_iam_policies):
-        """ Load iam policies into cloud sql.
-
-        A separate table is used to store the raw iam policies because it is
-        much faster than updating these individually into the projects table.
-
-        Args:
-            iam_policy_maps: List of IAM policies as per-org dictionary.
-                Example: {'project_number': 11111,
-                          'iam_policy': policy}
-                https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
-            loadable_iam_policies: An iterable of loadable iam policies,
-                as a per-org dictionary.
-
-        Returns:
-            None
-        """
-        try:
-            self.dao.load_data(self.name, self.cycle_timestamp,
-                               loadable_iam_policies)
-
-            for i in iam_policy_maps:
-                i['iam_policy'] = json.dumps(i['iam_policy'])
-            self.dao.load_data(self.RAW_RESOURCE_NAME, self.cycle_timestamp,
-                               iam_policy_maps)
-        except (data_access_errors.CSVFileError,
-                data_access_errors.MySQLError) as e:
-            raise inventory_errors.LoadDataPipelineError(e)
-
-
     def _transform(self, iam_policy_maps):
         """Yield an iterator of loadable iam policies.
 
@@ -121,6 +90,9 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                 Example: [{project_number: project_number,
                           iam_policy: iam_policy}]
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+
+        Raises:
+            ApiExecutionError: When an error has occurred executing the API.
         """
         # Get the projects for which we will retrieve the IAM policies.
         try:
@@ -161,6 +133,13 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
 
         loadable_iam_policies = self._transform(iam_policy_maps)
 
-        self._load(iam_policy_maps, loadable_iam_policies)
+        self._load(self.name, loadable_iam_policies)
+
+        # A separate table is used to store the raw iam policies json
+        # because it is much faster than updating these individually
+        # into the projects table.
+        for i in iam_policy_maps:
+            i['iam_policy'] = json.dumps(i['iam_policy'])
+        self._load(self.RAW_RESOURCE_NAME, iam_policy_maps)
 
         self._get_loaded_count()
