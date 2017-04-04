@@ -1,7 +1,7 @@
 # Service accounts
 There are two service accounts that need to be created:
 
- 1. A service account with special roles added for peforming scanning and enforcement
+ 1. A service account with special roles added for performing scanning and enforcement
  1. A service account with no special role but domain-wide delegation to fetch GSuite Google Group information
 
  * [Create a service account for scanning and enforcement](#create-a-service-account-for-scanning-and-enforcement)
