@@ -87,6 +87,9 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
         Returns:
             A list of group objects returned from the API.
+
+        Raises:
+            LoadDataPipelineException: An error with loading data has occurred.
         """
         try:
             return self.api_client.get_groups()
@@ -104,9 +107,6 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
         Returns:
             None
-
-        Raises:
-            LoadDataPipelineException: An error with loading data has occurred.
         """
         if not self._can_inventory_google_groups():
             raise inventory_errors.LoadDataPipelineError(

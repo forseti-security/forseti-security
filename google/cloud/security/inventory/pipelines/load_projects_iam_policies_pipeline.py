@@ -92,7 +92,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
         Raises:
-            ApiExecutionError: When an error has occurred executing the API.
+            LoadDataPipelineException: An error with loading data has occurred.
         """
         # Get the projects for which we will retrieve the IAM policies.
         try:
@@ -125,9 +125,6 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
 
         Returns:
             None
-
-        Raises:
-            LoadDataPipelineException: An error with loading data has occurred.
         """
         iam_policy_maps = self._retrieve()
 

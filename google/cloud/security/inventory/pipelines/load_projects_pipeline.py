@@ -111,7 +111,6 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         Returns:
             An iterable of resource manager project list response.
             https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
-
         """
         try:
             return self.api_client.get_projects(

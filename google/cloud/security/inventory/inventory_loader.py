@@ -47,7 +47,7 @@ from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
-from google.cloud.security.common.gcp_api import admin_directory
+from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import parser
@@ -249,21 +249,25 @@ def main(argv):
     # Otherwise, there is a gap where the ratelimiter from one pipeline
     # is not used for the next pipeline using the same API. This could
     # lead to unnecessary quota errors.
-    # TODO: Provide the api client from the api client module instead of here.
+    #
+    # TODO: Move the building of the rate limiter and credential
+    # to the api client:
+    # rate limit getting should be from the module
+    # rate limit setting should be passed into the creation of the client
+    # credentials should be built inside the client and never exposed here
     max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
     crm_api_client = crm.CloudResourceManagerClient(
         rate_limiter=crm_rate_limiter)
 
-    # TODO: Make this configurable.
+    # TODO: Make rate limiter configurable.
     try:
         admin_directory_rate_limiter = (
-            admin_directory.AdminDirectoryClient.get_rate_limiter())
-        credentials = (
-            admin_directory.AdminDirectoryClient.build_proper_credentials(
-                configs))
-        admin_api_client = admin_directory.AdminDirectoryClient(
-            credentials=credentials, rate_limiter=admin_directory_rate_limiter)
+            ad.AdminDirectoryClient.get_rate_limiter())
+        credentials = ad.AdminDirectoryClient.build_proper_credentials(configs)
+        admin_api_client = ad.AdminDirectoryClient(
+            credentials=credentials,
+            rate_limiter=admin_directory_rate_limiter)
     except api_errors.ApiExecutionError:
         LOGGER.error('Unable to build api client.\n%s', e)
         sys.exit()
@@ -279,6 +283,7 @@ def main(argv):
             cycle_timestamp, configs, admin_api_client, dao),
     ]
 
+    # TODO: Define these status codes programmatically.
     succeeded = []
     for pipeline in pipelines:
         try:
@@ -286,7 +291,7 @@ def main(argv):
             pipeline.status = 'SUCCESS'
         except LoadDataPipelineError as e:
             LOGGER.error(
-                'Encountered error to load data.\n%s', e)
+                'Encountered error loading data.\n%s', e)
             pipeline.status = 'FAILURE'
             LOGGER.info('Continuing on.')
         succeeded.append(pipeline.status == 'SUCCESS')
@@ -309,6 +314,7 @@ def main(argv):
                     configs.get('sendgrid_api_key'),
                     configs.get('email_sender'),
                     configs.get('email_recipient'))
+# pylint: enable=too-many-locals
 
 
 if __name__ == '__main__':

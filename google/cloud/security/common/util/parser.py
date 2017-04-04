@@ -31,7 +31,7 @@ def parse_member_info(member):
     if '@' in email:
         member_name, member_domain = email.split('@', 1)
     else:
-        # member is really something like domain:google.com
+        # Member then is really something like domain:google.com
         member_name = ''
         member_domain = email
 

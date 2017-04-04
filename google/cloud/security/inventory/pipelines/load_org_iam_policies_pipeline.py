@@ -85,6 +85,9 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
                 Example: {org_id: org_id,
                           iam_policy: iam_policy}
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
+
+        Raises:
+            LoadDataPipelineException: An error with loading data has occurred.
         """
         try:
             # Flatten the iterator since we will use it twice, and it is faster
@@ -102,9 +105,6 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
 
         Returns:
             None
-
-        Raises:
-            LoadDataPipelineException: An error with loading data has occurred.
         """
         org_id = self.configs.get('organization_id')
         # Check if the placeholder is replaced in the config/flag.
