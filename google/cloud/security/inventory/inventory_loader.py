@@ -225,6 +225,8 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
+# TODO: Investigate improving so the pylint disable isn't needed.
+# pylint: disable=too-many-locals
 def main(argv):
     """Runs the Inventory Loader."""
 
