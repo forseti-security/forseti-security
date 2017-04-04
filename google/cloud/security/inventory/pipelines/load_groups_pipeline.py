@@ -14,7 +14,6 @@
 
 """Pipeline to load GSuite Account Groups into Inventory."""
 
-from google.cloud.security.common.data_access import errors as data_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import metadata_server
 from google.cloud.security.inventory import errors as inventory_errors
