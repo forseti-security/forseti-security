@@ -23,12 +23,11 @@ from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
-from tests.inventory.pipelines.test_data.fake_iam_policies import EXPECTED_LOADABLE_PROJECT_IAM_POLICY
-from tests.inventory.pipelines.test_data.fake_iam_policies import FAKE_PROJECT_IAM_POLICY_MAP
+from tests.inventory.pipelines.test_data import fake_configs
+from tests.inventory.pipelines.test_data import fake_iam_policies
 # pylint: enable=line-too-long
 
 
@@ -41,42 +40,24 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         """Set up."""
 
         self.cycle_timestamp = '20001225T120000Z'
-        self.configs = {'organization_id': '66666',
-                        'max_crm_api_calls_per_100_seconds': 400,
-                        'db_name': 'forseti_security',
-                        'db_user': 'sqlproxy',
-                        'db_host': '127.0.0.1',
-                        'email_sender': 'foo.sender@company.com', 
-                        'email_recipient': 'foo.recipient@company.com',
-                        'sendgrid_api_key': 'foo_email_key',}
+        self.configs = fake_configs.FAKE_CONFIGS
         self.mock_crm = mock.create_autospec(crm.CloudResourceManagerClient)
         self.mock_dao = mock.create_autospec(dao.Dao)
-        self.mock_parser = mock.create_autospec(parser)
         self.pipeline = (
             load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
                 self.cycle_timestamp,
                 self.configs,
                 self.mock_crm,
-                self.mock_dao,
-                self.mock_parser))
+                self.mock_dao))
 
     def test_can_transform_project_iam_policies(self):
         """Test that project iam policies can be tranformed."""
-
-        # Real parser is needed for this test.
-        self.parser = parser
-        self.pipeline = (
-            load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-                self.cycle_timestamp,
-                self.configs,
-                self.mock_crm,
-                self.mock_dao,
-                self.parser))
         
         loadable_iam_policies = self.pipeline._transform(
-            FAKE_PROJECT_IAM_POLICY_MAP)
-        self.assertEquals(EXPECTED_LOADABLE_PROJECT_IAM_POLICY,
-                          list(loadable_iam_policies))
+            fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP)
+        self.assertEquals(
+            fake_iam_policies.EXPECTED_LOADABLE_PROJECT_IAM_POLICY,
+            list(loadable_iam_policies))
 
     def test_api_is_called_to_retrieve_org_policies(self):
         """Test that api is called to retrieve org policies."""
@@ -86,20 +67,20 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         self.pipeline._retrieve()
         
         self.pipeline.dao.select_project_numbers.assert_called_once_with(
-            self.pipeline.name, self.pipeline.cycle_timestamp)
+            self.pipeline.RESOURCE_NAME, self.pipeline.cycle_timestamp)
 
 
         self.assertEquals(
             2, self.pipeline.api_client.get_project_iam_policies.call_count)        
         called_args, called_kwargs = (
             self.pipeline.api_client.get_project_iam_policies.call_args_list[0])
-        expected_args = (self.pipeline.name,
+        expected_args = (self.pipeline.RESOURCE_NAME,
                          self.FAKE_PROJECT_NUMBERS[0])
         self.assertEquals(expected_args, called_args)        
 
         called_args, called_kwargs = (
             self.pipeline.api_client.get_project_iam_policies.call_args_list[1])
-        expected_args = (self.pipeline.name,
+        expected_args = (self.pipeline.RESOURCE_NAME,
                          self.FAKE_PROJECT_NUMBERS[1])
         self.assertEquals(expected_args, called_args)        
 
@@ -109,8 +90,8 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         self.pipeline.dao.select_project_numbers.side_effect = (
             data_access_errors.MySQLError('error error', mock.MagicMock()))
 
-        self.assertRaises(inventory_errors.LoadDataPipelineError,
-                          self.pipeline._retrieve)
+        with self.assertRaises(inventory_errors.LoadDataPipelineError):
+            self.pipeline._retrieve()
 
     def test_api_error_is_handled_when_retrieving(self):
         """Test that exceptions are handled when retrieving.
@@ -146,28 +127,31 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
             mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""
 
-        mock_retrieve.return_value = FAKE_PROJECT_IAM_POLICY_MAP
-        mock_transform.return_value = EXPECTED_LOADABLE_PROJECT_IAM_POLICY
+        mock_retrieve.return_value = (
+            fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP)
+        mock_transform.return_value = (
+            fake_iam_policies.EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
         self.pipeline.run()
 
         mock_retrieve.assert_called_once_with()
 
-        mock_transform.assert_called_once_with(FAKE_PROJECT_IAM_POLICY_MAP)
+        mock_transform.assert_called_once_with(
+            fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP)
 
         self.assertEquals(2, mock_load.call_count)
 
         # The regular data is loaded.
         called_args, called_kwargs = mock_load.call_args_list[0]
         expected_args = (
-            self.pipeline.name,
-            EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
+            self.pipeline.RESOURCE_NAME,
+            fake_iam_policies.EXPECTED_LOADABLE_PROJECT_IAM_POLICY)
         self.assertEquals(expected_args, called_args)
 
         # The raw json data is loaded.
         called_args, called_kwargs = mock_load.call_args_list[1]
         expected_args = (
             self.pipeline.RAW_RESOURCE_NAME,
-            FAKE_PROJECT_IAM_POLICY_MAP)
+            fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP)
         self.assertEquals(expected_args, called_args)         
 
         mock_get_loaded_count.assert_called_once

@@ -50,7 +50,6 @@ from google.cloud.security.common.data_access.sql_queries import snapshot_cycles
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
@@ -225,7 +224,8 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
-# TODO: Investigate improving so the pylint disable isn't needed.
+# TODO: Break up main into helper functions:
+# build_pipelines, run_pipelines, check_pipeline_statuses, and add tests
 # pylint: disable=too-many-locals
 def main(argv):
     """Runs the Inventory Loader."""
@@ -261,9 +261,9 @@ def main(argv):
         rate_limiter=crm_rate_limiter)
 
     # TODO: Make rate limiter configurable.
+    admin_directory_rate_limiter = (
+        ad.AdminDirectoryClient.get_rate_limiter())
     try:
-        admin_directory_rate_limiter = (
-            ad.AdminDirectoryClient.get_rate_limiter())
         credentials = ad.AdminDirectoryClient.build_proper_credentials(configs)
         admin_api_client = ad.AdminDirectoryClient(
             credentials=credentials,
@@ -274,11 +274,11 @@ def main(argv):
 
     pipelines = [
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao, parser),
+            cycle_timestamp, configs, crm_api_client, dao),
         load_projects_pipeline.LoadProjectsPipeline(
             cycle_timestamp, configs, crm_api_client, dao),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao, parser),
+            cycle_timestamp, configs, crm_api_client, dao),
         load_groups_pipeline.LoadGroupsPipeline(
             cycle_timestamp, configs, admin_api_client, dao),
     ]

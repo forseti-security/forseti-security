@@ -29,11 +29,10 @@ class BasePipeline(object):
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, name, cycle_timestamp, configs, api_client, dao):
+    def __init__(self, cycle_timestamp, configs, api_client, dao):
         """Constructor for the base pipeline.
 
         Args:
-            name: String of the resource loaded by the pipeline.
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
             configs: Dictionary of configurations.
             api_client: API client object.
@@ -43,7 +42,6 @@ class BasePipeline(object):
             None
         """
         self.logger = LogUtil.setup_logging(__name__)
-        self.name = name
         self.cycle_timestamp = cycle_timestamp
         self.configs = configs
         self.api_client = api_client
@@ -88,8 +86,8 @@ class BasePipeline(object):
         """Get the count of how many of a resource has been loaded."""
         try:
             self.count = self.dao.select_record_count(
-                self.name,
+                self.RESOURCE_NAME,
                 self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             self.logger.error('Unable to retrieve record count for %s_%s:\n%s',
-                              self.name, self.cycle_timestamp, e)
+                              self.RESOURCE_NAME, self.cycle_timestamp, e)

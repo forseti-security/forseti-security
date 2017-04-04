@@ -27,8 +27,8 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
-from tests.inventory.pipelines.test_data.fake_projects import EXPECTED_LOADABLE_PROJECTS
-from tests.inventory.pipelines.test_data.fake_projects import FAKE_PROJECTS
+from tests.inventory.pipelines.test_data import fake_configs
+from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
 
 
@@ -39,14 +39,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         """Set up."""
 
         self.cycle_timestamp = '20001225T120000Z'
-        self.configs = {'organization_id': '66666',
-                        'max_crm_api_calls_per_100_seconds': 400,
-                        'db_name': 'forseti_security',
-                        'db_user': 'sqlproxy',
-                        'db_host': '127.0.0.1',
-                        'email_sender': 'foo.sender@company.com', 
-                        'email_recipient': 'foo.recipient@company.com',
-                        'sendgrid_api_key': 'foo_email_key',}
+        self.configs = fake_configs.FAKE_CONFIGS
         self.mock_crm = mock.create_autospec(crm.CloudResourceManagerClient)
         self.mock_dao = mock.create_autospec(dao.Dao)
         self.pipeline = (
@@ -59,12 +52,13 @@ class LoadProjectsPipelineTest(basetest.TestCase):
     def test_can_transform_projects(self):
         """Test that projects can be transformed."""
 
-        projects = self.pipeline._transform(FAKE_PROJECTS)
+        projects = self.pipeline._transform(fake_projects.FAKE_PROJECTS)
         for (i, project) in enumerate(projects):
             # Normalize to python representation.
             project['raw_project'] = json.loads(project['raw_project'])
             project = json.loads(json.dumps(project))
-            self.assertEquals(EXPECTED_LOADABLE_PROJECTS[i], project)
+            self.assertEquals(
+                fake_projects.EXPECTED_LOADABLE_PROJECTS[i], project)
 
     def test_api_is_called_to_retrieve_projects(self):
         """Test that api is called to retrieve projects."""
@@ -72,7 +66,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         self.pipeline._retrieve()
 
         self.pipeline.api_client.get_projects.assert_called_once_with(
-            self.pipeline.name,
+            self.pipeline.RESOURCE_NAME,
             self.pipeline.configs['organization_id'],
             lifecycleState=LifecycleState.ACTIVE)
 
@@ -82,8 +76,8 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         self.pipeline.api_client.get_projects.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
-        self.assertRaises(inventory_errors.LoadDataPipelineError,
-                          self.pipeline._retrieve)
+        with self.assertRaises(inventory_errors.LoadDataPipelineError):
+            self.pipeline._retrieve()
 
     @mock.patch.object(
         load_projects_pipeline.LoadProjectsPipeline,
@@ -101,16 +95,17 @@ class LoadProjectsPipelineTest(basetest.TestCase):
             mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""
 
-        mock_retrieve.return_value = FAKE_PROJECTS
-        mock_transform.return_value = EXPECTED_LOADABLE_PROJECTS
+        mock_retrieve.return_value = fake_projects.FAKE_PROJECTS
+        mock_transform.return_value = (
+            fake_projects.EXPECTED_LOADABLE_PROJECTS)
         self.pipeline.run()
 
         mock_retrieve.assert_called_once_with()
 
-        mock_transform.assert_called_once_with(FAKE_PROJECTS)
+        mock_transform.assert_called_once_with(fake_projects.FAKE_PROJECTS)
 
-        mock_load.assert_called_once_with(self.pipeline.name,
-                                          EXPECTED_LOADABLE_PROJECTS)
+        mock_load.assert_called_once_with(
+            self.pipeline.RESOURCE_NAME,
+            fake_projects.EXPECTED_LOADABLE_PROJECTS)
         
         mock_get_loaded_count.assert_called_once
-

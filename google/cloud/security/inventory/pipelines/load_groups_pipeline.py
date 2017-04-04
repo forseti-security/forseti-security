@@ -39,13 +39,10 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             None
         """
         super(LoadGroupsPipeline, self).__init__(
-            self.RESOURCE_NAME, cycle_timestamp, configs, admin_client, dao)
+            cycle_timestamp, configs, admin_client, dao)
 
     def _can_inventory_google_groups(self):
         """A simple function that validates required inputs to inventory groups.
-
-        Args:
-            None
 
         Returns:
             Boolean
@@ -59,6 +56,9 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             self.configs.get('service_account_credentials_file'),
             self.configs.get('domain_super_admin_email')]
 
+        # TODO: Should use memoize or similar so that after the first check
+        # the cached result is always returned, regardless of how often it is
+        # called.
         if metadata_server.can_reach_metadata_server():
             required_execution_config = required_gcp_execution_config
         else:
@@ -82,9 +82,6 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
     def _retrieve(self):
         """Retrieve the org IAM policies from GCP.
 
-        Args:
-            None
-
         Returns:
             A list of group objects returned from the API.
 
@@ -97,17 +94,7 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):
-        """Runs the load GSuite account groups pipeline.
-
-        Args:
-            dao: Data access object.
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            config: Dictionary of configurations.
-            rate_limiter: RateLimiter object for the API client.
-
-        Returns:
-            None
-        """
+        """Runs the load GSuite account groups pipeline."""
         if not self._can_inventory_google_groups():
             raise inventory_errors.LoadDataPipelineError(
                 'Unable to inventory groups with specified arguments:\n%s',
@@ -117,6 +104,6 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
         loadable_groups = self._transform(groups_map)
 
-        self._load(self.name, loadable_groups)
+        self._load(self.RESOURCE_NAME, loadable_groups)
 
         self._get_loaded_count()

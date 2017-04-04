@@ -27,7 +27,8 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
-from tests.inventory.pipelines.test_data.fake_projects import EXPECTED_LOADABLE_PROJECTS
+from tests.inventory.pipelines.test_data import fake_configs
+from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
 
 
@@ -42,14 +43,7 @@ class BasePipelineTest(basetest.TestCase):
         """Set up."""
 
         self.cycle_timestamp = '20001225T120000Z'
-        self.configs = {'organization_id': '66666',
-                        'max_crm_api_calls_per_100_seconds': 400,
-                        'db_name': 'forseti_security',
-                        'db_user': 'sqlproxy',
-                        'db_host': '127.0.0.1',
-                        'email_sender': 'foo.sender@company.com', 
-                        'email_recipient': 'foo.recipient@company.com',
-                        'sendgrid_api_key': 'foo_email_key',}
+        self.configs = fake_configs.FAKE_CONFIGS
         self.mock_crm = mock.create_autospec(crm.CloudResourceManagerClient)
         self.mock_dao = mock.create_autospec(dao.Dao)
         self.mock_parser = mock.create_autospec(parser)
@@ -65,12 +59,12 @@ class BasePipelineTest(basetest.TestCase):
 
         resource_name = 'foo_resource'
         self.pipeline._load(resource_name,
-                            EXPECTED_LOADABLE_PROJECTS)
+                            fake_projects.EXPECTED_LOADABLE_PROJECTS)
 
         self.pipeline.dao.load_data.assert_called_once_with(
             resource_name,
             self.pipeline.cycle_timestamp,
-            EXPECTED_LOADABLE_PROJECTS)       
+            fake_projects.EXPECTED_LOADABLE_PROJECTS)       
 
     def test_load_errors_are_handled(self):
         """Test that errors are handled when loading."""
@@ -78,11 +72,10 @@ class BasePipelineTest(basetest.TestCase):
         self.pipeline.dao.load_data.side_effect = (
             data_access_errors.MySQLError('error error', mock.MagicMock()))
 
-        self.assertRaises(inventory_errors.LoadDataPipelineError,
-                          self.pipeline._load,
-                          self.pipeline.name,
-                          EXPECTED_LOADABLE_PROJECTS)
-     
+        with self.assertRaises(inventory_errors.LoadDataPipelineError):
+            self.pipeline._load(self.pipeline.RESOURCE_NAME,
+                                fake_projects.EXPECTED_LOADABLE_PROJECTS)
+
     def test_get_loaded_count(self):
         """Test the loaded count is gotten."""
 
@@ -94,7 +87,8 @@ class BasePipelineTest(basetest.TestCase):
     def test_error_is_handled_in_get_loaded_count(self):
         """Test error from get_loaded_count is handled."""
 
-        self.pipeline.logger = mock.create_autospec(LogUtil).setup_logging('foo')
+        self.pipeline.logger = mock.create_autospec(
+            LogUtil).setup_logging('foo')
         self.pipeline.dao.select_record_count.side_effect = (
             data_access_errors.MySQLError('11111', '22222'))
 

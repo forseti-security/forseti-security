@@ -20,6 +20,7 @@ import json
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
@@ -31,7 +32,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
     RESOURCE_NAME = 'project_iam_policies'
     RAW_RESOURCE_NAME = 'raw_project_iam_policies'
 
-    def __init__(self, cycle_timestamp, configs, crm_client, dao, parser):
+    def __init__(self, cycle_timestamp, configs, crm_client, dao):
         """Constructor for the data pipeline.
 
         Args:
@@ -39,14 +40,12 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
             configs: Dictionary of configurations.
             crm_client: CRM API client.
             dao: Data access object.
-            parser: Forseti parser object.
 
         Returns:
             None
         """
         super(LoadProjectsIamPoliciesPipeline, self).__init__(
-            self.RESOURCE_NAME, cycle_timestamp, configs, crm_client, dao)
-        self.parser = parser
+            cycle_timestamp, configs, crm_client, dao)
 
     def _transform(self, iam_policy_maps):
         """Yield an iterator of loadable iam policies.
@@ -68,7 +67,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                 members = binding.get('members', [])
                 for member in members:
                     member_type, member_name, member_domain = (
-                        self.parser.parse_member_info(member))
+                        parser.parse_member_info(member))
                     role = binding.get('role', '')
                     if role.startswith('roles/'):
                         role = role.replace('roles/', '')
@@ -97,7 +96,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         # Get the projects for which we will retrieve the IAM policies.
         try:
             project_numbers = self.dao.select_project_numbers(
-                self.name, self.cycle_timestamp)
+                self.RESOURCE_NAME, self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
@@ -107,7 +106,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         for project_number in project_numbers:
             try:
                 iam_policy = self.api_client.get_project_iam_policies(
-                    self.name, project_number)
+                    self.RESOURCE_NAME, project_number)
                 iam_policy_map = {'project_number': project_number,
                                   'iam_policy': iam_policy}
                 iam_policy_maps.append(iam_policy_map)
@@ -118,19 +117,12 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         return iam_policy_maps
 
     def run(self):
-        """Runs the load IAM policies data pipeline.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
+        """Runs the load IAM policies data pipeline."""
         iam_policy_maps = self._retrieve()
 
         loadable_iam_policies = self._transform(iam_policy_maps)
 
-        self._load(self.name, loadable_iam_policies)
+        self._load(self.RESOURCE_NAME, loadable_iam_policies)
 
         # A separate table is used to store the raw iam policies json
         # because it is much faster than updating these individually

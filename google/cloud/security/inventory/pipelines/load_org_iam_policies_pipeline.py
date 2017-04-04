@@ -17,6 +17,7 @@
 import json
 
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
@@ -27,7 +28,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
     RESOURCE_NAME = 'org_iam_policies'
     RAW_RESOURCE_NAME = 'raw_org_iam_policies'
 
-    def __init__(self, cycle_timestamp, configs, crm_client, dao, parser):
+    def __init__(self, cycle_timestamp, configs, crm_client, dao):
         """Constructor for the data pipeline.
 
         Args:
@@ -35,14 +36,12 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
             configs: Dictionary of configurations.
             crm_client: CRM API client.
             dao: Data access object.
-            parser: Forseti parser object.
 
         Returns:
             None
         """
         super(LoadOrgIamPoliciesPipeline, self).__init__(
-            self.RESOURCE_NAME, cycle_timestamp, configs, crm_client, dao)
-        self.parser = parser
+            cycle_timestamp, configs, crm_client, dao)
 
     def _transform(self, iam_policies_map):
         """Yield an iterator of loadable iam policies.
@@ -64,7 +63,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
                 members = binding.get('members', [])
                 for member in members:
                     member_type, member_name, member_domain = (
-                        self.parser.parse_member_info(member))
+                        parser.parse_member_info(member))
                     role = binding.get('role', '')
                     if role.startswith('roles/'):
                         role = role.replace('roles/', '')
@@ -76,9 +75,6 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
 
     def _retrieve(self):
         """Retrieve the org IAM policies from GCP.
-
-        Args:
-            None
 
         Returns:
             iam_policies_map: List of IAM policies as per-org dictionary.
@@ -93,19 +89,12 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
             # Flatten the iterator since we will use it twice, and it is faster
             # than cloning to 2 iterators.
             return list(self.api_client.get_org_iam_policies(
-                self.name, self.configs.get('organization_id')))
+                self.RESOURCE_NAME, self.configs.get('organization_id')))
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):
-        """Runs the data pipeline.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
+        """Runs the data pipeline."""
         org_id = self.configs.get('organization_id')
         # Check if the placeholder is replaced in the config/flag.
         if org_id == '<organization id>':
@@ -116,7 +105,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
 
         loadable_iam_policies = self._transform(iam_policies_map)
 
-        self._load(self.name, loadable_iam_policies)
+        self._load(self.RESOURCE_NAME, loadable_iam_policies)
 
         # A separate table is used to store the raw iam policies json
         # because it is much faster than updating these individually

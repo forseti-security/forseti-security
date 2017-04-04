@@ -49,7 +49,7 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
             None
         """
         super(LoadProjectsPipeline, self).__init__(
-            self.RESOURCE_NAME, cycle_timestamp, configs, crm_client, dao)
+            cycle_timestamp, configs, crm_client, dao)
 
     def _load(self, resource_name, data):
         """ Load iam policies into cloud sql.
@@ -105,9 +105,6 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
     def _retrieve(self):
         """Retrieve the project resources from GCP.
 
-        Args:
-            None
-
         Returns:
             An iterable of resource manager project list response.
             https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
@@ -121,17 +118,7 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):
-        """Runs the data pipeline.
-
-        Args:
-            None
-
-        Returns:
-            None
-
-        Raises:
-            LoadDataPipelineException: An error with loading data has occurred.
-        """
+        """Runs the data pipeline."""
         org_id = self.configs.get('organization_id')
         # Check if the placeholder is replaced in the config/flag.
         if org_id == '<organization id>':
@@ -142,6 +129,6 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
 
         loadable_projects = self._transform(projects_map)
 
-        self._load(self.name, loadable_projects)
+        self._load(self.RESOURCE_NAME, loadable_projects)
 
         self._get_loaded_count()
