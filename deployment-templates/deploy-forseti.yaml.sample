@@ -66,5 +66,6 @@ resources:
     inventory-groups: true
     groups-domain-super-admin-email: EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN
     groups-service-account-email: EMAIL_ADDRESS_OF_YOUR_GROUPS_SERVICE_ACCOUNT
+    groups-service-account-key-path: "PATH_TO_THE_DOWNLOADED_KEY"
     groups-service-account-credentials-metadata-server-key: "dwd-key"
 

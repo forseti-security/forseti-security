@@ -14,6 +14,9 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+import json
+import os
+
 
 def GenerateConfig(context):
     """Generate configuration."""
@@ -58,8 +61,15 @@ def GenerateConfig(context):
     if SHOULD_INVENTORY_GROUPS:
         GROUPS_DOMAIN_SUPER_ADMIN_EMAIL = context.properties['groups-domain-super-admin-email']
         GROUPS_SERVICE_ACCOUNT_EMAIL = context.properties['groups-service-account-email']
+        GROUPS_SERVIER_ACCOUNT_KEY_PATH = context.properties['groups-service-account-key-path']
         GROUPS_SERVICE_ACCOUNT_CREDENTIALS_METADATA_SERVER_KEY = context.properties[
             'groups-service-account-credentials-metadata-server-key']
+
+        if os.path.isfile(GROUPS_SERVIER_ACCOUNT_KEY_PATH):
+            with open(context.properties['groups-service-account-key-path']) as f:
+                GROUPS_SERVICE_ACCOUNT_CREDENTIALS_KEY_DATA = json.load(f.read()))
+        else:
+            raise Exception
 
         inventory_groups_flags = '--domain_super_admin_email {} --groups_service_accounts_email {} --groups_service_account_credentials_metadata_server_key {}'.format(
             GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
@@ -108,9 +118,12 @@ def GenerateConfig(context):
                 'scopes': SERVICE_ACCOUNT_SCOPES,
             }],
             'metadata': {
-                'items': [{
-                    'key': 'startup-script',
-                    'value': """#!/bin/bash
+                'items': [
+                    {'key': GROUPS_SERVICE_ACCOUNT_CREDENTIALS_METADATA_SERVER_KEY,
+                     'value': GROUPS_SERVICE_ACCOUNT_CREDENTIALS_KEY_DATA
+                    },
+                    {'key': 'startup-script',
+                     'value': """#!/bin/bash
 sudo apt-get install -y unzip
 sudo apt-get install -y libmysqlclient-dev
 sudo apt-get install -y python-pip python-dev
