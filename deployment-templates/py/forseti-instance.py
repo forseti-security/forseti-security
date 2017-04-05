@@ -14,8 +14,9 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+import os.path
+
 import json
-import os
 
 
 def GenerateConfig(context):
