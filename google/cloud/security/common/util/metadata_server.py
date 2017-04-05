@@ -57,7 +57,7 @@ def _issue_http_request(path, method, headers):
 
     try:
         return http_client.request(path, method, headers)
-    except socket.error as e:
+    except socket.error:
         raise errors.MetadataServerHttpError
     finally:
         http_client.close()
