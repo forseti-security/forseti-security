@@ -20,19 +20,21 @@ The metadata server is only accessible on GCE.
 import httplib
 import socket
 
+
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
 METADATA_SERVER_CONN_TIMEOUT = 2
 REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
 HTTP_SUCCESS = httplib.OK
+HTTP_GET = 'GET'
 
-class MetaDataBaseError(Error):
+
+class MetadataBaseError(Exception):
     """Base error class for handling meta_data errors."""
     pass
 
-class MetaDataHttpError(MetaDataBaseError):
+class MetadataHttpError(MetadataBaseError):
     """An error for handling HTTP errors with the metadata server."""
-    passs
-
+    pass
 
 def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
     """Returns a simple HTTP client to the GCP metadata server.
@@ -43,8 +45,7 @@ def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
     return httplib.HTTPConnection(hostname,
                                   timeout=METADATA_SERVER_CONN_TIMEOUT)
 
-def _issue_http_request(method='GET', path,
-                        headers=REQUIRED_METADATA_HEADER):
+def _issue_http_request(path, method, headers):
     """Perform a request on a specified httplib connection object.
 
     Args:
@@ -56,13 +57,16 @@ def _issue_http_request(method='GET', path,
         The httplib.HTTPResponse object.
 
     Raises:
-        MetaDataHttpError: When we can't reach the requested host.
+        MetadataHttpError: When we can't reach the requested host.
     """
-    with _obtain_http_client() as http_client:
-        try:
-            return http_client.request(method, path, None, headers)
-        except socket.error as e:
-            raise MetaDataHttpError(e):
+    http_client = _obtain_http_client()
+
+    try:
+        return http_client.request(path, method, headers)
+    except socket.error as e:
+        raise MetadataHttpError(e)
+    finally:
+      http_client.close()
 
 def can_reach_metadata_server():
     """Determine if we can reach the metadata server.
@@ -71,25 +75,32 @@ def can_reach_metadata_server():
         True if metadata server can be reached, False otherwise.
     """
     path = '/computeMetadata/v1/instance/id'
+    response = None
+
     try:
-        response = _issue_http_request(path=path)
-    except MetaDataHttpError:
+        response = _issue_http_request(
+            path, HTTP_GET, REQUIRED_METADATA_HEADER)
+    except MetadataHttpError as e:
         pass
 
-    return (response and response.status == 200)
+    return (response and response.status == HTTP_SUCCESS)
 
-def get_value_for_attribute(attribute)
+def get_value_for_attribute(attribute):
     """For a given key return the value.
 
     Args:
         attribute: a String representing the key.
 
     Returns:
-        The value otherwise None.
+        The value of the request.
     """
     path = '/computeMetadata/v1/instance/attributes/'
     path = path + attribute
+    http_response = ''
+
     try:
-        return _issue_http_request(path=path)
-    except MetaDataHttpError:
-        return None
+        http_response = _issue_http_request(
+            path, HTTP_GET, REQUIRED_METADATA_HEADER)
+        return http_response.read()
+    except MetadataHttpError:
+        return http_response
