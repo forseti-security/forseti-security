@@ -249,7 +249,7 @@ def main(argv):
     crm_rate_limiter = RateLimiter(max_crm_calls, 100)
     crm_api_client = crm.CloudResourceManagerClient(
         rate_limiter=crm_rate_limiter)
-    admin_api_client = ad.AdminDirectoryClient()
+    admin_api_client = ad.AdminDirectoryClient(configs)
 
     pipelines = [
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(

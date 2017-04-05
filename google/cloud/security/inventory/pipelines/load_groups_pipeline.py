@@ -55,11 +55,10 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         required_local_execution_config = [
             self.configs.get('groups_service_account_email'),
             self.configs.get('domain_super_admin_email'),
-            self.configs.get('groups_service_account_credentials_file')
+            self.configs.get('groups_service_account_credentials_file')]
 
-        metadata_server_reachable = metadata_server.can_reach_metadata_server()
 
-        if metadata_server_reachable:
+        if metadata_server.can_reach_metadata_server():
             required_execution_config = required_gcp_execution_config
         else:
             required_execution_config = required_local_execution_config

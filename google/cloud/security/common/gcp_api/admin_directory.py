@@ -16,7 +16,6 @@
 
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
-from oauth2client.contrib.gce import AppAssertionCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 
@@ -53,7 +52,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         if credentials:
             self.credentials = credentials
         else:
-            self.credentials = self._build_proper_credentials(configs)
+            self.credentials = self._build_proper_credentials()
 
         self.configs = configs
 
@@ -92,12 +91,12 @@ class AdminDirectoryClient(_base_client.BaseClient):
             ApiExecutionError: When an error has occurred executing the API.
         """
         try:
-            credentials = ServiceAccountCredentials.from_json_keyfile_name(
+            return credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 self.configs.get('service_account_credentials_file'),
                 scopes=REQUIRED_SCOPES)
         except (ValueError, KeyError) as e:
             raise api_errors.ApiExecutionError(
-                'Error building admin api credential', e)
+                'Error building admin api credential: %s', e)
 
     def _build_proper_credentials(self):
         """Build proper credentials required for accessing the directory API.
