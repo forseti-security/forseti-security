@@ -18,7 +18,6 @@ The metadata server is only accessible on GCE.
 """
 
 import httplib
-import json
 import socket
 
 from google.cloud.security.common.util import errors
@@ -99,7 +98,7 @@ def get_value_for_attribute(attribute):
             path, HTTP_GET, REQUIRED_METADATA_HEADER)
         read_response = http_response.read()
 
-        return json.loads(read_response)
+        return read_response
     except (TypeError, ValueError,
             errors.MetadataServerHttpError) as e:
         LOGGER.error('Unable to read value for attribute key %s '

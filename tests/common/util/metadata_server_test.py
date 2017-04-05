@@ -125,17 +125,17 @@ class MetadataServerTest(basetest.TestCase):
         Expected results:
             * A matching string.
         """
-        expected_response = json.loads({'expected': 'response'})
+        mock_response = 'expected_response'
 
         with mock.patch('httplib.HTTPResponse',
-                        mock.mock_open(read_data=expected_response)) as mock_http_resp:
+                        mock.mock_open(read_data=mock_response)) as mock_http_resp:
             mock_http_resp.side_effect = _default_side_effect
             mock_http_resp.return_value.status = httplib.OK
             mock_meta_req.side_effect = mock_http_resp
 
             actual_response = metadata_server.get_value_for_attribute('')
 
-        self.assertEqual(actual_response, expected_response)
+        self.assertEqual(actual_response, mock_response)
 
 
 if __name__ == '__main__':
