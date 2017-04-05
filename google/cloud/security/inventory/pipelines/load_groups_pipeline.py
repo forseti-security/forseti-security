@@ -14,114 +14,96 @@
 
 """Pipeline to load GSuite Account Groups into Inventory."""
 
-from oauth2client.contrib.gce import AppAssertionCredentials
-from oauth2client.service_account import ServiceAccountCredentials
-
-from google.cloud.security.common.data_access.errors import CSVFileError
-from google.cloud.security.common.data_access.errors import MySQLError
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
-# TODO: Investigate improving so the pylint disable isn't needed.
-# pylint: disable=line-too-long
-from google.cloud.security.common.gcp_api.admin_directory import AdminDirectoryClient
-# pylint: enable=line-too-long
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import metadata_server
-from google.cloud.security.inventory import transform_util
-from google.cloud.security.inventory.errors import LoadDataPipelineError
+from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-RESOURCE_NAME = 'groups'
-REQUIRED_SCOPES = frozenset([
-    'https://www.googleapis.com/auth/admin.directory.group.readonly'
-])
+class LoadGroupsPipeline(base_pipeline.BasePipeline):
+    """Pipeline to load groups data into Inventory."""
+    # TODO: Add unit tests.
 
+    RESOURCE_NAME = 'groups'
 
-def _is_our_environment_gce():
-    """A simple function that returns a boolean if we're running in GCE."""
-    return metadata_server.can_reach_metadata_server()
+    def __init__(self, cycle_timestamp, configs, admin_client, dao):
+        """Constructor for the data pipeline.
 
-def _can_inventory_google_groups(config):
-    """A simple function that validates required inputs for inventorying groups.
+        Args:
+            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            configs: Dictionary of configurations.
+            admin_client: Admin API client.
+            dao: Data access object.
 
-    Args:
-        config: Dictionary of configurations built from our config.
+        Returns:
+            None
+        """
+        super(LoadGroupsPipeline, self).__init__(
+            cycle_timestamp, configs, admin_client, dao)
 
-    Returns:
-        Boolean
-    """
-    required_gcp_execution_config = [
-        config.get('service_account_email'),
-        config.get('domain_super_admin_email')]
+    def _can_inventory_google_groups(self):
+        """A simple function that validates required inputs to inventory groups.
 
-    required_local_execution_config = [
-        config.get('service_account_email'),
-        config.get('service_account_credentials_file'),
-        config.get('domain_super_admin_email')]
+        Returns:
+            Boolean
+        """
+        required_gcp_execution_config = [
+            self.configs.get('service_account_email'),
+            self.configs.get('domain_super_admin_email')]
 
-    if _is_our_environment_gce():
-        required_execution_config = required_gcp_execution_config
-    else:
-        required_execution_config = required_local_execution_config
+        required_local_execution_config = [
+            self.configs.get('service_account_email'),
+            self.configs.get('service_account_credentials_file'),
+            self.configs.get('domain_super_admin_email')]
 
-    return all(required_execution_config)
+        # TODO: Should use memoize or similar so that after the first check
+        # the cached result is always returned, regardless of how often it is
+        # called.
+        if metadata_server.can_reach_metadata_server():
+            required_execution_config = required_gcp_execution_config
+        else:
+            required_execution_config = required_local_execution_config
 
-def _build_proper_credentials(config):
-    """Build proper credentials required for accessing the directory API.
+        return all(required_execution_config)
 
-    Args:
-        config: Dictionary of configurations.
+    def _transform(self, groups_map):
+        """Yield an iterator of loadable groups.
+        Args:
+            groups_map: An iterable of Admin SDK Directory API Groups.
+            https://google-api-client-libraries.appspot.com/documentation/admin/directory_v1/python/latest/admin_directory_v1.groups.html#list
 
-    Returns:
-        Credentials as built by oauth2client.
+        Yields:
+            An iterable of loadable groups as a per-group dictionary.
+        """
+        for group in groups_map:
+            yield {'group_id': group.get('id'),
+                   'group_email': group.get('email')}
 
-    Raises:
-        LoadDataPipelineException: An error with loading data has occurred.
-    """
+    def _retrieve(self):
+        """Retrieve the org IAM policies from GCP.
 
-    if metadata_server.can_reach_metadata_server():
-        return AppAssertionCredentials(REQUIRED_SCOPES)
+        Returns:
+            A list of group objects returned from the API.
 
-    try:
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            config.get('service_account_credentials_file'),
-            scopes=REQUIRED_SCOPES)
-    except (ValueError, KeyError) as e:
-        raise LoadDataPipelineError(e)
+        Raises:
+            LoadDataPipelineException: An error with loading data has occurred.
+        """
+        try:
+            return self.api_client.get_groups()
+        except api_errors.ApiExecutionError as e:
+            raise inventory_errors.LoadDataPipelineError(e)
 
-    return credentials.create_delegated(
-        config.get('domain_super_admin_email'))
+    def run(self):
+        """Runs the load GSuite account groups pipeline."""
+        if not self._can_inventory_google_groups():
+            raise inventory_errors.LoadDataPipelineError(
+                'Unable to inventory groups with specified arguments:\n%s',
+                self.configs)
 
+        groups_map = self._retrieve()
 
-def run(dao=None, cycle_timestamp=None, config=None, rate_limiter=None):
-    """Runs the load GSuite account groups pipeline.
+        loadable_groups = self._transform(groups_map)
 
-    Args:
-        dao: Data access object.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        config: Dictionary of configurations.
-        rate_limiter: RateLimiter object for the API client.
+        self._load(self.RESOURCE_NAME, loadable_groups)
 
-    Returns:
-        None
-
-    Raises:
-        LoadDataPipelineException: An error with loading data has occurred.
-    """
-    if not _can_inventory_google_groups(config):
-        raise LoadDataPipelineError(
-            'Unable to inventory groups with specified arguments:\n%s', config)
-
-    credentials = _build_proper_credentials(config)
-    admin_client = AdminDirectoryClient(credentials=credentials,
-                                        rate_limiter=rate_limiter)
-
-    try:
-        groups_map = admin_client.get_groups()
-    except ApiExecutionError as e:
-        raise LoadDataPipelineError(e)
-
-    flattened_groups = transform_util.flatten_groups(groups_map)
-
-    try:
-        dao.load_data(RESOURCE_NAME, cycle_timestamp, flattened_groups)
-    except (CSVFileError, MySQLError) as e:
-        raise LoadDataPipelineError(e)
+        self._get_loaded_count()

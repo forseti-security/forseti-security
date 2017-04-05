@@ -17,33 +17,32 @@
 import mock
 
 from google.apputils import basetest
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
-from google.cloud.security.common.gcp_api.errors import InvalidBucketPathError
+from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import storage
 
 
 class StorageTest(basetest.TestCase):
     """Test the StorageClient."""
 
-    def setUp(self):
-        from google.cloud.security.common.gcp_api import storage
-        self.client = storage.StorageClient()
-
-    @mock.patch.object(_BaseClient, '__init__', autospec=True)
+    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
     def test_get_bucket_and_path_from(self, mock_base):
         """Given a valid bucket object path, return the bucket and path."""
         expected_bucket = 'my-bucket'
         expected_obj_path = 'path/to/object'
         test_path = 'gs://{}/{}'.format(expected_bucket, expected_obj_path)
-        bucket, obj_path = self.client.get_bucket_and_path_from(test_path)
+        client = storage.StorageClient()
+        bucket, obj_path = storage.get_bucket_and_path_from(test_path)
         self.assertEqual(expected_bucket, bucket)
         self.assertEqual(expected_obj_path, obj_path)
 
-    @mock.patch.object(_BaseClient, '__init__', autospec=True)
+    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
     def test_non_bucket_uri_raises(self, mock_base):
         """Given a valid bucket object path, return the bucket and path."""
         test_path = '/some/local/path/file.ext'
-        with self.assertRaises(InvalidBucketPathError):
-            bucket, obj_path = self.client.get_bucket_and_path_from(test_path)
+        client = storage.StorageClient()
+        with self.assertRaises(api_errors.InvalidBucketPathError):
+            bucket, obj_path = storage.get_bucket_and_path_from(test_path)
 
 
 if __name__ == '__main__':

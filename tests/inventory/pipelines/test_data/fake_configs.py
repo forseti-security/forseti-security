@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Wrapper for IAM API client."""
+"""Test IAM policies data."""
 
-from google.cloud.security.common.gcp_api import _base_client
-
-
-# pylint: disable=too-few-public-methods
-class IamClient(_base_client.BaseClient):
-    """IAM Client."""
-
-    API_NAME = 'iam'
-
-    def __init__(self, credentials=None):
-        super(IamClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+FAKE_CONFIGS = {'organization_id': '66666',
+                'max_crm_api_calls_per_100_seconds': 400,
+                'db_name': 'forseti_security',
+                'db_user': 'sqlproxy',
+                'db_host': '127.0.0.1',
+                'email_sender': 'foo.sender@company.com', 
+                'email_recipient': 'foo.recipient@company.com',
+                'sendgrid_api_key': 'foo_email_key',}

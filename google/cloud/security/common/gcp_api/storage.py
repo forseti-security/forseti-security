@@ -16,16 +16,33 @@
 
 import StringIO
 
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
-from google.cloud.security.common.gcp_api.errors import InvalidBucketPathError
+from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from googleapiclient import http
-from googleapiclient.errors import HttpError
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class StorageClient(_BaseClient):
+def get_bucket_and_path_from(full_path):
+    """Get the bucket and object path.
+
+    Args:
+        full_path: The full GCS path.
+
+    Return:
+        The bucket name and object path.
+    """
+    if not full_path or not full_path.startswith('gs://'):
+        raise api_errors.InvalidBucketPathError(
+            'Invalid bucket path: {}'.format(full_path))
+    bucket_name = full_path[5:].split('/')[0]
+    bucket_prefix = 5 + len(bucket_name) + 1
+    object_path = full_path[bucket_prefix:]
+    return bucket_name, object_path
+
+
+class StorageClient(_base_client.BaseClient):
     """Storage Client."""
 
     API_NAME = 'storage'
@@ -33,24 +50,6 @@ class StorageClient(_BaseClient):
     def __init__(self, credentials=None):
         super(StorageClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
-
-    @classmethod
-    def get_bucket_and_path_from(cls, full_path):
-        """Get the bucket and object path.
-
-        Args:
-            full_path: The full GCS path.
-
-        Return:
-            The bucket name and object path.
-        """
-        if not full_path or not full_path.startswith('gs://'):
-            raise InvalidBucketPathError(
-                'Invalid bucket path: {}'.format(full_path))
-        bucket_name = full_path[5:].split('/')[0]
-        bucket_prefix = 5 + len(bucket_name) + 1
-        object_path = full_path[bucket_prefix:]
-        return bucket_name, object_path
 
     def put_text_file(self, local_file_path, full_bucket_path):
         """Put a text object into a bucket.
@@ -60,7 +59,7 @@ class StorageClient(_BaseClient):
             full_bucket_path: The full GCS path for the output.
         """
         storage_service = self.service
-        bucket, object_path = StorageClient.get_bucket_and_path_from(
+        bucket, object_path = get_bucket_and_path_from(
             full_bucket_path)
 
         req_body = {
@@ -85,7 +84,7 @@ class StorageClient(_BaseClient):
         """
         file_content = ''
         storage_service = self.service
-        bucket, object_path = StorageClient.get_bucket_and_path_from(
+        bucket, object_path = get_bucket_and_path_from(
             full_bucket_path)
         media_request = (storage_service.objects()
                          .get_media(bucket=bucket,

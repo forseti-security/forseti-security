@@ -18,22 +18,21 @@ from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
 
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
-from google.cloud.security.common.gcp_type.resource import LifecycleState
+from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
 
-DEFAULT_MAX_QUERIES = 100
+DEFAULT_MAX_QUERIES = 400
 DEFAULT_RATE_BUCKET_SECONDS = 100
 
 
-class CloudResourceManagerClient(_BaseClient):
+class CloudResourceManagerClient(_base_client.BaseClient):
     """Resource Manager Client."""
 
     API_NAME = 'cloudresourcemanager'
-    DEFAULT_MAX_QUERIES = 400
 
     def __init__(self, credentials=None, rate_limiter=None):
         super(CloudResourceManagerClient, self).__init__(
@@ -41,11 +40,11 @@ class CloudResourceManagerClient(_BaseClient):
         if rate_limiter:
             self.rate_limiter = rate_limiter
         else:
-            self.rate_limiter = self.get_rate_limiter()
+            self.rate_limiter = CloudResourceManagerClient.get_rate_limiter()
 
     @staticmethod
     def get_rate_limiter():
-        """Return an appriopriate rate limiter."""
+        """Return an appropriate rate limiter."""
         return RateLimiter(
             DEFAULT_MAX_QUERIES,
             DEFAULT_RATE_BUCKET_SECONDS)
@@ -70,7 +69,7 @@ class CloudResourceManagerClient(_BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(ApiExecutionError(project_id, e))
+            LOGGER.error(api_errors.ApiExecutionError(project_id, e))
         return None
 
     def get_projects(self, resource_name, organization_id, **filterargs):
@@ -112,12 +111,12 @@ class CloudResourceManagerClient(_BaseClient):
                     # TODO: once CRM API allows for direct filtering on
                     # lifecycleState, add it to the project_filter list
                     # and don't manually filter here.
-                    if lifecycle_state == LifecycleState.ACTIVE:
+                    if lifecycle_state == resource.LifecycleState.ACTIVE:
                         yield {
                             'projects': [
                                 p for p in response.get('projects')
                                 if (p.get('lifecycleState') ==
-                                    LifecycleState.ACTIVE)
+                                    resource.LifecycleState.ACTIVE)
                             ]
                         }
 
@@ -125,7 +124,7 @@ class CloudResourceManagerClient(_BaseClient):
                         previous_request=request,
                         previous_response=response)
         except (HttpError, HttpLib2Error) as e:
-            raise ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_project_iam_policies(self, resource_name, project_identifier):
         """Get all the iam policies of given project numbers.
@@ -146,7 +145,7 @@ class CloudResourceManagerClient(_BaseClient):
                     resource=project_identifier, body={})
                 return self._execute(request)
         except (HttpError, HttpLib2Error) as e:
-            raise ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_organization(self, org_name):
         """Get organizations.
@@ -168,7 +167,7 @@ class CloudResourceManagerClient(_BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(ApiExecutionError(org_name, e))
+            LOGGER.error(api_errors.ApiExecutionError(org_name, e))
         return None
 
     def get_org_iam_policies(self, resource_name, org_id):
@@ -187,7 +186,7 @@ class CloudResourceManagerClient(_BaseClient):
             ApiExecutionError: An error has occurred when executing the API.
         """
         orgs_stub = self.service.organizations()
-        resource_id = 'organizations/' + str(org_id)
+        resource_id = 'organizations/%s' % org_id
 
         try:
             with self.rate_limiter:
@@ -197,4 +196,4 @@ class CloudResourceManagerClient(_BaseClient):
                 yield {'org_id': org_id,
                        'iam_policy': response}
         except (HttpError, HttpLib2Error) as e:
-            raise ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(resource_name, e)

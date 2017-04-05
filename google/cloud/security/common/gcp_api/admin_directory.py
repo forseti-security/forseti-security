@@ -16,17 +16,24 @@
 
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
+from oauth2client.contrib.gce import AppAssertionCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 
-from google.cloud.security.common.gcp_api._base_client import _BaseClient
-from google.cloud.security.common.gcp_api._base_client import ApiExecutionError
+from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import metadata_server
 
 
 DEFAULT_MAX_QUERIES = 150000
 DEFAULT_RATE_BUCKET_SECONDS = 86400
 
+REQUIRED_SCOPES = frozenset([
+    'https://www.googleapis.com/auth/admin.directory.group.readonly'
+])
 
-class AdminDirectoryClient(_BaseClient):
+
+class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""
 
     API_NAME = 'admin'
@@ -46,6 +53,34 @@ class AdminDirectoryClient(_BaseClient):
             DEFAULT_MAX_QUERIES,
             DEFAULT_RATE_BUCKET_SECONDS)
 
+    @staticmethod
+    def build_proper_credentials(configs):
+        """Build proper credentials required for accessing the directory API.
+
+        Args:
+            configs: Dictionary of configurations.
+
+        Returns:
+            Credentials as built by oauth2client.
+
+        Raises:
+            ApiExecutionError: When an error has occurred executing the API.
+        """
+
+        if metadata_server.can_reach_metadata_server():
+            return AppAssertionCredentials(REQUIRED_SCOPES)
+
+        try:
+            credentials = ServiceAccountCredentials.from_json_keyfile_name(
+                configs.get('service_account_credentials_file'),
+                scopes=REQUIRED_SCOPES)
+        except (ValueError, KeyError) as e:
+            raise api_errors.ApiExecutionError(
+                'Error building admin api credential', e)
+
+        return credentials.create_delegated(
+            configs.get('domain_super_admin_email'))
+
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
 
@@ -62,13 +97,13 @@ class AdminDirectoryClient(_BaseClient):
             A list of group objects returned from the API.
 
         Raises:
-            ApiExecutionError: When an error has occured executing the API.
+            ApiExecutionError: When an error has occurred executing the API.
         """
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)
         results = []
 
-        # TODO: Investigate yeilding results to handle large group lists.
+        # TODO: Investigate yielding results to handle large group lists.
         while request is not None:
             try:
                 with self.rate_limiter:
@@ -76,6 +111,6 @@ class AdminDirectoryClient(_BaseClient):
                     results.extend(response.get('groups', []))
                     request = groups_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
-                raise ApiExecutionError(groups_stub, e)
+                raise api_errors.ApiExecutionError(groups_stub, e)
 
         return results

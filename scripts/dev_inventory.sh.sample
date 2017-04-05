@@ -16,6 +16,9 @@
 # Wrapper script to run inventory in development mode.
 
 PYTHONPATH=./ python google/cloud/security/inventory/inventory_loader.py \
+        --service_account_email <email of the gsuite google group service account> \
+        --service_account_credentials_file <path to the json file for the gsuite google group service account> \
+        --domain_super_admin_email <an email address of a gsuite super-admin to impersonate for group fetching> \
         --organization_id <organization id> \
         --max_crm_api_calls_per_100_seconds 400 \
         --db_host 127.0.0.1 \
