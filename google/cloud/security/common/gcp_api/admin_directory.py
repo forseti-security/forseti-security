@@ -58,14 +58,14 @@ class AdminDirectoryClient(_base_client.BaseClient):
     def _build_gcp_credentials(configs):
         """Build valid GCP credentials.
 
-          Args:
-              configs: Dictionary of configurations.
+        Args:
+            configs: Dictionary of configurations.
 
-          Returns:
-              Credentials as built by oauth2client.
+        Returns:
+            Credentials as built by oauth2client.
 
-          Raises:
-              ApiExecutionError: When an error has occurred executing the API.
+        Raises:
+            ApiExecutionError: When an error has occurred executing the API.
         """
         attribute_key = configs(
             'groups_service_account_credentials_metadata_server_key')
@@ -86,14 +86,14 @@ class AdminDirectoryClient(_base_client.BaseClient):
     def _build_local_credentials(configs):
         """Build valid local credentials.
 
-          Args:
-              configs: Dictionary of configurations.
+        Args:
+            configs: Dictionary of configurations.
 
-          Returns:
-              Credentials as built by oauth2client.
+        Returns:
+            Credentials as built by oauth2client.
 
-          Raises:
-              ApiExecutionError: When an error has occurred executing the API.
+        Raises:
+            ApiExecutionError: When an error has occurred executing the API.
         """
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
