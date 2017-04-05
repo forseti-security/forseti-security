@@ -20,8 +20,47 @@ The metadata server is only accessible on GCE.
 import httplib
 import socket
 
-METADATA_SERVER_CONN_TIMEOUT = 2
+from google.cloud.security.common.util import errors
 
+
+METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
+METADATA_SERVER_CONN_TIMEOUT = 2
+REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
+HTTP_SUCCESS = httplib.OK
+HTTP_GET = 'GET'
+
+
+def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
+    """Returns a simple HTTP client to the GCP metadata server.
+
+    Args:
+        hostname: a String with a qualified hostname.
+    """
+    return httplib.HTTPConnection(hostname,
+                                  timeout=METADATA_SERVER_CONN_TIMEOUT)
+
+def _issue_http_request(path, method, headers):
+    """Perform a request on a specified httplib connection object.
+
+    Args:
+        method: A string representing the http request method.
+        path: A string representing the path on the server.
+        headers: A dictionary reprsenting key-value pairs of headers.
+
+    Returns:
+        The httplib.HTTPResponse object.
+
+    Raises:
+        MetadataServerHttpError: When we can't reach the requested host.
+    """
+    http_client = _obtain_http_client()
+
+    try:
+        return http_client.request(path, method, headers)
+    except socket.error:
+        raise errors.MetadataServerHttpError
+    finally:
+        http_client.close()
 
 def can_reach_metadata_server():
     """Determine if we can reach the metadata server.
@@ -29,20 +68,30 @@ def can_reach_metadata_server():
     Returns:
         True if metadata server can be reached, False otherwise.
     """
-    conn = httplib.HTTPConnection('metadata.google.internal',
-                                  timeout=METADATA_SERVER_CONN_TIMEOUT)
-    can_reach_md_server = False
+    path = '/computeMetadata/v1/instance/id'
+    response = None
 
     try:
-        conn.request('GET', '/computeMetadata/v1/instance/id',
-                     None, {'Metadata-Flavor': 'Google'})
-        res = conn.getresponse()
-        can_reach_md_server = (res and res.status == 200)
-    except socket.error:
-        # Don't care about showing that an error happened.
+        response = _issue_http_request(
+            path, HTTP_GET, REQUIRED_METADATA_HEADER)
+    except errors.MetadataServerHttpError:
         pass
 
-    finally:
-        conn.close()
+    return response and response.status == HTTP_SUCCESS
 
-    return can_reach_md_server
+def get_value_for_attribute(attribute):
+    """For a given key return the value.
+
+    Args:
+        attribute: a String representing the key.
+
+    Returns:
+        The value of the request.
+    """
+    path = '/computeMetadata/v1/instance/attributes/%s' % attribute
+    try:
+        http_response = _issue_http_request(
+            path, HTTP_GET, REQUIRED_METADATA_HEADER)
+        return http_response.read()
+    except errors.MetadataServerHttpError:
+        return None
