@@ -72,7 +72,8 @@ class AdminDirectoryClient(_base_client.BaseClient):
 
         if not attribute_key_value:
             raise api_errors.ApiExecutionError(
-                'Unable to contiue without valid GCP credentials.', _)
+                'Invalid response from the metadata-server: %s',
+                attribute_key_value)
 
         try:
             return ServiceAccountCredentials.from_json_keyfile_dict(
