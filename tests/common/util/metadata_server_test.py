@@ -15,6 +15,7 @@
 """Tests the Metadata Server utility."""
 
 import httplib
+import json
 import mock
 import socket
 
@@ -124,7 +125,7 @@ class MetadataServerTest(basetest.TestCase):
         Expected results:
             * A matching string.
         """
-        expected_response = 'response'
+        expected_response = json.loads({'expected': 'response'})
 
         with mock.patch('httplib.HTTPResponse',
                         mock.mock_open(read_data=expected_response)) as mock_http_resp:
