@@ -29,7 +29,6 @@ from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.common.util.log_util import LogUtil
@@ -54,7 +53,8 @@ flags.DEFINE_string('groups_service_account_credentials_file', None,
                     'The file with credentials for the service account. '
                     'REQUIRED: If inventory_groups is enabled and '
                     'runnning locally.')
-flags.DEFINE_string('groups_service_account_credentials_metadata_server_key', None,
+flags.DEFINE_string('groups_service_account_credentials_metadata_server_key',
+                    None,
                     'The key name of where to look on the metadata-server for '
                     'the credentials of the groups service acount. '
                     'REQUIRED: ONLY if inventory_groups is enabled and '

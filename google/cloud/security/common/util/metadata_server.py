@@ -22,7 +22,7 @@ import json
 import socket
 
 from google.cloud.security.common.util import errors
-
+from google.cloud.security.common.util.log_util import LogUtil
 
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
 METADATA_SERVER_CONN_TIMEOUT = 2

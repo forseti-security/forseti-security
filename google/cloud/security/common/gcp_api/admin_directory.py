@@ -55,11 +55,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
         else:
             self.credentials = self._build_proper_credentials(configs)
 
-    def _build_gcp_credentials(configs):
-        """Build valid GCP credentials.
+        self.configs = configs
 
-        Args:
-            configs: Dictionary of configurations.
+    def _build_gcp_credentials(self):
+        """Build valid GCP credentials.
 
         Returns:
             Credentials as built by oauth2client.
@@ -67,7 +66,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: When an error has occurred executing the API.
         """
-        attribute_key = configs(
+        attribute_key = self.configs(
             'groups_service_account_credentials_metadata_server_key')
         attribute_key_value = metadata_server.get_value_for_attribute(
             attribute_key)
@@ -81,13 +80,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
                 attribute_key_value, scopes=REQUIRED_SCOPES)
         except (ValueError, KeyError) as e:
             raise api_errors.ApiExecutionError(
-                'Error building admin api credential', e)
+                'Error building admin api credential: %s', e)
 
-    def _build_local_credentials(configs):
+    def _build_local_credentials(self):
         """Build valid local credentials.
-
-        Args:
-            configs: Dictionary of configurations.
 
         Returns:
             Credentials as built by oauth2client.
@@ -97,13 +93,13 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                configs.get('service_account_credentials_file'),
+                self.configs.get('service_account_credentials_file'),
                 scopes=REQUIRED_SCOPES)
         except (ValueError, KeyError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential', e)
 
-    def _build_proper_credentials():
+    def _build_proper_credentials(self):
         """Build proper credentials required for accessing the directory API.
 
         Returns:
@@ -113,12 +109,12 @@ class AdminDirectoryClient(_base_client.BaseClient):
             ApiExecutionError: When an error has occurred executing the API.
         """
         if metadata_server.can_reach_metadata_server():
-            credentials = _build_gcp_credentials(configs)
+            credentials = self._build_gcp_credentials()
         else:
-            credentials =  _build_local_credentials(configs)
+            credentials = self._build_local_credentials()
 
         return credentials.create_delegated(
-            configs.get('domain_super_admin_email'))
+            self.configs.get('domain_super_admin_email'))
 
     @staticmethod
     def get_rate_limiter():
