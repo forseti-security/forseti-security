@@ -58,10 +58,13 @@ def GenerateConfig(context):
     if SHOULD_INVENTORY_GROUPS:
         GROUPS_DOMAIN_SUPER_ADMIN_EMAIL = context.properties['groups-domain-super-admin-email']
         GROUPS_SERVICE_ACCOUNT_EMAIL = context.properties['groups-service-account-email']
+        GROUPS_SERVICE_ACCOUNT_CREDENTIALS_METADATA_SERVER_KEY = context.properties[
+            'groups-service-account-credentials-metadata-server-key']
 
-        inventory_groups_flags = '--domain_super_admin_email {} --groups_service_accounts_email {}'.format(
+        inventory_groups_flags = '--domain_super_admin_email {} --groups_service_accounts_email {} --groups_service_account_credentials_metadata_server_key {}'.format(
             GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
             GROUPS_SERVICE_ACCOUNT_EMAIL,
+            GROUPS_SERVICE_ACCOUNT_CREDENTIALS_METADATA_SERVER_KEY,
         )
         inventory_command = inventory_command + inventory_groups_flags
 
