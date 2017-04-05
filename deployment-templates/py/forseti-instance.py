@@ -67,7 +67,7 @@ def GenerateConfig(context):
 
         if os.path.isfile(GROUPS_SERVIER_ACCOUNT_KEY_PATH):
             with open(context.properties['groups-service-account-key-path']) as f:
-                GROUPS_SERVICE_ACCOUNT_CREDENTIALS_KEY_DATA = json.load(f.read()))
+                GROUPS_SERVICE_ACCOUNT_CREDENTIALS_KEY_DATA = json.load(f.read())
         else:
             raise Exception
 
