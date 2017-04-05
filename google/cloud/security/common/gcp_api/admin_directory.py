@@ -74,7 +74,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 configs.get('service_account_credentials_file'),
                 scopes=REQUIRED_SCOPES)
-        except (ValueError, KeyError) as e:
+        except (ValueError, KeyError, TypeError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential', e)
 

@@ -265,7 +265,7 @@ def main(_):
         admin_api_client = ad.AdminDirectoryClient(
             credentials=credentials,
             rate_limiter=admin_directory_rate_limiter)
-    except api_errors.ApiExecutionError:
+    except api_errors.ApiExecutionError as e:
         LOGGER.error('Unable to build api client.\n%s', e)
         sys.exit()
 

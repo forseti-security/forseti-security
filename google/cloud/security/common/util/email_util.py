@@ -28,7 +28,6 @@ from sendgrid.helpers import mail
 from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
-from google.cloud.security.common.util.errors import EmailSendError
 
 
 FLAGS = flags.FLAGS

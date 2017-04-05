@@ -97,7 +97,7 @@ class StorageClient(_base_client.BaseClient):
                 _, done = downloader.next_chunk()
             file_content = out_stream.getvalue()
             out_stream.close()
-        except HttpError as http_error:
+        except http.HttpError as http_error:
             LOGGER.error('Unable to download file: %s', http_error)
             raise http_error
         return file_content
