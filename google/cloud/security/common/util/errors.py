@@ -37,4 +37,3 @@ class InvalidParserTypeError(Error):
 class MetadataServerHttpError(Error):
     """An error for handling HTTP errors with the metadata server."""
     pass
-
