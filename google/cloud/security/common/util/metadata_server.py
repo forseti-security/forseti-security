@@ -20,6 +20,8 @@ The metadata server is only accessible on GCE.
 import httplib
 import socket
 
+from google.cloud.security.common.util import errors
+
 
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
 METADATA_SERVER_CONN_TIMEOUT = 2
@@ -27,14 +29,6 @@ REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
 HTTP_SUCCESS = httplib.OK
 HTTP_GET = 'GET'
 
-
-class MetadataBaseError(Exception):
-    """Base error class for handling meta_data errors."""
-    pass
-
-class MetadataHttpError(MetadataBaseError):
-    """An error for handling HTTP errors with the metadata server."""
-    pass
 
 def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
     """Returns a simple HTTP client to the GCP metadata server.
@@ -57,14 +51,14 @@ def _issue_http_request(path, method, headers):
         The httplib.HTTPResponse object.
 
     Raises:
-        MetadataHttpError: When we can't reach the requested host.
+        MetadataServerHttpError: When we can't reach the requested host.
     """
     http_client = _obtain_http_client()
 
     try:
         return http_client.request(path, method, headers)
     except socket.error as e:
-        raise MetadataHttpError(e)
+        raise errors.MetadataServerHttpError
     finally:
         http_client.close()
 
@@ -80,7 +74,7 @@ def can_reach_metadata_server():
     try:
         response = _issue_http_request(
             path, HTTP_GET, REQUIRED_METADATA_HEADER)
-    except MetadataHttpError:
+    except errors.MetadataServerHttpError:
         pass
 
     return response and response.status == HTTP_SUCCESS
@@ -94,13 +88,10 @@ def get_value_for_attribute(attribute):
     Returns:
         The value of the request.
     """
-    path = '/computeMetadata/v1/instance/attributes/'
-    path = path + attribute
-    http_response = ''
-
+    path = '/computeMetadata/v1/instance/attributes/%s' % attribute
     try:
         http_response = _issue_http_request(
             path, HTTP_GET, REQUIRED_METADATA_HEADER)
         return http_response.read()
-    except MetadataHttpError:
-        return http_response
+    except errors.MetadataServerHttpError:
+        return None

@@ -32,3 +32,9 @@ class InvalidFileExtensionError(Error):
 class InvalidParserTypeError(Error):
     """No parser exists for the given parser type."""
     pass
+
+
+class MetadataServerHttpError(Error):
+    """An error for handling HTTP errors with the metadata server."""
+    pass
+

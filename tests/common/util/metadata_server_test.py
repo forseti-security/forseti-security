@@ -20,6 +20,7 @@ import socket
 
 from google.apputils import basetest
 from google.cloud.security.common.util import metadata_server
+from google.cloud.security.common.util import errors
 
 from StringIO import StringIO
 
@@ -32,8 +33,9 @@ class _MockHttpError(socket.error):
     """Mock Http Error"""
     pass
 
-class _MockMetadataHttpError(metadata_server.MetadataHttpError):
-    """Mock MetadataHttpError"""
+
+class _MockMetadataServerHttpError(errors.MetadataServerHttpError):
+    """Mock MetadataServerHttpError"""
     pass
 
 
@@ -49,10 +51,10 @@ class MetadataServerTest(basetest.TestCase):
             * Insist httplib.HTTPConnection.request raises socket.error.
 
         Expected results:
-            * metadata_server.MetadataHttpError is raised and asserted.
+            * metadata_server.MetadataServerHttpError is raised and asserted.
         """
         mock_req.side_effect = _MockHttpError('Unreachable')
-        with self.assertRaises(metadata_server.MetadataHttpError):
+        with self.assertRaises(errors.MetadataServerHttpError):
             metadata_server._issue_http_request('','',{})
 
     def test_obtain_http_client_returns_httplib_httpconnection_object(self):
@@ -93,12 +95,26 @@ class MetadataServerTest(basetest.TestCase):
         Expected results:
             * A False result.
         """
-        mock_meta_req.side_effect = _MockMetadataHttpError('Unreachable')
+        mock_meta_req.side_effect = _MockMetadataServerHttpError('Unreachable')
         actual_response = metadata_server.can_reach_metadata_server()
         self.assertFalse(actual_response)
 
     @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
-    def test_get_value_for_attribute_exists(self, mock_meta_req):
+    def test_get_value_for_attribute_with_exception(self, mock_meta_req):
+        """Test get_value_for_attribute returns correctly.
+
+        Setup:
+            * Have _issue_http_request raise errors.MetadataServerHttpError
+
+        Expected results:
+            * A matching string.
+        """
+        mock_meta_req.side_effect = _MockMetadataServerHttpError('Unreachable')
+        actual_response = metadata_server.get_value_for_attribute('')
+        self.assertIsNone(actual_response)
+
+    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
+    def test_get_value_for_attribute_with_a_present_attribute(self, mock_meta_req):
         """Test get_value_for_attribute returns correctly.
 
         Setup:
