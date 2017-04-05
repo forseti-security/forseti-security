@@ -63,7 +63,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             Credentials as built by oauth2client.
 
         Raises:
-            ApiExecutionError: When an error has occurred executing the API.
+            api_errors.ApiExecutionError
         """
         attribute_key = self.configs(
             'groups_service_account_credentials_metadata_server_key')
@@ -88,7 +88,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             Credentials as built by oauth2client.
 
         Raises:
-            ApiExecutionError: When an error has occurred executing the API.
+            api_errors.ApiExecutionError
         """
         try:
             return ServiceAccountCredentials.from_json_keyfile_name(
@@ -105,7 +105,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             Credentials as built by oauth2client.
 
         Raises:
-            ApiExecutionError: When an error has occurred executing the API.
+            api_errors.ApiExecutionError
         """
         if metadata_server.can_reach_metadata_server():
             credentials = self._build_gcp_credentials()
@@ -138,7 +138,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             A list of group objects returned from the API.
 
         Raises:
-            ApiExecutionError: When an error has occurred executing the API.
+            api_errors.ApiExecutionError
         """
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)
