@@ -91,7 +91,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             ApiExecutionError: When an error has occurred executing the API.
         """
         try:
-            return credentials = ServiceAccountCredentials.from_json_keyfile_name(
+            return ServiceAccountCredentials.from_json_keyfile_name(
                 self.configs.get('service_account_credentials_file'),
                 scopes=REQUIRED_SCOPES)
         except (ValueError, KeyError) as e:

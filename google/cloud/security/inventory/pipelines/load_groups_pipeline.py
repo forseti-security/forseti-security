@@ -50,7 +50,8 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         required_gcp_execution_config = [
             self.configs.get('groups_service_account_email'),
             self.configs.get('domain_super_admin_email'),
-            self.configs.get('groups_service_account_credentials_metadata_server_key')]
+            self.configs.get(
+                'groups_service_account_credentials_metadata_server_key')]
 
         required_local_execution_config = [
             self.configs.get('groups_service_account_email'),
