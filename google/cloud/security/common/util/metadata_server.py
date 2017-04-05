@@ -66,7 +66,7 @@ def _issue_http_request(path, method, headers):
     except socket.error as e:
         raise MetadataHttpError(e)
     finally:
-      http_client.close()
+        http_client.close()
 
 def can_reach_metadata_server():
     """Determine if we can reach the metadata server.
@@ -80,10 +80,10 @@ def can_reach_metadata_server():
     try:
         response = _issue_http_request(
             path, HTTP_GET, REQUIRED_METADATA_HEADER)
-    except MetadataHttpError as e:
+    except MetadataHttpError:
         pass
 
-    return (response and response.status == HTTP_SUCCESS)
+    return response and response.status == HTTP_SUCCESS
 
 def get_value_for_attribute(attribute):
     """For a given key return the value.
