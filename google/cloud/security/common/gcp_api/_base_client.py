@@ -52,7 +52,7 @@ class BaseClient(object):
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     # pylint: disable=no-self-use
-    # TODO: Investigate if this could be a standalone methods to remove dsiable.
+    # TODO: Investigate if this could be a standalone methods to remove disable.
     def _execute(self, request):
         """Executes requests in a rate-limited way.
 
