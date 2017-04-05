@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test IAM policies data."""
 
 FAKE_ORG_IAM_POLICY_MAP = [{
     'org_id': 666666,
@@ -62,7 +63,7 @@ FAKE_PROJECT_IAM_POLICY_MAP = [{
             ], 'version': 1, 'etag': 'BwVHfUJ0Apc='}
 }]
 
-EXPECTED_FLATTENED_ORG_IAM_POLICY = [
+EXPECTED_LOADABLE_ORG_IAM_POLICY = [
     {'org_id': 666666,
      'role': 'billing.creator',
      'member_domain': 'foo.com',
@@ -99,7 +100,7 @@ EXPECTED_FLATTENED_ORG_IAM_POLICY = [
      'member_type': 'domain', 'member_name': ''},
 ]
 
-EXPECTED_FLATTENED_PROJECT_IAM_POLICY = [
+EXPECTED_LOADABLE_PROJECT_IAM_POLICY = [
     {'project_number': 555555555555,
      'member_domain': 'henrychang.mygbiz.com',
      'member_name': 'policyscanner-foo-group',
