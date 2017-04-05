@@ -25,6 +25,7 @@ def GenerateConfig(context):
         '$(ref.cloudsql-instance.name)')
     SCANNER_BUCKET = context.properties['scanner-bucket']
     DATABASE_NAME = context.properties['database-name']
+    SHOULD_INVENTORY_GROUPS = bool(context.properties['inventory-groups'])
 
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
 
@@ -32,6 +33,7 @@ def GenerateConfig(context):
         context.properties['organization-id'],
         DATABASE_NAME,
     )
+
     scanner_command = '/usr/local/bin/forseti_scanner --rules {} --output_path {} --organization_id {} --db_name {} '.format(
         'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
         'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
@@ -51,6 +53,17 @@ def GenerateConfig(context):
         )
         inventory_command = inventory_command + email_flags
         scanner_command = scanner_command + email_flags
+
+    # Extend the commands, based on whether inventory-groups is set.
+    if SHOULD_INVENTORY_GROUPS:
+        GROUPS_DOMAIN_SUPER_ADMIN_EMAIL = context.properties['groups-domain-super-admin-email']
+        GROUPS_SERVICE_ACCOUNT_EMAIL = context.properties['groups-service-account-email']
+
+        inventory_groups_flags = '--domain_super_admin_email {} --groups_service_accounts_email {}'.format(
+            GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
+            GROUPS_SERVICE_ACCOUNT_EMAIL,
+        )
+        inventory_command = inventory_command + inventory_groups_flags
 
     resources = []
 

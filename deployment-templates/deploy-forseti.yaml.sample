@@ -62,3 +62,9 @@ resources:
     sendgrid-api-key: YOUR_SENDGRID_API_KEY
     email-sender: EMAIL_ADDRESS_OF_YOUR_SENDER
     email-recipient: EMAIL_ADDRESS_OF_YOUR_RECIPIENT
+    # Inventory configuration for GSuite Google Groups.
+    inventory-groups: true
+    groups-domain-super-admin-email: EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN
+    groups-service-account-email: EMAIL_ADDRESS_OF_YOUR_GROUPS_SERVICE_ACCOUNT
+    groups-service-account-credentials-metadata-server-key: "dwd-key"
+

@@ -48,17 +48,15 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             Boolean
         """
         required_gcp_execution_config = [
-            self.configs.get('service_account_email'),
-            self.configs.get('domain_super_admin_email')]
+            self.configs.get('groups_service_account_email'),
+            self.configs.get('domain_super_admin_email'),
+            self.configs.get('groups_service_account_credentials_metadata_server_key')]
 
         required_local_execution_config = [
-            self.configs.get('service_account_email'),
-            self.configs.get('service_account_credentials_file'),
-            self.configs.get('domain_super_admin_email')]
+            self.configs.get('groups_service_account_email'),
+            self.configs.get('domain_super_admin_email'),
+            self.configs.get('groups_service_account_credentials_file')
 
-        # TODO: Should use memoize or similar so that after the first check
-        # the cached result is always returned, regardless of how often it is
-        # called.
         if metadata_server.can_reach_metadata_server():
             required_execution_config = required_gcp_execution_config
         else:

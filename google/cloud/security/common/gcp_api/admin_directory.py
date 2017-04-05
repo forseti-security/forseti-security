@@ -41,38 +41,60 @@ class AdminDirectoryClient(_base_client.BaseClient):
 
     API_NAME = 'admin'
 
-    def __init__(self, credentials=None, rate_limiter=None):
+    def __init__(self, configs, credentials=None, rate_limiter=None):
         super(AdminDirectoryClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
+
         if rate_limiter:
             self.rate_limiter = rate_limiter
         else:
             self.rate_limiter = self.get_rate_limiter()
 
-    @staticmethod
-    def get_rate_limiter():
-        """Return an appriopriate rate limiter."""
-        return RateLimiter(
-            DEFAULT_MAX_QUERIES,
-            DEFAULT_RATE_BUCKET_SECONDS)
+        if credentials:
+            self.credentials = credentials
+        else:
+            self.credentials = self._build_proper_credentials(configs)
 
-    @staticmethod
-    def build_proper_credentials(configs):
-        """Build proper credentials required for accessing the directory API.
+    def _build_gcp_credentials(configs):
+        """Build valid GCP credentials.
 
-        Args:
-            configs: Dictionary of configurations.
+          Args:
+              configs: Dictionary of configurations.
 
-        Returns:
-            Credentials as built by oauth2client.
+          Returns:
+              Credentials as built by oauth2client.
 
-        Raises:
-            ApiExecutionError: When an error has occurred executing the API.
+          Raises:
+              ApiExecutionError: When an error has occurred executing the API.
         """
+        attribute_key = configs(
+            'groups_service_account_credentials_metadata_server_key')
+        attribute_key_value = metadata_server.get_value_for_attribute(
+            attribute_key)
 
-        if metadata_server.can_reach_metadata_server():
-            return AppAssertionCredentials(REQUIRED_SCOPES)
+        if not attribute_key_value:
+            raise api_errors.ApiExecutionError(
+                'Unable to contiue without valid GCP credentials.')
 
+        try:
+            return ServiceAccountCredentials.from_json_keyfile_dict(
+                attribute_key_value, scopes=REQUIRED_SCOPES)
+        except (ValueError, KeyError) as e:
+            raise api_errors.ApiExecutionError(
+                'Error building admin api credential', e)
+
+    def _build_local_credentials(configs):
+        """Build valid local credentials.
+
+          Args:
+              configs: Dictionary of configurations.
+
+          Returns:
+              Credentials as built by oauth2client.
+
+          Raises:
+              ApiExecutionError: When an error has occurred executing the API.
+        """
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 configs.get('service_account_credentials_file'),
@@ -81,8 +103,29 @@ class AdminDirectoryClient(_base_client.BaseClient):
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential', e)
 
+    def _build_proper_credentials():
+        """Build proper credentials required for accessing the directory API.
+
+        Returns:
+            Credentials as built by oauth2client.
+
+        Raises:
+            ApiExecutionError: When an error has occurred executing the API.
+        """
+        if metadata_server.can_reach_metadata_server():
+            credentials = _build_gcp_credentials(configs)
+        else:
+            credentials =  _build_local_credentials(configs)
+
         return credentials.create_delegated(
             configs.get('domain_super_admin_email'))
+
+    @staticmethod
+    def get_rate_limiter():
+        """Return an appriopriate rate limiter."""
+        return RateLimiter(
+            DEFAULT_MAX_QUERIES,
+            DEFAULT_RATE_BUCKET_SECONDS)
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
