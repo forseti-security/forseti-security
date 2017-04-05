@@ -20,6 +20,9 @@ import socket
 
 from google.apputils import basetest
 from google.cloud.security.common.util import metadata_server
+from google.cloud.security.common.util import errors
+
+from StringIO import StringIO
 
 
 def _default_side_effect(*args, **kwargs):
@@ -31,40 +34,107 @@ class _MockHttpError(socket.error):
     pass
 
 
+class _MockMetadataServerHttpError(errors.MetadataServerHttpError):
+    """Mock MetadataServerHttpError"""
+    pass
+
+
 class MetadataServerTest(basetest.TestCase):
     """Test the Metadata Server util."""
 
     @mock.patch.object(httplib.HTTPConnection, 'request', autospec=True)
-    def test_can_reach_metadata_server(self, mock_req):
-        """Test that the return value is True when metadata server is reachable.
+    def test_issue_http_request_raises_metadatahttperror(self, mock_req):
+        """Test _issue_http_request raises an exception with socket.error
+        in httplib.HTTPConnection.request().
 
         Setup:
-            * Patch the HTTPConnection request() method not to throw an
-              Exception due to an unreachable server.
-            * Patch the HTTPConnection getresponse() method's status property.
-        Expected results:
-            Method call returns True.
-        """
-        mock_req.side_effect = _default_side_effect
-        with mock.patch('httplib.HTTPConnection.getresponse') as mock_res:
-            mock_res.side_effect = _default_side_effect
-            mock_res.return_value.status = 200
-            actual_response = metadata_server.can_reach_metadata_server()
-        self.assertTrue(actual_response)
+            * Insist httplib.HTTPConnection.request raises socket.error.
 
-    @mock.patch.object(httplib.HTTPConnection, 'request', autospec=True)
-    def test_cannot_reach_metadata_server(self, mock_req):
-        """Test return value is False when metadata server is unreachable.
-
-        Setup:
-            * Patch the HTTPConnection request() method to throw an
-              Exception due to an unreachable server.
         Expected results:
-            Method call returns False.
+            * metadata_server.MetadataServerHttpError is raised and asserted.
         """
         mock_req.side_effect = _MockHttpError('Unreachable')
+        with self.assertRaises(errors.MetadataServerHttpError):
+            metadata_server._issue_http_request('','',{})
+
+    def test_obtain_http_client_returns_httplib_httpconnection_object(self):
+        """Test _obtain_http_client returns the proper object.
+
+        Expected results:
+            * Assert a httplib.HTTPConnection object is returned.
+        """
+        returned_object = metadata_server._obtain_http_client()
+        self.assertIsInstance(returned_object, httplib.HTTPConnection)
+
+    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
+    def test_can_reach_metadata_server_with_valid_response(self, mock_meta_req):
+        """Test can_reach_metadata_server returns True with a valid response.
+
+        Setup:
+            * Have httplib return a valid respone and response.status.
+
+        Expected results:
+            * A True result.
+        """
+        with mock.patch('httplib.HTTPResponse') as mock_http_resp:
+            mock_http_resp.side_effect = _default_side_effect
+            mock_http_resp.return_value.status = httplib.OK
+            mock_meta_req.side_effect = mock_http_resp
+            actual_response = metadata_server.can_reach_metadata_server()
+
+        self.assertTrue(actual_response)
+
+    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
+    def test_can_reach_metadata_server_with_error_response(self, mock_meta_req):
+        """Test can_reach_metadata_server returns Falise with an
+        invalid response.
+
+        Setup:
+            * Have httplib raise socket.error.
+
+        Expected results:
+            * A False result.
+        """
+        mock_meta_req.side_effect = _MockMetadataServerHttpError('Unreachable')
         actual_response = metadata_server.can_reach_metadata_server()
         self.assertFalse(actual_response)
+
+    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
+    def test_get_value_for_attribute_with_exception(self, mock_meta_req):
+        """Test get_value_for_attribute returns correctly.
+
+        Setup:
+            * Have _issue_http_request raise errors.MetadataServerHttpError
+
+        Expected results:
+            * A matching string.
+        """
+        mock_meta_req.side_effect = _MockMetadataServerHttpError('Unreachable')
+        actual_response = metadata_server.get_value_for_attribute('')
+        self.assertIsNone(actual_response)
+
+    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
+    def test_get_value_for_attribute_with_a_present_attribute(self, mock_meta_req):
+        """Test get_value_for_attribute returns correctly.
+
+        Setup:
+            * Mock out a httplib.HTTPResponse .
+            * Return that from _issue_http_request.
+
+        Expected results:
+            * A matching string.
+        """
+        expected_response = 'response'
+
+        with mock.patch('httplib.HTTPResponse',
+                        mock.mock_open(read_data=expected_response)) as mock_http_resp:
+            mock_http_resp.side_effect = _default_side_effect
+            mock_http_resp.return_value.status = httplib.OK
+            mock_meta_req.side_effect = mock_http_resp
+
+            actual_response = metadata_server.get_value_for_attribute('')
+
+        self.assertEqual(actual_response, expected_response)
 
 
 if __name__ == '__main__':
