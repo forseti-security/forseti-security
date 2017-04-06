@@ -76,8 +76,7 @@ class LoadGroupsPipelineTest(basetest.TestCase):
 
         groups = self.pipeline._transform(fake_groups.FAKE_GROUPS)
         for (i, group) in enumerate(groups):
-            self.assertEquals(
-                fake_groups.EXPECTED_LOADABLE_GROUPS[i], group)
+            self.assertEquals(fake_groups.EXPECTED_LOADABLE_GROUPS[i], group)
 
     def test_api_is_called_to_retrieve_groups(self):
         """Test that api is called to retrieve projects."""
