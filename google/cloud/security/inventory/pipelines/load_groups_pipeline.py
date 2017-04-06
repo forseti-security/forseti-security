@@ -15,7 +15,6 @@
 """Pipeline to load GSuite Account Groups into Inventory."""
 
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import metadata_server
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
@@ -47,24 +46,12 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         Returns:
             Boolean
         """
-        required_gcp_execution_config = [
+        required_execution_config_flags = [
             self.configs.get('groups_service_account_email'),
             self.configs.get('domain_super_admin_email'),
-            self.configs.get(
-                'groups_service_account_credentials_metadata_server_key')]
+            self.configs.get('groups_service_account_key_file')]
 
-        required_local_execution_config = [
-            self.configs.get('groups_service_account_email'),
-            self.configs.get('domain_super_admin_email'),
-            self.configs.get('groups_service_account_credentials_file')]
-
-
-        if metadata_server.can_reach_metadata_server():
-            required_execution_config = required_gcp_execution_config
-        else:
-            required_execution_config = required_local_execution_config
-
-        return all(required_execution_config)
+        return all(required_execution_config_flags)
 
     def _transform(self, groups_map):
         """Yield an iterator of loadable groups.

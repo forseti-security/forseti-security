@@ -21,7 +21,6 @@ from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import metadata_server
 from google.cloud.security.common.util.log_util import LogUtil
 
 
@@ -52,38 +51,12 @@ class AdminDirectoryClient(_base_client.BaseClient):
         if credentials:
             self.credentials = credentials
         else:
-            self.credentials = self._build_proper_credentials()
+            self.credentials = self._build_credentials()
 
         self.configs = configs
 
-    def _build_gcp_credentials(self):
-        """Build valid GCP credentials.
-
-        Returns:
-            Credentials as built by oauth2client.
-
-        Raises:
-            api_errors.ApiExecutionError
-        """
-        attribute_key = self.configs(
-            'groups_service_account_credentials_metadata_server_key')
-        attribute_key_value = metadata_server.get_value_for_attribute(
-            attribute_key)
-
-        if not attribute_key_value:
-            raise api_errors.ApiExecutionError(
-                'Invalid response from the metadata-server: %s',
-                attribute_key_value)
-
-        try:
-            return ServiceAccountCredentials.from_json_keyfile_dict(
-                attribute_key_value, scopes=REQUIRED_SCOPES)
-        except (ValueError, KeyError) as e:
-            raise api_errors.ApiExecutionError(
-                'Error building admin api credential: %s', e)
-
-    def _build_local_credentials(self):
-        """Build valid local credentials.
+    def _build_credentials(self):
+        """Build credentials required for accessing the directory API.
 
         Returns:
             Credentials as built by oauth2client.
@@ -93,25 +66,11 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         try:
             return ServiceAccountCredentials.from_json_keyfile_name(
-                self.configs.get('service_account_credentials_file'),
+                self.configs.get('groups_service_account_key_file'),
                 scopes=REQUIRED_SCOPES)
         except (ValueError, KeyError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential: %s', e)
-
-    def _build_proper_credentials(self):
-        """Build proper credentials required for accessing the directory API.
-
-        Returns:
-            Credentials as built by oauth2client.
-
-        Raises:
-            api_errors.ApiExecutionError
-        """
-        if metadata_server.can_reach_metadata_server():
-            credentials = self._build_gcp_credentials()
-        else:
-            credentials = self._build_local_credentials()
 
         return credentials.create_delegated(
             self.configs.get('domain_super_admin_email'))

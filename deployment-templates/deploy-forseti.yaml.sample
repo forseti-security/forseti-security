@@ -24,6 +24,8 @@ imports:
   name: bucket.py
 - path: py/forseti-instance.py
   name: forseti-instance.py
+- path: py/groups-service-account-key-data.py
+  name: groups-service-account-key-data
 
 resources:
 
@@ -42,7 +44,9 @@ resources:
 
 # Compute Engine
 - name: forseti-instance
-  type: forseti-instance.py
+  type:
+    - forseti-instance.py
+    - groups-service-account-key-data.py
   properties:
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1404-lts
@@ -62,10 +66,8 @@ resources:
     sendgrid-api-key: YOUR_SENDGRID_API_KEY
     email-sender: EMAIL_ADDRESS_OF_YOUR_SENDER
     email-recipient: EMAIL_ADDRESS_OF_YOUR_RECIPIENT
-    # Inventory configuration for GSuite Google Groups.
+    # Flags for Inventory to collect GSuite Google Groups information.
     inventory-groups: true
     groups-domain-super-admin-email: EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN
     groups-service-account-email: EMAIL_ADDRESS_OF_YOUR_GROUPS_SERVICE_ACCOUNT
-    groups-service-account-key-path: "PATH_TO_THE_DOWNLOADED_KEY"
-    groups-service-account-credentials-metadata-server-key: "dwd-key"
-
+    groups-service-account-key-file: "/home/ubuntu/forseti-security/service-acount-key.json"

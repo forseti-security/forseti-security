@@ -49,17 +49,10 @@ flags.DEFINE_string('domain_super_admin_email', None,
 flags.DEFINE_string('groups_service_account_email', None,
                     'The email of the service account. '
                     'REQUIRED: if inventory_groups is enabled.')
-flags.DEFINE_string('groups_service_account_credentials_file', None,
-                    'The file with credentials for the service account. '
+flags.DEFINE_string('groups_service_account_key_file', None,
+                    'The key file with credentials for the service account. '
                     'REQUIRED: If inventory_groups is enabled and '
                     'runnning locally.')
-flags.DEFINE_string('groups_service_account_credentials_metadata_server_key',
-                    None,
-                    'The key name of where to look on the metadata-server for '
-                    'the credentials of the groups service acount. '
-                    'REQUIRED: ONLY if inventory_groups is enabled and '
-                    'runnning on GCP. '
-                    'NOTE: This is set in the deploy-forseti.yaml.')
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
                      'Cloud Resource Manager queries per 100 seconds.')
