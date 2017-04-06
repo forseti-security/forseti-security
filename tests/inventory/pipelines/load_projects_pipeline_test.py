@@ -33,7 +33,7 @@ from tests.inventory.pipelines.test_data import fake_projects
 
 
 class LoadProjectsPipelineTest(basetest.TestCase):
-    """Tests for the load_org_iam_policies_pipeline."""
+    """Tests for the load_projects_pipeline."""
 
     def setUp(self):
         """Set up."""
@@ -96,8 +96,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
         """Test that the subroutines are called by run."""
 
         mock_retrieve.return_value = fake_projects.FAKE_PROJECTS
-        mock_transform.return_value = (
-            fake_projects.EXPECTED_LOADABLE_PROJECTS)
+        mock_transform.return_value = fake_projects.EXPECTED_LOADABLE_PROJECTS
         self.pipeline.run()
 
         mock_retrieve.assert_called_once_with()
