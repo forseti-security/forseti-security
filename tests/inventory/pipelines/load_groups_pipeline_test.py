@@ -49,25 +49,12 @@ class LoadGroupsPipelineTest(basetest.TestCase):
                 self.mock_admin_client,
                 self.mock_dao))
 
-    @mock.patch.object(load_groups_pipeline, 'metadata_server')
-    def test_can_inventory_google_groups(self, mock_metadata_server):
+    def test_can_inventory_google_groups(self):
         """Test inventory groups can be configured per config values."""
-
-        # GCP case, configs are good.
-        mock_metadata_server.can_reach_metadata_server.return_value = True
+        # Configs are good.
         self.assertTrue(self.pipeline._can_inventory_google_groups())
 
-        # Local case, configs are good.
-        mock_metadata_server.can_reach_metadata_server.return_value = False
-        self.assertTrue(self.pipeline._can_inventory_google_groups())
-
-        # GCP case, configs are bad.
-        mock_metadata_server.can_reach_metadata_server.return_value = True
-        self.pipeline.required_gcp_execution_config = ['aaaaa', None]
-        self.assertFalse(self.pipeline._can_inventory_google_groups())
-
-        # Local case, configs are bad.
-        mock_metadata_server.can_reach_metadata_server.return_value = False
+        # Configs are bad.
         self.pipeline.required_local_execution_config = ['aaaaa', None, 'bbbbb']
         self.assertFalse(self.pipeline._can_inventory_google_groups())
 
@@ -102,7 +89,7 @@ class LoadGroupsPipelineTest(basetest.TestCase):
         '_get_loaded_count')
     @mock.patch.object(
         load_groups_pipeline.LoadGroupsPipeline,
-        '_load')    
+        '_load')
     @mock.patch.object(
         load_groups_pipeline.LoadGroupsPipeline,
         '_transform')
@@ -125,7 +112,7 @@ class LoadGroupsPipelineTest(basetest.TestCase):
         mock_load.assert_called_once_with(
             self.pipeline.RESOURCE_NAME,
             fake_groups.EXPECTED_LOADABLE_GROUPS)
-        
+
         mock_get_loaded_count.assert_called_once
 
         # Test the exception is handled.
