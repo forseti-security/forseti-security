@@ -14,6 +14,7 @@
 
 """Wrapper for Resource Manager API client."""
 
+import gflags as flags
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
@@ -23,31 +24,26 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
-LOGGER = log_util.get_logger(__name__)
+FLAGS = flags.FLAGS
 
-DEFAULT_MAX_QUERIES = 400
-DEFAULT_RATE_BUCKET_SECONDS = 100
+flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
+                     'Cloud Resource Manager queries per 100 seconds.')
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class CloudResourceManagerClient(_base_client.BaseClient):
     """Resource Manager Client."""
 
     API_NAME = 'cloudresourcemanager'
+    DEFAULT_API_RATE_PER_SECONDS = 100
 
-    def __init__(self, credentials=None, rate_limiter=None):
+    def __init__(self, credentials=None):
         super(CloudResourceManagerClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
-        if rate_limiter:
-            self.rate_limiter = rate_limiter
-        else:
-            self.rate_limiter = CloudResourceManagerClient.get_rate_limiter()
-
-    @staticmethod
-    def get_rate_limiter():
-        """Return an appropriate rate limiter."""
-        return RateLimiter(
-            DEFAULT_MAX_QUERIES,
-            DEFAULT_RATE_BUCKET_SECONDS)
+        self.rate_limiter = RateLimiter(
+            FLAGS.max_crm_api_calls_per_100_seconds,
+            self.DEFAULT_API_RATE_PER_SECONDS)
 
     def get_project(self, project_id):
         """Get all the projects from organization.

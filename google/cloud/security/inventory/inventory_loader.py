@@ -72,8 +72,6 @@ flags.DEFINE_string('service_account_credentials_file', None,
                     'The file with credentials for the service account.'
                     'NOTE: This is only required when running locally.')
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
-flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager queries per 100 seconds.')
 
 flags.mark_flag_as_required('organization_id')
 
@@ -252,10 +250,7 @@ def main(_):
     # rate limit getting should be from the module
     # rate limit setting should be passed into the creation of the client
     # credentials should be built inside the client and never exposed here
-    max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
-    crm_rate_limiter = RateLimiter(max_crm_calls, 100)
-    crm_api_client = crm.CloudResourceManagerClient(
-        rate_limiter=crm_rate_limiter)
+    crm_api_client = crm.CloudResourceManagerClient()
 
     # TODO: Make rate limiter configurable.
     admin_directory_rate_limiter = (
