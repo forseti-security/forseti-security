@@ -50,9 +50,9 @@ from google.cloud.security.common.data_access.sql_queries import snapshot_cycles
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
@@ -80,7 +80,7 @@ flags.mark_flag_as_required('organization_id')
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 
 def _exists_snapshot_cycles_table(dao):
@@ -227,11 +227,8 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
 # TODO: Break up main into helper functions:
 # build_pipelines, run_pipelines, check_pipeline_statuses, and add tests
 # pylint: disable=too-many-locals
-def main(argv):
+def main(_):
     """Runs the Inventory Loader."""
-
-    del argv
-
     try:
         dao = Dao()
     except data_access_errors.MySQLError as e:
@@ -268,7 +265,7 @@ def main(argv):
         admin_api_client = ad.AdminDirectoryClient(
             credentials=credentials,
             rate_limiter=admin_directory_rate_limiter)
-    except api_errors.ApiExecutionError:
+    except api_errors.ApiExecutionError as e:
         LOGGER.error('Unable to build api client.\n%s', e)
         sys.exit()
 

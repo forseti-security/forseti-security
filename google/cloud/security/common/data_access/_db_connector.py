@@ -20,9 +20,7 @@ import MySQLdb
 from MySQLdb import OperationalError
 
 from google.cloud.security.common.data_access.errors import MySQLError
-from google.cloud.security.common.util.log_util import LogUtil
-
-LOGGER = LogUtil.setup_logging(__name__)
+from google.cloud.security.common.util import log_util
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('db_host', '127.0.0.1',
@@ -31,8 +29,9 @@ flags.DEFINE_string('db_name', 'forseti_security', 'Cloud SQL database name')
 flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 
 
+LOGGER = log_util.get_logger(__name__)
+
 # pylint: disable=too-few-public-methods
-# TODO: Investigate improving so we can avoid the pylint disable.
 class _DbConnector(object):
     """Database connector."""
 

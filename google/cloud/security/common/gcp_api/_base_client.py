@@ -41,7 +41,8 @@ class BaseClient(object):
                     _supported_apis.SUPPORTED_APIS[self.name]))
         self.version = _supported_apis.SUPPORTED_APIS[self.name]['version']
         self.service = discovery.build(self.name, self.version,
-                                       credentials=self._credentials)
+                                       credentials=self._credentials,
+                                       cache_discovery=False)
 
     def __repr__(self):
         return 'API: name={}, version={}'.format(self.name, self.version)

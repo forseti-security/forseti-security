@@ -18,10 +18,7 @@ import csv
 import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
-from google.cloud.security.common.util.log_util import LogUtil
 
-
-LOGGER = LogUtil.setup_logging(__name__)
 
 GROUPS_FIELDNAMES = [
     'group_id',

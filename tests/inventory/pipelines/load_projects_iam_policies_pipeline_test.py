@@ -23,7 +23,7 @@ from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
@@ -100,8 +100,8 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
         can not be retrieved.  We just want to log the error, and continue
         with the other projects.
         """
-        self.pipeline.logger = (
-            mock.create_autospec(LogUtil).setup_logging('foo'))
+        load_projects_iam_policies_pipeline.LOGGER = (
+            mock.create_autospec(log_util).get_logger('foo'))
         self.pipeline.dao.select_project_numbers.return_value = (
             self.FAKE_PROJECT_NUMBERS)
         self.pipeline.api_client.get_project_iam_policies.side_effect = (
@@ -109,7 +109,9 @@ class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
 
         self.pipeline._retrieve()
 
-        self.assertEquals(2, self.pipeline.logger.error.call_count)
+        self.assertEquals(
+            2,
+            load_projects_iam_policies_pipeline.LOGGER.error.call_count)
 
     @mock.patch.object(
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline,

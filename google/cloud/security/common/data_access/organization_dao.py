@@ -27,9 +27,9 @@ from google.cloud.security.common.data_access._db_connector import _DbConnector
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type.organization import Organization
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 
 class OrganizationDao(_DbConnector):

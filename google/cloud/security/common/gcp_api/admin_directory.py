@@ -23,10 +23,7 @@ from ratelimiter import RateLimiter
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import metadata_server
-from google.cloud.security.common.util.log_util import LogUtil
 
-
-LOGGER = LogUtil.setup_logging(__name__)
 
 DEFAULT_MAX_QUERIES = 150000
 DEFAULT_RATE_BUCKET_SECONDS = 86400
@@ -77,7 +74,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 configs.get('service_account_credentials_file'),
                 scopes=REQUIRED_SCOPES)
-        except (ValueError, KeyError) as e:
+        except (ValueError, KeyError, TypeError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential', e)
 

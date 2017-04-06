@@ -23,9 +23,10 @@ from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
-from google.cloud.security.common.util.log_util import LogUtil
 from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import base_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_projects
@@ -87,11 +88,11 @@ class BasePipelineTest(basetest.TestCase):
     def test_error_is_handled_in_get_loaded_count(self):
         """Test error from get_loaded_count is handled."""
 
-        self.pipeline.logger = mock.create_autospec(
-            LogUtil).setup_logging('foo')
+        base_pipeline.LOGGER = mock.create_autospec(
+            log_util).get_logger('foo')
         self.pipeline.dao.select_record_count.side_effect = (
             data_access_errors.MySQLError('11111', '22222'))
 
         self.pipeline._get_loaded_count()
-        self.assertEquals(1, self.pipeline.logger.error.call_count)
+        self.assertEquals(1, base_pipeline.LOGGER.error.call_count)
         self.assertIsNone(self.pipeline.count)

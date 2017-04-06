@@ -12,29 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A basic util that wraps logging."""
+"""A basic util that wraps logging.
+
+Setup logging for Forseti Security. Logs to console and syslog.
+"""
 
 import logging
-import os
+import logging.handlers
 
-class LogUtil(object):
-    """Utility to wrap logging setup."""
+LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
 
-    @classmethod
-    def setup_logging(cls, module_name):
-        """Setup logging configuration.
 
-        Args:
-            module_name: The name of the module to describe the log entry.
-        """
-        formatter = logging.Formatter(
-            '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-        handler = logging.StreamHandler()
-        handler.setFormatter(formatter)
-        my_logger = logging.getLogger(module_name)
-        my_logger.addHandler(handler)
-        if os.getenv('DEBUG'):
-            my_logger.setLevel(logging.DEBUG)
-        else:
-            my_logger.setLevel(logging.INFO)
-        return my_logger
+def get_logger(module_name):
+    """Setup the logger.
+
+    Args:
+        module_name: The name of the mdule to describe the log entry.
+
+    Returns:
+        An instance of the configured logger.
+    """
+    # TODO: Move this into a configuration file.
+    formatter = logging.Formatter(LOG_FORMAT)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    syslog_handler = logging.handlers.SysLogHandler()
+    syslog_handler.setFormatter(formatter)
+    logger_instance = logging.getLogger(module_name)
+    logger_instance.addHandler(console_handler)
+    logger_instance.addHandler(syslog_handler)
+    logger_instance.setLevel(logging.INFO)
+    return logger_instance

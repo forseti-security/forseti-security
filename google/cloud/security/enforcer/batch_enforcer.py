@@ -22,7 +22,7 @@ import concurrent.futures
 from google.apputils import datelib
 
 from google.cloud.security.common.gcp_api import compute
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 from google.cloud.security.enforcer import enforcer_log_pb2
 from google.cloud.security.enforcer import project_enforcer
 
@@ -31,7 +31,7 @@ STATUS_ERROR = enforcer_log_pb2.ERROR
 STATUS_SKIPPED = enforcer_log_pb2.SKIPPED
 STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 
 class BatchFirewallEnforcer(object):
