@@ -121,6 +121,14 @@ sudo apt-get install -y python-pip python-dev
 USER_HOME=/home/ubuntu
 FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
 
+# Install fluentd if necessary
+FLUENTD=$(ls /usr/sbin/google-fluentd)
+if [ -z "$FLUENTD" ]; then
+    cd $USER_HOME
+    curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
+    bash install-logging-agent.sh
+fi
+
 # Check whether Cloud SQL proxy is installed
 CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
 if [ -z "$CLOUD_SQL_PROXY" ]; then

@@ -21,10 +21,9 @@ from ratelimiter import RateLimiter
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type import resource
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 
-
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 DEFAULT_MAX_QUERIES = 400
 DEFAULT_RATE_BUCKET_SECONDS = 100
@@ -180,8 +179,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
 
         Yields:
             An iterable of iam policies as per-org dictionary.
-            Example: {org_id: org_id,
-                      iam_policy: iam_policy}
+            Example: {org_id: org_id, iam_policy: iam_policy}
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
         Raises:

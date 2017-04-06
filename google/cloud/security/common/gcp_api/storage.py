@@ -18,12 +18,10 @@ import StringIO
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util.log_util import LogUtil
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseDownload
-from googleapiclient.http import MediaIoBaseUpload
+from google.cloud.security.common.util import log_util
+from googleapiclient import http
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 
 def get_bucket_and_path_from(full_path):
@@ -71,7 +69,7 @@ class StorageClient(_base_client.BaseClient):
             req = storage_service.objects().insert(
                 bucket=bucket,
                 body=req_body,
-                media_body=MediaIoBaseUpload(
+                media_body=http.MediaIoBaseUpload(
                     f, 'application/octet-stream'))
             _ = req.execute()
 
@@ -93,13 +91,13 @@ class StorageClient(_base_client.BaseClient):
                                     object=object_path))
         out_stream = StringIO.StringIO()
         try:
-            downloader = MediaIoBaseDownload(out_stream, media_request)
+            downloader = http.MediaIoBaseDownload(out_stream, media_request)
             done = False
             while done is False:
                 _, done = downloader.next_chunk()
             file_content = out_stream.getvalue()
             out_stream.close()
-        except HttpError as http_error:
+        except http.HttpError as http_error:
             LOGGER.error('Unable to download file: %s', http_error)
             raise http_error
         return file_content

@@ -24,7 +24,7 @@ from googleapiclient import errors
 from google.apputils import datelib
 
 from google.cloud.security.common.gcp_api import compute
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 from google.cloud.security.enforcer import enforcer_log_pb2
 from google.cloud.security.enforcer import gce_firewall_enforcer as fe
 
@@ -37,7 +37,7 @@ STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
 # before the status is changed to ERROR and the enforcement fails.
 MAX_ENFORCEMENT_RETRIES = 3
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 
 class ProjectEnforcer(object):

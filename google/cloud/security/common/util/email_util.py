@@ -26,7 +26,7 @@ import sendgrid
 from sendgrid.helpers import mail
 
 from google.cloud.security.common.util import errors as util_errors
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
 
@@ -41,6 +41,8 @@ flags.DEFINE_string('email_sender', None,
 flags.DEFINE_string('sendgrid_api_key', None,
                     'API key to authenticate with SendGrid email service.')
 
+LOGGER = log_util.get_logger(__name__)
+
 
 class EmailUtil(object):
     """Utility for sending emails."""
@@ -51,7 +53,6 @@ class EmailUtil(object):
         Args:
             api_key: String of the sendgrid api key to auth email service.
         """
-        self.logger = LogUtil.setup_logging(__name__)
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -98,8 +99,8 @@ class EmailUtil(object):
         """
 
         if not email_sender or not email_recipient:
-            self.logger.warn('Unable to send email: sender=%s, recipient=%s',
-                             email_sender, email_recipient)
+            LOGGER.warn('Unable to send email: sender=%s, recipient=%s',
+                        email_sender, email_recipient)
             raise util_errors.EmailSendError
 
         email = mail.Mail(
@@ -115,17 +116,17 @@ class EmailUtil(object):
         try:
             response = self._execute_send(email)
         except (urllib2.URLError, urllib2.HTTPError) as e:
-            self.logger.error('Unable to send email: %s %s',
-                              e.code, e.reason)
+            LOGGER.error('Unable to send email: %s %s',
+                         e.code, e.reason)
             raise util_errors.EmailSendError
 
         if response.status_code == 202:
-            self.logger.info('Email accepted for delivery:\n%s',
-                             email_subject)
+            LOGGER.info('Email accepted for delivery:\n%s',
+                        email_subject)
         else:
-            self.logger.error('Unable to send email:\n%s\n%s\n%s\n%s',
-                              email_subject, response.status_code,
-                              response.body, response.headers)
+            LOGGER.error('Unable to send email:\n%s\n%s\n%s\n%s',
+                         email_subject, response.status_code,
+                         response.body, response.headers)
             raise util_errors.EmailSendError
 
     @classmethod

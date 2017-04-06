@@ -15,11 +15,17 @@
 
 """Test IAM policies data."""
 
-FAKE_CONFIGS = {'organization_id': '66666',
-                'max_crm_api_calls_per_100_seconds': 400,
-                'db_name': 'forseti_security',
-                'db_user': 'sqlproxy',
-                'db_host': '127.0.0.1',
-                'email_sender': 'foo.sender@company.com', 
-                'email_recipient': 'foo.recipient@company.com',
-                'sendgrid_api_key': 'foo_email_key',}
+FAKE_CONFIGS = {
+    'inventory_groups': True,
+    'service_account_email': 'admin@gserviceaccount.com',
+    'service_account_credentials_file': '/foo/path',
+    'domain_super_admin_email': 'admin@foo.com',
+    'organization_id': '66666',
+    'max_crm_api_calls_per_100_seconds': 400,
+    'db_name': 'forseti_security',
+    'db_user': 'sqlproxy',
+    'db_host': '127.0.0.1',
+    'email_sender': 'foo.sender@company.com', 
+    'email_recipient': 'foo.recipient@company.com',
+    'sendgrid_api_key': 'foo_email_key',
+}
