@@ -21,13 +21,14 @@ import httplib
 import socket
 
 from google.cloud.security.common.util import errors
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
 METADATA_SERVER_CONN_TIMEOUT = 2
 REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
 HTTP_SUCCESS = httplib.OK
 HTTP_GET = 'GET'
+
 LOGGER = LogUtil.setup_logging(__name__)
 
 
