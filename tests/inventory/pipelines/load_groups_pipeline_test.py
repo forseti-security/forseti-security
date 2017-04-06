@@ -63,12 +63,12 @@ class LoadGroupsPipelineTest(basetest.TestCase):
 
         # GCP case, configs are bad.
         mock_metadata_server.can_reach_metadata_server.return_value = True
-        self.pipeline.required_gcp_execution_config = [True, False]
+        self.pipeline.required_gcp_execution_config = ['aaaaa', None]
         self.assertFalse(self.pipeline._can_inventory_google_groups())
 
         # Local case, configs are bad.
         mock_metadata_server.can_reach_metadata_server.return_value = False
-        self.pipeline.required_local_execution_config = [True, False, True]
+        self.pipeline.required_local_execution_config = ['aaaaa', None, 'bbbbb']
         self.assertFalse(self.pipeline._can_inventory_google_groups())
 
     def test_can_transform_groups(self):
