@@ -41,28 +41,29 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         super(LoadGroupsPipeline, self).__init__(
             cycle_timestamp, configs, admin_client, dao)
 
+        # Class variable for mocking.
+        self.required_gcp_execution_config = [
+            self.configs.get('service_account_email'),
+            self.configs.get('domain_super_admin_email')]
+
+        self.required_local_execution_config = [
+            self.configs.get('service_account_email'),
+            self.configs.get('service_account_credentials_file'),
+            self.configs.get('domain_super_admin_email')]
+
     def _can_inventory_google_groups(self):
         """A simple function that validates required inputs to inventory groups.
 
         Returns:
             Boolean
         """
-        required_gcp_execution_config = [
-            self.configs.get('service_account_email'),
-            self.configs.get('domain_super_admin_email')]
-
-        required_local_execution_config = [
-            self.configs.get('service_account_email'),
-            self.configs.get('service_account_credentials_file'),
-            self.configs.get('domain_super_admin_email')]
-
         # TODO: Should use memoize or similar so that after the first check
         # the cached result is always returned, regardless of how often it is
         # called.
         if metadata_server.can_reach_metadata_server():
-            required_execution_config = required_gcp_execution_config
+            required_execution_config = self.required_gcp_execution_config
         else:
-            required_execution_config = required_local_execution_config
+            required_execution_config = self.required_local_execution_config
 
         return all(required_execution_config)
 
