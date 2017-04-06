@@ -29,7 +29,7 @@ REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
 HTTP_SUCCESS = httplib.OK
 HTTP_GET = 'GET'
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 
 def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):

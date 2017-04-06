@@ -62,7 +62,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             api_errors.ApiExecutionError
         """
         try:
-            return ServiceAccountCredentials.from_json_keyfile_name(
+            credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 self.configs.get('groups_service_account_key_file'),
                 scopes=REQUIRED_SCOPES)
         except (ValueError, KeyError, TypeError) as e:
