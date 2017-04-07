@@ -1,5 +1,6 @@
 # Eclipse metafile.
 .project
+.pydevproject
 
 # Compiled python
 *.pyc
