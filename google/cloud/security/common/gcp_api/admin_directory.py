@@ -27,13 +27,6 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 
 FLAGS = flags.FLAGS
 
-DEFAULT_MAX_QUERIES = 150000
-DEFAULT_RATE_BUCKET_SECONDS = 86400
-
-REQUIRED_SCOPES = frozenset([
-    'https://www.googleapis.com/auth/admin.directory.group.readonly'
-])
-
 flags.DEFINE_string('domain_super_admin_email', None,
                     'An email address of a super-admin in the GSuite domain. '
                     'REQUIRED: if inventory_groups is enabled.')
@@ -41,25 +34,25 @@ flags.DEFINE_string('groups_service_account_key_file', None,
                     'The key file with credentials for the service account. '
                     'REQUIRED: If inventory_groups is enabled and '
                     'runnning locally.')
+flags.DEFINE_integer('max_admin_api_calls_per_day', 150000,
+                     'Admin SDK queries per day.')
+
 
 class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""
 
     API_NAME = 'admin'
-
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 86400
+    REQUIRED_SCOPES = frozenset([
+        'https://www.googleapis.com/auth/admin.directory.group.readonly'
+    ])
     def __init__(self, credentials=None, rate_limiter=None):
         super(AdminDirectoryClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
 
-        if rate_limiter:
-            self.rate_limiter = rate_limiter
-        else:
-            self.rate_limiter = self.get_rate_limiter()
-
-        if credentials:
-            self.credentials = credentials
-        else:
-            self.credentials = self._build_credentials()
+        self.rate_limiter = RateLimiter(
+            FLAGS.max_admin_api_calls_per_day,
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def _build_credentials(self):
         """Build credentials required for accessing the directory API.
@@ -73,7 +66,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 FLAGS.groups_service_account_key_file,
-                scopes=REQUIRED_SCOPES)
+                scopes=self.REQUIRED_SCOPES)
         except (ValueError, KeyError, TypeError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential: %s', e)
