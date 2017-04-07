@@ -4,7 +4,7 @@ This is the Inventory component of Forseti Security tool.
   * [Executing inventory](#executing-inventory)
   * [Developing on inventory](#developing-on-inventory)
     * [Collecting and storing new data with inventory](#collecting-and-storing-new-data-with-inventory)
-  
+
 ## Prerequisites
 See the [PREREQUISITES](/docs/prerequisites/README.md) guide.
 
@@ -16,7 +16,20 @@ any directory to invoke the console script:
 $ forseti_inventory
 ```
 
-You can also use the convenience [dev_inventory.sh script](/scripts) to run forseti_inventory. Make a copy of dev_inventory.sh.sample as dev_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
+### Executing inventory to collect GSuite Google Groups
+
+```sh
+$ forset_inventory --inventory_groups
+--domain_super_admin_email EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN \
+--groups_service_account_key_file PATH_THE_DOWNLOADED_KEY_OF_THE_GROUPS_SERVICE_ACCOUNT
+```
+
+Where
+* --groups_service_account_key_file: The path to the
+  domain-wide-delegation key created for the groups-only service account
+  ([details](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)).
+
+You can also use the convenience [dev\_inventory.sh script](/scripts) to run forseti\_inventory. Make a copy of dev\_inventory.sh.sample as dev\_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
 
 ```sh
 $ cd path/to/forseti-security
@@ -73,7 +86,7 @@ Data retrieved from the Google Cloud APIs can have nested and repeating children
         ]
     }
     ```
-    
+
 To store this data in CSV or in a normalized storage system requires flattening the data into rows.
 
     ```

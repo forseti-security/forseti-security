@@ -22,7 +22,8 @@ from google.cloud.security.common.data_access.errors import CSVFileError
 
 GROUPS_FIELDNAMES = [
     'group_id',
-    'group_email'
+    'group_email',
+    'raw_group'
 ]
 
 ORG_IAM_POLICIES_FIELDNAMES = [

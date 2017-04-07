@@ -12,28 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Loads data into Inventory.
+"""Loads requested data into inventory.
+
+Usage examples: docs/inventory/README.md
 
 Usage:
-
   $ forseti_inventory \\
-      --inventory_groups \\
-      --service_account_email <email of the service account> \\
-      --service_account_credentials_file \\
-      --domain_super_admin_email \\
+      --inventory_groups <true|false> (optional) \\
+      --groups_service_account_key_file <path to file> (optional)\\
+      --domain_super_admin_email <user@domain.com> (optional) \\
       --organization_id <organization_id> (required) \\
-      --db_host <Cloud SQL database hostname/IP> \\
-      --db_user <Cloud SQL database user> \\
+      --db_host <Cloud SQL database hostname/IP> (required) \\
+      --db_user <Cloud SQL database user> (required) \\
       --db_name <Cloud SQL database name (required)> \\
-      --max_crm_api_calls_per_100_seconds 400 \
-      --max_admin_api_calls_per_day 150000 \
-      --sendgrid_api_key <API key to auth SendGrid email service> \\
-      --email_sender <email address of the email sender> \\
-      --email_recipient <email address of the email recipient>
+      --max_crm_api_calls_per_100_seconds <default: 400> (optional) \\
+      --max_admin_api_calls_per_day <default: 150000> (optional)  \\
+      --sendgrid_api_key <API key to auth SendGrid email service> (optional) \\
+      --email_sender <email address of the email sender> (optional) \\
+      --email_recipient <email address of the email recipient> (optional)
 
 To see all the dependent flags:
-
   $ forseti_inventory --helpfull
+
 """
 
 from datetime import datetime
