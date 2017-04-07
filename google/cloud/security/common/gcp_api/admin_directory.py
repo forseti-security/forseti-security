@@ -46,9 +46,11 @@ class AdminDirectoryClient(_base_client.BaseClient):
     REQUIRED_SCOPES = frozenset([
         'https://www.googleapis.com/auth/admin.directory.group.readonly'
     ])
-    def __init__(self, credentials=None, rate_limiter=None):
+
+    def __init__(self):
         super(AdminDirectoryClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+            credentials=self._build_credentials,
+            api_name=self.API_NAME)
 
         self.rate_limiter = RateLimiter(
             FLAGS.max_admin_api_calls_per_day,
