@@ -117,21 +117,21 @@ def _create_snapshot_cycles_table(dao):
         LOGGER.error('Unable to create snapshot cycles table: %s', e)
         sys.exit()
 
-def _start_snapshot_cycle(cycle_time, cycle_timestamp, dao):
+def _start_snapshot_cycle(dao):
     """Start snapshot cycle.
 
     Args:
-        cycle_time: Datetime object of the cycle, in UTC.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         dao: Data access object.
 
     Returns:
-        None
+        cycle_time: Datetime object of the cycle, in UTC.
+        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
     Raises:
         MySQLError: An error with MySQL has occurred.
     """
-
+    cycle_time = datetime.utcnow()
+    cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
 
     if not _exists_snapshot_cycles_table(dao):
         LOGGER.info('snapshot_cycles is not created yet.')
@@ -147,6 +147,56 @@ def _start_snapshot_cycle(cycle_time, cycle_timestamp, dao):
         sys.exit()
 
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
+    return cycle_time, cycle_timestamp
+
+def _build_pipelines(cycle_timestamp, configs, dao):
+    """Build the pipelines to load data.
+
+    Args:
+        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+        configs: Dictionary of configurations.
+        dao: Data access object.
+
+    Returns:
+        List of pipelines that will be run.
+    """
+
+    crm_api_client = crm.CloudResourceManagerClient()
+    admin_api_client = ad.AdminDirectoryClient()
+
+    return [
+        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_api_client, dao),
+        load_projects_pipeline.LoadProjectsPipeline(
+            cycle_timestamp, configs, crm_api_client, dao),
+        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_api_client, dao),
+        load_groups_pipeline.LoadGroupsPipeline(
+            cycle_timestamp, configs, admin_api_client, dao),
+    ]
+
+def _run_pipelines(pipelines):
+    """Run the pipelines to load data.
+
+    Args:
+        pipelines: List of pipelines to be run.
+
+    Returns:
+        run_statuses: List of boolean whether each pipeline was run
+            successfully or not.
+    """
+    # TODO: Define these status codes programmatically.
+    run_statuses = []
+    for pipeline in pipelines:
+        try:
+            pipeline.run()
+            pipeline.status = 'SUCCESS'
+        except LoadDataPipelineError as e:
+            LOGGER.error('Encountered error loading data.\n%s', e)
+            pipeline.status = 'FAILURE'
+            LOGGER.info('Continuing on.')
+        run_statuses.append(pipeline.status == 'SUCCESS')
+    return run_statuses
 
 def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     """Complete the snapshot cycle.
@@ -216,9 +266,6 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
     except EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
-# TODO: Break up main into helper functions:
-# build_pipelines, run_pipelines, check_pipeline_statuses, and add tests
-# pylint: disable=too-many-locals
 def main(_):
     """Runs the Inventory Loader."""
     try:
@@ -227,46 +274,20 @@ def main(_):
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
 
-    cycle_time = datetime.utcnow()
-    cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
-    _start_snapshot_cycle(cycle_time, cycle_timestamp, dao)
+    cycle_time, cycle_timestamp  = _start_snapshot_cycle(dao)
 
     configs = FLAGS.FlagValuesDict()
 
     try:
-        crm_api_client = crm.CloudResourceManagerClient()
-        admin_api_client = ad.AdminDirectoryClient()
+        pipelines = _build_pipelines(cycle_timestamp, configs, dao)
     except api_errors.ApiExecutionError as e:
-        LOGGER.error('Unable to build api client.\n%s', e)
+        LOGGER.error('Unable to build pipelines.\n%s', e)
         sys.exit()
 
-    pipelines = [
-        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao),
-        load_projects_pipeline.LoadProjectsPipeline(
-            cycle_timestamp, configs, crm_api_client, dao),
-        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao),
-        load_groups_pipeline.LoadGroupsPipeline(
-            cycle_timestamp, configs, admin_api_client, dao),
-    ]
-
-    # TODO: Define these status codes programmatically.
-    succeeded = []
-    for pipeline in pipelines:
-        try:
-            pipeline.run()
-            pipeline.status = 'SUCCESS'
-        except LoadDataPipelineError as e:
-            LOGGER.error(
-                'Encountered error loading data.\n%s', e)
-            pipeline.status = 'FAILURE'
-            LOGGER.info('Continuing on.')
-        succeeded.append(pipeline.status == 'SUCCESS')
-
-    if all(succeeded):
+    run_statuses = _run_pipelines(pipelines)
+    if all(run_statuses):
         snapshot_cycle_status = 'SUCCESS'
-    elif any(succeeded):
+    elif any(run_statuses):
         snapshot_cycle_status = 'PARTIAL_SUCCESS'
     else:
         snapshot_cycle_status = 'FAILURE'
@@ -282,7 +303,6 @@ def main(_):
                     configs.get('sendgrid_api_key'),
                     configs.get('email_sender'),
                     configs.get('email_recipient'))
-# pylint: enable=too-many-locals
 
 
 if __name__ == '__main__':
