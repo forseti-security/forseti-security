@@ -17,7 +17,6 @@
 
 FAKE_CONFIGS = {
     'inventory_groups': True,
-    'groups_service_account_email': 'admin@gserviceaccount.com',
     'groups_service_account_key_file': '/foo/path',
     'domain_super_admin_email': 'admin@foo.com',
     'organization_id': '66666',

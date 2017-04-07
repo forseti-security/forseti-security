@@ -21,16 +21,10 @@ $ forseti_inventory
 ```sh
 $ forset_inventory --inventory_groups
 --domain_super_admin_email EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN \
---groups_service_account_email EMAIL_ADDRESS_OF_THE_GROUPS_SERVICE_ACCOUNT \
 --groups_service_account_key_file PATH_THE_DOWNLOADED_KEY_OF_THE_GROUPS_SERVICE_ACCOUNT
 ```
 
 Where
-
-* --groups_service_account_email: The email address of the
-  previously created groups-only service account
-  ([details](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)).
-
 * --groups_service_account_key_file: The path to the
   domain-wide-delegation key created for the groups-only service account
   ([details](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)).

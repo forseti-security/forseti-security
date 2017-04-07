@@ -37,9 +37,6 @@ REQUIRED_SCOPES = frozenset([
 flags.DEFINE_string('domain_super_admin_email', None,
                     'An email address of a super-admin in the GSuite domain. '
                     'REQUIRED: if inventory_groups is enabled.')
-flags.DEFINE_string('groups_service_account_email', None,
-                    'The email of the service account. '
-                    'REQUIRED: if inventory_groups is enabled.')
 flags.DEFINE_string('groups_service_account_key_file', None,
                     'The key file with credentials for the service account. '
                     'REQUIRED: If inventory_groups is enabled and '
@@ -50,7 +47,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
 
     API_NAME = 'admin'
 
-    def __init__(self, configs, credentials=None, rate_limiter=None):
+    def __init__(self, credentials=None, rate_limiter=None):
         super(AdminDirectoryClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
 
@@ -64,8 +61,6 @@ class AdminDirectoryClient(_base_client.BaseClient):
         else:
             self.credentials = self._build_credentials()
 
-        self.configs = configs
-
     def _build_credentials(self):
         """Build credentials required for accessing the directory API.
 
@@ -77,14 +72,14 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                self.configs.get('groups_service_account_key_file'),
+                FLAGS.groups_service_account_key_file,
                 scopes=REQUIRED_SCOPES)
         except (ValueError, KeyError, TypeError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential: %s', e)
 
         return credentials.create_delegated(
-            self.configs.get('domain_super_admin_email'))
+            FLAGS.domain_super_admin_email)
 
     @staticmethod
     def get_rate_limiter():

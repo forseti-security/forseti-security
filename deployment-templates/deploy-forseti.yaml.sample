@@ -65,5 +65,4 @@ resources:
     # Flags for Inventory to collect GSuite Google Groups information.
     inventory-groups: true
     groups-domain-super-admin-email: EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN
-    groups-service-account-email: EMAIL_ADDRESS_OF_YOUR_GROUPS_SERVICE_ACCOUNT
     groups-service-account-key-file: "/home/ubuntu/forseti-security/service-account-key.json"

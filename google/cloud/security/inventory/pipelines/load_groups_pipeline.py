@@ -46,7 +46,6 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             Boolean
         """
         required_execution_config_flags = [
-            self.configs.get('groups_service_account_email'),
             self.configs.get('domain_super_admin_email'),
             self.configs.get('groups_service_account_key_file')]
 
