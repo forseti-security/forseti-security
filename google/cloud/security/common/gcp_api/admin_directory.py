@@ -42,7 +42,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""
 
     API_NAME = 'admin'
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 86400
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 86400 # pylint: disable=invalid-name
     REQUIRED_SCOPES = frozenset([
         'https://www.googleapis.com/auth/admin.directory.group.readonly'
     ])
@@ -80,8 +80,8 @@ class AdminDirectoryClient(_base_client.BaseClient):
     def get_rate_limiter():
         """Return an appriopriate rate limiter."""
         return RateLimiter(
-            DEFAULT_MAX_QUERIES,
-            DEFAULT_RATE_BUCKET_SECONDS)
+            FLAGS.max_admin_api_calls_per_day,
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
