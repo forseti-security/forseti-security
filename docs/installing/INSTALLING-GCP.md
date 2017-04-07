@@ -136,7 +136,7 @@ $ gcloud deployment-manager deployments create forseti-security \
 ```
 
 ```sh
-$ gcloud compute copy-files <downloaded_key> \
+$ gcloud compute copy-files <path_to_downloaded_key> \
       forseti-security:/home/ubuntu/forseti-security/service-account-key.json \
       --zone <your zone, default is us-central1>
 ```
@@ -174,7 +174,7 @@ your deployment:
 
   ```sh
   $ gcloud compute instances reset <GCE instance name>
-  ```
+  `l``
 
 ## Troubleshooting
 * **Getting errors about invalid resources?**

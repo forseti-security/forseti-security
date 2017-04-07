@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Loads requested data into inventory."""
+"""Loads requested data into inventory.
+
+Execution:
+  Examples can be found in /docs/inventory/README.md
+
+"""
 
 from datetime import datetime
 import sys
