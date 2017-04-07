@@ -14,6 +14,7 @@
 
 """Wrapper for Admin Directory  API client."""
 
+import gflags as flags
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from oauth2client.contrib.gce import AppAssertionCredentials
@@ -24,41 +25,42 @@ from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import metadata_server
 
+FLAGS = flags.FLAGS
 
-DEFAULT_MAX_QUERIES = 150000
-DEFAULT_RATE_BUCKET_SECONDS = 86400
+flags.DEFINE_string('domain_super_admin_email', None,
+                    'An email address of a super-admin in the GSuite domain.')
 
-REQUIRED_SCOPES = frozenset([
-    'https://www.googleapis.com/auth/admin.directory.group.readonly'
-])
+flags.DEFINE_string('service_account_email', None,
+                    'The email of the service account.')
+
+flags.DEFINE_string('service_account_credentials_file', None,
+                    'The file with credentials for the service account.'
+                    'NOTE: This is only required when running locally.')
+
+flags.DEFINE_integer('max_admin_api_calls_per_day', 150000,
+                     'Admin SDK queries per day.')
 
 
 class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""
 
     API_NAME = 'admin'
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 86400  # pylint: disable=invalid-name
 
-    def __init__(self, credentials=None, rate_limiter=None):
+    REQUIRED_SCOPES = frozenset([
+        'https://www.googleapis.com/auth/admin.directory.group.readonly'
+    ])
+
+    def __init__(self):
         super(AdminDirectoryClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
-        if rate_limiter:
-            self.rate_limiter = rate_limiter
-        else:
-            self.rate_limiter = self.get_rate_limiter()
+            credentials=self._build_proper_credentials(),
+            api_name=self.API_NAME)
+        self.rate_limiter = RateLimiter(
+            FLAGS.max_admin_api_calls_per_day,
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    @staticmethod
-    def get_rate_limiter():
-        """Return an appriopriate rate limiter."""
-        return RateLimiter(
-            DEFAULT_MAX_QUERIES,
-            DEFAULT_RATE_BUCKET_SECONDS)
-
-    @staticmethod
-    def build_proper_credentials(configs):
+    def _build_proper_credentials(self):
         """Build proper credentials required for accessing the directory API.
-
-        Args:
-            configs: Dictionary of configurations.
 
         Returns:
             Credentials as built by oauth2client.
@@ -68,18 +70,18 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
 
         if metadata_server.can_reach_metadata_server():
-            return AppAssertionCredentials(REQUIRED_SCOPES)
+            return AppAssertionCredentials(self.REQUIRED_SCOPES)
 
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                configs.get('service_account_credentials_file'),
-                scopes=REQUIRED_SCOPES)
+                FLAGS.service_account_credentials_file,
+                scopes=self.REQUIRED_SCOPES)
         except (ValueError, KeyError, TypeError) as e:
             raise api_errors.ApiExecutionError(
-                'Error building admin api credential', e)
+                'Error building admin api credential:\n%s', e)
 
         return credentials.create_delegated(
-            configs.get('domain_super_admin_email'))
+            FLAGS.domain_super_admin_email)
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
