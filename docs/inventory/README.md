@@ -29,13 +29,11 @@ Where
 
 * --groups_service_account_email: The email address of the
   previously created groups-only service account
-  ([details](/docs/common/SERVICE-ACCOUNT.md#creat
-  e-a-service-account-for-inventorying-of-gsuite-google-groups)).
+  ([details](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)).
 
 * --groups_service_account_key_file: The path to the
   domain-wide-delegation key created for the groups-only service account
-  ([details](/docs/common/SERVICE-ACC
-  OUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)).
+  ([details](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)).
 
 You can also use the convenience [dev\_inventory.sh script](/scripts) to run forseti\_inventory. Make a copy of dev\_inventory.sh.sample as dev\_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
 
