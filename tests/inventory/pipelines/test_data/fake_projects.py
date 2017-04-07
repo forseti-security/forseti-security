@@ -37,7 +37,7 @@ FAKE_PROJECTS = [
         },
         'projectId': 'project2',
         'projectNumber': '94226340476',
-        'lifecycleState': 'DELETE_REQUESTED',
+        'lifecycleState': 'ACTIVE',
         'createTime': '2016-11-13T05:32:10.930Z'
       },
       {
