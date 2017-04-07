@@ -274,7 +274,7 @@ def main(_):
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
 
-    cycle_time, cycle_timestamp  = _start_snapshot_cycle(dao)
+    cycle_time, cycle_timestamp = _start_snapshot_cycle(dao)
 
     configs = FLAGS.FlagValuesDict()
 
