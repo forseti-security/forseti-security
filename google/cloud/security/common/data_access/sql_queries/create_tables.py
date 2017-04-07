@@ -79,6 +79,7 @@ CREATE_GROUPS_TABLE = """
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `group_id` varchar(255) DEFAULT NULL,
         `group_email` varchar(255) DEFAULT NULL,
+        `raw_group` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
