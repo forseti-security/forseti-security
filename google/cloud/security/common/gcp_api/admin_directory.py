@@ -76,7 +76,6 @@ class AdminDirectoryClient(_base_client.BaseClient):
         return credentials.create_delegated(
             FLAGS.domain_super_admin_email)
 
-    @staticmethod
     def get_rate_limiter(self):
         """Return an appriopriate rate limiter."""
         return RateLimiter(
