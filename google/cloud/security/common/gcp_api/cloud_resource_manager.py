@@ -36,7 +36,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     """Resource Manager Client."""
 
     API_NAME = 'cloudresourcemanager'
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  #pylint: disable=invalid-name
 
     def __init__(self):
         super(CloudResourceManagerClient, self).__init__(
