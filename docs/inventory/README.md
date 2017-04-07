@@ -16,7 +16,13 @@ any directory to invoke the console script:
 $ forseti_inventory
 ```
 
-You can also use the convenience [dev_inventory.sh script](/scripts) to run forseti_inventory. Make a copy of dev_inventory.sh.sample as dev_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
+### Executing inventory to collect GSuite Google Groups
+
+```sh
+$ forset_inventory --inventory_groups --domain_super_admin_email <email of a gsuite super-admin> --groups_service_account_email <[email of the service account](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups) created just for GSuite Google Groups> --groups_service_account_key_file <[path to the key downloaded from]((/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)>
+```
+
+You can also use the convenience [dev\_inventory.sh script](/scripts) to run forseti\_inventory. Make a copy of dev\_inventory.sh.sample as dev\_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
 
 ```sh
 $ cd path/to/forseti-security
