@@ -14,6 +14,8 @@
 
 """Wrapper for Admin Directory  API client."""
 
+import glfags as flags
+
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from oauth2client.service_account import ServiceAccountCredentials
@@ -23,6 +25,8 @@ from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
+FLAGS = flags.FLAGS
+
 DEFAULT_MAX_QUERIES = 150000
 DEFAULT_RATE_BUCKET_SECONDS = 86400
 
@@ -30,6 +34,16 @@ REQUIRED_SCOPES = frozenset([
     'https://www.googleapis.com/auth/admin.directory.group.readonly'
 ])
 
+flags.DEFINE_string('domain_super_admin_email', None,
+                    'An email address of a super-admin in the GSuite domain. '
+                    'REQUIRED: if inventory_groups is enabled.')
+flags.DEFINE_string('groups_service_account_email', None,
+                    'The email of the service account. '
+                    'REQUIRED: if inventory_groups is enabled.')
+flags.DEFINE_string('groups_service_account_key_file', None,
+                    'The key file with credentials for the service account. '
+                    'REQUIRED: If inventory_groups is enabled and '
+                    'runnning locally.')
 
 class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""

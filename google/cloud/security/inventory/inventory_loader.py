@@ -18,7 +18,6 @@ from datetime import datetime
 import sys
 
 import gflags as flags
-from ratelimiter import RateLimiter
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
@@ -29,6 +28,7 @@ from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
@@ -43,19 +43,7 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_bool('inventory_groups', False,
                   'Whether to inventory GSuite Groups.')
-flags.DEFINE_string('domain_super_admin_email', None,
-                    'An email address of a super-admin in the GSuite domain. '
-                    'REQUIRED: if inventory_groups is enabled.')
-flags.DEFINE_string('groups_service_account_email', None,
-                    'The email of the service account. '
-                    'REQUIRED: if inventory_groups is enabled.')
-flags.DEFINE_string('groups_service_account_key_file', None,
-                    'The key file with credentials for the service account. '
-                    'REQUIRED: If inventory_groups is enabled and '
-                    'runnning locally.')
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
-flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager queries per 100 seconds.')
 
 flags.mark_flag_as_required('organization_id')
 
@@ -223,23 +211,12 @@ def main(_):
 
     configs = FLAGS.FlagValuesDict()
 
-    # It's better to build the ratelimiters once for each API
-    # and reuse them across multiple instances of the Client.
-    # Otherwise, there is a gap where the ratelimiter from one pipeline
-    # is not used for the next pipeline using the same API. This could
-    # lead to unnecessary quota errors.
-    #
-    # TODO: Move the building of the rate limiter and credential
-    # to the api client:
-    # rate limit getting should be from the module
-    # rate limit setting should be passed into the creation of the client
-    # credentials should be built inside the client and never exposed here
-    # Make rate limiter configurable.
-    max_crm_calls = configs.get('max_crm_api_calls_per_100_seconds', 400)
-    crm_rate_limiter = RateLimiter(max_crm_calls, 100)
-    crm_api_client = crm.CloudResourceManagerClient(
-        rate_limiter=crm_rate_limiter)
-    admin_api_client = ad.AdminDirectoryClient(configs)
+    try:
+        crm_api_client = crm.CloudResourceManagerClient()
+        admin_api_client = ad.AdminDirectoryClient()
+    except api_errors.ApiExecutionError as e:
+        LOGGER.error('Unable to build api client.\n%s', e)
+        sys.exit()
 
     pipelines = [
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
