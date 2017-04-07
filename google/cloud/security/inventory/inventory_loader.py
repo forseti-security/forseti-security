@@ -40,7 +40,6 @@ from datetime import datetime
 import sys
 
 import gflags as flags
-from ratelimiter import RateLimiter
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
