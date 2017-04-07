@@ -36,14 +36,13 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     """Resource Manager Client."""
 
     API_NAME = 'cloudresourcemanager'
-    DEFAULT_QUOTA = 100
 
     def __init__(self):
         super(CloudResourceManagerClient, self).__init__(
             api_name=self.API_NAME)
         self.rate_limiter = RateLimiter(
             FLAGS.max_crm_api_calls_per_100_seconds,
-            self.DEFAULT_QUOTA)
+            100)
 
     def get_project(self, project_id):
         """Get all the projects from organization.
