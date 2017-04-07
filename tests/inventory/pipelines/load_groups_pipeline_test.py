@@ -55,7 +55,9 @@ class LoadGroupsPipelineTest(basetest.TestCase):
 
     def test_cannot_inventory_google_groups(self):
         """Test inventory groups cannot be configured per config values."""
-        self.pipeline.required_execution_config_flags = [None, 'bbbbb', 'ccccc']
+        self.pipeline.configs['groups_service_account_email'] = None
+        self.pipeline.configs['inventory_groups'] = None
+        self.pipeline.configs['groups_service_account_key_file'] = None
         self.assertFalse(self.pipeline._can_inventory_google_groups())
 
     def test_can_transform_groups(self):
