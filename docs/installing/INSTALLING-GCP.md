@@ -174,7 +174,7 @@ your deployment:
 
   ```sh
   $ gcloud compute instances reset <GCE instance name>
-  `l``
+  ```
 
 ## Troubleshooting
 * **Getting errors about invalid resources?**

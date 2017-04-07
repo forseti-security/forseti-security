@@ -49,7 +49,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
 
     def __init__(self):
         super(AdminDirectoryClient, self).__init__(
-            credentials=self._build_credentials,
+            credentials=self._build_credentials(),
             api_name=self.API_NAME)
 
         self.rate_limiter = RateLimiter(
