@@ -21,13 +21,15 @@ import httplib
 import socket
 
 from google.cloud.security.common.util import errors
-
+from google.cloud.security.common.util import log_util
 
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
 METADATA_SERVER_CONN_TIMEOUT = 2
 REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
 HTTP_SUCCESS = httplib.OK
 HTTP_GET = 'GET'
+
+LOGGER = log_util.get_logger(__name__)
 
 
 def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
@@ -62,6 +64,9 @@ def _issue_http_request(path, method, headers):
     finally:
         http_client.close()
 
+# TODO: Should use memoize or similar so that after the first check
+# the cached result is always returned, regardless of how often it is
+# called.
 def can_reach_metadata_server():
     """Determine if we can reach the metadata server.
 
@@ -86,12 +91,17 @@ def get_value_for_attribute(attribute):
         attribute: a String representing the key.
 
     Returns:
-        The value of the request.
+        The value of the requested key, if key isn't present then None.
     """
     path = '/computeMetadata/v1/instance/attributes/%s' % attribute
     try:
         http_response = _issue_http_request(
             path, HTTP_GET, REQUIRED_METADATA_HEADER)
-        return http_response.read()
-    except errors.MetadataServerHttpError:
+        read_response = http_response.read()
+
+        return read_response
+    except (TypeError, ValueError,
+            errors.MetadataServerHttpError) as e:
+        LOGGER.error('Unable to read value for attribute key %s '
+                     'from metadata server: %s', attribute, e)
         return None
