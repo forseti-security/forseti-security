@@ -21,7 +21,7 @@ $ forseti_inventory
 ```sh
 $ forset_inventory --inventory_groups
 --domain_super_admin_email EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN \
---groups_service_account_email [EMAIL_ADDRESS_OF_THE_GROUPS_SERVICE_ACCOUNT](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups" \
+--groups_service_account_email [EMAIL_ADDRESS_OF_THE_GROUPS_SERVICE_ACCOUNT](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups) \
 --groups_service_account_key_file [PATH_THE_DOWNLOADED_KEY_OF_THE_GROUPS_SERVICE_ACCOUNT](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)
 ```
 
