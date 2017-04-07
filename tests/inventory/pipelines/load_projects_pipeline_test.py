@@ -14,10 +14,9 @@
 
 """Tests the load_projects_pipeline."""
 
-import json
+import mock
 
 from google.apputils import basetest
-import mock
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import dao
@@ -54,9 +53,6 @@ class LoadProjectsPipelineTest(basetest.TestCase):
 
         projects = self.pipeline._transform(fake_projects.FAKE_PROJECTS)
         for (i, project) in enumerate(projects):
-            # Normalize to python representation.
-            project['raw_project'] = json.loads(project['raw_project'])
-            project = json.loads(json.dumps(project))
             self.assertEquals(
                 fake_projects.EXPECTED_LOADABLE_PROJECTS[i], project)
 
