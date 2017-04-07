@@ -14,9 +14,8 @@
 
 """Tests the load_projects_pipeline."""
 
-import mock
-
 from google.apputils import basetest
+import mock
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import dao
