@@ -77,7 +77,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             FLAGS.domain_super_admin_email)
 
     @staticmethod
-    def get_rate_limiter():
+    def get_rate_limiter(self):
         """Return an appriopriate rate limiter."""
         return RateLimiter(
             FLAGS.max_admin_api_calls_per_day,
