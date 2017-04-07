@@ -20,9 +20,9 @@ import yaml
 
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util import errors as util_errors
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 
-LOGGER = LogUtil.setup_logging(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 
 def read_and_parse_file(file_path):

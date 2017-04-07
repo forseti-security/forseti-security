@@ -23,9 +23,12 @@ from dateutil import parser as dateutil_parser
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
+from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class LoadProjectsPipeline(base_pipeline.BasePipeline):
@@ -88,7 +91,7 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
                 formatted_project_create_time = (
                     parsed_time.strftime(self.MYSQL_DATETIME_FORMAT))
             except (TypeError, ValueError) as e:
-                self.logger.error(
+                LOGGER.error(
                     'Unable to parse create_time from project: %s\n%s',
                     project.get('createTime', ''), e)
                 formatted_project_create_time = '0000-00-00 00:00:00'

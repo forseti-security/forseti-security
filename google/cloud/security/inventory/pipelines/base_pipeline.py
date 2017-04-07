@@ -19,9 +19,11 @@ import abc
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.util.log_util import LogUtil
+from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 # pylint: enable=line-too-long
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class BasePipeline(object):
@@ -43,7 +45,6 @@ class BasePipeline(object):
         Returns:
             None
         """
-        self.logger = LogUtil.setup_logging(__name__)
         self.cycle_timestamp = cycle_timestamp
         self.configs = configs
         self.api_client = api_client
@@ -91,5 +92,5 @@ class BasePipeline(object):
                 self.RESOURCE_NAME,
                 self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
-            self.logger.error('Unable to retrieve record count for %s_%s:\n%s',
-                              self.RESOURCE_NAME, self.cycle_timestamp, e)
+            LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
+                         self.RESOURCE_NAME, self.cycle_timestamp, e)
