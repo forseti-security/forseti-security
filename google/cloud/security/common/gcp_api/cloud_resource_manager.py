@@ -36,14 +36,14 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     """Resource Manager Client."""
 
     API_NAME = 'cloudresourcemanager'
-    DEFAULT_API_RATE_PER_SECONDS = 100
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100
 
-    def __init__(self, credentials=None):
+    def __init__(self):
         super(CloudResourceManagerClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+            api_name=self.API_NAME)
         self.rate_limiter = RateLimiter(
             FLAGS.max_crm_api_calls_per_100_seconds,
-            self.DEFAULT_API_RATE_PER_SECONDS)
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_project(self, project_id):
         """Get all the projects from organization.
@@ -183,7 +183,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """
         orgs_stub = self.service.organizations()
         resource_id = 'organizations/%s' % org_id
-
         try:
             with self.rate_limiter:
                 request = orgs_stub.getIamPolicy(
