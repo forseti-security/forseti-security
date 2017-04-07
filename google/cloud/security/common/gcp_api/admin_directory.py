@@ -14,7 +14,7 @@
 
 """Wrapper for Admin Directory  API client."""
 
-import glfags as flags
+import gflags as flags
 
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
