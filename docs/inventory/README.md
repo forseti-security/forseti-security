@@ -20,9 +20,9 @@ $ forseti_inventory
 
 ```sh
 $ forset_inventory --inventory_groups
---domain_super_admin_email"EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN" \
---groups_service_account_email "[EMAIL_ADDRESS_OF_THE_GROUPS_SERVICE_ACCOUNT](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)" \
---groups_service_account_key_file "[PATH_THE_DOWNLOADED_KEY_OF_THE_GROUPS_SERVICE_ACCOUNT"](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)
+--domain_super_admin_email EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN \
+--groups_service_account_email [EMAIL_ADDRESS_OF_THE_GROUPS_SERVICE_ACCOUNT](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups" \
+--groups_service_account_key_file [PATH_THE_DOWNLOADED_KEY_OF_THE_GROUPS_SERVICE_ACCOUNT](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)
 ```
 
 You can also use the convenience [dev\_inventory.sh script](/scripts) to run forseti\_inventory. Make a copy of dev\_inventory.sh.sample as dev\_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
