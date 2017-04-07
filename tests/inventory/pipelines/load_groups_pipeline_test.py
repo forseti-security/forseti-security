@@ -51,7 +51,6 @@ class LoadGroupsPipelineTest(basetest.TestCase):
 
     def test_can_inventory_google_groups(self):
         """Test inventory groups can be configured per config values."""
-        self.pipeline.required_execution_config_flags = ['aaaaa', 'bbbbb', 'ccccc']
         self.assertTrue(self.pipeline._can_inventory_google_groups())
 
     def test_cannot_inventory_google_groups(self):
