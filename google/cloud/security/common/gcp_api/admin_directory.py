@@ -45,6 +45,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""
 
     API_NAME = 'admin'
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 86400  # pylint: enable=invalid-name
 
     REQUIRED_SCOPES = frozenset([
         'https://www.googleapis.com/auth/admin.directory.group.readonly'
@@ -56,7 +57,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             api_name=self.API_NAME)
         self.rate_limiter = RateLimiter(
             FLAGS.max_admin_api_calls_per_day,
-            86400)
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def _build_proper_credentials(self):
         """Build proper credentials required for accessing the directory API.
