@@ -88,6 +88,25 @@ There are other templates that you can modify:
    * By default, the startup script will setup the
      environment to install the Forseti Security and run the tools every hour.
 
+### Enabling GSuite Google Groups collection
+To enable the collection of GSuite Google Groups collection for processing by
+`scanner` and `enforcer` first make sure you've completed the prerequisite steps
+of [creating a service
+account](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups) just for this functionality.
+
+Once completed you can update the following variables in your version of the
+`deploy-forseti.yaml`
+
+* **inventory-groups**: Set this to `true` to enable collection.
+* EMAIL\_ADDRESS\_OF\_A\_GSUITE\_SUPER\_ADMIN: Use of the Admin API requires
+  delegation (impersonation). Enter an email address of a super-admin in the
+  GSuite account.
+* EMAIL\_ADDRESS\_OF\_YOUR\_GROUPS\_SERVICE\_ACCOUNT: This is the email address
+  of the service account you created just for inventorying GSuite Google Groups.
+* **groups-service-account-key-file**: This file tells the `inventory` tool
+  where to look for the key file. This shouldn't be changed unless you have also
+  changed the flag in `deployment-templates/py/forseti-instance.py`.
+
 ## Customize rules.yaml
 By default, the DM template has a rules.yaml that will allow service accounts on
 the organization and its children (e.g. projects) IAM policies. For more
@@ -104,9 +123,22 @@ with the appropriate path so the scanner knows where to find it).
 ## Deploy Forseti Security
 After you configure the deployment template variables you can create a new deployment.
 
+### Deploy without GSuite Google Groups collection enabled
 ```sh
 $ gcloud deployment-manager deployments create forseti-security \
   --config path/to/deploy-forseti.yaml
+```
+
+### Deploy with GSuite Google Groups collection enabled
+```sh
+$ gcloud deployment-manager deployments create forseti-security \
+  --config path/to/deploy-forseti.yaml
+```
+
+```sh
+$ gcloud compute copy-files <downloaded_key> \
+      forseti-security:/home/ubuntu/forseti-security/service-account-key.json \
+      --zone <your zone, default is us-central1>
 ```
 
 You can view the details of your deployment in the

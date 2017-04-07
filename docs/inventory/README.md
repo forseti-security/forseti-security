@@ -4,7 +4,7 @@ This is the Inventory component of Forseti Security tool.
   * [Executing inventory](#executing-inventory)
   * [Developing on inventory](#developing-on-inventory)
     * [Collecting and storing new data with inventory](#collecting-and-storing-new-data-with-inventory)
-  
+
 ## Prerequisites
 See the [PREREQUISITES](/docs/prerequisites/README.md) guide.
 
@@ -73,7 +73,7 @@ Data retrieved from the Google Cloud APIs can have nested and repeating children
         ]
     }
     ```
-    
+
 To store this data in CSV or in a normalized storage system requires flattening the data into rows.
 
     ```
