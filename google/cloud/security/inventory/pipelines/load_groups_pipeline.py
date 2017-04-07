@@ -53,22 +53,31 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
         return all(required_execution_config_flags)
 
-    def _transform(self, groups_map):
+    def _transform(self, groups_members_map):
         """Yield an iterator of loadable groups.
+
         Args:
-            groups_map: An iterable of Admin SDK Directory API Groups.
-            https://google-api-client-libraries.appspot.com/documentation/admin/directory_v1/python/latest/admin_directory_v1.groups.html#list
+            groups_members_map: A tuple of (group_object, group_object_members)
 
         Yields:
             An iterable of loadable groups as a per-group dictionary.
         """
-        for group in groups_map:
-            yield {'group_id': group.get('id'),
-                   'group_email': group.get('email'),
-                   'raw_group': json.dumps(group)}
+        for (group, members) in groups_members_map:
+            print group
+            for member in members:
+                print member
+                yield {'group_id': group['id'],
+                       'group_email': group['email'],
+                       'group_kind': group['kind'],
+                       'member_kind': member['kind'],
+                       'member_role': member['role'],
+                       'member_type': member['type'],
+                       'member_status': member['status'],
+                       'member_id': member['email'],
+                       'raw_group': json.dumps((group, members))}
 
     def _retrieve(self):
-        """Retrieve the groups from GCP.
+        """Retrieve the groups from GSuite.
 
         Returns:
             A list of group objects returned from the API.
@@ -76,10 +85,15 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         Raises:
             LoadDataPipelineException: An error with loading data has occurred.
         """
+        results = []
         try:
-            return self.api_client.get_groups()
+            groups = self.api_client.get_groups()
+            for group in groups:
+                results.append((group, self.api_client.get_members(group)))
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
+
+        return results
 
     def run(self):
         """Runs the load GSuite account groups pipeline."""

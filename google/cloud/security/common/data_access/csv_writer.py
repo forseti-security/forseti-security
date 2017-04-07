@@ -23,6 +23,12 @@ from google.cloud.security.common.data_access.errors import CSVFileError
 GROUPS_FIELDNAMES = [
     'group_id',
     'group_email',
+    'group_kind',
+    'member_kind',
+    'member_role',
+    'member_type',
+    'member_status',
+    'member_id',
     'raw_group'
 ]
 

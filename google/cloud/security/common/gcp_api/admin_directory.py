@@ -82,6 +82,30 @@ class AdminDirectoryClient(_base_client.BaseClient):
             FLAGS.max_admin_api_calls_per_day,
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
+    def get_members(self, group):
+        """Get all the members for specified groups.
+
+        Args:
+            groups: A group key, e.g. it's email address.
+
+        Returns:
+            tbd
+        """
+        members_stub = self.service.members()
+        request = members_stub.list(groupKey=group.get('email'))
+        results_by_member = []
+
+        while request is not None:
+            try:
+                with self.rate_limiter:
+                    response = self._execute(request)
+                    results_by_member.extend(response.get('members', []))
+                    request = members_stub.list_next(request, response)
+            except (HttpError, HttpLib2Error) as e:
+                raise api_errors.ApiExecutionError(members_stub, e)
+
+        return results_by_member
+
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
 
@@ -102,16 +126,16 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)
-        results = []
+        results_by_group = []
 
         # TODO: Investigate yielding results to handle large group lists.
         while request is not None:
             try:
                 with self.rate_limiter:
                     response = self._execute(request)
-                    results.extend(response.get('groups', []))
+                    results_by_group.extend(response.get('groups', []))
                     request = groups_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(groups_stub, e)
 
-        return results
+        return results_by_group
