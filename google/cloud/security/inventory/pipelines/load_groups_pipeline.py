@@ -14,6 +14,8 @@
 
 """Pipeline to load GSuite Account Groups into Inventory."""
 
+import json
+
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
@@ -62,10 +64,11 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         """
         for group in groups_map:
             yield {'group_id': group.get('id'),
-                   'group_email': group.get('email')}
+                   'group_email': group.get('email'),
+                   'raw_group': json.dumps(group)}
 
     def _retrieve(self):
-        """Retrieve the org IAM policies from GCP.
+        """Retrieve the groups from GCP.
 
         Returns:
             A list of group objects returned from the API.
