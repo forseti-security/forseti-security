@@ -99,4 +99,3 @@ CREATE_GROUP_MEMBERS_TABLE = """
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
-

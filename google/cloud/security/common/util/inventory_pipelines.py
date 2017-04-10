@@ -14,14 +14,17 @@
 
 """Common utilities to assist in inventory pipelines."""
 
-def can_inventory_groups(configs):
-    """A simple function that validates required inputs to inventory groups.
+class InventoryUtil(object):
+    """Utility functiosn for Inventory."""
 
-    Returns:
-        Boolean
-    """
-    required_execution_config_flags = [
-        configs.get('domain_super_admin_email'),
-        configs.get('groups_service_account_key_file')]
+    def can_inventory_groups(configs):
+        """A simple function that validates required inputs to inventory groups.
 
-    return all(required_execution_config_flags)
+        Returns:
+            Boolean
+        """
+        required_execution_config_flags = [
+            configs.get('domain_super_admin_email'),
+            configs.get('groups_service_account_key_file')]
+
+        return all(required_execution_config_flags)

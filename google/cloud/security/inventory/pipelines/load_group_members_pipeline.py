@@ -39,7 +39,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         Returns:
             None
         """
-        super(LoadGroupsPipeline, self).__init__(
+        super(LoadGroupMembersPipeline, self).__init__(
             cycle_timestamp, configs, admin_client, dao)
 
     def _can_inventory_google_groups(self):
@@ -54,14 +54,15 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
 
         return all(required_execution_config_flags)
 
-    def _fetch_groups_from_dao():
+    def _fetch_groups_from_dao(self):
         """Fetch the latest group ids previously stored in Cloud SQL.
 
         Returns:
              A list of group ids.
 
         Raises:
-            inventory_errors.LoadDataPipelineException: An error with loading data has occurred.
+            inventory_errors.LoadDataPipelineException: An error with loading
+            data has occurred.
         """
         try:
             group_ids = self.dao.select_project_numbers(
@@ -79,14 +80,14 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             An iterable of loadable groups as a per-group dictionary.
         """
         for (group, group_member) in groups_members_map:
-	    for member in group_member:
-		yield {'group_id': group,
-		       'member_kind': member['kind'],
-		       'member_role': member['role'],
-		       'member_type': member['type'],
-		       'member_status': member['status'],
-		       'member_id': member['email'],
-		       'raw_member': json.dumps(member)}
+            for member in group_member:
+                yield {'group_id': group,
+                       'member_kind': member['kind'],
+                       'member_role': member['role'],
+                       'member_type': member['type'],
+                       'member_status': member['status'],
+                       'member_id': member['email'],
+                       'raw_member': json.dumps(member)}
 
     def _retreive(self, group_ids):
         """Retrieve the membership for a given GSuite group.
@@ -112,7 +113,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                 'Unable to inventory groups with specified arguments:\n%s',
                 self.configs)
 
-	group_ids = self._fetch_groups_from_dao()
+        group_ids = self._fetch_groups_from_dao()
 
         groups_members_map = self._retrieve(group_ids)
 
