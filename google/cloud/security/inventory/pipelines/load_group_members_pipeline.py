@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load GSuite group members into Inventory."""
+"""Pipeline to load GSuite Group members into Inventory."""
 
 import json
 
@@ -91,12 +91,14 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                        'member_id': member['email'],
                        'raw_member': json.dumps(member)}
 
-    def _retreive(self, group_ids):
+    def _retreive(self):
         """Retrieve the membership for a given GSuite group.
 
         Returns:
             A list of tuples (group_id, group_members_data) from the Admin SDK.
         """
+        group_ids = self._fetch_groups_from_dao()
+
         group_members_map = []
         for group_id in group_ids:
             try:
@@ -115,9 +117,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                 'Unable to inventory groups with specified arguments:\n%s',
                 self.configs)
 
-        group_ids = self._fetch_groups_from_dao()
-
-        groups_members_map = self._retrieve(group_ids)
+        groups_members_map = self._retrieve()
 
         loadable_groups = self._transform(groups_members_map)
 

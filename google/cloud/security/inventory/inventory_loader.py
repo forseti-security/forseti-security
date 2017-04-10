@@ -176,7 +176,7 @@ def _build_pipelines(cycle_timestamp, configs, dao):
             cycle_timestamp, configs, crm_api_client, dao),
         load_groups_pipeline.LoadGroupsPipeline(
             cycle_timestamp, configs, admin_api_client, dao),
-        load_group_members_pipeline.LoadGroupsPipeline(
+        load_group_members_pipeline.LoadGroupMembersPipeline(
             cycle_timestamp, configs, admin_api_client, dao),
     ]
 
