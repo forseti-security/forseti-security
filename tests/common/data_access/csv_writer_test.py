@@ -34,6 +34,16 @@ class CsvWriterTest(basetest.TestCase):
             csv_filename = csv_file.name
 
         mock_os.remove.assert_called_once_with(csv_filename)
+
+        # Test that the csv file is still removed on error."""
+        mock_dict_writer.return_value = IOError
+
+        with csv_writer.write_csv('foo', mock.MagicMock()) as csv_file:
+            csv_filename = csv_file.name
+
+        self.assertEquals(2, mock_os.remove.call_count)
+        called_args, called_kwargs = mock_os.remove.call_args_list[1]
+        self.assertEquals(csv_filename, called_args[0])
         
         
 if __name__ == '__main__':
