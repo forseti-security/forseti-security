@@ -33,6 +33,7 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 
 CREATE_TABLE_MAP = {
     'groups': create_tables.CREATE_GROUPS_TABLE,
+    'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
@@ -115,6 +116,29 @@ class Dao(_DbConnector):
             cursor = self.conn.cursor()
             cursor.execute(record_count_sql)
             return cursor.fetchone()[0]
+        except (DataError, IntegrityError, InternalError, NotSupportedError,
+                OperationalError, ProgrammingError) as e:
+            raise MySQLError(resource_name, e)
+
+    def select_group_ids(self, resource_name, timestamp):
+        """Select the group ids from a snapshot table.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+             A list of group ids.
+
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
+        try:
+            group_ids_sql = select_data.GROUP_IDS.format(timestamp)
+            cursor = self.conn.cursor(cursorclass=cursors.DictCursor)
+            cursor.execute(group_ids_sql)
+            rows = cursor.fetchall()
+            return [row['group_ids'] for row in rows]
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)

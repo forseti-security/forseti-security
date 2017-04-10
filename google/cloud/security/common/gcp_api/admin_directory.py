@@ -78,11 +78,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
 
     def get_rate_limiter(self):
         """Return an appriopriate rate limiter."""
-        return RateLimiter(
-            FLAGS.max_admin_api_calls_per_day,
+        return RateLimiter( FLAGS.max_admin_api_calls_per_day,
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def get_members(self, group):
+    def get_group_members(self, group):
         """Get all the members for specified groups.
 
         Args:
