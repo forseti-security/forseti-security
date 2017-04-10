@@ -80,20 +80,20 @@ class Dao(_DbConnector):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        try:
-            snapshot_table_name = self._create_snapshot_table(
-                resource_name, timestamp)
-            csv_filename = csv_writer.write_csv(resource_name, data)
-            load_data_sql = load_data_sql_provider.provide_load_data_sql(
-                resource_name, csv_filename, snapshot_table_name)
-            cursor = self.conn.cursor()
-            cursor.execute(load_data_sql)
-            self.conn.commit()
-            # TODO: Return the snapshot table name so that it can be tracked
-            # in the main snapshot table.
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            raise MySQLError(resource_name, e)
+        with csv_writer.write_csv(resource_name, data) as csv_file:
+            try:
+                snapshot_table_name = self._create_snapshot_table(
+                    resource_name, timestamp)
+                load_data_sql = load_data_sql_provider.provide_load_data_sql(
+                    resource_name, csv_file.name, snapshot_table_name)
+                cursor = self.conn.cursor()
+                cursor.execute(load_data_sql)
+                self.conn.commit()
+                # TODO: Return the snapshot table name so that it can be tracked
+                # in the main snapshot table.
+            except (DataError, IntegrityError, InternalError, NotSupportedError,
+                    OperationalError, ProgrammingError) as e:
+                raise MySQLError(resource_name, e)
 
     def select_record_count(self, resource_name, timestamp):
         """Select the record count from a snapshot table.
