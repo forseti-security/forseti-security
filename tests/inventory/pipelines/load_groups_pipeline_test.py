@@ -50,7 +50,7 @@ class LoadGroupsPipelineTest(basetest.TestCase):
                 self.mock_admin_client,
                 self.mock_dao))
 
-    @mock.patch.object(inventory_util, 'can_inventory_groups')
+    @mock.patch.object(util, 'can_inventory_groups')
     def test_cannot_inventory_groups(self, mock_util):
         """Test that the proper flags do not exist to inventory groups."""
         mock_util.return_value = False
