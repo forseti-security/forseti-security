@@ -91,7 +91,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                        'member_id': member['email'],
                        'raw_member': json.dumps(member)}
 
-    def _retreive(self):
+    def _retrieve(self):
         """Retrieve the membership for a given GSuite group.
 
         Returns:
