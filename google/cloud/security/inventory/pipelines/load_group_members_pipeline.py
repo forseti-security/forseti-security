@@ -43,18 +43,6 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         super(LoadGroupMembersPipeline, self).__init__(
             cycle_timestamp, configs, admin_client, dao)
 
-    def _can_inventory_google_groups(self):
-        """A simple function that validates required inputs to inventory groups.
-
-        Returns:
-            Boolean
-        """
-        required_execution_config_flags = [
-            self.configs.get('domain_super_admin_email'),
-            self.configs.get('groups_service_account_key_file')]
-
-        return all(required_execution_config_flags)
-
     def _fetch_groups_from_dao(self):
         """Fetch the latest group ids previously stored in Cloud SQL.
 
@@ -119,8 +107,8 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
 
         groups_members_map = self._retrieve()
 
-        loadable_groups = self._transform(groups_members_map)
+        loadable_group_members = self._transform(groups_members_map)
 
-        self._load(self.RESOURCE_NAME, loadable_groups)
+        self._load(self.RESOURCE_NAME, loadable_group_members)
 
         self._get_loaded_count()

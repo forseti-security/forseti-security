@@ -88,7 +88,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
             groups: A group key, e.g. it's email address.
 
         Returns:
-            tbd
+            A list of member objects from the API.
+
+        Raises:
+            api_errors.ApiExecutionError
         """
         members_stub = self.service.members()
         request = members_stub.list(groupKey=group.get('email'))
