@@ -17,7 +17,6 @@
 from google.apputils import basetest
 import mock
 
-from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import csv_writer
 
 
@@ -27,8 +26,8 @@ class CsvWriterTest(basetest.TestCase):
     @mock.patch.object(csv_writer, 'os')
     @mock.patch.object(csv_writer.csv, 'DictWriter')
     @mock.patch.object(csv_writer.tempfile, 'NamedTemporaryFile')
-    def test_csv_files_are_removed(self, mock_tempfile,
-                                   mock_dict_writer, mock_os):
+    def test_csv_file_is_removed(self, mock_tempfile,
+                                 mock_dict_writer, mock_os):
         """Test that the csv file is removed."""
         csv_writer.CSV_FIELDNAME_MAP = mock.MagicMock()
         with csv_writer.write_csv('foo', mock.MagicMock()) as csv_file:
