@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load GSuite group members into Inventor."""
+"""Pipeline to load GSuite group members into Inventory."""
 
 import json
 
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory import util
 from google.cloud.security.inventory.pipelines import base_pipeline
-from google.cloud.security.common.util import inventory_pipelines
 
 
 class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
@@ -65,10 +66,11 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             data has occurred.
         """
         try:
-            group_ids = self.dao.select_project_numbers(
+            return self.dao.select_project_numbers(
                 self.RESOURCE_NAME, self.cycle_timestamp)
-        except data_access_errors.MySQLError as e:
+        except dao_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
+
 
     def _transform(self, groups_members_map):
         """Yield an iterator of loadable groups.
@@ -108,7 +110,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
 
     def run(self):
         """Runs the load GSuite account groups pipeline."""
-        if not nventory_pipelines.can_inventory_groups(self.configs):
+        if not util.can_inventory_groups(self.configs):
             raise inventory_errors.LoadDataPipelineError(
                 'Unable to inventory groups with specified arguments:\n%s',
                 self.configs)
@@ -117,7 +119,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
 
         groups_members_map = self._retrieve(group_ids)
 
-        loadable_objects = self._transform(groups_members_map)
+        loadable_groups = self._transform(groups_members_map)
 
         self._load(self.RESOURCE_NAME, loadable_groups)
 
