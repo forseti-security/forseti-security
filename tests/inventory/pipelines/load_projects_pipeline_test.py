@@ -62,7 +62,7 @@ class LoadProjectsPipelineTest(basetest.TestCase):
 
         self.pipeline.api_client.get_projects.assert_called_once_with(
             self.pipeline.RESOURCE_NAME,
-            self.pipeline.configs['organization_id'],
+            organization_id=self.pipeline.configs['organization_id'],
             lifecycleState=LifecycleState.ACTIVE)
 
     def test_retrieve_errors_are_handled(self):
