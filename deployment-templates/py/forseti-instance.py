@@ -18,7 +18,21 @@
 def GenerateConfig(context):
     """Generate configuration."""
 
-    RELEASE_VERSION = context.properties['release-version']
+    if context.properties['branch-name']:
+        FORSETI_INSTALL_COMMAND = """
+            cd $USER_HOME
+            git clone https://github.com/GoogleCloudPlatform/forseti-security.git --branch {} --single-branch forseti-security
+            cd forseti-security
+            python setup.py install
+        """.format(context.properties['branch-name'])
+    else:
+        FORSETI_INSTALL_COMMAND = """
+            cd $USER_HOME
+            wget -qO- {} | tar xvz
+            cd forseti-security-{}
+            python setup.py install
+        """.format(context.properties['src-path'],
+                   context.properties['release-version'])
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
         '$(ref.cloudsql-instance.region)',
@@ -75,20 +89,6 @@ def GenerateConfig(context):
         'properties': {
             'zone': context.properties['zone'],
             'machineType': (
-                'https://www.googleapis.com/compute/v1/projects/{}'
-                '/zones/{}/machineTypes/{}'.format(
-                context.env['project'], context.properties['zone'],
-                context.properties['instance-type'])),
-            'disks': [{
-                'deviceName': 'boot',
-                'type': 'PERSISTENT',
-                'boot': True,
-                'autoDelete': True,
-                'initializeParams': {
-                    'sourceImage': (
-                        'https://www.googleapis.com/compute/v1'
-                        '/projects/{}/global/images/family/{}'.format(
-                        context.properties['image-project'],
                         context.properties['image-family']))
                 }
             }],
@@ -201,6 +201,19 @@ chmod +x $USER_HOME/run_forseti.sh
 
 (echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
 """.format(
+read -d '' RUN_FORSETI << EOF
+#!/bin/bash
+# inventory command
+{}
+# scanner command
+{}
+
+EOF
+echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
+chmod +x $USER_HOME/run_forseti.sh
+
+(echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
+""".format(
            # cloud_sql_proxy
            context.properties['cloudsqlproxy-os-arch'],
            context.properties['cloudsqlproxy-os-arch'],
@@ -212,9 +225,8 @@ chmod +x $USER_HOME/run_forseti.sh
            context.properties['organization-id'],
            SCANNER_BUCKET,
 
-           # download forseti src code
-           context.properties['src-path'],
-           RELEASE_VERSION,
+           # install forseti
+           FORSETI_INSTALL_COMMAND,
 
            # run_forseti.sh
            # - forseti_inventory
