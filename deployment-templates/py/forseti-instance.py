@@ -18,21 +18,7 @@
 def GenerateConfig(context):
     """Generate configuration."""
 
-    if context.properties['branch-name']:
-        FORSETI_INSTALL_COMMAND = """
-            cd $USER_HOME
-            git clone https://github.com/GoogleCloudPlatform/forseti-security.git --branch {} --single-branch forseti-security
-            cd forseti-security
-            python setup.py install
-        """.format(context.properties['branch-name'])
-    else:
-        FORSETI_INSTALL_COMMAND = """
-            cd $USER_HOME
-            wget -qO- {} | tar xvz
-            cd forseti-security-{}
-            python setup.py install
-        """.format(context.properties['src-path'],
-                   context.properties['release-version'])
+    RELEASE_VERSION = context.properties['release-version']
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
         '$(ref.cloudsql-instance.region)',
@@ -127,7 +113,6 @@ def GenerateConfig(context):
 sudo apt-get install -y unzip
 sudo apt-get install -y libmysqlclient-dev
 sudo apt-get install -y python-pip python-dev
-sudo apt-get install git
 
 USER_HOME=/home/ubuntu
 FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
@@ -197,8 +182,10 @@ rm -rf forseti-*
 pip install --upgrade pip
 pip install --upgrade setuptools
 
-# specific install commmands
-{}
+cd $USER_HOME
+wget -qO- {} | tar xvz
+cd forseti-security-{}
+python setup.py install
 
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
@@ -225,8 +212,9 @@ chmod +x $USER_HOME/run_forseti.sh
            context.properties['organization-id'],
            SCANNER_BUCKET,
 
-           # install forseti
-           FORSETI_INSTALL_COMMAND,
+           # download forseti src code
+           context.properties['src-path'],
+           RELEASE_VERSION,
 
            # run_forseti.sh
            # - forseti_inventory
