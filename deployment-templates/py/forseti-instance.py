@@ -187,9 +187,9 @@ pip install --upgrade pip
 pip install --upgrade setuptools
 
 cd $USER_HOME
-wget -qO- {} | tar xvz
-cd forseti-security-{}
-python setup.py install
+
+# See FORSETI_INSTALL_COMMAND
+{}
 
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
