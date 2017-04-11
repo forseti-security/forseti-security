@@ -50,14 +50,6 @@ class LoadGroupsPipelineTest(basetest.TestCase):
                 self.mock_admin_client,
                 self.mock_dao))
 
-    @mock.patch.object(util, 'can_inventory_groups')
-    def test_cannot_inventory_groups(self, mock_util):
-        """Test that the proper flags do not exist to inventory groups."""
-        mock_util.return_value = False
-
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline.run()
-
     def test_can_transform_groups(self):
         """Test that groups can be transformed."""
 
@@ -113,9 +105,3 @@ class LoadGroupsPipelineTest(basetest.TestCase):
             fake_groups.EXPECTED_LOADABLE_GROUPS)
 
         mock_get_loaded_count.assert_called_once
-
-        # Test the exception is handled.
-        mock_can_inventory_groups.return_value = False
-
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline.run()
