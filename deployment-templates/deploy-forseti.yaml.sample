@@ -54,6 +54,9 @@ resources:
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
     organization-id: YOUR_ORG_ID
+    # Used for testing GCP installations against a specific branch.
+    # Use either branch-name or release-version.
+    #branch-name: ""
     release-version: "1.0.1"
     src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.1.tar.gz
     cloudsqlproxy-os-arch: linux.amd64
@@ -65,4 +68,4 @@ resources:
     # Flags for Inventory to collect GSuite Google Groups information.
     inventory-groups: true
     groups-domain-super-admin-email: EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN
-    groups-service-account-key-file: "/home/ubuntu/forseti-security/service-account-key.json"
+    groups-service-account-key-file: "/home/ubuntu/service-account-key.json"

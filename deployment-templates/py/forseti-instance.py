@@ -14,11 +14,29 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+import sys
 
 def GenerateConfig(context):
     """Generate configuration."""
 
-    RELEASE_VERSION = context.properties['release-version']
+    if context.properties['branch-name']:
+        FORSETI_INSTALL_COMMAND = """
+            cd $USER_HOME
+            git clone https://github.com/GoogleCloudPlatform/forseti-security.git --branch {} --single-branch forseti-security
+            cd forseti-security
+            python setup.py install
+        """.format(context.properties['branch-name'])
+    elif context.properties['branch-name'] and context.properies['release-version']:
+        print 'Both branch-name and release-version are specified, choose just one.'
+        sys.exit(1)
+    else:
+        FORSETI_INSTALL_COMMAND = """
+            cd $USER_HOME
+            wget -qO- {} | tar xvz
+            cd forseti-security-{}
+            python setup.py install
+        """.format(context.properties['src-path'],
+                   context.properties['release-version'])
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
         '$(ref.cloudsql-instance.region)',
@@ -88,8 +106,10 @@ def GenerateConfig(context):
                     'sourceImage': (
                         'https://www.googleapis.com/compute/v1'
                         '/projects/{}/global/images/family/{}'.format(
-                        context.properties['image-project'],
-                        context.properties['image-family']))
+                           context.properties['image-project'],
+                           context.properties['image-family']
+                        )
+                    )
                 }
             }],
             'networkInterfaces': [{
@@ -183,9 +203,9 @@ pip install --upgrade pip
 pip install --upgrade setuptools
 
 cd $USER_HOME
-wget -qO- {} | tar xvz
-cd forseti-security-{}
-python setup.py install
+
+# See FORSETI_INSTALL_COMMAND
+{}
 
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
@@ -212,9 +232,8 @@ chmod +x $USER_HOME/run_forseti.sh
            context.properties['organization-id'],
            SCANNER_BUCKET,
 
-           # download forseti src code
-           context.properties['src-path'],
-           RELEASE_VERSION,
+           # install forseti
+           FORSETI_INSTALL_COMMAND,
 
            # run_forseti.sh
            # - forseti_inventory

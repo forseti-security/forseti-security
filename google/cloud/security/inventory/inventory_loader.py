@@ -56,6 +56,7 @@ from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util.errors import EmailSendError
 from google.cloud.security.inventory.errors import LoadDataPipelineError
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
+from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
@@ -164,6 +165,8 @@ def _build_pipelines(cycle_timestamp, configs, dao):
     crm_api_client = crm.CloudResourceManagerClient()
     admin_api_client = ad.AdminDirectoryClient()
 
+    # The order here matters, e.g. groups_pipeline must come before
+    # group_members_pipeline.
     return [
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
             cycle_timestamp, configs, crm_api_client, dao),
@@ -172,6 +175,8 @@ def _build_pipelines(cycle_timestamp, configs, dao):
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
             cycle_timestamp, configs, crm_api_client, dao),
         load_groups_pipeline.LoadGroupsPipeline(
+            cycle_timestamp, configs, admin_api_client, dao),
+        load_group_members_pipeline.LoadGroupMembersPipeline(
             cycle_timestamp, configs, admin_api_client, dao),
     ]
 
