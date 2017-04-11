@@ -138,7 +138,7 @@ class Dao(_DbConnector):
             cursor = self.conn.cursor(cursorclass=cursors.DictCursor)
             cursor.execute(group_ids_sql)
             rows = cursor.fetchall()
-            return [row['group_ids'] for row in rows]
+            return [row['group_id'] for row in rows]
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)

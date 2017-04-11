@@ -17,10 +17,14 @@
 import json
 
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import util
 from google.cloud.security.inventory.pipelines import base_pipeline
+
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
@@ -54,10 +58,12 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             data has occurred.
         """
         try:
-            return self.dao.select_project_numbers(
+            group_ids = self.dao.select_group_ids(
                 self.RESOURCE_NAME, self.cycle_timestamp)
         except dao_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
+
+        return group_ids
 
 
     def _transform(self, groups_members_map):
@@ -83,18 +89,20 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         """Retrieve the membership for a given GSuite group.
 
         Returns:
-            A list of tuples (group_id, group_members_data) from the Admin SDK.
+            A list of tuples (group_id, group_members) from the Admin SDK, e.g.
+            (string, [])
         """
         group_ids = self._fetch_groups_from_dao()
-
         group_members_map = []
+
         for group_id in group_ids:
+
             try:
-                group_members_map.extend(
-                    (group_id, self.api_client.get_group_members(group_id))
-                )
+              group_members = self.api_client.get_group_members(group_id)
             except api_errors.ApiExecutionError as e:
                 raise inventory_errors.LoadDataPipelineError(e)
+
+            group_members_map.append((group_id, group_members))
 
         return group_members_map
 
@@ -107,8 +115,9 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
 
         groups_members_map = self._retrieve()
 
-        loadable_group_members = self._transform(groups_members_map)
-
-        self._load(self.RESOURCE_NAME, loadable_group_members)
-
-        self._get_loaded_count()
+        if isinstance(groups_members_map, list):
+            loadable_group_members = self._transform(groups_members_map)
+            self._load(self.RESOURCE_NAME, loadable_group_members)
+            self._get_loaded_count()
+        else:
+            LOGGER.warn('No group members retrieved.')

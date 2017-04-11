@@ -94,7 +94,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             api_errors.ApiExecutionError
         """
         members_stub = self.service.members()
-        request = members_stub.list(groupKey=group.get('email'))
+        request = members_stub.list(groupKey=group)
         results_by_member = []
 
         while request is not None:

@@ -20,6 +20,7 @@ from google.cloud.security.common.data_access.sql_queries import load_data
 
 FIELDNAME_MAP = {
     'groups': csv_writer.GROUPS_FIELDNAMES,
+    'group_members': csv_writer.GROUP_MEMBERS_FIELDNAMES,
     'org_iam_policies': csv_writer.ORG_IAM_POLICIES_FIELDNAMES,
     'projects': csv_writer.PROJECTS_FIELDNAMES,
     'project_iam_policies': csv_writer.PROJECT_IAM_POLICIES_FIELDNAMES,
