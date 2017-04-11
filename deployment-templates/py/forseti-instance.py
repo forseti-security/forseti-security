@@ -14,6 +14,7 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+import sys
 
 def GenerateConfig(context):
     """Generate configuration."""
@@ -25,6 +26,9 @@ def GenerateConfig(context):
             cd forseti-security
             python setup.py install
         """.format(context.properties['branch-name'])
+    elif context.properties['branch-name'] and context.properies['release-version']:
+        print 'Both branch-name and release-version are specified, choose just one.'
+        sys.exit(0)
     else:
         FORSETI_INSTALL_COMMAND = """
             cd $USER_HOME
