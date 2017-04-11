@@ -78,9 +78,36 @@ class AdminDirectoryClient(_base_client.BaseClient):
 
     def get_rate_limiter(self):
         """Return an appriopriate rate limiter."""
-        return RateLimiter(
-            FLAGS.max_admin_api_calls_per_day,
-            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
+        return RateLimiter(FLAGS.max_admin_api_calls_per_day,
+                           self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
+
+    def get_group_members(self, group_key):
+        """Get all the members for specified groups.
+
+        Args:
+            group_key: Its unique id assigned by the Admin API.
+
+        Returns:
+            A list of member objects from the API.
+
+        Raises:
+            api_errors.ApiExecutionError
+        """
+        members_stub = self.service.members()
+        request = members_stub.list(groupKey=group_key)
+        results_by_member = []
+
+        # TODO: Investigate yielding results to handle large group lists.
+        while request is not None:
+            try:
+                with self.rate_limiter:
+                    response = self._execute(request)
+                    results_by_member.extend(response.get('members', []))
+                    request = members_stub.list_next(request, response)
+            except (HttpError, HttpLib2Error) as e:
+                raise api_errors.ApiExecutionError(members_stub, e)
+
+        return results_by_member
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
@@ -102,16 +129,16 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)
-        results = []
+        results_by_group = []
 
         # TODO: Investigate yielding results to handle large group lists.
         while request is not None:
             try:
                 with self.rate_limiter:
                     response = self._execute(request)
-                    results.extend(response.get('groups', []))
+                    results_by_group.extend(response.get('groups', []))
                     request = groups_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(groups_stub, e)
 
-        return results
+        return results_by_group
