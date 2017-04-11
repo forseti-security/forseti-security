@@ -17,9 +17,13 @@
 import json
 
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import util
 from google.cloud.security.inventory.pipelines import base_pipeline
+
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class LoadGroupsPipeline(base_pipeline.BasePipeline):
@@ -83,8 +87,9 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
         groups_map = self._retrieve()
 
-        loadable_groups = self._transform(groups_map)
-
-        self._load(self.RESOURCE_NAME, loadable_groups)
-
-        self._get_loaded_count()
+        if isinstance(groups_map, list):
+            loadable_groups = self._transform(groups_map)
+            self._load(self.RESOURCE_NAME, loadable_groups)
+            self._get_loaded_count()
+        else:
+            LOGGER.warn('No groups retrieved.')
