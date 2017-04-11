@@ -39,6 +39,7 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
     def setUp(self):
         """Set up."""
 
+        self.RESOURCE_NAME = 'group_members'
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = fake_configs.FAKE_CONFIGS
         self.mock_admin_client = mock.create_autospec(ad.AdminDirectoryClient)
@@ -71,9 +72,9 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
     @mock.patch.object(
         load_group_members_pipeline.LoadGroupMembersPipeline,
         '_fetch_groups_from_dao')
-    def test_api_is_called_to_retrieve_groups(self, mock_dao):
+    def test_api_is_called_to_retrieve_groups(self, mock_dao_fetch):
         """Test that api is called to retrieve projects."""
-        mock_dao.return_value = 'a'
+        mock_dao_fetch.return_value = 'a'
 
         self.pipeline._retrieve()
         self.pipeline.api_client.get_group_members.assert_called_with('a')
