@@ -79,7 +79,7 @@ def GenerateConfig(context):
         GROUPS_SERVICE_ACCOUNT_KEY_FILE = context.properties[
             'groups-service-account-key-file']
 
-        inventory_groups_flags = '--inventory_groups --domain_super_admin_email {} groups_service_account_key_file {}'.format(
+        inventory_groups_flags = '--inventory_groups --domain_super_admin_email {} --groups_service_account_key_file {}'.format(
             GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
             GROUPS_SERVICE_ACCOUNT_KEY_FILE,
         )
