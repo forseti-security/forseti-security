@@ -60,6 +60,7 @@ from google.cloud.security.inventory.pipelines import load_group_members_pipelin
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
+from google.cloud.security.inventory import util
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -160,25 +161,36 @@ def _build_pipelines(cycle_timestamp, configs, dao):
 
     Returns:
         List of pipelines that will be run.
-    """
 
+    Raises: inventory_errors.LoadDataPipelineError.
+    """
+    pipelines = []
     crm_api_client = crm.CloudResourceManagerClient()
-    admin_api_client = ad.AdminDirectoryClient()
 
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
-    return [
+    pipelines = [
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
             cycle_timestamp, configs, crm_api_client, dao),
         load_projects_pipeline.LoadProjectsPipeline(
             cycle_timestamp, configs, crm_api_client, dao),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao),
-        load_groups_pipeline.LoadGroupsPipeline(
-            cycle_timestamp, configs, admin_api_client, dao),
-        load_group_members_pipeline.LoadGroupMembersPipeline(
-            cycle_timestamp, configs, admin_api_client, dao),
+            cycle_timestamp, configs, crm_api_client, dao)
     ]
+
+    if configs.get('inventory_groups'):
+        if util.can_inventory_groups(configs):
+            admin_api_client = ad.AdminDirectoryClient()
+            pipelines.extend([
+                load_groups_pipeline.LoadGroupsPipeline(
+                    cycle_timestamp, configs, admin_api_client, dao),
+                load_group_members_pipeline.LoadGroupMembersPipeline(
+                    cycle_timestamp, configs, admin_api_client, dao)
+            ])
+        else:
+            raise inventory_errors.LoadDataPipelineError(
+                'Unable to inventory groups with specified arguments:\n%s',
+                self.configs)
 
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
