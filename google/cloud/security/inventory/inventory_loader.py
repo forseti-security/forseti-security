@@ -53,8 +53,8 @@ from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.common.util.errors import EmailSendError
-from google.cloud.security.inventory.errors import LoadDataPipelineError
+from google.cloud.security.common.util import errors as util_errors
+from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
@@ -85,9 +85,6 @@ def _exists_snapshot_cycles_table(dao):
 
     Returns:
         True if the snapshot cycle table exists. False otherwise.
-
-    Raises:
-        MySQLError: An error with MySQL has occurred.
     """
     try:
         sql = snapshot_cycles_sql.SELECT_SNAPSHOT_CYCLES_TABLE
@@ -99,6 +96,7 @@ def _exists_snapshot_cycles_table(dao):
 
     if len(result) > 0 and result[0]['TABLE_NAME'] == 'snapshot_cycles':
         return True
+
     return False
 
 def _create_snapshot_cycles_table(dao):
@@ -106,9 +104,6 @@ def _create_snapshot_cycles_table(dao):
 
     Args:
         dao: Data access object.
-
-    Raises:
-        MySQLError: An error with MySQL has occurred.
     """
 
     try:
@@ -128,9 +123,6 @@ def _start_snapshot_cycle(dao):
     Returns:
         cycle_time: Datetime object of the cycle, in UTC.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-
-    Raises:
-        MySQLError: An error with MySQL has occurred.
     """
     cycle_time = datetime.utcnow()
     cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
@@ -188,7 +180,7 @@ def _build_pipelines(cycle_timestamp, configs, dao):
                     cycle_timestamp, configs, admin_api_client, dao)
             ])
         else:
-            raise api_errors.ApiExecutionError(
+            raise inventory_errors.LoadDataPipelineError(
                 'Unable to inventory groups with specified arguments:\n%s',
                 configs)
 
@@ -210,7 +202,7 @@ def _run_pipelines(pipelines):
         try:
             pipeline.run()
             pipeline.status = 'SUCCESS'
-        except LoadDataPipelineError as e:
+        except inventory_errors.LoadDataPipelineError as e:
             LOGGER.error('Encountered error loading data.\n%s', e)
             pipeline.status = 'FAILURE'
             LOGGER.info('Continuing on.')
@@ -227,9 +219,6 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
 
     Returns:
          None
-
-    Raises:
-        MySQLError: An error with MySQL has occurred.
     """
     complete_time = datetime.utcnow()
 
@@ -282,7 +271,7 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
         email_util.send(email_sender, email_recipient,
                         email_subject, email_content,
                         content_type='text/html')
-    except EmailSendError:
+    except util_errors.EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
 def main(_):
@@ -299,7 +288,8 @@ def main(_):
 
     try:
         pipelines = _build_pipelines(cycle_timestamp, configs, dao)
-    except api_errors.ApiExecutionError as e:
+    except (api_errors.ApiExecutionError,
+            inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)
         sys.exit()
 
