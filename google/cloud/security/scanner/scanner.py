@@ -225,10 +225,10 @@ def _output_results(all_violations, **kwargs):
         data=_write_violations_output(all_violations),
         write_header=True) as csv_file:
         LOGGER.info('CSV filename: %s', csv_file.name)
-    
+
         # Scanner timestamp for output file and email.
         now_utc = datetime.utcnow()
-    
+
         # If output_path specified, upload to GCS.
         if FLAGS.output_path:
             _upload_csv_to_gcs(FLAGS.output_path, now_utc, csv_file.name)
