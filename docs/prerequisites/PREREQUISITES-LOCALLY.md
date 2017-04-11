@@ -44,11 +44,20 @@ to somewhere like /usr/local/bin (or somewhere similar on your path). If `which
 protoc` doesn't bring up anything, you may need to change the permissions of the
 binary to be executable, i.e. `chmod 755 /path/to/protoc`.
 
+The commands for these steps are something like the following:
+
 ```sh
 $ mkdir ~/Downloads/protoc-3.2
 $ cd ~/Downloads/protoc-3.2
+
+# OSX
 $ wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-osx-x86_64.zip
 $ unzip protoc-3.2.0-osx-x86_64.zip
+
+# Linux
+$ wget https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+$ unzip protoc-3.2.0-linux-x86_64.zip
+
 $ sudo cp bin/protoc /usr/local/bin/protoc
 $ sudo chmod 755 /usr/local/bin/protoc
 ```
