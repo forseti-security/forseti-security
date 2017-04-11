@@ -188,9 +188,11 @@ def _build_pipelines(cycle_timestamp, configs, dao):
                     cycle_timestamp, configs, admin_api_client, dao)
             ])
         else:
-            raise inventory_errors.LoadDataPipelineError(
+            raise api_errors.ApiExecutionError(
                 'Unable to inventory groups with specified arguments:\n%s',
-                self.configs)
+                configs)
+
+    return pipelines
 
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
