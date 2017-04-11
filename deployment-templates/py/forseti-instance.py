@@ -28,7 +28,7 @@ def GenerateConfig(context):
         """.format(context.properties['branch-name'])
     elif context.properties['branch-name'] and context.properies['release-version']:
         print 'Both branch-name and release-version are specified, choose just one.'
-        sys.exit(0)
+        sys.exit(1)
     else:
         FORSETI_INSTALL_COMMAND = """
             cd $USER_HOME
