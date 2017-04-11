@@ -144,7 +144,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_organization(self, org_name):
-        """Get organizations.
+        """Get organization by org_name.
 
         Args:
             org_name: The string org name with format "organizations/$ORG_ID"
@@ -165,6 +165,33 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(org_name, e))
         return None
+
+    def get_organizations(self):
+        """Get organizations that this application has access to.
+
+        Yields:
+            An iterator of orgs this application has access to.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        orgs_api = self.service.organizations()
+        next_page_token = None
+
+        try:
+            with self.rate_limiter:
+                while True:
+                    req_body = {}
+                    if next_page_token:
+                        req_body['pageToken'] = next_page_token
+                    request = orgs_api.search(body=req_body)
+                    response = self._execute(request)
+                    yield response
+                    next_page_token = response.get('nextPageToken')
+                    if not next_page_token:
+                        break
+        except (HttpError, HttpLib2Error) as e:
+            LOGGER.error(api_errors.ApiExecutionError('organization', e))
 
     def get_org_iam_policies(self, resource_name, org_id):
         """Get all the iam policies of an org.
