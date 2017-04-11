@@ -103,11 +103,13 @@ def GenerateConfig(context):
                 'boot': True,
                 'autoDelete': True,
                 'initializeParams': {
-                     'sourceImage': (
-                       'https://www.googleapis.com/compute/v1'
-                       '/projects/{}/global/images/family/{}'.format(
-                        context.properties['image-project'],
-                        context.properties['image-family']))
+                    'sourceImage': (
+                        'https://www.googleapis.com/compute/v1'
+                        '/projects/{}/global/images/family/{}'.format(
+                           context.properties['image-project'],
+                           context.properties['image-family']
+                        )
+                    )
                 }
             }],
             'networkInterfaces': [{
@@ -206,19 +208,6 @@ cd $USER_HOME
 {}
 
 # Create the startup run script
-read -d '' RUN_FORSETI << EOF
-#!/bin/bash
-# inventory command
-{}
-# scanner command
-{}
-
-EOF
-echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
-chmod +x $USER_HOME/run_forseti.sh
-
-(echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
-""".format(
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
 # inventory command
