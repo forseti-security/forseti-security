@@ -81,11 +81,11 @@ class AdminDirectoryClient(_base_client.BaseClient):
         return RateLimiter(FLAGS.max_admin_api_calls_per_day,
                            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def get_group_members(self, group):
+    def get_group_members(self, group_key):
         """Get all the members for specified groups.
 
         Args:
-            groups: A group key, e.g. it's email address.
+            group_key: Its unique id assigned by the Admin API.
 
         Returns:
             A list of member objects from the API.
@@ -94,9 +94,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
             api_errors.ApiExecutionError
         """
         members_stub = self.service.members()
-        request = members_stub.list(groupKey=group)
+        request = members_stub.list(groupKey=group_key)
         results_by_member = []
 
+        # TODO: Investigate yielding results to handle large group lists.
         while request is not None:
             try:
                 with self.rate_limiter:
