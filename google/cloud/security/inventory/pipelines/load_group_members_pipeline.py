@@ -96,9 +96,8 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         group_members_map = []
 
         for group_id in group_ids:
-
             try:
-              group_members = self.api_client.get_group_members(group_id)
+                group_members = self.api_client.get_group_members(group_id)
             except api_errors.ApiExecutionError as e:
                 raise inventory_errors.LoadDataPipelineError(e)
 
