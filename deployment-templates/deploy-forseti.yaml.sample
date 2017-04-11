@@ -54,6 +54,8 @@ resources:
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
     organization-id: YOUR_ORG_ID
+    # Specifiy a branch name OR a release-version. If a branch name is specified release-version will be ignored.
+    branch-name: ""
     release-version: "1.0.1"
     src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.1.tar.gz
     cloudsqlproxy-os-arch: linux.amd64
