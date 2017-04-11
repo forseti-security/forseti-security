@@ -220,23 +220,23 @@ def _output_results(all_violations, **kwargs):
         **kwargs: The rest of the args.
     """
     # Write the CSV.
-    csv_name = csv_writer.write_csv(
+    with csv_writer.write_csv(
         resource_name='policy_violations',
         data=_write_violations_output(all_violations),
-        write_header=True)
-    LOGGER.info('CSV filename: %s', csv_name)
+        write_header=True) as csv_file:
+        LOGGER.info('CSV filename: %s', csv_file.name)
+    
+        # Scanner timestamp for output file and email.
+        now_utc = datetime.utcnow()
+    
+        # If output_path specified, upload to GCS.
+        if FLAGS.output_path:
+            _upload_csv_to_gcs(FLAGS.output_path, now_utc, csv_file.name)
 
-    # Scanner timestamp for output file and email.
-    now_utc = datetime.utcnow()
-
-    # If output_path specified, upload to GCS.
-    if FLAGS.output_path:
-        _upload_csv_to_gcs(FLAGS.output_path, now_utc, csv_name)
-
-    # Send summary email.
-    if FLAGS.email_recipient is not None:
-        resource_counts = kwargs.get('resource_counts', {})
-        _send_email(csv_name, now_utc, all_violations, resource_counts)
+        # Send summary email.
+        if FLAGS.email_recipient is not None:
+            resource_counts = kwargs.get('resource_counts', {})
+            _send_email(csv_file.name, now_utc, all_violations, resource_counts)
 
 def _upload_csv_to_gcs(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
