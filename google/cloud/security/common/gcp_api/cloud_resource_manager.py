@@ -68,28 +68,22 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
         return None
 
-    def get_projects(self, resource_name, organization_id, **filterargs):
-        """Get all the projects from organization.
+    def get_projects(self, resource_name, **filterargs):
+        """Get all the projects this application has access to.
 
         Args:
-            resource_name: String of the resource's name.
-            organization_id: String of the organization id
-                in Google Cloud Platform.
+            resource_name: String of the resource's type.
             filterargs: Extra project filter args.
 
         Yields:
-            An iterable of resource manager project list response.
+            An iterable of the projects.list() response.
             https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
 
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        projects_stub = self.service.projects()
-        # TODO: The filter currently does not get projects under folders.
-        project_filter = [
-            'parent.type:organization',
-            'parent.id:%s' % organization_id,
-        ]
+        projects_api = self.service.projects()
+        project_filter = []
         lifecycle_state = filterargs.get('lifecycleState')
         if lifecycle_state:
             project_filter.append('lifecycleState:%s' % lifecycle_state)
@@ -97,12 +91,16 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         for filter_key in filterargs:
             project_filter.append('%s:%s' %
                                   (filter_key, filterargs[filter_key]))
-        request = projects_stub.list(filter=' '.join(project_filter))
+        request = projects_api.list(filter=' '.join(project_filter))
 
         try:
             with self.rate_limiter:
                 while request is not None:
                     response = self._execute(request)
+
+                    # TODO: why aren't we yielding just the project?
+                    # i.e. why are we yielding a dict with one key 'projects'
+                    # which is a list?
 
                     # TODO: once CRM API allows for direct filtering on
                     # lifecycleState, add it to the project_filter list
@@ -115,8 +113,10 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                                     resource.LifecycleState.ACTIVE)
                             ]
                         }
+                    else:
+                        yield response
 
-                    request = projects_stub.list_next(
+                    request = projects_api.list_next(
                         previous_request=request,
                         previous_response=response)
         except (HttpError, HttpLib2Error) as e:

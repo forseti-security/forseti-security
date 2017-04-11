@@ -123,7 +123,9 @@ class CloudResourceManagerTest(basetest.TestCase):
         
         org_id = '11111'
         result = list(self.crm_api_client.get_projects(
-            'foo', org_id, lifecycleState=LifecycleState.ACTIVE))
+            'foo',
+            organization_id=org_id,
+            lifecycleState=LifecycleState.ACTIVE))
         self.assertEquals(expected_projects[0], result[0])
 
 

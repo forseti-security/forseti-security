@@ -115,7 +115,7 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         try:
             return self.api_client.get_projects(
                 self.RESOURCE_NAME,
-                self.configs['organization_id'],
+                organization_id=self.configs['organization_id'],
                 lifecycleState=LifecycleState.ACTIVE)
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
