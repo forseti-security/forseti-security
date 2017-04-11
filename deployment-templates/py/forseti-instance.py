@@ -93,6 +93,20 @@ def GenerateConfig(context):
         'properties': {
             'zone': context.properties['zone'],
             'machineType': (
+                'https://www.googleapis.com/compute/v1/projects/{}'
+                '/zones/{}/machineTypes/{}'.format(
+                context.env['project'], context.properties['zone'],
+                context.properties['instance-type'])),
+            'disks': [{
+                'deviceName': 'boot',
+                'type': 'PERSISTENT',
+                'boot': True,
+                'autoDelete': True,
+                'initializeParams': {
+                     'sourceImage': (
+                       'https://www.googleapis.com/compute/v1'
+                       '/projects/{}/global/images/family/{}'.format(
+                        context.properties['image-project'],
                         context.properties['image-family']))
                 }
             }],
