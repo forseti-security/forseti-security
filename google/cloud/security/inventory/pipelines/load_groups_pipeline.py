@@ -71,9 +71,8 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         Raises:
             LoadDataPipelineException: An error with loading data has occurred.
         """
-        groups = []
         try:
-            groups.extend(self.api_client.get_groups())
+            return self.api_client.get_groups()
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
