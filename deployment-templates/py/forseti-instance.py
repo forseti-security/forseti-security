@@ -127,7 +127,7 @@ def GenerateConfig(context):
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
-sudo apt-get install -y unzip
+sudo apt-get install -y unzip git
 sudo apt-get install -y libmysqlclient-dev
 sudo apt-get install -y python-pip python-dev
 
