@@ -121,6 +121,8 @@ the upstream remote.
     * the head fork is your fork with your changes
 
     All tests must pass before we will review your PR.
+    We also check the codebase with pylint. You can install the git hooks provided
+    under scripts/githooks/ to do the check locally.
 
 9. Merging your PR.
 
