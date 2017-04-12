@@ -58,7 +58,7 @@ resources:
     # on GCP.
     # Use either branch-name or release-version.
     #branch-name: ""
-    release-version: "1.0.1"
+    release-version: "1.0.2"
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
