@@ -55,10 +55,10 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             An iterable of loadable groups as a per-group dictionary.
         """
         for group in groups_map:
-            yield {'group_id': group['id'],
-                   'group_email': group['email'],
-                   'group_kind': group['kind'],
-                   'direct_member_count': group['directMembersCount'],
+            yield {'group_id': group.get('id'),
+                   'group_email': group.get('email'),
+                   'group_kind': group.get('kind'),
+                   'direct_member_count': group.get('directMembersCount'),
                    'raw_group': json.dumps(group)}
 
     def _retrieve(self):
