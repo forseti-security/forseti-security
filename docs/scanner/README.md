@@ -50,4 +50,4 @@ $ scripts/dev_scanner.sh
 
 ## Defining rules
 
-Refer to the [documentation](scanner/rules.md) on the rules schema.
+Refer to the [documentation](rules.md) on the rules schema.
