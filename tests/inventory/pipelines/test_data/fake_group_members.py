@@ -33,6 +33,14 @@ FAKE_GROUP_MEMBERS = [
        'type': 'USER',
        'status': 'ACTIVE'
     },
+    {
+       'kind': 'admin#directory#member',
+       'etag': '\"hijk1234HIJK1234\"',
+       'id': '333333333333333333333',
+       'role': 'MEMBER',
+       'type': 'USER',
+       'status': 'ACTIVE'
+    },
 ]
 
 FAKE_GROUP_MEMBERS_2 = [
@@ -74,6 +82,15 @@ EXPECTED_LOADABLE_GROUP_MEMBERS = [
         'member_status': 'ACTIVE',
         'member_id': 'myuser@mydomain.com',
         'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "myuser@mydomain.com", "etag": "\\"efgh1234EFGH1234\\"", "role": "MEMBER", "type": "USER", "id": "222222222222222222222"}'
+    },
+    {
+        'group_id': 'mygroup',
+        'member_kind': 'admin#directory#member',
+        'member_role': 'MEMBER',
+        'member_type': 'USER',
+        'member_status': 'ACTIVE',
+        'member_id': None,
+        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "etag": "\\"hijk1234HIJK1234\\"", "role": "MEMBER", "type": "USER", "id": "333333333333333333333"}'
     },
     {
         'group_id': 'mygroup2',

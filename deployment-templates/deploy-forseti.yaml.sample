@@ -54,14 +54,16 @@ resources:
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
     organization-id: YOUR_ORG_ID
-    # Used for testing GCP installations against a specific branch.
+    # Use the "branch-name" property to deploy a specify a branch of Forseti
+    # on GCP.
     # Use either branch-name or release-version.
     #branch-name: ""
     release-version: "1.0.1"
-    src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.1.tar.gz
+    src-path: https://github.com/GoogleCloudPlatform/forseti-security
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
-    # Remove or comment out the email properties if you do not want to send email.
+    # Remove or comment out the email properties if you do not want Forseti to
+    # send email notifications.
     sendgrid-api-key: YOUR_SENDGRID_API_KEY
     email-sender: EMAIL_ADDRESS_OF_YOUR_SENDER
     email-recipient: EMAIL_ADDRESS_OF_YOUR_RECIPIENT

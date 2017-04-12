@@ -14,6 +14,7 @@
 
 """Errors for Inventory."""
 
+
 class Error(Exception):
     """Base error class for Inventory."""
     pass

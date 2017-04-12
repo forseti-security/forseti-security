@@ -19,7 +19,6 @@ import json
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory import util
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
@@ -56,10 +55,10 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             An iterable of loadable groups as a per-group dictionary.
         """
         for group in groups_map:
-            yield {'group_id': group['id'],
-                   'group_email': group['email'],
-                   'group_kind': group['kind'],
-                   'direct_member_count': group['directMembersCount'],
+            yield {'group_id': group.get('id'),
+                   'group_email': group.get('email'),
+                   'group_kind': group.get('kind'),
+                   'direct_member_count': group.get('directMembersCount'),
                    'raw_group': json.dumps(group)}
 
     def _retrieve(self):
@@ -79,11 +78,6 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
     def run(self):
         """Runs the load GSuite account groups pipeline."""
-        if not util.can_inventory_groups(self.configs):
-            raise inventory_errors.LoadDataPipelineError(
-                'Unable to inventory groups with specified arguments:\n%s',
-                self.configs)
-
         groups_map = self._retrieve()
 
         if isinstance(groups_map, list):
