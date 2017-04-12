@@ -29,7 +29,8 @@ Usage:
       --max_admin_api_calls_per_day <default: 150000> (optional)  \\
       --sendgrid_api_key <API key to auth SendGrid email service> (optional) \\
       --email_sender <email address of the email sender> (optional) \\
-      --email_recipient <email address of the email recipient> (optional)
+      --email_recipient <email address of the email recipient> (optional) \\
+      --loglevel <debug|info|warning|error>
 
 To see all the dependent flags:
   $ forseti_inventory --helpfull
@@ -38,6 +39,7 @@ To see all the dependent flags:
 
 from datetime import datetime
 import sys
+import logging
 
 import gflags as flags
 
@@ -70,6 +72,15 @@ flags.DEFINE_bool('inventory_groups', False,
 flags.DEFINE_string('organization_id', None, 'Organization ID.')
 
 flags.mark_flag_as_required('organization_id')
+
+
+LOGLEVELS = {
+    'debug': logging.DEBUG,
+    'info' : logging.INFO,
+    'warning' : logging.WARN,
+    'error' : logging.ERROR,
+}
+flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -200,6 +211,7 @@ def _run_pipelines(pipelines):
     run_statuses = []
     for pipeline in pipelines:
         try:
+            LOGGER.debug('Running pipeline %s', pipeline)
             pipeline.run()
             pipeline.status = 'SUCCESS'
         except inventory_errors.LoadDataPipelineError as e:
@@ -274,6 +286,13 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
     except util_errors.EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
+
+def _configure_logging(configs):
+    """Configures the loglevel for all loggers."""
+    desc = configs.get('loglevel')
+    level = LOGLEVELS[desc]
+    log_util.set_logger_level(level)
+
 def main(_):
     """Runs the Inventory Loader."""
     try:
@@ -285,6 +304,8 @@ def main(_):
     cycle_time, cycle_timestamp = _start_snapshot_cycle(dao)
 
     configs = FLAGS.FlagValuesDict()
+
+    _configure_logging(configs)
 
     try:
         pipelines = _build_pipelines(cycle_timestamp, configs, dao)
