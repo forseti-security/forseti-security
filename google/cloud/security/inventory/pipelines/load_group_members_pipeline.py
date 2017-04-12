@@ -76,12 +76,13 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         """
         for (group, group_member) in groups_members_map:
             for member in group_member:
+                print member
                 yield {'group_id': group,
                        'member_kind': member['kind'],
                        'member_role': member['role'],
                        'member_type': member['type'],
                        'member_status': member['status'],
-                       'member_id': member['email'],
+                       'member_id': member.get('email'),
                        'raw_member': json.dumps(member)}
 
     def _retrieve(self):
