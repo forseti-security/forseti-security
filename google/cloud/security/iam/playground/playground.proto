@@ -1,0 +1,79 @@
+syntax = "proto2";
+
+package google.cloud.security.iam.playground;
+
+service Playground {
+  rpc Ping(PingRequest) returns (PingReply) {}
+
+  rpc SetIamPolicy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
+  rpc GetIamPolicy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
+  rpc CheckIamPolicy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
+
+  rpc AddMember(AddMemberRequest) returns (AddMemberReply) {}
+  rpc CreateMember(CreateMemberRequest) returns (CreateMemberReply) {}
+  rpc DeleteMember(DeleteMemberRequest) returns (DeleteMemberReply) {}
+
+  rpc AddResource(AddResourceRequest) returns (AddResourceReply) {}
+  rpc DeleteResource(DeleteResourceRequest) returns (DeleteResourceReply) {}
+}
+
+message PingRequest {
+  required string data = 1;
+}
+
+message PingReply {
+  required string data = 1;
+}
+
+message AddMemberRequest {
+}
+
+message AddMemberReply {
+}
+
+message CreateMemberRequest {
+}
+
+message CreateMemberReply {
+}
+
+message DeleteMemberRequest {
+}
+
+message DeleteMemberReply {
+}
+
+message AddResourceRequest {
+}
+
+message AddResourceReply {
+}
+
+message DeleteResourceRequest {
+}
+
+message DeleteResourceReply{
+}
+
+message CheckIamPolicyRequest {
+}
+
+message CheckIamPolicyReply {
+
+}
+
+message SetIamPolicyRequest {
+
+}
+
+message SetIamPolicyReply {
+
+}
+
+message GetIamPolicyRequest {
+
+}
+
+message GetIamPolicyReply {
+
+}
