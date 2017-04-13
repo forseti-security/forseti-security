@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package iam;
+
+service Explain {
+  rpc Ping(PingRequest) returns (PingReply) {}
+}
+
+message PingRequest {
+  string data = 1;
+}
+
+message PingReply {
+  string data = 1;
+}
+
