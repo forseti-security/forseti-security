@@ -127,9 +127,10 @@ def GenerateConfig(context):
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
-sudo apt-get install -y unzip
-sudo apt-get install -y libmysqlclient-dev
-sudo apt-get install -y python-pip python-dev
+# Forseti setup
+sudo apt-get install -y git unzip
+# Forseti dependencies
+sudo apt-get install -y libmysqlclient-dev python-pip python-dev
 
 USER_HOME=/home/ubuntu
 FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti Security."""
+# A git pre-commit hook to perform linter checks to catch errors locally
 
-__version__ = '1.0.2'
+# Check if the user is in a virtual environment
+if [ -z $VIRTUAL_ENV ]; then
+	echo "Need to be in a virtual env"
+	exit 1
+fi
 
-__import__('pkg_resources').declare_namespace(__name__)
+# Check if pylintrc exists and user is in the top repository directory
+if [ -e "./pylintrc" ]; then
+	echo "Executing pylint..."
+	pylint --rcfile=pylintrc --output-format=text google || exit 1
+else
+	echo "Need to commit from top level repository dir"
+	exit 1
+fi
+
