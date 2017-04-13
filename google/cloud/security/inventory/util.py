@@ -12,14 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Errors for Inventory."""
+"""Common utilities to assist in inventory pipelines."""
 
 
-class Error(Exception):
-    """Base error class for Inventory."""
-    pass
+def can_inventory_groups(configs):
+    """A simple function that validates required inputs to inventory groups.
 
+    Args:
+        The input flags converted to a dict.
 
-class LoadDataPipelineError(Error):
-    """Error in the data loading pipeline."""
-    pass
+    Returns:
+        Boolean
+    """
+    required_execution_config_flags = [
+        configs.get('domain_super_admin_email'),
+        configs.get('groups_service_account_key_file')]
+
+    return all(required_execution_config_flags)

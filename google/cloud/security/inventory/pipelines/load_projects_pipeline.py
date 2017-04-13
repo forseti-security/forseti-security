@@ -46,7 +46,6 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
             configs: Dictionary of configurations.
             crm_client: CRM API client.
             dao: Data access object.
-            parser: Forseti parser utility object.
 
         Returns:
             None

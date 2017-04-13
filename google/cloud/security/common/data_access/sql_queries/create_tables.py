@@ -79,7 +79,25 @@ CREATE_GROUPS_TABLE = """
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `group_id` varchar(255) DEFAULT NULL,
         `group_email` varchar(255) DEFAULT NULL,
+        `group_kind` varchar(255) DEFAULT NULL,
+        `direct_member_count` bigint(20) DEFAULT NULL,
         `raw_group` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
+
+CREATE_GROUP_MEMBERS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `group_id` varchar(255) DEFAULT NULL,
+        `member_kind` varchar(255) DEFAULT NULL,
+        `member_role` varchar(255) DEFAULT NULL,
+        `member_type` varchar(255) DEFAULT NULL,
+        `member_status` varchar(255) DEFAULT NULL,
+        `member_id` varchar(255) DEFAULT NULL,
+        `raw_member` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+# TODO: Add a RAW_GROUP_MEMBERS_TABLE.

@@ -38,3 +38,7 @@ ORG_IAM_POLICIES = """SELECT org_id, iam_policy
 LATEST_SNAPSHOT_TIMESTAMP = """SELECT max(cycle_timestamp)
     FROM snapshot_cycles
 """
+
+GROUP_IDS = """
+    SELECT group_id from groups_{0};
+"""

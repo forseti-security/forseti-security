@@ -90,7 +90,7 @@ the upstream remote.
     This way, it is easier for troubleshooting and rollbacks.  In other words,
     please do not incorporate multiple changes in one PR.
 
-    [Instructions to execute the tools.]
+    Instructions to execute the tools: [Inventory], [Scanner], [Enforcer]
 
 6. Create your test.
 
@@ -121,6 +121,8 @@ the upstream remote.
     * the head fork is your fork with your changes
 
     All tests must pass before we will review your PR.
+    We also check the codebase with pylint. You can install the git hooks provided
+    under scripts/githooks/ to do the check locally.
 
 9. Merging your PR.
 
@@ -129,7 +131,9 @@ the upstream remote.
 
 [GitHub Help]: https://help.github.com/articles/about-pull-requests/
 [Google Python Style Guide]: https://google.github.io/styleguide/pyguide.html
-[Instructions to execute the tools.]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/README.md#execution
+[Inventory]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/inventory#executing-inventory
+[Scanner]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/scanner
+[Enforcer]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/enforcer
 [basic example]: https://pypi.python.org/pypi/google-apputils
-[Instructions to run the tests.]: https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/README.md#tests
+[Instructions to run the tests.]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/tests
 [forseti-security@google.com]: mailto:forseti-security@google.com

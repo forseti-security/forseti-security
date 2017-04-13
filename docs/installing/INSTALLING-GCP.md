@@ -137,9 +137,10 @@ $ gcloud deployment-manager deployments create forseti-security \
 
 ```sh
 $ gcloud compute copy-files <path_to_downloaded_key> \
-      forseti-security:/home/ubuntu/forseti-security/service-account-key.json \
-      --zone <your zone, default is us-central1>
+      root@forseti-instance-vm:/home/ubuntu/service-account-key.json
 ```
+
+**Note**: The remote destination path of where you put the key on the vm instance should match what you specified in your deployment YAML for `groups-service-account-key-file:`.
 
 You can view the details of your deployment in the
 Cloud Console [Deployment Manager dashboard](https://console.cloud.google.com/deployments).

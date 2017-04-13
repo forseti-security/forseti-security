@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load GSuite Account Groups into Inventory."""
+"""Pipeline to load GSuite Groups into Inventory."""
 
 import json
 
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
+
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class LoadGroupsPipeline(base_pipeline.BasePipeline):
@@ -41,23 +45,11 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         super(LoadGroupsPipeline, self).__init__(
             cycle_timestamp, configs, admin_client, dao)
 
-    def _can_inventory_google_groups(self):
-        """A simple function that validates required inputs to inventory groups.
-
-        Returns:
-            Boolean
-        """
-        required_execution_config_flags = [
-            self.configs.get('domain_super_admin_email'),
-            self.configs.get('groups_service_account_key_file')]
-
-        return all(required_execution_config_flags)
-
     def _transform(self, groups_map):
         """Yield an iterator of loadable groups.
+
         Args:
-            groups_map: An iterable of Admin SDK Directory API Groups.
-            https://google-api-client-libraries.appspot.com/documentation/admin/directory_v1/python/latest/admin_directory_v1.groups.html#list
+            A list of group objects from the Admin SDK.
 
         Yields:
             An iterable of loadable groups as a per-group dictionary.
@@ -65,13 +57,15 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         for group in groups_map:
             yield {'group_id': group.get('id'),
                    'group_email': group.get('email'),
+                   'group_kind': group.get('kind'),
+                   'direct_member_count': group.get('directMembersCount'),
                    'raw_group': json.dumps(group)}
 
     def _retrieve(self):
-        """Retrieve the groups from GCP.
+        """Retrieve the groups from GSuite.
 
         Returns:
-            A list of group objects returned from the API.
+            A list of group list objects from the Admin SDK.
 
         Raises:
             LoadDataPipelineException: An error with loading data has occurred.
@@ -81,17 +75,14 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
+
     def run(self):
         """Runs the load GSuite account groups pipeline."""
-        if not self._can_inventory_google_groups():
-            raise inventory_errors.LoadDataPipelineError(
-                'Unable to inventory groups with specified arguments:\n%s',
-                self.configs)
-
         groups_map = self._retrieve()
 
-        loadable_groups = self._transform(groups_map)
-
-        self._load(self.RESOURCE_NAME, loadable_groups)
-
-        self._get_loaded_count()
+        if isinstance(groups_map, list):
+            loadable_groups = self._transform(groups_map)
+            self._load(self.RESOURCE_NAME, loadable_groups)
+            self._get_loaded_count()
+        else:
+            LOGGER.warn('No groups retrieved.')
