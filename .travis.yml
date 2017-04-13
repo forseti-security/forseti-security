@@ -22,9 +22,11 @@ install:
   - "pip install -q coveralls"
   - "bash scripts/travis_install_protoc.sh"
   - "pip install -q pylint==1.6.5"
+  - "pip install -q unittest"
   - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
 script:
-  - "coverage run --source='google' --omit='*__init__.py, *_test.py, *.pyc' setup.py google_test"
-  - "bash scripts/travis_test_pylint.sh"
+ - "coverage run --source='google' --omit='*__init__.py, *_test.py, *.pyc' python -m unittest discover -s . -p '*_test.py'
+ - "python setup.py google_test"
+ - "bash scripts/travis_test_pylint.sh"
 after_success:
   - "coveralls"
