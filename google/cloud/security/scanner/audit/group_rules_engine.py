@@ -20,6 +20,11 @@
 3. Compare the GCP groups data against the RuleBook to determine whether there
    are violations.
 """
+# pylint: disable=unused-argument
+# pylint: disable=abstract-method
+# pylint: disable=too-many-locals
+# pylint: disable=too-few-public-methods
+# pylint: disable=duplicate-code
 
 from google.cloud.security.common.gcp_type import errors as resource_errors
 from google.cloud.security.common.gcp_type.resource import ResourceType
@@ -148,6 +153,7 @@ class GroupRuleBook(base_rules_engine.BaseRuleBook):
             self.add_rules(rule_defs)
 
     def add_rules(self, rule_defs):
+        """Add rules."""
         for (i, rule) in enumerate(self.rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 

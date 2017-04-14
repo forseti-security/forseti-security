@@ -31,7 +31,7 @@ class Group(resource.Resource):
         super(Group, self).__init__(
             resource_id=group_id,
             resource_type=resource.ResourceType.GROUP,
-            parent=parent)        
+            parent=parent)
 
     def exists(self):
         """Verify that the resource exists in GCP."""

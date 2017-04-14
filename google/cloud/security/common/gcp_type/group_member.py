@@ -15,6 +15,7 @@
 
 https://developers.google.com/admin-sdk/directory/v1/reference/members
 """
+# pylint: disable=no-member
 
 from google.cloud.security.common.gcp_type import errors
 
@@ -34,10 +35,10 @@ class GroupMember(object):
         self.email = rule_def_member.get('email')
 
         if (not self.get('role') or
-            not self.get('type') or
-            not self.get('email')):
+                not self.get('type') or
+                not self.get('email')):
             raise errors.InvalidGroupMemberError(
                 ('Invalid group member: role={}, type={}, email={}'
-                     .format(self.get('role'),
-                             self.get('type'),
-                             self.get('email'))))
+                 .format(self.get('role'),
+                         self.get('type'),
+                         self.get('email'))))
