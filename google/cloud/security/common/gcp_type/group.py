@@ -22,12 +22,11 @@ from google.cloud.security.common.gcp_type import resource
 class Group(resource.Resource):
     """Google Group."""
 
-    def __init__(self, group_id, group_kind, parent=None):
+    def __init__(self, group_id, parent=None):
         """Initialize.
 
         Args:
             group_id: String of the group id.
-            group_kind: String of the group kind.
         """
         super(Group, self).__init__(
             resource_id=group_id,

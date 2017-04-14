@@ -16,8 +16,8 @@
 
 1. Build the RuleBook (GroupRuleBook) from the rule definitions (file either
    stored locally or in GCS).
-2. Get the GCP groups.
-3. Compare the GCP groups against the RuleBook to determine whether there
+2. Get the GCP groups data.
+3. Compare the GCP groups data against the RuleBook to determine whether there
    are violations.
 """
 
@@ -33,50 +33,49 @@ from google.cloud.security.scanner.audit import errors as audit_errors
 LOGGER = log_util.get_logger(__name__)
 
 
+def _check_whitelist_members(rule_members=None, group_members=None):
+    """Whitelist: Check that group members ARE in rule members.
 
-def _check_whitelist_members(rule_members=None, policy_members=None):
-    """Whitelist: Check that policy members ARE in rule members.
-
-    If a policy member is NOT found in the rule members, add it to
+    If a group member is NOT found in the rule members, add it to
     the violating members.
 
     Args:
-        rule_members: A list of IamPolicyMembers allowed in the rule.
-        policy_members: A list of IamPolicyMembers in the policy.
+        rule_members: A list of Group Members allowed in the rule.
+        group_members: A list of Group Members in the policy.
 
     Return:
-        A list of the violating members: policy members NOT found in
+        A list of the violating members: group members NOT found in
         the whitelist (rule members).
     """
     pass
 
-def _check_blacklist_members(rule_members=None, policy_members=None):
-    """Blacklist: Check that policy members ARE NOT in rule members.
+def _check_blacklist_members(rule_members=None, group_members=None):
+    """Blacklist: Check that group members ARE NOT in rule members.
 
-    If a policy member is found in the rule members, add it to the
+    If a group member is found in the rule members, add it to the
     violating members.
 
     Args:
-        rule_members: A list of IamPolicyMembers allowed in the rule.
-        policy_members: A list of IamPolicyMembers in the policy.
+        rule_members: A list of Group Members allowed in the rule.
+        group_members: A list of Group Members in the policy.
 
     Return:
-        A list of the violating members: policy members found in
+        A list of the violating members: group members found in
         the blacklist (rule members).
     """
     pass
 
-def _check_required_members(rule_members=None, policy_members=None):
-    """Required: Check that rule members are in policy members.
+def _check_required_members(rule_members=None, group_members=None):
+    """Required: Check that rule members are in group members.
 
-    If a required rule member is NOT found in the policy members, add
+    If a required rule member is NOT found in the group members, add
     it to the violating members. Note that the check is different:
     it's reversed from the whitelist/blacklist (policy as a subset of
     rules vs rules as subset of policy).
 
     Args:
-        rule_members: A list of IamPolicyMembers allowed in the rule.
-        policy_members: A list of IamPolicyMembers in the policy.
+        rule_members: A list of Group Members allowed in the rule.
+        group_members: A list of Group Members in the policy.
 
     Return:
         A list of the violating members: rule members not found in the
@@ -196,8 +195,6 @@ class GroupRuleBook(base_rules_engine.BaseRuleBook):
                 rule_applies_to = resource.get('applies_to')
                 rule_key = (gcp_resource, rule_applies_to)
 
-
-
                 # See if we have a mapping of the resource and rule
                 resource_rules = self.resource_rules_map.get(
                     rule_key)
@@ -230,8 +227,7 @@ class Rule(object):
         Args:
             rule_name: The string name of the rule.
             rule_index: The rule's index in the rules file.
-            bindings: The list of IamPolicyBindings for this rule.
-            mode: The RulesMode for this rule.
+            members: List of the rule members.
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
@@ -268,6 +264,3 @@ class ResourceRules(object):
             RuleMode.BLACKLIST: _check_blacklist_members,
             RuleMode.REQUIRED: _check_required_members,
         }
-
-
-

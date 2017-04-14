@@ -17,18 +17,8 @@
 import yaml
 
 from google.apputils import basetest
-from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
-from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
-from google.cloud.security.common.gcp_type import resource as res
-from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.scanner.audit import group_rules_engine
-from google.cloud.security.scanner.audit.org_rules_engine import ResourceRules
-from google.cloud.security.scanner.audit.org_rules_engine import Rule
-from google.cloud.security.scanner.audit.org_rules_engine import RuleMode
-from google.cloud.security.scanner.audit.org_rules_engine import RuleViolation
-from google.cloud.security.scanner.audit.org_rules_engine import RULE_VIOLATION_TYPE
 from tests.unittest_utils import get_datafile_path
-from tests.scanner.data import test_rules
 
 
 class GroupRulesEngineTest(basetest.TestCase):
@@ -57,12 +47,12 @@ class GroupRulesEngineTest(basetest.TestCase):
         # Verify the resource rules map.
         self.assertEquals(1, len(rules_engine.rule_book.resource_rules_map))
 
-        resource_rules_map_key, resource_rules = (
-            rules_engine.rule_book.resource_rules_map.items()[0])
-
         # Verify the resources.
         expected_resource = expected_resources[0]
+        resource_rules_map_key, resource_rules = (
+            rules_engine.rule_book.resource_rules_map.items()[0])
         resource = resource_rules_map_key[0]
+
         self.assertEquals(expected_resource.get('resource_ids')[0],
                           resource.resource_id)
         self.assertEquals(expected_resource.get('type'),

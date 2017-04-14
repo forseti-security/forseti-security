@@ -29,14 +29,15 @@ class GroupMember(object):
             rule_def_member: Dictionary of the Google Group Member from the
                 rule definition.
         """
-        if (not rule_def_member.get('role') or
-            not rule_def_member.get('type') or
-            not rule_def_member.get('email')):
-            raise errors.InvalidGroupMemberError(
-                ('Invalid group member: role={}, type={}, email={}'
-                     .format(rule_def_member.get('role'),
-                             rule_def_member.get('type'),
-                             rule_def_member.get('email'))))
         self.role = rule_def_member.get('role')
         self.type = rule_def_member.get('type')
         self.email = rule_def_member.get('email')
+
+        if (not self.get('role') or
+            not self.get('type') or
+            not self.get('email')):
+            raise errors.InvalidGroupMemberError(
+                ('Invalid group member: role={}, type={}, email={}'
+                     .format(self.get('role'),
+                             self.get('type'),
+                             self.get('email'))))
