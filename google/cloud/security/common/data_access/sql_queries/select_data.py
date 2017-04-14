@@ -43,6 +43,14 @@ ORGANIZATION_BY_ID = """SELECT org_id, name, display_name,
     WHERE org_id = %s
 """
 
+PROJECT_IAM_POLICIES_RAW = """
+    SELECT p.project_number, p.project_id, p.project_name, p.lifecycle_state,
+    p.parent_type, p.parent_id, i.iam_policy
+    FROM projects_{0} p INNER JOIN raw_project_iam_policies_{1} i
+    ON p.project_number = i.project_number
+    ORDER BY p.project_id
+"""
+
 ORG_IAM_POLICIES = """SELECT org_id, iam_policy
     FROM raw_org_iam_policies_{0}
 """
