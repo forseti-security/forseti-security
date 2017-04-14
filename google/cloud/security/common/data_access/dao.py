@@ -43,6 +43,8 @@ CREATE_TABLE_MAP = {
     'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
 }
 
+SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'
+
 
 class Dao(_db_connector.DbConnector):
     """Data access object (DAO)."""
@@ -210,9 +212,7 @@ class Dao(_db_connector.DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
-    # pylint: disable=invalid-name
-    # TODO: Investigate improving as to remove pylint disable.
-    def select_latest_complete_snapshot_timestamp(self, statuses):
+    def get_latest_snapshot_timestamp(self, statuses):
         """Select the latest timestamp of the completed snapshot.
 
         Args:
@@ -226,20 +226,18 @@ class Dao(_db_connector.DbConnector):
         """
         # Build a dynamic parameterized query string for filtering the
         # snapshot statuses
-        if not statuses:
-            statuses = ('SUCCESS')
+        if not isinstance(statuses, tuple):
+            statuses = ('SUCCESS',)
 
-        # TODO: Investigate improving to avoid the pylint disable.
-        status_params = ','.join(
-            ['%s' for s in statuses]) # pylint: disable=unused-variable
-        filter_clause = ' where status in ({})'.format(status_params)
+        status_params = ','.join(['%s']*len(statuses))
+        filter_clause = SNAPSHOT_FILTER_CLAUSE.format(status_params)
         try:
             cursor = self.conn.cursor()
             cursor.execute(
                 select_data.LATEST_SNAPSHOT_TIMESTAMP + filter_clause, statuses)
-            rows = cursor.fetchall()
-            if rows and rows[0]:
-                return rows[0][0]
+            row = cursor.fetchone()
+            if row:
+                return row[0]
             raise NoResultsError('No snapshot cycle found.')
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError, NoResultsError) as e:
