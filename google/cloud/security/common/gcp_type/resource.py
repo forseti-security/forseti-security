@@ -28,10 +28,12 @@ class ResourceType(object):
     ORGANIZATION = 'organization'
     FOLDER = 'folder'
     PROJECT = 'project'
+    GROUP = 'group'
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,
-        PROJECT
+        PROJECT,
+        GROUP
     ])
 
     @classmethod

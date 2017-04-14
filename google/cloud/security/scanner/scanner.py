@@ -18,6 +18,7 @@ Usage:
 
   $ forseti_scanner --rules <rules path> \\
       --output_path <output path (optional)> \\
+      --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
@@ -45,7 +46,11 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
+from google.cloud.security.scanner.audit import group_rules_engine as gre
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
+
+# Setup flags
+FLAGS = flags.FLAGS
 
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
@@ -55,27 +60,38 @@ flags.DEFINE_string('rules', None,
                      'If GCS object, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
 
+flags.DEFINE_string('group_rules', None,
+                    ('Path to rules file (yaml/json). '
+                     'If GCS object, include full path, e.g. '
+                     ' "gs://<bucketname>/path/to/file".'))
+
+
 flags.DEFINE_string('output_path', None,
                     ('Output path (do not include filename). If GCS location, '
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
 
-# Setup flags
-FLAGS = flags.FLAGS
+flags.DEFINE_string('organization_id', None, 'Organization id')
+
+flags.mark_flag_as_required('rules')
+flags.mark_flag_as_required('organization_id')
 
 LOGGER = log_util.get_logger(__name__)
 
 
 def main(_):
     """Run the scanner."""
-    if not FLAGS.rules:
-        print 'Provide a rules file. Use "forseti_scanner --helpful" for help.'
-        sys.exit(1)
-
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
     rules_engine.build_rule_book()
+
+    group_rules_engine = gre.GroupRulesEngine(FLAGS.group_rules)
+    
+    print '.....finished'
+
+
+    '''
 
     snapshot_timestamp = _get_timestamp()
     if not snapshot_timestamp:
@@ -185,7 +201,7 @@ def _get_project_policies(timestamp):
     project_policies = {}
     try:
         dao = project_dao.ProjectDao()
-        project_policies = dao.get_project_policies('projects', timestamp)
+        project_policies = dao.get_project_policies(timestamp)
     except MySQLError as err:
         LOGGER.error('Error getting project policies: %s', err)
 
@@ -344,6 +360,7 @@ def _build_scan_summary(all_violations, total_resources):
         total_violations += len(violation.members)
 
     return total_violations, resource_summaries
+'''
 
 if __name__ == '__main__':
     app.run()
