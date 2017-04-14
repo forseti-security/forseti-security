@@ -35,7 +35,7 @@ class Playgrounder(playground_pb2_grpc.PlaygroundServicer):
 	def DeleteResource(self, request, context):
 		return playground_pb2.DeleteResourceReply()
 
-def serve(endpoint=':50051', max_workers=10, wait_shutdown_secs=3):
+def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
 	server = grpc.server(futures.ThreadPoolExecutor(max_workers))
 	playground_pb2_grpc.add_PlaygroundServicer_to_server(Playgrounder(), server)
 	server.add_insecure_port(endpoint)
