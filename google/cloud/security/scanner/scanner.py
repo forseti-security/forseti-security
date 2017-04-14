@@ -46,6 +46,7 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
+from google.cloud.security.scanner.audit import group_rules_engine as gre
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
 
 # Setup flags
@@ -58,6 +59,12 @@ flags.DEFINE_string('rules', None,
                     ('Path to rules file (yaml/json). '
                      'If GCS object, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
+
+flags.DEFINE_string('group_rules', None,
+                    ('Path to rules file (yaml/json). '
+                     'If GCS object, include full path, e.g. '
+                     ' "gs://<bucketname>/path/to/file".'))
+
 
 flags.DEFINE_string('output_path', None,
                     ('Output path (do not include filename). If GCS location, '
@@ -78,6 +85,13 @@ def main(_):
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
     rules_engine.build_rule_book()
+
+    group_rules_engine = gre.GroupRulesEngine(FLAGS.group_rules)
+    
+    print '.....finished'
+
+
+    '''
 
     snapshot_timestamp = _get_timestamp()
     if not snapshot_timestamp:
@@ -346,7 +360,7 @@ def _build_scan_summary(all_violations, total_resources):
         total_violations += len(violation.members)
 
     return total_violations, resource_summaries
-
+'''
 
 if __name__ == '__main__':
     app.run()

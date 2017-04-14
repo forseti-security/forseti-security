@@ -10,8 +10,8 @@ rules:
     inherit_from_parents: true
     members:
       - role: MEMBER
-      - type: USER
-      - email: *@YOUR_ORG_EMAIL_DOMAIN
+        type: USER
+        email: '*@YOUR_ORG_EMAIL_DOMAIN'
 
 # Example response of group members from GCP on which the rules should be based.
 #
