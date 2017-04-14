@@ -14,6 +14,8 @@
 
 """Provides the data access object (DAO)."""
 
+import json
+
 from MySQLdb import DataError
 from MySQLdb import IntegrityError
 from MySQLdb import InternalError
@@ -22,10 +24,10 @@ from MySQLdb import OperationalError
 from MySQLdb import ProgrammingError
 
 from google.cloud.security.common.data_access._db_connector import _DbConnector
-from google.cloud.security.common.data_access.errors import MySQLError
+from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type.project import Project
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
+from google.cloud.security.common.gcp_type import project
+from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -37,12 +39,11 @@ class ProjectDao(_DbConnector):
     def __init__(self):
         super(ProjectDao, self).__init__()
 
-    # pylint: disable=too-many-locals
-    # TODO: Look into lowering variabls to remove pylint disable.
-    def get_project_policies(self, timestamp):
+    def get_project_policies(self, resource_name, timestamp):
         """Get the project policies.
 
         Args:
+            resource_name: The resource type.
             timestamp: The timestamp of the snapshot.
 
         Returns:
@@ -50,59 +51,27 @@ class ProjectDao(_DbConnector):
             and their iam policies (dict).
         """
         project_policies = {}
-        prev_proj_id = None
-        prev_proj = None
         try:
             cursor = self.conn.cursor()
-            cursor.execute(select_data.PROJECT_IAM_POLICIES.format(
-                timestamp, timestamp))
+            cursor.execute(
+                select_data.PROJECT_IAM_POLICIES_RAW.format(
+                    timestamp, timestamp))
             rows = cursor.fetchall()
             for row in rows:
-                proj_id = row[1]
-                if prev_proj_id != proj_id:
-                    project = Project(project_id=row[1],
-                                      project_name=row[2],
-                                      project_number=row[0],
-                                      lifecycle_state=row[3])
-                    project.parent = ResourceUtil.create_resource(
+                try:
+                    proj = project.Project(
+                        project_id=row[1],
+                        project_name=row[2],
+                        project_number=row[0],
+                        lifecycle_state=row[3])
+                    proj.parent = resource_util.ResourceUtil.create_resource(
                         resource_id=row[5],
                         resource_type=row[4])
-                else:
-                    project = prev_proj
-                policy = project_policies.get(project)
-                if not policy:
-                    policy = {
-                        'bindings': []
-                    }
-
-                role = row[6]
-                member_type = row[7]
-                member_name = row[8]
-                member_domain = row[9]
-                member = ''
-                if member_name:
-                    member = '{}:{}@{}'.format(
-                        member_type, member_name, member_domain)
-                else:
-                    member = '{}:{}'.format(member_type, member_domain)
-
-                member = member.strip()
-                added_to_role = False
-
-                for binding in policy.get('bindings'):
-                    if binding.get('role') == role:
-                        binding.get('members').append(member)
-                        added_to_role = True
-
-                if not added_to_role:
-                    policy['bindings'].append({
-                        'role': role,
-                        'members': [member]
-                    })
-
-                project_policies[project] = policy
-                prev_proj = project
+                    iam_policy = json.loads(row[6])
+                    project_policies[proj] = iam_policy
+                except ValueError:
+                    LOGGER.warn('Error parsing json:\n %s', row[6])
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
-            LOGGER.error(MySQLError('projects', e))
+            LOGGER.error(errors.MySQLError(resource_name, e))
         return project_policies

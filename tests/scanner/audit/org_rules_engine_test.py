@@ -34,7 +34,7 @@ from google.cloud.security.scanner.audit.org_rules_engine import RuleMode
 from google.cloud.security.scanner.audit.org_rules_engine import RuleViolation
 from google.cloud.security.scanner.audit.org_rules_engine import RULE_VIOLATION_TYPE
 from tests.unittest_utils import get_datafile_path
-from tests.scanner.data import test_rules
+from tests.scanner.audit.data import test_rules
 
 
 class OrgRulesEngineTest(basetest.TestCase):
