@@ -18,7 +18,6 @@ Usage:
 
   $ forseti_scanner --rules <rules path> \\
       --output_path <output path (optional)> \\
-      --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
@@ -48,9 +47,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
 
-# Setup flags
-FLAGS = flags.FLAGS
-
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
@@ -64,16 +60,18 @@ flags.DEFINE_string('output_path', None,
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
 
-flags.DEFINE_string('organization_id', None, 'Organization id')
-
-flags.mark_flag_as_required('rules')
-flags.mark_flag_as_required('organization_id')
+# Setup flags
+FLAGS = flags.FLAGS
 
 LOGGER = log_util.get_logger(__name__)
 
 
 def main(_):
     """Run the scanner."""
+    if not FLAGS.rules:
+        print 'Provide a rules file. Use "forseti_scanner --helpful" for help.'
+        sys.exit(1)
+
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
@@ -187,7 +185,7 @@ def _get_project_policies(timestamp):
     project_policies = {}
     try:
         dao = project_dao.ProjectDao()
-        project_policies = dao.get_project_policies(timestamp)
+        project_policies = dao.get_project_policies('projects', timestamp)
     except MySQLError as err:
         LOGGER.error('Error getting project policies: %s', err)
 
@@ -346,7 +344,6 @@ def _build_scan_summary(all_violations, total_resources):
         total_violations += len(violation.members)
 
     return total_violations, resource_summaries
-
 
 if __name__ == '__main__':
     app.run()
