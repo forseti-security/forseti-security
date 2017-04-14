@@ -19,7 +19,7 @@ python:
   - "2.7"
 before_install:
   - "pip install -qU coveralls pylint==1.6.5 mock MySQL-python"
-  - "sudo apt-get install libmysql-dev"
+  - "sudo apt-get install libmysqlclient-dev"
   - "bash scripts/travis_install_protoc.sh"
 install:
   - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
