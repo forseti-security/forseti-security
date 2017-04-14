@@ -26,14 +26,19 @@ from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import project
+from tests.common.gcp_type.test_data import fake_projects
 
 
 class ProjectDaoTest(basetest.TestCase):
     """Tests for the ProjectDao."""
 
-    @mock.patch.object(_db_connector._DbConnector, '__init__', autospec=True)
+    @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
     def setUp(self, mock_db_connector):
         self.project_dao = project_dao.ProjectDao()
+        self.resource_name = 'projects'
+        self.fake_timestamp = '12345'
+        self.fake_projects_bad_iam_db_rows = \
+            fake_projects.FAKE_PROJECTS_BAD_IAM_DB_ROWS
 
     def test_get_project_iam_policies(self):
         """Test that get_project_iam_policies() database methods are called.
@@ -57,11 +62,10 @@ class ProjectDaoTest(basetest.TestCase):
         self.project_dao.conn.cursor.return_value = cursor_mock
         cursor_mock.fetchall.return_value = fetch_mock
 
-        resource_name = 'projects'
-        fake_timestamp = '12345'
         fake_query = select_data.PROJECT_IAM_POLICIES_RAW.format(
-            fake_timestamp, fake_timestamp)
-        self.project_dao.get_project_policies(resource_name, fake_timestamp)
+            self.fake_timestamp, self.fake_timestamp)
+        self.project_dao.get_project_policies(
+            self.resource_name, self.fake_timestamp)
 
         conn_mock.cursor.assert_called_once_with()
         cursor_mock.execute.assert_called_once_with(fake_query)
@@ -100,9 +104,8 @@ class ProjectDaoTest(basetest.TestCase):
         self.project_dao.conn.cursor.return_value = cursor_mock
         cursor_mock.fetchall.return_value = fake_project_policies
 
-        fake_timestamp = '11111'
         actual = self.project_dao.get_project_policies(
-            'projects', fake_timestamp)
+            'projects', self.fake_timestamp)
 
         project1 = project.Project(
             project_number=fake_project_policies[0][0],
@@ -139,10 +142,49 @@ class ProjectDaoTest(basetest.TestCase):
         cursor_mock.execute.side_effect = DataError
         project_dao.LOGGER = mock.MagicMock()
 
-        fake_timestamp = '11111'
-        self.project_dao.get_project_policies('projects', fake_timestamp)
+        self.project_dao.get_project_policies(
+            self.resource_name, self.fake_timestamp)
 
         self.assertEqual(1, project_dao.LOGGER.error.call_count)
+
+    def test_get_project_iam_policies_malformed_json_error_handled(self):
+        """Test malformed json error is handled in get_project_policies().
+
+        Setup:
+            Create magic mocks for:
+              * conn
+              * cursor
+              * fetch
+
+        Expect:
+            Log a warning and skip the row.
+        """
+        conn_mock = mock.MagicMock()
+        cursor_mock = mock.MagicMock()
+        fetch_mock = mock.MagicMock()
+
+        self.project_dao.conn = conn_mock
+        self.project_dao.conn.cursor.return_value = cursor_mock
+        cursor_mock.fetchall = fetch_mock
+        fetch_mock.return_value = self.fake_projects_bad_iam_db_rows
+        project_dao.LOGGER = mock.MagicMock()
+
+        expected_project = project.Project(
+            project_id=self.fake_projects_bad_iam_db_rows[0][1],
+            project_name=self.fake_projects_bad_iam_db_rows[0][2],
+            project_number=self.fake_projects_bad_iam_db_rows[0][0],
+            lifecycle_state=self.fake_projects_bad_iam_db_rows[0][3])
+        expected_iam = json.loads(self.fake_projects_bad_iam_db_rows[0][6])
+
+        expected = {
+            expected_project: expected_iam
+        }
+
+        actual = self.project_dao.get_project_policies(
+            self.resource_name, self.fake_timestamp)
+
+        self.assertEqual(1, project_dao.LOGGER.warn.call_count)
+        self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':

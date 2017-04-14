@@ -83,7 +83,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                             'member_domain': member_domain}
 
     def _retrieve(self):
-        """Retrieve the org IAM policies from GCP.
+        """Retrieve the project IAM policies from GCP.
 
         Args:
             None

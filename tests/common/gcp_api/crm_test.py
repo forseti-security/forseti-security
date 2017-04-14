@@ -14,10 +14,10 @@
 
 """Tests the Storage client."""
 
-import mock
 
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
+import mock
 
 from google.apputils import basetest
 from google.cloud.security.common.gcp_api import _base_client
@@ -26,6 +26,7 @@ from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
+from tests.common.gcp_type.test_data import fake_orgs
 
 
 class CloudResourceManagerTest(basetest.TestCase):
@@ -123,7 +124,7 @@ class CloudResourceManagerTest(basetest.TestCase):
         
         org_id = '11111'
         result = list(self.crm_api_client.get_projects(
-            'foo', org_id, lifecycleState=LifecycleState.ACTIVE))
+            'foo', lifecycleState=LifecycleState.ACTIVE))
         self.assertEquals(expected_projects[0], result[0])
 
 
@@ -169,6 +170,22 @@ class CloudResourceManagerTest(basetest.TestCase):
         self.crm_api_client.get_organization(org_name)
         self.assertEquals(1, crm.LOGGER.error.call_count)
 
+    def test_get_organizations(self):
+        """Test get organizations."""
+
+        mock_orgs_stub = mock.MagicMock()
+        self.crm_api_client.service = mock.MagicMock()
+        self.crm_api_client.service.organizations.return_value = mock_orgs_stub
+
+        fake_orgs_response = fake_orgs.FAKE_ORGS_RESPONSE
+        expected_orgs = fake_orgs.EXPECTED_FAKE_ORGS_FROM_API
+
+        self.crm_api_client._execute = mock.MagicMock(
+            return_value=fake_orgs_response)
+        
+        result = list(self.crm_api_client.get_organizations('organizations'))
+        self.assertEquals(expected_orgs, [fake_orgs_response])
+
     def test_get_org_iam_policies(self):
         """Test get org IAM policies."""
 
@@ -183,7 +200,7 @@ class CloudResourceManagerTest(basetest.TestCase):
         self.crm_api_client._execute = mock.MagicMock(return_value=response)
         result = self.crm_api_client.get_org_iam_policies('foo', org_id)
 
-        self.assertEquals(expected_result, next(result))
+        self.assertEquals(expected_result, result)
         self.crm_api_client.service.organizations.assert_called_once_with()
         mock_orgs_stub.getIamPolicy.assert_called_once_with(
             resource='organizations/11111', body={})

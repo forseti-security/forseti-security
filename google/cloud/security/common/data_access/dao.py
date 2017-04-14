@@ -22,7 +22,7 @@ from MySQLdb import OperationalError
 from MySQLdb import ProgrammingError
 from MySQLdb import cursors
 
-from google.cloud.security.common.data_access._db_connector import _DbConnector
+from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import load_data_sql_provider
 from google.cloud.security.common.data_access.errors import MySQLError
@@ -34,17 +34,19 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 CREATE_TABLE_MAP = {
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+    'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
-    # pylint: disable=line-too-long
-    # TODO: Investigate improving so we can avoid the pylint disable.
-    'raw_project_iam_policies': create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
+    'raw_project_iam_policies':
+        create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
     'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
 }
 
+SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'
 
-class Dao(_DbConnector):
+
+class Dao(_db_connector.DbConnector):
     """Data access object (DAO)."""
 
     def __init__(self):
@@ -210,9 +212,7 @@ class Dao(_DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
-    # pylint: disable=invalid-name
-    # TODO: Investigate improving as to remove pylint disable.
-    def select_latest_complete_snapshot_timestamp(self, statuses):
+    def get_latest_snapshot_timestamp(self, statuses):
         """Select the latest timestamp of the completed snapshot.
 
         Args:
@@ -226,20 +226,18 @@ class Dao(_DbConnector):
         """
         # Build a dynamic parameterized query string for filtering the
         # snapshot statuses
-        if not statuses:
-            statuses = ('SUCCESS')
+        if not isinstance(statuses, tuple):
+            statuses = ('SUCCESS',)
 
-        # TODO: Investigate improving to avoid the pylint disable.
-        status_params = ','.join(
-            ['%s' for s in statuses]) # pylint: disable=unused-variable
-        filter_clause = ' where status in ({})'.format(status_params)
+        status_params = ','.join(['%s']*len(statuses))
+        filter_clause = SNAPSHOT_FILTER_CLAUSE.format(status_params)
         try:
             cursor = self.conn.cursor()
             cursor.execute(
                 select_data.LATEST_SNAPSHOT_TIMESTAMP + filter_clause, statuses)
-            rows = cursor.fetchall()
-            if rows and rows[0]:
-                return rows[0][0]
+            row = cursor.fetchone()
+            if row:
+                return row[0]
             raise NoResultsError('No snapshot cycle found.')
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError, NoResultsError) as e:

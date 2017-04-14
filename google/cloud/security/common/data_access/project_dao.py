@@ -23,7 +23,7 @@ from MySQLdb import NotSupportedError
 from MySQLdb import OperationalError
 from MySQLdb import ProgrammingError
 
-from google.cloud.security.common.data_access._db_connector import _DbConnector
+from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import project
@@ -33,7 +33,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class ProjectDao(_DbConnector):
+class ProjectDao(_db_connector.DbConnector):
     """Data access object (DAO)."""
 
     def __init__(self):
@@ -64,9 +64,11 @@ class ProjectDao(_DbConnector):
                         project_name=row[2],
                         project_number=row[0],
                         lifecycle_state=row[3])
-                    proj.parent = resource_util.ResourceUtil.create_resource(
-                        resource_id=row[5],
-                        resource_type=row[4])
+                    if row[5] and row[4]:
+                        proj.parent = (
+                            resource_util.ResourceUtil.create_resource(
+                                resource_id=row[5],
+                                resource_type=row[4]))
                     iam_policy = json.loads(row[6])
                     project_policies[proj] = iam_policy
                 except ValueError:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load projects data into Inventory."""
+"""Pipeline to load organizations data into Inventory."""
 
 import json
 
@@ -22,7 +22,6 @@ from dateutil import parser as dateutil_parser
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
@@ -31,10 +30,10 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 LOGGER = log_util.get_logger(__name__)
 
 
-class LoadProjectsPipeline(base_pipeline.BasePipeline):
-    """Pipeline to load project data into Inventory."""
+class LoadOrgsPipeline(base_pipeline.BasePipeline):
+    """Pipeline to load org IAM policies data into Inventory."""
 
-    RESOURCE_NAME = 'projects'
+    RESOURCE_NAME = 'organizations'
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -50,7 +49,7 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         Returns:
             None
         """
-        super(LoadProjectsPipeline, self).__init__(
+        super(LoadOrgsPipeline, self).__init__(
             cycle_timestamp, configs, crm_client, dao)
 
     def _load(self, resource_name, data):
@@ -72,58 +71,61 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
                 data_access_errors.MySQLError) as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
-    def _transform(self, projects):
+    def _transform(self, orgs):
         """Yield an iterator of loadable iam policies.
 
         Args:
-            projects: An iterable of resource manager project list response.
-                https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
+            orgs: An iterable of resource manager org search response.
+                  https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
+                  https://cloud.google.com/resource-manager/reference/rest/v1/organizations#Organization
 
         Yields:
-            An iterable of loadable projects, as a per-project dictionary.
+            An iterable of loadable orgs, each org as a dict.
         """
-        for project in (project for d in projects \
-                        for project in d.get('projects', [])):
-            project_json = json.dumps(project)
+        for org in (o for d in orgs \
+                        for o in d.get('organizations', [])):
+            org_json = json.dumps(org)
             try:
-                parsed_time = dateutil_parser.parse(project.get('createTime'))
-                formatted_project_create_time = (
+                parsed_time = dateutil_parser.parse(org.get('creationTime'))
+                create_time_fmt = (
                     parsed_time.strftime(self.MYSQL_DATETIME_FORMAT))
             except (TypeError, ValueError) as e:
                 LOGGER.error(
-                    'Unable to parse create_time from project: %s\n%s',
-                    project.get('createTime', ''), e)
-                formatted_project_create_time = '0000-00-00 00:00:00'
+                    'Unable to parse creation_time from org: %s\n%s',
+                    org.get('creationTime', ''), e)
+                create_time_fmt = '0000-00-00 00:00:00'
 
-            yield {'project_number': project.get('projectNumber'),
-                   'project_id': project.get('projectId'),
-                   'project_name': project.get('name'),
-                   'lifecycle_state': project.get('lifecycleState'),
-                   'parent_type': project.get('parent', {}).get('type'),
-                   'parent_id': project.get('parent', {}).get('id'),
-                   'raw_project': project_json,
-                   'create_time': formatted_project_create_time}
+            # org_name is the unique identifier for the org, formatted as
+            # "organizations/<organization_id>".
+            org_name = org.get('name')
+            org_id = org_name[len('organizations/'):]
+
+            yield {'org_id': org_id,
+                   'name': org_name,
+                   'display_name': org.get('displayName'),
+                   'lifecycle_state': org.get('lifecycleState'),
+                   'raw_org': org_json,
+                   'creation_time': create_time_fmt}
 
     def _retrieve(self):
-        """Retrieve the project resources from GCP.
+        """Retrieve the organizations resources from GCP.
 
         Returns:
-            An iterable of resource manager project list response.
-            https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
+            An iterable of resource manager org search response.
+            https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
         """
         try:
-            return self.api_client.get_projects(
-                self.RESOURCE_NAME,
-                lifecycleState=LifecycleState.ACTIVE)
+            return self.api_client.get_organizations(
+                self.RESOURCE_NAME)
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):
         """Runs the data pipeline."""
-        projects_map = self._retrieve()
+        orgs_map = self._retrieve()
 
-        loadable_projects = self._transform(projects_map)
+        loadable_orgs = self._transform(orgs_map)
 
-        self._load(self.RESOURCE_NAME, loadable_projects)
+        self._load(self.RESOURCE_NAME, loadable_orgs)
 
         self._get_loaded_count()

@@ -31,7 +31,7 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.group_member import GroupMember
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
-from google.cloud.security.scanner.audit import base_rules_engine
+from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
@@ -89,42 +89,7 @@ def _check_required_members(rule_members=None, group_members=None):
     pass
 
 
-class RuleAppliesTo(object):
-    """What the rule applies to. (Default: SELF) """
-
-    SELF = 'self'
-    CHILDREN = 'children'
-    SELF_AND_CHILDREN = 'self_and_children'
-    apply_types = frozenset([SELF, CHILDREN, SELF_AND_CHILDREN])
-
-    @classmethod
-    def verify(cls, applies_to):
-        """Verify whether the applies_to is valid."""
-        if applies_to not in cls.apply_types:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Invalid applies_to: {}'.format(applies_to))
-        return applies_to
-
-
-class RuleMode(object):
-    """The rule mode."""
-
-    WHITELIST = 'whitelist'
-    BLACKLIST = 'blacklist'
-    REQUIRED = 'required'
-
-    modes = frozenset([WHITELIST, BLACKLIST, REQUIRED])
-
-    @classmethod
-    def verify(cls, mode):
-        """Verify whether the mode is valid."""
-        if mode not in cls.modes:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Invalid rule mode: {}'.format(mode))
-        return mode
-
-
-class GroupRulesEngine(base_rules_engine.BaseRulesEngine):
+class GroupRulesEngine(bre.BaseRulesEngine):
     """Rules engine for group-related resources."""
 
     def __init__(self, rules_file_path):
@@ -133,7 +98,7 @@ class GroupRulesEngine(base_rules_engine.BaseRulesEngine):
         self.rule_book = GroupRuleBook(self._load_rule_definitions())
 
 
-class GroupRuleBook(base_rules_engine.BaseRuleBook):
+class GroupRuleBook(bre.BaseRuleBook):
     """The RuleBook for group resources."""
 
     def __init__(self, rule_defs=None, verify_resource_exists=False):
@@ -246,7 +211,7 @@ class ResourceRules(object):
     def __init__(self,
                  resource=None,
                  rules=None,
-                 applies_to=RuleAppliesTo.SELF,
+                 applies_to=bre.RuleAppliesTo.SELF,
                  inherit_from_parents=False):
         """Initialize.
 
@@ -262,11 +227,11 @@ class ResourceRules(object):
             rules = set([])
         self.resource = resource
         self.rules = rules
-        self.applies_to = RuleAppliesTo.verify(applies_to)
+        self.applies_to = bre.RuleAppliesTo.verify(applies_to)
         self.inherit_from_parents = inherit_from_parents
 
         self._rule_mode_methods = {
-            RuleMode.WHITELIST: _check_whitelist_members,
-            RuleMode.BLACKLIST: _check_blacklist_members,
-            RuleMode.REQUIRED: _check_required_members,
+            bre.RuleMode.WHITELIST: _check_whitelist_members,
+            bre.RuleMode.BLACKLIST: _check_blacklist_members,
+            bre.RuleMode.REQUIRED: _check_required_members,
         }

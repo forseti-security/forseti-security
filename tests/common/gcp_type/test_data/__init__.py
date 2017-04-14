@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,15 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Wrapper script to run scanner in development mode.
-
-PYTHONPATH=./ python google/cloud/security/scanner/scanner.py \
-        --rules <rules path> \
-        --group_rules <rules path> \
-        --output_path <output path> \
-        --db_host 127.0.0.1 \
-        --db_user root \
-        --db_name <database name> \
-        --sendgrid_api_key <Sendgrid API key> \
-        --email_sender <email sender> \
-        --email_recipient <email recipient>
+"""Fake GCP Types data."""

@@ -40,6 +40,15 @@ GROUPS_FIELDNAMES = [
     'raw_group'
 ]
 
+ORGANIZATIONS_FIELDNAMES = [
+    'org_id',
+    'name',
+    'display_name',
+    'lifecycle_state',
+    'raw_org',
+    'creation_time',
+]
+
 ORG_IAM_POLICIES_FIELDNAMES = [
     'org_id',
     'role',
@@ -90,6 +99,7 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
 CSV_FIELDNAME_MAP = {
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
+    'organizations': ORGANIZATIONS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
