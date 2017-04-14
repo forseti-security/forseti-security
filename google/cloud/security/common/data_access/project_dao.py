@@ -64,9 +64,11 @@ class ProjectDao(_db_connector.DbConnector):
                         project_name=row[2],
                         project_number=row[0],
                         lifecycle_state=row[3])
-                    proj.parent = resource_util.ResourceUtil.create_resource(
-                        resource_id=row[5],
-                        resource_type=row[4])
+                    if row[5] and row[4]:
+                        proj.parent = (
+                            resource_util.ResourceUtil.create_resource(
+                                resource_id=row[5],
+                                resource_type=row[4]))
                     iam_policy = json.loads(row[6])
                     project_policies[proj] = iam_policy
                 except ValueError:

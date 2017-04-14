@@ -114,7 +114,7 @@ class OrganizationDao(_db_connector.DbConnector):
                     iam_policy = json.loads(row[1])
                     org_iam_policies[org] = iam_policy
                 except ValueError:
-                    LOGGER.warn('Error parsing json:\n %s', row[2])
+                    LOGGER.warn('Error parsing json:\n %s', row[1])
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
             LOGGER.error(MySQLError(resource_name, e))

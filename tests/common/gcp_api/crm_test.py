@@ -26,6 +26,7 @@ from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
+from tests.common.gcp_type.test_data import fake_orgs
 
 
 class CloudResourceManagerTest(basetest.TestCase):
@@ -175,50 +176,15 @@ class CloudResourceManagerTest(basetest.TestCase):
         mock_orgs_stub = mock.MagicMock()
         self.crm_api_client.service = mock.MagicMock()
         self.crm_api_client.service.organizations.return_value = mock_orgs_stub
-        
-        fake_orgs = {
-            'organizations': [
-                {
-                    'name': 'organizations/1111111111',
-                    'display_name': 'Organization1',
-                    'lifecycleState': 'ACTIVE',
-                },
-                {
-                    'name': 'organizations/2222222222',
-                    'display_name': 'Organization2',
-                    'lifecycleState': 'ACTIVE',
-                },
-                {
-                    'name': 'organizations/3333333333',
-                    'display_name': 'Organization3',
-                    'lifecycleState': 'ACTIVE',
-                }]
-            }
 
-        expected_orgs = [{
-            'organizations': [
-                {
-                    'name': 'organizations/1111111111',
-                    'display_name': 'Organization1',
-                    'lifecycleState': 'ACTIVE',
-                },
-                {
-                    'name': 'organizations/2222222222',
-                    'display_name': 'Organization2',
-                    'lifecycleState': 'ACTIVE',
-                },
-                {
-                    'name': 'organizations/3333333333',
-                    'display_name': 'Organization3',
-                    'lifecycleState': 'ACTIVE',
-                }]
-            }]
+        fake_orgs_response = fake_orgs.FAKE_ORGS_RESPONSE
+        expected_orgs = fake_orgs.EXPECTED_FAKE_ORGS_FROM_API
 
         self.crm_api_client._execute = mock.MagicMock(
-            return_value=fake_orgs)
+            return_value=fake_orgs_response)
         
         result = list(self.crm_api_client.get_organizations('organizations'))
-        self.assertEquals(expected_orgs, [fake_orgs])
+        self.assertEquals(expected_orgs, [fake_orgs_response])
 
     def test_get_org_iam_policies(self):
         """Test get org IAM policies."""
