@@ -18,7 +18,6 @@ Usage:
 
   $ forseti_scanner --rules <rules path> \\
       --output_path <output path (optional)> \\
-      --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
@@ -64,10 +63,7 @@ flags.DEFINE_string('output_path', None,
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
 
-flags.DEFINE_string('organization_id', None, 'Organization id')
-
 flags.mark_flag_as_required('rules')
-flags.mark_flag_as_required('organization_id')
 
 LOGGER = log_util.get_logger(__name__)
 
