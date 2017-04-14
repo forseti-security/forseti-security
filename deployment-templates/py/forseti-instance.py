@@ -14,33 +14,30 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
-import sys
-
 def GenerateConfig(context):
     """Generate configuration."""
 
-    if context.properties['branch-name']:
-        FORSETI_INSTALL_COMMAND = """
-            cd $USER_HOME
-            git clone https://github.com/GoogleCloudPlatform/forseti-security.git --branch {} --single-branch forseti-security
+    if context.properties.get('branch-name'):
+        DOWNLOAD_FORSETI = """
+            git clone {}.git --branch {} --single-branch forseti-security
             cd forseti-security
-            python setup.py install
-        """.format(context.properties['branch-name'])
-    elif context.properties['branch-name'] and context.properies['release-version']:
-        print 'Both branch-name and release-version are specified, choose just one.'
-        sys.exit(1)
+        """.format(
+            context.properties['src-path'],
+            context.properties['branch-name'])
     else:
-        FORSETI_INSTALL_COMMAND = """
-            cd $USER_HOME
-            wget -qO- {} | tar xvz
+        DOWNLOAD_FORSETI = """
+            wget -qO- {}/archive/v{}.tar.gz | tar xvz
             cd forseti-security-{}
-            python setup.py install
-        """.format(context.properties['src-path'],
-                   context.properties['release-version'])
+        """.format(
+            context.properties['src-path'],
+            context.properties['release-version'],
+            context.properties['release-version'])
 
-    CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(context.env['project'],
+    CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
+        context.env['project'],
         '$(ref.cloudsql-instance.region)',
         '$(ref.cloudsql-instance.name)')
+
     SCANNER_BUCKET = context.properties['scanner-bucket']
     DATABASE_NAME = context.properties['database-name']
     SHOULD_INVENTORY_GROUPS = bool(context.properties['inventory-groups'])
@@ -79,7 +76,7 @@ def GenerateConfig(context):
         GROUPS_SERVICE_ACCOUNT_KEY_FILE = context.properties[
             'groups-service-account-key-file']
 
-        inventory_groups_flags = '--domain_super_admin_email {} groups_service_account_key_file {}'.format(
+        inventory_groups_flags = ' --inventory_groups --domain_super_admin_email {} --groups_service_account_key_file {}'.format(
             GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
             GROUPS_SERVICE_ACCOUNT_KEY_FILE,
         )
@@ -106,8 +103,8 @@ def GenerateConfig(context):
                     'sourceImage': (
                         'https://www.googleapis.com/compute/v1'
                         '/projects/{}/global/images/family/{}'.format(
-                           context.properties['image-project'],
-                           context.properties['image-family']
+                            context.properties['image-project'],
+                            context.properties['image-family']
                         )
                     )
                 }
@@ -130,9 +127,10 @@ def GenerateConfig(context):
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
-sudo apt-get install -y unzip
-sudo apt-get install -y libmysqlclient-dev
-sudo apt-get install -y python-pip python-dev
+# Forseti setup
+sudo apt-get install -y git unzip
+# Forseti dependencies
+sudo apt-get install -y libmysqlclient-dev python-pip python-dev
 
 USER_HOME=/home/ubuntu
 FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
@@ -140,9 +138,9 @@ FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti
 # Install fluentd if necessary
 FLUENTD=$(ls /usr/sbin/google-fluentd)
 if [ -z "$FLUENTD" ]; then
-    cd $USER_HOME
-    curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
-    bash install-logging-agent.sh
+      cd $USER_HOME
+      curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
+      bash install-logging-agent.sh
 fi
 
 # Check whether Cloud SQL proxy is installed
@@ -204,8 +202,9 @@ pip install --upgrade setuptools
 
 cd $USER_HOME
 
-# See FORSETI_INSTALL_COMMAND
+# Download Forseti src; see DOWNLOAD_FORSETI
 {}
+python setup.py install
 
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
@@ -221,26 +220,26 @@ chmod +x $USER_HOME/run_forseti.sh
 
 (echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
 """.format(
-           # cloud_sql_proxy
-           context.properties['cloudsqlproxy-os-arch'],
-           context.properties['cloudsqlproxy-os-arch'],
-           CLOUDSQL_CONN_STRING,
-           context.properties['db-port'],
+    # cloud_sql_proxy
+    context.properties['cloudsqlproxy-os-arch'],
+    context.properties['cloudsqlproxy-os-arch'],
+    CLOUDSQL_CONN_STRING,
+    context.properties['db-port'],
 
-           # rules.yaml
-           SCANNER_BUCKET,
-           context.properties['organization-id'],
-           SCANNER_BUCKET,
+    # rules.yaml
+    SCANNER_BUCKET,
+    context.properties['organization-id'],
+    SCANNER_BUCKET,
 
-           # install forseti
-           FORSETI_INSTALL_COMMAND,
+    # install forseti
+    DOWNLOAD_FORSETI,
 
-           # run_forseti.sh
-           # - forseti_inventory
-           inventory_command,
+    # run_forseti.sh
+    # - forseti_inventory
+    inventory_command,
 
-           # - forseti_scanner
-           scanner_command,
+    # - forseti_scanner
+    scanner_command,
 )
                 }]
             }

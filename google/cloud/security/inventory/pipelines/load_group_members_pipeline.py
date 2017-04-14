@@ -20,7 +20,6 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory import util
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
@@ -78,11 +77,11 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         for (group, group_member) in groups_members_map:
             for member in group_member:
                 yield {'group_id': group,
-                       'member_kind': member['kind'],
-                       'member_role': member['role'],
-                       'member_type': member['type'],
-                       'member_status': member['status'],
-                       'member_id': member['email'],
+                       'member_kind': member.get('kind'),
+                       'member_role': member.get('role'),
+                       'member_type': member.get('type'),
+                       'member_status': member.get('status'),
+                       'member_id': member.get('email'),
                        'raw_member': json.dumps(member)}
 
     def _retrieve(self):
@@ -107,11 +106,6 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
 
     def run(self):
         """Runs the load GSuite account groups pipeline."""
-        if not util.can_inventory_groups(self.configs):
-            raise inventory_errors.LoadDataPipelineError(
-                'Unable to inventory groups with specified arguments:\n%s',
-                self.configs)
-
         groups_members_map = self._retrieve()
 
         if isinstance(groups_members_map, list):
