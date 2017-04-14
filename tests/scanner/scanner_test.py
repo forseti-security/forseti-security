@@ -31,6 +31,9 @@ from google.cloud.security.scanner.audit import org_rules_engine as ore
 
 class ScannerRunnerTest(basetest.TestCase):
 
+    def setUp(self):
+        self.fake_timestamp = '123456'
+
     def test_find_violations(self):
         """Test that find_violations() is called."""
         policies = [
@@ -71,10 +74,9 @@ class ScannerRunnerTest(basetest.TestCase):
         }]
         mock_get_org_iam.return_value = org_policies
 
-        fake_timestamp = '123456'
-        actual = scanner._get_org_policies(fake_timestamp)
+        actual = scanner._get_org_policies(self.fake_timestamp)
         mock_get_org_iam.assert_called_once_with(
-            'organizations', fake_timestamp)
+            'organizations', self.fake_timestamp)
         self.assertEqual(org_policies, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
@@ -88,9 +90,10 @@ class ScannerRunnerTest(basetest.TestCase):
             }
         }]
         mock_get_proj_iam.return_value = proj_policies
-        fake_timestamp = '123456'
-        actual = scanner._get_project_policies(fake_timestamp)
-        mock_get_proj_iam.assert_called_once_with('projects', fake_timestamp)
+        actual = scanner._get_project_policies(
+            self.fake_timestamp)
+        mock_get_proj_iam.assert_called_once_with(
+            'projects', self.fake_timestamp)
         self.assertEqual(proj_policies, actual)
 
     def test_build_scan_summary(self):

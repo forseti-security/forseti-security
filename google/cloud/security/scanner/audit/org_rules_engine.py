@@ -28,7 +28,7 @@ from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
-from google.cloud.security.scanner.audit import base_rules_engine
+from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 LOGGER = log_util.get_logger(__name__)
@@ -101,7 +101,7 @@ def _check_required_members(rule_members=None, policy_members=None):
     return violating_members
 
 
-class OrgRulesEngine(base_rules_engine.BaseRulesEngine):
+class OrgRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
     def __init__(self, rules_file_path):
@@ -143,42 +143,7 @@ class OrgRulesEngine(base_rules_engine.BaseRulesEngine):
             self.rule_book.add_rules(rules)
 
 
-class RuleAppliesTo(object):
-    """What the rule applies to. (Default: SELF) """
-
-    SELF = 'self'
-    CHILDREN = 'children'
-    SELF_AND_CHILDREN = 'self_and_children'
-    apply_types = frozenset([SELF, CHILDREN, SELF_AND_CHILDREN])
-
-    @classmethod
-    def verify(cls, applies_to):
-        """Verify whether the applies_to is valid."""
-        if applies_to not in cls.apply_types:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Invalid applies_to: {}'.format(applies_to))
-        return applies_to
-
-
-class RuleMode(object):
-    """The rule mode."""
-
-    WHITELIST = 'whitelist'
-    BLACKLIST = 'blacklist'
-    REQUIRED = 'required'
-
-    modes = frozenset([WHITELIST, BLACKLIST, REQUIRED])
-
-    @classmethod
-    def verify(cls, mode):
-        """Verify whether the mode is valid."""
-        if mode not in cls.modes:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Invalid rule mode: {}'.format(mode))
-        return mode
-
-
-class OrgRuleBook(base_rules_engine.BaseRuleBook):
+class OrgRuleBook(bre.BaseRuleBook):
     """The RuleBook for organization resources.
 
     Rules from the rules definition file are parsed and placed into a
@@ -368,7 +333,7 @@ class OrgRuleBook(base_rules_engine.BaseRuleBook):
         """
         resource_rules = []
 
-        for rule_applies_to in RuleAppliesTo.apply_types:
+        for rule_applies_to in bre.RuleAppliesTo.apply_types:
             if (resource, rule_applies_to) in self.resource_rules_map:
                 resource_rules.append(self.resource_rules_map.get(
                     (resource, rule_applies_to)))
@@ -403,12 +368,12 @@ class OrgRuleBook(base_rules_engine.BaseRuleBook):
                 # CHILDREN: check rules if starting resource != current resource
                 # SELF_AND_CHILDREN: always check rules
                 rule_applies_to_resource = (
-                    (resource_rule.applies_to == RuleAppliesTo.SELF and
+                    (resource_rule.applies_to == bre.RuleAppliesTo.SELF and
                      resource == curr_resource) or
-                    (resource_rule.applies_to == RuleAppliesTo.CHILDREN and
+                    (resource_rule.applies_to == bre.RuleAppliesTo.CHILDREN and
                      resource != curr_resource) or
                     (resource_rule.applies_to ==
-                     RuleAppliesTo.SELF_AND_CHILDREN))
+                     bre.RuleAppliesTo.SELF_AND_CHILDREN))
 
                 if not rule_applies_to_resource:
                     continue
@@ -436,7 +401,7 @@ class ResourceRules(object):
     def __init__(self,
                  resource=None,
                  rules=None,
-                 applies_to=RuleAppliesTo.SELF,
+                 applies_to=bre.RuleAppliesTo.SELF,
                  inherit_from_parents=False):
         """Initialize.
 
@@ -452,13 +417,13 @@ class ResourceRules(object):
             rules = set([])
         self.resource = resource
         self.rules = rules
-        self.applies_to = RuleAppliesTo.verify(applies_to)
+        self.applies_to = bre.RuleAppliesTo.verify(applies_to)
         self.inherit_from_parents = inherit_from_parents
 
         self._rule_mode_methods = {
-            RuleMode.WHITELIST: _check_whitelist_members,
-            RuleMode.BLACKLIST: _check_blacklist_members,
-            RuleMode.REQUIRED: _check_required_members,
+            bre.RuleMode.WHITELIST: _check_whitelist_members,
+            bre.RuleMode.BLACKLIST: _check_blacklist_members,
+            bre.RuleMode.REQUIRED: _check_required_members,
         }
 
     def __eq__(self, other):
@@ -510,7 +475,7 @@ class ResourceRules(object):
                 # pattern, then check the members to see whether they match,
                 # according to the rule mode.
                 if binding.role_pattern.match(policy_role_name):
-                    if rule.mode == RuleMode.REQUIRED:
+                    if rule.mode == bre.RuleMode.REQUIRED:
                         role_name = binding.role_name
                     else:
                         role_name = policy_role_name
@@ -531,7 +496,7 @@ class ResourceRules(object):
                             members=tuple(violating_members))
 
             # Extra check if the role did not match in the REQUIRED case.
-            if not found_role and rule.mode == RuleMode.REQUIRED:
+            if not found_role and rule.mode == bre.RuleMode.REQUIRED:
                 for binding in rule.bindings:
                     yield RuleViolation(
                         resource_type=policy_resource.resource_type,
@@ -579,7 +544,7 @@ class Rule(object):
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.bindings = bindings
-        self.mode = RuleMode.verify(mode)
+        self.mode = bre.RuleMode.verify(mode)
 
     def __eq__(self, other):
         """Test whether Rule equals other Rule."""

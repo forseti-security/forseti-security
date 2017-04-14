@@ -20,6 +20,7 @@ https://developers.google.com/admin-sdk/directory/v1/reference/members
 from google.cloud.security.common.gcp_type import errors
 
 
+# pylint: disable=too-few-public-methods
 class GroupMember(object):
     """Group Member."""
 
@@ -34,11 +35,11 @@ class GroupMember(object):
         self.type = rule_def_member.get('type')
         self.email = rule_def_member.get('email')
 
-        if (not self.get('role') or
-                not self.get('type') or
-                not self.get('email')):
+        if (not self.role or
+                not self.type or
+                not self.email):
             raise errors.InvalidGroupMemberError(
                 ('Invalid group member: role={}, type={}, email={}'
-                 .format(self.get('role'),
-                         self.get('type'),
-                         self.get('email'))))
+                 .format(self.role,
+                         self.type,
+                         self.email)))

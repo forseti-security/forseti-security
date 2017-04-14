@@ -18,7 +18,6 @@ Usage:
 
   $ forseti_scanner --rules <rules path> \\
       --output_path <output path (optional)> \\
-      --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
@@ -65,16 +64,10 @@ flags.DEFINE_string('group_rules', None,
                      'If GCS object, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
 
-
 flags.DEFINE_string('output_path', None,
                     ('Output path (do not include filename). If GCS location, '
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
-
-flags.DEFINE_string('organization_id', None, 'Organization id')
-
-flags.mark_flag_as_required('rules')
-flags.mark_flag_as_required('organization_id')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -83,15 +76,18 @@ def main(_):
     """Run the scanner."""
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
+    if not FLAGS.rules or not FLAGS.group_rules:
+        print 'Provide a rules file. Use "forseti_scanner --helpful" for help.'
+        sys.exit(1)
+
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
     rules_engine.build_rule_book()
-
-    group_rules_engine = gre.GroupRulesEngine(FLAGS.group_rules)
-    
-    print '.....finished'
-
-
-    '''
+    # pylint: disable=bare-except
+    try:
+        gre.GroupRulesEngine(FLAGS.group_rules)
+    except:
+        pass
+    # pylint: enable=bare-except
 
     snapshot_timestamp = _get_timestamp()
     if not snapshot_timestamp:
@@ -201,7 +197,7 @@ def _get_project_policies(timestamp):
     project_policies = {}
     try:
         dao = project_dao.ProjectDao()
-        project_policies = dao.get_project_policies(timestamp)
+        project_policies = dao.get_project_policies('projects', timestamp)
     except MySQLError as err:
         LOGGER.error('Error getting project policies: %s', err)
 
@@ -360,7 +356,6 @@ def _build_scan_summary(all_violations, total_resources):
         total_violations += len(violation.members)
 
     return total_violations, resource_summaries
-'''
 
 if __name__ == '__main__':
     app.run()
