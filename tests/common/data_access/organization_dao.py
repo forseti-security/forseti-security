@@ -14,6 +14,8 @@
 
 """Tests the OrganizationDao."""
 
+import json
+
 from google.apputils import basetest
 import mock
 
@@ -140,12 +142,10 @@ class OrgDaoTest(basetest.TestCase):
         resource_name = 'organizations'
         fake_timestamp = '11111'
         fake_query = select_data.ORGANIZATIONS.format(fake_timestamp)
-        orgs = self.org_dao.get_organizations(resource_name, fake_timestamp)
 
-        cursor_mock.execute.assert_called_once_with(fake_query)
-
-        self.assertEqual([], orgs)
-        self.assertEqual(1, organization_dao.LOGGER.error.call_count)
+        with self.assertRaises(errors.MySQLError):
+            orgs = self.org_dao.get_organizations(resource_name, fake_timestamp)
+            cursor_mock.execute.assert_called_once_with(fake_query)
 
     def test_get_organization_is_called(self):
         """Test that get_organization() database methods are called.
@@ -249,6 +249,104 @@ class OrgDaoTest(basetest.TestCase):
         with self.assertRaises(errors.MySQLError):
             org = self.org_dao.get_organization(fake_timestamp, org_id)
 
+    def test_get_org_iam_policies_is_called(self):
+        """Test that get_org_iam_policies() database methods are called.
+
+        Setup:
+            Create magic mocks for:
+              * conn
+              * cursor
+              * fetch
+
+        Expect:
+            * cursor() is called.
+            * cursor.execute() is called.
+            * cursor.fetchall() is called.
+        """
+        conn_mock = mock.MagicMock()
+        cursor_mock = mock.MagicMock()
+        fetch_mock = mock.MagicMock()
+
+        self.org_dao.conn = conn_mock
+        self.org_dao.conn.cursor.return_value = cursor_mock
+        cursor_mock.fetchall.return_value = fetch_mock
+
+        resource_name = 'organizations'
+        fake_timestamp = '12345'
+        fake_query = select_data.ORG_IAM_POLICIES.format(fake_timestamp)
+        self.org_dao.get_org_iam_policies(resource_name, fake_timestamp)
+
+        conn_mock.cursor.assert_called_once_with()
+        cursor_mock.execute.assert_called_once_with(fake_query)
+        cursor_mock.fetchall.assert_called_once_with()
+
+    def test_get_org_iam_policies(self):
+        """Test that get_org_iam_policies() returns expected data.
+
+        Setup:
+            Create magic mocks for:
+              * conn
+              * cursor
+              * fetch
+            Create fake row of org data.
+
+        Expect:
+            * get_org_iam_policies() call returns expected data: a dict of
+              Organizations and their IAM policies.
+        """
+        conn_mock = mock.MagicMock()
+        cursor_mock = mock.MagicMock()
+
+        org_id = '1111111111'
+        iam_policy = {
+            'role': 'roles/something',
+            'members': ['user:a@b.c']
+        }
+
+        fake_org_iam_policies = [
+            [org_id, json.dumps(iam_policy)]
+        ]
+
+        self.org_dao.conn = conn_mock
+        self.org_dao.conn.cursor.return_value = cursor_mock
+        cursor_mock.fetchall.return_value = fake_org_iam_policies
+
+        fake_timestamp = '11111'
+        actual = self.org_dao.get_org_iam_policies(
+            'organizations', fake_timestamp)
+
+        org = organization.Organization(org_id)
+        expected = {
+            org: iam_policy
+        }
+
+        self.assertEqual(expected, actual)
+
+    def test_get_org_iam_policies_query_failed_handles_error(self):
+        """Test that a failed get_org_iam_policies() handles the error.
+
+        Setup:
+            Create magic mocks for:
+              * conn
+              * cursor
+              * fetch
+
+        Expect:
+            Raises a MySQLError.
+        """
+        conn_mock = mock.MagicMock()
+        cursor_mock = mock.MagicMock()
+
+        self.org_dao.conn = conn_mock
+        self.org_dao.conn.cursor.return_value = cursor_mock
+        cursor_mock.execute.side_effect = DataError
+        organization_dao.LOGGER = mock.MagicMock()
+
+
+        fake_timestamp = '11111'
+        self.org_dao.get_org_iam_policies('organizations', fake_timestamp)
+
+        self.assertEqual(1, organization_dao.LOGGER.error.call_count)
 
 if __name__ == '__main__':
     basetest.main()
