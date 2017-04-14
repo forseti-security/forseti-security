@@ -90,8 +90,10 @@ class ProjectDaoTest(basetest.TestCase):
         ]
 
         fake_project_policies = [
-            ['11111', 'project-1', json.dumps(iam_policies[0])],
-            ['22222', 'project-2', json.dumps(iam_policies[1])],
+            ['11111', 'project-1', 'a1', 'ACTIVE',
+             'organization', '1111', json.dumps(iam_policies[0])],
+            ['22222', 'project-2', 'a2', 'ACTIVE',
+             'organization', '2222', json.dumps(iam_policies[1])],
         ]
 
         self.project_dao.conn = conn_mock
