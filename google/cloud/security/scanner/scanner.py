@@ -169,7 +169,7 @@ def _get_org_policies(timestamp):
     org_policies = {}
     try:
         org_dao = organization_dao.OrganizationDao()
-        org_policies = org_dao.get_org_iam_policies(timestamp)
+        org_policies = org_dao.get_org_iam_policies('organizations', timestamp)
     except MySQLError as err:
         LOGGER.error('Error getting org policies: %s', err)
 

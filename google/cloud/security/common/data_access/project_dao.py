@@ -21,7 +21,7 @@ from MySQLdb import NotSupportedError
 from MySQLdb import OperationalError
 from MySQLdb import ProgrammingError
 
-from google.cloud.security.common.data_access._db_connector import _DbConnector
+from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type.project import Project
@@ -31,7 +31,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class ProjectDao(_DbConnector):
+class ProjectDao(_db_connector.DbConnector):
     """Data access object (DAO)."""
 
     def __init__(self):

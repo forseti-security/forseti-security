@@ -104,6 +104,11 @@ class Resource(object):
         return 'Resource<id={},type={},parent={}>'.format(
             self.resource_id, self.resource_type, self.parent)
 
+    @property
+    def id(self):
+        """Get id."""
+        return self.resource_id
+
     def get_id(self):
         """Get resource id."""
         return self.resource_id

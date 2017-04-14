@@ -166,11 +166,15 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             LOGGER.error(api_errors.ApiExecutionError(org_name, e))
         return None
 
-    def get_organizations(self):
+    def get_organizations(self, resource_name):
         """Get organizations that this application has access to.
 
+        Args:
+            resource_name: String of the resource's type.
+
         Yields:
-            An iterator of orgs this application has access to.
+            An iterator of the response from the organizations API, which
+            contains is paginated and contains a list of organizations.
 
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
@@ -191,7 +195,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                     if not next_page_token:
                         break
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError('organization', e))
+            LOGGER.error(api_errors.ApiExecutionError(resource_name, e))
 
     def get_org_iam_policies(self, resource_name, org_id):
         """Get all the iam policies of an org.
@@ -200,9 +204,8 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             resource_name: String of the resource's name.
             org_id: Integer of the org id.
 
-        Yields:
-            An iterable of iam policies as per-org dictionary.
-            Example: {org_id: org_id, iam_policy: iam_policy}
+        Returns:
+            Organization IAM policy for given org_id.
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
         Raises:
@@ -214,8 +217,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             with self.rate_limiter:
                 request = orgs_stub.getIamPolicy(
                     resource=resource_id, body={})
-                response = self._execute(request)
-                yield {'org_id': org_id,
-                       'iam_policy': response}
+                return {'org_id': org_id,
+                        'iam_policy': self._execute(request)}
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)

@@ -31,6 +31,18 @@ PROJECT_IAM_POLICIES = """SELECT p.project_number, p.project_id, p.project_name,
     pol.member_domain, pol.member_name
 """
 
+ORGANIZATIONS = """SELECT org_id, name, display_name, lifecycle_state,
+    creation_time
+    FROM organizations_{0}
+    ORDER BY display_name
+"""
+
+ORGANIZATION_BY_ID = """SELECT org_id, name, display_name,
+    lifecycle_state, creation_time
+    FROM organizations_{0}
+    WHERE org_id = %s
+"""
+
 ORG_IAM_POLICIES = """SELECT org_id, iam_policy
     FROM raw_org_iam_policies_{0}
 """

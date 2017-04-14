@@ -14,10 +14,10 @@
 
 """Tests the Storage client."""
 
-import mock
 
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
+import mock
 
 from google.apputils import basetest
 from google.cloud.security.common.gcp_api import _base_client
@@ -123,9 +123,7 @@ class CloudResourceManagerTest(basetest.TestCase):
         
         org_id = '11111'
         result = list(self.crm_api_client.get_projects(
-            'foo',
-            organization_id=org_id,
-            lifecycleState=LifecycleState.ACTIVE))
+            'foo', lifecycleState=LifecycleState.ACTIVE))
         self.assertEquals(expected_projects[0], result[0])
 
 
@@ -171,6 +169,57 @@ class CloudResourceManagerTest(basetest.TestCase):
         self.crm_api_client.get_organization(org_name)
         self.assertEquals(1, crm.LOGGER.error.call_count)
 
+    def test_get_organizations(self):
+        """Test get organizations."""
+
+        mock_orgs_stub = mock.MagicMock()
+        self.crm_api_client.service = mock.MagicMock()
+        self.crm_api_client.service.organizations.return_value = mock_orgs_stub
+        
+        fake_orgs = {
+            'organizations': [
+                {
+                    'name': 'organizations/1111111111',
+                    'display_name': 'Organization1',
+                    'lifecycleState': 'ACTIVE',
+                },
+                {
+                    'name': 'organizations/2222222222',
+                    'display_name': 'Organization2',
+                    'lifecycleState': 'ACTIVE',
+                },
+                {
+                    'name': 'organizations/3333333333',
+                    'display_name': 'Organization3',
+                    'lifecycleState': 'ACTIVE',
+                }]
+            }
+
+        expected_orgs = [{
+            'organizations': [
+                {
+                    'name': 'organizations/1111111111',
+                    'display_name': 'Organization1',
+                    'lifecycleState': 'ACTIVE',
+                },
+                {
+                    'name': 'organizations/2222222222',
+                    'display_name': 'Organization2',
+                    'lifecycleState': 'ACTIVE',
+                },
+                {
+                    'name': 'organizations/3333333333',
+                    'display_name': 'Organization3',
+                    'lifecycleState': 'ACTIVE',
+                }]
+            }]
+
+        self.crm_api_client._execute = mock.MagicMock(
+            return_value=fake_orgs)
+        
+        result = list(self.crm_api_client.get_organizations('organizations'))
+        self.assertEquals(expected_orgs, [fake_orgs])
+
     def test_get_org_iam_policies(self):
         """Test get org IAM policies."""
 
@@ -185,7 +234,7 @@ class CloudResourceManagerTest(basetest.TestCase):
         self.crm_api_client._execute = mock.MagicMock(return_value=response)
         result = self.crm_api_client.get_org_iam_policies('foo', org_id)
 
-        self.assertEquals(expected_result, next(result))
+        self.assertEquals(expected_result, result)
         self.crm_api_client.service.organizations.assert_called_once_with()
         mock_orgs_stub.getIamPolicy.assert_called_once_with(
             resource='organizations/11111', body={})

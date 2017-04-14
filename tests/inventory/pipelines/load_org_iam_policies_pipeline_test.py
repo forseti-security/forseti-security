@@ -21,8 +21,10 @@ import mock
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
@@ -56,8 +58,13 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
         self.assertEquals(fake_iam_policies.EXPECTED_LOADABLE_ORG_IAM_POLICY,
                           list(loadable_iam_policies))
 
-    def test_api_is_called_to_retrieve_org_policies(self):
+    @mock.patch.object(organization_dao.OrganizationDao,
+        'get_organizations', autospec=True)
+    def test_api_is_called_to_retrieve_org_policies(self, mock_get_orgs):
         """Test that api is called to retrieve org policies."""
+
+        mock_get_orgs.return_value = [
+            organization.Organization(self.pipeline.configs['organization_id'])]
 
         self.pipeline._retrieve()
 
@@ -65,14 +72,29 @@ class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
             self.pipeline.RESOURCE_NAME,
             self.pipeline.configs['organization_id'])
 
-    def test_retrieve_errors_are_handled(self):
-        """Test that errors are handled when retrieving."""
-
-        self.pipeline.api_client.get_org_iam_policies.side_effect = (
-            api_errors.ApiExecutionError('11111', mock.MagicMock()))
+    @mock.patch.object(organization_dao.OrganizationDao, 'get_organizations',
+        autospec=True)
+    def test_retrieve_error_raised_when_db_error(self, mock_get_orgs):
+        """Test that LoadDataPipelineError is raised when database error."""
+        mock_get_orgs.side_effect = data_access_errors.MySQLError(
+            'organizations', mock.MagicMock())
 
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve()
+
+    @mock.patch.object(organization_dao.OrganizationDao, 'get_organizations',
+        autospec=True)
+    def test_retrieve_error_logged_when_api_error(self, mock_get_orgs):
+        """Test that LOGGER.error() is called when there is an API error."""
+        mock_get_orgs.return_value = [
+            organization.Organization(self.pipeline.configs['organization_id'])]
+        self.pipeline.api_client.get_org_iam_policies.side_effect = (
+            api_errors.ApiExecutionError('11111', mock.MagicMock()))
+        load_org_iam_policies_pipeline.LOGGER = mock.MagicMock()
+        self.pipeline._retrieve()
+
+        self.assertEqual(
+            1, load_org_iam_policies_pipeline.LOGGER.error.call_count)
 
     @mock.patch.object(
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline,

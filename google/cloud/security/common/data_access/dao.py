@@ -22,7 +22,7 @@ from MySQLdb import OperationalError
 from MySQLdb import ProgrammingError
 from MySQLdb import cursors
 
-from google.cloud.security.common.data_access._db_connector import _DbConnector
+from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import load_data_sql_provider
 from google.cloud.security.common.data_access.errors import MySQLError
@@ -34,17 +34,17 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 CREATE_TABLE_MAP = {
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+    'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
-    # pylint: disable=line-too-long
-    # TODO: Investigate improving so we can avoid the pylint disable.
-    'raw_project_iam_policies': create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
+    'raw_project_iam_policies':
+        create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
     'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
 }
 
 
-class Dao(_DbConnector):
+class Dao(_db_connector.DbConnector):
     """Data access object (DAO)."""
 
     def __init__(self):

@@ -32,7 +32,7 @@ flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 LOGGER = log_util.get_logger(__name__)
 
 # pylint: disable=too-few-public-methods
-class _DbConnector(object):
+class DbConnector(object):
     """Database connector."""
 
     def __init__(self):
