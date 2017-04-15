@@ -64,7 +64,7 @@ if sys.version_info.major > 2:
 
 def build_protos():
     """Build protos."""
-    subprocess.check_call(['python', 'makefile.py', '--clean'])
+    subprocess.check_call(['python', 'build_protos.py', '--clean'])
 
 class PostInstallCommand(install):
     """Post installation command."""
@@ -73,6 +73,11 @@ class PostInstallCommand(install):
         build_protos()
         install.do_egg_install(self)
 
+class BuildProxy(install):
+    """Proxy build process."""
+
+    def run(self):
+        subprocess.check_call(['sh', 'proxy/build.sh'])
 
 setup(
     name='forseti-security',
@@ -87,7 +92,8 @@ setup(
         'License :: OSI Approved :: Apache Software License'
     ],
     cmdclass={
-        'install': PostInstallCommand
+        'install': PostInstallCommand,
+        'proxy': BuildProxy,
     },
     install_requires=SETUP_REQUIRES + INSTALL_REQUIRES,
     setup_requires=SETUP_REQUIRES,

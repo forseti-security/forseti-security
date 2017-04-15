@@ -1,9 +1,46 @@
 syntax = "proto3";
 
-package iam;
+package explain;
+
+import "google/api/annotations.proto";
 
 service Explain {
-  rpc Ping(PingRequest) returns (PingReply) {}
+  rpc Ping(PingRequest) returns (PingReply) {
+    option (google.api.http) = {
+      post: "/v1/iam/explain/ping"
+      body: "*"
+    };
+  }
+
+  rpc GetAccessByResources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {
+    option (google.api.http) = {
+      post: "/v1/iam/explain/getaccessbyresources"
+      body: "*"
+    };
+  }
+
+  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {
+    option (google.api.http) = {
+      post: "/v1/iam/explain/getaccessbymembers"
+      body: "*"
+    };
+  }
+}
+
+message GetAccessByResourcesRequest {
+
+}
+
+message GetAccessByResourcesReply {
+
+}
+
+message GetAccessByMembersRequest {
+
+}
+
+message GetAccessByMembersReply {
+
 }
 
 message PingRequest {
