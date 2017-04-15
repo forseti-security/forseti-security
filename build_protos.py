@@ -28,6 +28,9 @@ import os
 import subprocess
 
 
+def isGrpcServiceDir(root, files):
+  return "/service_protos" in root or ".grpc_service" in files
+
 def Clean():
   """Clean out compiled protos."""
   # Start running from one directory above the directory which is found by
@@ -36,7 +39,11 @@ def Clean():
   cwd = os.path.dirname(os.path.abspath(__file__))
 
   # Find all the .proto files.
-  for (root, _, files) in os.walk(cwd):
+  for (root, dirs, files) in os.walk(cwd):
+    if isGrpcServiceDir(root, files):
+      logging.info("Skipping grpc service directory: %s"%root)
+      dirs[:] = []
+      continue
     for filename in files:
       full_filename = os.path.join(root, filename)
       if full_filename.endswith("_pb2.py") or full_filename.endswith(
@@ -52,7 +59,11 @@ def MakeProto():
 
   # Find all the .proto files.
   protos_to_compile = []
-  for (root, _, files) in os.walk(cwd):
+  for (root, dirs, files) in os.walk(cwd):
+    if isGrpcServiceDir(root, files):
+      logging.info("Skipping grpc service directory: %s"%root)
+      dirs[:] = []
+      continue
     for filename in files:
       full_filename = os.path.join(root, filename)
       if full_filename.endswith(".proto"):

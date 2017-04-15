@@ -7,7 +7,7 @@ from google.cloud.security.iam.playground import playground_pb2
 from google.cloud.security.iam.playground import playground_pb2_grpc
 
 class Playgrounder(playground_pb2_grpc.PlaygroundServicer):
-
+    
 	def Ping(self, request, context):
 		return playground_pb2.PingReply(data=request.data)
 
@@ -35,21 +35,24 @@ class Playgrounder(playground_pb2_grpc.PlaygroundServicer):
 	def DeleteResource(self, request, context):
 		return playground_pb2.DeleteResourceReply()
 
+def registerWithServer(playgrounder, server):
+    playground_pb2_grpc.add_PlaygroundServicer_to_server(playgrounder, server)
+
 def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
-	server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-	playground_pb2_grpc.add_PlaygroundServicer_to_server(Playgrounder(), server)
-	server.add_insecure_port(endpoint)
-	server.start()
-	while True:
-		try:
-			time.sleep(1)
-		except KeyboardInterrupt:
-			server.stop(wait_shutdown_secs).wait()
-			return
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers))
+    registerWithServer(Playgrounder(), server)
+    server.add_insecure_port(endpoint)
+    server.start()
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            server.stop(wait_shutdown_secs).wait()
+            return
 
 def main(argv):
-	serve()
+    serve()
 
 if __name__ == "__main__":
-	app.run()
+    app.run()
 

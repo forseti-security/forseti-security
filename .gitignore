@@ -7,6 +7,7 @@
 
 # Compiled protobuf
 *_pb2.py
+*_pb2_grpc.py
 
 # Miscellaneous
 .DS_Store

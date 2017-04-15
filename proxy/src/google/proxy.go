@@ -2,6 +2,7 @@ package main
 
 import (
   "flag"
+  "fmt"
   "net/http"
 
   "github.com/golang/glog"
@@ -13,7 +14,8 @@ import (
 )
 
 var (
-  echoEndpoint = flag.String("echo_endpoint", "localhost:50051", "endpoint of YourService")
+  connectPort = flag.Int("grpc-port", 50051, "gRPC port to connect to locally")
+  listenPort = flag.Int("http-port", 8081, "http port to listen for incoming connections")
 )
 
 func run() error {
@@ -21,21 +23,26 @@ func run() error {
   ctx, cancel := context.WithCancel(ctx)
   defer cancel()
 
+  connectTo := fmt.Sprintf("localhost:%d", *connectPort)
+  listenAt := fmt.Sprintf(":%d", *listenPort)
+
   mux := runtime.NewServeMux()
   opts := []grpc.DialOption{grpc.WithInsecure()}
-  err := gw.RegisterPlaygroundHandlerFromEndpoint(ctx, mux, *echoEndpoint, opts)
+  err := gw.RegisterPlaygroundHandlerFromEndpoint(ctx, mux, connectTo, opts)
   if err != nil {
     return err
   }
 
-  return http.ListenAndServe(":8088", mux)
+  return http.ListenAndServe(listenAt, mux)
 }
 
 func main() {
   flag.Parse()
   defer glog.Flush()
 
-  if err := run(); err != nil {
-    glog.Fatal(err)
+  for {
+    if err := run(); err != nil {
+      glog.Fatal(err)
+    }
   }
 }

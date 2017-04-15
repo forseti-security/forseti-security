@@ -6,7 +6,7 @@ import grpc
 import time
 
 def run():
-	channel = grpc.insecure_channel(':50051')
+	channel = grpc.insecure_channel('localhost:50051')
 	stub = playground_pb2_grpc.PlaygroundStub(channel)
 	request = playground_pb2.PingRequest()
 	request.data = "hello"
