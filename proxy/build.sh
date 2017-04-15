@@ -74,7 +74,7 @@ python -m grpc_tools.protoc \
 done # LOOP END
 
 echo "Compiling proxy"
-go build src/google/proxy.go
+go build ${PROXYDIR}/src/google/proxy.go
 
 
 echo "Generating annotations.proto and http.proto"
@@ -83,14 +83,14 @@ cp ${PROXYDIR}/__init__.py ../google/api/
 
 python -m grpc_tools.protoc \
     -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-    --python_out=../google/api \
-    --grpc_python_out=../google/api \
+    --python_out=${PROXYDIR}/.. \
+    --grpc_python_out=${PROXYDIR}/.. \
     ${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api/annotations.proto
 
 python -m grpc_tools.protoc \
     -I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-    --python_out=../google/api \
-    --grpc_python_out=../google/api \
+    --python_out=${PROXYDIR}/.. \
+    --grpc_python_out=${PROXYDIR}/.. \
     ${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api/http.proto
 
 
