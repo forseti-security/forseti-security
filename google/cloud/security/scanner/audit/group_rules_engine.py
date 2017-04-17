@@ -156,7 +156,10 @@ class GroupRuleBook(bre.BaseRuleBook):
                 rule_members = []
                 rule_def_members = rule_def.get('members')
                 for rule_def_member in rule_def_members:
-                    rule_members.append(GroupMember(rule_def_member))
+                    rule_members.append(
+                        GroupMember(rule_def_member.get('role'),
+                                    rule_def_member.get('type'),
+                                    rule_def_member.get('email')))
 
                 rule = Rule(rule_name=rule_def.get('name'),
                             rule_index=rule_index,
