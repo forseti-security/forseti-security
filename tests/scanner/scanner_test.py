@@ -20,6 +20,7 @@ import mock
 import MySQLdb
 
 from google.apputils import basetest
+from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.gcp_type import iam_policy
 from google.cloud.security.common.gcp_type import organization
@@ -96,6 +97,26 @@ class ScannerRunnerTest(basetest.TestCase):
             'projects', self.fake_timestamp)
         self.assertEqual(proj_policies, actual)
 
+    @mock.patch.object(MySQLdb, 'connect')
+    @mock.patch('google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp')
+    def test_get_timestamp(self, mock_get_ss_timestamp, mock_conn):
+        """Test that get_timestamp() works."""
+        mock_get_ss_timestamp.return_value = self.fake_timestamp
+        actual = scanner._get_timestamp()
+        self.assertEqual(1, mock_get_ss_timestamp.call_count)
+        self.assertEqual(self.fake_timestamp, actual)
+
+    @mock.patch.object(MySQLdb, 'connect')
+    @mock.patch('google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp')
+    def test_get_timestamp_db_errors(self, mock_get_ss_timestamp, mock_conn):
+        """Test that get_timestamp() works."""
+        mock_get_ss_timestamp.side_effect = errors.MySQLError(
+            'snapshot_cycles', mock.MagicMock())
+        scanner.LOGGER = mock.MagicMock()
+        actual = scanner._get_timestamp()
+        self.assertEqual(1, scanner.LOGGER.error.call_count)
+        self.assertIsNone(actual)
+
     def test_build_scan_summary(self):
         """Test that the scan summary is built correctly."""
         members = [iam_policy.IamPolicyMember.create_from(u)
@@ -131,18 +152,21 @@ class ScannerRunnerTest(basetest.TestCase):
                 'pluralized_resource_type': 'Organizations',
                 'total': 1,
                 'violations': {
-                    'abc111': 3
+                    'abc111': len(members)
                 }
             },
             resource.ResourceType.PROJECT: {
                 'pluralized_resource_type': 'Projects',
                 'total': 1,
                 'violations': {
-                    'def222': 3
+                    'def222': len(members)
                 }
             },
         }
-        expected = (6, expected_summaries)
+        expected_totals = sum(
+            [v for t in expected_summaries.values()
+            for v in t['violations'].values()])
+        expected = (expected_totals, expected_summaries)
 
         self.assertEqual(expected, actual)
             
