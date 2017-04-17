@@ -45,7 +45,6 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.scanner.audit import group_rules_engine as gre
 from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
 
 # Setup flags
@@ -82,12 +81,6 @@ def main(_):
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
     rules_engine.build_rule_book()
-    # pylint: disable=bare-except
-    try:
-        gre.GroupRulesEngine(FLAGS.group_rules)
-    except:
-        pass
-    # pylint: enable=bare-except
 
     snapshot_timestamp = _get_timestamp()
     if not snapshot_timestamp:
