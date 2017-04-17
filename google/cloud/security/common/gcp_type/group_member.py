@@ -36,9 +36,9 @@ class GroupMember(object):
         self.member_type = member_type
         self.member_email = member_email
 
-        if (not self.member_role or 
-            not self.member_type or
-            not self.member_email):
+        if (not self.member_role or
+                not self.member_type or
+                not self.member_email):
             raise errors.InvalidGroupMemberError(
                 ('Invalid group member: role={}, type={}, email={}'
                  .format(self.member_role,
