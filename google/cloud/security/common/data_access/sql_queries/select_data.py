@@ -64,3 +64,9 @@ LATEST_SNAPSHOT_TIMESTAMP = """
 GROUP_IDS = """
     SELECT group_id from groups_{0};
 """
+
+GROUP_USERS = """
+    SELECT group_id, member_role, member_type, member_id
+    FROM group_members_{0}
+    WHERE member_status = "ACTIVE" and member_type = "USER";
+"""
