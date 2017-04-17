@@ -23,7 +23,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class GroupDao(dao.Dao):
-    """Data access object (DAO) for Organizations."""
+    """Data access object (DAO) for Groups."""
 
     def __init__(self):
         super(GroupDao, self).__init__()
