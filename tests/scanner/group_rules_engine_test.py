@@ -69,9 +69,12 @@ class GroupRulesEngineTest(basetest.TestCase):
         self.assertEquals(len(expected_members), len(rule.members))
 
         expected_member = expected_members[0]
-        self.assertEquals(expected_member.get('email') , rule.members[0].email)
-        self.assertEquals(expected_member.get('role'), rule.members[0].role)
-        self.assertEquals(expected_member.get('type'), rule.members[0].type)
+        self.assertEquals(expected_member.get('email') ,
+                          rule.members[0].member_email)
+        self.assertEquals(expected_member.get('role'),
+                          rule.members[0].member_role)
+        self.assertEquals(expected_member.get('type'),
+                          rule.members[0].member_type)
 
 
 if __name__ == '__main__':
