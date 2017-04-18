@@ -53,25 +53,6 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         super(LoadProjectsPipeline, self).__init__(
             cycle_timestamp, configs, crm_client, dao)
 
-    def _load(self, resource_name, data):
-        """ Load iam policies into cloud sql.
-
-        Args:
-            resource_name: String of the resource name.
-            data: An iterable or a list of data to be uploaded.
-
-        Returns:
-            None
-
-        Raises:
-            LoadDataPipelineError: An error with loading data has occurred.
-        """
-        try:
-            self.dao.load_data(resource_name, self.cycle_timestamp, data)
-        except (data_access_errors.CSVFileError,
-                data_access_errors.MySQLError) as e:
-            raise inventory_errors.LoadDataPipelineError(e)
-
     def _transform(self, projects):
         """Yield an iterator of loadable iam policies.
 

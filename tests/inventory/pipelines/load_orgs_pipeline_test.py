@@ -19,8 +19,8 @@ import json
 import mock
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.inventory import errors as inventory_errors
@@ -48,7 +48,7 @@ class LoadOrgsPipelineTest(basetest.TestCase):
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = fake_configs.FAKE_CONFIGS
         self.mock_crm = mock.create_autospec(crm.CloudResourceManagerClient)
-        self.mock_dao = mock.create_autospec(dao.Dao)
+        self.mock_dao = mock.create_autospec(org_dao.OrganizationDao)
         self.pipeline = (
             load_orgs_pipeline.LoadOrgsPipeline(
                 self.cycle_timestamp,

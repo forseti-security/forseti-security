@@ -52,25 +52,6 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         super(LoadOrgsPipeline, self).__init__(
             cycle_timestamp, configs, crm_client, dao)
 
-    def _load(self, resource_name, data):
-        """ Load iam policies into cloud sql.
-
-        Args:
-            resource_name: String of the resource name.
-            data: An iterable or a list of data to be uploaded.
-
-        Returns:
-            None
-
-        Raises:
-            LoadDataPipelineError: An error with loading data has occurred.
-        """
-        try:
-            self.dao.load_data(resource_name, self.cycle_timestamp, data)
-        except (data_access_errors.CSVFileError,
-                data_access_errors.MySQLError) as e:
-            raise inventory_errors.LoadDataPipelineError(e)
-
     def _transform(self, orgs):
         """Yield an iterator of loadable iam policies.
 
@@ -82,8 +63,7 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of loadable orgs, each org as a dict.
         """
-        for org in (o for d in orgs \
-                        for o in d.get('organizations', [])):
+        for org in (o for d in orgs for o in d.get('organizations', [])):
             org_json = json.dumps(org)
             try:
                 parsed_time = dateutil_parser.parse(org.get('creationTime'))

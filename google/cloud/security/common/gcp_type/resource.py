@@ -68,30 +68,44 @@ class Resource(object):
     """Represents a GCP resource."""
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, resource_id, resource_type,
-                 resource_name=None, parent=None,
-                 lifecycle_state=LifecycleState.UNSPECIFIED):
+    def __init__(
+        self,
+        resource_id,
+        resource_type,
+        name=None,
+        display_name=None,
+        parent=None,
+        lifecycle_state=LifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:
-            resource_id: The resource id (string).
+            resource_id: The resource's unique id (string) in GCP.
             resource_type: The resource type.
-            resource_name: The resource name.
+            name: The resource unique name,
+                e.g. "<resource type>/{id}".
+            display_name: The resource display name.
             parent: The parent Resource object.
             lifecycle_state: The lifecycle state of the Resource.
         """
-        self.resource_id = str(resource_id)
-        self.resource_name = resource_name
-        self.resource_type = resource_type
-        self.parent = parent
-        self.lifecycle_state = lifecycle_state
+        self._resource_id = str(resource_id)
+        self._resource_type = resource_type
+        if name:
+            self._name = name
+        else:
+            self._name = self.RESOURCE_NAME_FMT % resource_id
+        self._display_name = display_name
+        # TODO: maybe need assertion for parent type, e.g. assert that
+        # organization has no parent, whereas projects and folders can
+        # have either another folder or organization as a parent.
+        self._parent = parent
+        self._lifecycle_state = lifecycle_state
 
     def __eq__(self, other):
         """Test equality of Resource."""
         if not isinstance(other, type(self)):
             return NotImplemented
-        return (self.resource_id == other.resource_id and
-                self.resource_type == self.resource_type)
+        return (self.id == other.id and
+                self.type == self.type)
 
     def __ne__(self, other):
         """Test inequality of Resource."""
@@ -99,37 +113,42 @@ class Resource(object):
 
     def __hash__(self):
         """Create a hash on the resource type and id."""
-        return hash((self.resource_type, self.resource_id))
+        return hash((self.type, self.id))
 
     def __repr__(self):
         """String representation of the Resource."""
-        return 'Resource<id={},type={},parent={}>'.format(
-            self.resource_id, self.resource_type, self.parent)
+        return '{}<id={},parent={}>'.format(
+            self.type, self.id, self.parent)
 
     @property
     def id(self):
-        """Get id."""
-        return self.resource_id
+        """Resource id."""
+        return self._resource_id
 
-    def get_id(self):
-        """Get resource id."""
-        return self.resource_id
+    @property
+    def type(self):
+        """Resource type."""
+        return self._resource_type
 
-    def get_name(self):
-        """Get resource name."""
-        return self.resource_name
+    @property
+    def name(self):
+        """GCP name."""
+        return self._name
 
-    def get_type(self):
-        """Get resource type."""
-        return self.resource_type
+    @property
+    def display_name(self):
+        """Display name."""
+        return self._display_name
 
-    def get_parent(self):
-        """Get resource parent."""
-        return self.parent
+    @property
+    def parent(self):
+        """Resource parent."""
+        return self._parent
 
-    def get_lifecycle_state(self):
-        """Get the lifecycle state."""
-        return self.lifecycle_state
+    @property
+    def lifecycle_state(self):
+        """Lifecycle state."""
+        return self._lifecycle_state
 
     def get_ancestors(self, include_self=True):
         """Get the resource ancestors.
@@ -143,7 +162,7 @@ class Resource(object):
         if include_self:
             curr = self
         else:
-            curr = self.parent
+            curr = self._parent
 
         while curr:
             yield curr

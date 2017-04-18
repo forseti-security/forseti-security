@@ -99,11 +99,11 @@ class OrgDaoTest(basetest.TestCase):
         expected_orgs = [
             organization.Organization(
                 self.fake_orgs_db_rows[0][0],
-                org_name=self.fake_orgs_db_rows[0][2],
+                display_name=self.fake_orgs_db_rows[0][2],
                 lifecycle_state=self.fake_orgs_db_rows[0][3]),
             organization.Organization(
                 self.fake_orgs_db_rows[1][0],
-                org_name=self.fake_orgs_db_rows[1][2],
+                display_name=self.fake_orgs_db_rows[1][2],
                 lifecycle_state=self.fake_orgs_db_rows[1][3]),
         ]
 
@@ -195,7 +195,7 @@ class OrgDaoTest(basetest.TestCase):
 
         expected_org = organization.Organization(
             fake_org[0],
-            org_name=fake_org[2],
+            display_name=fake_org[2],
             lifecycle_state=fake_org[3])
 
         self.assertEqual(expected_org, org)

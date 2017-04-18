@@ -13,6 +13,7 @@
 # limitations under the License.
 """A Folder Resource."""
 
+from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_type import resource
 
 
@@ -25,20 +26,30 @@ class FolderLifecycleState(resource.LifecycleState):
 class Folder(resource.Resource):
     """Folder Resource."""
 
-    def __init__(self, folder_id, folder_name=None,
-                 lifecycle_state=FolderLifecycleState.UNSPECIFIED):
-        """Initalize.
+    RESOURCE_NAME_FMT = 'folders/%s'
+
+    def __init__(
+        self,
+        folder_id,
+        name=None,
+        display_name=None,
+        parent=None,
+        lifecycle_state=FolderLifecycleState.UNSPECIFIED):
+        """Initialize.
 
         Args:
             folder_id: The string folder id.
-            folder_name: The string folder name.
+            name: The folder unique GCP name, i.e. "folders/{id}".
+            display_name: The folder display name.
+            parent: The parent Resource.
             lifecycle_state: The folder's lifecycle state.
         """
         super(Folder, self).__init__(
             resource_id=folder_id,
             resource_type=resource.ResourceType.FOLDER,
-            resource_name=folder_name,
-            parent=None,
+            name=name,
+            display_name=display_name,
+            parent=parent,
             lifecycle_state=lifecycle_state)
 
     def exists(self):
@@ -47,5 +58,7 @@ class Folder(resource.Resource):
         Returns:
             True if we can get the folder from GCP, otherwise False.
         """
-        # TODO: enable for folders
-        return False
+        crm_client = crm.CloudResourceManagerClient()
+        folder = crm_client.get_folder(self.id)
+
+        return folder is not None

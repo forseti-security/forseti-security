@@ -145,29 +145,6 @@ class Dao(_db_connector.DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
-    def select_project_numbers(self, resource_name, timestamp):
-        """Select the project numbers from a snapshot table.
-
-        Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-
-        Returns:
-             list of project numbers
-
-        Raises:
-            MySQLError: An error with MySQL has occurred.
-        """
-        try:
-            project_numbers_sql = select_data.PROJECT_NUMBERS.format(timestamp)
-            cursor = self.conn.cursor(cursorclass=cursors.DictCursor)
-            cursor.execute(project_numbers_sql)
-            rows = cursor.fetchall()
-            return [row['project_number'] for row in rows]
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            raise MySQLError(resource_name, e)
-
     def execute_sql_with_fetch(self, resource_name, sql, values):
         """Executes a provided sql statement with fetch.
 

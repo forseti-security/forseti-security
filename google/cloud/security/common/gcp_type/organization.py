@@ -30,20 +30,27 @@ class OrgLifecycleState(resource.LifecycleState):
 class Organization(resource.Resource):
     """Organization resource."""
 
-    def __init__(self, organization_id, org_name=None,
-                 lifecycle_state=OrgLifecycleState.UNSPECIFIED):
+    RESOURCE_NAME_FMT = 'organizations/%s'
+
+    def __init__(
+        self,
+        organization_id,
+        name=None,
+        display_name=None,
+        lifecycle_state=OrgLifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:
             organization_id: The organization id.
-            org_name: The organization's display name.
+            name: The organization's unique GCP name, i.e. "organizations/{id}".
+            display_name: The organization's display name.
             lifecycle_state: The lifecycle state of the organization.
         """
         super(Organization, self).__init__(
             resource_id=organization_id,
             resource_type=resource.ResourceType.ORGANIZATION,
-            resource_name=org_name,
-            parent=None,
+            name=name,
+            display_name=display_name,
             lifecycle_state=lifecycle_state)
 
     def exists(self):
@@ -53,7 +60,6 @@ class Organization(resource.Resource):
             True if we can get the org from GCP, otherwise False.
         """
         crm_client = crm.CloudResourceManagerClient()
-        org = crm_client.get_organization(
-            'organizations/{}'.format(self.resource_id))
+        org = crm_client.get_organization(self.name)
 
         return org is not None

@@ -31,22 +31,31 @@ class ProjectLifecycleState(resource.LifecycleState):
 class Project(resource.Resource):
     """Project resource."""
 
-    def __init__(self, project_id, project_number,
-                 project_name=None, parent=None,
-                 lifecycle_state=ProjectLifecycleState.UNSPECIFIED):
+    RESOURCE_NAME_FMT = 'organizations/%s'
+
+    def __init__(
+        self,
+        project_id,
+        project_number=None,
+        name=None,
+        display_name=None,
+        parent=None,
+        lifecycle_state=ProjectLifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:
             project_id: The project string id.
             project_number: The project number.
-            project_name: The project name.
+            name: The full unique GCP name, i.e. "projects/{projectId}".
+            display_name: The display name.
             parent: The parent Resource.
             lifecycle_state: The project's lifecycle state.
         """
         super(Project, self).__init__(
             resource_id=project_id,
             resource_type=resource.ResourceType.PROJECT,
-            resource_name=project_name,
+            name=name,
+            display_name=display_name,
             parent=parent,
             lifecycle_state=lifecycle_state)
         self.project_number = project_number
@@ -62,6 +71,6 @@ class Project(resource.Resource):
             True if we can get the project from GCP, otherwise False.
         """
         crm_client = crm.CloudResourceManagerClient()
-        project = crm_client.get_project(self.resource_id)
+        project = crm_client.get_project(self.id)
 
         return project is not None

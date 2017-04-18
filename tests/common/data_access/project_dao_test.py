@@ -40,6 +40,23 @@ class ProjectDaoTest(basetest.TestCase):
         self.fake_projects_bad_iam_db_rows = \
             fake_projects.FAKE_PROJECTS_BAD_IAM_DB_ROWS
 
+    def test_get_project_numbers(self):
+        """Test get_project_numbers()."""
+        conn_mock = mock.MagicMock()
+        cursor_mock = mock.MagicMock()
+        fetch_mock = mock.MagicMock()
+
+        self.project_dao.conn = conn_mock
+        self.project_dao.conn.cursor.return_value = cursor_mock
+        cursor_mock.fetchall.return_value = fetch_mock
+
+        fake_query = select_data.PROJECT_NUMBERS.format(self.fake_timestamp)
+        self.project_dao.get_project_numbers(
+            self.resource_name, self.fake_timestamp)
+
+        cursor_mock.execute.assert_called_once_with(fake_query, ())
+        cursor_mock.fetchall.assert_called_once_with()
+
     def test_get_project_iam_policies(self):
         """Test that get_project_iam_policies() database methods are called.
 
@@ -108,12 +125,12 @@ class ProjectDaoTest(basetest.TestCase):
             'projects', self.fake_timestamp)
 
         project1 = project.Project(
-            project_number=fake_project_policies[0][0],
             project_id=fake_project_policies[0][1],
+            project_number=fake_project_policies[0][0],
         )
         project2 = project.Project(
-            project_number=fake_project_policies[1][0],
             project_id=fake_project_policies[1][1],
+            project_number=fake_project_policies[1][0],
         )
         expected = {
             project1: iam_policies[0],
@@ -171,8 +188,8 @@ class ProjectDaoTest(basetest.TestCase):
 
         expected_project = project.Project(
             project_id=self.fake_projects_bad_iam_db_rows[0][1],
-            project_name=self.fake_projects_bad_iam_db_rows[0][2],
             project_number=self.fake_projects_bad_iam_db_rows[0][0],
+            display_name=self.fake_projects_bad_iam_db_rows[0][2],
             lifecycle_state=self.fake_projects_bad_iam_db_rows[0][3])
         expected_iam = json.loads(self.fake_projects_bad_iam_db_rows[0][6])
 

@@ -54,9 +54,9 @@ class GroupRulesEngineTest(basetest.TestCase):
         resource = resource_rules_map_key[0]
 
         self.assertEquals(expected_resource.get('resource_ids')[0],
-                          resource.resource_id)
+                          resource.id)
         self.assertEquals(expected_resource.get('type'),
-                          resource.resource_type)
+                          resource.type)
         self.assertEquals(expected_resource.get('applies_to'),
                           resource_rules_map_key[1])
 
