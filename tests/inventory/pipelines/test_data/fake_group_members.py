@@ -18,7 +18,7 @@ FAKE_GROUP_MEMBERS = [
     {
        'kind': 'admin#directory#member',
        'etag': '\"abcd1234ABCD1234\"',
-       'id': '111111111111111111111',
+       'id': '11111',
        'email': 'writer@my-gcp-project.iam.gserviceaccount.com',
        'role': 'MEMBER',
        'type': 'USER',
@@ -27,7 +27,7 @@ FAKE_GROUP_MEMBERS = [
     {
        'kind': 'admin#directory#member',
        'etag': '\"efgh1234EFGH1234\"',
-       'id': '222222222222222222222',
+       'id': '22222',
        'email': 'myuser@mydomain.com',
        'role': 'MEMBER',
        'type': 'USER',
@@ -36,7 +36,7 @@ FAKE_GROUP_MEMBERS = [
     {
        'kind': 'admin#directory#member',
        'etag': '\"hijk1234HIJK1234\"',
-       'id': '333333333333333333333',
+       'id': '33333',
        'role': 'MEMBER',
        'type': 'USER',
        'status': 'ACTIVE'
@@ -47,7 +47,7 @@ FAKE_GROUP_MEMBERS_2 = [
     {
        'kind': 'admin#directory#member',
        'etag': '\"abcd1234ABCD1234\"',
-       'id': '111111111111111111111',
+       'id': '44444',
        'email': 'reader@my-gcp-project.iam.gserviceaccount.com',
        'role': 'MEMBER',
        'type': 'USER',
@@ -56,7 +56,7 @@ FAKE_GROUP_MEMBERS_2 = [
     {
        'kind': 'admin#directory#member',
        'etag': '\"efgh1234EFGH1234\"',
-       'id': '222222222222222222222',
+       'id': '55555',
        'email': 'myuser2@mydomain.com',
        'role': 'OWNER',
        'type': 'USER',
@@ -71,8 +71,9 @@ EXPECTED_LOADABLE_GROUP_MEMBERS = [
         'member_role': 'MEMBER',
         'member_type': 'USER',
         'member_status': 'ACTIVE',
-        'member_id': 'writer@my-gcp-project.iam.gserviceaccount.com',
-        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "writer@my-gcp-project.iam.gserviceaccount.com", "etag": "\\"abcd1234ABCD1234\\"", "role": "MEMBER", "type": "USER", "id": "111111111111111111111"}'
+        'member_id': '11111',
+        'member_email': 'writer@my-gcp-project.iam.gserviceaccount.com',
+        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "writer@my-gcp-project.iam.gserviceaccount.com", "etag": "\\"abcd1234ABCD1234\\"", "role": "MEMBER", "type": "USER", "id": "11111"}'
     },
     {
         'group_id': 'mygroup',
@@ -80,8 +81,9 @@ EXPECTED_LOADABLE_GROUP_MEMBERS = [
         'member_role': 'MEMBER',
         'member_type': 'USER',
         'member_status': 'ACTIVE',
-        'member_id': 'myuser@mydomain.com',
-        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "myuser@mydomain.com", "etag": "\\"efgh1234EFGH1234\\"", "role": "MEMBER", "type": "USER", "id": "222222222222222222222"}'
+        'member_id': '22222',
+        'member_email': 'myuser@mydomain.com',
+        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "myuser@mydomain.com", "etag": "\\"efgh1234EFGH1234\\"", "role": "MEMBER", "type": "USER", "id": "22222"}'
     },
     {
         'group_id': 'mygroup',
@@ -89,8 +91,9 @@ EXPECTED_LOADABLE_GROUP_MEMBERS = [
         'member_role': 'MEMBER',
         'member_type': 'USER',
         'member_status': 'ACTIVE',
-        'member_id': None,
-        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "etag": "\\"hijk1234HIJK1234\\"", "role": "MEMBER", "type": "USER", "id": "333333333333333333333"}'
+        'member_id': '33333',
+        'member_email': None,
+        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "etag": "\\"hijk1234HIJK1234\\"", "role": "MEMBER", "type": "USER", "id": "33333"}'
     },
     {
         'group_id': 'mygroup2',
@@ -98,8 +101,9 @@ EXPECTED_LOADABLE_GROUP_MEMBERS = [
         'member_role': 'MEMBER',
         'member_type': 'USER',
         'member_status': 'ACTIVE',
-        'member_id': 'reader@my-gcp-project.iam.gserviceaccount.com',
-        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "reader@my-gcp-project.iam.gserviceaccount.com", "etag": "\\"abcd1234ABCD1234\\"", "role": "MEMBER", "type": "USER", "id": "111111111111111111111"}'
+        'member_id': '44444',
+        'member_email': 'reader@my-gcp-project.iam.gserviceaccount.com',
+        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "reader@my-gcp-project.iam.gserviceaccount.com", "etag": "\\"abcd1234ABCD1234\\"", "role": "MEMBER", "type": "USER", "id": "44444"}'
     },
     {
         'group_id': 'mygroup2',
@@ -107,8 +111,9 @@ EXPECTED_LOADABLE_GROUP_MEMBERS = [
         'member_role': 'OWNER',
         'member_type': 'USER',
         'member_status': 'ACTIVE',
-        'member_id': 'myuser2@mydomain.com',
-        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "myuser2@mydomain.com", "etag": "\\"efgh1234EFGH1234\\"", "role": "OWNER", "type": "USER", "id": "222222222222222222222"}'
+        'member_id': '55555',
+        'member_email': 'myuser2@mydomain.com',
+        'raw_member': '{"status": "ACTIVE", "kind": "admin#directory#member", "email": "myuser2@mydomain.com", "etag": "\\"efgh1234EFGH1234\\"", "role": "OWNER", "type": "USER", "id": "55555"}'
     }
 ]
 

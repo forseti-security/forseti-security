@@ -143,7 +143,7 @@ def _get_output_filename(now_utc):
     output_filename = 'scanner_output.{}.csv'.format(output_timestamp)
     return output_filename
 
-def _get_timestamp():
+def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
     Returns:
@@ -153,8 +153,7 @@ def _get_timestamp():
     latest_timestamp = None
     try:
         dao = Dao()
-        latest_timestamp = dao.get_latest_snapshot_timestamp(
-            ('SUCCESS', 'PARTIAL_SUCCESS'))
+        latest_timestamp = dao.get_latest_snapshot_timestamp(statuses)
     except MySQLError as err:
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
@@ -170,12 +169,8 @@ def _get_org_policies(timestamp):
         The org policies.
     """
     org_policies = {}
-    try:
-        org_dao = organization_dao.OrganizationDao()
-        org_policies = org_dao.get_org_iam_policies('organizations', timestamp)
-    except MySQLError as err:
-        LOGGER.error('Error getting org policies: %s', err)
-
+    org_dao = organization_dao.OrganizationDao()
+    org_policies = org_dao.get_org_iam_policies('organizations', timestamp)
     return org_policies
 
 def _get_project_policies(timestamp):
@@ -188,12 +183,8 @@ def _get_project_policies(timestamp):
         The project policies.
     """
     project_policies = {}
-    try:
-        dao = project_dao.ProjectDao()
-        project_policies = dao.get_project_policies('projects', timestamp)
-    except MySQLError as err:
-        LOGGER.error('Error getting project policies: %s', err)
-
+    dao = project_dao.ProjectDao()
+    project_policies = dao.get_project_policies('projects', timestamp)
     return project_policies
 
 def _write_violations_output(violations):
