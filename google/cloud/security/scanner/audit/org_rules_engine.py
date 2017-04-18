@@ -486,8 +486,8 @@ class ResourceRules(object):
                         policy_members=policy_binding.members))
                     if violating_members:
                         yield RuleViolation(
-                            resource_type=policy_resource.resource_type,
-                            resource_id=policy_resource.resource_id,
+                            resource_type=policy_resource.type,
+                            resource_id=policy_resource.id,
                             rule_name=rule.rule_name,
                             rule_index=rule.rule_index,
                             violation_type=RULE_VIOLATION_TYPE.get(
@@ -499,8 +499,8 @@ class ResourceRules(object):
             if not found_role and rule.mode == bre.RuleMode.REQUIRED:
                 for binding in rule.bindings:
                     yield RuleViolation(
-                        resource_type=policy_resource.resource_type,
-                        resource_id=policy_resource.resource_id,
+                        resource_type=policy_resource.type,
+                        resource_id=policy_resource.id,
                         rule_name=rule.rule_name,
                         rule_index=rule.rule_index,
                         violation_type=RULE_VIOLATION_TYPE.get(

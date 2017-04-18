@@ -19,7 +19,6 @@ import json
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
@@ -94,8 +93,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
             LoadDataPipelineException: An error with loading data has occurred.
         """
         try:
-            org_dao = organization_dao.OrganizationDao()
-            orgs = org_dao.get_organizations(
+            orgs = self.dao.get_organizations(
                 self.RESOURCE_NAME, self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
