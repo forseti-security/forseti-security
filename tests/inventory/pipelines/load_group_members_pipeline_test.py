@@ -56,7 +56,7 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
 
         loadable_groups_members = self.pipeline._transform(
             fake_group_members.FAKE_GROUPS_MEMBERS_MAP)
-        for (i, group_member) in enumerate(loadable_groups_members):            
+        for (i, group_member) in enumerate(loadable_groups_members):
             self.assertDictEqual(
                 fake_group_members.EXPECTED_LOADABLE_GROUP_MEMBERS[i],
                 group_member)
