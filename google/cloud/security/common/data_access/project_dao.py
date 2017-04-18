@@ -52,15 +52,10 @@ class ProjectDao(dao.Dao):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        try:
-            project_numbers_sql = select_data.PROJECT_NUMBERS.format(timestamp)
-            rows = self.execute_sql_with_fetch(
-                resource_name, project_numbers_sql, ())
-            return [row['project_number'] for row in rows]
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            raise errors.MySQLError(resource_name, e)
-
+        project_numbers_sql = select_data.PROJECT_NUMBERS.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource_name, project_numbers_sql, ())
+        return [row['project_number'] for row in rows]
 
     def get_project_policies(self, resource_name, timestamp):
         """Get the project policies.

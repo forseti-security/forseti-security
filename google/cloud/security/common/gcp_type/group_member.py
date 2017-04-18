@@ -44,3 +44,19 @@ class GroupMember(object):
                  .format(self.member_role,
                          self.member_type,
                          self.member_email)))
+
+    def __eq__(self, other):
+        """Tests equality with another object."""
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (self.member_role == other.member_role and
+                self.member_type == other.member_type and
+                self.member_email == other.member_email)
+
+    def __ne__(self, other):
+        """Tests inequality with another object."""
+        return not self == other
+
+    def __hash__(self):
+        """Return hash of properties."""
+        return hash((self.member_role, self.member_type, self.member_email))
