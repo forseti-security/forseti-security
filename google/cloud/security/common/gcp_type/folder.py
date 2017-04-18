@@ -29,12 +29,12 @@ class Folder(resource.Resource):
     RESOURCE_NAME_FMT = 'folders/%s'
 
     def __init__(
-        self,
-        folder_id,
-        name=None,
-        display_name=None,
-        parent=None,
-        lifecycle_state=FolderLifecycleState.UNSPECIFIED):
+            self,
+            folder_id,
+            name=None,
+            display_name=None,
+            parent=None,
+            lifecycle_state=FolderLifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:

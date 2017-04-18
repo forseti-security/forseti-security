@@ -69,13 +69,13 @@ class Resource(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(
-        self,
-        resource_id,
-        resource_type,
-        name=None,
-        display_name=None,
-        parent=None,
-        lifecycle_state=LifecycleState.UNSPECIFIED):
+            self,
+            resource_id,
+            resource_type,
+            name=None,
+            display_name=None,
+            parent=None,
+            lifecycle_state=LifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:

@@ -18,15 +18,11 @@ import json
 
 from dateutil import parser as dateutil_parser
 
-# TODO: Investigate improving so the pylint disable isn't needed.
-# pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
 

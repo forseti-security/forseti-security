@@ -33,11 +33,11 @@ class Organization(resource.Resource):
     RESOURCE_NAME_FMT = 'organizations/%s'
 
     def __init__(
-        self,
-        organization_id,
-        name=None,
-        display_name=None,
-        lifecycle_state=OrgLifecycleState.UNSPECIFIED):
+            self,
+            organization_id,
+            name=None,
+            display_name=None,
+            lifecycle_state=OrgLifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:

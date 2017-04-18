@@ -34,13 +34,13 @@ class Project(resource.Resource):
     RESOURCE_NAME_FMT = 'organizations/%s'
 
     def __init__(
-        self,
-        project_id,
-        project_number=None,
-        name=None,
-        display_name=None,
-        parent=None,
-        lifecycle_state=ProjectLifecycleState.UNSPECIFIED):
+            self,
+            project_id,
+            project_number=None,
+            name=None,
+            display_name=None,
+            parent=None,
+            lifecycle_state=ProjectLifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:

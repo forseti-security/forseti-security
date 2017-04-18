@@ -19,7 +19,6 @@ import json
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
