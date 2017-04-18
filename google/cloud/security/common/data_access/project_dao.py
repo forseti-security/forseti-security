@@ -59,7 +59,7 @@ class ProjectDao(dao.Dao):
             return [row['project_number'] for row in rows]
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
-            raise MySQLError(resource_name, e)
+            raise errors.MySQLError(resource_name, e)
 
 
     def get_project_policies(self, resource_name, timestamp):
