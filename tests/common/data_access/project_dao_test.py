@@ -57,6 +57,17 @@ class ProjectDaoTest(basetest.TestCase):
         cursor_mock.execute.assert_called_once_with(fake_query, ())
         cursor_mock.fetchall.assert_called_once_with()
 
+    def test_get_project_numbers_raises_error(self):
+        """Test get_project_numbers() raises a MySQLError."""
+        fetch_mock = mock.MagicMock()
+        self.project_dao.execute_sql_with_fetch = fetch_mock
+        fetch_mock.side_effect = (
+            errors.MySQLError(self.resource_name, mock.MagicMock()))
+
+        with self.assertRaises(errors.MySQLError):
+            self.project_dao.get_project_numbers(
+                self.resource_name, self.fake_timestamp)
+
     def test_get_project_iam_policies(self):
         """Test that get_project_iam_policies() database methods are called.
 
@@ -149,7 +160,7 @@ class ProjectDaoTest(basetest.TestCase):
               * fetch
 
         Expect:
-            Raises a MySQLError.
+            LOGGER.error() has one call count.
         """
         conn_mock = mock.MagicMock()
         cursor_mock = mock.MagicMock()
