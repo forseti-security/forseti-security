@@ -81,7 +81,8 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                        'member_role': member.get('role'),
                        'member_type': member.get('type'),
                        'member_status': member.get('status'),
-                       'member_id': member.get('email'),
+                       'member_id': member.get('id'),
+                       'member_email': member.get('email'),
                        'raw_member': json.dumps(member)}
 
     def _retrieve(self):

@@ -108,6 +108,7 @@ CREATE_GROUP_MEMBERS_TABLE = """
         `member_type` varchar(255) DEFAULT NULL,
         `member_status` varchar(255) DEFAULT NULL,
         `member_id` varchar(255) DEFAULT NULL,
+        `member_email` varchar(255) DEFAULT NULL,
         `raw_member` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
