@@ -47,7 +47,7 @@ class GroupDao(dao.Dao):
             group_user = group_member.GroupMember(
                 row.get('member_role'),
                 row.get('member_type'),
-                row.get('member_id'))
+                row.get('member_email'))
             if row.get('group_id') not in group_users:
                 group_users[row.get('group_id')] = [group_user]
             else:
