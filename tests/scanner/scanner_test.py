@@ -15,11 +15,13 @@
 """Scanner runner script test."""
 
 from datetime import datetime
+import os
 
 import mock
 import MySQLdb
 
 from google.apputils import basetest
+from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.gcp_type import iam_policy
@@ -34,6 +36,11 @@ from tests.inventory.pipelines.test_data import fake_iam_policies
 class ScannerRunnerTest(basetest.TestCase):
 
     def setUp(self):
+        fake_utcnow = datetime(
+            year=1900, month=1, day=1,
+            hour=0, minute=0, second=0, microsecond=0)
+        self.fake_utcnow = fake_utcnow
+        self.fake_utcnow_str = self.fake_utcnow.strftime(scanner.OUTPUT_TIMESTAMP_FMT)
         self.fake_timestamp = '123456'
         self.scanner = scanner
         self.scanner.LOGGER = mock.MagicMock()
@@ -131,17 +138,11 @@ class ScannerRunnerTest(basetest.TestCase):
     def test_get_output_filename(self):
         """Test that the output filename of the scanner is correct.
 
-        Setup:
-            * Create a fake datetime of 01/01/1900 00:00:00.
-
         Expected:
             * Scanner output filename matches the format.
         """
-        fake_datetime = datetime(
-            year=1900, month=1, day=1,
-            hour=0, minute=0, second=0, microsecond=0)
-        actual = self.scanner._get_output_filename(fake_datetime)
-        expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format('19000101T000000Z')
+        actual = self.scanner._get_output_filename(self.fake_utcnow)
+        expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(self.fake_utcnow_str)
         self.assertEquals(expected, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
@@ -217,6 +218,101 @@ class ScannerRunnerTest(basetest.TestCase):
         actual = scanner._get_timestamp()
         self.assertEqual(1, scanner.LOGGER.error.call_count)
         self.assertIsNone(actual)
+
+    @mock.patch.object(csv_writer, 'write_csv', autospec=True)
+    @mock.patch.object(os, 'path', autospec=True)
+    @mock.patch.object(scanner, '_upload_csv')
+    @mock.patch.object(scanner, '_send_email')
+    @mock.patch('google.cloud.security.scanner.scanner.datetime')
+    def test_output_results_local_no_email(
+            self,
+            mock_datetime,
+            mock_send_email,
+            mock_upload,
+            mock_path,
+            mock_write_csv):
+        """Test output results for local output, and don't send email.
+
+        Setup:
+            * Create fake csv filename.
+            * Create fake file path.
+            * Set FLAGS values.
+            * Mock the context manager and the csv file name.
+            * Mock the timestamp for the email.
+            * Mock the file path.
+
+        Expect:
+            * _upload_csv() is called once with the fake parameters.
+        """
+        fake_csv_name = 'fake.csv'
+        fake_full_path = '/fake/output/path'
+
+        self.scanner.FLAGS.email_recipient = None
+        self.scanner.FLAGS.output_path = fake_full_path
+
+        mock_write_csv.return_value = mock.MagicMock()
+        mock_write_csv.return_value.__enter__ = mock.MagicMock()
+        type(mock_write_csv.return_value.__enter__.return_value).name = fake_csv_name
+
+        mock_datetime.utcnow = mock.MagicMock()
+        mock_datetime.utcnow.return_value = self.fake_utcnow
+        mock_path.abspath = mock.MagicMock()
+        mock_path.abspath.return_value = fake_full_path
+
+        self.scanner._output_results(['a'])
+
+        mock_upload.assert_called_once_with(fake_full_path, self.fake_utcnow, fake_csv_name)
+        self.assertEquals(0, mock_send_email.call_count)
+
+    @mock.patch.object(csv_writer, 'write_csv', autospec=True)
+    @mock.patch.object(os, 'path', autospec=True)
+    @mock.patch.object(scanner, '_upload_csv')
+    @mock.patch.object(scanner, '_send_email')
+    @mock.patch('google.cloud.security.scanner.scanner.datetime')
+    def test_output_results_gcs_email(
+            self,
+            mock_datetime,
+            mock_send_email,
+            mock_upload,
+            mock_path,
+            mock_write_csv):
+        """Test output results for GCS upload and send email.
+
+        Setup:
+            * Create fake violations.
+            * Create fake counts.
+            * Create fake csv filename.
+            * Create fake file path.
+            * Set FLAGS values.
+            * Mock the context manager and the csv file name.
+            * Mock the timestamp for the email.
+            * Mock the file path.
+
+        Expect:
+            * _upload_csv() is called once with the fake parameters.
+        """
+
+        fake_violations = ['a']
+        fake_counts = {'x': 2}
+        fake_csv_name = 'fake.csv'
+        fake_full_path = 'gs://fake-bucket/output/path'
+
+        self.scanner.FLAGS.email_recipient = 'fake@somewhere.com'
+        self.scanner.FLAGS.output_path = fake_full_path
+
+        mock_write_csv.return_value = mock.MagicMock()
+        mock_write_csv.return_value.__enter__ = mock.MagicMock()
+        type(mock_write_csv.return_value.__enter__.return_value).name = fake_csv_name
+        mock_datetime.utcnow = mock.MagicMock()
+        mock_datetime.utcnow.return_value = self.fake_utcnow
+        mock_path.abspath = mock.MagicMock()
+        mock_path.abspath.return_value = fake_full_path
+
+        self.scanner._output_results(fake_violations, resource_counts=fake_counts)
+
+        mock_upload.assert_called_once_with(fake_full_path, self.fake_utcnow, fake_csv_name)
+        mock_send_email.assert_called_once_with(
+            fake_csv_name, self.fake_utcnow, fake_violations, fake_counts)
 
     def test_build_scan_summary(self):
         """Test that the scan summary is built correctly."""

@@ -120,7 +120,7 @@ def write_csv(resource_name, data, write_header=False):
         write_header: If True, write the header in the csv file.
 
     Returns:
-       String of the csv filename; full path included.
+       The CSV temporary file.
     """
     csv_file = tempfile.NamedTemporaryFile(delete=False)
     try:

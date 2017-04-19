@@ -70,6 +70,7 @@ flags.DEFINE_string('output_path', None,
 
 LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
+OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
 def main(_):
@@ -142,7 +143,7 @@ def _get_output_filename(now_utc):
     Returns:
         The output filename for the csv, formatted with the now_utc timestamp.
     """
-    output_timestamp = now_utc.strftime('%Y%m%dT%H%M%SZ')
+    output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
     output_filename = SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
     return output_filename
 
@@ -233,14 +234,14 @@ def _output_results(all_violations, **kwargs):
                 if not os.path.exists(FLAGS.output_path):
                     os.makedirs(output_path)
                 output_path = os.path.abspath(output_path)
-            _upload_csv_to_gcs(output_path, now_utc, csv_file.name)
+            _upload_csv(output_path, now_utc, csv_file.name)
 
         # Send summary email.
         if FLAGS.email_recipient is not None:
             resource_counts = kwargs.get('resource_counts', {})
             _send_email(csv_file.name, now_utc, all_violations, resource_counts)
 
-def _upload_csv_to_gcs(output_path, now_utc, csv_name):
+def _upload_csv(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
 
     Args:
