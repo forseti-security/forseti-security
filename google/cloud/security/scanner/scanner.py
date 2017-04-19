@@ -69,6 +69,7 @@ flags.DEFINE_string('output_path', None,
                      '"gs://bucket-name/path/for/output".'))
 
 LOGGER = log_util.get_logger(__name__)
+SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 
 
 def main(_):
@@ -76,7 +77,7 @@ def main(_):
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     if not FLAGS.rules:
-        print 'Provide a rules file. Use "forseti_scanner --helpfull" for help.'
+        LOGGER.warn('Provide a rules file. Use "forseti_scanner --helpfull" for help.')
         sys.exit(1)
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
@@ -84,14 +85,15 @@ def main(_):
 
     snapshot_timestamp = _get_timestamp()
     if not snapshot_timestamp:
-        LOGGER.info('No snapshot timestamp found. Exiting.')
+        LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
+    # TODO: make this generic
     org_policies = _get_org_policies(snapshot_timestamp)
     project_policies = _get_project_policies(snapshot_timestamp)
 
     if not org_policies and not project_policies:
-        LOGGER.info('No policies found. Exiting.')
+        LOGGER.warn('No policies found. Exiting.')
         sys.exit()
 
     all_violations = _find_violations(
@@ -140,7 +142,7 @@ def _get_output_filename(now_utc):
         The output filename for the csv, formatted with the now_utc timestamp.
     """
     output_timestamp = now_utc.strftime('%Y%m%dT%H%M%SZ')
-    output_filename = 'scanner_output.{}.csv'.format(output_timestamp)
+    output_filename = SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
     return output_filename
 
 def _get_timestamp():
@@ -234,7 +236,12 @@ def _output_results(all_violations, **kwargs):
 
         # If output_path specified, upload to GCS.
         if FLAGS.output_path:
-            _upload_csv_to_gcs(FLAGS.output_path, now_utc, csv_file.name)
+            output_path = FLAGS.output_path
+            if not output_path.startswith('gs://'):
+                if not os.path.exists(FLAGS.output_path):
+                    os.makedirs(output_path)
+                output_path = os.path.abspath(output_path)
+            _upload_csv_to_gcs(output_path, now_utc, csv_file.name)
 
         # Send summary email.
         if FLAGS.email_recipient is not None:
@@ -255,19 +262,18 @@ def _upload_csv_to_gcs(output_path, now_utc, csv_name):
 
     # If output path was specified, copy the csv temp file either to
     # a local file or upload it to Google Cloud Storage.
-    LOGGER.info('Output filename: %s', output_filename)
+    full_output_path = os.path.join(output_path, output_filename)
+    LOGGER.info('Output path: %s', full_output_path)
 
     if output_path.startswith('gs://'):
         # An output path for GCS must be the full
         # `gs://bucket-name/path/for/output`
         storage_client = storage.StorageClient()
-        full_output_path = os.path.join(output_path, output_filename)
-
         storage_client.put_text_file(
             csv_name, full_output_path)
     else:
         # Otherwise, just copy it to the output path.
-        shutil.copy(csv_name, os.path.join(output_path, output_filename))
+        shutil.copy(csv_name, full_output_path)
 
 def _send_email(csv_name, now_utc, all_violations, total_resources):
     """Send a summary email of the scan.
