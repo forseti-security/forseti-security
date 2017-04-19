@@ -14,52 +14,60 @@
 
 """Tests the Folder resource"""
 
+import mock
+
 from google.apputils import basetest
-from google.cloud.security.common.gcp_type.folder import Folder
-from google.cloud.security.common.gcp_type.folder import FolderLifecycleState
-from google.cloud.security.common.gcp_type.organization import Organization
-from google.cloud.security.common.gcp_type.project import Project
-from google.cloud.security.common.gcp_type.resource import ResourceType
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
+from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_type import folder
+from google.cloud.security.common.gcp_type import project
+from google.cloud.security.common.gcp_type import resource
 
 
 class FolderTest(basetest.TestCase):
     """Test Folder resource."""
 
+    def setUp(self):
+        self.folder1 = folder.Folder(
+            '12345',
+            display_name='My folder',
+            lifecycle_state=folder.FolderLifecycleState.ACTIVE)
+
     def test_create_folder_getters_are_correct(self):
         """Test whether the Folder getter methods return expected data."""
-        my_folder_id = 'my-folderid-1'
+        my_folder_id = '123456'
         my_folder_name = 'My folder name'
-        folder = Folder(my_folder_id, folder_name=my_folder_name,
-                          lifecycle_state=FolderLifecycleState.ACTIVE)
-        self.assertEqual(my_folder_id, folder.get_id())
-        self.assertEqual(my_folder_name, folder.get_name())
-        self.assertEqual(ResourceType.FOLDER, folder.get_type())
-        self.assertEqual(None, folder.get_parent())
-        self.assertEqual(FolderLifecycleState.ACTIVE,
-                         folder.get_lifecycle_state())
-
-    def test_folder_type_is_folder(self):
-        """Test whether the created Folder's type is ResourceType.FOLDER."""
-        folder = Folder('folder-id', 12345)
-        self.assertEqual(ResourceType.FOLDER, folder.get_type())
+        f1 = folder.Folder(my_folder_id, display_name=my_folder_name,
+                           lifecycle_state=folder.FolderLifecycleState.ACTIVE)
+        self.assertEqual(my_folder_id, f1.id)
+        self.assertEqual(
+            folder.Folder.RESOURCE_NAME_FMT % my_folder_id, f1.name)
+        self.assertEqual(my_folder_name, f1.display_name)
+        self.assertEqual(resource.ResourceType.FOLDER, f1.type)
+        self.assertEqual(None, f1.parent)
+        self.assertEqual(folder.FolderLifecycleState.ACTIVE,
+                         f1.lifecycle_state)
 
     def test_project_in_folder_returns_folder_ancestor(self):
         """Test whether the ancestry includes the folder, for a project."""
-        folder = Folder('folder-1', folder_name='My folder name')
-        project = Project('my-project-id', 333,
-                          project_name='My project',
-                          parent=folder)
-        expected = [folder]
-        actual = [a for a in project.get_ancestors(include_self=False)]
+        project1 = project.Project('my-project-id', 333,
+                                    display_name='My project',
+                                    parent=self.folder1)
+        expected = [self.folder1]
+        actual = [a for a in project1.get_ancestors(include_self=False)]
         self.assertEqual(expected, actual)
 
     def test_folder_no_parent_returns_empty_ancestors(self):
         """Test that a folder with no parents has no ancestors."""
-        folder = Folder('my-folder-id', folder_name='My folder')
         expected = []
-        actual = [a for a in folder.get_ancestors(include_self=False)]
+        actual = [a for a in self.folder1.get_ancestors(include_self=False)]
         self.assertEqual(expected, actual)
+
+    @mock.patch.object(
+        crm.CloudResourceManagerClient, 'get_folder', autospec=True)
+    def test_org_exists(self, mock_crm):
+        """Tests that the folder exists."""
+        mock_crm.return_value = True
+        self.assertTrue(self.folder1.exists())
 
 
 if __name__ == '__main__':

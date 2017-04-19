@@ -22,6 +22,8 @@ from google.cloud.security.common.gcp_type import resource
 class Group(resource.Resource):
     """Google Group."""
 
+    RESOURCE_NAME_FMT = 'groups/%s'
+
     def __init__(self, group_id, parent=None):
         """Initialize.
 

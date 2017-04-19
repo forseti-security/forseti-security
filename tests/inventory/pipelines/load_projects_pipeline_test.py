@@ -18,8 +18,8 @@ from google.apputils import basetest
 import mock
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
@@ -35,11 +35,11 @@ class LoadProjectsPipelineTest(basetest.TestCase):
 
     def setUp(self):
         """Set up."""
-
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = fake_configs.FAKE_CONFIGS
         self.mock_crm = mock.create_autospec(crm.CloudResourceManagerClient)
-        self.mock_dao = mock.create_autospec(dao.Dao)
+        self.mock_dao = mock.create_autospec(proj_dao.ProjectDao)
+        load_projects_pipeline.LOGGER = mock.MagicMock()
         self.pipeline = (
             load_projects_pipeline.LoadProjectsPipeline(
                 self.cycle_timestamp,
@@ -50,10 +50,9 @@ class LoadProjectsPipelineTest(basetest.TestCase):
     def test_can_transform_projects(self):
         """Test that projects can be transformed."""
 
-        projects = self.pipeline._transform(fake_projects.FAKE_PROJECTS)
-        for (i, project) in enumerate(projects):
-            self.assertEquals(
-                fake_projects.EXPECTED_LOADABLE_PROJECTS[i], project)
+        project = list(self.pipeline._transform(fake_projects.FAKE_PROJECTS))
+        self.assertEquals(
+            fake_projects.EXPECTED_LOADABLE_PROJECTS, project)
 
     def test_api_is_called_to_retrieve_projects(self):
         """Test that api is called to retrieve projects."""

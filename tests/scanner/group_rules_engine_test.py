@@ -54,9 +54,9 @@ class GroupRulesEngineTest(basetest.TestCase):
         resource = resource_rules_map_key[0]
 
         self.assertEquals(expected_resource.get('resource_ids')[0],
-                          resource.resource_id)
+                          resource.id)
         self.assertEquals(expected_resource.get('type'),
-                          resource.resource_type)
+                          resource.type)
         self.assertEquals(expected_resource.get('applies_to'),
                           resource_rules_map_key[1])
 
@@ -69,9 +69,12 @@ class GroupRulesEngineTest(basetest.TestCase):
         self.assertEquals(len(expected_members), len(rule.members))
 
         expected_member = expected_members[0]
-        self.assertEquals(expected_member.get('email') , rule.members[0].email)
-        self.assertEquals(expected_member.get('role'), rule.members[0].role)
-        self.assertEquals(expected_member.get('type'), rule.members[0].type)
+        self.assertEquals(expected_member.get('email') ,
+                          rule.members[0].member_email)
+        self.assertEquals(expected_member.get('role'),
+                          rule.members[0].member_role)
+        self.assertEquals(expected_member.get('type'),
+                          rule.members[0].member_type)
 
 
 if __name__ == '__main__':

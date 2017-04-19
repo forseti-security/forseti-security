@@ -29,6 +29,7 @@ GROUP_MEMBERS_FIELDNAMES = [
     'member_type',
     'member_status',
     'member_id',
+    'member_email',
     'raw_member'
 ]
 

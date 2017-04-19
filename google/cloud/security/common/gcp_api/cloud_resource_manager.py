@@ -98,10 +98,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 while request is not None:
                     response = self._execute(request)
 
-                    # TODO: why aren't we yielding just the project?
-                    # i.e. why are we yielding a dict with one key 'projects'
-                    # which is a list?
-
                     # TODO: once CRM API allows for direct filtering on
                     # lifecycleState, add it to the project_filter list
                     # and don't manually filter here.
@@ -221,3 +217,25 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                         'iam_policy': self._execute(request)}
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
+
+    def get_folder(self, folder_name):
+        """Get a folder.
+
+        Args:
+            folder_name: The unique folder name, i.e. "folders/{folderId}".
+
+        Returns:
+            The folder API response.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        folders_api = self.service.folders()
+
+        try:
+            with self.rate_limiter:
+                request = folders_api.get(name=folder_name)
+                response = self._execute(request)
+                return response
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(folder_name, e)

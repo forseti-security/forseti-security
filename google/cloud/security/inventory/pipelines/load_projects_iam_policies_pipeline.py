@@ -99,7 +99,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         """
         # Get the projects for which we will retrieve the IAM policies.
         try:
-            project_numbers = self.dao.select_project_numbers(
+            project_numbers = self.dao.get_project_numbers(
                 self.RESOURCE_NAME, self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)

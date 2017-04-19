@@ -131,7 +131,6 @@ class CloudResourceManagerTest(basetest.TestCase):
     def test_get_project_iam_policies(self):
         """Test get project IAM policies."""
 
-        self.crm_api_client = crm.CloudResourceManagerClient()
         mock_project_stub = mock.MagicMock()
         self.crm_api_client.service = mock.MagicMock()
         self.crm_api_client.service.projects.return_value = mock_project_stub
@@ -152,7 +151,6 @@ class CloudResourceManagerTest(basetest.TestCase):
     def test_get_organization(self):
         """Test get organizations."""
 
-        self.crm_api_client = crm.CloudResourceManagerClient()
         mock_orgs_stub = mock.MagicMock()
         self.crm_api_client.service = mock.MagicMock()
         self.crm_api_client.service.organizations.return_value = mock_orgs_stub
@@ -189,7 +187,6 @@ class CloudResourceManagerTest(basetest.TestCase):
     def test_get_org_iam_policies(self):
         """Test get org IAM policies."""
 
-        self.crm_api_client = crm.CloudResourceManagerClient()
         mock_orgs_stub = mock.MagicMock()
         self.crm_api_client.service = mock.MagicMock()
         self.crm_api_client.service.organizations.return_value = mock_orgs_stub

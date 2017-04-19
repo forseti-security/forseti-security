@@ -40,13 +40,13 @@ class OrgRulesEngineTest(basetest.TestCase):
 
     def setUp(self):
         """Set up."""
-        self.org789 = Organization('778899', org_name='My org')
+        self.org789 = Organization('778899', display_name='My org')
         self.project1 = Project(
             'my-project-1', 12345,
-            project_name='My project 1',
+            display_name='My project 1',
             parent=self.org789)
         self.project2 = Project('my-project-2', 12346,
-            project_name='My project 2')
+            display_name='My project 2')
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
@@ -337,8 +337,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         }
         expected_violations = set([
             RuleViolation(
-                resource_type=self.project1.resource_type,
-                resource_id=self.project1.resource_id,
+                resource_type=self.project1.type,
+                resource_id=self.project1.id,
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 role='roles/editor',
@@ -480,32 +480,32 @@ class OrgRulesEngineTest(basetest.TestCase):
             RuleViolation(
                 rule_index=0,
                 rule_name='my rule',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding1['roles/editor'])),
             RuleViolation(
                 rule_index=0,
                 rule_name='my rule',
-                resource_type=self.project2.resource_type,
-                resource_id=self.project2.resource_id,
+                resource_type=self.project2.type,
+                resource_id=self.project2.id,
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding1['roles/editor'])),
             RuleViolation(
                 rule_index=1,
                 rule_name='my other rule',
-                resource_type=self.project2.resource_type,
-                resource_id=self.project2.resource_id,
+                resource_type=self.project2.type,
+                resource_id=self.project2.id,
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding2['roles/editor'])),
             RuleViolation(
                 rule_index=2,
                 rule_name='required rule',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='REMOVED',
                 role='roles/viewer',
                 members=tuple([IamPolicyMember.create_from(
@@ -612,24 +612,24 @@ class OrgRulesEngineTest(basetest.TestCase):
             RuleViolation(
                 rule_index=1,
                 rule_name='my blacklist rule',
-                resource_id=self.org789.resource_id,
-                resource_type=self.org789.resource_type,
+                resource_id=self.org789.id,
+                resource_type=self.org789.type,
                 violation_type='ADDED',
                 role=org_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_org['roles/editor'])),
             RuleViolation(
                 rule_index=0,
                 rule_name='my whitelist rule',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_project['roles/editor'])),
             RuleViolation(
                 rule_index=2,
                 rule_name='my required rule',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='REMOVED',
                 role='roles/viewer',
                 members=tuple(expected_outstanding_project['roles/viewer'])),
@@ -698,16 +698,16 @@ class OrgRulesEngineTest(basetest.TestCase):
             RuleViolation(
                 rule_index=0,
                 rule_name='org whitelist',
-                resource_id=self.org789.resource_id,
-                resource_type=self.org789.resource_type,
+                resource_id=self.org789.id,
+                resource_type=self.org789.type,
                 violation_type='ADDED',
                 role=org_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_org['roles/owner'])),
             RuleViolation(
                 rule_index=1,
                 rule_name='project whitelist',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_proj['roles/editor'])),
@@ -803,8 +803,8 @@ class OrgRulesEngineTest(basetest.TestCase):
             RuleViolation(
                 rule_index=1,
                 rule_name='project blacklist',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_proj['roles/owner'])),
@@ -858,8 +858,8 @@ class OrgRulesEngineTest(basetest.TestCase):
             RuleViolation(
                 rule_index=0,
                 rule_name='org blacklist',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_proj['roles/owner'])),
@@ -965,8 +965,8 @@ class OrgRulesEngineTest(basetest.TestCase):
             RuleViolation(
                 rule_index=1,
                 rule_name='project blacklist',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_proj['roles/owner'])),
@@ -1018,8 +1018,8 @@ class OrgRulesEngineTest(basetest.TestCase):
             RuleViolation(
                 rule_index=1,
                 rule_name='project blacklist',
-                resource_id=self.project1.resource_id,
-                resource_type=self.project1.resource_type,
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_proj['roles/owner'])),

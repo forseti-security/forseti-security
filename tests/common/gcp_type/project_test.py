@@ -28,7 +28,19 @@ from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 class ProjectTest(basetest.TestCase):
 
     def setUp(self):
-        self.project1 = Project('project-id-1', 123451, 'Project 1')
+        self.org = Organization('1234567890', display_name='My org name')
+        self.folder = Folder('55555', display_name='My folder', parent=self.org)
+        self.project1 = Project('project-1',
+                                11111,
+                                display_name='Project 1')
+        self.project2 = Project('project-2',
+                                22222,
+                                display_name='Project 2',
+                                parent=self.org)
+        self.project3 = Project('project-3',
+                                33333,
+                                display_name='Project 3',
+                                parent=self.folder)
 
     def test_create_project_getters_are_correct(self):
         """Test Project getters returns correct values."""
@@ -36,31 +48,29 @@ class ProjectTest(basetest.TestCase):
         my_project_number = 1234567890
         my_project_name = 'My project name'
         project = Project(my_project_id, my_project_number,
-                          project_name=my_project_name,
+                          display_name=my_project_name,
                           lifecycle_state=ProjectLifecycleState.ACTIVE)
-        self.assertEqual(my_project_id, project.get_id())
-        self.assertEqual(my_project_number, project.get_project_number())
-        self.assertEqual(my_project_name, project.get_name())
-        self.assertEqual(ResourceType.PROJECT, project.get_type())
-        self.assertEqual(None, project.get_parent())
+        self.assertEqual(my_project_id, project.id)
+        self.assertEqual(my_project_number, project.project_number)
+        self.assertEqual(
+            Project.RESOURCE_NAME_FMT % my_project_id, project.name)
+        self.assertEqual(my_project_name, project.display_name)
+        self.assertEqual(ResourceType.PROJECT, project.type)
+        self.assertEqual(None, project.parent)
         self.assertEqual(ProjectLifecycleState.ACTIVE,
-                         project.get_lifecycle_state())
-
-    def test_project_type_is_project(self):
-        """Test Project created is a ResourceType.PROJECT type."""
-        self.assertEqual(ResourceType.PROJECT, self.project1.get_type())
+                         project.lifecycle_state)
 
     def test_project_equals_other_project_is_true(self):
         """Test that Project == another Project."""
         id_1 = 'my-project-1'
         number_1 = 1234567890
         name_1 = 'My project 1'
-        project1 = Project(id_1, number_1, project_name=name_1)
+        project1 = Project(id_1, number_1, display_name=name_1)
 
         id_2 = 'my-project-1'
         number_2 = 1234567890
         name_2 = 'My project 1'
-        project2 = Project(id_2, number_2, project_name=name_2)
+        project2 = Project(id_2, number_2, display_name=name_2)
 
         self.assertTrue(project1 == project2)
 
@@ -69,12 +79,12 @@ class ProjectTest(basetest.TestCase):
         id_1 = 'my-project-1'
         number_1 = 1234567890
         name_1 = 'My project 1'
-        project1 = Project(id_1, number_1, project_name=name_1)
+        project1 = Project(id_1, number_1, display_name=name_1)
 
         id_2 = 'my-project-2'
         number_2 = 1234567891
         name_2 = 'My project 2'
-        project2 = Project(id_2, number_2, project_name=name_2)
+        project2 = Project(id_2, number_2, display_name=name_2)
 
         self.assertTrue(project1 != project2)
 
@@ -83,40 +93,30 @@ class ProjectTest(basetest.TestCase):
         id_1 = 'my-project-1'
         number_1 = 1234567890
         name_1 = 'My project 1'
-        project = Project(id_1, number_1, project_name=name_1)
+        project = Project(id_1, number_1, display_name=name_1)
 
         id_2 = '1234567890'
         name_2 = 'My org 1'
-        org = Organization(id_2, org_name=name_2)
+        org = Organization(id_2, display_name=name_2)
 
         self.assertTrue(project != org)
 
     def test_project_in_org_returns_org_ancestor(self):
         """Test that a Project with Org ancestor returns Org ancestor."""
-        org = Organization('1234567890', org_name='My org name')
-        project = Project('my-project-id', 333,
-                          project_name='My project',
-                          parent=org)
-        expected = [org]
-        actual = [a for a in project.get_ancestors(include_self=False)]
+        expected = [self.org]
+        actual = [a for a in self.project2.get_ancestors(include_self=False)]
         self.assertEqual(expected, actual)
 
-    def test_project_no_org_returns_empty_ancestors(self):
+    def test_project_no_parent_returns_empty_ancestors(self):
         """Test that a Project with no parent has no ancestors."""
-        project = Project('my-project-id', 333,
-                          project_name='My project')
         expected = []
-        actual = [a for a in project.get_ancestors(include_self=False)]
+        actual = [a for a in self.project1.get_ancestors(include_self=False)]
         self.assertEqual(expected, actual)
 
     def test_project_ancestors_include_self(self):
         """Test Project ancestors when including self."""
-        org = Organization('1234567890', org_name='My org name')
-        project = Project('my-project-id', 333,
-                          project_name='My project',
-                          parent=org)
-        expected = [project, org]
-        actual = [a for a in project.get_ancestors()]
+        expected = [self.project3, self.folder, self.org]
+        actual = [a for a in self.project3.get_ancestors()]
         self.assertEqual(expected, actual)
 
     @mock.patch.object(CloudResourceManagerClient, 'get_project',

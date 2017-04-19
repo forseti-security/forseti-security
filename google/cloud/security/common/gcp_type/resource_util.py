@@ -27,45 +27,41 @@ class ResourceUtil(object):
         'UNDEFINED': {
             'class': resource.Resource,
             'plural': 'UNDEFINED',
-            'level': 0
         },
         resource.ResourceType.ORGANIZATION: {
             'class': org.Organization,
             'plural': 'Organizations',
-            'level': 3
         },
         resource.ResourceType.FOLDER: {
             'class': folder.Folder,
             'plural': 'Folders',
-            'level': 2
         },
         resource.ResourceType.PROJECT: {
             'class': project.Project,
             'plural': 'Projects',
-            'level': 1
         },
         resource.ResourceType.GROUP: {
             'class': group.Group,
             'plural': 'Groups',
-            'level': 4
         }
     }
 
     @classmethod
-    def create_resource(cls, resource_id, resource_type):
+    def create_resource(cls, resource_id, resource_type, **kwargs):
         """Factory to create a certain kind of Resource.
 
         Args:
             resource_id: The resource id.
             resource_type: The resource type.
+            kwargs: Extra args.
 
         Returns:
-            The new resource based on the type.
+            The new Resource based on the type.
         """
         return cls.resource_type_map.get(
             resource_type,
             cls.resource_type_map['UNDEFINED']).get('class')(
-                resource_id, resource_type)
+                resource_id, **kwargs)
 
     @classmethod
     def pluralize(cls, resource_type):

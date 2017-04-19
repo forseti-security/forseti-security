@@ -24,22 +24,39 @@ from google.cloud.security.common.gcp_type import errors
 class GroupMember(object):
     """Group Member."""
 
-    def __init__(self, rule_def_member):
+    def __init__(self, member_role, member_type, member_email):
         """Initialize.
 
         Args:
-            rule_def_member: Dictionary of the Google Group Member from the
-                rule definition.
+            member_role: String of the member role, e.g. owner, member, etc.
+            member_type: String of the member type, e.g. group, user, etc.
+            member_email: String of the member email
         """
-        self.role = rule_def_member.get('role')
-        self.type = rule_def_member.get('type')
-        self.email = rule_def_member.get('email')
+        self.member_role = member_role
+        self.member_type = member_type
+        self.member_email = member_email
 
-        if (not self.role or
-                not self.type or
-                not self.email):
+        if (not self.member_role or
+                not self.member_type or
+                not self.member_email):
             raise errors.InvalidGroupMemberError(
                 ('Invalid group member: role={}, type={}, email={}'
-                 .format(self.role,
-                         self.type,
-                         self.email)))
+                 .format(self.member_role,
+                         self.member_type,
+                         self.member_email)))
+
+    def __eq__(self, other):
+        """Tests equality with another object."""
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (self.member_role == other.member_role and
+                self.member_type == other.member_type and
+                self.member_email == other.member_email)
+
+    def __ne__(self, other):
+        """Tests inequality with another object."""
+        return not self == other
+
+    def __hash__(self):
+        """Return hash of properties."""
+        return hash((self.member_role, self.member_type, self.member_email))

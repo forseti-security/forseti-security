@@ -23,7 +23,7 @@ from MySQLdb import NotSupportedError
 from MySQLdb import OperationalError
 from MySQLdb import ProgrammingError
 
-from google.cloud.security.common.data_access import _db_connector
+from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import organization
@@ -32,7 +32,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class OrganizationDao(_db_connector.DbConnector):
+class OrganizationDao(dao.Dao):
     """Data access object (DAO) for Organizations."""
 
     def __init__(self):
@@ -58,7 +58,7 @@ class OrganizationDao(_db_connector.DbConnector):
             for row in rows:
                 org = organization.Organization(
                     organization_id=row[0],
-                    org_name=row[2],
+                    display_name=row[2],
                     lifecycle_state=row[3])
                 orgs.append(org)
             return orgs
@@ -86,7 +86,7 @@ class OrganizationDao(_db_connector.DbConnector):
             row = cursor.fetchone()
             org = organization.Organization(
                 organization_id=row[0],
-                org_name=row[2],
+                display_name=row[2],
                 lifecycle_state=row[3])
             return org
         except (DataError, IntegrityError, InternalError, NotSupportedError,
@@ -95,6 +95,9 @@ class OrganizationDao(_db_connector.DbConnector):
 
     def get_org_iam_policies(self, resource_name, timestamp):
         """Get the organization policies.
+
+        This does not raise any errors if there's a database or json parse
+        error because we want to return as many organizations as possible.
 
         Args:
             timestamp: The timestamp of the snapshot.
