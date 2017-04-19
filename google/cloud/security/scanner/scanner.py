@@ -75,8 +75,8 @@ def main(_):
     """Run the scanner."""
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
-    if not FLAGS.rules or not FLAGS.group_rules:
-        print 'Provide a rules file. Use "forseti_scanner --helpful" for help.'
+    if not FLAGS.rules:
+        print 'Provide a rules file. Use "forseti_scanner --helpfull" for help.'
         sys.exit(1)
 
     rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
