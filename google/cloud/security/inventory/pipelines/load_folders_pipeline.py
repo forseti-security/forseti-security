@@ -26,7 +26,7 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 LOGGER = log_util.get_logger(__name__)
 
 
-class LoadOrgsPipeline(base_pipeline.BasePipeline):
+class LoadFoldersPipeline(base_pipeline.BasePipeline):
     """Pipeline to load folder data into Inventory."""
 
     RESOURCE_NAME = 'folders'
@@ -45,13 +45,13 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         for folder in (f for d in folders for f in d.get('folders', [])):
             folder_json = json.dumps(folder)
             try:
-                parsed_time = dateutil_parser.parse(folder.get('creationTime'))
+                parsed_time = dateutil_parser.parse(folder.get('createTime'))
                 create_time_fmt = (
                     parsed_time.strftime(self.MYSQL_DATETIME_FORMAT))
             except (TypeError, ValueError) as e:
                 LOGGER.error(
                     'Unable to parse creation_time from folder: %s\n%s',
-                    folder.get('creationTime', ''), e)
+                    folder.get('createTime', ''), e)
                 create_time_fmt = '0000-00-00 00:00:00'
 
             # folder_name is the unique identifier for the folder,
