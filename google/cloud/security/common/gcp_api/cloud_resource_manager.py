@@ -65,8 +65,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(project_id, e))
-        return None
+            raise api_errors.ApiExecutionError(project_id, e)
 
     def get_projects(self, resource_name, **filterargs):
         """Get all the projects this application has access to.
@@ -159,8 +158,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(org_name, e))
-        return None
+            raise api_errors.ApiExecutionError(org_name, e)
 
     def get_organizations(self, resource_name):
         """Get organizations that this application has access to.
@@ -191,7 +189,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                     if not next_page_token:
                         break
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(resource_name, e))
+            raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_org_iam_policies(self, resource_name, org_id):
         """Get all the iam policies of an org.
@@ -239,3 +237,38 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 return response
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(folder_name, e)
+
+    def get_folders(self, resource_name, **kwargs):
+        """Find all folders Forseti can access.
+
+        Args:
+            kwargs: Extra args.
+            resource_name: The resource name. TODO: why include this?
+
+        Returns:
+            The folders API response.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        folders_api = self.service.folders()
+        next_page_token = None
+
+        lifecycle_state_filter = kwargs.get('lifecycle_state')
+
+        try:
+            with self.rate_limiter:
+                while True:
+                    req_body = {}
+                    if next_page_token:
+                        req_body['pageToken'] = next_page_token
+                    if lifecycle_state_filter:
+                        req_body['lifecycleState'] = lifecycle_state_filter
+                    request = folders_api.search(body=req_body)
+                    response = self._execute(request)
+                    yield response
+                    next_page_token = response.get('nextPageToken')
+                    if not next_page_token:
+                        break
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_name, e)

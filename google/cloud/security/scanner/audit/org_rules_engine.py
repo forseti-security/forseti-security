@@ -286,7 +286,9 @@ class OrgRuleBook(bre.BaseRuleBook):
                     gcp_resource = ResourceUtil.create_resource(
                         resource_id=resource_id,
                         resource_type=resource_type)
+
                     # Verify that this resource actually exists in GCP.
+                    # TODO: is this somethign we actually want to do?
                     if (self.verify_resource_exists and
                             not gcp_resource.exists()):
 
