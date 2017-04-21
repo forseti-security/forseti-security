@@ -50,7 +50,7 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
                     parsed_time.strftime(self.MYSQL_DATETIME_FORMAT))
             except (TypeError, ValueError) as e:
                 LOGGER.error(
-                    'Unable to parse creation_time from folder: %s\n%s',
+                    'Unable to parse createTime from folder: %s\n%s',
                     folder.get('createTime', ''), e)
                 create_time_fmt = '0000-00-00 00:00:00'
 
@@ -64,7 +64,7 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
                    'display_name': folder.get('displayName'),
                    'lifecycle_state': folder.get('lifecycleState'),
                    'raw_folder': folder_json,
-                   'creation_time': create_time_fmt}
+                   'create_time': create_time_fmt}
 
     def _retrieve(self):
         """Retrieve the folder resources from GCP.

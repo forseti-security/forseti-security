@@ -14,16 +14,53 @@
 
 """Fake folders data."""
 
-# TODO
-FAKE_FOLDERS_OK_IAM_DB_ROWS = [
-    [1111111111, 'project-1', 'Project 1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
-    [2222222222, 'project-2', 'Project 2', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
+FAKE_FOLDERS_DB_ROWS = [
+    ['111111111111',
+     'folders/111111111111',
+     'Folder1',
+     'ACTIVE',
+     '2015-09-09 00:01:01',
+     None,
+     None],
+    ['222222222222',
+     'folders/222222222222',
+     'Folder2',
+     'ACTIVE',
+     '2015-10-10 00:02:02',
+     None,
+     None],
 ]
 
-# TODO
+FAKE_FOLDERS_RESPONSE = {
+    'folders': [
+        {
+          'name': 'folders/1111111111',
+          'display_name': 'Folder1',
+          'lifecycleState': 'ACTIVE',
+        },
+        {
+            'name': 'folders/2222222222',
+            'display_name': 'Folder2',
+            'lifecycleState': 'ACTIVE',
+        },
+        {
+            'name': 'folders/3333333333',
+            'display_name': 'Folder3',
+            'lifecycleState': 'ACTIVE',
+        }
+    ]
+}
+
+EXPECTED_FAKE_FOLDERS_FROM_API = [FAKE_FOLDERS_RESPONSE]
+
+FAKE_FOLDERS_OK_IAM_DB_ROWS = [
+    ['1111111111', 'Folder1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
+    ['2222222222', 'Folder2', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:d@e.f"]}]}'],
+]
+
 FAKE_FOLDERS_BAD_IAM_DB_ROWS = [
-    [1111111111, 'project-1', 'Project 1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
-    [2222222222, 'project-2', 'Project 2', 'ACTIVE', None, None, ''],
+    ['1111111111', 'Folder1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
+    ['2222222222', 'Folder2', 'ACTIVE', None, None, ''],
 ]
 
 FAKE_FOLDERS_API_RESPONSE1 = {
@@ -31,13 +68,13 @@ FAKE_FOLDERS_API_RESPONSE1 = {
         {
             'displayName': 'folder-1',
             'name': 'folders/111',
-            'parent': 'organizations/1111111',
+            'parent': 'folders/1111111',
             'lifecycleState': 'ACTIVE'
         },
         {
             'displayName': 'folder-2',
             'name': 'folders/222',
-            'parent': 'organizations/2222222',
+            'parent': 'folders/2222222',
             'lifecycleState': 'DELETE_REQUESTED'
         },
         {

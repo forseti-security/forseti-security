@@ -34,16 +34,23 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 CREATE_TABLE_MAP = {
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
+    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
+
+    'folders': create_tables.CREATE_FOLDERS_TABLE,
+    'folder_iam_policies': create_tables.CREATE_FOLDER_IAM_POLICIES_TABLE,
+    'raw_folder_iam_policies': (
+        create_tables.CREATE_RAW_FOLDER_IAM_POLICIES_TABLE),
+
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
-    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
 }
 
-SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'
+SNAPSHOT_STATUS_FILTER_CLAUSE = ' where status in ({})'
 
 
 class Dao(_db_connector.DbConnector):
@@ -207,7 +214,7 @@ class Dao(_db_connector.DbConnector):
             statuses = ('SUCCESS',)
 
         status_params = ','.join(['%s']*len(statuses))
-        filter_clause = SNAPSHOT_FILTER_CLAUSE.format(status_params)
+        filter_clause = SNAPSHOT_STATUS_FILTER_CLAUSE.format(status_params)
         try:
             cursor = self.conn.cursor()
             cursor.execute(

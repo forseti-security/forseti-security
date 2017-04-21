@@ -87,6 +87,42 @@ CREATE_RAW_ORG_IAM_POLICIES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_FOLDERS_TABLE = """
+    CREATE TABLE `{0}` (
+        `folder_id` bigint(20) unsigned NOT NULL,
+        `name` varchar(255) NOT NULL,
+        `display_name` varchar(255) DEFAULT NULL,
+        `lifecycle_state` enum('ACTIVE','DELETE_REQUESTED',
+            'DELETED','LIFECYCLE_STATE_UNSPECIFIED') DEFAULT NULL,
+        `parent_type` varchar(255) DEFAULT NULL,
+        `parent_id` varchar(255) DEFAULT NULL,
+        `raw_folder` json DEFAULT NULL,
+        `create_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`folder_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_FOLDER_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `folder_id` bigint(20) DEFAULT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `member_type` varchar(255) DEFAULT NULL,
+        `member_name` varchar(255) DEFAULT NULL,
+        `member_domain` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_RAW_FOLDER_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `folder_id` bigint(20) DEFAULT NULL,
+        `iam_policy` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_GROUPS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

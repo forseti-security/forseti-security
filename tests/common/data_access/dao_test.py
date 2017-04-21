@@ -95,7 +95,7 @@ class DaoTest(basetest.TestCase):
         fetch_mock.return_value = ['123456']
 
         statuses = ('SUCCESS',)
-        filter_clause = dao.SNAPSHOT_FILTER_CLAUSE.format('%s')
+        filter_clause = dao.SNAPSHOT_STATUS_FILTER_CLAUSE.format('%s')
 
         actual = self.dao.get_latest_snapshot_timestamp(statuses)
 
@@ -131,7 +131,7 @@ class DaoTest(basetest.TestCase):
         fetch_mock.return_value = ['123456']
 
         expected_statuses = ('SUCCESS',)
-        filter_clause = dao.SNAPSHOT_FILTER_CLAUSE.format('%s')
+        filter_clause = dao.SNAPSHOT_STATUS_FILTER_CLAUSE.format('%s')
 
         actual = self.dao.get_latest_snapshot_timestamp('asdfasdf')
 
@@ -163,7 +163,7 @@ class DaoTest(basetest.TestCase):
         exec_mock.side_effect = errors.NoResultsError
 
         expected_statuses = ('SUCCESS',)
-        filter_clause = dao.SNAPSHOT_FILTER_CLAUSE.format('%s')
+        filter_clause = dao.SNAPSHOT_STATUS_FILTER_CLAUSE.format('%s')
 
         with self.assertRaises(errors.MySQLError):
             self.dao.get_latest_snapshot_timestamp('asdfasdf')

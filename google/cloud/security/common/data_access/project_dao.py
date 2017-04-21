@@ -26,7 +26,7 @@ from MySQLdb import ProgrammingError
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import project
+from google.cloud.security.common.gcp_type import project as gcp_project
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 
@@ -86,7 +86,7 @@ class ProjectDao(dao.Dao):
                             resource_util.ResourceUtil.create_resource(
                                 resource_id=row[5],
                                 resource_type=row[4]))
-                    proj = project.Project(
+                    proj = gcp_project.Project(
                         project_id=row[1],
                         project_number=row[0],
                         display_name=row[2],
