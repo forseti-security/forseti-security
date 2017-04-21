@@ -21,7 +21,6 @@ Usage:
       --inventory_groups <true|false> (optional) \\
       --groups_service_account_key_file <path to file> (optional)\\
       --domain_super_admin_email <user@domain.com> (optional) \\
-      --organization_id <organization_id> (required) \\
       --db_host <Cloud SQL database hostname/IP> (required) \\
       --db_user <Cloud SQL database user> (required) \\
       --db_name <Cloud SQL database name (required)> \\
@@ -48,6 +47,8 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import organization_dao as org_dao
+from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory as ad
@@ -60,6 +61,7 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
+from google.cloud.security.inventory.pipelines import load_orgs_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from google.cloud.security.inventory import util
@@ -69,9 +71,6 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_bool('inventory_groups', False,
                   'Whether to inventory GSuite Groups.')
-flags.DEFINE_string('organization_id', None, 'Organization ID.')
-
-flags.mark_flag_as_required('organization_id')
 
 
 LOGLEVELS = {
@@ -154,13 +153,13 @@ def _start_snapshot_cycle(dao):
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
 
-def _build_pipelines(cycle_timestamp, configs, dao):
+def _build_pipelines(cycle_timestamp, configs, **kwargs):
     """Build the pipelines to load data.
 
     Args:
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         configs: Dictionary of configurations.
-        dao: Data access object.
+        kwargs: Extra configs.
 
     Returns:
         List of pipelines that will be run.
@@ -170,15 +169,21 @@ def _build_pipelines(cycle_timestamp, configs, dao):
     pipelines = []
     crm_api_client = crm.CloudResourceManagerClient()
 
+    dao = kwargs.get('dao')
+    project_dao = kwargs.get('project_dao')
+    organization_dao = kwargs.get('organization_dao')
+
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
     pipelines = [
+        load_orgs_pipeline.LoadOrgsPipeline(
+            cycle_timestamp, configs, crm_api_client, organization_dao),
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao),
+            cycle_timestamp, configs, crm_api_client, organization_dao),
         load_projects_pipeline.LoadProjectsPipeline(
-            cycle_timestamp, configs, crm_api_client, dao),
+            cycle_timestamp, configs, crm_api_client, project_dao),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, dao)
+            cycle_timestamp, configs, crm_api_client, project_dao)
     ]
 
     if configs.get('inventory_groups'):
@@ -246,13 +251,12 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
+def _send_email(cycle_time, cycle_timestamp, status, pipelines,
                 sendgrid_api_key, email_sender, email_recipient,
                 email_content=None):
     """Send an email.
 
     Args:
-        organization_id: String of the organization id
         cycle_time: Datetime object of the cycle, in UTC.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status: String of the overall status of current snapshot cycle.
@@ -271,7 +275,6 @@ def _send_email(organization_id, cycle_time, cycle_timestamp, status, pipelines,
 
     email_content = EmailUtil.render_from_template(
         'inventory_snapshot_summary.jinja', {
-            'organization_id': organization_id,
             'cycle_time': cycle_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
             'cycle_timestamp': cycle_timestamp,
             'status_summary': status,
@@ -297,6 +300,8 @@ def main(_):
     """Runs the Inventory Loader."""
     try:
         dao = Dao()
+        project_dao = proj_dao.ProjectDao()
+        organization_dao = org_dao.OrganizationDao()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
@@ -308,7 +313,12 @@ def main(_):
     _configure_logging(configs)
 
     try:
-        pipelines = _build_pipelines(cycle_timestamp, configs, dao)
+        pipelines = _build_pipelines(
+            cycle_timestamp,
+            configs,
+            dao=dao,
+            project_dao=project_dao,
+            organization_dao=organization_dao)
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)
@@ -325,8 +335,7 @@ def main(_):
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
 
     if configs.get('email_recipient') is not None:
-        _send_email(configs.get('organization_id'),
-                    cycle_time,
+        _send_email(cycle_time,
                     cycle_timestamp,
                     snapshot_cycle_status,
                     pipelines,

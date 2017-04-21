@@ -29,6 +29,7 @@ GROUP_MEMBERS_FIELDNAMES = [
     'member_type',
     'member_status',
     'member_id',
+    'member_email',
     'raw_member'
 ]
 
@@ -38,6 +39,15 @@ GROUPS_FIELDNAMES = [
     'group_kind',
     'direct_member_count',
     'raw_group'
+]
+
+ORGANIZATIONS_FIELDNAMES = [
+    'org_id',
+    'name',
+    'display_name',
+    'lifecycle_state',
+    'raw_org',
+    'creation_time',
 ]
 
 ORG_IAM_POLICIES_FIELDNAMES = [
@@ -90,6 +100,7 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
 CSV_FIELDNAME_MAP = {
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
+    'organizations': ORGANIZATIONS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
@@ -109,7 +120,7 @@ def write_csv(resource_name, data, write_header=False):
         write_header: If True, write the header in the csv file.
 
     Returns:
-       String of the csv filename; full path included.
+       The CSV temporary file.
     """
     csv_file = tempfile.NamedTemporaryFile(delete=False)
     try:

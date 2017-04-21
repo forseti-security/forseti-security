@@ -22,7 +22,8 @@ PROJECT_NUMBERS = """
     SELECT project_number from projects_{0};
 """
 
-PROJECT_IAM_POLICIES = """SELECT p.project_number, p.project_id, p.project_name,
+PROJECT_IAM_POLICIES = """
+    SELECT p.project_number, p.project_id, p.project_name,
     p.lifecycle_state as proj_lifecycle, p.parent_type, p.parent_id,
     pol.role, pol.member_type, pol.member_name, pol.member_domain
     FROM projects_{0} p INNER JOIN project_iam_policies_{1} pol
@@ -31,14 +32,41 @@ PROJECT_IAM_POLICIES = """SELECT p.project_number, p.project_id, p.project_name,
     pol.member_domain, pol.member_name
 """
 
-ORG_IAM_POLICIES = """SELECT org_id, iam_policy
+ORGANIZATIONS = """
+    SELECT org_id, name, display_name, lifecycle_state, creation_time
+    FROM organizations_{0}
+    ORDER BY display_name
+"""
+
+ORGANIZATION_BY_ID = """
+    SELECT org_id, name, display_name, lifecycle_state, creation_time
+    FROM organizations_{0}
+    WHERE org_id = %s
+"""
+
+PROJECT_IAM_POLICIES_RAW = """
+    SELECT p.project_number, p.project_id, p.project_name, p.lifecycle_state,
+    p.parent_type, p.parent_id, i.iam_policy
+    FROM projects_{0} p INNER JOIN raw_project_iam_policies_{1} i
+    ON p.project_number = i.project_number
+    ORDER BY p.project_id
+"""
+
+ORG_IAM_POLICIES = """
+    SELECT org_id, iam_policy
     FROM raw_org_iam_policies_{0}
 """
 
-LATEST_SNAPSHOT_TIMESTAMP = """SELECT max(cycle_timestamp)
-    FROM snapshot_cycles
+LATEST_SNAPSHOT_TIMESTAMP = """
+    SELECT max(cycle_timestamp) FROM snapshot_cycles
 """
 
 GROUP_IDS = """
     SELECT group_id from groups_{0};
+"""
+
+GROUP_USERS = """
+    SELECT group_id, member_role, member_type, member_id, member_email
+    FROM group_members_{0}
+    WHERE member_status = "ACTIVE" and member_type = "USER";
 """

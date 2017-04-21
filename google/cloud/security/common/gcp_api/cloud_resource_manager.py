@@ -68,28 +68,22 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
         return None
 
-    def get_projects(self, resource_name, organization_id, **filterargs):
-        """Get all the projects from organization.
+    def get_projects(self, resource_name, **filterargs):
+        """Get all the projects this application has access to.
 
         Args:
-            resource_name: String of the resource's name.
-            organization_id: String of the organization id
-                in Google Cloud Platform.
+            resource_name: String of the resource's type.
             filterargs: Extra project filter args.
 
         Yields:
-            An iterable of resource manager project list response.
+            An iterable of the projects.list() response.
             https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
 
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        projects_stub = self.service.projects()
-        # TODO: The filter currently does not get projects under folders.
-        project_filter = [
-            'parent.type:organization',
-            'parent.id:%s' % organization_id,
-        ]
+        projects_api = self.service.projects()
+        project_filter = []
         lifecycle_state = filterargs.get('lifecycleState')
         if lifecycle_state:
             project_filter.append('lifecycleState:%s' % lifecycle_state)
@@ -97,7 +91,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         for filter_key in filterargs:
             project_filter.append('%s:%s' %
                                   (filter_key, filterargs[filter_key]))
-        request = projects_stub.list(filter=' '.join(project_filter))
+        request = projects_api.list(filter=' '.join(project_filter))
 
         try:
             with self.rate_limiter:
@@ -115,8 +109,10 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                                     resource.LifecycleState.ACTIVE)
                             ]
                         }
+                    else:
+                        yield response
 
-                    request = projects_stub.list_next(
+                    request = projects_api.list_next(
                         previous_request=request,
                         previous_response=response)
         except (HttpError, HttpLib2Error) as e:
@@ -144,7 +140,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_organization(self, org_name):
-        """Get organizations.
+        """Get organization by org_name.
 
         Args:
             org_name: The string org name with format "organizations/$ORG_ID"
@@ -166,6 +162,37 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             LOGGER.error(api_errors.ApiExecutionError(org_name, e))
         return None
 
+    def get_organizations(self, resource_name):
+        """Get organizations that this application has access to.
+
+        Args:
+            resource_name: String of the resource's type.
+
+        Yields:
+            An iterator of the response from the organizations API, which
+            contains is paginated and contains a list of organizations.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        orgs_api = self.service.organizations()
+        next_page_token = None
+
+        try:
+            with self.rate_limiter:
+                while True:
+                    req_body = {}
+                    if next_page_token:
+                        req_body['pageToken'] = next_page_token
+                    request = orgs_api.search(body=req_body)
+                    response = self._execute(request)
+                    yield response
+                    next_page_token = response.get('nextPageToken')
+                    if not next_page_token:
+                        break
+        except (HttpError, HttpLib2Error) as e:
+            LOGGER.error(api_errors.ApiExecutionError(resource_name, e))
+
     def get_org_iam_policies(self, resource_name, org_id):
         """Get all the iam policies of an org.
 
@@ -173,9 +200,8 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             resource_name: String of the resource's name.
             org_id: Integer of the org id.
 
-        Yields:
-            An iterable of iam policies as per-org dictionary.
-            Example: {org_id: org_id, iam_policy: iam_policy}
+        Returns:
+            Organization IAM policy for given org_id.
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
         Raises:
@@ -187,8 +213,29 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             with self.rate_limiter:
                 request = orgs_stub.getIamPolicy(
                     resource=resource_id, body={})
-                response = self._execute(request)
-                yield {'org_id': org_id,
-                       'iam_policy': response}
+                return {'org_id': org_id,
+                        'iam_policy': self._execute(request)}
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
+
+    def get_folder(self, folder_name):
+        """Get a folder.
+
+        Args:
+            folder_name: The unique folder name, i.e. "folders/{folderId}".
+
+        Returns:
+            The folder API response.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        folders_api = self.service.folders()
+
+        try:
+            with self.rate_limiter:
+                request = folders_api.get(name=folder_name)
+                response = self._execute(request)
+                return response
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(folder_name, e)

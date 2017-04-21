@@ -18,21 +18,17 @@ import json
 
 from dateutil import parser as dateutil_parser
 
-# TODO: Investigate improving so the pylint disable isn't needed.
-# pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
 
 
 class LoadProjectsPipeline(base_pipeline.BasePipeline):
-    """Pipeline to load org IAM policies data into Inventory."""
+    """Pipeline to load project data into Inventory."""
 
     RESOURCE_NAME = 'projects'
 
@@ -52,25 +48,6 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         """
         super(LoadProjectsPipeline, self).__init__(
             cycle_timestamp, configs, crm_client, dao)
-
-    def _load(self, resource_name, data):
-        """ Load iam policies into cloud sql.
-
-        Args:
-            resource_name: String of the resource name.
-            data: An iterable or a list of data to be uploaded.
-
-        Returns:
-            None
-
-        Raises:
-            LoadDataPipelineError: An error with loading data has occurred.
-        """
-        try:
-            self.dao.load_data(resource_name, self.cycle_timestamp, data)
-        except (data_access_errors.CSVFileError,
-                data_access_errors.MySQLError) as e:
-            raise inventory_errors.LoadDataPipelineError(e)
 
     def _transform(self, projects):
         """Yield an iterator of loadable iam policies.
@@ -114,19 +91,12 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         try:
             return self.api_client.get_projects(
                 self.RESOURCE_NAME,
-                self.configs['organization_id'],
                 lifecycleState=LifecycleState.ACTIVE)
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):
         """Runs the data pipeline."""
-        org_id = self.configs.get('organization_id')
-        # Check if the placeholder is replaced in the config/flag.
-        if org_id == '<organization id>':
-            raise inventory_errors.LoadDataPipelineError(
-                'No organization id is specified.')
-
         projects_map = self._retrieve()
 
         loadable_projects = self._transform(projects_map)

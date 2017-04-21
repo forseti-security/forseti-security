@@ -21,7 +21,7 @@ import abc
 
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
-from google.cloud.security.scanner.audit import errors
+from google.cloud.security.scanner.audit import errors as audit_errors
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -37,7 +37,7 @@ class BaseRulesEngine(object):
             rules_file_path: The path to the rules file.
         """
         if not rules_file_path:
-            raise errors.InvalidRuleDefinitionError(
+            raise audit_errors.InvalidRuleDefinitionError(
                 'File path: {}'.format(rules_file_path))
         self.full_rules_path = rules_file_path.strip()
 
@@ -71,3 +71,37 @@ class BaseRuleBook(object):
     def add_rule(self, rule_def, rule_index):
         """Add rule to rule book."""
         raise NotImplementedError('Implement add_rule() in subclass')
+
+class RuleAppliesTo(object):
+    """What the rule applies to. (Default: SELF) """
+
+    SELF = 'self'
+    CHILDREN = 'children'
+    SELF_AND_CHILDREN = 'self_and_children'
+    apply_types = frozenset([SELF, CHILDREN, SELF_AND_CHILDREN])
+
+    @classmethod
+    def verify(cls, applies_to):
+        """Verify whether the applies_to is valid."""
+        if applies_to not in cls.apply_types:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Invalid applies_to: {}'.format(applies_to))
+        return applies_to
+
+
+class RuleMode(object):
+    """The rule mode."""
+
+    WHITELIST = 'whitelist'
+    BLACKLIST = 'blacklist'
+    REQUIRED = 'required'
+
+    modes = frozenset([WHITELIST, BLACKLIST, REQUIRED])
+
+    @classmethod
+    def verify(cls, mode):
+        """Verify whether the mode is valid."""
+        if mode not in cls.modes:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Invalid rule mode: {}'.format(mode))
+        return mode

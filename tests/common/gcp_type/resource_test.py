@@ -36,7 +36,8 @@ class ResourceTest(basetest.TestCase):
         Resource.__abstractmethods__ = frozenset()
         abs_res = Resource(resource_id=my_resource_id,
                            resource_type=ResourceType.PROJECT,
-                           resource_name=my_resource_name)
+                           name='projects/%s' % my_resource_id,
+                           display_name=my_resource_name)
         with self.assertRaises(NotImplementedError):
             abs_res.exists()
 
@@ -47,7 +48,7 @@ class ResourceTest(basetest.TestCase):
         self.assertEqual(ResourceType.FOLDER, ResourceType.verify('folder'))
         self.assertEqual(ResourceType.PROJECT, ResourceType.verify('project'))
 
-    def test_get_fake_resource_type_does_not_exist(self):
+    def test_get_invalid_resource_type_does_not_exist(self):
         """Test fake resource type raises exception."""
         with self.assertRaises(InvalidResourceTypeError):
             ResourceType.verify('fake')
@@ -57,12 +58,15 @@ class ResourceUtilTest(basetest.TestCase):
 
     def test_create_resource_is_ok(self):
         """Test the ResourceUtil.create_resource() creates the types."""
-        expect_org = Organization(12345, 'Org a')
-        actual_org = ResourceUtil.create_resource(12345, 'Org a')
+        expect_org = Organization(12345)
+        actual_org = ResourceUtil.create_resource(
+            12345, ResourceType.ORGANIZATION)
         self.assertEqual(expect_org, actual_org)
-        expect_proj = Project('abcd', 'Proj a')
-        actual_proj = ResourceUtil.create_resource('abcd', 'Proj a')
-        self.assertEqual(expect_proj, expect_proj)
+        expect_proj = Project('abcd', 54321)
+        actual_proj = ResourceUtil.create_resource(
+            'abcd', ResourceType.PROJECT, project_number=54321)
+        self.assertEqual(expect_proj, actual_proj)
+        self.assertEqual(expect_proj.project_number, actual_proj.project_number)
 
     def test_plural_is_correct(self):
         """Test that the resource type is pluralized correctly."""

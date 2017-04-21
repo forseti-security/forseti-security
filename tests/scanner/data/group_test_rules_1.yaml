@@ -1,0 +1,14 @@
+rules:
+  # Only allow Organization users to be in the Organization groups.
+  - name: sample whitelist for group users
+    mode: whitelist
+    resource:
+      - type: group
+        applies_to: self_and_children
+        resource_ids:
+          - my_customer
+    inherit_from_parents: true
+    members:
+      - role: MEMBER
+        type: USER
+        email: '*@YOUR_ORG_EMAIL_DOMAIN'

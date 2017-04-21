@@ -20,7 +20,7 @@ Setup logging for Forseti Security. Logs to console and syslog.
 import logging
 import logging.handlers
 
-LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(funcName)s %(message)s'
 
 
 LOGGERS = {}
