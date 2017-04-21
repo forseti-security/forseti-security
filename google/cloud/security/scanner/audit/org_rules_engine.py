@@ -175,7 +175,7 @@ class OrgRuleBook(bre.BaseRuleBook):
 
     """
 
-    def __init__(self, rule_defs=None, verify_resource_exists=False):
+    def __init__(self, rule_defs=None):
         """Initialize.
 
         Args:
@@ -183,9 +183,8 @@ class OrgRuleBook(bre.BaseRuleBook):
                        definition file.
         """
         super(OrgRuleBook, self).__init__()
-        self._lock = threading.Lock()
+        self._rules_sema = threading.BoundedSemaphore(value=1)
         self.resource_rules_map = {}
-        self.verify_resource_exists = verify_resource_exists
         if not rule_defs:
             self.rule_defs = {}
         else:
@@ -260,7 +259,9 @@ class OrgRuleBook(bre.BaseRuleBook):
             rule_index: The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        with self._lock:
+        self._rules_sema.acquire()
+
+        try:
             resources = rule_def.get('resource')
 
             for resource in resources:
@@ -286,13 +287,6 @@ class OrgRuleBook(bre.BaseRuleBook):
                     gcp_resource = ResourceUtil.create_resource(
                         resource_id=resource_id,
                         resource_type=resource_type)
-                    # Verify that this resource actually exists in GCP.
-                    if (self.verify_resource_exists and
-                            not gcp_resource.exists()):
-
-                        LOGGER.error('Resource does not exist: %s',
-                                     gcp_resource)
-                        continue
 
                     rule_bindings = [
                         IamPolicyBinding.create_from(b)
@@ -321,6 +315,8 @@ class OrgRuleBook(bre.BaseRuleBook):
                     # If the rule isn't in the mapping, add it.
                     if rule not in resource_rules.rules:
                         resource_rules.rules.add(rule)
+        finally:
+            self._rules_sema.release()
 
     def _get_resource_rules(self, resource):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
