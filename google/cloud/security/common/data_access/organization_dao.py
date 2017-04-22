@@ -35,9 +35,6 @@ LOGGER = log_util.get_logger(__name__)
 class OrganizationDao(dao.Dao):
     """Data access object (DAO) for Organizations."""
 
-    def __init__(self):
-        super(OrganizationDao, self).__init__()
-
     def get_organizations(self, resource_name, timestamp):
         """Get organizations from snapshot table.
 

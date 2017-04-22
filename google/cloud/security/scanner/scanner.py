@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Organization resource scanner.
+"""GCP Resource scanner.
 
 Usage:
 
@@ -37,10 +37,11 @@ import gflags as flags
 
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
+from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.data_access.dao import Dao
-from google.cloud.security.common.data_access.errors import MySQLError
+from google.cloud.security.common.data_access import violation_dao
+from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
@@ -75,6 +76,7 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 def main(_):
     """Run the scanner."""
+
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     if not FLAGS.rules:
@@ -110,7 +112,9 @@ def main(_):
             ResourceType.ORGANIZATION: len(org_policies),
             ResourceType.PROJECT: len(project_policies),
         }
-        _output_results(all_violations, resource_counts=resource_counts)
+        _output_results(all_violations,
+                        resource_counts=resource_counts,
+                        snapshot_timestamp=snapshot_timestamp)
 
     LOGGER.info('Done!')
 
@@ -124,6 +128,7 @@ def _find_violations(policies, rules_engine):
     Returns:
         A list of violations.
     """
+
     all_violations = []
     LOGGER.info('Finding policy violations...')
     for (resource, policy) in policies:
@@ -143,6 +148,7 @@ def _get_output_filename(now_utc):
     Returns:
         The output filename for the csv, formatted with the now_utc timestamp.
     """
+
     output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
     output_filename = SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
     return output_filename
@@ -153,12 +159,11 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     Returns:
         The latest snapshot timestamp string.
     """
-    dao = None
+
     latest_timestamp = None
     try:
-        dao = Dao()
-        latest_timestamp = dao.get_latest_snapshot_timestamp(statuses)
-    except MySQLError as err:
+        latest_timestamp = dao.Dao().get_latest_snapshot_timestamp(statuses)
+    except db_errors.MySQLError as err:
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
     return latest_timestamp
@@ -172,6 +177,7 @@ def _get_org_policies(timestamp):
     Returns:
         The org policies.
     """
+
     org_policies = {}
     org_dao = organization_dao.OrganizationDao()
     org_policies = org_dao.get_org_iam_policies('organizations', timestamp)
@@ -186,6 +192,7 @@ def _get_project_policies(timestamp):
     Returns:
         The project policies.
     """
+
     project_policies = {}
     dao = project_dao.ProjectDao()
     project_policies = dao.get_project_policies('projects', timestamp)
@@ -197,6 +204,7 @@ def _write_violations_output(violations):
     Args:
         violations: The violations to write to the csv.
     """
+
     LOGGER.info('Writing violations to csv...')
     for violation in violations:
         for member in violation.members:
@@ -217,6 +225,14 @@ def _output_results(all_violations, **kwargs):
         all_violations: The list of violations to report.
         **kwargs: The rest of the args.
     """
+
+    # Write violations to database.
+    try:
+        vdao = violation_dao.ViolationDao()
+        vdao.import_violations(all_violations, kwargs.get('snapshot_timestamp'))
+    except db_errors.MySQLError as err:
+        LOGGER.error('Error importing violations to database: %s', err)
+
     # Write the CSV.
     with csv_writer.write_csv(
         resource_name='policy_violations',
@@ -249,6 +265,7 @@ def _upload_csv(output_path, now_utc, csv_name):
         now_utc: The UTC timestamp of "now".
         csv_name: The csv_name.
     """
+
     from google.cloud.security.common.gcp_api import storage
 
     output_filename = _get_output_filename(now_utc)
@@ -277,6 +294,7 @@ def _send_email(csv_name, now_utc, all_violations, total_resources):
         all_violations: The list of violations.
         total_resources: A dict of the resources and their count.
     """
+
     mail_util = EmailUtil(FLAGS.sendgrid_api_key)
     total_violations, resource_summaries = _build_scan_summary(
         all_violations, total_resources)
@@ -316,6 +334,7 @@ def _build_scan_summary(all_violations, total_resources):
     Returns:
         Total counts and summaries.
     """
+
     resource_summaries = {}
     total_violations = 0
     # Build a summary of the violations and counts for the email.
@@ -348,6 +367,7 @@ def _build_scan_summary(all_violations, total_resources):
         total_violations += len(violation.members)
 
     return total_violations, resource_summaries
+
 
 if __name__ == '__main__':
     app.run()

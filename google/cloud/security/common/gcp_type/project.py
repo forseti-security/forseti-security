@@ -25,7 +25,6 @@ class ProjectLifecycleState(resource.LifecycleState):
     """Project lifecycle state."""
 
     DELETE_REQUESTED = 'DELETE_REQUESTED'
-    DELETE_IN_PROGRESS = 'DELETE_IN_PROGRESS'
 
 
 class Project(resource.Resource):

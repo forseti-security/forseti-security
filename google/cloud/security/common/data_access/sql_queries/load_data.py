@@ -19,3 +19,10 @@ LOAD_DATA = """
     INTO TABLE {1} FIELDS TERMINATED BY ','
     ({2});
 """
+
+INSERT_VIOLATION = """
+    INSERT INTO {0}
+    (resource_type, resource_id, rule_name, rule_index,
+     violation_type, role, member)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+"""
