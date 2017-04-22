@@ -194,8 +194,8 @@ def _get_project_policies(timestamp):
     """
 
     project_policies = {}
-    dao = project_dao.ProjectDao()
-    project_policies = dao.get_project_policies('projects', timestamp)
+    project_policies = (
+        project_dao.ProjectDao().get_project_policies('projects', timestamp))
     return project_policies
 
 def _write_violations_output(violations):
