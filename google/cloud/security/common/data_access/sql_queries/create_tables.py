@@ -115,3 +115,30 @@ CREATE_GROUP_MEMBERS_TABLE = """
 """
 
 # TODO: Add a RAW_GROUP_MEMBERS_TABLE.
+
+CREATE_BUCKETS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,
+        `bucket_id` varchar(255) DEFAULT NULL,
+        `bucket_name` varchar(255) DEFAULT NULL,
+        `bucket_kind` varchar(255) DEFAULT NULL,
+        `bucket_storage_class` varchar(255) DEFAULT NULL,
+        `bucket_location` varchar(255) DEFAULT NULL,
+        `bucket_create_time` datetime DEFAULT NULL,
+        `bucket_update_time` datetime DEFAULT NULL,
+        `bucket_selflink` varchar(255) DEFAULT NULL,
+        `bucket_lifecycle_raw` json DEFAULT NULL,
+        `raw_bucket` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_RAW_BUCKETS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) DEFAULT NULL,
+        `buckets` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""

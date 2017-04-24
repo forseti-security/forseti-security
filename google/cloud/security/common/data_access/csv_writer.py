@@ -97,6 +97,25 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
     'iam_policy'
 ]
 
+BUCKETS_FIELDNAMES = [
+    'project_number',
+    'bucket_id',
+    'bucket_name',
+    'bucket_kind',
+    'bucket_storage_class',
+    'bucket_location',
+    'bucket_create_time',
+    'bucket_update_time',
+    'bucket_selflink',
+    'bucket_lifecycle_raw',
+    'raw_bucket'
+]
+
+RAW_BUCKETS_FIELDNAMES = [
+    'project_number',
+    'buckets'
+]
+
 CSV_FIELDNAME_MAP = {
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
@@ -107,6 +126,8 @@ CSV_FIELDNAME_MAP = {
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
     'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAMES,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
+    'buckets': BUCKETS_FIELDNAMES,
+    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
 }
 
 

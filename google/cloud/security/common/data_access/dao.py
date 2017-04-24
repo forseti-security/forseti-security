@@ -41,6 +41,8 @@ CREATE_TABLE_MAP = {
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
     'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
+    'buckets': create_tables.CREATE_BUCKETS_TABLE,
+    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
 }
 
 SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'

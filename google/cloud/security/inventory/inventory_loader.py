@@ -51,6 +51,7 @@ from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
@@ -62,6 +63,7 @@ from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipe
 from google.cloud.security.inventory.pipelines import load_orgs_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
 from google.cloud.security.inventory import util
 # pylint: enable=line-too-long
 
@@ -157,6 +159,7 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     """
     pipelines = []
     crm_api_client = crm.CloudResourceManagerClient()
+    gcs_api_client = gcs.StorageClient()
 
     dao = kwargs.get('dao')
     project_dao = kwargs.get('project_dao')
@@ -172,7 +175,9 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
         load_projects_pipeline.LoadProjectsPipeline(
             cycle_timestamp, configs, crm_api_client, project_dao),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, project_dao)
+            cycle_timestamp, configs, crm_api_client, project_dao),
+        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
+            cycle_timestamp, configs, gcs_api_client, project_dao),
     ]
 
     if configs.get('inventory_groups'):
