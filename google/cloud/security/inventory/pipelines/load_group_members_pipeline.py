@@ -21,6 +21,8 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
+from concurrent import futures
+import threading
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -45,6 +47,8 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         """
         super(LoadGroupMembersPipeline, self).__init__(
             cycle_timestamp, configs, admin_client, dao)
+        self.group_members_map = []
+        self.group_members_map_lock = threading.Lock()
 
     def _fetch_groups_from_dao(self):
         """Fetch the latest group ids previously stored in Cloud SQL.
@@ -85,6 +89,16 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                        'member_email': member.get('email'),
                        'raw_member': json.dumps(member)}
 
+    def _group_members_worker(self, group_id):
+        group_members = self.api_client.get_group_members(group_id)
+        # group_members_map.append((group_id, group_members))
+        # LOGGER.info("group_members_map size: {1}".format(len(group_members_map)))
+        LOGGER.info("members: {0}".format(len(group_members)))
+        with self.group_members_map_lock:
+            LOGGER.info("writing lock")
+            self.group_members_map.append((group_id, group_members))
+        LOGGER.debug("group_members {0} {1} {2}".format(group_id, len(group_members, len(self.group_members_map))))
+
     def _retrieve(self):
         """Retrieve the membership for a given GSuite group.
 
@@ -95,15 +109,23 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         group_ids = self._fetch_groups_from_dao()
         group_members_map = []
 
+        executor = futures.ThreadPoolExecutor(15)
+        runs = [executor.submit(self._group_members_worker, group_id) for group_id in group_ids]
+        futures.wait(runs)
+
+
+        """
         for group_id in group_ids:
             try:
                 group_members = self.api_client.get_group_members(group_id)
+
             except api_errors.ApiExecutionError as e:
                 raise inventory_errors.LoadDataPipelineError(e)
 
             group_members_map.append((group_id, group_members))
+        """
 
-        return group_members_map
+        return self.group_members_map
 
     def run(self):
         """Runs the load GSuite account groups pipeline."""
