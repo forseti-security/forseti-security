@@ -29,7 +29,7 @@ class ViolationDao(dao.Dao):
 
     RESOURCE_NAME = 'violations'
 
-    def import_violations(self, violations, snapshot_timestamp=None):
+    def insert_violations(self, violations, snapshot_timestamp=None):
         """Import violations into database.
 
         Args:
@@ -37,9 +37,12 @@ class ViolationDao(dao.Dao):
             snapshot_timestamp: The snapshot timestamp to associate these
                 violations with.
 
+        Return:
+            A tuple of (int, list) containing the count of inserted rows and
+            a list of violations that encountered an error during insert.
+
         Raise:
-            MySQLError if an error occurs while loading the violations into
-            the database.
+            MySQLError if snapshot table could not be created.
         """
 
         try:
@@ -54,21 +57,23 @@ class ViolationDao(dao.Dao):
         except MySQLdb.Error, e:
             raise db_errors.MySQLError(self.RESOURCE_NAME, e)
 
-        try:
-            # Insert the violations to the table in one single transaction.
-            self.conn.autocommit(False)
-            cursor = self.conn.cursor()
-            for violation in violations:
-                for formatted_violation in _format_violation(violation):
-                    cursor.execute(
+        inserted_rows = 0
+        violation_errors = []
+        for violation in violations:
+            for formatted_violation in _format_violation(violation):
+                try:
+                    self.execute_sql_with_commit(
+                        self.RESOURCE_NAME,
                         load_data.INSERT_VIOLATION.format(snapshot_table),
                         formatted_violation)
-            self.conn.commit()
-        except MySQLdb.Error, e:
-            self.conn.rollback()
-            raise db_errors.MySQLError(self.RESOURCE_NAME, e)
-        finally:
-            self.conn.autocommit(True)
+                    inserted_rows += 1
+                except MySQLdb.Error, e:
+                    LOGGER.error('Unable to insert violation %s due to %s',
+                                 formatted_violation, e)
+                    violation_errors.append(formatted_violation)
+
+        return (inserted_rows, violation_errors)
+
 
 def _format_violation(violation):
     """Format the violation data into a tuple.
@@ -76,10 +81,13 @@ def _format_violation(violation):
     Also flattens the RuleViolation, since it consists of the resource,
     rule, and members that don't meet the rule criteria.
 
+    Various properties of RuleViolation may also have values that exceed the
+    declared column length, so truncate as necessary to prevent MySQL errors.
+
     Args:
         violation: The RuleViolation.
 
-    Returns:
+    Yields:
         A tuple of the rule violation properties.
     """
 

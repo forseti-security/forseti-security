@@ -113,8 +113,8 @@ def main(_):
             ResourceType.PROJECT: len(project_policies),
         }
         _output_results(all_violations,
-                        resource_counts=resource_counts,
-                        snapshot_timestamp=snapshot_timestamp)
+                        snapshot_timestamp,
+                        resource_counts=resource_counts)
 
     LOGGER.info('Done!')
 
@@ -198,11 +198,14 @@ def _get_project_policies(timestamp):
         project_dao.ProjectDao().get_project_policies('projects', timestamp))
     return project_policies
 
-def _write_violations_output(violations):
-    """Write violations to csv output file and store in output bucket.
+def _flatten_violations(violations):
+    """Flatten RuleViolations into a dict for each RuleViolation member.
 
     Args:
-        violations: The violations to write to the csv.
+        violations: The RuleViolations to flatten.
+
+    Yield:
+        Iterator of RuleViolations as a dict per member.
     """
 
     LOGGER.info('Writing violations to csv...')
@@ -218,7 +221,7 @@ def _write_violations_output(violations):
                 'member': '{}:{}'.format(member.type, member.name)
             }
 
-def _output_results(all_violations, **kwargs):
+def _output_results(all_violations, snapshot_timestamp, **kwargs):
     """Send the output results.
 
     Args:
@@ -227,18 +230,27 @@ def _output_results(all_violations, **kwargs):
     """
 
     # Write violations to database.
+    (inserted_rows, violation_errors) = (0, [])
     try:
         vdao = violation_dao.ViolationDao()
-        vdao.import_violations(all_violations, kwargs.get('snapshot_timestamp'))
+        (inserted_rows, violation_errors) = vdao.insert_violations(
+            all_violations, snapshot_timestamp=snapshot_timestamp)
     except db_errors.MySQLError as err:
         LOGGER.error('Error importing violations to database: %s', err)
 
-    # Write the CSV.
+    # TODO: figure out what to do with the errors. For now, just log it.
+    LOGGER.debug('Inserted %s rows with %s errors',
+                 inserted_rows, len(violation_errors))
+
+    output_csv_name = None
+
+    # Write the CSV for all the violations.
     with csv_writer.write_csv(
         resource_name='policy_violations',
-        data=_write_violations_output(all_violations),
+        data=_flatten_violations(all_violations),
         write_header=True) as csv_file:
-        LOGGER.info('CSV filename: %s', csv_file.name)
+        output_csv_name = csv_file.name
+        LOGGER.info('CSV filename: %s', output_csv_name)
 
         # Scanner timestamp for output file and email.
         now_utc = datetime.utcnow()
@@ -250,12 +262,14 @@ def _output_results(all_violations, **kwargs):
                 if not os.path.exists(FLAGS.output_path):
                     os.makedirs(output_path)
                 output_path = os.path.abspath(output_path)
-            _upload_csv(output_path, now_utc, csv_file.name)
+            _upload_csv(output_path, now_utc, output_csv_name)
 
         # Send summary email.
         if FLAGS.email_recipient is not None:
             resource_counts = kwargs.get('resource_counts', {})
-            _send_email(csv_file.name, now_utc, all_violations, resource_counts)
+            _send_email(output_csv_name, now_utc,
+                        all_violations, resource_counts,
+                        violation_errors)
 
 def _upload_csv(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
@@ -285,7 +299,8 @@ def _upload_csv(output_path, now_utc, csv_name):
         # Otherwise, just copy it to the output path.
         shutil.copy(csv_name, full_output_path)
 
-def _send_email(csv_name, now_utc, all_violations, total_resources):
+def _send_email(csv_name, now_utc, all_violations,
+                total_resources, violation_errors):
     """Send a summary email of the scan.
 
     Args:
@@ -293,6 +308,7 @@ def _send_email(csv_name, now_utc, all_violations, total_resources):
         now_utc: The UTC datetime right now.
         all_violations: The list of violations.
         total_resources: A dict of the resources and their count.
+        violation_errors: Iterable of violation errors.
     """
 
     mail_util = EmailUtil(FLAGS.sendgrid_api_key)
@@ -305,6 +321,7 @@ def _send_email(csv_name, now_utc, all_violations, total_resources):
         'scanner_summary.jinja', {
             'scan_date':  scan_date,
             'resource_summaries': resource_summaries,
+            'violation_errors': violation_errors,
         })
 
     # Create an attachment out of the csv file and base64 encode the content.

@@ -229,7 +229,7 @@ class ScannerRunnerTest(basetest.TestCase):
     @mock.patch.object(scanner, '_upload_csv')
     @mock.patch.object(scanner, '_send_email')
     @mock.patch('google.cloud.security.scanner.scanner.datetime')
-    @mock.patch.object(vdao.ViolationDao, 'import_violations')
+    @mock.patch.object(vdao.ViolationDao, 'insert_violations')
     def test_output_results_local_no_email(
             self,
             mock_violation_dao,
@@ -268,7 +268,9 @@ class ScannerRunnerTest(basetest.TestCase):
         mock_path.abspath = mock.MagicMock()
         mock_path.abspath.return_value = fake_full_path
 
-        self.scanner._output_results(['a'])
+        mock_violation_dao.return_value = (1, [])
+
+        self.scanner._output_results(['a'], self.fake_timestamp)
 
         mock_upload.assert_called_once_with(
             fake_full_path, self.fake_utcnow, fake_csv_name)
@@ -280,7 +282,7 @@ class ScannerRunnerTest(basetest.TestCase):
     @mock.patch.object(scanner, '_upload_csv')
     @mock.patch.object(scanner, '_send_email')
     @mock.patch('google.cloud.security.scanner.scanner.datetime')
-    @mock.patch.object(vdao.ViolationDao, 'import_violations')
+    @mock.patch.object(vdao.ViolationDao, 'insert_violations')
     def test_output_results_gcs_email(
             self,
             mock_violation_dao,
@@ -324,13 +326,16 @@ class ScannerRunnerTest(basetest.TestCase):
         mock_path.abspath = mock.MagicMock()
         mock_path.abspath.return_value = fake_full_path
 
+        mock_violation_dao.return_value = (1, [])
+
         self.scanner._output_results(fake_violations,
+                                     self.fake_timestamp,
                                      resource_counts=fake_counts)
 
         mock_upload.assert_called_once_with(
             fake_full_path, self.fake_utcnow, fake_csv_name)
         mock_send_email.assert_called_once_with(
-            fake_csv_name, self.fake_utcnow, fake_violations, fake_counts)
+            fake_csv_name, self.fake_utcnow, fake_violations, fake_counts, [])
 
     def test_build_scan_summary(self):
         """Test that the scan summary is built correctly."""

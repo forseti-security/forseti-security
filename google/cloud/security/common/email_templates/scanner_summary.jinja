@@ -21,57 +21,8 @@
   line-height: 16px;
 }
 
-body {
-  background-color: #eee;
-}
-
-div.forseti-content {
-  background-color: #fff;
-  margin-top: 40px;
-  padding: 20px;
-  margin-left: 20%;
-  margin-right: 20%;
-}
-
-div.message {
-  margin: 10px 10px 15px 10px;
-}
-
-div.summary > .header {
-  font-weight: bold;
-  font-size: 16px;
-  margin-bottom: 5px;
-}
-
-.summary .footer {
-  font-style: italic;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.diff-summary {
-  font-size: 14px;
-}
-
-.diff-summary > * {
-  margin: 5px 0;
-}
-
 a, a:visited {
   color: #1082d9;
-}
-
-.summary {
-  margin: 10px 10px;
-}
-
-.resource {
-  margin: 20px 10px;
-}
-
-.resource-violations {
-  border-collapse: collapse;
-  border-spacing: 0
 }
 
 .resource-violations tr > td {
@@ -81,14 +32,6 @@ a, a:visited {
   border-bottom: 0;
   font-size: 14px;
   padding: 4px;
-}
-
-.resource-violations tr:first-child > th {
-  border-bottom: 1px solid #ddd;
-}
-
-.resource-violations tr:last-child > td {
-  border-bottom: 1px solid #ddd;
 }
 
 th {
@@ -102,26 +45,18 @@ td {
   padding: 4px;
 }
 
-.resource-violations th.left {
-  width: 40%;
-}
-
-.resource-violations th.left > a {
-  font-weight: normal;
-}
-
 </style>
 </head>
-<body>
-<div class="forseti-content">
-  <div class="message">
+<body style="background-color: #eee;">
+<div style="background-color: #fff; margin-top: 40px; padding: 20px; margin-left: 20%; margin-right: 20%;">
+  <div style="margin: 10px 10px 15px 10px; font-size: 14px;">
     Forseti Security found some issues during the scan on {{ scan_date }}.
   </div>
-  <div class="summary">
-    <div class="header">
+  <div style="margin: 10px 10px;">
+    <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px;">
       Resource Violations:
     </div>
-    <div class="diff-summary">
+    <div style="font-size: 14px;">
     {% for (resource_type, summary) in resource_summaries.iteritems() %}
     <div>{{ summary['pluralized_resource_type'] }}:
          {{ summary['violations']|length }}
@@ -130,25 +65,34 @@ td {
     </div>
     {% endfor %}
     </div>
-    <div class="footer">
+    <div style="margin: 10px 0;">
+      <div style="font-size: 14px;">
+          <strong>Errors:</strong> {{ violation_errors|length }}
+      </div>
+    </div>
+    <div style="font-style: italic; font-size: 14px; margin-bottom: 5px;">
       See attached CSV for full violation details.
     </div>
   </div>
 
   <br/>
 
-  <div class="details">
+  <div>
     {% for (resource_type, summary) in resource_summaries.iteritems() %}
-    <div class="resource">
-      <table class="resource-violations" width="80%">
+    <div style="margin: 20px 10px;">
+      <table style="border-collapse: collapse; border-spacing: 0;" width="100%">
         <tr>
-          <th class="left">{{ resource_type.title() }}</th>
-          <th># Violations</th>
+          <th style="border-bottom: 1px solid #ddd; width: 40%;">
+            {{ resource_type.title() }}
+          </th>
+          <th style="border-bottom: 1px solid #ddd; width: 40%;">
+            # Violations
+          </th>
         </tr>
         {% for resource_id, count in summary['violations'].iteritems() %}
         <tr>
-          <td>{{ resource_id}}</td>
-          <td>{{ count }}</td>
+          <td style="padding: 4px;">{{ resource_id}}</td>
+          <td style="padding: 4px;">{{ count }}</td>
         </tr>
         {% endfor %}
       </table>

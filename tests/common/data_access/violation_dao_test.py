@@ -59,6 +59,15 @@ class ViolationDaoTest(basetest.TestCase):
             ),
         ]
 
+        self.expected_fake_violations = [
+            ('x', '1', 'rule name', 0, 'ADDED',
+             'roles/editor', 'user:a@foo.com'),
+            ('x', '1', 'rule name', 0, 'ADDED',
+             'roles/editor', 'user:b@foo.com'),
+            ('a'*255, '1', 'c'*255, 1, 'REMOVED',
+             'e'*255, ('user:%s' % ('g'*300))[:255]),
+        ]
+
     def test_format_violation(self):
         """Test that a RuleViolation is formatted and flattened properly.
 
@@ -75,25 +84,14 @@ class ViolationDaoTest(basetest.TestCase):
         actual = [f for v in self.fake_violations
                     for f in violation_dao._format_violation(v)]
 
-        expected = [
-            ('x', '1', 'rule name', 0, 'ADDED',
-             'roles/editor', 'user:a@foo.com'),
-            ('x', '1', 'rule name', 0, 'ADDED',
-             'roles/editor', 'user:b@foo.com'),
-            ('a'*255, '1', 'c'*255, 1, 'REMOVED',
-             'e'*255, ('user:%s' % ('g'*300))[:255]),
-        ]
+        self.assertEquals(self.expected_fake_violations, actual)
 
-        self.assertEquals(expected, actual)
-
-    def test_import_violations_no_timestamp(self):
-        """Test that import_violations() is properly called.
+    def test_insert_violations_no_timestamp(self):
+        """Test that insert_violations() is properly called.
 
         Setup:
             Create mocks:
               * self.dao.conn
-              * self.dao.conn.cursor
-              * self.dao.conn.autocommit
               * self.dao.conn.commit
               * self.dao.get_latest_snapshot_timestamp
               * self.dao._create_snapshot_table
@@ -101,16 +99,11 @@ class ViolationDaoTest(basetest.TestCase):
         Expect:
             * Assert that get_latest_snapshot_timestamp() gets called.
             * Assert that _create_snapshot_table() gets called.
-            * Assert that conn.commit() is called.
-            * Assert that conn.autocommit() is called 2x
-              (once for True, once for False).
-            * Assert that 3 rows were inserted (# of times cursor.execute()
+            * Assert that conn.commit() is called 3x.
               was called == # of formatted/flattened RuleViolations).
         """
 
         conn_mock = mock.MagicMock()
-        cursor_mock = mock.MagicMock()
-        autocommit_mock = mock.MagicMock()
         commit_mock = mock.MagicMock()
 
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
@@ -118,11 +111,9 @@ class ViolationDaoTest(basetest.TestCase):
         self.dao._create_snapshot_table = mock.MagicMock(
             return_value=self.fake_table_name)
         self.dao.conn = conn_mock
-        self.dao.conn.cursor.return_value = cursor_mock
-        conn_mock.autocommit = autocommit_mock
-        self.dao.conn.commit = commit_mock
+        self.dao.execute_sql_with_commit = commit_mock
 
-        self.dao.import_violations(self.fake_violations)
+        self.dao.insert_violations(self.fake_violations)
 
         # Assert snapshot is retrieved because no snapshot timestamp was
         # provided to the method call.
@@ -133,20 +124,11 @@ class ViolationDaoTest(basetest.TestCase):
         self.dao._create_snapshot_table.assert_called_once_with(
             self.dao.RESOURCE_NAME, self.fake_snapshot_timestamp)
 
-        # Autocommit was called 2x, once with False and once with True.
-        expected_autocommit_calls = [
-            mock.call(False), mock.call(True)
-        ]
-        autocommit_mock.assert_has_calls(expected_autocommit_calls)
-
         # Assert that conn.commit() was called.
-        commit_mock.assert_called_once_with()
+        self.assertEqual(3, commit_mock.call_count)
 
-        # cursor.execute() gets called 3x because there are 3 violations.
-        self.assertEqual(3, cursor_mock.execute.call_count)
-
-    def test_import_violations_with_timestamp(self):
-        """Test that import_violations() is properly called with timestamp.
+    def test_insert_violations_with_timestamp(self):
+        """Test that insert_violations() is properly called with timestamp.
 
         Setup:
             * Create fake custom timestamp.
@@ -164,13 +146,13 @@ class ViolationDaoTest(basetest.TestCase):
         self.dao.conn = mock.MagicMock()
         self.dao._create_snapshot_table = mock.MagicMock()
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock()
-        self.dao.import_violations(self.fake_violations, fake_custom_timestamp)
+        self.dao.insert_violations(self.fake_violations, fake_custom_timestamp)
 
         self.dao.get_latest_snapshot_timestamp.assert_not_called()
         self.dao._create_snapshot_table.assert_called_once_with(
             self.dao.RESOURCE_NAME, fake_custom_timestamp)
 
-    def test_import_violations_raises_error_on_create(self):
+    def test_insert_violations_raises_error_on_create(self):
         """Test raises MySQLError when getting a create table error.
         
         Expect:
@@ -183,34 +165,45 @@ class ViolationDaoTest(basetest.TestCase):
             side_effect=MySQLdb.DataError)
 
         with self.assertRaises(errors.MySQLError):
-            self.dao.import_violations([])
+            self.dao.insert_violations([])
 
-    def test_import_violations_raises_error_on_insert(self):
-        """Test raises MySQLError when getting a insert error.
+    def test_insert_violations_with_error(self):
+        """Test insert_violations handles errors during insert.
 
         Setup:
             * Create mocks:
                 * self.dao.conn
                 * self.dao.get_latest_snapshot_timestamp
                 * self.dao._create_snapshot_table
+            * Create side effect for one violation to raise an error.
         
         Expect:
-            * Raise MySQLError when table insert error occurs.
-            * Assert that conn.rollback() is called.
+            * Log MySQLError when table insert error occurs and return list
+              of errors.
+            * Return a tuple of (num_violations-1, [violation])
         """
 
-        conn_mock = mock.MagicMock()
-        self.dao.conn = conn_mock
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
             return_value=self.fake_snapshot_timestamp)
         self.dao._create_snapshot_table = mock.MagicMock(
             return_value=self.fake_table_name)
-        conn_mock.cursor = mock.MagicMock(side_effect=MySQLdb.DataError)
+        violation_dao.LOGGER = mock.MagicMock()
 
-        with self.assertRaises(errors.MySQLError):
-            self.dao.import_violations([])
+        def insert_violation_side_effect(*args, **kwargs):
+            if args[2] == self.expected_fake_violations[1]:
+                raise MySQLdb.DataError(
+                    self.dao.RESOURCE_NAME, mock.MagicMock())
+            else:
+                return mock.DEFAULT
 
-        conn_mock.rollback.assert_called_once_with()
+        self.dao.execute_sql_with_commit = mock.MagicMock(
+            side_effect=insert_violation_side_effect)
+
+        actual = self.dao.insert_violations(self.fake_violations)
+        expected = (2, [self.expected_fake_violations[1]])
+
+        self.assertEqual(expected, actual)
+        self.assertEquals(1, violation_dao.LOGGER.error.call_count)
 
 
 if __name__ == '__main__':
