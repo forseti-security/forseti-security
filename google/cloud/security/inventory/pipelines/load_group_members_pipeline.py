@@ -90,50 +90,53 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                        'raw_member': json.dumps(member)}
 
     def _group_members_worker(self, group_id):
-        group_members = self.api_client.get_group_members(group_id)
-        # group_members_map.append((group_id, group_members))
-        # LOGGER.info("group_members_map size: {1}".format(len(group_members_map)))
-        LOGGER.info("members: {0}".format(len(group_members)))
-        with self.group_members_map_lock:
-            LOGGER.info("writing lock")
-            self.group_members_map.append((group_id, group_members))
-        LOGGER.debug("group_members {0} {1} {2}".format(group_id, len(group_members, len(self.group_members_map))))
+        """Retrieve members from a single GSuite group
 
-    def _retrieve(self):
-        """Retrieve the membership for a given GSuite group.
+        Returns:
+            A tuple (group_id, group_members) from the Admin SDK, e.g.
+            (string, [])
+        """
+        group_members = self.api_client.get_group_members(group_id)
+        LOGGER.debug('Retrieved members from {0}: {1}'.format(
+                     group_id,
+                     len(group_members)))
+
+        return (group_id, group_members)
+
+    def _retrieve(self, group_ids):
+        """Retrieve the membership for a list of given GSuite groups.
 
         Returns:
             A list of tuples (group_id, group_members) from the Admin SDK, e.g.
             (string, [])
         """
-        group_ids = self._fetch_groups_from_dao()
         group_members_map = []
 
-        executor = futures.ThreadPoolExecutor(15)
+        executor = futures.ThreadPoolExecutor(10)
         runs = [executor.submit(self._group_members_worker, group_id) for group_id in group_ids]
         futures.wait(runs)
 
-
-        """
-        for group_id in group_ids:
-            try:
-                group_members = self.api_client.get_group_members(group_id)
-
-            except api_errors.ApiExecutionError as e:
-                raise inventory_errors.LoadDataPipelineError(e)
-
-            group_members_map.append((group_id, group_members))
-        """
+        for r in runs:
+            group_members_map.append(r.result())
 
         return self.group_members_map
 
     def run(self):
         """Runs the load GSuite account groups pipeline."""
-        groups_members_map = self._retrieve()
 
-        if isinstance(groups_members_map, list):
-            loadable_group_members = self._transform(groups_members_map)
-            self._load(self.RESOURCE_NAME, loadable_group_members)
-            self._get_loaded_count()
-        else:
-            LOGGER.warn('No group members retrieved.')
+        group_ids = self._fetch_groups_from_dao()
+
+        def chunker(seq, size):
+            """ helper to chunk a list """
+            return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
+
+        for group_ids_chunk in chunker(group_ids[0:15], 10):
+            LOGGER.debug('Retrieving a batch of group members')
+            groups_members_map = self._retrieve(group_ids_chunk)
+
+            if isinstance(groups_members_map, list):
+                loadable_group_members = self._transform(groups_members_map)
+                self._load(self.RESOURCE_NAME, loadable_group_members)
+                self._get_loaded_count()
+            else:
+                LOGGER.warn('No group members retrieved.')
