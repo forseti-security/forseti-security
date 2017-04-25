@@ -127,4 +127,19 @@ class StorageClient(_base_client.BaseClient):
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
 
+    def get_bucket_acls(self, bucket_name):
+        """Gets acls for GCS bucket.
 
+        Args:
+            bucket_name: The name of the bucket.
+
+        Returns: ACL json for bucket
+            
+        """
+        storage_service_api = self.service.bucketAccessControls()
+        try:
+            bucket_acl_request = storage_service_api.list(bucket=bucket_name)
+            bucket_acl = bucket_acl_request.execute()
+            return buckets
+        except (HttpError, HttpLib2Error) as e:
+            LOGGER.error(api_errors.ApiExecutionError(project_id, e))
