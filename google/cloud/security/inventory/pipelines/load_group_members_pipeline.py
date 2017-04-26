@@ -26,6 +26,7 @@ import threading
 
 
 LOGGER = log_util.get_logger(__name__)
+GROUP_CHUNK_SIZE = 20
 
 
 class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
@@ -96,6 +97,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             A tuple (group_id, group_members) from the Admin SDK, e.g.
             (string, [])
         """
+        LOGGER.debug('started worker')
         group_members = self.api_client.get_group_members(group_id)
         LOGGER.debug('Retrieved members from {0}: {1}'.format(
                      group_id,
@@ -110,16 +112,21 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             A list of tuples (group_id, group_members) from the Admin SDK, e.g.
             (string, [])
         """
+
         group_members_map = []
 
-        executor = futures.ThreadPoolExecutor(10)
-        runs = [executor.submit(self._group_members_worker, group_id) for group_id in group_ids]
-        futures.wait(runs)
+        for group_id in group_ids:
+            try:
+                group_members = self.api_client.get_group_members(group_id)
+            except api_errors.ApiExecutionError as e:
+                raise inventory_errors.LoadDataPipelineError(e)
 
-        for r in runs:
-            group_members_map.append(r.result())
+            group_members_map.append((group_id, group_members))
+            LOGGER.debug('Retrieved members from {0}: {1}'.format(
+                         group_id,
+                         len(group_members)))
 
-        return self.group_members_map
+        return group_members_map
 
     def run(self):
         """Runs the load GSuite account groups pipeline."""
@@ -130,7 +137,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             """ helper to chunk a list """
             return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
-        for group_ids_chunk in chunker(group_ids[0:15], 10):
+        for group_ids_chunk in chunker(group_ids, GROUP_CHUNK_SIZE):
             LOGGER.debug('Retrieving a batch of group members')
             groups_members_map = self._retrieve(group_ids_chunk)
 
