@@ -137,6 +137,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             """ helper to chunk a list """
             return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
+        # TODO: keep track of group_ids that are not retrieved/committed to db
         for group_ids_chunk in chunker(group_ids, GROUP_CHUNK_SIZE):
             LOGGER.debug('Retrieving a batch of group members')
             groups_members_map = self._retrieve(group_ids_chunk)
