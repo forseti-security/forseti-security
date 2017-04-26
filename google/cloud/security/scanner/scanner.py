@@ -230,17 +230,17 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
     """
 
     # Write violations to database.
-    (inserted_rows, violation_errors) = (0, [])
+    (inserted_row_count, violation_errors) = (0, [])
     try:
         vdao = violation_dao.ViolationDao()
-        (inserted_rows, violation_errors) = vdao.insert_violations(
+        (inserted_row_count, violation_errors) = vdao.insert_violations(
             all_violations, snapshot_timestamp=snapshot_timestamp)
     except db_errors.MySQLError as err:
         LOGGER.error('Error importing violations to database: %s', err)
 
     # TODO: figure out what to do with the errors. For now, just log it.
     LOGGER.debug('Inserted %s rows with %s errors',
-                 inserted_rows, len(violation_errors))
+                 inserted_row_count, len(violation_errors))
 
     output_csv_name = None
 
