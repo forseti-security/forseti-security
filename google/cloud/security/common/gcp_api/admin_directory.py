@@ -36,8 +36,8 @@ flags.DEFINE_string('groups_service_account_key_file', None,
                     'runnning locally.')
 flags.DEFINE_integer('max_admin_api_calls_per_day', 150000,
                      'Admin SDK queries per day.')
-flags.DEFINE_integer('max_results_admin_api', 500,
-+                     'maxResult param for the Admin SDK list() method')
+flags.DEFINE_string('max_results_admin_api', 500,
+                    'maxResult param for the Admin SDK list() method')
 
 
 class AdminDirectoryClient(_base_client.BaseClient):
