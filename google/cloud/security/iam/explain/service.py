@@ -6,19 +6,52 @@ import grpc
 
 import explain_pb2
 import explain_pb2_grpc
+import explainer
 
-class Explainer(explain_pb2_grpc.ExplainServicer):
 
-	def Ping(self, request, context):
-		return explain_pb2.PingReply(data=request.data)
-        
-def registerWithServer(explainer, server):
-    explain_pb2_grpc.add_ExplainServicer_to_server(explainer, server)
+class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
+    
+    def __init__(self, explainer):
+        super(GrpcExplainer, self).__init__()
+        self.explainer = explainer
+
+    def Ping(self, request, context):
+        return explain_pb2.PingReply(data=request.data)
+
+    def GetAccessByResources(self, request, context):
+        members = self.explainer.GetAccessByResources(request.resource_name,
+                                                      request.permission_names,
+                                                      request.expand_groups)
+        accesses = []
+        for member in members:
+            access = explain_pb2.GetAccessByResourcesReply.Access()
+            access.member = member.name
+            access.resource = request.resource_name
+            access.role = ""
+            accesses.append(access)
+
+        reply = explain_pb2.GetAccessByResourcesReply()
+        reply.accesses.extend(accesses)
+        return reply
+
+    def GetAccessByMembers(self, request, context):
+        raise NotImplementedError()
+
+    def GetPermissionsByRoles(self, request, context):
+        raise NotImplementedError()
+
+class GrpcExplainerFactory:
+    def __init__(self):
+        pass
+    
+    def createAndRegisterService(self, server):
+        service = GrpcExplainer(explainer=explainer.Explainer())
+        explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
+        return service
 
 def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-    registerWithServer(Explainer(), server)
-    explain_pb2_grpc.add_ExplainServicer_to_server(Explainer(), server)
+    GrpcExplainerFactory().createAndRegisterService(server)
     server.add_insecure_port(endpoint)
     server.start()
     while True:
@@ -29,4 +62,5 @@ def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
             return
 
 if __name__ == "__main__":
-    serve()
+    import sys
+    serve(endpoint=sys.argv[1] if len(sys.argv) > 1 else '[::]:50051')

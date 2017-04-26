@@ -44,7 +44,8 @@ INSTALL_REQUIRES = [
     'PyYAML==3.12',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
-    'sendgrid==3.6.3',
+    'sendgrid==3.6.3'
+    'SQLAlchemy==1.1.9',
 ]
 
 SETUP_REQUIRES = [
@@ -54,6 +55,7 @@ SETUP_REQUIRES = [
 
 TEST_REQUIRES = [
     'mock==2.0.0',
+    'SQLAlchemy==1.1.9',
 ]
 
 if sys.version_info < (2, 7):
