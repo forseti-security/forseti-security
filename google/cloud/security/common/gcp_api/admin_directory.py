@@ -94,7 +94,8 @@ class AdminDirectoryClient(_base_client.BaseClient):
             api_errors.ApiExecutionError
         """
         members_stub = self.service.members()
-        request = members_stub.list(groupKey=group_key)
+        request = members_stub.list(groupKey=group_key,
+                                    maxResults=500)
         results_by_member = []
 
         # TODO: Investigate yielding results to handle large group lists.
