@@ -2,45 +2,57 @@ syntax = "proto3";
 
 package explain;
 
-import "google/api/annotations.proto";
-
 service Explain {
-  rpc Ping(PingRequest) returns (PingReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/explain/ping"
-      body: "*"
-    };
-  }
+  rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc GetAccessByResources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/explain/getaccessbyresources"
-      body: "*"
-    };
-  }
+  rpc GetAccessByResources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
 
-  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/explain/getaccessbymembers"
-      body: "*"
-    };
+  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
+
+  rpc GetPermissionsByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
+}
+
+message GetPermissionsByRolesRequest {
+  repeated string role_names = 1;
+  repeated string role_patterns = 2;
+  bool return_all = 3;
+}
+
+message GetPermissionsByRolesReply {
+  message PermissionsByRole {
+    string role = 1;
+    repeated string permissions = 2;
   }
+  repeated PermissionsByRole permissionsbyroles = 1;
 }
 
 message GetAccessByResourcesRequest {
-
+  string resource_name = 1;
+  repeated string permission_names = 2;
+  bool expand_groups = 3;
 }
 
 message GetAccessByResourcesReply {
-
+  message Access {
+    string member = 1;
+    string resource = 2;
+    string role = 3;
+  }
+  repeated Access accesses = 1;
 }
 
 message GetAccessByMembersRequest {
-
+  repeated string member_names = 1;
+  bool expand_resources = 2;
 }
 
 message GetAccessByMembersReply {
-
+  message Access {
+    string member = 1;
+    string resource = 2;
+    string role = 3;
+  }
+  repeated Access accesses = 1;
 }
 
 message PingRequest {

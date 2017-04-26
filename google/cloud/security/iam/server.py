@@ -4,14 +4,26 @@ from concurrent import futures
 import time
 import grpc
 
-from explain.service import Explainer, registerWithServer as registerExplainer
+from explain.service import GrpcExplainerFactory
 from playground.service import Playgrounder, registerWithServer as registerPlaygrounder
 
-def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
+
+static_service_mapping = {
+    "explain":GrpcExplainerFactory,
+}
+
+def serve(endpoint, services, max_workers=10, wait_shutdown_secs=3):
+
+    factories = []
+    for service in services:
+        factories.append(static_service_mapping[service])
+
+    if not factories:
+        raise Exception("No services to start")
+
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-    
-    registerExplainer(Explainer(), server)
-    registerPlaygrounder(Playgrounder(), server)
+    for factory in factories:
+        factory().createAndRegisterService(server)
 
     server.add_insecure_port(endpoint)
     server.start()
@@ -23,5 +35,7 @@ def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
             return
 
 if __name__ == "__main__":
-    serve()
-
+    import sys
+    endpoint=sys.argv[1] if len(sys.argv) > 1 else '[::]:50051'
+    services=sys.argv[2:] if len(sys.argv) > 2 else []
+    serve(endpoint, services)
