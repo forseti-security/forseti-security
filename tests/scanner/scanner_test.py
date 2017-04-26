@@ -30,7 +30,7 @@ from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.scanner import scanner
-from google.cloud.security.scanner.audit import org_rules_engine as ore
+from google.cloud.security.scanner.audit import iam_rules_engine as ire
 from google.cloud.security.scanner.audit import rules as audit_rules
 from tests.inventory.pipelines.test_data import fake_iam_policies
 
@@ -61,7 +61,7 @@ class ScannerRunnerTest(basetest.TestCase):
         with self.assertRaises(SystemExit):
             self.scanner.main(self.fake_main_argv)
 
-    @mock.patch.object(ore.OrgRulesEngine, 'build_rule_book', autospec=True)
+    @mock.patch.object(ire.IamRulesEngine, 'build_rule_book', autospec=True)
     @mock.patch.object(scanner, '_get_timestamp')
     def test_no_timestamp_raises_systemexit(self, mock_get_timestamp, mock_build_rule_book):
         """Test that no org or project policies raises SystemExit/calls sys.exit()."""
@@ -71,7 +71,7 @@ class ScannerRunnerTest(basetest.TestCase):
         self.assertEqual(1, mock_build_rule_book.call_count)
         self.scanner.LOGGER.warn.assert_called_with('No snapshot timestamp found. Exiting.')
 
-    @mock.patch.object(ore.OrgRulesEngine, 'build_rule_book')
+    @mock.patch.object(ire.IamRulesEngine, 'build_rule_book')
     @mock.patch.object(scanner, '_get_timestamp')
     @mock.patch.object(scanner, '_get_org_policies')
     @mock.patch.object(scanner, '_get_project_policies')
@@ -89,7 +89,7 @@ class ScannerRunnerTest(basetest.TestCase):
             self.scanner.main(self.fake_main_argv)
         self.scanner.LOGGER.warn.assert_called_with('No policies found. Exiting.')
 
-    @mock.patch.object(ore.OrgRulesEngine, 'build_rule_book', autospec=True)
+    @mock.patch.object(ire.IamRulesEngine, 'build_rule_book', autospec=True)
     @mock.patch.object(scanner, '_get_timestamp')
     @mock.patch.object(scanner, '_get_org_policies')
     @mock.patch.object(scanner, '_get_project_policies')

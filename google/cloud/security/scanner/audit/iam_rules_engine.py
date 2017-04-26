@@ -14,7 +14,7 @@
 
 """Rules engine for organizations, folders, and projects.
 
-Builds the RuleBook (OrgRuleBook) from the rule definitions (file either
+Builds the RuleBook (IamRuleBook) from the rule definitions (file either
 stored locally or in GCS) and compares a policy against the RuleBook to
 determine whether there are violations.
 """
@@ -101,17 +101,17 @@ def _check_required_members(rule_members=None, policy_members=None):
     return violating_members
 
 
-class OrgRulesEngine(bre.BaseRulesEngine):
+class IamRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
     def __init__(self, rules_file_path):
-        super(OrgRulesEngine, self).__init__(
+        super(IamRulesEngine, self).__init__(
             rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self):
-        """Build OrgRuleBook from the rules definition file."""
-        self.rule_book = OrgRuleBook(self._load_rule_definitions())
+        """Build IamRuleBook from the rules definition file."""
+        self.rule_book = IamRuleBook(self._load_rule_definitions())
 
     def find_policy_violations(self, resource, policy, force_rebuild=False):
         """Determine whether policy violates rules.
@@ -143,7 +143,7 @@ class OrgRulesEngine(bre.BaseRulesEngine):
             self.rule_book.add_rules(rules)
 
 
-class OrgRuleBook(bre.BaseRuleBook):
+class IamRuleBook(bre.BaseRuleBook):
     """The RuleBook for organization resources.
 
     Rules from the rules definition file are parsed and placed into a
@@ -182,7 +182,7 @@ class OrgRuleBook(bre.BaseRuleBook):
             rule_defs: The parsed dictionary of rules from the YAML
                        definition file.
         """
-        super(OrgRuleBook, self).__init__()
+        super(IamRuleBook, self).__init__()
         self._rules_sema = threading.BoundedSemaphore(value=1)
         self.resource_rules_map = {}
         if not rule_defs:
@@ -200,7 +200,7 @@ class OrgRuleBook(bre.BaseRuleBook):
         return not self == other
 
     def __repr__(self):
-        return 'OrgRuleBook <{}>'.format(self.resource_rules_map)
+        return 'IamRuleBook <{}>'.format(self.resource_rules_map)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
