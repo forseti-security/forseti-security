@@ -90,21 +90,6 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                        'member_email': member.get('email'),
                        'raw_member': json.dumps(member)}
 
-    def _group_members_worker(self, group_id):
-        """Retrieve members from a single GSuite group
-
-        Returns:
-            A tuple (group_id, group_members) from the Admin SDK, e.g.
-            (string, [])
-        """
-        LOGGER.debug('started worker')
-        group_members = self.api_client.get_group_members(group_id)
-        LOGGER.debug('Retrieved members from {0}: {1}'.format(
-                     group_id,
-                     len(group_members)))
-
-        return (group_id, group_members)
-
     def _retrieve(self, group_ids):
         """Retrieve the membership for a list of given GSuite groups.
 
