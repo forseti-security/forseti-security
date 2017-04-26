@@ -35,21 +35,6 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
     RESOURCE_NAME = 'org_iam_policies'
     RAW_RESOURCE_NAME = 'raw_org_iam_policies'
 
-    def __init__(self, cycle_timestamp, configs, crm_client, dao):
-        """Constructor for the data pipeline.
-
-        Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
-            crm_client: CRM API client.
-            dao: Data access object.
-
-        Returns:
-            None
-        """
-        super(LoadOrgIamPoliciesPipeline, self).__init__(
-            cycle_timestamp, configs, crm_client, dao)
-
     def _transform(self, iam_policies):
         """Yield an iterator of loadable iam policies.
 

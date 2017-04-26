@@ -34,6 +34,7 @@ class ProjectDaoTest(basetest.TestCase):
 
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
     def setUp(self, mock_db_connector):
+        mock_db_connector.return_value = None
         self.project_dao = project_dao.ProjectDao()
         self.resource_name = 'projects'
         self.fake_timestamp = '12345'

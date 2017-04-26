@@ -28,3 +28,7 @@ deployment-templates/*.yaml
 build/
 dist/
 out/
+
+# Coverage
+.coverage
+htmlcov/

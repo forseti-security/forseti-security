@@ -28,9 +28,7 @@ from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import org_rules_engine as ore
-from google.cloud.security.scanner.audit.org_rules_engine import ResourceRules
-from google.cloud.security.scanner.audit.org_rules_engine import RuleViolation
-from google.cloud.security.scanner.audit.org_rules_engine import RULE_VIOLATION_TYPE
+from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import test_rules
 
@@ -109,18 +107,18 @@ class OrgRulesEngineTest(basetest.TestCase):
         rule_bindings = [{
             'role': 'roles/*', 'members': ['user:*@company.com']
         }]
-        rule = ore.Rule('my rule', 0,
+        rule = scanner_rules.Rule('my rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='whitelist')
-        expected_org_rules = ResourceRules(self.org789,
-                                           rules=set([rule]),
-                                           applies_to='self_and_children')
-        expected_proj1_rules = ResourceRules(self.project1,
-                                             rules=set([rule]),
-                                             applies_to='self')
-        expected_proj2_rules = ResourceRules(self.project2,
-                                             rules=set([rule]),
-                                             applies_to='self')
+        expected_org_rules = ore.ResourceRules(self.org789,
+                                               rules=set([rule]),
+                                               applies_to='self_and_children')
+        expected_proj1_rules = ore.ResourceRules(self.project1,
+                                                 rules=set([rule]),
+                                                 applies_to='self')
+        expected_proj2_rules = ore.ResourceRules(self.project2,
+                                                 rules=set([rule]),
+                                                 applies_to='self')
         expected_rules = {
             (self.org789, 'self_and_children'): expected_org_rules,
             (self.project1, 'self'): expected_proj1_rules,
@@ -132,12 +130,12 @@ class OrgRulesEngineTest(basetest.TestCase):
     def test_invalid_rule_mode_raises_when_verify_mode(self):
         """Test that an invalid rule mode raises error."""
         with self.assertRaises(InvalidRulesSchemaError):
-            bre.RuleMode.verify('nonexistent mode')
+            scanner_rules.RuleMode.verify('nonexistent mode')
 
     def test_invalid_rule_mode_raises_when_create_rule(self):
         """Test that creating a Rule with invalid rule mode raises error."""
         with self.assertRaises(InvalidRulesSchemaError):
-            ore.Rule('exception', 0, [])
+            scanner_rules.Rule('exception', 0, [])
 
     def test_policy_binding_matches_whitelist_rules(self):
         """Test that a policy binding matches the whitelist rules.
@@ -171,10 +169,10 @@ class OrgRulesEngineTest(basetest.TestCase):
             }
         ]
 
-        rule = ore.Rule('test rule', 0,
+        rule = scanner_rules.Rule('test rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='whitelist')
-        resource_rule = ResourceRules(rules=[rule])
+        resource_rule = ore.ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
 
@@ -209,10 +207,10 @@ class OrgRulesEngineTest(basetest.TestCase):
             }
         ]
 
-        rule = ore.Rule('test rule', 0,
+        rule = scanner_rules.Rule('test rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='blacklist')
-        resource_rule = ResourceRules(rules=[rule])
+        resource_rule = ore.ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
 
@@ -248,10 +246,10 @@ class OrgRulesEngineTest(basetest.TestCase):
             }
         ]
 
-        rule = ore.Rule('test rule', 0,
+        rule = scanner_rules.Rule('test rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='required')
-        resource_rule = ResourceRules(rules=[rule])
+        resource_rule = ore.ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
 
@@ -286,10 +284,10 @@ class OrgRulesEngineTest(basetest.TestCase):
             }
         ]
 
-        rule = ore.Rule('test rule', 0,
+        rule = scanner_rules.Rule('test rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='required')
-        resource_rule = ResourceRules(resource=self.project1)
+        resource_rule = ore.ResourceRules(resource=self.project1)
         resource_rule.rules.add(rule)
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
@@ -327,7 +325,7 @@ class OrgRulesEngineTest(basetest.TestCase):
             'role': 'roles/*',
             'members': ['user:*@company.com']
         }]
-        rule = ore.Rule('my rule', 0,
+        rule = scanner_rules.Rule('my rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='whitelist')
         expected_outstanding = {
@@ -336,13 +334,13 @@ class OrgRulesEngineTest(basetest.TestCase):
             ]
         }
         expected_violations = set([
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 resource_type=self.project1.type,
                 resource_id=self.project1.id,
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 role='roles/editor',
-                violation_type=RULE_VIOLATION_TYPE.get(rule.mode),
+                violation_type=scanner_rules.VIOLATION_TYPE.get(rule.mode),
                 members=tuple(expected_outstanding['roles/editor']))
         ])
 
@@ -477,7 +475,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         }
 
         expected_violations = set([
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=0,
                 rule_name='my rule',
                 resource_id=self.project1.id,
@@ -485,7 +483,7 @@ class OrgRulesEngineTest(basetest.TestCase):
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding1['roles/editor'])),
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=0,
                 rule_name='my rule',
                 resource_type=self.project2.type,
@@ -493,7 +491,7 @@ class OrgRulesEngineTest(basetest.TestCase):
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding1['roles/editor'])),
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=1,
                 rule_name='my other rule',
                 resource_type=self.project2.type,
@@ -501,7 +499,7 @@ class OrgRulesEngineTest(basetest.TestCase):
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding2['roles/editor'])),
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=2,
                 rule_name='required rule',
                 resource_id=self.project1.id,
@@ -609,7 +607,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         }
 
         expected_violations = set([
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=1,
                 rule_name='my blacklist rule',
                 resource_id=self.org789.id,
@@ -617,7 +615,7 @@ class OrgRulesEngineTest(basetest.TestCase):
                 violation_type='ADDED',
                 role=org_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_org['roles/editor'])),
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=0,
                 rule_name='my whitelist rule',
                 resource_id=self.project1.id,
@@ -625,7 +623,7 @@ class OrgRulesEngineTest(basetest.TestCase):
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_project['roles/editor'])),
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=2,
                 rule_name='my required rule',
                 resource_id=self.project1.id,
@@ -695,7 +693,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         }
 
         expected_violations = set([
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=0,
                 rule_name='org whitelist',
                 resource_id=self.org789.id,
@@ -703,7 +701,7 @@ class OrgRulesEngineTest(basetest.TestCase):
                 violation_type='ADDED',
                 role=org_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_org['roles/owner'])),
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=1,
                 rule_name='project whitelist',
                 resource_id=self.project1.id,
@@ -744,9 +742,9 @@ class OrgRulesEngineTest(basetest.TestCase):
             ]
         }
 
-        actual_violations = set(itertools.chain(
+        actual_violations = set(
             rules_engine.find_policy_violations(self.project1, project_policy)
-        ))
+        )
 
         # expected
         expected_outstanding_proj = {
@@ -800,7 +798,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         }
 
         expected_violations = set([
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=1,
                 rule_name='project blacklist',
                 resource_id=self.project1.id,
@@ -855,7 +853,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         }
 
         expected_violations = set([
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=0,
                 rule_name='org blacklist',
                 resource_id=self.project1.id,
@@ -962,7 +960,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         }
 
         expected_violations = set([
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=1,
                 rule_name='project blacklist',
                 resource_id=self.project1.id,
@@ -1003,9 +1001,9 @@ class OrgRulesEngineTest(basetest.TestCase):
             ]
         }
 
-        actual_violations = set(itertools.chain(
+        actual_violations = set(
             rules_engine.find_policy_violations(self.project1, project_policy)
-        ))
+        )
 
         # expected
         expected_outstanding_proj = {
@@ -1015,7 +1013,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         }
 
         expected_violations = set([
-            RuleViolation(
+            scanner_rules.RuleViolation(
                 rule_index=1,
                 rule_name='project blacklist',
                 resource_id=self.project1.id,
