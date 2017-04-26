@@ -27,6 +27,7 @@ from googleapiclient.errors import HttpError
 
 LOGGER = log_util.get_logger(__name__)
 
+
 def get_bucket_and_path_from(full_path):
     """Get the bucket and object path.
 
@@ -43,6 +44,7 @@ def get_bucket_and_path_from(full_path):
     bucket_prefix = 5 + len(bucket_name) + 1
     object_path = full_path[bucket_prefix:]
     return bucket_name, object_path
+
 
 class StorageClient(_base_client.BaseClient):
     """Storage Client."""
@@ -126,5 +128,4 @@ class StorageClient(_base_client.BaseClient):
             return buckets
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
-
-
+            raise api_errors.ApiExecutionError(resource_name, e)

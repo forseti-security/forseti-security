@@ -63,9 +63,9 @@ from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_orgs_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
 from google.cloud.security.inventory import util
 # pylint: enable=line-too-long
 

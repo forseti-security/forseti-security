@@ -134,7 +134,7 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
                 buckets = self.api_client.get_buckets(
                     project_number)
                 buckets_map = {'project_number': project_number,
-                                  'buckets': buckets}
+                               'buckets': buckets}
                 buckets_maps.append(buckets_map)
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(
