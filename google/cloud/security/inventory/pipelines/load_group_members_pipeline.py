@@ -21,7 +21,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-from concurrent import futures
 import threading
 
 
