@@ -293,7 +293,7 @@ def _send_email(cycle_time, cycle_timestamp, status, pipelines,
 def _configure_logging(configs):
     """Configures the loglevel for all loggers."""
     desc = configs.get('loglevel')
-    level = LOGLEVELS[desc]
+    level = LOGLEVELS.setdefault(desc, 'info')
     log_util.set_logger_level(level)
 
 def main(_):
