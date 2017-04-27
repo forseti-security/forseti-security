@@ -72,7 +72,7 @@ def MakeProto():
   for (root, dirs, files) in os.walk(cwd):
     if isGrpcServiceDir(root, files):
       logging.info("Found service directory, building grpc service: %s"%root)
-      MakeProtoService(root)
+      #MakeProtoService(root)
       dirs[:] = []
       continue
     for filename in files:
