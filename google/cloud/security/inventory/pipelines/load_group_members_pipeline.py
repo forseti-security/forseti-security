@@ -47,8 +47,6 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         """
         super(LoadGroupMembersPipeline, self).__init__(
             cycle_timestamp, configs, admin_client, dao)
-        self.group_members_map = []
-        self.group_members_map_lock = threading.Lock()
 
     def _fetch_groups_from_dao(self):
         """Fetch the latest group ids previously stored in Cloud SQL.
