@@ -29,7 +29,7 @@ import subprocess
 
 
 def isGrpcServiceDir(root, files):
-  return "/service_protos" in root or ".grpc_service" in files
+  return ".grpc_service" in files
 
 def Clean():
   """Clean out compiled protos."""
@@ -50,6 +50,16 @@ def Clean():
           "_pb2.pyc"):
         os.unlink(full_filename)
 
+def MakeProtoService(root):
+  script_basename = "mkproto.sh"
+  script_path = os.path.join(root, script_basename)
+  subprocess.check_call(
+          [
+              "/bin/sh",
+              script_path
+          ])
+
+
 
 def MakeProto():
   """Make sure our protos have been compiled to python libraries."""
@@ -61,7 +71,8 @@ def MakeProto():
   protos_to_compile = []
   for (root, dirs, files) in os.walk(cwd):
     if isGrpcServiceDir(root, files):
-      logging.info("Skipping grpc service directory: %s"%root)
+      logging.info("Found service directory, building grpc service: %s"%root)
+      MakeProtoService(root)
       dirs[:] = []
       continue
     for filename in files:

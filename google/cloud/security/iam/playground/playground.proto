@@ -2,70 +2,16 @@ syntax = "proto3";
 
 package playground;
 
-import "google/api/annotations.proto";
-
 service Playground {
-  rpc Ping(PingRequest) returns (PingReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/ping"
-      body: "*"
-    };
-  }
-
-  rpc SetIamPolicy(SetIamPolicyRequest) returns (SetIamPolicyReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/setiampolicy"
-      body: "*"
-    };
-  }
-
-  rpc GetIamPolicy(GetIamPolicyRequest) returns (GetIamPolicyReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/getiampolicy"
-      body: "*"
-    };
-  }
-
-  rpc CheckIamPolicy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/checkiampolicy"
-      body: "*"
-    };
-  }
-
-  rpc AddMember(AddMemberRequest) returns (AddMemberReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/member/add"
-      body: "*"
-    };
-  }
-
-  rpc CreateMember(CreateMemberRequest) returns (CreateMemberReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/member/create"
-      body: "*"
-    };
-  }
-
-  rpc DeleteMember(DeleteMemberRequest) returns (DeleteMemberReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/member/delete"
-      body: "*"
-    };
-  }
-
-  rpc AddResource(AddResourceRequest) returns (AddResourceReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/resource/add"
-      body: "*"
-    };
-  }
-  rpc DeleteResource(DeleteResourceRequest) returns (DeleteResourceReply) {
-    option (google.api.http) = {
-      post: "/v1/iam/playground/resource/delete"
-      body: "*"
-    };
-  }
+  rpc Ping(PingRequest) returns (PingReply) {}
+  rpc SetIamPolicy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
+  rpc GetIamPolicy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
+  rpc CheckIamPolicy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
+  rpc AddMember(AddMemberRequest) returns (AddMemberReply) {}
+  rpc CreateMember(CreateMemberRequest) returns (CreateMemberReply) {}
+  rpc DeleteMember(DeleteMemberRequest) returns (DeleteMemberReply) {}
+  rpc AddResource(AddResourceRequest) returns (AddResourceReply) {}
+  rpc DeleteResource(DeleteResourceRequest) returns (DeleteResourceReply) {}
 }
 
 message PingRequest {

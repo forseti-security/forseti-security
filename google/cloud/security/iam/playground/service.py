@@ -1,10 +1,12 @@
+#!/usr/bin/env python
+
 from google.apputils import app
 from concurrent import futures
 import time
 import grpc
 
-from google.cloud.security.iam.playground import playground_pb2
-from google.cloud.security.iam.playground import playground_pb2_grpc
+import playground_pb2
+import playground_pb2_grpc
 
 class Playgrounder(playground_pb2_grpc.PlaygroundServicer):
     
