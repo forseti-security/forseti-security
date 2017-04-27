@@ -71,37 +71,3 @@ class BaseRuleBook(object):
     def add_rule(self, rule_def, rule_index):
         """Add rule to rule book."""
         raise NotImplementedError('Implement add_rule() in subclass')
-
-class RuleAppliesTo(object):
-    """What the rule applies to. (Default: SELF) """
-
-    SELF = 'self'
-    CHILDREN = 'children'
-    SELF_AND_CHILDREN = 'self_and_children'
-    apply_types = frozenset([SELF, CHILDREN, SELF_AND_CHILDREN])
-
-    @classmethod
-    def verify(cls, applies_to):
-        """Verify whether the applies_to is valid."""
-        if applies_to not in cls.apply_types:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Invalid applies_to: {}'.format(applies_to))
-        return applies_to
-
-
-class RuleMode(object):
-    """The rule mode."""
-
-    WHITELIST = 'whitelist'
-    BLACKLIST = 'blacklist'
-    REQUIRED = 'required'
-
-    modes = frozenset([WHITELIST, BLACKLIST, REQUIRED])
-
-    @classmethod
-    def verify(cls, mode):
-        """Verify whether the mode is valid."""
-        if mode not in cls.modes:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Invalid rule mode: {}'.format(mode))
-        return mode

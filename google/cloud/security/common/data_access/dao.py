@@ -40,6 +40,8 @@ CREATE_TABLE_MAP = {
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
     'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
+
+    'violations': create_tables.CREATE_VIOLATIONS_TABLE,
 }
 
 SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'
@@ -47,9 +49,6 @@ SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'
 
 class Dao(_db_connector.DbConnector):
     """Data access object (DAO)."""
-
-    def __init__(self):
-        super(Dao, self).__init__()
 
     def _create_snapshot_table(self, resource_name, timestamp):
         """Creates a snapshot table.
