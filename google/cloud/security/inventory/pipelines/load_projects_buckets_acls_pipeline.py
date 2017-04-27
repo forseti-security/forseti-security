@@ -33,8 +33,8 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
     """Pipeline to load project buckets data into Inventory."""
 
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
-    RESOURCE_NAME = 'buckets'
-    RAW_RESOURCE_NAME = 'raw_buckets'
+    RESOURCE_NAME = 'buckets_acl'
+    RAW_RESOURCE_NAME = 'raw_buckets_acl'
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -131,32 +131,35 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
         projects_buckets_maps = []
         for project_number in project_numbers:
             try:
-                project_buckets = self.dao.get_buckets_by_project_number(
-                    self.RESOURCE_NAME, self.cycle_timestamp, 
+                buckets = self.dao.get_buckets_by_project_number(
+                    self.RESOURCE_NAME, self.cycle_timestamp,
                     project_number)
                 project_buckets_map = {'project_number': project_number,
-                                          'buckets': buckets}
+                                       'buckets': buckets}
                 projects_buckets_maps.append(project_buckets_map)
             except data_access_errors.MySQLError as e:
                 raise inventory_errors.LoadDataPipelineError(e)
         # Retrieve data from GCP.
         # ADD code for ACLS
-        for project_number in project_numbers:
-            try:
-                buckets = self.api_client.get_buckets(
-                    project_number)
-                buckets_map = {'project_number': project_number,
-                                  'buckets': buckets}
-                buckets_maps.append(buckets_map)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(
-                    'Unable to get buckets for project %s:\n%s',
-                    project_number, e)
-        return buckets_maps
+        buckets_acl_maps = []
+        for project_buckets in projects_buckets_maps:
+            for bucket in project_buckets['buckets']:
+                try:
+                    bucket_acl = self.api_client.get_buckets_acl(
+                        bucket)
+                    bucket_acl_map = {'bucket_name': bucket,
+                                      'acl': bucket_acl}
+                    buckets_acl_maps.append(bucket_acl_map)
+                except api_errors.ApiExecutionError as e:
+                    LOGGER.error(
+                        'Unable to get buckets acls for bucket %s:\n%s',
+                        bucket, e)
+        return buckets_acl_maps
 
     def run(self):
         """Runs the load buckets data pipeline."""
         buckets_acls_maps = self._retrieve()
+        print buckets_acls_maps[0:5]
 
         #loadable_buckets = self._transform(buckets_maps)
 

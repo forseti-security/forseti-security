@@ -143,6 +143,6 @@ class StorageClient(_base_client.BaseClient):
         try:
             bucket_acl_request = storage_service_api.list(bucket=bucket_name)
             bucket_acl = bucket_acl_request.execute()
-            return buckets
+            return bucket_acl
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(project_id, e))
+            LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
