@@ -200,7 +200,7 @@ cd $USER_HOME
 rm -rf forseti-*
 pip install --upgrade pip
 pip install --upgrade setuptools
-pip install grpcio grpcio-tools
+pip install google-apputils grpcio grpcio-tools protobuf
 
 cd $USER_HOME
 
