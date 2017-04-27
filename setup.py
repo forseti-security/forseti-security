@@ -19,14 +19,12 @@ import os
 import subprocess
 import sys
 
-import google.cloud.security
-
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
 
-FORSETI_VERSION = google.cloud.security.__version__
+FORSETI_VERSION = '1.0.1'
 
 NAMESPACE_PACKAGES = [
     'google',
