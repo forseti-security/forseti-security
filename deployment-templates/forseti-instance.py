@@ -200,6 +200,7 @@ cd $USER_HOME
 rm -rf forseti-*
 pip install --upgrade pip
 pip install --upgrade setuptools
+pip install grpcio grpcio-tools
 
 cd $USER_HOME
 
