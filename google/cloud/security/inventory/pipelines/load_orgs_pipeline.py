@@ -33,21 +33,6 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-    def __init__(self, cycle_timestamp, configs, crm_client, dao):
-        """Constructor for the data pipeline.
-
-        Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
-            crm_client: CRM API client.
-            dao: Data access object.
-
-        Returns:
-            None
-        """
-        super(LoadOrgsPipeline, self).__init__(
-            cycle_timestamp, configs, crm_client, dao)
-
     def _transform(self, orgs):
         """Yield an iterator of loadable iam policies.
 

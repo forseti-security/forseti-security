@@ -32,6 +32,7 @@ from google.cloud.security.common.gcp_type.group_member import GroupMember
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
+from google.cloud.security.scanner.audit import rules as audit_rules
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
@@ -214,7 +215,7 @@ class ResourceRules(object):
     def __init__(self,
                  resource=None,
                  rules=None,
-                 applies_to=bre.RuleAppliesTo.SELF,
+                 applies_to=audit_rules.RuleAppliesTo.SELF,
                  inherit_from_parents=False):
         """Initialize.
 
@@ -230,11 +231,11 @@ class ResourceRules(object):
             rules = set([])
         self.resource = resource
         self.rules = rules
-        self.applies_to = bre.RuleAppliesTo.verify(applies_to)
+        self.applies_to = audit_rules.RuleAppliesTo.verify(applies_to)
         self.inherit_from_parents = inherit_from_parents
 
         self._rule_mode_methods = {
-            bre.RuleMode.WHITELIST: _check_whitelist_members,
-            bre.RuleMode.BLACKLIST: _check_blacklist_members,
-            bre.RuleMode.REQUIRED: _check_required_members,
+            audit_rules.RuleMode.WHITELIST: _check_whitelist_members,
+            audit_rules.RuleMode.BLACKLIST: _check_blacklist_members,
+            audit_rules.RuleMode.REQUIRED: _check_required_members,
         }

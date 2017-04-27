@@ -5,11 +5,11 @@ The "rules engine" takes in a rules file (see the `samples/` directory for examp
 * Organizations
 * Projects
 
-# High level overview of `OrgRulesEngine`
+# High level overview of `IamRulesEngine`
 
-With the `OrgRulesEngine`, Forseti Scanner integrates with Forseti Inventory to get IAM policy data for organizations and projects and runs it against the rule definitions. `OrgRulesEngine` was designed with the organization resources' hierarchy in mind, so rules can "roll up" to the resource ancestors (e.g. a project under some org can look for both the rules for that project as well as for that org).
+With the `IamRulesEngine`, Forseti Scanner integrates with Forseti Inventory to get IAM policy data for organizations and projects and runs it against the rule definitions. `IamRulesEngine` was designed with the organization resources' hierarchy in mind, so rules can "roll up" to the resource ancestors (e.g. a project under some org can look for both the rules for that project as well as for that org).
 
-The `OrgRulesEngine` breaks up an IAM policy by policy binding. If a policy binding violates a rule in its "rule book", it will report a rule violation. In the runner script (`scanner.py`), the rule violations are collected into a CSV file.
+The `IamRulesEngine` breaks up an IAM policy by policy binding. If a policy binding violates a rule in its "rule book", it will report a rule violation. In the runner script (`scanner.py`), the rule violations are collected into a CSV file.
 
 # Creating your own rules engine
 
@@ -23,4 +23,4 @@ The general design for a rules engine would be:
    * The `find_policy_violations()` method searches the rule book and compares the policy against the rule (if found) in the book.
 3. Create or reuse the runner script to instantiate your rules engine and run it. (e.g. `scanner.py`)
 
-Refer to `scanner.py` for an example of how the `OrgRulesEngine` works in conjunction with Forseti Inventory.
+Refer to `scanner.py` for an example of how the `IamRulesEngine` works in conjunction with Forseti Inventory.
