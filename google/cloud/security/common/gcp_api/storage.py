@@ -17,7 +17,6 @@
 import StringIO
 
 from httplib2 import HttpLib2Error
-from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
@@ -128,4 +127,5 @@ class StorageClient(_base_client.BaseClient):
             return buckets
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
-            raise api_errors.ApiExecutionError(resource_name, e)
+            # TODO: pass in "buckets" as resource_name variable
+            raise api_errors.ApiExecutionError('buckets', e)
