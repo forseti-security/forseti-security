@@ -18,6 +18,7 @@ import mock
 
 from google.apputils import basetest
 from google.cloud.security.scanner.audit import base_rules_engine as bre
+from google.cloud.security.scanner.audit import rules as audit_rules
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
@@ -60,18 +61,24 @@ class RuleAppliesToTest(basetest.TestCase):
 
     def test_rule_applies_is_verified(self):
         """Test valid RuleAppliesTo."""
-        self.assertEqual(bre.RuleAppliesTo.SELF,
-                         bre.RuleAppliesTo.verify(bre.RuleAppliesTo.SELF))
-        self.assertEqual(bre.RuleAppliesTo.CHILDREN,
-                         bre.RuleAppliesTo.verify(bre.RuleAppliesTo.CHILDREN))
-        self.assertEqual(bre.RuleAppliesTo.SELF_AND_CHILDREN,
-                         bre.RuleAppliesTo.verify(
-                             bre.RuleAppliesTo.SELF_AND_CHILDREN))
+
+        self.assertEqual(
+            audit_rules.RuleAppliesTo.SELF,
+            audit_rules.RuleAppliesTo.verify(audit_rules.RuleAppliesTo.SELF))
+
+        self.assertEqual(
+            audit_rules.RuleAppliesTo.CHILDREN,
+            audit_rules.RuleAppliesTo.verify(audit_rules.RuleAppliesTo.CHILDREN))
+
+        self.assertEqual(
+            audit_rules.RuleAppliesTo.SELF_AND_CHILDREN,
+            audit_rules.RuleAppliesTo.verify(
+              audit_rules.RuleAppliesTo.SELF_AND_CHILDREN))
 
     def test_invalid_rule_applies_raises_error(self):
         """Test invalid RuleAppliesTo raises error."""
         with self.assertRaises(audit_errors.InvalidRulesSchemaError):
-            bre.RuleAppliesTo.verify('invalid')
+            audit_rules.RuleAppliesTo.verify('invalid')
 
 
 if __name__ == '__main__':
