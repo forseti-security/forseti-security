@@ -70,11 +70,6 @@ def MakeProto():
   # Find all the .proto files.
   protos_to_compile = []
   for (root, dirs, files) in os.walk(cwd):
-    if isGrpcServiceDir(root, files):
-      logging.info("Found service directory, building grpc service: %s"%root)
-      #MakeProtoService(root)
-      dirs[:] = []
-      continue
     for filename in files:
       full_filename = os.path.join(root, filename)
       if full_filename.endswith(".proto"):
@@ -92,39 +87,18 @@ def MakeProto():
   if not protos_to_compile:
     logging.info("No protos needed to be compiled.")
   else:
-    # Find the protoc compiler.
-    protoc = os.environ.get("PROTOC", "protoc")
-    try:
-      output = subprocess.check_output([protoc, "--version"])
-    except (IOError, OSError):
-      raise RuntimeError("Unable to launch %s protoc compiler. Please "
-                         "set the PROTOC environment variable.", protoc)
-
-    pieces = output.split(" ")
-    try:
-        version_pieces = pieces[1].strip().split(".")
-        protoc_version = float("{}.{}".format(version_pieces[0],
-                                              version_pieces[1]))
-    except (IndexError, ValueError):
-        raise RuntimeError("Incompatible protoc compiler: %s" % output)
-
-    if protoc_version < 3:
-      raise RuntimeError("Incompatible protoc compiler detected. "
-                         "We need >= 3.0.0; you have %s" % output)
-
     for proto in protos_to_compile:
       logging.info("Compiling %s", proto)
       # The protoc compiler is too dumb to deal with full paths - it expects a
       # relative path from the current working directory.
       subprocess.check_call(
           [
-              protoc,
-              # Write the python files next to the .proto files.
+              "python",
+              "-m",
+              "grpc_tools.protoc",
+              "-I.",
               "--python_out=.",
-              # Standard include paths.
-              # We just bring google/proto/descriptor.proto with us to make it
-              # easier to install.
-              "--proto_path=.",
+              "--grpc_python_out=.",
               os.path.relpath(proto, cwd)
           ],
           cwd=cwd)
