@@ -89,8 +89,10 @@ def MakeProto():
   else:
     for proto in protos_to_compile:
       logging.info("Compiling %s", proto)
+      protodir, protofile = os.path.split(proto)
       # The protoc compiler is too dumb to deal with full paths - it expects a
       # relative path from the current working directory.
+
       subprocess.check_call(
           [
               "python",
@@ -99,9 +101,9 @@ def MakeProto():
               "-I.",
               "--python_out=.",
               "--grpc_python_out=.",
-              os.path.relpath(proto, cwd)
+              protofile,
           ],
-          cwd=cwd)
+          cwd=protodir)
 
 def main(unused_argv=None):
     root_logger = logging.getLogger()

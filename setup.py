@@ -50,6 +50,8 @@ SETUP_REQUIRES = [
     'google-apputils==0.4.2',
     'python-gflags==3.1.1',
     'grpcio==1.2.1',
+    'grpcio-tools==1.2.1',
+    'protobuf==3.2.0',
 ]
 
 TEST_REQUIRES = [
