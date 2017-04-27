@@ -50,6 +50,7 @@ class GroupDaoTest(basetest.TestCase):
 
     @mock.patch.object(dao.Dao, '__init__', autospec=True)
     def setUp(self, mock_dao):
+        mock_dao.return_value = None
         #self.group_dao = mock.create_autospec(group_dao.GroupDao)
         self.group_dao = group_dao.GroupDao()
         self.resource_name = 'groups'

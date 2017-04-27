@@ -27,6 +27,7 @@ from googleapiclient.errors import HttpError
 
 LOGGER = log_util.get_logger(__name__)
 
+
 def get_bucket_and_path_from(full_path):
     """Get the bucket and object path.
 
@@ -43,6 +44,7 @@ def get_bucket_and_path_from(full_path):
     bucket_prefix = 5 + len(bucket_name) + 1
     object_path = full_path[bucket_prefix:]
     return bucket_name, object_path
+
 
 class StorageClient(_base_client.BaseClient):
     """Storage Client."""
@@ -126,6 +128,7 @@ class StorageClient(_base_client.BaseClient):
             return buckets
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
+            raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_bucket_acls(self, bucket_name):
         """Gets acls for GCS bucket.
@@ -134,12 +137,12 @@ class StorageClient(_base_client.BaseClient):
             bucket_name: The name of the bucket.
 
         Returns: ACL json for bucket
-            
+
         """
         storage_service_api = self.service.bucketAccessControls()
         try:
             bucket_acl_request = storage_service_api.list(bucket=bucket_name)
             bucket_acl = bucket_acl_request.execute()
-            return buckets
+            return bucket_acl
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(project_id, e))
+            LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
