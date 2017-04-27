@@ -118,7 +118,16 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         group_ids = self._fetch_groups_from_dao()
 
         def chunker(seq, size):
-            """ helper to chunk a list """
+            """Helper to transform a list in a list of sublists of the given size
+
+            Args:
+                seq: The list to transform
+                size: The length of a single chunks
+
+            Returns:
+                A list of chunks of the given size containing the original list
+                elements
+            """
             return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
         # TODO: keep track of group_ids that are not retrieved/committed to db
