@@ -118,15 +118,14 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         group_ids = self._fetch_groups_from_dao()
 
         def chunker(seq, size):
-            """Helper to transform a list in a list of sublists of the given size
+            """Helper to chunk a list.
 
             Args:
-                seq: The list to transform
-                size: The length of a single chunks
+                seq: A list.
+                size: Integer of the desired chunk size.
 
             Returns:
-                A list of chunks of the given size containing the original list
-                elements
+                A tuple of the chunked seq.
             """
             return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
