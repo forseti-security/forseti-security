@@ -156,3 +156,21 @@ CREATE_VIOLATIONS_TABLE = """
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
+
+CREATE_BUCKETS_ACL_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `bucket` varchar(255) DEFAULT NOT NULL,
+        `domain` varchar(255) DEFAULT NULL,
+        `email` varchar(255) DEFAULT NULL,
+        `entity` varchar(255) DEFAULT NULL,
+        `entity_id` varchar(255) DEFAULT NULL,
+        `acl_id` varchar(255) DEFAULT NULL,
+        `kind` varchar(255) DEFAULT NULL,
+        `project_team` json DEFAULT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `bucket_acl_selflink` varchar(255) DEFAULT NULL,
+        `raw_bucket_acl` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
