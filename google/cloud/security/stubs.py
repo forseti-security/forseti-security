@@ -44,3 +44,11 @@ def RunForsetiNotifier():
     """Run Forseti Notifier module."""
     import google.cloud.security.notifier.notifier as forseti_notifier
     run_script_module.RunScriptModule(forseti_notifier)
+
+# TODO: Investigate improving so the pylint disable isn't needed.
+# pylint: disable=invalid-name
+def RunForsetiApi():
+    """Run Forseti API server."""
+    import google.cloud.security.api.server as forseti_api
+    run_script_module.RunScriptModule(forseti_api)
+
