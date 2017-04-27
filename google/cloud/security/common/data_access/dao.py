@@ -77,10 +77,9 @@ class Dao(_db_connector.DbConnector):
             timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            snapshot_table_name: String of the created snapshot table.
+            String of the created snapshot table.
         """
-        snapshot_table_name = resource_name + '_' + timestamp
-        return snapshot_table_name
+        return resource_name + '_' + timestamp
 
     def load_data(self, resource_name, timestamp, data):
         """Load data into a snapshot table.
