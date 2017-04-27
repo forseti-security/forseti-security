@@ -66,9 +66,9 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
         '_fetch_groups_from_dao')
     def test_api_is_called_to_retrieve_groups(self, mock_dao_fetch):
         """Test that api is called to retrieve projects."""
-        mock_dao_fetch.return_value = 'a'
+        mock_dao_fetch.return_value = ['a']
 
-        self.pipeline._retrieve()
+        self.pipeline._retrieve(mock_dao_fetch.return_value)
         self.pipeline.api_client.get_group_members.assert_called_with('a')
 
     @mock.patch.object(
