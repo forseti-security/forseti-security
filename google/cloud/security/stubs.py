@@ -39,3 +39,10 @@ def RunForsetiEnforcer():
     """Run Forseti Enforcer module."""
     import google.cloud.security.enforcer.enforcer as forseti_enforcer
     run_script_module.RunScriptModule(forseti_enforcer)
+
+# TODO: Investigate improving so the pylint disable isn't needed.
+# pylint: disable=invalid-name
+def RunForsetiApi():
+    """Run Forseti API server."""
+    import google.cloud.security.api.server as forseti_api
+    run_script_module.RunScriptModule(forseti_api)
