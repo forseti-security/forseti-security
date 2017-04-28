@@ -68,6 +68,7 @@ class Dao(_db_connector.DbConnector):
         cursor.execute(create_snapshot_sql)
         return snapshot_table_name
 
+    @staticmethod
     def _create_snapshot_table_name(self, resource_name, timestamp):
         """Create the snapshot table if it doens't exist.
 
@@ -76,7 +77,7 @@ class Dao(_db_connector.DbConnector):
             timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            snapshot_table_name: String of the created snapshot table.
+            String of the created snapshot table name.
         """
         return resource_name + '_' + timestamp
 
@@ -93,7 +94,7 @@ class Dao(_db_connector.DbConnector):
         try:
             snapshot_table_name = self._create_snapshot_table(
                 resource_name, timestamp)
-        except OperationalError as e:
+        except OperationalError:
             # TODO: find a better way to handle this. I want this method
             # to be resilient when the table has already been created
             # so that it can support inserting new data. This will catch
@@ -119,7 +120,7 @@ class Dao(_db_connector.DbConnector):
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
                 snapshot_table_name = self._get_snapshot_table(
-                        resource_name, timestamp)
+                    resource_name, timestamp)
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
                     resource_name, csv_file.name, snapshot_table_name)
                 cursor = self.conn.cursor()
