@@ -10,6 +10,42 @@ service Explain {
   rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
 
   rpc GetPermissionsByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
+
+  rpc CreateModel(CreateModelRequest) returns (CreateModelReply) {}
+
+  rpc DeleteModel(DeleteModelRequest) returns (DeleteModelReply) {}
+
+  rpc ListModel(ListModelRequest) returns (ListModelReply) {}
+
+}
+
+message CreateModelRequest {
+	enum ImportType {
+		FORSETI = 0;
+	}
+	ImportType type = 1;
+}
+
+message CreateModelReply {
+	string handle = 1;
+}
+
+message DeleteModelRequest {
+	string handle = 1;
+}
+
+message DeleteModelReply {
+	enum Status {
+		SUCCESS = 0;
+	}
+	Status statis = 1;
+}
+
+message ListModelRequest {
+}
+
+message ListModelReply {
+	repeated string handles = 1;
 }
 
 message GetPermissionsByRolesRequest {

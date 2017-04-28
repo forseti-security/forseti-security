@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+import datetime
+import utils
 import sqlalchemy
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Table, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Table, Text, DateTime, Enum
+from sqlalchemy.orm import relationship, state
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -23,6 +25,31 @@ group_members = Table('group_members', Base.metadata,
 		Column('group_name', ForeignKey('members.name'), primary_key=True),
 		Column('members_name', ForeignKey('members.name'), primary_key=True),
 	)
+
+class ModelState(Enum):
+	WAITING = "WAITING"
+	INPROGRESS = "INPROGRESS"
+	DONE = "DONE"
+
+class Model(Base):
+	__tablename__ = 'model'
+	
+	handle = Column(String, primary_key=True)
+	state = Column(ModelState)
+	watchdog_timer = Column(DateTime)
+	created_at = Column(DateTime)
+	
+	def kick_watchdog(self, session):
+		self.watchdog_timer = datetime.datetime.utcnow()
+		session.commit()
+
+	def set_inprogress(self, session):
+		self.state = ModelState.INPROGRESS
+		session.commit()
+
+	def set_done(self, session):
+		self.state = ModelState.DONE
+		session.commit()
 
 class Resource(Base):
 	__tablename__ = 'resources'
@@ -270,6 +297,10 @@ def explainHasAccessToResource(session, resource_name, permission_names, expand_
     else:
         members = expandMembers(session, map(lambda m: m.name, member_set))
     return members
+   
+def create_model(session):
+	handle = utils.generateModelHandle()
+	return Model(handle=handle, state=ModelState.WAITING, created_at=datetime.datetime.utcnow())
 
 def useScenario(session):
     print explainHasAccessToResource(session, 'vm1', ['cloudsql.table.read'], True)

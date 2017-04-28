@@ -39,13 +39,24 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def GetPermissionsByRoles(self, request, context):
         raise NotImplementedError()
+    
+    def CreateModel(self, request, context):
+        raise NotImplementedError()
+    
+    def DeleteModel(self, request, context):
+        raise NotImplementedError()
+    
+    def ListModel(self, request, context):
+        raise NotImplementedError()
+    
+    
 
 class GrpcExplainerFactory:
-    def __init__(self):
-        pass
+    def __init__(self, config):
+        self.config = config
     
     def createAndRegisterService(self, server):
-        service = GrpcExplainer(explainer=explainer.Explainer())
+        service = GrpcExplainer(explainer=explainer.Explainer(self.config))
         explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
         return service
 
