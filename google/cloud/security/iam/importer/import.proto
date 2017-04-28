@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package importer;
+
+service Import {
+  rpc Ping(PingRequest) returns (PingReply) {}
+
+  rpc CreateImport(CreateImportRequest) returns (CreateImportReply) {}
+
+}
+
+message CreateImportRequest {
+  enum ImportType {
+    FORSETI = 0;
+  }
+  ImportType type = 1;
+}
+
+message CreateImportReply {
+}
+
+message PingRequest {
+  string data = 1;
+}
+
+message PingReply {
+  string data = 1;
+}
