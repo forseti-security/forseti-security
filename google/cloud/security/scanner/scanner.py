@@ -46,7 +46,7 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.scanner.audit.org_rules_engine import OrgRulesEngine
+from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
 
 # Setup flags
 FLAGS = flags.FLAGS
@@ -84,7 +84,7 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    rules_engine = OrgRulesEngine(rules_file_path=FLAGS.rules)
+    rules_engine = IamRulesEngine(rules_file_path=FLAGS.rules)
     rules_engine.build_rule_book()
 
     snapshot_timestamp = _get_timestamp()

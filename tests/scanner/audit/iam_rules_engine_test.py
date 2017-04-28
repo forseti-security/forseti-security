@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the OrgRulesEngine."""
+"""Tests the IamRulesEngine."""
 
 import copy
 import itertools
@@ -27,14 +27,14 @@ from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import base_rules_engine as bre
-from google.cloud.security.scanner.audit import org_rules_engine as ore
+from google.cloud.security.scanner.audit import iam_rules_engine as ire
 from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import test_rules
 
 
-class OrgRulesEngineTest(basetest.TestCase):
-    """Tests for the OrgRulesEngine."""
+class IamRulesEngineTest(basetest.TestCase):
+    """Tests for the IamRulesEngine."""
 
     def setUp(self):
         """Set up."""
@@ -49,14 +49,14 @@ class OrgRulesEngineTest(basetest.TestCase):
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_file_path=rules_local_path)
+        rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_from_local_json_file_works(self):
         """Test that a RuleBook is built correctly with a json file."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.json')
-        rules_engine = ore.OrgRulesEngine(rules_file_path=rules_local_path)
+        rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
@@ -75,7 +75,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         bucket_name = 'bucket-name'
         rules_path = 'input/test_rules_1.yaml'
         full_rules_path = 'gs://{}/{}'.format(bucket_name, rules_path)
-        rules_engine = ore.OrgRulesEngine(rules_file_path=full_rules_path)
+        rules_engine = ire.IamRulesEngine(rules_file_path=full_rules_path)
 
         # Read in the rules file
         file_content = None
@@ -94,13 +94,13 @@ class OrgRulesEngineTest(basetest.TestCase):
     def test_build_rule_book_no_resource_type_fails(self):
         """Test that a rule without a resource type cannot be created."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_2.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_file_path=rules_local_path)
+        rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
 
     def test_add_single_rule_builds_correct_map(self):
         """Test that adding a single rule builds the correct map."""
-        rule_book = ore.OrgRuleBook(test_rules.RULES1)
+        rule_book = ire.IamRuleBook(test_rules.RULES1)
         actual_rules = rule_book.resource_rules_map
 
         # expected
@@ -110,13 +110,13 @@ class OrgRulesEngineTest(basetest.TestCase):
         rule = scanner_rules.Rule('my rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='whitelist')
-        expected_org_rules = ore.ResourceRules(self.org789,
+        expected_org_rules = ire.ResourceRules(self.org789,
                                                rules=set([rule]),
                                                applies_to='self_and_children')
-        expected_proj1_rules = ore.ResourceRules(self.project1,
+        expected_proj1_rules = ire.ResourceRules(self.project1,
                                                  rules=set([rule]),
                                                  applies_to='self')
-        expected_proj2_rules = ore.ResourceRules(self.project2,
+        expected_proj2_rules = ire.ResourceRules(self.project2,
                                                  rules=set([rule]),
                                                  applies_to='self')
         expected_rules = {
@@ -172,7 +172,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         rule = scanner_rules.Rule('test rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='whitelist')
-        resource_rule = ore.ResourceRules(rules=[rule])
+        resource_rule = ire.ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
 
@@ -210,7 +210,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         rule = scanner_rules.Rule('test rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='blacklist')
-        resource_rule = ore.ResourceRules(rules=[rule])
+        resource_rule = ire.ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
 
@@ -249,7 +249,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         rule = scanner_rules.Rule('test rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='required')
-        resource_rule = ore.ResourceRules(rules=[rule])
+        resource_rule = ire.ResourceRules(rules=[rule])
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
 
@@ -287,7 +287,7 @@ class OrgRulesEngineTest(basetest.TestCase):
         rule = scanner_rules.Rule('test rule', 0,
             [IamPolicyBinding.create_from(b) for b in rule_bindings],
             mode='required')
-        resource_rule = ore.ResourceRules(resource=self.project1)
+        resource_rule = ire.ResourceRules(resource=self.project1)
         resource_rule.rules.add(rule)
         results = list(resource_rule.find_mismatches(
             self.project1, test_binding))
@@ -308,8 +308,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES1)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES1)
 
         policy = {
             'bindings': [{
@@ -360,8 +360,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES1)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES1)
         policy = {
             'bindings': [{
               'role': 'roles/editor',
@@ -390,8 +390,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook({})
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook({})
         policy = {
             'bindings': [{
                 'role': 'roles/editor',
@@ -419,8 +419,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES1)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES1)
 
         actual_violations = set(rules_engine.find_policy_violations(
             self.project1, {}))
@@ -442,8 +442,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES2)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES2)
 
         policy = {
             'bindings': [
@@ -524,8 +524,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES1)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES1)
 
         policy = {
             'bindings': [
@@ -559,8 +559,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES3)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES3)
 
         org_policy = {
             'bindings': [
@@ -649,8 +649,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES4)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES4)
 
         org_policy = {
             'bindings': [
@@ -728,8 +728,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES5)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES5)
 
         project_policy = {
             'bindings': [
@@ -772,8 +772,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES6)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES6)
 
         project_policy = {
             'bindings': [
@@ -825,10 +825,10 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
         rules5 = copy.deepcopy(test_rules.RULES5)
         rules5['rules'][1]['inherit_from_parents'] = True
-        rules_engine.rule_book = ore.OrgRuleBook(rules5)
+        rules_engine.rule_book = ire.IamRuleBook(rules5)
 
         project_policy = {
             'bindings': [
@@ -882,10 +882,10 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
         rules5 = copy.deepcopy(test_rules.RULES5)
         rules5['rules'][0]['resource'][0]['applies_to'] = 'self'
-        rules_engine.rule_book = ore.OrgRuleBook(rules5)
+        rules_engine.rule_book = ire.IamRuleBook(rules5)
 
         project_policy = {
             'bindings': [{
@@ -920,10 +920,10 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
         rules6 = copy.deepcopy(test_rules.RULES6)
         rules6['rules'][0]['resource'][0]['applies_to'] = 'self'
-        rules_engine.rule_book = ore.OrgRuleBook(rules6)
+        rules_engine.rule_book = ire.IamRuleBook(rules6)
 
         org_policy = {
             'bindings': [
@@ -987,8 +987,8 @@ class OrgRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ore.OrgRulesEngine(rules_local_path)
-        rules_engine.rule_book = ore.OrgRuleBook(test_rules.RULES6)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES6)
 
         project_policy = {
             'bindings': [

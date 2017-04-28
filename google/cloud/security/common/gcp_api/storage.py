@@ -16,10 +16,13 @@
 
 import StringIO
 
+from httplib2 import HttpLib2Error
+
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from googleapiclient import http
+from googleapiclient.errors import HttpError
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -101,3 +104,28 @@ class StorageClient(_base_client.BaseClient):
             LOGGER.error('Unable to download file: %s', http_error)
             raise http_error
         return file_content
+
+    def get_buckets(self, project_id):
+        """Gets all GCS buckets for a project.
+
+        Args:
+            project_id: The project id for a GCP project.
+
+        Returns:
+            {
+              "kind": "storage#buckets",
+              "nextPageToken": string,
+              "items": [
+                buckets Resource
+              ]
+            }
+        """
+        storage_service_api = self.service.buckets()
+        try:
+            buckets_request = storage_service_api.list(project=project_id)
+            buckets = buckets_request.execute()
+            return buckets
+        except (HttpError, HttpLib2Error) as e:
+            LOGGER.error(api_errors.ApiExecutionError(project_id, e))
+            # TODO: pass in "buckets" as resource_name variable
+            raise api_errors.ApiExecutionError('buckets', e)
