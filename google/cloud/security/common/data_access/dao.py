@@ -83,14 +83,14 @@ class Dao(_db_connector.DbConnector):
         return resource_name + '_' + timestamp
 
     def _get_snapshot_table(self, resource_name, timestamp):
-        """Creates a snapshot table name.
+        """Returns a snapshot table name.
 
         Args:
             resource_name: String of the resource name.
             timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            String of the created snapshot table.
+            snapshot_table_name: String of the created snapshot table.
         """
         try:
             snapshot_table_name = self._create_snapshot_table(
