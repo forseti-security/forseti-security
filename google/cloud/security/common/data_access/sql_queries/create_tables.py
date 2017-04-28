@@ -160,7 +160,7 @@ CREATE_VIOLATIONS_TABLE = """
 CREATE_BUCKETS_ACL_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `bucket` varchar(255) DEFAULT NOT NULL,
+        `bucket` varchar(255) DEFAULT NULL,
         `domain` varchar(255) DEFAULT NULL,
         `email` varchar(255) DEFAULT NULL,
         `entity` varchar(255) DEFAULT NULL,

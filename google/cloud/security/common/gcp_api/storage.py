@@ -128,7 +128,8 @@ class StorageClient(_base_client.BaseClient):
             return buckets
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
-            raise api_errors.ApiExecutionError(resource_name, e)
+            # TODO: pass in "buckets" as resource_name variable
+            raise api_errors.ApiExecutionError('buckets', e)
 
     def get_bucket_acls(self, bucket_name):
         """Gets acls for GCS bucket.
@@ -146,3 +147,5 @@ class StorageClient(_base_client.BaseClient):
             return bucket_acl
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
+            # TODO: pass in "buckets" as resource_name variable
+            raise api_errors.ApiExecutionError('buckets', e)
