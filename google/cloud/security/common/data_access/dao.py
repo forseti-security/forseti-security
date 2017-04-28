@@ -69,6 +69,18 @@ class Dao(_db_connector.DbConnector):
         return snapshot_table_name
 
     def _create_snapshot_table_name(self, resource_name, timestamp):
+        """Create the snapshot table if it doens't exist.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            snapshot_table_name: String of the created snapshot table.
+        """
+        return resource_name + '_' + timestamp
+
+    def _get_snapshot_table(self, resource_name, timestamp):
         """Creates a snapshot table name.
 
         Args:
@@ -78,7 +90,17 @@ class Dao(_db_connector.DbConnector):
         Returns:
             String of the created snapshot table.
         """
-        return resource_name + '_' + timestamp
+        try:
+            snapshot_table_name = self._create_snapshot_table(
+                resource_name, timestamp)
+        except OperationalError as e:
+            # TODO: find a better way to handle this. I want this method
+            # to be resilient when the table has already been created
+            # so that it can support inserting new data. This will catch
+            # a sql 'table already exist' error and alter the flow.
+            snapshot_table_name = self._create_snapshot_table_name(
+                resource_name, timestamp)
+        return snapshot_table_name
 
     def load_data(self, resource_name, timestamp, data):
         """Load data into a snapshot table.
@@ -96,15 +118,7 @@ class Dao(_db_connector.DbConnector):
         """
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
-                try:
-                    snapshot_table_name = self._create_snapshot_table(
-                        resource_name, timestamp)
-                except OperationalError as e:
-                    # TODO: find a better way to handle this. I want this method
-                    # to be resilient when the table has already been created
-                    # so that it can support inserting new data. This will catch
-                    # a sql 'table already exist' error and alter the flow.
-                    snapshot_table_name = self._create_snapshot_table_name(
+                snapshot_table_name = self._get_snapshot_table(
                         resource_name, timestamp)
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
                     resource_name, csv_file.name, snapshot_table_name)
