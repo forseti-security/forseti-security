@@ -30,8 +30,11 @@ class Snapshot(Base):
 
     def __repr__(self):
         return "<Snapshot(id='%s', version='%s', timestamp='%s')>" % (self.id, self.schema_version, self.cycle_timestamp)
-    
+
+table_cache = {}
 def createTableNames(timestamp):
+    if table_cache.has_key(timestamp):
+        return table_cache[timestamp]
     class Project(Base):
         __tablename__ = 'projects_%s'%timestamp
         
@@ -100,7 +103,9 @@ def createTableNames(timestamp):
         def __repr__(self):
             return "<Organization(id='%s', name='%s', display_name='%s')>"%(self.org_id, self.name, self.display_name)
 
-    return {"projects":Project,"buckets":Bucket,"organizations":Organization},[OrganizationPolicy, ProjectPolicy]
+    result = {"projects":Project,"buckets":Bucket,"organizations":Organization},[OrganizationPolicy, ProjectPolicy]
+    table_cache[timestamp] = result
+    return result
 
 class Importer:
     def __init__(self, db_connect_string='mysql://root@127.0.0.1:3306/forseti_security'):
@@ -115,13 +120,13 @@ class Importer:
 
     def __iter__(self):
         tables, policies = createTableNames(self.snapshot.cycle_timestamp)
-        for table in tables.itervalues():
+        for res_type, table in tables.iteritems():
             for item in self.session.query(table).all():
-                yield item
+                yield res_type, item
         
         for policyTable in policies:
             for policy in self.session.query(policyTable).all():
-                yield policy
+                yield None, policy
 
 if __name__ == '__main__':
     i = Importer()

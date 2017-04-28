@@ -19,7 +19,13 @@ def useExplain(channel):
     request = explain_pb2.PingRequest()
     request.data = "hello"
     reply = stub.Ping(request)
-    return reply.data == "hello"
+    if reply.data != "hello":
+        raise Exception()
+
+    request = explain_pb2.CreateModelRequest()
+    request.type = "FORSETI"
+    reply = stub.CreateModel(request)
+    print reply.handle
 
 def run():
     channel = grpc.insecure_channel('localhost:50051')

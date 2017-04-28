@@ -8,27 +8,27 @@ def createScenario():
     return session
 
 class Explainer():
-    def __init__(self, config, sessionCreator=createScenario):
-        self.sessionCreator = sessionCreator
+    def __init__(self, config):
         self.config = config
 
     def GetAccessByResources(self, resource_name, permission_names, expand_groups):
-        session = self.sessionCreator()
+        session = self.config.getSession()
         members = dao.explainHasAccessToResource(session,
                                                  resource_name,
                                                  permission_names,
                                                  expand_groups)
         return members
-    
+
     def CreateModel(self, source):
-        session = self.sessionCreator()
+        session = self.config.getSession()
         model = dao.create_model(session)
-        
+
         def doImport():
             import_runner = importer.ForsetiImporter(session, model)
             import_runner.run()
 
         self.config.runInBackground(doImport)
+        return model.handle
 
     def GetAccessByMembers(self, request, context):
         raise NotImplementedError()
