@@ -129,14 +129,21 @@ class Permission(Base):
 	def __repr__(self):
 		return "<Permission(name='%s')>" % (self.name)
 
-
-
 def createSession():
-    engine = create_engine('sqlite:///:memory:', echo=True)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    return session
+	engine = create_engine('sqlite:///:memory:', echo=True)
+	Base.metadata.create_all(engine)
+	Session = sessionmaker(bind=engine)
+	session = Session()
+	return session
+
+def session_creator(filename=None):
+	if filename:
+		engine = create_engine('sqlite:///%s'%filename)
+	else:
+		raise NotImplementedError(filename)
+		engine = create_engine('sqlite:///:memory:', echo=True)
+	Base.metadata.create_all(engine)
+	return sessionmaker(bind=engine)
 
 def addResource(session, name, parent=None):
 	resource = Resource(name=name, type='test', parent=parent)

@@ -41,7 +41,11 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         raise NotImplementedError()
     
     def CreateModel(self, request, context):
-        raise NotImplementedError()
+        handle = self.explainer.CreateModel(request.type)
+        
+        reply = explain_pb2.CreateModelReply()
+        reply.handle = handle
+        return reply
     
     def DeleteModel(self, request, context):
         raise NotImplementedError()
