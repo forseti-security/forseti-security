@@ -7,11 +7,6 @@ service Playground {
   rpc SetIamPolicy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
   rpc GetIamPolicy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
   rpc CheckIamPolicy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
-  rpc AddMember(AddMemberRequest) returns (AddMemberReply) {}
-  rpc CreateMember(CreateMemberRequest) returns (CreateMemberReply) {}
-  rpc DeleteMember(DeleteMemberRequest) returns (DeleteMemberReply) {}
-  rpc AddResource(AddResourceRequest) returns (AddResourceReply) {}
-  rpc DeleteResource(DeleteResourceRequest) returns (DeleteResourceReply) {}
 }
 
 message PingRequest {
@@ -22,55 +17,43 @@ message PingReply {
   string data = 1;
 }
 
-message AddMemberRequest {
+message Binding {
+	string role = 1;
+	repeated string member = 2;
 }
 
-message AddMemberReply {
-}
-
-message CreateMemberRequest {
-}
-
-message CreateMemberReply {
-}
-
-message DeleteMemberRequest {
-}
-
-message DeleteMemberReply {
-}
-
-message AddResourceRequest {
-}
-
-message AddResourceReply {
-}
-
-message DeleteResourceRequest {
-}
-
-message DeleteResourceReply{
+message Policy {
+	repeated Binding bindings = 1;
 }
 
 message CheckIamPolicyRequest {
+	string model = 1;
+	string resource = 2;
+	string permission = 3;
+	string identity = 4;
 }
 
 message CheckIamPolicyReply {
-
+	bool result = 1;
 }
 
 message SetIamPolicyRequest {
-
+	string model = 1;
+	string resource = 2;
+	Policy policy = 3;
+	string etag = 4;
 }
 
 message SetIamPolicyReply {
-
+	bool accepted = 1;
 }
 
 message GetIamPolicyRequest {
-
+	string model = 1;
+	string resource = 2;
 }
 
 message GetIamPolicyReply {
-
+	string resource = 1;
+	Policy policy = 2;
 }

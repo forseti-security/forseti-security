@@ -296,8 +296,8 @@ def explainHasAccessToResource(session, resource_name, permission_names, expand_
         members = member_set
     else:
         members = expandMembers(session, map(lambda m: m.name, member_set))
-    return members
-   
+	return members
+
 def create_model(session):
 	handle = utils.generateModelHandle()
 	return Model(handle=handle, state=ModelState.WAITING, created_at=datetime.datetime.utcnow())

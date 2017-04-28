@@ -6,11 +6,12 @@ import time
 import grpc
 
 from explain.service import GrpcExplainerFactory
-from playground.service import Playgrounder, registerWithServer as registerPlaygrounder
+from playground.service import GrpcPlaygrounderFactory
 
 
 static_service_mapping = {
-    "explain":GrpcExplainerFactory,
+    'explain':GrpcExplainerFactory,
+    'playground':GrpcPlaygrounderFactory,
 }
 
 class ServiceConfig:

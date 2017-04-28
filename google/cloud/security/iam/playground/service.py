@@ -1,60 +1,55 @@
 #!/usr/bin/env python
 
-from google.apputils import app
 from concurrent import futures
 import time
 import grpc
 
 import playground_pb2
 import playground_pb2_grpc
+import playgrounder
 
-class Playgrounder(playground_pb2_grpc.PlaygroundServicer):
+class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
+    def __init__(self, playgrounder):
+        super(GrpcPlaygrounder, self).__init__()
+        self.playgrounder = playgrounder
     
-	def Ping(self, request, context):
-		return playground_pb2.PingReply(data=request.data)
+    def Ping(self, request, context):
+        return playground_pb2.PingReply(data=request.data)
 
-	def SetIamPolicy(self, request, context):
-		return playground_pb2.SetIamPolicyReply()
+    def SetIamPolicy(self, request, context):
+        return self.playgrounder.SetIamPolicy(request)
 
-	def GetIamPolicy(self, request, context):
-		return playground_pb2.GetIamPolicyReply()
+    def GetIamPolicy(self, request, context):
+        return self.playgrounder.GetIamPolicy(request)
 
-	def CheckIamPolicy(self, request, context):
-		return playground_pb2.CheckIamPolicyReply()
+    def CheckIamPolicy(self, request, context):
+        return self.playgrounder.CheckIamPolicy(request)
 
-	def AddMember(self, request, context):
-		return playground_pb2.AddMemberReply()
+class GrpcPlaygrounderFactory:
+    def __init__(self, config):
+        self.config = config
+    
+    def createAndRegisterService(self, server):
+        service = GrpcPlaygrounder(playgrounder=playgrounder.Playgrounder(self.config))
+        playground_pb2_grpc.add_PlaygroundServicer_to_server(service, server)
+        return service
 
-	def CreateMember(self, request, context):
-		return playground_pb2.CreateMemberReply()
-
-	def DeleteMember(self, request, context):
-		return playground_pb2.DeleteMemberReply()
-
-	def AddResource(self, request, context):
-		return playground_pb2.AddResourceReply()
-
-	def DeleteResource(self, request, context):
-		return playground_pb2.DeleteResourceReply()
-
-def registerWithServer(playgrounder, server):
-    playground_pb2_grpc.add_PlaygroundServicer_to_server(playgrounder, server)
-
-def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
+def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-    registerWithServer(Playgrounder(), server)
+    GrpcPlaygrounderFactory(config).createAndRegisterService(server)
     server.add_insecure_port(endpoint)
     server.start()
     while True:
         try:
-            time.sleep(1)
+            time.sleep(1); print "Looping\n"
         except KeyboardInterrupt:
             server.stop(wait_shutdown_secs).wait()
             return
 
-def main(argv):
-    serve()
-
 if __name__ == "__main__":
-    app.run()
+    class DummyConfig:
+        def runInBackground(self, function):
+            function()
 
+    import sys
+    serve(endpoint=sys.argv[1] if len(sys.argv) > 1 else '[::]:50051', config=DummyConfig())
