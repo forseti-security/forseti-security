@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from multiprocessing.pool import ThreadPool
 from concurrent import futures
 import time
 import grpc
@@ -12,6 +13,13 @@ static_service_mapping = {
     "explain":GrpcExplainerFactory,
 }
 
+class ServiceConfig:
+    def __init__(self):
+        self.threadPool = ThreadPool()
+    
+    def runInBackground(self, function):
+        self.threadPool.apply_async(function)
+
 def serve(endpoint, services, max_workers=10, wait_shutdown_secs=3):
 
     factories = []
@@ -20,10 +28,11 @@ def serve(endpoint, services, max_workers=10, wait_shutdown_secs=3):
 
     if not factories:
         raise Exception("No services to start")
-
+    
+    config = ServiceConfig()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     for factory in factories:
-        factory().createAndRegisterService(server)
+        factory(config).createAndRegisterService(server)
 
     server.add_insecure_port(endpoint)
     server.start()
