@@ -183,13 +183,12 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     # group_members_pipeline.
     pipelines = [
         load_orgs_pipeline.LoadOrgsPipeline(
-             cycle_timestamp, configs, crm_api_client, organization_dao),
+            cycle_timestamp, configs, crm_api_client, organization_dao),
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-             cycle_timestamp, configs, crm_api_client, organization_dao),
+            cycle_timestamp, configs, crm_api_client, organization_dao),
         load_projects_pipeline.LoadProjectsPipeline(
-             cycle_timestamp, configs, crm_api_client, project_dao),
-        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-             cycle_timestamp, configs, crm_api_client, project_dao),
+            cycle_timestamp, configs, crm_api_client, project_dao),
+        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(cycle_timestamp, configs, crm_api_client, project_dao),
         load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
             cycle_timestamp, configs, gcs_api_client, project_dao),
         load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
