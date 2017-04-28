@@ -88,7 +88,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         if lifecycle_state:
             project_filter.append('lifecycleState:%s' % lifecycle_state)
 
-        # project_filter.append('name:SpotifySecurity') # TODO: remove me
         for filter_key in filterargs:
             project_filter.append('%s:%s' %
                                   (filter_key, filterargs[filter_key]))

@@ -17,7 +17,6 @@
 import StringIO
 
 from httplib2 import HttpLib2Error
-from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
