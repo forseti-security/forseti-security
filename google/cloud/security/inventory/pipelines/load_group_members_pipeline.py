@@ -104,9 +104,9 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                 raise inventory_errors.LoadDataPipelineError(e)
 
             group_members_map.append((group_id, group_members))
-            LOGGER.debug('Retrieved members from {0}: {1}'.format(
+            LOGGER.debug('Retrieved members from %s: %d',
                          group_id,
-                         len(group_members)))
+                         len(group_members))
 
         return group_members_map
 
