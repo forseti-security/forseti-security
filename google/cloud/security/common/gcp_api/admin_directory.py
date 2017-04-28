@@ -36,6 +36,8 @@ flags.DEFINE_string('groups_service_account_key_file', None,
                     'runnning locally.')
 flags.DEFINE_integer('max_admin_api_calls_per_day', 150000,
                      'Admin SDK queries per day.')
+flags.DEFINE_string('max_results_admin_api', 500,
+                    'maxResult param for the Admin SDK list() method')
 
 
 class AdminDirectoryClient(_base_client.BaseClient):
@@ -95,7 +97,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         members_stub = self.service.members()
         request = members_stub.list(groupKey=group_key,
-                                    maxResults=500)
+                                    maxResults=FLAGS.max_results_admin_api)
         results_by_member = []
 
         # TODO: Investigate yielding results to handle large group lists.
