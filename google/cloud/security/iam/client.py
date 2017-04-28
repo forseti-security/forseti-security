@@ -1,24 +1,30 @@
 #!/usr/bin/env python
 
-import explain_pb2_grpc
-import explain_pb2
-import grpc
-import time
-import logging
+from explain import explain_pb2_grpc
+from explain import explain_pb2
+from playground import playground_pb2_grpc
+from playground import playground_pb2
 
-def run():
-    logging.info("Running client")
-    channel = grpc.insecure_channel('localhost:50051')
-    logging.info("Connected")
+import grpc
+
+def usePlayground(channel):
+    stub = playground_pb2_grpc.PlaygroundStub(channel)
+    request = playground_pb2.PingRequest()
+    request.data = 'ehlo'
+    reply = stub.Ping(request)
+    return reply.data == 'ehlo'
+    
+def useExplain(channel):
     stub = explain_pb2_grpc.ExplainStub(channel)
-    logging.info("Instantiated client stub")
     request = explain_pb2.PingRequest()
-    logging.info("Created request")
     request.data = "hello"
     reply = stub.Ping(request)
-    logging.info("Executed RPC")
-    print reply.data == "hello"
+    return reply.data == "hello"
+
+def run():
+    channel = grpc.insecure_channel('localhost:50051')
+    usePlayground(channel)
+    useExplain(channel)
 
 if __name__ == "__main__":
-    print "Running"
     run()

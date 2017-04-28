@@ -60,9 +60,9 @@ class GrpcExplainerFactory:
         explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
         return service
 
-def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
+def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-    GrpcExplainerFactory().createAndRegisterService(server)
+    GrpcExplainerFactory(config).createAndRegisterService(server)
     server.add_insecure_port(endpoint)
     server.start()
     while True:
@@ -73,5 +73,8 @@ def serve(endpoint='[::]:50051', max_workers=10, wait_shutdown_secs=3):
             return
 
 if __name__ == "__main__":
+    class DummyConfig:
+        def runInBackground(self, function):
+            function()
     import sys
-    serve(endpoint=sys.argv[1] if len(sys.argv) > 1 else '[::]:50051')
+    serve(endpoint=sys.argv[1] if len(sys.argv) > 1 else '[::]:50051', config=DummyConfig())
