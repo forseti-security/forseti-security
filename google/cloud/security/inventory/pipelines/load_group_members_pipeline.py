@@ -21,7 +21,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-import threading
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -87,7 +86,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                        'member_email': member.get('email'),
                        'raw_member': json.dumps(member)}
 
-    def _retrieve(self, group_ids):
+    def _retrieve(self, group_ids):  # pylint: disable=arguments-differ
         """Retrieve the membership for a list of given GSuite groups.
 
         Returns:
