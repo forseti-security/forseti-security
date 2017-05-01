@@ -47,6 +47,7 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.data_access.dao import Dao
@@ -64,6 +65,7 @@ from google.cloud.security.inventory.pipelines import load_group_members_pipelin
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_orgs_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_buckets_acls_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from google.cloud.security.inventory import util
@@ -175,6 +177,7 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     dao = kwargs.get('dao')
     project_dao = kwargs.get('project_dao')
     organization_dao = kwargs.get('organization_dao')
+    bucket_dao = kwargs.get('bucket_dao')
 
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
@@ -189,6 +192,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             cycle_timestamp, configs, crm_api_client, project_dao),
         load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
             cycle_timestamp, configs, gcs_api_client, project_dao),
+        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
+            cycle_timestamp, configs, gcs_api_client, bucket_dao),
     ]
 
     if configs.get('inventory_groups'):
@@ -307,6 +312,7 @@ def main(_):
         dao = Dao()
         project_dao = proj_dao.ProjectDao()
         organization_dao = org_dao.OrganizationDao()
+        bucket_dao = buck_dao.BucketDao()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
@@ -323,7 +329,8 @@ def main(_):
             configs,
             dao=dao,
             project_dao=project_dao,
-            organization_dao=organization_dao)
+            organization_dao=organization_dao,
+            bucket_dao=bucket_dao)
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)

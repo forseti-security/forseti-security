@@ -97,6 +97,9 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
     'iam_policy'
 ]
 
+# TODO: Add pydoc to describe the mapping of the custom field naming
+# to the field names in the resource objects.
+# https://cloud.google.com/storage/docs/json_api/v1/buckets#resource
 BUCKETS_FIELDNAMES = [
     'project_number',
     'bucket_id',
@@ -116,18 +119,33 @@ RAW_BUCKETS_FIELDNAMES = [
     'buckets'
 ]
 
+BUCKETS_ACL_FIELDNAMES = [
+    'bucket',
+    'domain',
+    'email',
+    'entity',
+    'entity_id',
+    'acl_id',
+    'kind',
+    'project_team',  # TODO: flatten this
+    'role',
+    'bucket_acl_selflink',
+    'raw_bucket_acl'
+]
+
 CSV_FIELDNAME_MAP = {
+    'buckets': BUCKETS_FIELDNAMES,
+    'buckets_acl': BUCKETS_ACL_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
-    'organizations': ORGANIZATIONS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
+    'organizations': ORGANIZATIONS_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,
-    'projects': PROJECTS_FIELDNAMES,
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
+    'projects': PROJECTS_FIELDNAMES,
+    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
     'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAMES,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
-    'buckets': BUCKETS_FIELDNAMES,
-    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
 }
 
 

@@ -70,3 +70,16 @@ GROUP_USERS = """
     FROM group_members_{0}
     WHERE member_status = "ACTIVE" and member_type = "USER";
 """
+
+BUCKETS = """
+    SELECT project_number, bucket_id, bucket_name, bucket_kind, bucket_storage_class,
+    bucket_location, bucket_create_time, bucket_update_time, bucket_selflink,
+    bucket_lifecycle_raw
+    FROM buckets_{0};
+"""
+
+BUCKETS_BY_PROJECT_ID = """
+    SELECT bucket_name
+    FROM buckets_{0}
+    WHERE project_number = {1};
+"""
