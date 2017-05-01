@@ -116,6 +116,20 @@ RAW_BUCKETS_FIELDNAMES = [
     'buckets'
 ]
 
+BUCKETS_ACL_FIELDNAMES = [
+    'bucket',
+    'domain',
+    'email',
+    'entity',
+    'entity_id',
+    'acl_id',
+    'kind',
+    'project_team',
+    'role',
+    'bucket_acl_selflink',
+    'raw_bucket_acl'
+]
+
 CSV_FIELDNAME_MAP = {
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
@@ -128,6 +142,7 @@ CSV_FIELDNAME_MAP = {
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
     'raw_buckets': RAW_BUCKETS_FIELDNAMES,
+    'buckets_acl': BUCKETS_ACL_FIELDNAMES,
 }
 
 
