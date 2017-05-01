@@ -97,6 +97,9 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
     'iam_policy'
 ]
 
+# TODO: Add pydoc to describe the mapping of the custom field naming
+# to the field names in the resource objects.
+# https://cloud.google.com/storage/docs/json_api/v1/buckets#resource
 BUCKETS_FIELDNAMES = [
     'project_number',
     'bucket_id',
