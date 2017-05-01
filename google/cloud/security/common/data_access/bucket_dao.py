@@ -37,7 +37,7 @@ class BucketDao(project_dao.ProjectDao):
             project_number: Project number
 
         Returns:
-            list of project buckets
+            List of project buckets.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
