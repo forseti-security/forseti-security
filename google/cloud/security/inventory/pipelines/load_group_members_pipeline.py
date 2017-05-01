@@ -24,13 +24,14 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 
 
 LOGGER = log_util.get_logger(__name__)
-GROUP_CHUNK_SIZE = 20
 
 
 class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
     """Pipeline to load group members data into Inventory."""
 
     RESOURCE_NAME = 'group_members'
+    GROUP_CHUNK_SIZE = 20
+
 
     def __init__(self, cycle_timestamp, configs, admin_client, dao):
         """Constructor for the data pipeline.
@@ -114,6 +115,8 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
 
         group_ids = self._fetch_groups_from_dao()
 
+        # TODO: Move this to g/c/s/c/gcp_api/common so it can be reused
+        # by other pipelines.
         def chunker(seq, size):
             """Helper to chunk a list.
 
@@ -127,9 +130,12 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
         # TODO: keep track of group_ids that are not retrieved/committed to db
-        for group_ids_chunk in chunker(group_ids, GROUP_CHUNK_SIZE):
-            LOGGER.debug('Retrieving a batch of group members')
-            groups_members_map = self._retrieve(group_ids_chunk)
+        chunk_counter = 0
+        for group_ids_in_chunk in chunker(group_ids, self.GROUP_CHUNK_SIZE):
+            LOGGER.debug('Retrieving a batch of group members in %s chunks.\n'
+                         'Current chunk count is: %s',
+                         self.GROUP_CHUNK_SIZE, chunk_counter)
+            groups_members_map = self._retrieve(group_ids_in_chunk)
 
             if isinstance(groups_members_map, list):
                 loadable_group_members = self._transform(groups_members_map)
@@ -137,3 +143,4 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                 self._get_loaded_count()
             else:
                 LOGGER.warn('No group members retrieved.')
+            chunk_counter += 1

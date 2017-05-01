@@ -70,9 +70,8 @@ class Dao(_db_connector.DbConnector):
         cursor.execute(create_snapshot_sql)
         return snapshot_table_name
 
-    # TODO: fix this lint warning by turning this into a static method.
-    # pylint: disable=no-self-use
-    def _create_snapshot_table_name(self, resource_name, timestamp):
+    @staticmethod
+    def _create_snapshot_table_name(resource_name, timestamp):
         """Create the snapshot table if it doens't exist.
 
         Args:

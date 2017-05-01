@@ -15,6 +15,7 @@
 """Tests the load_group_members_pipeline."""
 
 import json
+import math
 
 from google.apputils import basetest
 import mock
@@ -88,18 +89,30 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
             mock_load, mock_get_loaded_count, mock_can_inventory_groups):
         """Test that the subroutines are called by run."""
-        return  # TODO: Fix the test; assert the call count matches the chunk size.
 
+        self.pipeline.GROUP_CHUNK_SIZE = 3
+        self.mock_dao.select_group_ids.return_value = (
+            fake_group_members.FAKE_GROUP_IDS)
         mock_can_inventory_groups.return_value = True
         mock_retrieve.return_value = fake_group_members.FAKE_GROUPS_MEMBERS_MAP
         mock_transform.return_value = fake_group_members.EXPECTED_LOADABLE_GROUP_MEMBERS
         self.pipeline.run()
 
-        mock_retrieve.assert_called_once_with()
+        expected_call_count = math.ceil(
+            float(len(fake_group_members.FAKE_GROUP_IDS))/
+            float(self.pipeline.GROUP_CHUNK_SIZE))
+        self.assertEquals(expected_call_count, mock_retrieve.call_count)
+        self.assertEquals(expected_call_count, mock_transform.call_count)
+        self.assertEquals(expected_call_count, mock_load.call_count)
 
-        mock_transform.assert_called_once_with(fake_group_members.FAKE_GROUPS_MEMBERS_MAP)
+        for i in range(len(fake_group_members.EXPECTED_CALL_LIST)):
+            args, kwargs = mock_retrieve.call_args_list[i]
+            self.assertEquals(fake_group_members.EXPECTED_CALL_LIST[i], args[0])
 
-        mock_load.assert_called_once_with(
+        mock_transform.assert_called_with(
+            fake_group_members.FAKE_GROUPS_MEMBERS_MAP)
+
+        mock_load.assert_called_with(
             self.pipeline.RESOURCE_NAME,
             fake_group_members.EXPECTED_LOADABLE_GROUP_MEMBERS)
 
