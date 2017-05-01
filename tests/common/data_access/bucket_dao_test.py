@@ -57,7 +57,7 @@ class BucketDaoTest(basetest.TestCase):
 			self.fake_timestamp, 
 			self.FAKE_PROJECT_NUMBERS[0])
 
-		cursor_mock.execute.assert_called_once_with(fake_query, ())
+		cursor_mock.execute.assert_called_once_with(fake_query, None)
 		cursor_mock.fetchall.assert_called_once_with()
 
 	def test_get_project_numbers_raises_error(self):
