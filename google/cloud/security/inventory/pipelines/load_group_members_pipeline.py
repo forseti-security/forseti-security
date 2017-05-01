@@ -130,7 +130,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         # TODO: keep track of group_ids that are not retrieved/committed to db
         chunk_counter = 0
         for group_ids_in_chunk in chunker(group_ids, self.GROUP_CHUNK_SIZE):
-            LOGGER.info('Retrieving a batch of group members in %s chunks.\n'
+            LOGGER.debug('Retrieving a batch of group members in %s chunks.\n'
                         'Current chunk count is: %s',
                         self.GROUP_CHUNK_SIZE, chunk_counter)
             groups_members_map = self._retrieve(group_ids_in_chunk)
