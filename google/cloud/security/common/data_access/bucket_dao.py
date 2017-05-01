@@ -28,6 +28,8 @@ class BucketDao(dao.Dao):
     def __init__(self):
         super(BucketDao, self).__init__()
 
+    # TODO: fix this lint warning by turning this into a static method.
+    # pylint: disable=no-self-use
     def project_numbers_dao_stub(self, resource_name, timestamp):
         """Stub for selecting the project numbers for the orgsanisation.
 
@@ -46,7 +48,10 @@ class BucketDao(dao.Dao):
             timestamp)
         return project_numbers
 
+    # TODO: fix this warning
+    # pylint: disable=line-too-long
     def get_buckets_by_project_number(self, resource_name, timestamp, project_number):
+    # pylint: enable=line-too-long
         """Select the buckets for project from a buckets snapshot table.
 
         Args:
