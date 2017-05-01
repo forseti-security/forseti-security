@@ -64,13 +64,13 @@ class LoadProjectsBucketsAclsPipelineTest(basetest.TestCase):
 	def test_api_is_called_to_retrieve_bucket_acls(self):
 		"""Test that api is called to retrive bucket acls."""
 
-		self.pipeline.dao.project_numbers_dao_stub.return_value = (
+		self.pipeline.dao.get_project_numbers.return_value = (
 			self.FAKE_PROJECT_NUMBERS)
 		self.pipeline.dao.get_buckets_by_project_number.return_value = (
 			self.FAKE_BUCKETS)
 		self.pipeline._retrieve()
 
-		self.pipeline.dao.project_numbers_dao_stub.assert_called_once_with(
+		self.pipeline.dao.get_project_numbers.assert_called_once_with(
 			self.pipeline.PROJECTS_RESOURCE_NAME, 
 			self.pipeline.cycle_timestamp)
 
@@ -94,7 +94,7 @@ class LoadProjectsBucketsAclsPipelineTest(basetest.TestCase):
 		"""
 		load_projects_buckets_acls_pipeline.LOGGER = (
 			mock.create_autospec(log_util).get_logger('foo'))
-		self.pipeline.dao.project_numbers_dao_stub.return_value = (
+		self.pipeline.dao.get_project_numbers.return_value = (
 			self.FAKE_PROJECT_NUMBERS)
 		self.pipeline.dao.get_buckets_by_project_number.return_value = (
 			self.FAKE_BUCKETS)
