@@ -55,21 +55,21 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
         Args:
             buckets_acls_maps: An iterable of bucket acls as per-bucket
                 dictionary.
-                Example: {'bucket_name': 'axample_bucket_name.appspot.com',
+                Example: {'bucket_name': 'example_bucket_name.appspot.com',
                           'acl': bucket_acls_json}
 
         Yields:
             An iterable of bucket acls, as a per-bucket dictionary.
         """
-        for buckets_map_acls in buckets_acls_maps:
-            acls = buckets_map_acls['acl']
+        for buckets_acls_map in buckets_acls_maps:
+            acls = buckets_acls_map['acl']
             acls_items = acls.get('items', [])
 
             for acl_item in acls_items:
                 bucket_acl_json = json.dumps(acl_item)
 
                 yield {
-                    'bucket': buckets_map_acls['bucket_name'],
+                    'bucket': buckets_acls_map['bucket_name'],
                     'domain': acl_item.get('domain'),
                     'email': acl_item.get('email'),
                     'entity': acl_item.get('entity'),
