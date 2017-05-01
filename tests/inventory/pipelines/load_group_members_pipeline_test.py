@@ -15,6 +15,7 @@
 """Tests the load_group_members_pipeline."""
 
 import json
+import math
 
 from google.apputils import basetest
 import mock
@@ -88,18 +89,38 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
             mock_load, mock_get_loaded_count, mock_can_inventory_groups):
         """Test that the subroutines are called by run."""
-        return  # TODO: Fix the test; assert the call count matches the chunk size.
 
+        self.pipeline.GROUP_CHUNK_SIZE = 3
+        fake_group_ids = [
+            'a111', 'a222', 'a333', 'a444', 'a555',
+            'a666', 'a777', 'a888', 'a999', 'a000',
+            ]
+        self.mock_dao.select_group_ids.return_value = fake_group_ids
         mock_can_inventory_groups.return_value = True
         mock_retrieve.return_value = fake_group_members.FAKE_GROUPS_MEMBERS_MAP
         mock_transform.return_value = fake_group_members.EXPECTED_LOADABLE_GROUP_MEMBERS
         self.pipeline.run()
 
-        mock_retrieve.assert_called_once_with()
+        expected_call_count = math.ceil(
+            float(len(fake_group_ids))/float(self.pipeline.GROUP_CHUNK_SIZE))
+        self.assertEquals(expected_call_count, mock_retrieve.call_count)
+        self.assertEquals(expected_call_count, mock_transform.call_count)
+        self.assertEquals(expected_call_count, mock_load.call_count)
 
-        mock_transform.assert_called_once_with(fake_group_members.FAKE_GROUPS_MEMBERS_MAP)
+        expected_call_list = [
+            ['a111', 'a222', 'a333'],
+            ['a444', 'a555', 'a666'],
+            ['a777', 'a888', 'a999'],
+            ['a000'],
+        ]
+        for i in range(len(expected_call_list)):
+            args, kwargs = mock_retrieve.call_args_list[i]
+            self.assertEquals(expected_call_list[i], args[0])
 
-        mock_load.assert_called_once_with(
+        mock_transform.assert_called_with(
+            fake_group_members.FAKE_GROUPS_MEMBERS_MAP)
+
+        mock_load.assert_called_with(
             self.pipeline.RESOURCE_NAME,
             fake_group_members.EXPECTED_LOADABLE_GROUP_MEMBERS)
 
