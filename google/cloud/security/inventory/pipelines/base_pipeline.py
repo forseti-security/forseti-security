@@ -57,7 +57,7 @@ class BasePipeline(object):
         pass
 
     @abc.abstractmethod
-    def _retrieve(self, *args):
+    def _retrieve(self):
         """Retrieve resource data from source."""
         pass
 
