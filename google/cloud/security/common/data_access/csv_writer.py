@@ -124,7 +124,7 @@ BUCKETS_ACL_FIELDNAMES = [
     'entity_id',
     'acl_id',
     'kind',
-    'project_team',
+    'project_team',  # TODO: flatten this
     'role',
     'bucket_acl_selflink',
     'raw_bucket_acl'
