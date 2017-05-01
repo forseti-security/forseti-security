@@ -91,31 +91,23 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
         """Test that the subroutines are called by run."""
 
         self.pipeline.GROUP_CHUNK_SIZE = 3
-        fake_group_ids = [
-            'a111', 'a222', 'a333', 'a444', 'a555',
-            'a666', 'a777', 'a888', 'a999', 'a000',
-            ]
-        self.mock_dao.select_group_ids.return_value = fake_group_ids
+        self.mock_dao.select_group_ids.return_value = (
+            fake_group_members.FAKE_GROUP_IDS)
         mock_can_inventory_groups.return_value = True
         mock_retrieve.return_value = fake_group_members.FAKE_GROUPS_MEMBERS_MAP
         mock_transform.return_value = fake_group_members.EXPECTED_LOADABLE_GROUP_MEMBERS
         self.pipeline.run()
 
         expected_call_count = math.ceil(
-            float(len(fake_group_ids))/float(self.pipeline.GROUP_CHUNK_SIZE))
+            float(len(fake_group_members.FAKE_GROUP_IDS))/
+            float(self.pipeline.GROUP_CHUNK_SIZE))
         self.assertEquals(expected_call_count, mock_retrieve.call_count)
         self.assertEquals(expected_call_count, mock_transform.call_count)
         self.assertEquals(expected_call_count, mock_load.call_count)
 
-        expected_call_list = [
-            ['a111', 'a222', 'a333'],
-            ['a444', 'a555', 'a666'],
-            ['a777', 'a888', 'a999'],
-            ['a000'],
-        ]
-        for i in range(len(expected_call_list)):
+        for i in range(len(fake_group_members.EXPECTED_CALL_LIST)):
             args, kwargs = mock_retrieve.call_args_list[i]
-            self.assertEquals(expected_call_list[i], args[0])
+            self.assertEquals(fake_group_members.EXPECTED_CALL_LIST[i], args[0])
 
         mock_transform.assert_called_with(
             fake_group_members.FAKE_GROUPS_MEMBERS_MAP)
