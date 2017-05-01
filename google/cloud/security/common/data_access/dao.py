@@ -30,7 +30,6 @@ from google.cloud.security.common.data_access.errors import NoResultsError
 from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
 
-
 CREATE_TABLE_MAP = {
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
@@ -63,11 +62,48 @@ class Dao(_db_connector.DbConnector):
         Returns:
             snapshot_table_name: String of the created snapshot table.
         """
-        snapshot_table_name = resource_name + '_' + timestamp
+        snapshot_table_name = self._create_snapshot_table_name(
+            resource_name, timestamp)
         create_table_sql = CREATE_TABLE_MAP[resource_name]
         create_snapshot_sql = create_table_sql.format(snapshot_table_name)
         cursor = self.conn.cursor()
         cursor.execute(create_snapshot_sql)
+        return snapshot_table_name
+
+    # TODO: fix this lint warning by turning this into a static method.
+    # pylint: disable=no-self-use
+    def _create_snapshot_table_name(self, resource_name, timestamp):
+        """Create the snapshot table if it doens't exist.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            String of the created snapshot table name.
+        """
+        return resource_name + '_' + timestamp
+
+    def _get_snapshot_table(self, resource_name, timestamp):
+        """Returns a snapshot table name.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            snapshot_table_name: String of the created snapshot table.
+        """
+        try:
+            snapshot_table_name = self._create_snapshot_table(
+                resource_name, timestamp)
+        except OperationalError:
+            # TODO: find a better way to handle this. I want this method
+            # to be resilient when the table has already been created
+            # so that it can support inserting new data. This will catch
+            # a sql 'table already exist' error and alter the flow.
+            snapshot_table_name = self._create_snapshot_table_name(
+                resource_name, timestamp)
         return snapshot_table_name
 
     def load_data(self, resource_name, timestamp, data):
@@ -86,7 +122,7 @@ class Dao(_db_connector.DbConnector):
         """
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
-                snapshot_table_name = self._create_snapshot_table(
+                snapshot_table_name = self._get_snapshot_table(
                     resource_name, timestamp)
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
                     resource_name, csv_file.name, snapshot_table_name)
