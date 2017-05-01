@@ -12,7 +12,7 @@ Features:
 We are continually improving Forseti Security and invite you to submit feature requests and bug reports under Issues. If you would like to contribute to our development efforts, please review our [contributing guidelines](/CONTRIBUTING.md) and submit a pull request.
 
 # Installation
-Follow the [installation README](docs/installing/README.md).
+{% include install.md %}
 
 # Contact us
 Reach out to us with questions by contacting [forseti-security@google.com](mailto:forseti-security@google.com).

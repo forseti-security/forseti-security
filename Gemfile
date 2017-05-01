@@ -1,11 +1,11 @@
 source 'https://rubygems.org'
 
-require 'json'
-require 'open-uri'
+# Needed for Travis CI.
+gem "html-proofer"
+gem "jekyll"
+exclude: [vendor]
 
-versions = JSON.parse(open('https://pages.github.com/versions.json').read)
-
-gem 'github-pages', versions['github-pages']
+# Needed to build proper Github Pages.
+gem 'github-pages', group: :jekyll_plugins
 gem 'execjs'
 gem 'therubyracer'
-

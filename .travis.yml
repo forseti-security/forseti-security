@@ -12,19 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cache: "pip"
-language:
-  - "python"
-python:
-  - "2.7"
-install:
-  - "sudo apt-get install -y libmysqlclient-dev"
-  - "pip install -q coveralls"
-  - "bash scripts/travis_install_protoc.sh"
-  - "pip install -q pylint==1.6.5"
-  - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
-script:
-  - "coverage run --source='google.cloud.security' --omit='__init__.py' setup.py google_test"
-  - "bash scripts/travis_test_pylint.sh"
-after_success:
-  - "coveralls"
+language: ruby
+rvm:
+- 2.3.3
+branches:
+  only:
+  - gh-pages
+env:
+  global:
+  - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
+sudo: false
+script: jekyll build && htmlproofer ./_site
