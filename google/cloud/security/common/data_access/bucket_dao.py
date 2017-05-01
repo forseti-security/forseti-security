@@ -42,12 +42,11 @@ class BucketDao(dao.Dao):
         """
         project_numbers_dao = project_dao.ProjectDao()
         project_numbers = project_numbers_dao.get_project_numbers(
-            resource_name, 
+            resource_name,
             timestamp)
         return project_numbers
 
-    def get_buckets_by_project_number(self, resource_name, 
-        timestamp, project_number):
+    def get_buckets_by_project_number(self, resource_name, timestamp, project_number):
         """Select the buckets for project from a buckets snapshot table.
 
         Args:
@@ -62,7 +61,7 @@ class BucketDao(dao.Dao):
             MySQLError: An error with MySQL has occurred.
         """
         buckets_sql = select_data.BUCKETS_BY_PROJECT_ID.format(
-            timestamp, 
+            timestamp,
             project_number)
         rows = self.execute_sql_with_fetch(
             resource_name, buckets_sql, ())
