@@ -98,7 +98,7 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
         """
         # Get the projects for which we will retrieve the buckets.
         try:
-            project_numbers = self.dao.project_numbers_dao_stub(
+            project_numbers = self.dao.get_project_numbers(
                 self.PROJECTS_RESOURCE_NAME, self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
