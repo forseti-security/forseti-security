@@ -22,6 +22,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
+# TODO: Inherit from project_dao, so the get_project_numbers() can be reused.
 class BucketDao(dao.Dao):
     """Data access object (DAO) for Organizations."""
 
