@@ -134,18 +134,18 @@ BUCKETS_ACL_FIELDNAMES = [
 ]
 
 CSV_FIELDNAME_MAP = {
+    'buckets': BUCKETS_FIELDNAMES,
+    'buckets_acl': BUCKETS_ACL_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
-    'organizations': ORGANIZATIONS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
+    'organizations': ORGANIZATIONS_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,
-    'projects': PROJECTS_FIELDNAMES,
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
+    'projects': PROJECTS_FIELDNAMES,
+    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
     'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAMES,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
-    'buckets': BUCKETS_FIELDNAMES,
-    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
-    'buckets_acl': BUCKETS_ACL_FIELDNAMES,
 }
 
 
