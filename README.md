@@ -1,3 +1,5 @@
+---
+---
 [![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security) [![Coverage Status](https://coveralls.io/repos/github/GoogleCloudPlatform/forseti-security/badge.svg)](https://coveralls.io/github/GoogleCloudPlatform/forseti-security)
 
 # Forseti Security

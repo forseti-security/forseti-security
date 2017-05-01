@@ -36,4 +36,5 @@ htmlcov/
 # jekyll (gh-pages)
 _site/
 .jekyll-metadata/
+_config.yml~
 Gemfile.lock
