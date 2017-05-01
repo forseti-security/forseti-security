@@ -49,10 +49,8 @@ class BucketDao(dao.Dao):
             timestamp)
         return project_numbers
 
-    # TODO: fix this warning
-    # pylint: disable=line-too-long
-    def get_buckets_by_project_number(self, resource_name, timestamp, project_number):
-    # pylint: enable=line-too-long
+    def get_buckets_by_project_number(self, resource_name,
+                                      timestamp, project_number):
         """Select the buckets for project from a buckets snapshot table.
 
         Args:
