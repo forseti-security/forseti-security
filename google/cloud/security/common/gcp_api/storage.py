@@ -137,13 +137,11 @@ class StorageClient(_base_client.BaseClient):
             bucket_name: The name of the bucket.
 
         Returns: ACL json for bucket
-
         """
         storage_service_api = self.service.bucketAccessControls()
+        bucket_acl_request = storage_service_api.list(bucket=bucket_name)
         try:
-            bucket_acl_request = storage_service_api.list(bucket=bucket_name)
-            bucket_acl = bucket_acl_request.execute()
-            return bucket_acl
+            return bucket_acl_request.execute()
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
             # TODO: pass in "buckets" as resource_name variable
