@@ -131,8 +131,8 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         chunk_counter = 0
         for group_ids_in_chunk in chunker(group_ids, self.GROUP_CHUNK_SIZE):
             LOGGER.debug('Retrieving a batch of group members in %s chunks.\n'
-                        'Current chunk count is: %s',
-                        self.GROUP_CHUNK_SIZE, chunk_counter)
+                         'Current chunk count is: %s',
+                         self.GROUP_CHUNK_SIZE, chunk_counter)
             groups_members_map = self._retrieve(group_ids_in_chunk)
 
             if isinstance(groups_members_map, list):
