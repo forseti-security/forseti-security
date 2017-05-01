@@ -14,7 +14,6 @@
 
 """Provides the data access object (DAO) for buckets."""
 
-from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
