@@ -32,3 +32,8 @@ out/
 # Coverage
 .coverage
 htmlcov/
+
+# jekyll (gh-pages)
+_site/
+.jekyll-metadata/
+Gemfile.lock
