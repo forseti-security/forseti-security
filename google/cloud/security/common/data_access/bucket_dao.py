@@ -46,5 +46,5 @@ class BucketDao(project_dao.ProjectDao):
             timestamp,
             project_number)
         rows = self.execute_sql_with_fetch(
-            resource_name, buckets_sql, ())
+            resource_name, buckets_sql, None)
         return [row['bucket_name'] for row in rows]
