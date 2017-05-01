@@ -115,6 +115,8 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
 
         group_ids = self._fetch_groups_from_dao()
 
+        # TODO: Move this to g/c/s/c/gcp_api/common so it can be reused
+        # by other pipelines.
         def chunker(seq, size):
             """Helper to chunk a list.
 
