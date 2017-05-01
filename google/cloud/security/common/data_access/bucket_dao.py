@@ -14,20 +14,9 @@
 
 """Provides the data access object (DAO) for buckets."""
 
-import json
-
-from MySQLdb import DataError
-from MySQLdb import IntegrityError
-from MySQLdb import InternalError
-from MySQLdb import NotSupportedError
-from MySQLdb import OperationalError
-from MySQLdb import ProgrammingError
-
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -52,10 +41,13 @@ class BucketDao(dao.Dao):
             MySQLError: An error with MySQL has occurred.
         """
         project_numbers_dao = project_dao.ProjectDao()
-        project_numbers = project_numbers_dao.get_project_numbers(resource_name, timestamp)
+        project_numbers = project_numbers_dao.get_project_numbers(
+            resource_name, 
+            timestamp)
         return project_numbers
 
-    def get_buckets_by_project_number(self, resource_name, timestamp, project_number):
+    def get_buckets_by_project_number(self, resource_name, 
+        timestamp, project_number):
         """Select the buckets for project from a buckets snapshot table.
 
         Args:
@@ -69,7 +61,9 @@ class BucketDao(dao.Dao):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        buckets_sql = select_data.BUCKETS_BY_PROJECT_ID.format(timestamp, project_number)
+        buckets_sql = select_data.BUCKETS_BY_PROJECT_ID.format(
+            timestamp, 
+            project_number)
         rows = self.execute_sql_with_fetch(
             resource_name, buckets_sql, ())
         return [row['bucket_name'] for row in rows]
