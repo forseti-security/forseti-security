@@ -14,7 +14,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     
     def _get_handle(self, context):
         metadata = context.invocation_metadata()
-        print metadata
         metadata_dict = {}
         for key, value in metadata:
             metadata_dict[key] = value
@@ -59,10 +58,16 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
     
     def DeleteModel(self, request, context):
-        raise NotImplementedError()
+        model_name = request.handle
+        self.explainer.DeleteModel(model_name)
+        return explain_pb2.DeleteModelReply()
     
     def ListModel(self, request, context):
-        raise NotImplementedError()
+        model_names = self.explainer.ListModel()
+        reply = explain_pb2.ListModelReply()
+        reply.handles.extend(model_names)
+        return reply
+
 
 class GrpcExplainerFactory:
     def __init__(self, config):

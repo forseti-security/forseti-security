@@ -35,6 +35,14 @@ class Explainer():
 
     def GetPermissionsByRoles(self, request, context):
         raise NotImplementedError()
+    
+    def ListModel(self):
+        model_manager = self.config.model_manager
+        return model_manager.models()
+    
+    def DeleteModel(self, model_name):
+        model_manager = self.config.model_manager
+        model_manager.delete(model_name)
 
 if __name__ == "__main__":
     class DummyConfig:

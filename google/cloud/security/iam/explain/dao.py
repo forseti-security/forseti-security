@@ -146,7 +146,18 @@ def define_model(model_name, dbengine):
 		TBL_PERMISSION = Permission
 		TBL_ROLE = Role
 		TBL_RESOURCE = Resource
-	
+		
+		@staticmethod
+		def deleteAll(engine):
+			Binding.__table__.drop(engine)
+			Member.__table__.drop(engine)
+			Permission.__table__.drop(engine)
+			Role.__table__.drop(engine)
+			Resource.__table__.drop(engine)
+			role_permissions.drop(engine)
+			binding_members.drop(engine)
+			group_members.drop(engine)
+
 		@staticmethod	
 		def addResource(session, name, parent=None):
 			resource = Resource(full_name=name, name=name, type='test', parent=parent)
@@ -277,6 +288,9 @@ def define_model(model_name, dbengine):
 	Base.metadata.create_all(dbengine)
 	return sessionmaker(bind=dbengine), ModelAccess
 
+def undefine_model(sessionmaker, data_access):
+	session = sessionmaker()
+	data_access.deleteAll(session)
 
 class ModelManager:
 	def __init__(self, dbengine):
@@ -306,9 +320,15 @@ class ModelManager:
 			self.sessionmakers[model] = define_model(model, self.engine)
 			return self.sessionmakers[model]
 	
-	def delete(self, model):
-		raise NotImplementedError()
-		
+	def delete(self, model_name):
+		sessionmaker, data_access = self.sessionmakers[model_name]
+		del self.sessionmakers[model_name]
+		session = self.model_sessionmaker()
+		session.query(Model).filter(Model.handle == model_name).delete()
+		session.commit()
+		del session
+		data_access.deleteAll(self.engine)
+
 	def models(self):
 		session = self.model_sessionmaker()
 		return map(lambda model: model.handle, session.query(Model).all())
@@ -378,9 +398,18 @@ def useScenario(session, data_access):
 if __name__ == "__main__":
 	engine = create_engine('sqlite:///:memory:', echo=True)
 	model_manager = ModelManager(engine)
+	
 	model_name = model_manager.create()
-
 	creator, data_access = model_manager.get(model_name)
 	session = creator()
 	createScenario(session, data_access)
 	useScenario(session, data_access)
+	
+	model_name = model_manager.create()
+	creator, data_access = model_manager.get(model_name)
+	session = creator()
+	createScenario(session, data_access)
+	useScenario(session, data_access)
+	
+	model_manager.delete(model_name)
+	print model_manager.models()

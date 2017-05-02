@@ -41,6 +41,19 @@ def useExplain(channel):
     request.permission_names.extend(['cloudsql.table.read','cloudsql.table.write'])
     reply = stub.GetAccessByResources(request, metadata=[("handle",handle)])
     print reply
+    
+    request = explain_pb2.ListModelRequest()
+    reply = stub.ListModel(request)
+    print reply
+    
+    request = explain_pb2.DeleteModelRequest()
+    request.handle = handle
+    reply = stub.DeleteModel(request)
+    print reply
+    
+    request = explain_pb2.ListModelRequest()
+    reply = stub.ListModel(request)
+    print reply
 
 def run():
     channel = grpc.insecure_channel('localhost:50051')
