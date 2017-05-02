@@ -1,5 +1,3 @@
----
----
 ### Create a GCP project
 * Create a new project within your Google Cloud Organization.
   * You can also re-use a project that is dedicated for Forseti Security.

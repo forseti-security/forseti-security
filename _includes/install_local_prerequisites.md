@@ -1,5 +1,3 @@
----
----
 ### Create Cloud SQL Instance
   1. Create a new instance in the [SQL page of GCP console](https://console.cloud.google.com/sql).
      * Select second generation.

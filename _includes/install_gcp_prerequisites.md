@@ -1,5 +1,3 @@
----
----  
 * Enable **Deployment Manager API**.
 
   ```sh
