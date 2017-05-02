@@ -5,7 +5,7 @@ from concurrent import futures
 import time
 import grpc
 
-from explain.dao import session_creator
+from explain.dao import ModelManager, create_engine
 from explain.service import GrpcExplainerFactory
 from playground.service import GrpcPlaygrounderFactory
 
@@ -17,14 +17,13 @@ static_service_mapping = {
 class ServiceConfig:
     def __init__(self):
         self.threadPool = ThreadPool()
-        self.session_creator = session_creator('/tmp/explain.db')
+        
+        engine = create_engine('sqlite:///%s'%'/tmp/explain.db')
+        self.model_manager = ModelManager(engine)
     
     def runInBackground(self, function):
         function()
         #self.threadPool.apply_async(function)
-        
-    def getSession(self):
-        return self.session_creator()
 
 def serve(endpoint, services, max_workers=10, wait_shutdown_secs=3):
 

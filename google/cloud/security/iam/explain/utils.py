@@ -1,6 +1,6 @@
 
 import os
-import base64
+import binascii
 
 def generateModelHandle():
-    return base64.b64encode(os.urandom(16))
+    return binascii.hexlify(os.urandom(16))
