@@ -158,8 +158,8 @@ def _import_rules_engine(path, name):
     """
     name, ext = os.path.splitext(name)
     try:
-        file, filename, data = imp.find_module(name, [path])
-        module = imp.load_module(name, file, filename, data)
+        file_location, filename, data = imp.find_module(name, [path])
+        module = imp.load_module(name, file_location, filename, data)
     except ImportError as err:
         LOGGER.error('Failed to import module %s', name)
     return module
