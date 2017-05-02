@@ -25,7 +25,7 @@ class ServiceConfig:
         function()
         #self.threadPool.apply_async(function)
 
-def serve(endpoint, services, max_workers=10, wait_shutdown_secs=3):
+def serve(endpoint, services, max_workers=1, wait_shutdown_secs=3):
 
     factories = []
     for service in services:
