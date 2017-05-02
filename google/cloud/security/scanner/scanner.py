@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """GCP Resource scanner.
+
 
 Usage:
 
@@ -50,6 +50,7 @@ from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
+from google.cloud.security.scanner.pipelines import pipelines_conf as pc
 
 # Setup flags
 FLAGS = flags.FLAGS
@@ -84,14 +85,15 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 def main(_):
     """Run the scanner."""
     audit_base_dir = os.path.dirname(__file__) + '/audit/'
+    data_pipeline_base = os.path.dirname(__file__) + '/pipelines/'
 
     if FLAGS.list_engines:
         glob_string = audit_base_dir + '*engine*.py'
         engines = glob.glob(glob_string)
-        print 'Available Forseti scanner engines:'
+        print('Available Forseti scanner engines:')
         for engine in engines:
             if 'base_rules_engine.py' not in engine:
-                print os.path.basename(engine)
+                print(os.path.basename(engine))
         sys.exit(1)
 
     if not FLAGS.use_engine:
@@ -100,8 +102,10 @@ def main(_):
     else:
         rules_engine_filename = FLAGS.use_engine
 
-    rules_engine_class = _create_rules_engine(audit_base_dir,
-                                              rules_engine_filename)
+    rules_engine_class, rules_engine_name = _create_rules_engine(
+                                            audit_base_dir,
+                                            rules_engine_filename, 
+                                            'Engine')
 
     LOGGER.info('Using rules engine: %s', rules_engine_filename)
 
@@ -120,33 +124,23 @@ def main(_):
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
-    # TODO: make this generic
-    j = []
-    org_policies = _get_org_policies(snapshot_timestamp)
-    project_policies = _get_project_policies(snapshot_timestamp)
-    j.append(org_policies.iteritems())
-    j.append(project_policies.iteritems())
-    if not org_policies and not project_policies:
-        LOGGER.warn('No policies found. Exiting.')
-        sys.exit()
+    engine_map = pc.get_engine_info(rules_engine_name)
+
+    data_pipeline_class, data_pipeline_name = _create_rules_engine(
+        data_pipeline_base,
+        engine_map['module'],
+        engine_map['data_class'])
+
+    data_pipeline_instance = data_pipeline_class(snapshot_timestamp)
+    iter_objects, resource_counts = data_pipeline_instance.run()
 
     all_violations = _find_violations(
         itertools.chain(
-            *j),
+            *iter_objects),
         rules_engine)
-
-    #all_violations = _find_violations(
-    #    itertools.chain(
-    #        org_policies.iteritems(),
-    #        project_policies.iteritems()),
-    #    rules_engine)
 
     # If there are violations, send results.
     if all_violations:
-        resource_counts = {
-            ResourceType.ORGANIZATION: len(org_policies),
-            ResourceType.PROJECT: len(project_policies),
-        }
         _output_results(all_violations,
                         snapshot_timestamp,
                         resource_counts=resource_counts)
@@ -171,7 +165,7 @@ def _import_rules_engine(path, name):
         LOGGER.error('Failed to import module %s', name)
     return module
 
-def _create_rules_engine(audit_base_dir, rules_engine_filename):
+def _create_rules_engine(audit_base_dir, rules_engine_filename, filter):
     """Create the rules engine class
 
     Args:
@@ -188,10 +182,14 @@ def _create_rules_engine(audit_base_dir, rules_engine_filename):
     except IOError as err:
         LOGGER.error('Error opening module file: %s', err)
         sys.exit(1)
+    try:
+        module_tree = ast.parse(class_file.read())
+    except IndentationError as err:
+        LOGGER.error('Error parsing class: %s', err)
+        sys.exit(1)
 
-    module_tree = ast.parse(class_file.read())
     for node in ast.walk(module_tree):
-        if isinstance(node, ast.ClassDef) and 'Engine' in node.name:
+        if isinstance(node, ast.ClassDef) and filter in node.name:
             rules_engine_class_name = node.name
 
     if rules_engine_class_name is None:
@@ -202,7 +200,7 @@ def _create_rules_engine(audit_base_dir, rules_engine_filename):
                                                rules_engine_filename)
     rules_engine_class = getattr(rules_engine_module, rules_engine_class_name)
 
-    return rules_engine_class
+    return rules_engine_class, rules_engine_class_name
 
 def _find_violations(policies, rules_engine):
     """Find violations in the policies.
@@ -214,7 +212,6 @@ def _find_violations(policies, rules_engine):
     Returns:
         A list of violations.
     """
-
     all_violations = []
     LOGGER.info('Finding policy violations...')
     for (resource, policy) in policies:
@@ -253,36 +250,6 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
     return latest_timestamp
-
-def _get_org_policies(timestamp):
-    """Get orgs from data source.
-
-    Args:
-        timestamp: The snapshot timestamp.
-
-    Returns:
-        The org policies.
-    """
-
-    org_policies = {}
-    org_dao = organization_dao.OrganizationDao()
-    org_policies = org_dao.get_org_iam_policies('organizations', timestamp)
-    return org_policies
-
-def _get_project_policies(timestamp):
-    """Get projects from data source.
-
-    Args:
-        timestamp: The snapshot timestamp.
-
-    Returns:
-        The project policies.
-    """
-
-    project_policies = {}
-    project_policies = (
-        project_dao.ProjectDao().get_project_policies('projects', timestamp))
-    return project_policies
 
 def _flatten_violations(violations):
     """Flatten RuleViolations into a dict for each RuleViolation member.
