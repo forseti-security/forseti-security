@@ -33,4 +33,4 @@ This is not an official Google product.
 See our requirements for [contributing]{{ site.baseurl }}{% link contributing/index.md %}).
 
 # License
-See our [license]({{ site.baseurl }}{% link LICENSE %}).
+See our [license]({{ site.baseurl }}{% link LICENSE.txt %}).
