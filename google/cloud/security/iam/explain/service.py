@@ -7,6 +7,8 @@ import grpc
 import explain_pb2
 import explain_pb2_grpc
 import explainer
+from dao import session_creator
+
 
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
@@ -78,7 +80,14 @@ def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
 
 if __name__ == "__main__":
     class DummyConfig:
+        def __init__(self):
+            self.session_creator = session_creator('/tmp/explain.db')
+
         def runInBackground(self, function):
             function()
+
+        def getSession(self):
+            return self.session_creator()
+
     import sys
     serve(endpoint=sys.argv[1] if len(sys.argv) > 1 else '[::]:50051', config=DummyConfig())

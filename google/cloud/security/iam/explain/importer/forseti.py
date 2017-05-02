@@ -60,20 +60,32 @@ def createTableNames(timestamp):
 
         def __repr__(self):
             return "<Policy(id='%s', type='%s', name='%s'"%(self.id, "project", self.project_number)
+        
+        def getResourceReference(self):
+            return 'project', self.project_number
+        
+        def getPolicy(self):
+            return self.iam_policy
 
     class OrganizationPolicy(Base):
         __tablename__ = 'raw_org_iam_policies_%s'%timestamp
-        
+
         id = Column(BigInteger(), primary_key=True)
         org_id = Column(BigInteger())
         iam_policy = Column(Text)
 
         def __repr__(self):
             return "<Policy(id='%s', type='%s', name='%s'"%(self.id, "organization", self.org_id)
+        
+        def getResourceReference(self):
+            return 'organization', self.org_id
+        
+        def getPolicy(self):
+            return self.iam_policy
 
     class Bucket(Base):
         __tablename__ = 'buckets_%s'%timestamp
-        
+
         id = Column(BigInteger(), primary_key=True)
         project_number = Column(BigInteger())
         bucket_id = Column(String(255))
@@ -86,24 +98,24 @@ def createTableNames(timestamp):
         bucket_selflink = Column(String(255))
         bucket_lifecycle_raw = Column(Text)
         raw_bucket = Column(Text)
-        
+
         def __repr__(self):
             return "<Bucket(id='%s', name='%s', location='%s')>"%(self.bucket_id, self.bucket_name, self.bucket_location)
 
     class Organization(Base):
         __tablename__ = 'organizations_%s'%timestamp
-        
+
         org_id = Column(BigInteger(), primary_key=True)
         name = Column(String(255))
         display_name = Column(String(255))
         lifecycle_state = Column(String(255))
         raw_org = Column(Text)
         creation_time = Column(Date)
-        
+
         def __repr__(self):
             return "<Organization(id='%s', name='%s', display_name='%s')>"%(self.org_id, self.name, self.display_name)
 
-    result = {"projects":Project,"buckets":Bucket,"organizations":Organization},[OrganizationPolicy, ProjectPolicy]
+    result = (Organization, [('projects',Project),('buckets',Bucket)],[OrganizationPolicy, ProjectPolicy])
     table_cache[timestamp] = result
     return result
 
@@ -119,14 +131,15 @@ class Importer:
         self.snapshot = self.session.query(Snapshot).filter(Snapshot.status == SnapshotState.SUCCESS).order_by(Snapshot.start_time.desc()).first()
 
     def __iter__(self):
-        tables, policies = createTableNames(self.snapshot.cycle_timestamp)
-        for res_type, table in tables.iteritems():
+        organization, tables, policies = createTableNames(self.snapshot.cycle_timestamp)
+        yield "organizations", self.session.query(organization).one()
+        for res_type, table in tables:
             for item in self.session.query(table).all():
                 yield res_type, item
         
         for policyTable in policies:
             for policy in self.session.query(policyTable).all():
-                yield None, policy
+                yield 'policy', policy
 
 if __name__ == '__main__':
     i = Importer()

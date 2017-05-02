@@ -36,9 +36,15 @@ class Explainer():
     def GetPermissionsByRoles(self, request, context):
         raise NotImplementedError()
 
-if __name__ == "__main__":
+if __name__ == "__main__":     
     class DummyConfig:
+        def __init__(self):
+            self.session_creator = dao.session_creator('/tmp/explain.db')
+
         def runInBackground(self, function):
             function()
+
+        def getSession(self):
+            return self.session_creator()
     e = Explainer(config=DummyConfig())
     e.CreateModel("FORSETI")
