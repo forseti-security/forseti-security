@@ -121,3 +121,15 @@ FAKE_GROUPS_MEMBERS_MAP = [
     ('mygroup',  FAKE_GROUP_MEMBERS),
     ('mygroup2', FAKE_GROUP_MEMBERS_2)
 ]
+
+FAKE_GROUP_IDS = [
+    'a111', 'a222', 'a333', 'a444', 'a555',
+    'a666', 'a777', 'a888', 'a999', 'a000',
+]
+
+EXPECTED_CALL_LIST = [
+    ['a111', 'a222', 'a333'],
+    ['a444', 'a555', 'a666'],
+    ['a777', 'a888', 'a999'],
+    ['a000'],
+]
