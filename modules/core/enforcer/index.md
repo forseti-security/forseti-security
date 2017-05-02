@@ -18,29 +18,6 @@ enforcement endpoints are under development.
   IAM settings. It must also be granted access to the compute API scope on the
   instance that is running enforcer.
 
-* Before running the enforcer, make sure you've installed the forseti-security
-  package. See the [README](/README.md) in the top-level directory of this repo.
-
-* Update gcloud (the following gcloud commands have been tested with version
-  1.3.8):
-
-```sh
-$ gcloud components update
-```
-
-* Set your gcloud environment to use this project. To create a new environment
-  configuration:
-
-```sh
-$ gcloud init
-```
-
-* To see all the available commandline flags for the enforcer, run:
-
-```sh
-$ forseti_enforcer --helpfull
-```
-
 To run the enforcer with a local policy file:
 
 ```sh

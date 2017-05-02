@@ -36,7 +36,9 @@ If you are interested in vulnerability scanning please see [Cloud Security Scann
   $ forseti_scanner --rules "rules/rules.yaml" --input_bucket my-project-id
   ```
 
-* By default, the scanner will save the csv output to a temporary location. Specify an output path (it can also be a GCS bucket) in order to save the csv there.
+* By default, the scanner will save the csv output to a temporary
+location. Specify an output path (it can also be a GCS bucket) in order to
+save the csv there.
 
   To specify the output location for the violations:
 
@@ -44,7 +46,9 @@ If you are interested in vulnerability scanning please see [Cloud Security Scann
   $ forseti_scanner --rules "rules/rules.yaml" --output_path path/for/output/
   ```
 
-* If you are developing a new feature or bug fix, you can also use the convenience [dev_scanner.sh script](/scripts) to run scanner so you don't have to set PYTHONPATH and other commandline flags manually.
+* If you are developing a new feature or bug fix, you can also use the
+convenience [dev_scanner.sh script](/scripts) to run scanner so you don't have
+to set PYTHONPATH and other commandline flags manually.
 
 ```sh
 $ cd path/to/forseti-security
@@ -53,4 +57,5 @@ $ scripts/dev_scanner.sh
 
 ## Defining rules
 
-Refer to the [documentation](/modules/core/scanner/rules) on the rules schema.
+Refer to the [documentation]({{ site.baseurl }}{% link modules/core/scanner/rules.md %})
+on the rules schema.

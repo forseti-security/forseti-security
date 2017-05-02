@@ -23,9 +23,12 @@ $ forset_inventory --inventory_groups
 Where
 * --groups_service_account_key_file: The path to the
   domain-wide-delegation key created for the groups-only service account
-  ([details](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups)).
+  ([details]({{ site.baseurl }}{% link common/service_accounts.md %}).
 
-You can also use the convenience [dev\_inventory.sh script](/scripts) to run forseti\_inventory. Make a copy of dev\_inventory.sh.sample as dev\_inventory.sh, edit the script for the appropriate commandline flags, and invoke the script from the repo root to run inventory.
+You can also use the convenience [dev\_inventory.sh script](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/scripts/dev_inventory.sh.sample)
+to run forseti\_inventory. Make a copy of dev\_inventory.sh.sample as
+dev\_inventory.sh, edit the script for the appropriate commandline flags, and
+invoke the script from the repo root to run inventory.
 
 ```sh
 $ cd path/to/forseti-security
@@ -42,12 +45,15 @@ Each relevant field of data you retrieve from an API should correspond to a colu
 2. Define a new table schema for the 'raw data you need to store.
 Additionally, we aim to store the raw API data as json to assist troubleshooting.
 
-Once you've completed these steps create a [Pull Request](https://help.github.com/articles/creating-a-pull-request/) ([an example PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/159)).
+Once you've completed these steps create a [Pull Request](https://help.github.com/articles/creating-a-pull-request/)
+([an example PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/159)).
 
-3. Once the database PR is merged create a [pipeline](/google/cloud/security/inventory/pipelines/) to fetch your data.
-This possibly requires adding new API support, and different authentication. If your change does not require adding new API support you can skip step 4.
+3. Once the database PR is merged create a [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines)
+to fetch your data. This possibly requires adding new API support, and
+different authentication. If your change does not require adding new API
+support you can skip step 4.
 
-4. Add your pipeline to [`inventory_loader.py`](/google/cloud_securit/inventory/inventory_loader.py).
+4. Add your pipeline to [`inventory_loader.py`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/inventory_loader.py).
 Doing this might require protecting the processing of this pipeline with new flags.
 
 5. Flattening the data collected from your API
