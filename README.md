@@ -4,7 +4,7 @@
 Forseti Security is a tool that secures your organization's use of Google Cloud
 Platform.
 
-For details on installation see
+For documentation and installation guides checkout our GitHub Page at
 [googlecloudplatform.github.io/forseti-security/](https://googlecloudplatform.github.io/forseti-security/)
 
 
