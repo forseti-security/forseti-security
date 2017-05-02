@@ -1,7 +1,6 @@
 import json
 
 import forseti
-from google.cloud.security.iam.explain import dao
 
 class ResourceCache(dict):
     pass
@@ -42,15 +41,16 @@ class Policy(dict):
             i+=1
 
 class ForsetiImporter:
-    def __init__(self, session, model):
+    def __init__(self, session, model, dao):
         self.session = session
         self.model = model
         self.forseti_importer = forseti.Importer()
         self.resource_cache = ResourceCache()
+        self.dao = dao
 
     def _convert_organization(self, forseti_org):
         org_name = 'organization/{}'.format(forseti_org.org_id)
-        org = dao.Resource(full_name=org_name, name=org_name, type='organization', parent=None)
+        org = self.dao.TBL_RESOURCE(full_name=org_name, name=org_name, type='organization', parent=None)
         self.resource_cache['organization'] = (org, org_name)
         return org
 
@@ -58,7 +58,7 @@ class ForsetiImporter:
         org, org_name = self.resource_cache['organization']
         project_name = 'project/{}'.format(forseti_project.project_number)
         full_project_name = '{}/project/{}'.format(org_name, forseti_project.project_number)
-        project = dao.Resource(full_name=full_project_name, name=project_name, type='project', parent=org)
+        project = self.dao.TBL_RESOURCE(full_name=full_project_name, name=project_name, type='project', parent=org)
         self.resource_cache[project_name] = (project, full_project_name)
         return project
 
@@ -67,7 +67,7 @@ class ForsetiImporter:
         project_name = 'project/{}'.format(forseti_bucket.project_number)
         parent, full_parent_name = self.resource_cache[project_name]
         full_bucket_name = '{}/{}'.format(full_parent_name, bucket_name)
-        bucket = dao.Resource(full_name=full_bucket_name, name=bucket_name, type='bucket', parent=parent)
+        bucket = self.dao.TBL_RESOURCE(full_name=full_bucket_name, name=bucket_name, type='bucket', parent=parent)
         self.resource_cache[bucket_name] = (bucket, full_bucket_name)
         return bucket
 
@@ -75,9 +75,9 @@ class ForsetiImporter:
         res_type, res_id = forseti_policy.getResourceReference()
         policy = Policy(forseti_policy)
         for binding in policy.iterbindings():
-            self.session.merge(dao.Role(name=binding.getrole()))
+            self.session.merge(self.dao.TBL_ROLE(name=binding.getrole()))
             for member in binding.itermembers():
-                self.session.merge(dao.Member(name=member.getName(), type=member.getType()))
+                self.session.merge(self.dao.TBL_MEMBER(name=member.getName(), type=member.getType()))
 
     def run(self):
         self.model.set_inprogress(self.session)
