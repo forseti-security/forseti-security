@@ -17,8 +17,11 @@ language:
   - "python"
 python:
   - "2.7"
+addons:
+  apt:
+    packages:
+    - "libmysqlclient-dev"
 install:
-  - "sudo apt-get install -y libmysqlclient-dev"
   - "pip install -q coveralls"
   - "bash scripts/travis_install_protoc.sh"
   - "pip install -q pylint==1.6.5"
