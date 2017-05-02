@@ -121,18 +121,25 @@ def main(_):
         sys.exit()
 
     # TODO: make this generic
+    j = []
     org_policies = _get_org_policies(snapshot_timestamp)
     project_policies = _get_project_policies(snapshot_timestamp)
-
+    j.append(org_policies.iteritems())
+    j.append(project_policies.iteritems())
     if not org_policies and not project_policies:
         LOGGER.warn('No policies found. Exiting.')
         sys.exit()
 
     all_violations = _find_violations(
         itertools.chain(
-            org_policies.iteritems(),
-            project_policies.iteritems()),
+            *j),
         rules_engine)
+
+    #all_violations = _find_violations(
+    #    itertools.chain(
+    #        org_policies.iteritems(),
+    #        project_policies.iteritems()),
+    #    rules_engine)
 
     # If there are violations, send results.
     if all_violations:
