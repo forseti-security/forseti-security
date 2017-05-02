@@ -22,7 +22,6 @@ addons:
   apt:
     packages:
     - "libmysqlclient-dev"
-    - "libmysqlclient-dev:i386"
 install:
   - "pip install -q coveralls"
   - "bash scripts/travis_install_protoc.sh"
