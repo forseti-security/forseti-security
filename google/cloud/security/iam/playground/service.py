@@ -9,6 +9,15 @@ import playground_pb2_grpc
 import playgrounder
 
 class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
+    HANDLE_KEY = "handle"
+    
+    def _get_handle(self, context):
+        metadata = context.invocation_metadata()
+        metadata_dict = {}
+        for key, value in metadata:
+            metadata_dict[key] = value
+        return metadata_dict[self.HANDLE_KEY]
+
     def __init__(self, playgrounder):
         super(GrpcPlaygrounder, self).__init__()
         self.playgrounder = playgrounder
@@ -24,6 +33,75 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def CheckIamPolicy(self, request, context):
         return self.playgrounder.CheckIamPolicy(request)
+    
+    def AddGroupMember(self, request, context):
+        handle = self._get_handle(context)
+        self.playgrounder.AddGroupMember(handle,
+                                         request.member_name,
+                                         request.member_type,
+                                         request.parent_names)
+        return playground_pb2.AddGroupMemberReply()
+
+    def DelGroupMember(self, request, context):
+        handle = self._get_handle(context)
+        self.playgrounder.DelGroupMember(handle,
+                                         request.member_name,
+                                         request.parent_name,
+                                         request.only_delete_relationship)
+        return playground_pb2.DelGroupMemberReply()
+    
+    def ListGroupMembers(self, request, context):
+        handle = self._get_handle(context)
+        member_names = self.playgrounder.ListGroupMembers(handle,
+                                                          request.prefix)
+        reply = playground_pb2.ListGroupMembersReply()
+        reply.member_names.extend(member_names)
+        return reply
+
+    def DelResource(self, request, context):
+        handle = self._get_handle(context)
+        self.playgrounder.DelResource(handle,
+                                      request.full_resource_name)
+        return playground_pb2.DelResourceReply()
+
+    def AddResource(self, request, context):
+        handle = self._get_handle(context)
+        self.playgrounder.AddResource(handle,
+                                         request.full_resource_name,
+                                         request.resource_type,
+                                         request.no_require_parent)
+        return playground_pb2.AddResourceReply()
+    
+    def ListResources(self, request, context):
+        handle = self._get_handle(context)
+        full_resource_names = self.playgrounder.ListResources(handle,
+                                                              request.prefix)
+        reply = playground_pb2.ListResourcesReply()
+        reply.full_resource_names.extend(full_resource_names)
+        return reply
+    
+    def DelRole(self, request, context):
+        handle = self._get_handle(context)
+        self.playgrounder.DelRole(handle,
+                                  request.role_name)
+        return playground_pb2.DelRoleReply()
+
+    def AddRole(self, request, context):
+        handle = self._get_handle(context)
+        self.playgrounder.AddRole(handle,
+                                  request.role_name,
+                                  request.permissions)
+        return playground_pb2.AddRoleReply()
+    
+    def ListRoles(self, request, context):
+        handle = self._get_handle(context)
+        role_names = self.playgrounder.ListRoles(handle,
+                                                              request.prefix)
+        reply = playground_pb2.ListRolesReply()
+        reply.role_names.extend(role_names)
+        return reply
+    
+    
 
 class GrpcPlaygrounderFactory:
     def __init__(self, config):

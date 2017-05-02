@@ -1,6 +1,7 @@
 import json
 
-import forseti
+import google.cloud.security.common.data_access.forseti
+from google.cloud.security.common.data_access.dao import Dao
 
 class ResourceCache(dict):
     pass
@@ -39,7 +40,16 @@ class Policy(dict):
         while i < len(bindings):
             yield Binding(bindings[i])
             i+=1
-            
+
+class EmptyImporter:
+    def __init__(self, session, model, dao):
+        self.session = session
+        self.model = model
+        self.dao = Dao
+        
+    def run(self):
+        self.session.commit()
+  
 class TestImporter:
     def __init__(self, session, model, dao):
         self.session = session
@@ -130,4 +140,5 @@ def by_source(source):
     return {
         "TEST":TestImporter,
         "FORSETI":ForsetiImporter,
+        "EMPTY":EmptyImporter,
         }[source]
