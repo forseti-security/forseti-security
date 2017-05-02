@@ -2,7 +2,7 @@
 install_type: 'local'
 permalink: /install/local/
 ---
-# Forseti Security local installation
+# Local installation
 ## Prerequisites
 {% include install_prerequisites.md %}
 {% include install_local_prerequisites.md %}

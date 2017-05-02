@@ -28,9 +28,3 @@ For enhancements, bugs, or other similar items, please open an
 
 # Disclaimer
 This is not an official Google product.
-
-# Contributing
-See our requirements for [contributing]{{ site.baseurl }}{% link contributing/index.md %}).
-
-# License
-See our [license]({{ site.baseurl }}{% link LICENSE.txt %}).
