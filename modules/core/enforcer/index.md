@@ -61,8 +61,3 @@ Example rule:
     }
 
 ```
-
-If this rule is used in a policy file, it needs to be wrapped in a list.
-See [default_allow_policy.json].
-
-[default_allow_policy.json]: samples/default_allow_policy.json

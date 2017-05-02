@@ -47,8 +47,9 @@ save the csv there.
   ```
 
 * If you are developing a new feature or bug fix, you can also use the
-convenience [dev_scanner.sh script](/scripts) to run scanner so you don't have
-to set PYTHONPATH and other commandline flags manually.
+convenience [dev_scanner.sh script](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/scripts/dev_scanner.sh.sample)
+to run scanner so you don't have to set PYTHONPATH and other commandline flags
+manually.
 
 ```sh
 $ cd path/to/forseti-security
