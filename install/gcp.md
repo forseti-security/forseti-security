@@ -91,8 +91,8 @@ There are other templates that you can modify:
 ### Enabling GSuite Google Groups collection
 To enable the collection of GSuite Google Groups collection for processing by
 `scanner` and `enforcer` first make sure you've completed the prerequisite steps
-of [creating a service
-account](/docs/common/SERVICE-ACCOUNT.md#create-a-service-account-for-inventorying-of-gsuite-google-groups) just for this functionality.
+of [creating a service account]({{ site.baseurl }}{% link common/service_accounts.md %})
+just for this functionality.
 
 Once completed you can update the following variables in your version of the
 `deploy-forseti.yaml`
@@ -110,8 +110,8 @@ Once completed you can update the following variables in your version of the
 ## Customize rules.yaml
 By default, the DM template has a rules.yaml that will allow service accounts on
 the organization and its children (e.g. projects) IAM policies. For more
-information, refer to the [rules schema](scanner/rules.md)
-as well as the [scanner unit tests](/tests/scanner) for examples and explanations.
+information, refer to the [rules schema]({{ site.baseurl }}{% link modules/core/scanner/rules.md %})
+for detail.
 
 Once you finish customizing rules.yaml, upload it to your SCANNER\_BUCKET.
 The `py/forseti_instance.py` template looks for the rules.yaml
@@ -121,7 +121,8 @@ accordingly (e.g. replace every instance of "rules/rules.yaml"
 with the appropriate path so the scanner knows where to find it).
 
 ## Deploy Forseti Security
-After you configure the deployment template variables you can create a new deployment.
+After you configure the deployment template variables you can create a
+new deployment.
 
 ### Deploy without GSuite Google Groups collection enabled
 ```sh
@@ -148,16 +149,16 @@ $ <your_instance>: sudo mv /tmp/service-account-key.json <the_path_you_specified
 instance should match what you specified in your deployment YAML for
 `groups-service-account-key-file:`.
 
-You can view the details of your deployment in the
-Cloud Console [Deployment Manager dashboard](https://console.cloud.google.com/deployments).
+You can view the details of your deployment in the Cloud Console
+[Deployment Manager dashboard](https://console.cloud.google.com/deployments).
 Also, if you're using the default startup script, Forseti Security
 should run on the top of the hour, drop a
-csv in `gs://SCANNER_BUCKET/scanner_violations/`,
-and email you the inventory and scanner results.
+csv in `gs://SCANNER_BUCKET/scanner_violations/`, and email you the inventory
+and scanner results.
 
 ## Making changes to your deployment
-If you need to make changes to your deployment,
-refer to the [documentation](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments)
+If you need to make changes to your deployment, refer to the
+[documentation](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments)
 for more details.
 
 Most of the changes you will probably make will be around the

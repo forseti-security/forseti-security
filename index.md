@@ -12,8 +12,12 @@ Features:
 We are continually improving Forseti Security and invite you to submit feature
 requests and bug reports under Issues.
 
-# Installation
+## Installation
 {% include install.md %}
+
+## Module specific information
+{% include modules_core.md %}
+{% include modules_optional.md %}
 
 # Contact us
 Reach out to us with questions by contacting
@@ -26,4 +30,7 @@ For enhancements, bugs, or other similar items, please open an
 This is not an official Google product.
 
 # Contributing
-See our requirements for [contributing](/contributing/).
+See our requirements for [contributing]{{ site.baseurl }}{% link contributing/index.md %}).
+
+# License
+See our [license]({{ site.baseurl }}{% link LICENSE %}).

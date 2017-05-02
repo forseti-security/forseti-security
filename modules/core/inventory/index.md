@@ -3,13 +3,6 @@ permalink: /modules/core/inventory/
 ---
 # Inventory
 This is the Inventory component of Forseti Security tool.
-  * [Prerequisites](#prerequisites)
-  * [Executing inventory](#executing-inventory)
-  * [Developing on inventory](#developing-on-inventory)
-    * [Collecting and storing new data with inventory](#collecting-and-storing-new-data-with-inventory)
-
-## Prerequisites
-See the [PREREQUISITES](/docs/prerequisites/README.md) guide.
 
 ## Executing inventory
 After running setup.py, as long as your virtualenv is activated, then you can be in
