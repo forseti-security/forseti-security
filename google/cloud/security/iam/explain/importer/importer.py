@@ -39,6 +39,33 @@ class Policy(dict):
         while i < len(bindings):
             yield Binding(bindings[i])
             i+=1
+            
+class TestImporter:
+    def __init__(self, session, model, dao):
+        self.session = session
+        self.model = model
+        self.dao = dao
+        
+    def run(self):
+        project = self.dao.addResource(self.session, 'project')
+        vm = self.dao.addResource(self.session, 'vm1', project)
+        db = self.dao.addResource(self.session, 'db1', project)
+
+        permission1 = self.dao.addPermission(self.session, 'cloudsql.table.read')
+        permission2 = self.dao.addPermission(self.session, 'cloudsql.table.write')
+
+        role1 = self.dao.addRole(self.session, 'sqlreader', [permission1])
+        role2 = self.dao.addRole(self.session, 'sqlwriter', [permission1, permission2])
+
+        group1 = self.dao.addMember(self.session, 'group1', 'group')
+        group2 = self.dao.addMember(self.session, 'group2', 'group', [group1]) 
+
+        member1 = self.dao.addMember(self.session, 'felix', 'user', [group2])
+        member2 = self.dao.addMember(self.session, 'fooba', 'user', [group2])
+
+        binding = self.dao.addBinding(self.session, vm, role1, [group1])
+        binding = self.dao.addBinding(self.session, project, role2, [group2])
+        self.session.commit()
 
 class ForsetiImporter:
     def __init__(self, session, model, dao):
@@ -98,3 +125,9 @@ class ForsetiImporter:
 
         self.model.set_done(self.session)
         self.session.commit()
+        
+def by_source(source):
+    return {
+        "TEST":TestImporter,
+        "FORSETI":ForsetiImporter,
+        }[source]

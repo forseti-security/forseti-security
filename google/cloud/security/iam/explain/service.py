@@ -9,10 +9,17 @@ import explain_pb2_grpc
 import explainer
 from dao import session_creator
 
-
-
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
+    HANDLE_KEY = "handle"
     
+    def _get_handle(self, context):
+        metadata = context.invocation_metadata()
+        print metadata
+        metadata_dict = {}
+        for key, value in metadata:
+            metadata_dict[key] = value
+        return metadata_dict[self.HANDLE_KEY]
+
     def __init__(self, explainer):
         super(GrpcExplainer, self).__init__()
         self.explainer = explainer
@@ -21,7 +28,9 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return explain_pb2.PingReply(data=request.data)
 
     def GetAccessByResources(self, request, context):
-        members = self.explainer.GetAccessByResources(request.resource_name,
+        model_name = self._get_handle(context)
+        members = self.explainer.GetAccessByResources(model_name,
+                                                      request.resource_name,
                                                       request.permission_names,
                                                       request.expand_groups)
         accesses = []
@@ -54,8 +63,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     
     def ListModel(self, request, context):
         raise NotImplementedError()
-    
-    
 
 class GrpcExplainerFactory:
     def __init__(self, config):

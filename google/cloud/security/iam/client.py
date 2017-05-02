@@ -23,9 +23,24 @@ def useExplain(channel):
         raise Exception()
 
     request = explain_pb2.CreateModelRequest()
-    request.type = "FORSETI"
+    request.type = "TEST"
     reply = stub.CreateModel(request)
     print reply.handle
+
+    handle = reply.handle
+    request = explain_pb2.GetAccessByResourcesRequest()
+    request.resource_name='vm1'
+    request.expand_groups=True
+    request.permission_names.extend(['cloudsql.table.read','cloudsql.table.write'])
+    reply = stub.GetAccessByResources(request, metadata=[("handle",handle)])
+    print reply
+    
+    request = explain_pb2.GetAccessByResourcesRequest()
+    request.resource_name='vm1'
+    request.expand_groups=False
+    request.permission_names.extend(['cloudsql.table.read','cloudsql.table.write'])
+    reply = stub.GetAccessByResources(request, metadata=[("handle",handle)])
+    print reply
 
 def run():
     channel = grpc.insecure_channel('localhost:50051')
