@@ -186,13 +186,13 @@ def _create_rules_engine(audit_base_dir, rules_engine_filename):
     for node in ast.walk(module_tree):
         if isinstance(node, ast.ClassDef) and 'Engine' in node.name:
             rules_engine_class_name = node.name
-    
+
     if rules_engine_class_name is None:
         LOGGER.error('Engine module %s wasn\'t loaded', rules_engine_filename)
         sys.exit(1)
 
     rules_engine_module = _import_rules_engine(audit_base_dir,
-                                              rules_engine_filename)
+                                               rules_engine_filename)
     rules_engine_class = getattr(rules_engine_module, rules_engine_class_name)
 
     return rules_engine_class
