@@ -54,16 +54,16 @@ class Model(Base):
 class Resource(Base):
 	__tablename__ = 'resources'
 
-	name = Column(String, primary_key=True)
+	full_name = Column(String, primary_key=True)
+	name = Column(String)
 	type = Column(String)
 
 	parent_name = Column(String, ForeignKey('resources.name'))
 	parent = relationship("Resource", remote_side=[name])
-
 	bindings = relationship('Binding', back_populates="resource")
 
 	def __repr__(self):
-		return "<Resource(name='%s', type='%s')>" % (self.name, self.type)
+		return "<Resource(full_name='%s', type='%s')>" % (self.full_name, self.type)
 
 Resource.children = relationship(
 	"Resource", order_by=Resource.name, back_populates="parent")

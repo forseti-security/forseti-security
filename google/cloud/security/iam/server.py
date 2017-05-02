@@ -20,7 +20,8 @@ class ServiceConfig:
         self.session_creator = session_creator('/tmp/explain.db')
     
     def runInBackground(self, function):
-        self.threadPool.apply_async(function)
+        function()
+        #self.threadPool.apply_async(function)
         
     def getSession(self):
         return self.session_creator()
