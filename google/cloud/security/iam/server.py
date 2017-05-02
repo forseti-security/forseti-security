@@ -5,7 +5,7 @@ from concurrent import futures
 import time
 import grpc
 
-from explain.dao import ModelManager, create_engine
+from dao import ModelManager, create_engine
 from explain.service import GrpcExplainerFactory
 from playground.service import GrpcPlaygrounderFactory
 
