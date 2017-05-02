@@ -1,3 +1,6 @@
+---
+permalink: /modules/core/scanner/rules_engine/
+---
 # Rules Engine
 
 The "rules engine" takes in a rules file (see the `samples/` directory for examples) and methodically checks policies against the rules. The current version of Forseti Security supports rule checking for the following resources:

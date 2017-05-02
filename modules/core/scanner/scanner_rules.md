@@ -1,3 +1,6 @@
+---
+permalink: /modules/core/scanner/rules/
+---
 # Defining rules
 The Forseti Scanner recognizes the following rule grammar (either in YAML or JSON):
 

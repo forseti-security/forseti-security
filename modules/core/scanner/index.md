@@ -1,3 +1,6 @@
+---
+permalink: /modules/core/scanner/
+---
 # Scanner
 
 The Forseti Scanner takes a rules definition file (either json or
@@ -50,4 +53,4 @@ $ scripts/dev_scanner.sh
 
 ## Defining rules
 
-Refer to the [documentation](rules.md) on the rules schema.
+Refer to the [documentation](/modules/core/scanner/rules) on the rules schema.

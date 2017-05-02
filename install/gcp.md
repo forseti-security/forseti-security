@@ -1,7 +1,8 @@
 ---
 install_type: 'gcp'
+permalink: /install/gcp/
 ---
-# Installing and Deploying Forseti Security to Google Cloud Platform
+# Forseti Security Google Cloud Platform installation
 
 One of the goals of Forseti Security is to provide continuous scanning
 and enforcement in your Google Cloud Platform (GCP)environment.

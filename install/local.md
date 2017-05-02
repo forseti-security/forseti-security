@@ -1,7 +1,8 @@
 ---
 install_type: 'local'
+permalink: /install/local/
 ---
-# Installing locally
+# Forseti Security local installation
 ## Prerequisites
 {% include install_prerequisites.md %}
 {% include install_local_prerequisites.md %}
