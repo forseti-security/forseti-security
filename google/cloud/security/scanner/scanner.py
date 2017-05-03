@@ -26,13 +26,13 @@ Usage:
       --email_recipient <email address of the email recipient>
 """
 
+import ast
+import glob
+import imp
 import itertools
 import os
 import shutil
 import sys
-import glob
-import ast
-import imp
 
 from datetime import datetime
 
@@ -49,7 +49,6 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
 from google.cloud.security.scanner.pipelines import pipelines_conf as pc
 
 # Setup flags
@@ -77,6 +76,8 @@ flags.DEFINE_bool('list_engines', False, 'List all rule engines')
 
 flags.DEFINE_string('use_engine', None, 'Which engine to use')
 
+flags.DEFINE_string('use_scanner_basedir', None, 'Which rule basedir to use')
+
 LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
@@ -84,17 +85,23 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 def main(_):
     """Run the scanner."""
-    audit_base_dir = os.path.dirname(__file__) + '/audit/'
-    data_pipeline_base = os.path.dirname(__file__) + '/pipelines/'
+    scanner_base_dir = os.path.dirname(__file__)
+    
+    # Allow loading of rules engines and pipelines from different location
+    if not FLAGS.use_scanner_basedir:
+        LOGGER.info("Using %s as scanner base direcotry",
+            scanner_base_dir)
+    else:
+        scanner_base_dir = FLAGS.use_scanner_basedir
+        LOGGER.info("Using %s as scanner base directory",
+            scanner_base_dir)
+
+    # Setup base directories
+    audit_base_dir = scanner_base_dir + '/audit/'
+    data_pipeline_base = scanner_base_dir + '/pipelines/'
 
     if FLAGS.list_engines:
-        glob_string = audit_base_dir + '*engine*.py'
-        engines = glob.glob(glob_string)
-        print('Available Forseti scanner engines:')
-        for engine in engines:
-            if 'base_rules_engine.py' not in engine:
-                print(os.path.basename(engine))
-        sys.exit(1)
+        _rules_engine_list(audit_base_dir)
 
     if not FLAGS.use_engine:
         LOGGER.warn('Provide an engine file')
@@ -102,6 +109,7 @@ def main(_):
     else:
         rules_engine_filename = FLAGS.use_engine
 
+    # Load rules engine according to command line flag
     rules_engine_class, rules_engine_name = _create_rules_engine(
                                             audit_base_dir,
                                             rules_engine_filename, 
@@ -116,6 +124,7 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
+    # Instantiate rules engine with supplied rules file
     rules_engine = rules_engine_class(rules_file_path=FLAGS.rules)
     rules_engine.build_rule_book()
 
@@ -124,6 +133,7 @@ def main(_):
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
+    # Load pipeline from mapping file
     engine_map = pc.get_engine_info(rules_engine_name)
 
     data_pipeline_class, data_pipeline_name = _create_rules_engine(
@@ -131,10 +141,12 @@ def main(_):
         engine_map['module'],
         engine_map['data_class'])
 
+    # Create instance of the pipeline and pull data
     data_pipeline_instance = data_pipeline_class(snapshot_timestamp)
     iter_objects, resource_counts = data_pipeline_instance.run()
 
-    all_violations = _find_violations(
+    # Load violations processing function
+    all_violations = data_pipeline_instance.find_violations(
         itertools.chain(
             *iter_objects),
         rules_engine)
@@ -202,25 +214,22 @@ def _create_rules_engine(audit_base_dir, rules_engine_filename, filter):
 
     return rules_engine_class, rules_engine_class_name
 
-def _find_violations(policies, rules_engine):
-    """Find violations in the policies.
+def _rules_engine_list(audit_base_dir):
+    """List rules engines.
 
     Args:
-        policies: The list of policies to find violations in.
-        rules_engine: The rules engine to run.
+        audit_base_dir: base directory for rules engines
 
     Returns:
-        A list of violations.
+        None
     """
-    all_violations = []
-    LOGGER.info('Finding policy violations...')
-    for (resource, policy) in policies:
-        LOGGER.debug('%s => %s', resource, policy)
-        violations = rules_engine.find_policy_violations(
-            resource, policy)
-        LOGGER.debug(violations)
-        all_violations.extend(violations)
-    return all_violations
+    glob_string = audit_base_dir + '*engine*.py'
+    engines = glob.glob(glob_string)
+    print('Available Forseti scanner engines:')
+    for engine in engines:
+        if 'base_rules_engine.py' not in engine:
+            print(os.path.basename(engine))
+    sys.exit(1)
 
 def _get_output_filename(now_utc):
     """Create the output filename.

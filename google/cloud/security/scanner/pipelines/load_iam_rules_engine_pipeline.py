@@ -14,11 +14,15 @@
 
 """Pipeline for the IAM rules engine."""
 
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.pipelines import base_data_pipeline
+
+LOGGER = log_util.get_logger(__name__)
+
 
 class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
 	def __init__(self, snapshot_timestamp):
@@ -84,3 +88,23 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
 		policy_data.append(project_policies.iteritems())
 
 		return policy_data, resource_counts
+
+	def find_violations(self, policies, rules_engine):
+		"""Find violations in the policies.
+
+		Args:
+		    policies: The list of policies to find violations in.
+		    rules_engine: The rules engine to run.
+
+		Returns:
+		    A list of violations
+		"""
+		all_violations = []
+		LOGGER.info('Finding policy violations...')
+		for (resource, policy) in policies:
+			LOGGER.debug('%s => %s', resource, policy)
+			violations = rules_engine.find_policy_violations(
+				resource, policy)
+			LOGGER.debug(violations)
+			all_violations.extend(violations)
+		return all_violations

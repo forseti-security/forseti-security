@@ -18,7 +18,6 @@ import abc
 
 from google.cloud.security.common.util import log_util
 
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -40,4 +39,9 @@ class BaseDataPipeline(object):
 	@abc.abstractmethod
 	def run(self):
 		"""Runs the pipeline."""
+		pass
+
+	@abc.abstractmethod
+	def find_violations(self):
+		"""Find violations."""
 		pass
