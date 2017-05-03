@@ -40,11 +40,6 @@ class UnsupportedApiError(Error):
     pass
 
 
-class UnsupportedApiMethodError(Error):
-    """Error for unsupported API method calls."""
-    pass
-
-
 class UnsupportedApiVersionError(Error):
     """Error for unsupported API version."""
     pass
