@@ -72,6 +72,44 @@ def usePlayground(channel, handle):
     reply = stub.ListRoles(request, metadata=[("handle", handle)])
     print reply
 
+    request = playground_pb2.GetIamPolicyRequest()
+    request.resource = 'vm1'
+    reply = stub.GetIamPolicy(request, metadata=[('handle', handle)])
+    print reply
+
+    request = playground_pb2.CheckIamPolicyRequest()
+    request.permission = 'cloudsql.table.read'
+    request.resource = 'vm1'
+    request.identity = 'group1'
+    reply = stub.CheckIamPolicy(request, metadata=[('handle', handle)])
+    print "First check: %s"%reply
+
+    request = playground_pb2.CheckIamPolicyRequest()
+    request.permission = 'cloudsql.table.write'
+    request.resource = 'vm1'
+    request.identity = 'group1'
+    reply = stub.CheckIamPolicy(request, metadata=[('handle', handle)])
+    print "Secpmd check: %s"%reply
+
+    bindings = []
+    b1 = playground_pb2.Binding()
+    b1.role = 'sqlreader'
+    b1.members.extend(['group2','felix','felixfelixfelix'])
+
+    b2 = playground_pb2.Binding()
+    b2.role = 'new_role'
+    b2.members.extend(['group2','felix','felixfelixfelix2'])
+
+    request = playground_pb2.SetIamPolicyRequest()
+    request.resource = 'vm1'
+    request.policy.bindings.extend([b1,b2])
+    reply = stub.SetIamPolicy(request, metadata=[('handle', handle)])
+
+    request = playground_pb2.GetIamPolicyRequest()
+    request.resource = 'vm1'
+    reply = stub.GetIamPolicy(request, metadata=[('handle', handle)])
+    print reply
+
 def useExplain(channel):
     stub = explain_pb2_grpc.ExplainStub(channel)
     request = explain_pb2.PingRequest()

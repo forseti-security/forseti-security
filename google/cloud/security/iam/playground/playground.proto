@@ -106,11 +106,12 @@ message PingReply {
 
 message Binding {
 	string role = 1;
-	repeated string member = 2;
+	repeated string members = 2;
 }
 
 message Policy {
 	repeated Binding bindings = 1;
+	string etag = 2;
 }
 
 message CheckIamPolicyRequest {

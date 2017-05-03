@@ -21,19 +21,56 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     def __init__(self, playgrounder):
         super(GrpcPlaygrounder, self).__init__()
         self.playgrounder = playgrounder
-    
+
     def Ping(self, request, context):
         return playground_pb2.PingReply(data=request.data)
 
     def SetIamPolicy(self, request, context):
-        return self.playgrounder.SetIamPolicy(request)
+        handle = self._get_handle(context)
+        policy = {}
+        for binding in request.policy.bindings:
+            policy[binding.role] = binding.members
+        
+        self.playgrounder.SetIamPolicy(handle,
+                                       request.resource,
+                                       policy)
+        
+        return playground_pb2.SetIamPolicyReply()
+
 
     def GetIamPolicy(self, request, context):
-        return self.playgrounder.GetIamPolicy(request)
+        handle = self._get_handle(context)
+        policy = self.playgrounder.GetIamPolicy(handle,
+                                                request.resource)
+        
+        reply = playground_pb2.GetIamPolicyReply()
+        
+        etag = ""
+        bindings = []
+        for key, value in policy.iteritems():
+            if key == 'etag':
+                etag = value
+            else:
+                binding = playground_pb2.Binding()
+                binding.role = key
+                binding.members.extend(value)
+                bindings.append(binding)
+
+        reply.resource = request.resource
+        reply.policy.bindings.extend(bindings)
+        reply.policy.etag = etag 
+        return reply
 
     def CheckIamPolicy(self, request, context):
-        return self.playgrounder.CheckIamPolicy(request)
-    
+        handle = self._get_handle(context)
+        authorized = self.playgrounder.CheckIamPolicy(handle,
+                                                      request.resource,
+                                                      request.permission,
+                                                      request.identity)
+        reply = playground_pb2.CheckIamPolicyReply()
+        reply.result = authorized;
+        return reply
+
     def AddGroupMember(self, request, context):
         handle = self._get_handle(context)
         self.playgrounder.AddGroupMember(handle,
@@ -49,7 +86,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
                                          request.parent_name,
                                          request.only_delete_relationship)
         return playground_pb2.DelGroupMemberReply()
-    
+
     def ListGroupMembers(self, request, context):
         handle = self._get_handle(context)
         member_names = self.playgrounder.ListGroupMembers(handle,
@@ -71,7 +108,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
                                          request.resource_type,
                                          request.no_require_parent)
         return playground_pb2.AddResourceReply()
-    
+
     def ListResources(self, request, context):
         handle = self._get_handle(context)
         full_resource_names = self.playgrounder.ListResources(handle,
@@ -79,7 +116,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         reply = playground_pb2.ListResourcesReply()
         reply.full_resource_names.extend(full_resource_names)
         return reply
-    
+
     def DelRole(self, request, context):
         handle = self._get_handle(context)
         self.playgrounder.DelRole(handle,
@@ -92,7 +129,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
                                   request.role_name,
                                   request.permissions)
         return playground_pb2.AddRoleReply()
-    
+
     def ListRoles(self, request, context):
         handle = self._get_handle(context)
         role_names = self.playgrounder.ListRoles(handle,

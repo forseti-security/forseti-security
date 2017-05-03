@@ -6,13 +6,22 @@ class Playgrounder():
         self.config = config
 
     def SetIamPolicy(self, model_name, resource, policy):
-        return playground_pb2.SetIamPolicyReply()
+        model_manager = self.config.model_manager
+        session_creator, data_access = model_manager.get(model_name)
+        session = session_creator()
+        data_access.setIamPolicy(session, resource, policy)
 
     def GetIamPolicy(self, model_name, resource):
-        return playground_pb2.GetIamPolicyReply()
+        model_manager = self.config.model_manager
+        session_creator, data_access = model_manager.get(model_name)
+        session = session_creator()
+        return data_access.getIamPolicy(session, resource)
 
     def CheckIamPolicy(self, model_name, resource, permission, identity):
-        return playground_pb2.CheckIamPolicyReply()
+        model_manager = self.config.model_manager
+        session_creator, data_access = model_manager.get(model_name)
+        session = session_creator()
+        return data_access.checkIamPolicy(session, resource, permission, identity)
 
     def AddGroupMember(self, model_name, member_name, member_type, parent_names):
         model_manager = self.config.model_manager

@@ -4,6 +4,7 @@ import datetime
 import sqlalchemy
 import os
 import binascii
+import collections
 
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Table, Text, DateTime, Enum
@@ -162,6 +163,67 @@ def define_model(model_name, dbengine):
             role_permissions.drop(engine)
             binding_members.drop(engine)
             group_members.drop(engine)
+            
+        @staticmethod
+        def setIamPolicy(session, full_resource_name, policy):
+            old_policy = ModelAccess.getIamPolicy(session, full_resource_name)
+
+            additions = []
+            subtractions = []
+            
+            def filterEtag(policy):
+                return filter(lambda (k,v): k != 'etag', policy.iteritems())
+
+            def calculateDiff(policy, old_policy):
+                diff = collections.defaultdict(list)
+                for role, members in filterEtag(policy):
+                    if role in old_policy:
+                        for member in members:
+                            if member not in old_policy[role]:
+                                diff[role].append(member)
+                    else:
+                        diff[role] = members
+                return diff
+            
+            grants = calculateDiff(policy, old_policy)
+            revocations = calculateDiff(old_policy, policy)
+            
+            print "Grants: %s"%grants
+            print "Revokes: %s"%revocations
+
+            for role, members in revocations.iteritems():
+                bindings = session.query(Binding).filter(Binding.resource_name == full_resource_name).filter(Binding.role_name == role).join(binding_members).join(Member).filter(Member.name.in_(members)).all()
+                map(lambda b: session.delete(b), bindings)
+            existing_bindings = session.query(Binding).filter(Binding.resource_name == full_resource_name).filter(Binding.role_name == role).all()
+            for role, members in grants.iteritems():
+                inserted = False
+                for binding in existing_bindings:
+                    if binding.role_name == role:
+                        inserted = True
+                        for member in members:
+                            binding.members.append(session.query(Member).filter(Member.name == member).one())
+                if not inserted:
+                    binding = Binding(resource_name=full_resource_name, role=session.query(Role).filter(Role.name==role).one())
+                    binding.members = session.query(Member).filter(Member.name.in_(members)).all()
+                    session.add(binding)
+            session.commit()
+                    
+
+        @staticmethod
+        def getIamPolicy(session, full_resource_name):
+            resource = session.query(Resource).filter(Resource.full_name==full_resource_name).one()
+            policy = {"etag":"not implemented"}
+            for binding in session.query(Binding).filter(Binding.resource_name==full_resource_name).all():
+                role = binding.role_name
+                members = map(lambda m: m.name, binding.members)
+                policy[role] = members
+            return policy
+
+        @staticmethod
+        def checkIamPolicy(session, full_resource_name, permission_name, member_name):
+            member_names = map(lambda m: m.name, ModelAccess.reverseExpandMembers(session, [member_name]))
+            resource_names = map(lambda r: r.full_name, ModelAccess.findResourcePath(session, full_resource_name))
+            return None != session.query(Permission).filter(Permission.name==permission_name).join(role_permissions).join(Role).join(Binding).filter(Binding.resource_name.in_(resource_names)).join(binding_members).join(Member).filter(Member.name.in_(member_names)).first()
 
         @staticmethod
         def listRolesByPrefix(session, role_prefix):
@@ -336,13 +398,12 @@ def define_model(model_name, dbengine):
 			return group_set.union(non_group_set)
 
         @staticmethod
-        def findResourcePath(session, resource_name):
-			resources = session.query(Resource).filter(Resource.name == resource_name).all()
+        def findResourcePath(session, full_resource_name):
+			resources = session.query(Resource).filter(Resource.full_name == full_resource_name).all()
 			if len(resources) < 1:
 				return []
 
 			path = []
-
 			resource = resources[0]
 
 			path.append(resource)
