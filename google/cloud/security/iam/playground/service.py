@@ -27,9 +27,9 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def SetIamPolicy(self, request, context):
         handle = self._get_handle(context)
-        policy = {}
+        policy = {'etag':request.policy.etag, 'bindings':{}}
         for binding in request.policy.bindings:
-            policy[binding.role] = binding.members
+            policy['bindings'][binding.role] = binding.members
         
         self.playgrounder.SetIamPolicy(handle,
                                        request.resource,
@@ -42,19 +42,16 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         handle = self._get_handle(context)
         policy = self.playgrounder.GetIamPolicy(handle,
                                                 request.resource)
-        
+
         reply = playground_pb2.GetIamPolicyReply()
-        
-        etag = ""
+
+        etag = policy['etag']
         bindings = []
-        for key, value in policy.iteritems():
-            if key == 'etag':
-                etag = value
-            else:
-                binding = playground_pb2.Binding()
-                binding.role = key
-                binding.members.extend(value)
-                bindings.append(binding)
+        for key, value in policy['bindings'].iteritems():
+            binding = playground_pb2.Binding()
+            binding.role = key
+            binding.members.extend(value)
+            bindings.append(binding)
 
         reply.resource = request.resource
         reply.policy.bindings.extend(bindings)
@@ -133,7 +130,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     def ListRoles(self, request, context):
         handle = self._get_handle(context)
         role_names = self.playgrounder.ListRoles(handle,
-                                                              request.prefix)
+                                                 request.prefix)
         reply = playground_pb2.ListRolesReply()
         reply.role_names.extend(role_names)
         return reply

@@ -127,7 +127,6 @@ message CheckIamPolicyReply {
 message SetIamPolicyRequest {
 	string resource = 1;
 	Policy policy = 2;
-	string etag = 3;
 }
 
 message SetIamPolicyReply {
