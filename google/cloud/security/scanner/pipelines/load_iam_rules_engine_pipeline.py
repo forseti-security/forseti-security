@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Pipeline for the IAM rules engine."""
+import sys
 
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import dao
