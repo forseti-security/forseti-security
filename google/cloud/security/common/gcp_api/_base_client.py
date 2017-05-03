@@ -81,7 +81,7 @@ class BaseClient(object):
             rate_limiter: An instance of RateLimiter to use.
 
         Returns:
-            API response object.
+            A list of API response objects (dict).
 
         Raises:
             When the retry is exceeded, exception will be thrown.  This
@@ -89,11 +89,12 @@ class BaseClient(object):
             upstream.
         """
         results = []
+        response = []
         while request is not None:
             try:
                 with rate_limiter:
-                    response = self._execute(request)
-                    results.append(response)
+                    response.append(self._execute(request))
+                    results.extend(response)
                     request = api_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)
