@@ -93,7 +93,7 @@ class BaseClient(object):
             try:
                 with rate_limiter:
                     response = self._execute(request)
-                    results.extend(response)
+                    results.append(response)
                     request = api_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)

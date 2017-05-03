@@ -99,7 +99,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         results = self._build_paged_result(request, members_stub,
                                            self.rate_limiter)
 
-        return [member for member in results.get('members', [])]
+        return [item.get('members', []) for item in results]
 
 
     def get_groups(self, customer_id='my_customer'):
@@ -124,4 +124,4 @@ class AdminDirectoryClient(_base_client.BaseClient):
         results = self._build_paged_result(request, groups_stub,
                                            self.rate_limiter)
 
-        return [group for group in results.get('groups', [])]
+        return [item.get('groups', []) for item in results]
