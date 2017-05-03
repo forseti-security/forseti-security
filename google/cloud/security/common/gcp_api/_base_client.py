@@ -15,6 +15,8 @@
 """Base GCP client which uses the discovery API."""
 
 from apiclient import discovery
+from googleapiclient.errors import HttpError
+from httplib2 import HttpLib2Error
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
@@ -45,7 +47,7 @@ class BaseClient(object):
                                        cache_discovery=False)
 
     def __repr__(self):
-        return 'API: name={}, version={}'.format(self.name, self.version)
+        return 'API: name=%s, version=%s' % (self.name, self.version)
 
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
@@ -69,3 +71,42 @@ class BaseClient(object):
             upstream.
         """
         return request.execute()
+
+    def _build_paged_result(self, request, api_stub, rate_limiter):
+        """Execute results and page through the results.
+
+        Use of this method requires the API having a .list_next() method.
+
+        Args:
+            request: GCP API client request object.
+            api_stub: The API stub used to build the request.
+            rate_limiter: An instance of RateLimiter to use.
+
+        Returns:
+            A list of API response objects (dict).
+
+        Raises:
+            When the retry is exceeded, exception will be thrown.  This
+            exception is not wrapped by the retry library, and will be handled
+            upstream.
+
+            api_errors.ApiExecutionError when there is no list_next() method
+            on the api_stub.
+        """
+        if not hasattr(api_stub, 'list_next'):
+            raise api_errors.ApiExecutionError(
+                api_stub, 'No list_next() method.')
+
+        results = []
+        response = []
+
+        while request is not None:
+            try:
+                with rate_limiter:
+                    response.append(self._execute(request))
+                    results.extend(response)
+                    request = api_stub.list_next(request, response)
+            except (HttpError, HttpLib2Error) as e:
+                raise api_errors.ApiExecutionError(api_stub, e)
+
+        return results

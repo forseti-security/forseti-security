@@ -16,8 +16,6 @@
 
 import gflags as flags
 
-from googleapiclient.errors import HttpError
-from httplib2 import HttpLib2Error
 from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 
@@ -98,26 +96,18 @@ class AdminDirectoryClient(_base_client.BaseClient):
         members_stub = self.service.members()
         request = members_stub.list(groupKey=group_key,
                                     maxResults=FLAGS.max_results_admin_api)
-        results_by_member = []
 
-        # TODO: Investigate yielding results to handle large group lists.
-        while request is not None:
-            try:
-                with self.rate_limiter:
-                    response = self._execute(request)
-                    results_by_member.extend(response.get('members', []))
-                    request = members_stub.list_next(request, response)
-            except (HttpError, HttpLib2Error) as e:
-                raise api_errors.ApiExecutionError(members_stub, e)
+        results = self._build_paged_result(
+            request, members_stub, self.rate_limiter)
 
-        return results_by_member
+        return [item.get('members', []) for item in results]
+
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
 
-        A note on customer_id='my_customer'.
-        This is a magic string instead of using the real
-        customer id. See:
+        A note on customer_id='my_customer'. This is a magic string instead
+        of using the real customer id. See:
 
         https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
 
@@ -132,16 +122,8 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)
-        results_by_group = []
 
-        # TODO: Investigate yielding results to handle large group lists.
-        while request is not None:
-            try:
-                with self.rate_limiter:
-                    response = self._execute(request)
-                    results_by_group.extend(response.get('groups', []))
-                    request = groups_stub.list_next(request, response)
-            except (HttpError, HttpLib2Error) as e:
-                raise api_errors.ApiExecutionError(groups_stub, e)
+        results = self._build_paged_result(
+            request, groups_stub, self.rate_limiter)
 
-        return results_by_group
+        return [item.get('groups', []) for item in results]
