@@ -118,8 +118,8 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
             Resource count map
         """
         resource_counts = {
-                    ResourceType.ORGANIZATION: len(org_policies),
-                    ResourceType.PROJECT: len(project_policies),
+            ResourceType.ORGANIZATION: len(org_policies),
+            ResourceType.PROJECT: len(project_policies),
         }
 
         return resource_counts
