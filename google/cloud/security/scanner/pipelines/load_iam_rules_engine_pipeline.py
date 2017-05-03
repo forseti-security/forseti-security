@@ -59,14 +59,15 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
 
         Args:
             timestamp: The snapshot timestamp.
-        
+
         Returns:
             The project policies.
         """
         project_policies = {}
         project_policies = (
             project_dao.ProjectDao().get_project_policies('projects',
-                                                          self.snapshot_timestamp))
+                                                          self.\
+                                                          snapshot_timestamp))
         return project_policies
 
     def _get_resource_count(self, org_policies, project_policies):
@@ -94,7 +95,7 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
 
         if not org_policies and not project_policies:
             LOGGER.warn('No policies found. Exiting.')
-            sys.exit()
+            sys.exit(1)
         resource_counts = self._get_resource_count(org_policies,
                                                    project_policies)
         policy_data.append(org_policies.iteritems())
