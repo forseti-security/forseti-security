@@ -43,6 +43,14 @@ class Explainer():
     def DeleteModel(self, model_name):
         model_manager = self.config.model_manager
         model_manager.delete(model_name)
+   
+    def Denormalize(self, model_name):
+        model_manager = self.config.model_manager
+        session_creator, data_access = model_manager.get(model_name)
+        session = session_creator()
+        for tuple in data_access.denormalize(session):
+            permission, resource, member = tuple
+            yield permission.name, resource.full_name, member.name
 
 if __name__ == "__main__":
     class DummyConfig:

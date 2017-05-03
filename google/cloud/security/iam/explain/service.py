@@ -9,6 +9,17 @@ import explain_pb2_grpc
 import explainer
 from dao import session_creator
 
+def autoclose_stream(f):
+    def wrapper(*args):
+        def closed(context):
+            return context._state.client == 'closed'
+        context = args[-1]
+        for result in f(*args):
+            if closed(context):
+                return
+            yield result
+    return wrapper
+
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     HANDLE_KEY = "handle"
     
@@ -49,25 +60,31 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def GetPermissionsByRoles(self, request, context):
         raise NotImplementedError()
-    
+
     def CreateModel(self, request, context):
         handle = self.explainer.CreateModel(request.type)
         
         reply = explain_pb2.CreateModelReply()
         reply.handle = handle
         return reply
-    
+
     def DeleteModel(self, request, context):
         model_name = request.handle
         self.explainer.DeleteModel(model_name)
         return explain_pb2.DeleteModelReply()
-    
+
     def ListModel(self, request, context):
         model_names = self.explainer.ListModel()
         reply = explain_pb2.ListModelReply()
         reply.handles.extend(model_names)
         return reply
 
+    #@autoclose_stream
+    def Denormalize(self, request, context):
+        model_name = self._get_handle(context)
+        
+        for permission, resource, member in self.explainer.Denormalize(model_name):
+            yield explain_pb2.AuthorizationTuple(member=member, permission=permission, resource=resource)
 
 class GrpcExplainerFactory:
     def __init__(self, config):
