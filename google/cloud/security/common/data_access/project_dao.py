@@ -35,6 +35,26 @@ LOGGER = log_util.get_logger(__name__)
 
 class ProjectDao(dao.Dao):
     """Data access object (DAO)."""
+    
+    
+    def get_project_numbers(self, resource_name, timestamp):
+        """Select the project ids from a projects snapshot table.
+    
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+    
+        Returns:
+             list of project ids
+    
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
+        project_ids_sql = select_data.PROJECT_IDS.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource_name, project_numbers_sql, ())
+        
+        return [row['project_id'] for row in rows]
 
     def get_project_numbers(self, resource_name, timestamp):
         """Select the project numbers from a projects snapshot table.

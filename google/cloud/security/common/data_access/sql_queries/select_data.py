@@ -18,6 +18,10 @@ RECORD_COUNT = """
     SELECT COUNT(*) FROM {0}_{1};
 """
 
+PROJECT_IDS = """
+    SELECT project_id from projects_{0};
+"""
+
 PROJECT_NUMBERS = """
     SELECT project_number from projects_{0};
 """
