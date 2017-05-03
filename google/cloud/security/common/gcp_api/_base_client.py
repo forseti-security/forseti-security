@@ -45,7 +45,7 @@ class BaseClient(object):
                                        cache_discovery=False)
 
     def __repr__(self):
-        return 'API: name={}, version={}'.format(self.name, self.version)
+        return 'API: name=%s, version=%s' % (self.name, self.version)
 
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
@@ -69,3 +69,32 @@ class BaseClient(object):
             upstream.
         """
         return request.execute()
+
+    def _build_paged_result(self, request, api_stub, rate_limiter):
+        """Execute results and page through the results.
+
+        Args:
+            request: GCP API client request object.
+            api_stub: The API stub used to build the request.
+            rate_limiter: An instance of RateLimiter to use.
+
+        Returns:
+            API response object.
+
+        Raises:
+            When the retry is exceeded, exception will be thrown.  This
+            exception is not wrapped by the retry library, and will be handled
+            upstream.
+        """
+        results = []
+        while request is not None:
+            try:
+                with rate_limiter:
+                    response = self._execute(request)
+                    results.extend(response)
+                    request = api_stub.list_next(request, response)
+            except (HttpError, HttpLib2Error) as e:
+                raise api_errors.ApiExecutionError(api_stub, e)
+
+        return results
+
