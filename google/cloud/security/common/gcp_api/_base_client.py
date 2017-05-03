@@ -75,6 +75,8 @@ class BaseClient(object):
     def _build_paged_result(self, request, api_stub, rate_limiter):
         """Execute results and page through the results.
 
+        Use of this method requires the API having a .list_next() method.
+
         Args:
             request: GCP API client request object.
             api_stub: The API stub used to build the request.
@@ -87,9 +89,16 @@ class BaseClient(object):
             When the retry is exceeded, exception will be thrown.  This
             exception is not wrapped by the retry library, and will be handled
             upstream.
+
+            UnsupportedApiMethodError when the api_stub does not have the required
+            list_next() method.
         """
+        if not hasattr(api_stub, 'list_next')
+            raise api_errors.UnsupportedApiMethodError
+
         results = []
         response = []
+
         while request is not None:
             try:
                 with rate_limiter:

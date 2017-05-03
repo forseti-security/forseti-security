@@ -96,8 +96,12 @@ class AdminDirectoryClient(_base_client.BaseClient):
         members_stub = self.service.members()
         request = members_stub.list(groupKey=group_key,
                                     maxResults=FLAGS.max_results_admin_api)
-        results = self._build_paged_result(request, members_stub,
-                                           self.rate_limiter)
+
+        try:
+            results = self._build_paged_result(
+                request, members_stub, self.rate_limiter)
+        except api_errors.UnsupportedApiError:
+            raise api_errors.ApiExecutionError
 
         return [item.get('members', []) for item in results]
 
@@ -121,7 +125,11 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)
-        results = self._build_paged_result(request, groups_stub,
-                                           self.rate_limiter)
+
+        try:
+            results = self._build_paged_result(
+                request, groups_stub, self.rate_limiter)
+        except api_errors.UnsupportedApiError:
+            raise api_errors.ApiExecutionError
 
         return [item.get('groups', []) for item in results]
