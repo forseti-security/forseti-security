@@ -110,6 +110,7 @@ def usePlayground(channel, handle):
     reply = stub.GetIamPolicy(request, metadata=[('handle', handle)])
     print reply
 
+
 def useExplain(channel):
     stub = explain_pb2_grpc.ExplainStub(channel)
     request = explain_pb2.PingRequest()
@@ -150,6 +151,11 @@ def useExplain(channel):
     #request = explain_pb2.ListModelRequest()
     #reply = stub.ListModel(request)
     #print reply
+
+    request = explain_pb2.DenormalizeRequest()
+    reply = stub.Denormalize(request, metadata=[('handle', handle)])
+    for tuple in reply:
+        print tuple
     return handle
 
 def run():

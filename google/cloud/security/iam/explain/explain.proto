@@ -17,6 +17,22 @@ service Explain {
 
   rpc ListModel(ListModelRequest) returns (ListModelReply) {}
 
+  rpc Denormalize(DenormalizeRequest) returns (stream AuthorizationTuple) {}
+
+}
+
+message DenormalizeRequest {
+
+}
+
+message DenormalizeReply {
+	repeated AuthorizationTuple authorizations = 1;
+}
+
+message AuthorizationTuple {
+	string member = 1;
+	string resource = 2;
+	string permission = 3;
 }
 
 message CreateModelRequest {
