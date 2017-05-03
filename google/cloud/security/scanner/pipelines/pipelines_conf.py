@@ -15,9 +15,9 @@
 """Config for the data pipelines."""
 
 ENGINE_TO_DATA_MAP = [{
-'engine': 'IamRulesEngine',
-'data_class': 'LoadIamDataPipeline',
-'module': 'load_iam_rules_engine_pipeline.py'
+    'engine': 'IamRulesEngine',
+    'data_class': 'LoadIamDataPipeline',
+    'module': 'load_iam_rules_engine_pipeline.py'
 }]
 
 

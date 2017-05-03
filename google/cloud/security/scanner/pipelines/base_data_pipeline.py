@@ -42,6 +42,6 @@ class BaseDataPipeline(object):
         pass
 
     @abc.abstractmethod
-    def find_violations(self):
+    def find_violations(self, **kwarg):
         """Find violations."""
         pass

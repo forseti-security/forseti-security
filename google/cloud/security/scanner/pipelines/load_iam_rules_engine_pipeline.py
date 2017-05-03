@@ -25,6 +25,8 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
+    """Pipeline to IAM data from DAO"""
+
     def __init__(self, snapshot_timestamp):
         """Constructor for the base pipeline.
 
@@ -49,7 +51,7 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
         org_policies = {}
         org_dao = organization_dao.OrganizationDao()
         org_policies = org_dao.get_org_iam_policies('organizations',
-            self.snapshot_timestamp)
+                                                    self.snapshot_timestamp)
         return org_policies
 
     def _get_project_policies(self):
@@ -57,22 +59,32 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
 
         Args:
             timestamp: The snapshot timestamp.
+        
         Returns:
             The project policies.
         """
         project_policies = {}
         project_policies = (
             project_dao.ProjectDao().get_project_policies('projects',
-                self.snapshot_timestamp))
+                                                          self.snapshot_timestamp))
         return project_policies
 
     def _get_resource_count(self, org_policies, project_policies):
+        """Get resource count for org and project policies.
+
+        Args:
+            org_policies: organisation policies from inventory
+            project_pollicies: project policies from inventory.
+
+        Returns:
+            Resource count map
+        """
         resource_counts = {
             ResourceType.ORGANIZATION: len(org_policies),
             ResourceType.PROJECT: len(project_policies),
         }
 
-    return resource_counts
+        return resource_counts
 
     def run(self):
         """Runs the data collection."""
@@ -84,7 +96,7 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
             LOGGER.warn('No policies found. Exiting.')
             sys.exit()
         resource_counts = self._get_resource_count(org_policies,
-            project_policies)
+                                                   project_policies)
         policy_data.append(org_policies.iteritems())
         policy_data.append(project_policies.iteritems())
 
