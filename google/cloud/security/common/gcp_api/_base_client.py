@@ -15,6 +15,8 @@
 """Base GCP client which uses the discovery API."""
 
 from apiclient import discovery
+from googleapiclient.errors import HttpError
+from httplib2 import HttpLib2Error
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
@@ -97,4 +99,3 @@ class BaseClient(object):
                 raise api_errors.ApiExecutionError(api_stub, e)
 
         return results
-

@@ -16,8 +16,6 @@
 
 import gflags as flags
 
-from googleapiclient.errors import HttpError
-from httplib2 import HttpLib2Error
 from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 
@@ -127,4 +125,3 @@ class AdminDirectoryClient(_base_client.BaseClient):
                                            self.rate_limiter)
 
         return [group for group in results.get('groups', [])]
-
