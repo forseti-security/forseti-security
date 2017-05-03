@@ -80,12 +80,12 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
             LOGGER.warn('No policies found. Exiting.')
             sys.exit(1)
         resource_counts = self._get_resource_count(org_policies,
-                                             project_policies)
+                                                   project_policies)
         policy_data.append(org_policies.iteritems())
         policy_data.append(project_policies.iteritems())
 
         return policy_data, resource_counts
-    
+
     # pylint: disable=arguments-differ
     def find_violations(self, policies, rules_engine):
         """Find violations in the policies.
@@ -118,8 +118,8 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
             Resource count map
         """
         resource_counts = {
-                ResourceType.ORGANIZATION: len(org_policies),
-                ResourceType.PROJECT: len(project_policies),
+                    ResourceType.ORGANIZATION: len(org_policies),
+                    ResourceType.PROJECT: len(project_policies),
         }
 
         return resource_counts
