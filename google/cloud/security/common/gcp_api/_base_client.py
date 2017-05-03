@@ -90,11 +90,12 @@ class BaseClient(object):
             exception is not wrapped by the retry library, and will be handled
             upstream.
 
-            UnsupportedApiMethodError when the api_stub does not have the required
-            list_next() method.
+            api_errors.ApiExecutionError when there is no list_next() method
+            on the api_stub.
         """
-        if not hasattr(api_stub, 'list_next')
-            raise api_errors.UnsupportedApiMethodError
+        if not hasattr(api_stub, 'list_next'):
+            raise api_errors.ApiExecutionError(
+                api_stub, 'No list_next() method.')
 
         results = []
         response = []
