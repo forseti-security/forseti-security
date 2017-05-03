@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline for the IAM rules engine."""
+"""Scanner for the IAM rules engine."""
 import sys
 
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
-from google.cloud.security.scanner.pipelines import base_data_pipeline
+from google.cloud.security.scanner.scanners import base_scanner
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
+class IamPolicyScanner(base_scanner.BaseScanner):
     """Pipeline to IAM data from DAO"""
 
     def __init__(self, snapshot_timestamp):
@@ -36,7 +36,7 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
         Returns:
             None
         """
-        super(LoadIamDataPipeline, self).__init__(
+        super(IamPolicyScanner, self).__init__(
             snapshot_timestamp)
 
     def _get_org_policies(self):

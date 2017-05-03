@@ -26,9 +26,6 @@ Usage:
       --email_recipient <email address of the email recipient>
 """
 
-import ast
-import glob
-import imp
 import itertools
 import os
 import shutil
@@ -46,7 +43,9 @@ from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.scanner.pipelines import pipelines_conf as pc
+from google.cloud.security.scanner.audit import engine_map as em
+from google.cloud.security.scanner.scanners import scanners_map as sm
+
 
 # Setup flags
 FLAGS = flags.FLAGS
@@ -69,9 +68,9 @@ flags.DEFINE_string('output_path', None,
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
 
-flags.DEFINE_bool('list_engines', False, 'List all rule engines')
+flags.DEFINE_boolean('list_engines', False, 'List all rule engines')
 
-flags.DEFINE_string('use_engine', None, 'Which engine to use')
+flags.DEFINE_string('engine_name', None, 'Which engine to use')
 
 flags.DEFINE_string('use_scanner_basedir', None, 'Which rule basedir to use')
 
@@ -82,37 +81,18 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 def main(_):
     """Run the scanner."""
-    scanner_base_dir = os.path.dirname(__file__)
 
-    # Allow loading of rules engines and pipelines from different location
-    if not FLAGS.use_scanner_basedir:
-        LOGGER.info("Using %s as scanner base direcotry",
-                    scanner_base_dir)
-    else:
-        scanner_base_dir = FLAGS.use_scanner_basedir
-        LOGGER.info("Using %s as scanner base directory",
-                    scanner_base_dir)
+    if FLAGS.list_engines is True:
+        _list_rules_engines()
+        sys.exit(1)
 
-    # Setup base directories
-    audit_base_dir = scanner_base_dir + '/audit/'
-    data_pipeline_base = scanner_base_dir + '/pipelines/'
-
-    if FLAGS.list_engines:
-        _rules_engine_list(audit_base_dir)
-
-    if not FLAGS.use_engine:
-        LOGGER.warn('Provide an engine file')
+    if not FLAGS.engine_name:
+        LOGGER.warn('Provide an engine name')
         sys.exit(1)
     else:
-        rules_engine_filename = FLAGS.use_engine
+        rules_engine_name = FLAGS.engine_name
 
-    # Load rules engine according to command line flag
-    rules_engine_class, rules_engine_name = _create_rules_engine(
-        audit_base_dir,
-        rules_engine_filename,
-        'Engine')
-
-    LOGGER.info('Using rules engine: %s', rules_engine_filename)
+    LOGGER.info('Using rules engine: %s', rules_engine_name)
 
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
@@ -122,7 +102,8 @@ def main(_):
         sys.exit(1)
 
     # Instantiate rules engine with supplied rules file
-    rules_engine = rules_engine_class(rules_file_path=FLAGS.rules)
+    rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](rules_file_path=\
+                                                            FLAGS.rules)
     rules_engine.build_rule_book()
 
     snapshot_timestamp = _get_timestamp()
@@ -130,20 +111,12 @@ def main(_):
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
-    # Load pipeline from mapping file
-    engine_map = pc.get_engine_info(rules_engine_name)
-
-    data_pipeline_class, _ = _create_rules_engine(
-        data_pipeline_base,
-        engine_map['module'],
-        engine_map['data_class'])
-
-    # Create instance of the pipeline and pull data
-    data_pipeline_instance = data_pipeline_class(snapshot_timestamp)
-    iter_objects, resource_counts = data_pipeline_instance.run()
+    # Load scanner from map
+    scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
+    iter_objects, resource_counts = scanner.run()
 
     # Load violations processing function
-    all_violations = data_pipeline_instance.find_violations(
+    all_violations = scanner.find_violations(
         itertools.chain(
             *iter_objects),
         rules_engine)
@@ -156,62 +129,7 @@ def main(_):
 
     LOGGER.info('Done!')
 
-def _import_rules_engine(path, name):
-    """Load rules engine
-
-    Args:
-        path: System path of module.
-        name: Name of the file.
-
-    Returns:
-        Module.
-    """
-    name, _ = os.path.splitext(name)
-    try:
-        file_location, filename, data = imp.find_module(name, [path])
-        module = imp.load_module(name, file_location, filename, data)
-    except ImportError as err:
-        LOGGER.error('Failed to import module %s', err)
-    return module
-
-def _create_rules_engine(audit_base_dir, rules_engine_filename, engine_filter):
-    """Create the rules engine class
-
-    Args:
-        audit_base_dir: Base directory with enignes.
-        rules_engine_filename: Rules engine python file.
-
-    Returns:
-        Rules engined class.
-    """
-    rules_engine_class_name = None
-
-    try:
-        class_file = open(audit_base_dir + rules_engine_filename)
-    except IOError as err:
-        LOGGER.error('Error opening module file: %s', err)
-        sys.exit(1)
-    try:
-        module_tree = ast.parse(class_file.read())
-    except IndentationError as err:
-        LOGGER.error('Error parsing class: %s', err)
-        sys.exit(1)
-
-    for node in ast.walk(module_tree):
-        if isinstance(node, ast.ClassDef) and engine_filter in node.name:
-            rules_engine_class_name = node.name
-
-    if rules_engine_class_name is None:
-        LOGGER.error('Engine module %s wasn\'t loaded', rules_engine_filename)
-        sys.exit(1)
-
-    rules_engine_module = _import_rules_engine(audit_base_dir,
-                                               rules_engine_filename)
-    rules_engine_class = getattr(rules_engine_module, rules_engine_class_name)
-
-    return rules_engine_class, rules_engine_class_name
-
-def _rules_engine_list(audit_base_dir):
+def _list_rules_engines():
     """List rules engines.
 
     Args:
@@ -220,13 +138,8 @@ def _rules_engine_list(audit_base_dir):
     Returns:
         None
     """
-    glob_string = audit_base_dir + '*engine*.py'
-    engines = glob.glob(glob_string)
-    print 'Available Forseti scanner engines:'
-    for engine in engines:
-        if 'base_rules_engine.py' not in engine:
-            print os.path.basename(engine)
-    sys.exit(1)
+    for engine in em.ENGINE_TO_DATA_MAP:
+        print engine
 
 def _get_output_filename(now_utc):
     """Create the output filename.

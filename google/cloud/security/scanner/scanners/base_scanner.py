@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base data pipeline skeleton."""
+"""Base scanner skeleton."""
 
 import abc
 
@@ -21,7 +21,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class BaseDataPipeline(object):
+class BaseScanner(object):
     """This is a base class skeleton for data retrival pipelines"""
     __metaclass__ = abc.ABCMeta
 

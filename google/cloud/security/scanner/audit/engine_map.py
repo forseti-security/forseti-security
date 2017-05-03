@@ -12,25 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Config for the data pipelines."""
+"""Map for the rule engine names to rule engine classes."""
 
-ENGINE_TO_DATA_MAP = [{
-    'engine': 'IamRulesEngine',
-    'data_class': 'LoadIamDataPipeline',
-    'module': 'load_iam_rules_engine_pipeline.py'
-}]
+from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
 
 
-def get_engine_info(engine):
-    """Helper that returns the mapping.
-
-    Args:
-        engine: Name of the engine class
-
-    Returns:
-        json blob with the engine mapping
-    """
-    for engine_element in ENGINE_TO_DATA_MAP:
-        if engine_element['engine'] == engine:
-            return engine_element
-    return None
+ENGINE_TO_DATA_MAP = {
+    'IamRulesEngine': IamRulesEngine,
+}
