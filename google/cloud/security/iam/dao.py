@@ -5,6 +5,8 @@ import sqlalchemy
 import os
 import binascii
 import collections
+import struct
+import hmac
 
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Table, Text, DateTime, Enum, join, select
@@ -13,8 +15,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from __builtin__ import staticmethod
 
-
 def generateModelHandle():
+    return binascii.hexlify(os.urandom(16))
+
+def generateModelSeed():
     return binascii.hexlify(os.urandom(16))
 
 ModelBase = declarative_base()
@@ -26,6 +30,7 @@ class Model(ModelBase):
     state = Column(String)
     watchdog_timer = Column(DateTime)
     created_at = Column(DateTime)
+    etag_seed = Column(String(32), nullable=False)
     
     def kick_watchdog(self, session):
         self.watchdog_timer = datetime.datetime.utcnow()
@@ -39,7 +44,7 @@ class Model(ModelBase):
         self.state = "DONE"
         session.commit()
 
-def define_model(model_name, dbengine):
+def define_model(model_name, dbengine, model_seed):
     Base = declarative_base()
     
     bindings_tablename = '{}_bindings'.format(model_name)
@@ -73,10 +78,18 @@ def define_model(model_name, dbengine):
         full_name = Column(String, primary_key=True)
         name = Column(String)
         type = Column(String)
+        policy_update_counter = Column(Integer, default=0)
 
         parent_name = Column(String, ForeignKey('{}.name'.format(resources_tablename)))
         parent = relationship("Resource", remote_side=[name])
         bindings = relationship('Binding', back_populates="resource")
+
+        def incrementUpdateCounter(self):
+            self.policy_update_counter += 1
+
+        def getEtag(self):
+            msg = binascii.hexlify(struct.pack('>I',self.policy_update_counter)) + self.full_name
+            return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
 
         def __repr__(self):
             return "<Resource(full_name='%s', type='%s')>" % (self.full_name, self.type)
@@ -172,7 +185,13 @@ def define_model(model_name, dbengine):
         @staticmethod
         def setIamPolicy(session, full_resource_name, policy):
             old_policy = ModelAccess.getIamPolicy(session, full_resource_name)
+            print old_policy
+            print policy
+            if policy['etag'] != old_policy['etag']:
+                raise Exception('Etags distinct, stored={}, provided={}'.format(old_policy['etag'], policy['etag']))
 
+            old_policy = old_policy['bindings']
+            policy = policy['bindings']
             additions = []
             subtractions = []
             
@@ -192,9 +211,6 @@ def define_model(model_name, dbengine):
             
             grants = calculateDiff(policy, old_policy)
             revocations = calculateDiff(old_policy, policy)
-            
-            print "Grants: %s"%grants
-            print "Revokes: %s"%revocations
 
             for role, members in revocations.iteritems():
                 bindings = session.query(Binding).filter(Binding.resource_name == full_resource_name).filter(Binding.role_name == role).join(binding_members).join(Member).filter(Member.name.in_(members)).all()
@@ -211,17 +227,19 @@ def define_model(model_name, dbengine):
                     binding = Binding(resource_name=full_resource_name, role=session.query(Role).filter(Role.name==role).one())
                     binding.members = session.query(Member).filter(Member.name.in_(members)).all()
                     session.add(binding)
+            resource = session.query(Resource).filter(Resource.full_name==full_resource_name).one()
+            resource.incrementUpdateCounter()
             session.commit()
                     
 
         @staticmethod
         def getIamPolicy(session, full_resource_name):
             resource = session.query(Resource).filter(Resource.full_name==full_resource_name).one()
-            policy = {"etag":"not implemented"}
+            policy = {'etag':resource.getEtag(), 'bindings':{}, 'resource':resource.full_name}
             for binding in session.query(Binding).filter(Binding.resource_name==full_resource_name).all():
                 role = binding.role_name
                 members = map(lambda m: m.name, binding.members)
-                policy[role] = members
+                policy['bindings'][role] = members
             return policy
 
         @staticmethod
@@ -460,9 +478,10 @@ class ModelManager:
     def create(self):
         model_name = generateModelHandle()
         session = self.model_sessionmaker()
-        session.add(Model(handle=model_name, state="CREATED", created_at=datetime.datetime.utcnow(), watchdog_timer=datetime.datetime.utcnow()))
+        model = Model(handle=model_name, state="CREATED", created_at=datetime.datetime.utcnow(), watchdog_timer=datetime.datetime.utcnow(), etag_seed=generateModelSeed())
+        session.add(model)
         session.commit()
-        self.sessionmakers[model_name] = define_model(model_name, self.engine)
+        self.sessionmakers[model.handle] = define_model(model.handle, self.engine, model.etag_seed)
         return model_name
 
     def get(self, model):

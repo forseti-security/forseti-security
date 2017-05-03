@@ -76,6 +76,7 @@ def usePlayground(channel, handle):
     request.resource = 'vm1'
     reply = stub.GetIamPolicy(request, metadata=[('handle', handle)])
     print reply
+    last_etag = reply.policy.etag
 
     request = playground_pb2.CheckIamPolicyRequest()
     request.permission = 'cloudsql.table.read'
@@ -102,6 +103,7 @@ def usePlayground(channel, handle):
 
     request = playground_pb2.SetIamPolicyRequest()
     request.resource = 'vm1'
+    request.policy.etag = last_etag
     request.policy.bindings.extend([b1,b2])
     reply = stub.SetIamPolicy(request, metadata=[('handle', handle)])
 
