@@ -32,7 +32,7 @@ from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.scanner import scanner
 from google.cloud.security.scanner.audit import iam_rules_engine as ire
 from google.cloud.security.scanner.audit import rules as audit_rules
-from google.cloud.security.scanner.pipelines import load_iam_rules_engine_pipeline as irep
+from google.cloud.security.scanner.scanners import iam_rules_scanner as irs
 from tests.inventory.pipelines.test_data import fake_iam_policies
 
 
@@ -52,7 +52,7 @@ class ScannerRunnerTest(basetest.TestCase):
         self.scanner.FLAGS.rules = 'fake/path/to/rules.yaml'
         self.scanner.FLAGS.list_engines = None
         self.ire = ire
-        self.irep = irep
+        self.irs = irs
 
         self.fake_main_argv = []
         self.fake_org_policies = fake_iam_policies.FAKE_ORG_IAM_POLICY_MAP
@@ -193,7 +193,7 @@ class ScannerRunnerTest(basetest.TestCase):
         }]
         mock_get_org_iam.return_value = org_policies
 
-        actual = self.irep.LoadIamDataPipeline(self.fake_timestamp)._get_org_policies()
+        actual = self.irs.IamPolicyScanner(self.fake_timestamp)._get_org_policies()
         mock_get_org_iam.assert_called_once_with('organizations', self.fake_timestamp)
         self.assertEqual(org_policies, actual)
 
@@ -208,7 +208,7 @@ class ScannerRunnerTest(basetest.TestCase):
             }
         }]
         mock_get_proj_iam.return_value = proj_policies
-        actual = self.irep.LoadIamDataPipeline(self.fake_timestamp)._get_project_policies()
+        actual = self.irs.IamPolicyScanner(self.fake_timestamp)._get_project_policies()
         mock_get_proj_iam.assert_called_once_with('projects', self.fake_timestamp)
         self.assertEqual(proj_policies, actual)
 
