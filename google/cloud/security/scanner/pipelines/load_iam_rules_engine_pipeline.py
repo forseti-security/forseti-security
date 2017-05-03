@@ -16,7 +16,6 @@
 import sys
 
 from google.cloud.security.common.util import log_util
-from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
@@ -71,23 +70,6 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
                                                           snapshot_timestamp))
         return project_policies
 
-    def _get_resource_count(self, org_policies, project_policies):
-        """Get resource count for org and project policies.
-
-        Args:
-            org_policies: organisation policies from inventory
-            project_pollicies: project policies from inventory.
-
-        Returns:
-            Resource count map
-        """
-        resource_counts = {
-            ResourceType.ORGANIZATION: len(org_policies),
-            ResourceType.PROJECT: len(project_policies),
-        }
-
-        return resource_counts
-
     def run(self):
         """Runs the data collection."""
         policy_data = []
@@ -98,12 +80,13 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
             LOGGER.warn('No policies found. Exiting.')
             sys.exit(1)
         resource_counts = self._get_resource_count(org_policies,
-                                                   project_policies)
+                                             project_policies)
         policy_data.append(org_policies.iteritems())
         policy_data.append(project_policies.iteritems())
 
         return policy_data, resource_counts
-
+    
+    # pylint: disable=arguments-differ
     def find_violations(self, policies, rules_engine):
         """Find violations in the policies.
 
@@ -123,3 +106,20 @@ class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
+
+    @staticmethod
+    def _get_resource_count(org_policies, project_policies):
+        """Get resource count for org and project policies.
+
+        Args:
+            org_policies: organisation policies from inventory
+            project_pollicies: project policies from inventory.
+        Returns:
+            Resource count map
+        """
+        resource_counts = {
+                ResourceType.ORGANIZATION: len(org_policies),
+                ResourceType.PROJECT: len(project_policies),
+        }
+
+        return resource_counts

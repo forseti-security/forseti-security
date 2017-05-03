@@ -133,7 +133,7 @@ def main(_):
     # Load pipeline from mapping file
     engine_map = pc.get_engine_info(rules_engine_name)
 
-    data_pipeline_class, data_pipeline_name = _create_rules_engine(
+    data_pipeline_class, _ = _create_rules_engine(
         data_pipeline_base,
         engine_map['module'],
         engine_map['data_class'])
@@ -166,12 +166,12 @@ def _import_rules_engine(path, name):
     Returns:
         Module.
     """
-    name, ext = os.path.splitext(name)
+    name, _ = os.path.splitext(name)
     try:
         file_location, filename, data = imp.find_module(name, [path])
         module = imp.load_module(name, file_location, filename, data)
     except ImportError as err:
-        LOGGER.error('Failed to import module %s', name)
+        LOGGER.error('Failed to import module %s', err)
     return module
 
 def _create_rules_engine(audit_base_dir, rules_engine_filename, engine_filter):
