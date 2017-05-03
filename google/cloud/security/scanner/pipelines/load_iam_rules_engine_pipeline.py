@@ -25,86 +25,87 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class LoadIamDataPipeline(base_data_pipeline.BaseDataPipeline):
-	def __init__(self, snapshot_timestamp):
-		"""Constructor for the base pipeline.
+    def __init__(self, snapshot_timestamp):
+        """Constructor for the base pipeline.
 
-		Args:
-		    cycle_timestamp: String of timestamp, formatted as
+        Args:
+            cycle_timestamp: String of timestamp, formatted as
 
-		Returns:
-		    None
-		"""
-		super(LoadIamDataPipeline, self).__init__(
-			snapshot_timestamp)
+        Returns:
+            None
+        """
+        super(LoadIamDataPipeline, self).__init__(
+            snapshot_timestamp)
 
-	def _get_org_policies(self):
-		"""Get orgs from data source.
+    def _get_org_policies(self):
+        """Get orgs from data source.
 
-		Args:
-			timestamp: The snapshot timestamp.
-		Returns:
-			The org policies.
-		"""
-		org_policies = {}
-		org_dao = organization_dao.OrganizationDao()
-		org_policies = org_dao.get_org_iam_policies('organizations',
-			self.snapshot_timestamp)
-		return org_policies
+        Args:
+            timestamp: The snapshot timestamp.
 
-	def _get_project_policies(self):
-		"""Get projects from data source.
+        Returns:
+            The org policies.
+        """
+        org_policies = {}
+        org_dao = organization_dao.OrganizationDao()
+        org_policies = org_dao.get_org_iam_policies('organizations',
+            self.snapshot_timestamp)
+        return org_policies
 
-		Args:
-		    timestamp: The snapshot timestamp.
-		Returns:
-		    The project policies.
-		"""
-		project_policies = {}
-		project_policies = (
-			project_dao.ProjectDao().get_project_policies('projects',
-				self.snapshot_timestamp))
-		return project_policies
+    def _get_project_policies(self):
+        """Get projects from data source.
 
-	def _get_resource_count(self, org_policies, project_policies):
-		resource_counts = {
-		    ResourceType.ORGANIZATION: len(org_policies),
-		    ResourceType.PROJECT: len(project_policies),
-		}
+        Args:
+            timestamp: The snapshot timestamp.
+        Returns:
+            The project policies.
+        """
+        project_policies = {}
+        project_policies = (
+            project_dao.ProjectDao().get_project_policies('projects',
+                self.snapshot_timestamp))
+        return project_policies
 
-		return resource_counts
-	
-	def run(self):
-		"""Runs the data collection."""
-		policy_data = []
-		org_policies = self._get_org_policies()
-		project_policies = self._get_project_policies()
+    def _get_resource_count(self, org_policies, project_policies):
+        resource_counts = {
+            ResourceType.ORGANIZATION: len(org_policies),
+            ResourceType.PROJECT: len(project_policies),
+        }
 
-		if not org_policies and not project_policies:
-			LOGGER.warn('No policies found. Exiting.')
-			sys.exit()
-		resource_counts = self._get_resource_count(org_policies,
-			project_policies)
-		policy_data.append(org_policies.iteritems())
-		policy_data.append(project_policies.iteritems())
+    return resource_counts
 
-		return policy_data, resource_counts
+    def run(self):
+        """Runs the data collection."""
+        policy_data = []
+        org_policies = self._get_org_policies()
+        project_policies = self._get_project_policies()
 
-	def find_violations(self, policies, rules_engine):
-		"""Find violations in the policies.
+        if not org_policies and not project_policies:
+            LOGGER.warn('No policies found. Exiting.')
+            sys.exit()
+        resource_counts = self._get_resource_count(org_policies,
+            project_policies)
+        policy_data.append(org_policies.iteritems())
+        policy_data.append(project_policies.iteritems())
 
-		Args:
-		    policies: The list of policies to find violations in.
-		    rules_engine: The rules engine to run.
+        return policy_data, resource_counts
 
-		Returns:
-		    A list of violations
-		"""
-		all_violations = []
-		LOGGER.info('Finding policy violations...')
-		for (resource, policy) in policies:
-			LOGGER.debug('%s => %s', resource, policy)
-			violations = rules_engine.find_policy_violations(
-				resource, policy)
-			LOGGER.debug(violations)
-			all_violations.extend(violations)
-		return all_violations
+    def find_violations(self, policies, rules_engine):
+        """Find violations in the policies.
+
+        Args:
+            policies: The list of policies to find violations in.
+            rules_engine: The rules engine to run.
+
+        Returns:
+            A list of violations
+        """
+        all_violations = []
+        LOGGER.info('Finding policy violations...')
+        for (resource, policy) in policies:
+            LOGGER.debug('%s => %s', resource, policy)
+            violations = rules_engine.find_policy_violations(
+                resource, policy)
+            LOGGER.debug(violations)
+            all_violations.extend(violations)
+        return all_violations

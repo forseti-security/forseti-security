@@ -15,23 +15,22 @@
 """Config for the data pipelines."""
 
 ENGINE_TO_DATA_MAP = [{
-	                   'engine': 'IamRulesEngine',
-	                   'data_class': 'LoadIamDataPipeline',
-	                   'module': 'load_iam_rules_engine_pipeline.py'
-                      }
-]
+'engine': 'IamRulesEngine',
+'data_class': 'LoadIamDataPipeline',
+'module': 'load_iam_rules_engine_pipeline.py'
+}]
 
 
 def get_engine_info(engine):
-	"""Helper that returns the mapping.
+    """Helper that returns the mapping.
 
-	Args:
-	     engine: Name of the engine class
+    Args:
+        engine: Name of the engine class
 
-	Returns:
-	     json blob with the engine mapping
-	"""
-	for el in ENGINE_TO_DATA_MAP:
-		if el['engine'] == engine:
-			return el
-	return None
+    Returns:
+        json blob with the engine mapping
+    """
+    for engine_element in ENGINE_TO_DATA_MAP:
+        if engine_element['engine'] == engine:
+            return engine_element
+    return None

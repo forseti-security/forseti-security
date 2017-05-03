@@ -22,26 +22,26 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class BaseDataPipeline(object):
-	"""This is a base class skeleton for data retrival pipelines"""
-	__metaclass__ = abc.ABCMeta
+    """This is a base class skeleton for data retrival pipelines"""
+    __metaclass__ = abc.ABCMeta
 
-	def __init__(self, snapshot_timestamp):
-		"""Constructor for the base pipeline.
+    def __init__(self, snapshot_timestamp):
+        """Constructor for the base pipeline.
 
-		Args:
-		    cycle_timestamp: String of timestamp, formatted as
+        Args:
+            cycle_timestamp: String of timestamp, formatted as
 
-		Returns:
-		    None
-		"""
-		self.snapshot_timestamp = snapshot_timestamp
+        Returns:
+            None
+        """
+        self.snapshot_timestamp = snapshot_timestamp
 
-	@abc.abstractmethod
-	def run(self):
-		"""Runs the pipeline."""
-		pass
+    @abc.abstractmethod
+    def run(self):
+        """Runs the pipeline."""
+        pass
 
-	@abc.abstractmethod
-	def find_violations(self):
-		"""Find violations."""
-		pass
+    @abc.abstractmethod
+    def find_violations(self):
+        """Find violations."""
+        pass

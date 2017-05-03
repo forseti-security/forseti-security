@@ -41,11 +41,8 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import organization_dao
-from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
@@ -86,15 +83,15 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 def main(_):
     """Run the scanner."""
     scanner_base_dir = os.path.dirname(__file__)
-    
+
     # Allow loading of rules engines and pipelines from different location
     if not FLAGS.use_scanner_basedir:
         LOGGER.info("Using %s as scanner base direcotry",
-            scanner_base_dir)
+                    scanner_base_dir)
     else:
         scanner_base_dir = FLAGS.use_scanner_basedir
         LOGGER.info("Using %s as scanner base directory",
-            scanner_base_dir)
+                    scanner_base_dir)
 
     # Setup base directories
     audit_base_dir = scanner_base_dir + '/audit/'
@@ -111,9 +108,9 @@ def main(_):
 
     # Load rules engine according to command line flag
     rules_engine_class, rules_engine_name = _create_rules_engine(
-                                            audit_base_dir,
-                                            rules_engine_filename, 
-                                            'Engine')
+        audit_base_dir,
+        rules_engine_filename,
+        'Engine')
 
     LOGGER.info('Using rules engine: %s', rules_engine_filename)
 
@@ -177,7 +174,7 @@ def _import_rules_engine(path, name):
         LOGGER.error('Failed to import module %s', name)
     return module
 
-def _create_rules_engine(audit_base_dir, rules_engine_filename, filter):
+def _create_rules_engine(audit_base_dir, rules_engine_filename, engine_filter):
     """Create the rules engine class
 
     Args:
@@ -201,7 +198,7 @@ def _create_rules_engine(audit_base_dir, rules_engine_filename, filter):
         sys.exit(1)
 
     for node in ast.walk(module_tree):
-        if isinstance(node, ast.ClassDef) and filter in node.name:
+        if isinstance(node, ast.ClassDef) and engine_filter in node.name:
             rules_engine_class_name = node.name
 
     if rules_engine_class_name is None:
@@ -225,10 +222,10 @@ def _rules_engine_list(audit_base_dir):
     """
     glob_string = audit_base_dir + '*engine*.py'
     engines = glob.glob(glob_string)
-    print('Available Forseti scanner engines:')
+    print 'Available Forseti scanner engines:'
     for engine in engines:
         if 'base_rules_engine.py' not in engine:
-            print(os.path.basename(engine))
+            print os.path.basename(engine)
     sys.exit(1)
 
 def _get_output_filename(now_utc):
