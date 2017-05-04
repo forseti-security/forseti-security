@@ -15,6 +15,7 @@
 """Tests the load_group_members_pipeline."""
 
 import json
+import math
 
 from google.apputils import basetest
 import mock
@@ -66,9 +67,9 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
         '_fetch_groups_from_dao')
     def test_api_is_called_to_retrieve_groups(self, mock_dao_fetch):
         """Test that api is called to retrieve projects."""
-        mock_dao_fetch.return_value = 'a'
+        mock_dao_fetch.return_value = ['a']
 
-        self.pipeline._retrieve()
+        self.pipeline._retrieve(mock_dao_fetch.return_value)
         self.pipeline.api_client.get_group_members.assert_called_with('a')
 
     @mock.patch.object(
@@ -89,16 +90,29 @@ class LoadGroupMembersPipelineTest(basetest.TestCase):
             mock_load, mock_get_loaded_count, mock_can_inventory_groups):
         """Test that the subroutines are called by run."""
 
+        self.pipeline.GROUP_CHUNK_SIZE = 3
+        self.mock_dao.select_group_ids.return_value = (
+            fake_group_members.FAKE_GROUP_IDS)
         mock_can_inventory_groups.return_value = True
         mock_retrieve.return_value = fake_group_members.FAKE_GROUPS_MEMBERS_MAP
         mock_transform.return_value = fake_group_members.EXPECTED_LOADABLE_GROUP_MEMBERS
         self.pipeline.run()
 
-        mock_retrieve.assert_called_once_with()
+        expected_call_count = math.ceil(
+            float(len(fake_group_members.FAKE_GROUP_IDS))/
+            float(self.pipeline.GROUP_CHUNK_SIZE))
+        self.assertEquals(expected_call_count, mock_retrieve.call_count)
+        self.assertEquals(expected_call_count, mock_transform.call_count)
+        self.assertEquals(expected_call_count, mock_load.call_count)
 
-        mock_transform.assert_called_once_with(fake_group_members.FAKE_GROUPS_MEMBERS_MAP)
+        for i in range(len(fake_group_members.EXPECTED_CALL_LIST)):
+            args, kwargs = mock_retrieve.call_args_list[i]
+            self.assertEquals(fake_group_members.EXPECTED_CALL_LIST[i], args[0])
 
-        mock_load.assert_called_once_with(
+        mock_transform.assert_called_with(
+            fake_group_members.FAKE_GROUPS_MEMBERS_MAP)
+
+        mock_load.assert_called_with(
             self.pipeline.RESOURCE_NAME,
             fake_group_members.EXPECTED_LOADABLE_GROUP_MEMBERS)
 

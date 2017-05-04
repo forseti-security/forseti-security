@@ -28,7 +28,8 @@ Usage:
       --max_admin_api_calls_per_day <default: 150000> (optional)  \\
       --sendgrid_api_key <API key to auth SendGrid email service> (optional) \\
       --email_sender <email address of the email sender> (optional) \\
-      --email_recipient <email address of the email recipient> (optional)
+      --email_recipient <email address of the email recipient> (optional) \\
+      --loglevel <debug|info|warning|error>
 
 To see all the dependent flags:
   $ forseti_inventory --helpfull
@@ -37,6 +38,7 @@ To see all the dependent flags:
 
 from datetime import datetime
 import sys
+import logging
 
 import gflags as flags
 
@@ -45,12 +47,14 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
@@ -60,6 +64,8 @@ from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_orgs_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_buckets_acls_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from google.cloud.security.inventory import util
@@ -69,6 +75,15 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_bool('inventory_groups', False,
                   'Whether to inventory GSuite Groups.')
+
+
+LOGLEVELS = {
+    'debug': logging.DEBUG,
+    'info' : logging.INFO,
+    'warning' : logging.WARN,
+    'error' : logging.ERROR,
+}
+flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -157,10 +172,12 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     """
     pipelines = []
     crm_api_client = crm.CloudResourceManagerClient()
+    gcs_api_client = gcs.StorageClient()
 
     dao = kwargs.get('dao')
     project_dao = kwargs.get('project_dao')
     organization_dao = kwargs.get('organization_dao')
+    bucket_dao = kwargs.get('bucket_dao')
 
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
@@ -172,7 +189,11 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
         load_projects_pipeline.LoadProjectsPipeline(
             cycle_timestamp, configs, crm_api_client, project_dao),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_api_client, project_dao)
+            cycle_timestamp, configs, crm_api_client, project_dao),
+        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
+            cycle_timestamp, configs, gcs_api_client, project_dao),
+        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
+            cycle_timestamp, configs, gcs_api_client, bucket_dao),
     ]
 
     if configs.get('inventory_groups'):
@@ -205,6 +226,7 @@ def _run_pipelines(pipelines):
     run_statuses = []
     for pipeline in pipelines:
         try:
+            LOGGER.debug('Running pipeline %s', pipeline)
             pipeline.run()
             pipeline.status = 'SUCCESS'
         except inventory_errors.LoadDataPipelineError as e:
@@ -277,12 +299,20 @@ def _send_email(cycle_time, cycle_timestamp, status, pipelines,
     except util_errors.EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
+
+def _configure_logging(configs):
+    """Configures the loglevel for all loggers."""
+    desc = configs.get('loglevel')
+    level = LOGLEVELS.setdefault(desc, 'info')
+    log_util.set_logger_level(level)
+
 def main(_):
     """Runs the Inventory Loader."""
     try:
         dao = Dao()
         project_dao = proj_dao.ProjectDao()
         organization_dao = org_dao.OrganizationDao()
+        bucket_dao = buck_dao.BucketDao()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
@@ -291,13 +321,16 @@ def main(_):
 
     configs = FLAGS.FlagValuesDict()
 
+    _configure_logging(configs)
+
     try:
         pipelines = _build_pipelines(
             cycle_timestamp,
             configs,
             dao=dao,
             project_dao=project_dao,
-            organization_dao=organization_dao)
+            organization_dao=organization_dao,
+            bucket_dao=bucket_dao)
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)

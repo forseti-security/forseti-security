@@ -36,8 +36,8 @@ def read_and_parse_file(file_path):
 
     if file_path.startswith('gs://'):
         return _read_file_from_gcs(file_path)
-    else:
-        return _read_file_from_local(file_path)
+
+    return _read_file_from_local(file_path)
 
 
 def _get_filetype_parser(file_path, parser_type):

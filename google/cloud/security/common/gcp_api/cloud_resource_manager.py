@@ -92,6 +92,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                                   (filter_key, filterargs[filter_key]))
         request = projects_api.list(filter=' '.join(project_filter))
 
+        # TODO: Convert this over to _base_client._build_paged_result().
         try:
             with self.rate_limiter:
                 while request is not None:

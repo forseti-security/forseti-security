@@ -14,7 +14,7 @@
 
 """Rules engine for organizations, folders, and projects.
 
-Builds the RuleBook (OrgRuleBook) from the rule definitions (file either
+Builds the RuleBook (IamRuleBook) from the rule definitions (file either
 stored locally or in GCS) and compares a policy against the RuleBook to
 determine whether there are violations.
 """
@@ -22,13 +22,13 @@ determine whether there are violations.
 import itertools
 import threading
 
-from collections import namedtuple
 from google.cloud.security.common.gcp_type import errors as resource_errors
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
+from google.cloud.security.scanner.audit import rules as scanner_rules
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 LOGGER = log_util.get_logger(__name__)
@@ -101,17 +101,17 @@ def _check_required_members(rule_members=None, policy_members=None):
     return violating_members
 
 
-class OrgRulesEngine(bre.BaseRulesEngine):
+class IamRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
     def __init__(self, rules_file_path):
-        super(OrgRulesEngine, self).__init__(
+        super(IamRulesEngine, self).__init__(
             rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self):
-        """Build OrgRuleBook from the rules definition file."""
-        self.rule_book = OrgRuleBook(self._load_rule_definitions())
+        """Build IamRuleBook from the rules definition file."""
+        self.rule_book = IamRuleBook(self._load_rule_definitions())
 
     def find_policy_violations(self, resource, policy, force_rebuild=False):
         """Determine whether policy violates rules.
@@ -143,7 +143,7 @@ class OrgRulesEngine(bre.BaseRulesEngine):
             self.rule_book.add_rules(rules)
 
 
-class OrgRuleBook(bre.BaseRuleBook):
+class IamRuleBook(bre.BaseRuleBook):
     """The RuleBook for organization resources.
 
     Rules from the rules definition file are parsed and placed into a
@@ -175,17 +175,16 @@ class OrgRuleBook(bre.BaseRuleBook):
 
     """
 
-    def __init__(self, rule_defs=None, verify_resource_exists=False):
+    def __init__(self, rule_defs=None):
         """Initialize.
 
         Args:
             rule_defs: The parsed dictionary of rules from the YAML
                        definition file.
         """
-        super(OrgRuleBook, self).__init__()
-        self._lock = threading.Lock()
+        super(IamRuleBook, self).__init__()
+        self._rules_sema = threading.BoundedSemaphore(value=1)
         self.resource_rules_map = {}
-        self.verify_resource_exists = verify_resource_exists
         if not rule_defs:
             self.rule_defs = {}
         else:
@@ -201,7 +200,7 @@ class OrgRuleBook(bre.BaseRuleBook):
         return not self == other
 
     def __repr__(self):
-        return 'OrgRuleBook <{}>'.format(self.resource_rules_map)
+        return 'IamRuleBook <{}>'.format(self.resource_rules_map)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
@@ -260,7 +259,9 @@ class OrgRuleBook(bre.BaseRuleBook):
             rule_index: The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        with self._lock:
+        self._rules_sema.acquire()
+
+        try:
             resources = rule_def.get('resource')
 
             for resource in resources:
@@ -287,22 +288,13 @@ class OrgRuleBook(bre.BaseRuleBook):
                         resource_id=resource_id,
                         resource_type=resource_type)
 
-                    # Verify that this resource actually exists in GCP.
-                    # TODO: is this somethign we actually want to do?
-                    if (self.verify_resource_exists and
-                            not gcp_resource.exists()):
-
-                        LOGGER.error('Resource does not exist: %s',
-                                     gcp_resource)
-                        continue
-
                     rule_bindings = [
                         IamPolicyBinding.create_from(b)
                         for b in rule_def.get('bindings')]
-                    rule = Rule(rule_name=rule_def.get('name'),
-                                rule_index=rule_index,
-                                bindings=rule_bindings,
-                                mode=rule_def.get('mode'))
+                    rule = scanner_rules.Rule(rule_name=rule_def.get('name'),
+                                              rule_index=rule_index,
+                                              bindings=rule_bindings,
+                                              mode=rule_def.get('mode'))
 
                     rule_applies_to = resource.get('applies_to')
                     rule_key = (gcp_resource, rule_applies_to)
@@ -323,6 +315,8 @@ class OrgRuleBook(bre.BaseRuleBook):
                     # If the rule isn't in the mapping, add it.
                     if rule not in resource_rules.rules:
                         resource_rules.rules.add(rule)
+        finally:
+            self._rules_sema.release()
 
     def _get_resource_rules(self, resource):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
@@ -335,7 +329,7 @@ class OrgRuleBook(bre.BaseRuleBook):
         """
         resource_rules = []
 
-        for rule_applies_to in bre.RuleAppliesTo.apply_types:
+        for rule_applies_to in scanner_rules.RuleAppliesTo.apply_types:
             if (resource, rule_applies_to) in self.resource_rules_map:
                 resource_rules.append(self.resource_rules_map.get(
                     (resource, rule_applies_to)))
@@ -369,13 +363,22 @@ class OrgRuleBook(bre.BaseRuleBook):
                 # SELF: check rules if the starting resource == current resource
                 # CHILDREN: check rules if starting resource != current resource
                 # SELF_AND_CHILDREN: always check rules
+                applies_to_self = (
+                    resource_rule.applies_to ==
+                    scanner_rules.RuleAppliesTo.SELF and
+                    resource == curr_resource)
+                applies_to_children = (
+                    resource_rule.applies_to ==
+                    scanner_rules.RuleAppliesTo.CHILDREN and
+                    resource != curr_resource)
+                applies_to_both = (
+                    resource_rule.applies_to ==
+                    scanner_rules.RuleAppliesTo.SELF_AND_CHILDREN)
+
                 rule_applies_to_resource = (
-                    (resource_rule.applies_to == bre.RuleAppliesTo.SELF and
-                     resource == curr_resource) or
-                    (resource_rule.applies_to == bre.RuleAppliesTo.CHILDREN and
-                     resource != curr_resource) or
-                    (resource_rule.applies_to ==
-                     bre.RuleAppliesTo.SELF_AND_CHILDREN))
+                    applies_to_self or
+                    applies_to_children or
+                    applies_to_both)
 
                 if not rule_applies_to_resource:
                     continue
@@ -403,7 +406,7 @@ class ResourceRules(object):
     def __init__(self,
                  resource=None,
                  rules=None,
-                 applies_to=bre.RuleAppliesTo.SELF,
+                 applies_to=scanner_rules.RuleAppliesTo.SELF,
                  inherit_from_parents=False):
         """Initialize.
 
@@ -419,13 +422,13 @@ class ResourceRules(object):
             rules = set([])
         self.resource = resource
         self.rules = rules
-        self.applies_to = bre.RuleAppliesTo.verify(applies_to)
+        self.applies_to = scanner_rules.RuleAppliesTo.verify(applies_to)
         self.inherit_from_parents = inherit_from_parents
 
         self._rule_mode_methods = {
-            bre.RuleMode.WHITELIST: _check_whitelist_members,
-            bre.RuleMode.BLACKLIST: _check_blacklist_members,
-            bre.RuleMode.REQUIRED: _check_required_members,
+            scanner_rules.RuleMode.WHITELIST: _check_whitelist_members,
+            scanner_rules.RuleMode.BLACKLIST: _check_blacklist_members,
+            scanner_rules.RuleMode.REQUIRED: _check_required_members,
         }
 
     def __eq__(self, other):
@@ -477,7 +480,7 @@ class ResourceRules(object):
                 # pattern, then check the members to see whether they match,
                 # according to the rule mode.
                 if binding.role_pattern.match(policy_role_name):
-                    if rule.mode == bre.RuleMode.REQUIRED:
+                    if rule.mode == scanner_rules.RuleMode.REQUIRED:
                         role_name = binding.role_name
                     else:
                         role_name = policy_role_name
@@ -487,26 +490,28 @@ class ResourceRules(object):
                         rule_members=binding.members,
                         policy_members=policy_binding.members))
                     if violating_members:
-                        yield RuleViolation(
+                        yield scanner_rules.RuleViolation(
                             resource_type=policy_resource.type,
                             resource_id=policy_resource.id,
                             rule_name=rule.rule_name,
                             rule_index=rule.rule_index,
-                            violation_type=RULE_VIOLATION_TYPE.get(
-                                rule.mode, RULE_VIOLATION_TYPE['UNSPECIFIED']),
+                            violation_type=scanner_rules.VIOLATION_TYPE.get(
+                                rule.mode,
+                                scanner_rules.VIOLATION_TYPE['UNSPECIFIED']),
                             role=role_name,
                             members=tuple(violating_members))
 
             # Extra check if the role did not match in the REQUIRED case.
-            if not found_role and rule.mode == bre.RuleMode.REQUIRED:
+            if not found_role and rule.mode == scanner_rules.RuleMode.REQUIRED:
                 for binding in rule.bindings:
-                    yield RuleViolation(
+                    yield scanner_rules.RuleViolation(
                         resource_type=policy_resource.type,
                         resource_id=policy_resource.id,
                         rule_name=rule.rule_name,
                         rule_index=rule.rule_index,
-                        violation_type=RULE_VIOLATION_TYPE.get(
-                            rule.mode, RULE_VIOLATION_TYPE['UNSPECIFIED']),
+                        violation_type=scanner_rules.VIOLATION_TYPE.get(
+                            rule.mode,
+                            scanner_rules.VIOLATION_TYPE['UNSPECIFIED']),
                         role=binding.role_name,
                         members=tuple(binding.members))
 
@@ -524,78 +529,3 @@ class ResourceRules(object):
         return self._rule_mode_methods[mode](
             rule_members=rule_members,
             policy_members=policy_members)
-
-
-# pylint: disable=too-few-public-methods
-class Rule(object):
-    """Encapsulate Rule properties from the rule definition file.
-
-    The reason this is not a named tuple is that it needs to be hashable.
-    The ResourceRules class has a set of Rules.
-    """
-
-    def __init__(self, rule_name, rule_index, bindings, mode=None):
-        """Initialize.
-
-        Args:
-            rule_name: The string name of the rule.
-            rule_index: The rule's index in the rules file.
-            bindings: The list of IamPolicyBindings for this rule.
-            mode: The RulesMode for this rule.
-        """
-        self.rule_name = rule_name
-        self.rule_index = rule_index
-        self.bindings = bindings
-        self.mode = bre.RuleMode.verify(mode)
-
-    def __eq__(self, other):
-        """Test whether Rule equals other Rule."""
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        return (self.rule_name == other.rule_name and
-                self.rule_index == other.rule_index and
-                self.bindings == other.bindings and
-                self.mode == other.mode)
-
-    def __ne__(self, other):
-        """Test whether Rule is not equal to another Rule."""
-        return not self == other
-
-    def __hash__(self):
-        """Make a hash of the rule index.
-
-        For now, this will suffice since the rule index is assigned
-        automatically when the rules map is built, and the scanner
-        only handles one rule file at a time. Later on, we'll need to
-        revisit this hash method when we process multiple rule files.
-
-        Returns:
-            The hash of the rule index.
-        """
-        return hash(self.rule_index)
-
-    def __repr__(self):
-        """Returns the string representation of this Rule."""
-        return 'Rule <{}, name={}, mode={}, bindings={}>'.format(
-            self.rule_index, self.rule_name, self.mode, self.bindings)
-
-
-# Rule violation.
-# resource_type: string
-# resource_id: string
-# rule_name: string
-# rule_index: int
-# violation_type: RULE_VIOLATION_TYPE
-# role: string
-# members: tuple of IamPolicyBindings
-RuleViolation = namedtuple('RuleViolation',
-                           ['resource_type', 'resource_id', 'rule_name',
-                            'rule_index', 'violation_type', 'role', 'members'])
-
-# Rule violation types.
-RULE_VIOLATION_TYPE = {
-    'whitelist': 'ADDED',
-    'blacklist': 'ADDED',
-    'required': 'REMOVED',
-    'UNSPECIFIED': 'UNSPECIFIED'
-}

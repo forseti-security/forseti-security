@@ -30,6 +30,8 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
     """Pipeline to load group members data into Inventory."""
 
     RESOURCE_NAME = 'group_members'
+    GROUP_CHUNK_SIZE = 20
+
 
     def __init__(self, cycle_timestamp, configs, admin_client, dao):
         """Constructor for the data pipeline.
@@ -85,14 +87,14 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                        'member_email': member.get('email'),
                        'raw_member': json.dumps(member)}
 
-    def _retrieve(self):
-        """Retrieve the membership for a given GSuite group.
+    def _retrieve(self, group_ids):  # pylint: disable=arguments-differ
+        """Retrieve the membership for a list of given GSuite groups.
 
         Returns:
             A list of tuples (group_id, group_members) from the Admin SDK, e.g.
             (string, [])
         """
-        group_ids = self._fetch_groups_from_dao()
+
         group_members_map = []
 
         for group_id in group_ids:
@@ -102,16 +104,43 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
                 raise inventory_errors.LoadDataPipelineError(e)
 
             group_members_map.append((group_id, group_members))
+            LOGGER.debug('Retrieved members from %s: %d',
+                         group_id,
+                         len(group_members))
 
         return group_members_map
 
     def run(self):
         """Runs the load GSuite account groups pipeline."""
-        groups_members_map = self._retrieve()
 
-        if isinstance(groups_members_map, list):
-            loadable_group_members = self._transform(groups_members_map)
-            self._load(self.RESOURCE_NAME, loadable_group_members)
-            self._get_loaded_count()
-        else:
-            LOGGER.warn('No group members retrieved.')
+        group_ids = self._fetch_groups_from_dao()
+
+        # TODO: Move this to g/c/s/c/gcp_api/common so it can be reused
+        # by other pipelines.
+        def chunker(seq, size):
+            """Helper to chunk a list.
+
+            Args:
+                seq: A list.
+                size: Integer of the desired chunk size.
+
+            Returns:
+                A tuple of the chunked seq.
+            """
+            return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
+
+        # TODO: keep track of group_ids that are not retrieved/committed to db
+        chunk_counter = 0
+        for group_ids_in_chunk in chunker(group_ids, self.GROUP_CHUNK_SIZE):
+            LOGGER.debug('Retrieving a batch of group members in %s chunks.\n'
+                         'Current chunk count is: %s',
+                         self.GROUP_CHUNK_SIZE, chunk_counter)
+            groups_members_map = self._retrieve(group_ids_in_chunk)
+
+            if isinstance(groups_members_map, list):
+                loadable_group_members = self._transform(groups_members_map)
+                self._load(self.RESOURCE_NAME, loadable_group_members)
+                self._get_loaded_count()
+            else:
+                LOGGER.warn('No group members retrieved.')
+            chunk_counter += 1

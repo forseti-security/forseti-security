@@ -16,8 +16,6 @@
 
 import gflags as flags
 
-from googleapiclient.errors import HttpError
-from httplib2 import HttpLib2Error
 from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 
@@ -36,6 +34,8 @@ flags.DEFINE_string('groups_service_account_key_file', None,
                     'runnning locally.')
 flags.DEFINE_integer('max_admin_api_calls_per_day', 150000,
                      'Admin SDK queries per day.')
+flags.DEFINE_string('max_results_admin_api', 500,
+                    'maxResult param for the Admin SDK list() method')
 
 
 class AdminDirectoryClient(_base_client.BaseClient):
@@ -94,27 +94,23 @@ class AdminDirectoryClient(_base_client.BaseClient):
             api_errors.ApiExecutionError
         """
         members_stub = self.service.members()
-        request = members_stub.list(groupKey=group_key)
-        results_by_member = []
+        request = members_stub.list(groupKey=group_key,
+                                    maxResults=FLAGS.max_results_admin_api)
 
-        # TODO: Investigate yielding results to handle large group lists.
-        while request is not None:
-            try:
-                with self.rate_limiter:
-                    response = self._execute(request)
-                    results_by_member.extend(response.get('members', []))
-                    request = members_stub.list_next(request, response)
-            except (HttpError, HttpLib2Error) as e:
-                raise api_errors.ApiExecutionError(members_stub, e)
+        paged_results = self._build_paged_result(
+            request, members_stub, self.rate_limiter)
 
-        return results_by_member
+        group_members = []
+        for page in paged_results:
+            group_members.extend(page.get('members', []))
+        return group_members
+
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
 
-        A note on customer_id='my_customer'.
-        This is a magic string instead of using the real
-        customer id. See:
+        A note on customer_id='my_customer'. This is a magic string instead
+        of using the real customer id. See:
 
         https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
 
@@ -129,16 +125,13 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)
-        results_by_group = []
 
-        # TODO: Investigate yielding results to handle large group lists.
-        while request is not None:
-            try:
-                with self.rate_limiter:
-                    response = self._execute(request)
-                    results_by_group.extend(response.get('groups', []))
-                    request = groups_stub.list_next(request, response)
-            except (HttpError, HttpLib2Error) as e:
-                raise api_errors.ApiExecutionError(groups_stub, e)
+        paged_results = self._build_paged_result(
+            request, groups_stub, self.rate_limiter)
 
-        return results_by_group
+        # TODO: Refactor this to a helper function, where a key string can
+        # be passed in, to extract the right values to merge.
+        groups = []
+        for page in paged_results:
+            groups.extend(page.get('groups', []))
+        return groups

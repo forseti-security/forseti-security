@@ -12,23 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cache: "pip"
-sudo: "false"
-dist: "trusty"
-language:
-  - "python"
-python:
-  - "2.7"
-addons:
-  apt:
-    packages:
-    - "libmysqlclient-dev"
-install:
-  - "pip install -q coveralls pylint==1.6.5"
-  - "bash scripts/travis_install_protoc.sh"
-  - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
-script:
-  - "coverage run --source='google.cloud.security' --omit='__init__.py' setup.py google_test"
-  - "bash scripts/travis_test_pylint.sh"
-after_success:
-  - "coveralls"
+"""Test data for data_access."""

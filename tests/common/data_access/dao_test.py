@@ -30,6 +30,7 @@ class DaoTest(basetest.TestCase):
 
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
     def setUp(self, mock_db_connector):
+        mock_db_connector.return_value = None
         self.dao = dao.Dao()
         self.fake_timestamp = '12345'
         self.resource_projects = 'projects'

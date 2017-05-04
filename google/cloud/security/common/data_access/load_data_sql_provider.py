@@ -27,6 +27,9 @@ FIELDNAME_MAP = {
     'project_iam_policies': csv_writer.PROJECT_IAM_POLICIES_FIELDNAMES,
     'raw_org_iam_policies': csv_writer.RAW_ORG_IAM_POLICIES_FIELDNAMES,
     'raw_project_iam_policies': csv_writer.RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
+    'buckets': csv_writer.BUCKETS_FIELDNAMES,
+    'raw_buckets': csv_writer.RAW_BUCKETS_FIELDNAMES,
+    'buckets_acl': csv_writer.BUCKETS_ACL_FIELDNAMES,
 }
 
 

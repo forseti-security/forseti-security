@@ -199,7 +199,7 @@ class IamPolicyMember(object):
 
     def __repr__(self):
         """String representation of IamPolicyMember."""
-        return 'IamMember <type={}, name={}>'.format(self.type, self.name)
+        return '%s:%s' % (self.type, self.name)
 
     def _member_type_exists(self, member_type):
         """Determine if the member type exists in valid member types."""

@@ -87,8 +87,27 @@ GROUP_IDS = """
     SELECT group_id from groups_{0};
 """
 
-GROUP_USERS = """
+GROUP_ID = """
+    SELECT group_id
+    FROM groups_{}
+    WHERE group_email = %s;
+"""
+
+GROUP_MEMBERS = """
     SELECT group_id, member_role, member_type, member_id, member_email
-    FROM group_members_{0}
-    WHERE member_status = "ACTIVE" and member_type = "USER";
+    FROM group_members_{}
+    WHERE group_id = %s;
+"""
+
+BUCKETS = """
+    SELECT project_number, bucket_id, bucket_name, bucket_kind, bucket_storage_class,
+    bucket_location, bucket_create_time, bucket_update_time, bucket_selflink,
+    bucket_lifecycle_raw
+    FROM buckets_{0};
+"""
+
+BUCKETS_BY_PROJECT_ID = """
+    SELECT bucket_name
+    FROM buckets_{0}
+    WHERE project_number = {1};
 """

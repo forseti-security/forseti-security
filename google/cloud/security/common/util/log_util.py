@@ -23,6 +23,9 @@ import logging.handlers
 LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(funcName)s %(message)s'
 
 
+LOGGERS = {}
+LOGLEVEL = logging.INFO
+
 def get_logger(module_name):
     """Setup the logger.
 
@@ -41,5 +44,27 @@ def get_logger(module_name):
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(console_handler)
     logger_instance.addHandler(syslog_handler)
-    logger_instance.setLevel(logging.INFO)
+    logger_instance.setLevel(LOGLEVEL)
+    LOGGERS[module_name] = logger_instance
     return logger_instance
+
+def _map_logger(func):
+    """Map function to current loggers.
+
+    Args:
+        func: Function to call on every logger.
+    """
+    map(func, LOGGERS.itervalues())
+
+def set_logger_level(level):
+    """Modify log level of existing loggers as well as the default
+       for new loggers.
+
+    Args:
+        level: The log level to set the loggers to.
+    """
+
+    # pylint: disable=W0603
+    global LOGLEVEL
+    LOGLEVEL = level
+    _map_logger(lambda logger: logger.setLevel(level))
