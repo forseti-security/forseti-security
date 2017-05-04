@@ -26,18 +26,18 @@ LOGGER = log_util.get_logger(__name__)
 class GroupDao(dao.Dao):
     """Data access object (DAO) for Groups."""
 
-    def get_group_id(self, resource_name, email, timestamp):
-        """Get the id of a group from an email.
+    def get_group_id(self, resource_name, group_email, timestamp):
+        """Get the group_id for the specified group_email.
 
         Args:
             resource_name: String of the resource name.
-            group_id: String of the group id.
+            group_email: String of the group email.
             timestamp: The timestamp of the snapshot.
 
         Returns:
              String of the group id.
         """
-        sql = select_data.GROUP_ID.format(email, timestamp)
+        sql = select_data.GROUP_ID.format(group_email, timestamp)
         result = self.execute_sql_with_fetch(resource_name, sql, None)
         return result[0].get('group_id')
 
