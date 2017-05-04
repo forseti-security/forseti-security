@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Provides the data access object (DAO) for Groups."""
 
 from Queue import Queue
@@ -77,8 +78,7 @@ class GroupDao(dao.Dao):
         all_members = []
         queue = Queue()
 
-        group_id = self.get_group_id(
-            'group', group_email, timestamp)
+        group_id = self.get_group_id('group', group_email, timestamp)
         queue.put(group_id)
 
         while not queue.empty():
