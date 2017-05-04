@@ -97,10 +97,13 @@ class AdminDirectoryClient(_base_client.BaseClient):
         request = members_stub.list(groupKey=group_key,
                                     maxResults=FLAGS.max_results_admin_api)
 
-        results = self._build_paged_result(
+        paged_results = self._build_paged_result(
             request, members_stub, self.rate_limiter)
 
-        return [item.get('members', []) for item in results]
+        group_members = []
+        for page in paged_results:
+            group_members.extend(page.get('members', []))
+        return group_members
 
 
     def get_groups(self, customer_id='my_customer'):
@@ -123,7 +126,12 @@ class AdminDirectoryClient(_base_client.BaseClient):
         groups_stub = self.service.groups()
         request = groups_stub.list(customer=customer_id)
 
-        results = self._build_paged_result(
+        paged_results = self._build_paged_result(
             request, groups_stub, self.rate_limiter)
 
-        return [item.get('groups', []) for item in results]
+        # TODO: Refactor this to a helper function, where a key string can
+        # be passed in, to extract the right values to merge.
+        groups = []
+        for page in paged_results:
+            groups.extend(page.get('groups', []))
+        return groups
