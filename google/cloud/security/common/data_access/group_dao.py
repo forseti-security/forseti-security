@@ -37,8 +37,8 @@ class GroupDao(dao.Dao):
         Returns:
              String of the group id.
         """
-        sql = select_data.GROUP_ID.format(group_email, timestamp)
-        result = self.execute_sql_with_fetch(resource_name, sql, None)
+        sql = select_data.GROUP_ID.format(timestamp)
+        result = self.execute_sql_with_fetch(resource_name, sql, (group_email,))
         return result[0].get('group_id')
 
     def get_group_members(self, resource_name, group_id, timestamp):
@@ -57,8 +57,8 @@ class GroupDao(dao.Dao):
                'member_role': 'OWNER',
                'member_type': 'USER'}, ...)
         """
-        sql = select_data.GROUP_MEMBERS.format(group_id, timestamp)
-        return self.execute_sql_with_fetch(resource_name, sql, None)
+        sql = select_data.GROUP_MEMBERS.format(timestamp)
+        return self.execute_sql_with_fetch(resource_name, sql, (group_id,))
 
     def get_recursive_members_of_group(self, group_email, timestamp):
         """Get all the recursive members of a group.

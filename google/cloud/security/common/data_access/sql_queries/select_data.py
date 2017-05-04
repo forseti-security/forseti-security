@@ -67,14 +67,14 @@ GROUP_IDS = """
 
 GROUP_ID = """
     SELECT group_id
-    FROM groups_{1}
-    WHERE group_email = "{0}";
+    FROM groups_{}
+    WHERE group_email = %s;
 """
 
 GROUP_MEMBERS = """
     SELECT group_id, member_role, member_type, member_id, member_email
-    FROM group_members_{1}
-    WHERE group_id = "{0}";
+    FROM group_members_{}
+    WHERE group_id = %s;
 """
 
 BUCKETS = """
