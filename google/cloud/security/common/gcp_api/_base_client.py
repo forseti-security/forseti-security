@@ -84,7 +84,7 @@ class BaseClient(object):
 
         Returns:
             A list of API response objects (dict), in pages (i.e. another list).
-            [[page result 1], [paget result 2], etc.]
+            [[page result 1], [page result 2], etc.]
 
         Raises:
             When the retry is exceeded, exception will be thrown.  This
