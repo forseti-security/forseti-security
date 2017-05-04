@@ -520,27 +520,6 @@ def session_creator(model_name, filename=None):
     sessionmaker, data_access = define_model(model_name, engine)
     return sessionmaker, data_access
 
-def createScenario(session, data_access):
-    project = data_access.addResource(session, 'project')
-    vm = data_access.addResource(session, 'vm1', project)
-    db = data_access.addResource(session, 'db1', project)
-
-    permission1 = data_access.addPermission(session, 'cloudsql.table.read')
-    permission2 = data_access.addPermission(session, 'cloudsql.table.write')
-
-    role1 = data_access.addRole(session, 'sqlreader', [permission1])
-    role2 = data_access.addRole(session, 'sqlwriter', [permission1, permission2])
-
-    group1 = data_access.addMember(session, 'group1', 'group')
-    group2 = data_access.addMember(session, 'group2', 'group', [group1]) 
-
-    member1 = data_access.addMember(session, 'felix', 'user', [group2])
-    member2 = data_access.addMember(session, 'fooba', 'user', [group2])
-
-    binding = data_access.addBinding(session, vm, role1, [group1])
-    binding = data_access.addBinding(session, project, role2, [group2])
-    session.commit()
-
 def explainMemberHasAccessTo(session, data_access, member_names, expand_resources=False):
     if expand_resources:
         raise NotImplementedError()
@@ -570,6 +549,27 @@ def useScenario(session, data_access):
     print explainMemberHasAccessTo(session, data_access, ['group1'], False)
 
 if __name__ == "__main__":
+    def createScenario(session, data_access):
+        project = data_access.addResource(session, 'project')
+        vm = data_access.addResource(session, 'vm1', project)
+        db = data_access.addResource(session, 'db1', project)
+
+        permission1 = data_access.addPermission(session, 'cloudsql.table.read')
+        permission2 = data_access.addPermission(session, 'cloudsql.table.write')
+
+        role1 = data_access.addRole(session, 'sqlreader', [permission1])
+        role2 = data_access.addRole(session, 'sqlwriter', [permission1, permission2])
+
+        group1 = data_access.addMember(session, 'group1', 'group')
+        group2 = data_access.addMember(session, 'group2', 'group', [group1]) 
+
+        member1 = data_access.addMember(session, 'felix', 'user', [group2])
+        member2 = data_access.addMember(session, 'fooba', 'user', [group2])
+
+        binding = data_access.addBinding(session, vm, role1, [group1])
+        binding = data_access.addBinding(session, project, role2, [group2])
+        session.commit()
+    
     engine = create_engine('sqlite:///:memory:', echo=True)
     model_manager = ModelManager(engine)
     

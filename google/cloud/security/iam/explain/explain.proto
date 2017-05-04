@@ -22,7 +22,6 @@ service Explain {
 }
 
 message DenormalizeRequest {
-
 }
 
 message DenormalizeReply {
