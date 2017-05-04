@@ -41,33 +41,128 @@ class BigQueryClient(_base_client.BaseClient):
         super(BigQueryClient, self).__init__(
             api_name=self.API_NAME)
         self.rate_limiter = self.get_rate_limiter()
-        
+
+    def _extract_dataset_access(self, dataset_object):
+        """Return a list of just dataset access objects.
+
+        Args: A datset_object in the form of:
+            https://developers.google.com/resources/api-libraries/documentation/bigquery/v2/python/latest/bigquery_v2.datasets.html#get
+
+        Returns:
+            "access": [{"domain": "A String", "userByEmail": "A String", "specialGroup": "A String", "groupByEmail": "A String", "role": "A String", "view": {"projectId": "A String", "tableId": "A String", "datasetId": "A String", }, },]
+        """
+        return [item.get('access', []) for item in dataset_objects]
+
+    def _extract_datasets(self, dataset_list_objects):
+        """Return a list of just dataset objects.
+
+        Args: A dataset list object in the form of:
+            {"kind": "bigquery#datasetList",
+            "etag": etag,
+            "nextPageToken": string,
+            "datasets": [
+               {
+                  "kind": "bigquery#dataset",
+                  "id": "string",
+                  "datasetReference": {
+                    "datasetId": "string",
+                    "projectId": "string"
+                  },
+                  "labels": {
+                    "key": "string"
+                  },
+                  "friendlyName": "string"
+                },
+                {
+                  "kind": "bigquery#dataset",
+                  "id": "string",
+                  "datasetReference": {
+                    "datasetId": "string",
+                    "projectId": "string"
+                  },
+                  "labels": {
+                    "key": "string"
+                  },
+                  "friendlyName": "string"
+                }
+            ]}
+
+        Returns:
+            A list of dataset objects like:
+            [{'friendlyName': 'string',
+              'kind': 'bigquery#dataset',
+              'labels': {'key': 'string'},
+              'id': 'string',
+              'datasetReference': {'projectId': 'string',
+                                   'datasetId': 'string'}
+             },{...}
+            ]
+        """
+        return [item.get('datasets', []) for item in dataset_list_objects]
+
+    def _extract_dataset_references(self, dataset_objects):
+        """Return a list of just datasetReference objects.
+
+        Args:
+            dataset_objects: A list of objects like:
+            [{'friendlyName': 'string',
+              'kind': 'bigquery#dataset',
+              'labels': {'key': 'string'},
+              'id': 'string',
+              'datasetReference': {'projectId': 'string',
+                                   'datasetId': 'string'}
+             },{...}
+            ]
+
+        Returns:
+            A list of objects like:
+            [{'projectId': 'string', 'datasetId': 'string'},
+             {'projectId': 'string', 'datasetId': 'string'},
+             {'projectId': 'string', 'datasetId': 'string'}]
+        """
+        return [item.get('datasetsReference', []) for item in dataset_objects]
+
     def get_rate_limiter(self):
         """Return an appropriate rate limiter."""
         return RateLimiter(FLAGS.max_bigquery_api_calls_per_100_seconds,
                            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
-    
-    def get_datasets(self, project_id):
+
+    def get_datasets_for_project_id(self, project_id):
         """Return BigQuery datasets stored in the requested project_id.
-        
+
         Args:
             project_id: A String representing the unique project_id.
-            
-        Returns:
+
+        Returns: A list of datasetReference objects for a given project_id.
+            See _extract_dataset_reference for details.
         """
         bigquery_stub = self.service.datasets()
+
         request = bigquery_stub.list(projectId=project_id, all=True)
-        results = []
+        results = self._build_paged_result(
+            request, bigquery_stub, self.rate_limiter)
 
-        # TODO: Investigate yielding results to handle large group lists.
-        while request is not None:
-            try:
-                with self.rate_limiter:
-                    response = self._execute(request)
-                    results.extend(response.get('datasets', []))
-                    request = bigquery_stub.list_next(request, response)
-            except (HttpError, HttpLib2Error) as e:
-                raise api_errors.ApiExecutionError(bigquery_stub, e)
+        datasets = self._extract_datasets(results)
 
-        return results
-      
+        return self._extract_dataset_references(datasets)
+
+    def get_dataset_access(self, project_id, dataset_id):
+      """Return access portion of the dataset resource object.
+
+      Args:
+          project_id: String representing the project id.
+          dataset_id: String representing the dataset id.
+
+      Returns:
+          A data set resource object as a dictionary.
+          See https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets#resource
+      """
+      bigquery_stub = self.service.datasets()
+
+      request = bigquery_stub.get(projectId=project_id, datasetId=dataset_id)
+      results = self._build_paged_result(
+          request, bigquery_stub, self.rate_limiter)
+
+      dataset_access = self._extract_dataset_access(results)
+
+      return self._extract_dataset_references(datasets)
