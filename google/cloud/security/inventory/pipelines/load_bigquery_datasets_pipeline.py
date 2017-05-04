@@ -20,7 +20,6 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-from google.cloud.security.common.data_access import project_dao
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -151,7 +150,7 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
                     'access_view_dataset_id': acl.get('view').get('datasetId')
                 }
 
-    def _retrieve(self, project_ids):
+    def _retrieve(self):
         """Retrieve dataset access lists.
 
         Args:
@@ -160,13 +159,14 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
         Returns:
             A dataset access map. See _get_dataset_access_map().
         """
+        project_ids = self._get_project_ids_from_dao()
         dataset_project_map = self._get_dataset_project_map(project_ids)
 
         return self._get_dataset_access_map(dataset_project_map)
 
     def run(self):
         """Runs the data pipeline."""
-        project_ids = self._get_project_ids_from_dao()
+        dataset_project_access_map = self._retrieve()
 
         loadable_datasets = self._transform(dataset_project_access_map)
 

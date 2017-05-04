@@ -156,10 +156,13 @@ class BigQueryClient(_base_client.BaseClient):
             See extract_dataset_reference for details.
         """
         bigquery_stub = self.service.datasets()
-
         request = bigquery_stub.list(projectId=project_id, all=True)
-        results = self._build_paged_result(
-            request, bigquery_stub, self.rate_limiter)
+
+        try:
+            results = self._build_paged_result(
+                request, bigquery_stub, self.rate_limiter)
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_name, e)
 
         datasets = self.extract_datasets(results)
 
@@ -177,10 +180,13 @@ class BigQueryClient(_base_client.BaseClient):
             https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets#resource
         """
         bigquery_stub = self.service.datasets()
-
         request = bigquery_stub.get(projectId=project_id, datasetId=dataset_id)
-        results = self._build_paged_result(
-            request, bigquery_stub, self.rate_limiter)
+
+        try:
+            results = self._build_paged_result(
+                request, bigquery_stub, self.rate_limiter)
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_name, e)
 
         dataset_access = self.extract_dataset_access(results)
 
