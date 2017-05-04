@@ -14,35 +14,13 @@
 
 """Tests the GroupDao."""
 
-import json
-
 from google.apputils import basetest
 import mock
-
-from MySQLdb import DataError
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import group_dao
-from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import group
-from google.cloud.security.common.gcp_type import group_member
-from tests.common.gcp_type.test_data import fake_groups
-
-
-def _get_expected_group_members(db_rows):
-    members = {}
-    for row in db_rows:
-        group_id = row.get('group_id')
-        member = group_member.GroupMember(
-            member_role=row.get('member_role'),
-            member_type=row.get('member_type'),
-            member_email=row.get('member_email')
-        )
-        if group_id not in members:
-            members[group_id] = []
-        members[group_id].append(member)
-    return members
+from tests.common.data_access.test_data import fake_group_dao_data as fake_data
 
 
 class GroupDaoTest(basetest.TestCase):
@@ -51,32 +29,44 @@ class GroupDaoTest(basetest.TestCase):
     @mock.patch.object(dao.Dao, '__init__', autospec=True)
     def setUp(self, mock_dao):
         mock_dao.return_value = None
-        #self.group_dao = mock.create_autospec(group_dao.GroupDao)
-        self.group_dao = group_dao.GroupDao()
+        self.dao = group_dao.GroupDao()
         self.resource_name = 'groups'
-        self.fake_timestamp = '12345'
-        self.fake_group_db_rows1 = fake_groups.FAKE_GROUPS_DB_ROWS
-        self.fake_group_expected1 = _get_expected_group_members(
-            self.fake_group_db_rows1)
+        self.fake_group_email = 'foo@mycompany.com'
+        self.fake_group_id = '11111'
+        self.fake_timestamp = '22222'
 
     @mock.patch.object(dao.Dao, 'execute_sql_with_fetch', autospec=True)
-    def test_get_group_users(self, mock_fetch):
-        """Test get_group_users()."""
-        mock_fetch.return_value = self.fake_group_db_rows1
-        actual = self.group_dao.get_group_users(
-            self.resource_name, self.fake_timestamp)
-        expected = self.fake_group_expected1
-        self.assertEqual(expected, actual)
+    def test_get_group_id(self, mock_fetch):
+        """Test get_group_members()."""
+        mock_fetch.return_value = ({'group_id': '11111'},
+                                   {'group_id': '22222'})
+        group_id = self.dao.get_group_id(
+            self.resource_name, self.fake_group_email, self.fake_timestamp)
+        self.assertEqual('11111', group_id)
 
     @mock.patch.object(dao.Dao, 'execute_sql_with_fetch', autospec=True)
-    def test_get_group_users_raises_error(self, mock_fetch):
-        """Test get_group_users() raises error."""
+    def test_get_group_members_raises_error(self, mock_fetch):
+        """Test get_group_members() raises error."""
         mock_fetch.side_effect = errors.MySQLError(
             self.resource_name, mock.MagicMock())
 
         with self.assertRaises(errors.MySQLError):
-            self.group_dao.get_group_users(
-                self.resource_name, self.fake_timestamp)
+            self.dao.get_group_members(
+                self.resource_name, self.fake_group_id, self.fake_timestamp)
+
+    @mock.patch.object(group_dao.GroupDao, 'get_group_members', autospec=True)
+    @mock.patch.object(group_dao.GroupDao, 'get_group_id', autospec=True)
+    def test_get_recursive_members_of_group(self, mock_get_group_id,
+                                            mock_get_group_members):
+        """Test get_recursive_members_of_group()."""
+        mock_get_group_id.return_value = '999999'
+        mock_get_group_members.side_effect = (
+            fake_data.GET_GROUP_MEMBERS_SIDE_EFFECT)
+        
+        all_members = self.dao.get_recursive_members_of_group(
+            self.fake_group_email, self.fake_timestamp)
+        
+        self.assert_(fake_data.EXPECTED_ALL_MEMBERS, all_members)
 
 
 if __name__ == '__main__':

@@ -65,10 +65,16 @@ GROUP_IDS = """
     SELECT group_id from groups_{0};
 """
 
-GROUP_USERS = """
+GROUP_ID = """
+    SELECT group_id
+    FROM groups_{1}
+    WHERE group_email = "{0}";
+"""
+
+GROUP_MEMBERS = """
     SELECT group_id, member_role, member_type, member_id, member_email
-    FROM group_members_{0}
-    WHERE member_status = "ACTIVE" and member_type = "USER";
+    FROM group_members_{1}
+    WHERE group_id = "{0}";
 """
 
 BUCKETS = """

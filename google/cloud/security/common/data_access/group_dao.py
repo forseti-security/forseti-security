@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Provides the data access object (DAO) for Groups."""
+
+from Queue import Queue
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import group_member
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -25,28 +25,68 @@ LOGGER = log_util.get_logger(__name__)
 class GroupDao(dao.Dao):
     """Data access object (DAO) for Groups."""
 
-    def get_group_users(self, resource_name, timestamp):
-        """Get the group members who are users.
+    def get_group_id(self, resource_name, email, timestamp):
+        """Get the id of a group from an email.
 
         Args:
+            resource_name: String of the resource name.
+            group_id: String of the group id.
             timestamp: The timestamp of the snapshot.
 
         Returns:
-             A dict containing the group (gcp_type.group) and a list of
-            their members (gcp_type.group_members) who are user type.
+             String of the group id.
         """
-        sql = select_data.GROUP_USERS.format(timestamp)
-        rows = self.execute_sql_with_fetch(resource_name, sql, None)
-        group_users = {}
-        for row in rows:
-            # TODO: Determine if parenting is needed here, similar to
-            # project IAM policies.
-            group_user = group_member.GroupMember(
-                row.get('member_role'),
-                row.get('member_type'),
-                row.get('member_email'))
-            if row.get('group_id') not in group_users:
-                group_users[row.get('group_id')] = [group_user]
-            else:
-                group_users[row.get('group_id')].append(group_user)
-        return group_users
+        sql = select_data.GROUP_ID.format(email, timestamp)
+        result = self.execute_sql_with_fetch(resource_name, sql, None)
+        return result[0].get('group_id')
+
+    def get_group_members(self, resource_name, group_id, timestamp):
+        """Get the members of a group.
+
+        Args:
+            resource_name: String of the resource name.
+            group_id: String of the group id.
+            timestamp: The timestamp of the snapshot.
+
+        Returns:
+             A tuple of group members in dict format.
+             ({'group_id': '00lnxb',
+               'member_email': 'foo@mygbiz.com',
+               'member_id': '11111',
+               'member_role': 'OWNER',
+               'member_type': 'USER'}, ...)
+        """
+        sql = select_data.GROUP_MEMBERS.format(group_id, timestamp)
+        return self.execute_sql_with_fetch(resource_name, sql, None)
+
+    def get_recursive_members_of_group(self, group_email, timestamp):
+        """Get all the recursive members of a group.
+
+        Args:
+            group_email: String of the group email.
+            timestamp: The timestamp of the snapshot.
+
+        Returns:
+             A list of group members in dict format.
+             [{'group_id': '00lnxb',
+               'member_email': 'foo@mygbiz.com',
+               'member_id': '11111',
+               'member_role': 'OWNER',
+               'member_type': 'USER'}, ...]
+        """
+        all_members = []
+        queue = Queue()
+
+        group_id = self.get_group_id(
+            'group', group_email, timestamp)
+        queue.put(group_id)
+
+        while not queue.empty():
+            group_id = queue.get()
+            members = self.get_group_members('group_members', group_id,
+                                             timestamp)
+            for member in members:
+                all_members.append(member)
+                if member.get('member_type') == 'GROUP':
+                    queue.put(member.get('member_id'))
+        return all_members
