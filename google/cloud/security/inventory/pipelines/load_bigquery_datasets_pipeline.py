@@ -14,13 +14,9 @@
 
 """Pipeline to load bigquery datasets data into Inventory."""
 
-import json
-
-from dateutil import parser as dateutil_parser
 from MySQLdb import MySQLError
 
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
@@ -90,8 +86,8 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
         """
         dataset_by_project_map = []
         for project_id in project_ids:
-           datasets = self._retrieve_dataset_by_projectid(project_id)
-           dataset_by_project_map.append(datasets)
+            datasets = self.retrieve_dataset_by_projectid(project_id)
+            dataset_by_project_map.append(datasets)
 
         return dataset_by_project_map
 

@@ -44,14 +44,14 @@ class ProjectDao(dao.Dao):
             timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-             list of project ids
+             A list of project ids.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
         project_ids_sql = select_data.PROJECT_IDS.format(timestamp)
         rows = self.execute_sql_with_fetch(
-            resource_name, project_numbers_sql, ())
+            resource_name, project_ids_sql, None)
 
         return [row['project_id'] for row in rows]
 
@@ -63,7 +63,7 @@ class ProjectDao(dao.Dao):
             timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-             list of project numbers
+             A list of project numbers.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
