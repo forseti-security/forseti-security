@@ -59,7 +59,10 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
              {'projectId': 'string', 'datasetId': 'string'},
              {'projectId': 'string', 'datasetId': 'string'}]
         """
-        return self.api_client.get_datasets_for_project_id(project_id)
+        try:
+            return self.api_client.get_datasets_for_project_id(project_id)
+        except api_errors.ApiExecutionError as e:
+            raise inventory_errors.LoadDataPipelineError(e)
 
     def _get_dataset_access(self, project_id, dataset_id):
         """Retrieve the bigquery dataset resources from GCP.
@@ -70,7 +73,10 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
 
         Returns: See bigquery.get_dataset_access().
         """
-        return self.api_client.get_dataset_access(project_id, dataset_id)
+        try:
+            return self.api_client.get_dataset_access(project_id, dataset_id)
+        except api_errors.ApiExecutionError as e:
+            raise inventory_errors.LoadDataPipelineError(e)
 
     def _get_dataset_project_map(self, project_ids):
         """Retrieve the bigquery datasets for all requested project ids.
@@ -86,7 +92,12 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
         """
         dataset_by_project_map = []
         for project_id in project_ids:
-            datasets = self.retrieve_dataset_by_projectid(project_id)
+            try:
+                datasets = self.api_client.retrieve_dataset_by_projectid(
+                    project_id)
+            except api_errors.ApiExecutionError as e:
+                raise inventory_errors.LoadDataPipelineError(e)
+
             dataset_by_project_map.append(datasets)
 
         return dataset_by_project_map
@@ -126,29 +137,36 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
             An iterable of project_id, dataset_id, and access detail.
         """
         for (project_id, dataset_id, access_map) in dataset_project_access_map:
-            for access in access_map:
-                yield {'project_id': project_id,
-                       'datset_id': dataset_id,
-                       'access_domain': access.get('domain'),
-                       'access_user_by_email': access.get('userByEmail'),
-                       'access_special_group': access.get('specialGroup'),
-                       'access_group_by_email': access.get('groupByEmail'),
-                       'role': access.get('role'),
-                       'access_view_project_id': access.get(
-                           'view').get('projectId'),
-                       'access_view_table_id': access.get(
-                           'view').get('table_id'),
-                       'access_view_dataset_id': access.get(
-                           'view').get('datasetId')}
+            for acl in access_map:
+                yield {
+                    'project_id': project_id,
+                    'datset_id': dataset_id,
+                    'access_domain': acl.get('domain'),
+                    'access_user_by_email': acl.get('userByEmail'),
+                    'access_special_group': acl.get('specialGroup'),
+                    'access_group_by_email': acl.get('groupByEmail'),
+                    'role': acl.get('role'),
+                    'access_view_project_id': acl.get('view').get('projectId'),
+                    'access_view_table_id': acl.get('view').get('table_id'),
+                    'access_view_dataset_id': acl.get('view').get('datasetId')
+                }
 
+    def _retrieve(self, project_ids):
+        """Retrieve dataset access lists.
+
+        Args:
+            A list of project ids.
+
+        Returns:
+            A dataset access map. See _get_dataset_access_map().
+        """
+        dataset_project_map = self._get_dataset_project_map(project_ids)
+
+        return self._get_dataset_access_map(dataset_project_map)
 
     def run(self):
         """Runs the data pipeline."""
         project_ids = self._get_project_ids_from_dao()
-
-        dataset_project_map = self._get_dataset_project_map(project_ids)
-        dataset_project_access_map = self._get_dataset_access_map(
-            dataset_project_map)
 
         loadable_datasets = self._transform(dataset_project_access_map)
 
