@@ -129,6 +129,8 @@ class AdminDirectoryClient(_base_client.BaseClient):
         paged_results = self._build_paged_result(
             request, groups_stub, self.rate_limiter)
 
+        # TODO: Refactor this to a helper function, where a key string can
+        # be passed in, to extract the right values to merge.
         groups = []
         for page in paged_results:
             groups.extend(page.get('groups', []))
