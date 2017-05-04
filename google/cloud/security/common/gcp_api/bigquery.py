@@ -35,16 +35,18 @@ class BigQueryClient(_base_client.BaseClient):
     """BigQuery Client."""
 
     API_NAME = 'bigquery'
+
     # TODO: Remove pylint disable.
-    # pytlint: disable=invalid-name
+    # pylint: disable=invalid-name
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100
-    # pytlint: enable=invalid-name
+    # pylint: enable=invalid-name
 
     def __init__(self):
         super(BigQueryClient, self).__init__(
             api_name=self.API_NAME)
         self.rate_limiter = self.get_rate_limiter()
 
+    # pylint: disable=no-self-use
     def extract_dataset_access(self, dataset_objects):
         """Return a list of just dataset access objects.
 
@@ -64,7 +66,9 @@ class BigQueryClient(_base_client.BaseClient):
                       }]
         """
         return [item.get('access', []) for item in dataset_objects]
+    # pylint: enable=no-self-use
 
+    # pylint: disable=no-self-use
     def extract_datasets(self, dataset_list_objects):
         """Return a list of just dataset objects.
 
@@ -111,7 +115,9 @@ class BigQueryClient(_base_client.BaseClient):
             ]
         """
         return [item.get('datasets', []) for item in dataset_list_objects]
+    # pylint: enable=no-self-use
 
+    # pylint: disable=no-self-use
     def extract_dataset_references(self, dataset_objects):
         """Return a list of just datasetReference objects.
 
@@ -133,6 +139,7 @@ class BigQueryClient(_base_client.BaseClient):
              {'projectId': 'string', 'datasetId': 'string'}]
         """
         return [item.get('datasetsReference', []) for item in dataset_objects]
+    # pylint: enable=no-self-use
 
     def get_rate_limiter(self):
         """Return an appropriate rate limiter."""
@@ -156,7 +163,7 @@ class BigQueryClient(_base_client.BaseClient):
 
         datasets = self.extract_datasets(results)
 
-        return self._xtract_dataset_references(datasets)
+        return self.extract_dataset_references(datasets)
 
     def get_dataset_access(self, project_id, dataset_id):
         """Return access portion of the dataset resource object.
@@ -166,8 +173,8 @@ class BigQueryClient(_base_client.BaseClient):
             dataset_id: String representing the dataset id.
 
         Returns:
-            A data set resource object as a dictionary.
-            See https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets#resource
+            A data set resource object as a dictionary, see:
+            https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets#resource
         """
         bigquery_stub = self.service.datasets()
 
@@ -177,4 +184,4 @@ class BigQueryClient(_base_client.BaseClient):
 
         dataset_access = self.extract_dataset_access(results)
 
-        return self.extract_dataset_references(datasets)
+        return self.extract_dataset_references(dataset_access)

@@ -41,8 +41,8 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
         encountered
         """
         try:
-            return project_dao.get_project_ids(self.api_client,
-                                               self.cycle_timestamp)
+            return self.dao.get_project_ids(self.api_client,
+                                            self.cycle_timestamp)
         except MySQLError as e:
             LOGGER.error('Error fetching project ids from MySQL: %s', e)
             raise inventory_errors.LoadDataPipelineError
