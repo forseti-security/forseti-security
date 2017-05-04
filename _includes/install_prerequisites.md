@@ -19,7 +19,7 @@ You will need to use it as a flag value when running the individual tools.
   ```sh
   $ gcloud components update
   ```
-  
+
 Ensure gcloud is configured for your Forseti Security project.
 
   ```sh
@@ -61,7 +61,7 @@ Use `gcloud` to enable required APIs.
 * Enable the **Admin SDK API**
 
   ```sh
-  $ gcloud beta service-management list enable admin.googleapis.com
+  $ gcloud beta service-management enable admin.googleapis.com
   ```
 
 {% if page.install_type == 'gcp' %}
