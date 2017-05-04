@@ -83,8 +83,7 @@ class BaseClient(object):
             rate_limiter: An instance of RateLimiter to use.
 
         Returns:
-            A list of API response objects (dict), in pages (i.e. another list).
-            [[page result 1], [page result 2], etc.]
+            A list of API response objects (dict).
 
         Raises:
             When the retry is exceeded, exception will be thrown.  This
