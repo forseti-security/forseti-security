@@ -6,6 +6,12 @@ import logging
 from google.cloud.security.iam.client import ClientComposition
 from google.cloud.security.iam.dao import create_engine
 
+def cleanup(test_callback):
+    def wrapper(client):
+        for handle in client.list_models().handles:
+            client.delete_model(handle)
+    return wrapper
+
 def create_test_engine():
     tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
     logging.info('Creating database at {}'.format(tmpfile))
