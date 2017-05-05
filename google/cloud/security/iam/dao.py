@@ -465,34 +465,46 @@ def undefine_model(sessionmaker, data_access):
     session = sessionmaker()
     data_access.deleteAll(session)
 
-class ScopedSession:
-    def __init__(self, session):
+class ScopedSession(object):
+    def __init__(self, session, auto_commit=False):
         self.session = session
+        self.auto_commit = auto_commit
 
     def __enter__(self):
         return self.session
 
     def __exit__(self, type, value, traceback):
-        self.session.close()
+        try:
+            if traceback is None and self.auto_commit:
+                self.session.commit()
+        finally:
+            self.session.close()
+        
+class ScopedSessionMaker(object):
+    def __init__(self, sessionmaker, auto_commit=False):
+        self.sessionmaker = sessionmaker
+        self.auto_commit = auto_commit
+        
+    def __call__(self, *args):
+        return ScopedSession(self.sessionmaker(*args), self.auto_commit)
 
 class ModelManager:
     def __init__(self, dbengine):
         self.engine = dbengine
-        self.model_sessionmaker = self._create_model_session()
+        self.modelmaker = self._create_model_session()
         self.sessionmakers = {}
     
     def _create_model_session(self):
         ModelBase.metadata.create_all(self.engine)
-        return sessionmaker(bind=self.engine)
+        return ScopedSessionMaker(sessionmaker(bind=self.engine), auto_commit=True)
     
     def create(self):
         model_name = generateModelHandle()
-        session = self.model_sessionmaker()
-        model = Model(handle=model_name, state="CREATED", created_at=datetime.datetime.utcnow(), watchdog_timer=datetime.datetime.utcnow(), etag_seed=generateModelSeed())
-        session.add(model)
-        session.commit()
-        self.sessionmakers[model.handle] = define_model(model.handle, self.engine, model.etag_seed)
-        return model_name
+        with self.modelmaker() as session:
+            model = Model(handle=model_name, state="CREATED", created_at=datetime.datetime.utcnow(), watchdog_timer=datetime.datetime.utcnow(), etag_seed=generateModelSeed())
+            session.add(model)
+            self.sessionmakers[model.handle] = define_model(model.handle, self.engine, model.etag_seed)
+            return model_name
 
     def get(self, model):
         sessionmaker, data_access = self._get(model)
@@ -511,17 +523,17 @@ class ModelManager:
     def delete(self, model_name):
         sessionmaker, data_access = self.sessionmakers[model_name]
         del self.sessionmakers[model_name]
-        with ScopedSession(self.model_sessionmaker()) as session:
+        with self.modelmaker() as session:
             session.query(Model).filter(Model.handle == model_name).delete()
             session.commit()
         data_access.deleteAll(self.engine)
 
     def models(self):
-        with ScopedSession(self.model_sessionmaker()) as session:
+        with self.modelmaker() as session:
             return map(lambda model: model.handle, session.query(Model).all())
     
     def model(self, model_name):
-        with ScopedSession(self.model_sessionmaker()) as session:
+        with self.modelmaker() as session:
             return session.query(Model).filter(Model.handle == model_name).one()
 
 def session_creator(model_name, filename=None):
