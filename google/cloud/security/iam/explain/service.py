@@ -7,7 +7,7 @@ import grpc
 import explain_pb2
 import explain_pb2_grpc
 import explainer
-from dao import session_creator
+from google.cloud.security.iam.dao import session_creator
 
 def autoclose_stream(f):
     def wrapper(*args):

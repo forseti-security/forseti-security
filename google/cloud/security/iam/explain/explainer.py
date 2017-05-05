@@ -1,34 +1,45 @@
 from google.cloud.security.iam import dao
 from importer import importer
 
+def inject_session(f):
+    def wrapper(*args):
+        model_name = args[1]
+        obj = args[0]
+        
+        scoped_session, data_access = obj.config.model_manager.get(model_name)
+        with scoped_session as session:
+            args.append(session)
+            args.append(data_access)
+            return f(*args)
+
 class Explainer():
     def __init__(self, config):
         self.config = config
 
     def GetAccessByResources(self, model_name, resource_name, permission_names, expand_groups):
         model_manager = self.config.model_manager
-        session_creator, data_access = model_manager.get(model_name)
-        session = session_creator()
-        members = dao.explainHasAccessToResource(session,
-                                                 data_access,
-                                                 resource_name,
-                                                 permission_names,
-                                                 expand_groups)
-        return members
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            members = dao.explainHasAccessToResource(session,
+                                                     data_access,
+                                                     resource_name,
+                                                     permission_names,
+                                                     expand_groups)
+            return members
 
     def CreateModel(self, source):
         model_manager = self.config.model_manager
         model_name = model_manager.create()
-        session_creator, data_access = model_manager.get(model_name)
-        session = session_creator()
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
 
-        def doImport():
-            importer_cls = importer.by_source(source)
-            import_runner = importer_cls(session, model_manager.model(model_name), data_access)
-            import_runner.run()
+            def doImport():
+                importer_cls = importer.by_source(source)
+                import_runner = importer_cls(session, model_manager.model(model_name), data_access)
+                import_runner.run()
 
-        self.config.runInBackground(doImport)
-        return model_name
+            self.config.runInBackground(doImport)
+            return model_name
 
     def GetAccessByMembers(self, request, context):
         raise NotImplementedError()
@@ -46,11 +57,11 @@ class Explainer():
    
     def Denormalize(self, model_name):
         model_manager = self.config.model_manager
-        session_creator, data_access = model_manager.get(model_name)
-        session = session_creator()
-        for tuple in data_access.denormalize(session):
-            permission, resource, member = tuple
-            yield permission.name, resource.full_name, member.name
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            for tuple in data_access.denormalize(session):
+                permission, resource, member = tuple
+                yield permission.name, resource.full_name, member.name
 
 if __name__ == "__main__":
     class DummyConfig:
