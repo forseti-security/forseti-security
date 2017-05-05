@@ -465,6 +465,16 @@ def undefine_model(sessionmaker, data_access):
     session = sessionmaker()
     data_access.deleteAll(session)
 
+class ScopedSession:
+    def __init__(self, session):
+        self.session = session
+
+    def __enter__(self):
+        return self.session
+
+    def __exit__(self, type, value, traceback):
+        self.session.close()
+
 class ModelManager:
     def __init__(self, dbengine):
         self.engine = dbengine
@@ -485,6 +495,10 @@ class ModelManager:
         return model_name
 
     def get(self, model):
+        sessionmaker, data_access = self._get(model)
+        return ScopedSession(sessionmaker()), data_access
+
+    def _get(self, model):
         if not model in self.models():
             raise KeyError(model)
         
@@ -497,19 +511,18 @@ class ModelManager:
     def delete(self, model_name):
         sessionmaker, data_access = self.sessionmakers[model_name]
         del self.sessionmakers[model_name]
-        session = self.model_sessionmaker()
-        session.query(Model).filter(Model.handle == model_name).delete()
-        session.commit()
-        del session
+        with ScopedSession(self.model_sessionmaker()) as session:
+            session.query(Model).filter(Model.handle == model_name).delete()
+            session.commit()
         data_access.deleteAll(self.engine)
 
     def models(self):
-        session = self.model_sessionmaker()
-        return map(lambda model: model.handle, session.query(Model).all())
+        with ScopedSession(self.model_sessionmaker()) as session:
+            return map(lambda model: model.handle, session.query(Model).all())
     
     def model(self, model_name):
-        session = self.model_sessionmaker()
-        return session.query(Model).filter(Model.handle == model_name).one()
+        with ScopedSession(self.model_sessionmaker()) as session:
+            return session.query(Model).filter(Model.handle == model_name).one()
 
 def session_creator(model_name, filename=None):
     if filename:
