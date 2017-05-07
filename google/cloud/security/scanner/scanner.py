@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """GCP Resource scanner.
+
 
 Usage:
 
@@ -30,9 +30,6 @@ import itertools
 import os
 import shutil
 import sys
-import glob
-import ast
-import imp
 
 from datetime import datetime
 
@@ -41,15 +38,14 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import organization_dao
-from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
+from google.cloud.security.scanner.audit import engine_map as em
+from google.cloud.security.scanner.scanners import scanners_map as sm
+
 
 # Setup flags
 FLAGS = flags.FLAGS
@@ -72,9 +68,11 @@ flags.DEFINE_string('output_path', None,
                      'the format of the path should be '
                      '"gs://bucket-name/path/for/output".'))
 
-flags.DEFINE_bool('list_engines', False, 'List all rule engines')
+flags.DEFINE_boolean('list_engines', False, 'List all rule engines')
 
-flags.DEFINE_string('use_engine', None, 'Which engine to use')
+flags.DEFINE_string('engine_name', None, 'Which engine to use')
+
+flags.DEFINE_string('use_scanner_basedir', None, 'Which rule basedir to use')
 
 LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
@@ -83,27 +81,18 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 def main(_):
     """Run the scanner."""
-    audit_base_dir = os.path.dirname(__file__) + '/audit/'
 
-    if FLAGS.list_engines:
-        glob_string = audit_base_dir + '*engine*.py'
-        engines = glob.glob(glob_string)
-        print 'Available Forseti scanner engines:'
-        for engine in engines:
-            if 'base_rules_engine.py' not in engine:
-                print os.path.basename(engine)
+    if FLAGS.list_engines is True:
+        _list_rules_engines()
         sys.exit(1)
 
-    if not FLAGS.use_engine:
-        LOGGER.warn('Provide an engine file')
+    if not FLAGS.engine_name:
+        LOGGER.warn('Provide an engine name')
         sys.exit(1)
     else:
-        rules_engine_filename = FLAGS.use_engine
+        rules_engine_name = FLAGS.engine_name
 
-    rules_engine_class = _create_rules_engine(audit_base_dir,
-                                              rules_engine_filename)
-
-    LOGGER.info('Using rules engine: %s', rules_engine_filename)
+    LOGGER.info('Using rules engine: %s', rules_engine_name)
 
     LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
@@ -112,7 +101,9 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    rules_engine = rules_engine_class(rules_file_path=FLAGS.rules)
+    # Instantiate rules engine with supplied rules file
+    rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](rules_file_path=\
+                                                            FLAGS.rules)
     rules_engine.build_rule_book()
 
     snapshot_timestamp = _get_timestamp()
@@ -120,103 +111,35 @@ def main(_):
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
-    # TODO: make this generic
-    org_policies = _get_org_policies(snapshot_timestamp)
-    project_policies = _get_project_policies(snapshot_timestamp)
+    # Load scanner from map
+    scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
+    iter_objects, resource_counts = scanner.run()
 
-    if not org_policies and not project_policies:
-        LOGGER.warn('No policies found. Exiting.')
-        sys.exit()
-
-    all_violations = _find_violations(
+    # Load violations processing function
+    all_violations = scanner.find_violations(
         itertools.chain(
-            org_policies.iteritems(),
-            project_policies.iteritems()),
+            *iter_objects),
         rules_engine)
 
     # If there are violations, send results.
     if all_violations:
-        resource_counts = {
-            ResourceType.ORGANIZATION: len(org_policies),
-            ResourceType.PROJECT: len(project_policies),
-        }
         _output_results(all_violations,
                         snapshot_timestamp,
                         resource_counts=resource_counts)
 
     LOGGER.info('Done!')
 
-def _import_rules_engine(path, name):
-    """Load rules engine
+def _list_rules_engines():
+    """List rules engines.
 
     Args:
-        path: System path of module.
-        name: Name of the file.
+        audit_base_dir: base directory for rules engines
 
     Returns:
-        Module.
+        None
     """
-    name, ext = os.path.splitext(name)
-    try:
-        file_location, filename, data = imp.find_module(name, [path])
-        module = imp.load_module(name, file_location, filename, data)
-    except ImportError as err:
-        LOGGER.error('Failed to import module %s', name)
-    return module
-
-def _create_rules_engine(audit_base_dir, rules_engine_filename):
-    """Create the rules engine class
-
-    Args:
-        audit_base_dir: Base directory with enignes.
-        rules_engine_filename: Rules engine python file.
-
-    Returns:
-        Rules engined class.
-    """
-    rules_engine_class_name = None
-
-    try:
-        class_file = open(audit_base_dir + rules_engine_filename)
-    except IOError as err:
-        LOGGER.error('Error opening module file: %s', err)
-        sys.exit(1)
-
-    module_tree = ast.parse(class_file.read())
-    for node in ast.walk(module_tree):
-        if isinstance(node, ast.ClassDef) and 'Engine' in node.name:
-            rules_engine_class_name = node.name
-
-    if rules_engine_class_name is None:
-        LOGGER.error('Engine module %s wasn\'t loaded', rules_engine_filename)
-        sys.exit(1)
-
-    rules_engine_module = _import_rules_engine(audit_base_dir,
-                                               rules_engine_filename)
-    rules_engine_class = getattr(rules_engine_module, rules_engine_class_name)
-
-    return rules_engine_class
-
-def _find_violations(policies, rules_engine):
-    """Find violations in the policies.
-
-    Args:
-        policies: The list of policies to find violations in.
-        rules_engine: The rules engine to run.
-
-    Returns:
-        A list of violations.
-    """
-
-    all_violations = []
-    LOGGER.info('Finding policy violations...')
-    for (resource, policy) in policies:
-        LOGGER.debug('%s => %s', resource, policy)
-        violations = rules_engine.find_policy_violations(
-            resource, policy)
-        LOGGER.debug(violations)
-        all_violations.extend(violations)
-    return all_violations
+    for engine in em.ENGINE_TO_DATA_MAP:
+        print engine
 
 def _get_output_filename(now_utc):
     """Create the output filename.
@@ -246,36 +169,6 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
     return latest_timestamp
-
-def _get_org_policies(timestamp):
-    """Get orgs from data source.
-
-    Args:
-        timestamp: The snapshot timestamp.
-
-    Returns:
-        The org policies.
-    """
-
-    org_policies = {}
-    org_dao = organization_dao.OrganizationDao()
-    org_policies = org_dao.get_org_iam_policies('organizations', timestamp)
-    return org_policies
-
-def _get_project_policies(timestamp):
-    """Get projects from data source.
-
-    Args:
-        timestamp: The snapshot timestamp.
-
-    Returns:
-        The project policies.
-    """
-
-    project_policies = {}
-    project_policies = (
-        project_dao.ProjectDao().get_project_policies('projects', timestamp))
-    return project_policies
 
 def _flatten_violations(violations):
     """Flatten RuleViolations into a dict for each RuleViolation member.
