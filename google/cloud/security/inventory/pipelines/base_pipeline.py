@@ -45,6 +45,7 @@ class BasePipeline(object):
         Returns:
             None
         """
+
         self.cycle_timestamp = cycle_timestamp
         self.configs = configs
         self.api_client = api_client
@@ -54,16 +55,19 @@ class BasePipeline(object):
     @abc.abstractmethod
     def run(self):
         """Runs the pipeline."""
+
         pass
 
     @abc.abstractmethod
     def _retrieve(self):
         """Retrieve resource data from source."""
+
         pass
 
     @abc.abstractmethod
     def _transform(self, resource_from_api):
         """Transform api resource data into loadable format."""
+
         pass
 
     def _load(self, resource_name, data):
@@ -79,6 +83,7 @@ class BasePipeline(object):
         Raises:
             LoadDataPipelineError: An error with loading data has occurred.
         """
+
         try:
             self.dao.load_data(resource_name, self.cycle_timestamp, data)
         except (data_access_errors.CSVFileError,
@@ -87,6 +92,7 @@ class BasePipeline(object):
 
     def _get_loaded_count(self):
         """Get the count of how many of a resource has been loaded."""
+
         try:
             self.count = self.dao.select_record_count(
                 self.RESOURCE_NAME,

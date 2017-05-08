@@ -162,7 +162,7 @@ class BigQueryClient(_base_client.BaseClient):
             results = self._build_paged_result(
                 request, bigquery_stub, self.rate_limiter)
         except (HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(self.API_NAME, e)
 
         datasets = self.extract_datasets(results)
 
@@ -186,7 +186,7 @@ class BigQueryClient(_base_client.BaseClient):
             results = self._build_paged_result(
                 request, bigquery_stub, self.rate_limiter)
         except (HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(self.API_NAME, e)
 
         dataset_access = self.extract_dataset_access(results)
 

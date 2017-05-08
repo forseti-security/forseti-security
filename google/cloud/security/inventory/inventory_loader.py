@@ -25,7 +25,8 @@ Usage:
       --db_user <Cloud SQL database user> (required) \\
       --db_name <Cloud SQL database name (required)> \\
       --max_crm_api_calls_per_100_seconds <default: 400> (optional) \\
-      --max_admin_api_calls_per_day <default: 150000> (optional)  \\
+      --max_admin_api_calls_per_day <default: 150000> (optional) \\
+      --max_bigquery_api_calls_per_day <default: 17000> (optional) \\
       --sendgrid_api_key <API key to auth SendGrid email service> (optional) \\
       --email_sender <email address of the email sender> (optional) \\
       --email_recipient <email address of the email recipient> (optional) \\
@@ -45,8 +46,10 @@ import gflags as flags
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.apputils import app
-from google.cloud.security.common.data_access import db_schema_version
+from google.cloud.security.common.data_access import db_schema_version,\
+    bigquery_datasets_dao
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import bigquery_datasets_dao as bq_dao
 from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
@@ -55,11 +58,13 @@ from google.cloud.security.common.data_access.sql_queries import snapshot_cycles
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import storage as gcs
+from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
@@ -71,18 +76,17 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from google.cloud.security.inventory import util
 # pylint: enable=line-too-long
 
-FLAGS = flags.FLAGS
-
-flags.DEFINE_bool('inventory_groups', False,
-                  'Whether to inventory GSuite Groups.')
-
-
 LOGLEVELS = {
     'debug': logging.DEBUG,
     'info' : logging.INFO,
     'warning' : logging.WARN,
     'error' : logging.ERROR,
 }
+
+FLAGS = flags.FLAGS
+
+flags.DEFINE_bool('inventory_groups', False,
+                  'Whether to inventory GSuite Groups.')
 flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
@@ -100,6 +104,7 @@ def _exists_snapshot_cycles_table(dao):
     Returns:
         True if the snapshot cycle table exists. False otherwise.
     """
+
     try:
         sql = snapshot_cycles_sql.SELECT_SNAPSHOT_CYCLES_TABLE
         result = dao.execute_sql_with_fetch(snapshot_cycles_sql.RESOURCE_NAME,
@@ -138,6 +143,7 @@ def _start_snapshot_cycle(dao):
         cycle_time: Datetime object of the cycle, in UTC.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
     """
+
     cycle_time = datetime.utcnow()
     cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
 
@@ -170,9 +176,11 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
 
     Raises: inventory_errors.LoadDataPipelineError.
     """
+
     pipelines = []
     crm_api_client = crm.CloudResourceManagerClient()
     gcs_api_client = gcs.StorageClient()
+    bq_api_client = bq.BigQueryClient()
 
     dao = kwargs.get('dao')
     project_dao = kwargs.get('project_dao')
@@ -194,6 +202,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             cycle_timestamp, configs, gcs_api_client, project_dao),
         load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
             cycle_timestamp, configs, gcs_api_client, bucket_dao),
+        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
+            cycle_timestamp, configs, bq_api_client, project_dao)
     ]
 
     if configs.get('inventory_groups'):
@@ -222,6 +232,7 @@ def _run_pipelines(pipelines):
         run_statuses: List of boolean whether each pipeline was run
             successfully or not.
     """
+
     # TODO: Define these status codes programmatically.
     run_statuses = []
     for pipeline in pipelines:
@@ -302,17 +313,20 @@ def _send_email(cycle_time, cycle_timestamp, status, pipelines,
 
 def _configure_logging(configs):
     """Configures the loglevel for all loggers."""
+
     desc = configs.get('loglevel')
     level = LOGLEVELS.setdefault(desc, 'info')
     log_util.set_logger_level(level)
 
 def main(_):
     """Runs the Inventory Loader."""
+
     try:
         dao = Dao()
         project_dao = proj_dao.ProjectDao()
         organization_dao = org_dao.OrganizationDao()
         bucket_dao = buck_dao.BucketDao()
+        bigquery_datasets_dao = bq_dao.BigqueryDatasets()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
@@ -328,6 +342,7 @@ def main(_):
             cycle_timestamp,
             configs,
             dao=dao,
+            bigquery_datasets_dao=bigquery_datasets_dao,
             project_dao=project_dao,
             organization_dao=organization_dao,
             bucket_dao=bucket_dao)
@@ -337,6 +352,7 @@ def main(_):
         sys.exit()
 
     run_statuses = _run_pipelines(pipelines)
+
     if all(run_statuses):
         snapshot_cycle_status = 'SUCCESS'
     elif any(run_statuses):

@@ -49,6 +49,7 @@ class ProjectDao(dao.Dao):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
+
         project_ids_sql = select_data.PROJECT_IDS.format(timestamp)
         rows = self.execute_sql_with_fetch(
             resource_name, project_ids_sql, None)
@@ -68,6 +69,7 @@ class ProjectDao(dao.Dao):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
+
         project_numbers_sql = select_data.PROJECT_NUMBERS.format(timestamp)
         rows = self.execute_sql_with_fetch(
             resource_name, project_numbers_sql, ())
@@ -87,6 +89,7 @@ class ProjectDao(dao.Dao):
             A dict containing the projects (gcp_type.project.Project)
             and their iam policies (dict).
         """
+
         project_policies = {}
         try:
             cursor = self.conn.cursor()

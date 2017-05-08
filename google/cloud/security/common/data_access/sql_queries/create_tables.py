@@ -14,75 +14,56 @@
 
 """SQL queries to create Cloud SQL tables."""
 
-CREATE_PROJECT_TABLE = """
+CREATE_BIGQUERY_DATASETS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `dataset_id` varchar(255) DEFAULT NULL,
+        `access_domain` varchar(255) DEFAULT NULL,
+        `access_user_by_email` varchar(255) DEFAULT NULL,
+        `access_special_group` varchar(255) DEFAULT NULL,
+        `access_group_by_email` varchar(255) DEFAULT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `access_view_project_id` varchar(255) DEFAULT NULL,
+        `access_view_table_id` varchar(255) DEFAULT NULL,
+        `access_view_dataset_id` varchar(255) DEFAULT NULL,
+        `raw_access_map`: json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_BUCKETS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `project_number` bigint(20) NOT NULL,
-        `project_id` varchar(255) NOT NULL,
-        `project_name` varchar(255) DEFAULT NULL,
-        `lifecycle_state` enum('LIFECYCLE_STATE_UNSPECIFIED','ACTIVE',
-            'DELETE_REQUESTED','DELETED') NOT NULL,
-        `parent_type` varchar(255) DEFAULT NULL,
-        `parent_id` varchar(255) DEFAULT NULL,
-        `raw_project` json DEFAULT NULL,
-        `create_time` datetime DEFAULT NULL,
-        PRIMARY KEY (`id`),
-        UNIQUE KEY `project_id_UNIQUE` (`project_id`),
-        UNIQUE KEY `project_number_UNIQUE` (`project_number`)
+        `bucket_id` varchar(255) DEFAULT NULL,
+        `bucket_name` varchar(255) DEFAULT NULL,
+        `bucket_kind` varchar(255) DEFAULT NULL,
+        `bucket_storage_class` varchar(255) DEFAULT NULL,
+        `bucket_location` varchar(255) DEFAULT NULL,
+        `bucket_create_time` datetime DEFAULT NULL,
+        `bucket_update_time` datetime DEFAULT NULL,
+        `bucket_selflink` varchar(255) DEFAULT NULL,
+        `bucket_lifecycle_raw` json DEFAULT NULL,
+        `raw_bucket` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
-CREATE_PROJECT_IAM_POLICIES_TABLE = """
+CREATE_BUCKETS_ACL_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `project_number` bigint(20) DEFAULT NULL,
+        `bucket` varchar(255) DEFAULT NULL,
+        `domain` varchar(255) DEFAULT NULL,
+        `email` varchar(255) DEFAULT NULL,
+        `entity` varchar(255) DEFAULT NULL,
+        `entity_id` varchar(255) DEFAULT NULL,
+        `acl_id` varchar(255) DEFAULT NULL,
+        `kind` varchar(255) DEFAULT NULL,
+        `project_team` json DEFAULT NULL,
         `role` varchar(255) DEFAULT NULL,
-        `member_type` varchar(255) DEFAULT NULL,
-        `member_name` varchar(255) DEFAULT NULL,
-        `member_domain` varchar(255) DEFAULT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
-CREATE_RAW_PROJECT_IAM_POLICIES_TABLE = """
-    CREATE TABLE `{0}` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `project_number` bigint(20) DEFAULT NULL,
-        `iam_policy` json DEFAULT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
-CREATE_ORGANIZATIONS_TABLE = """
-    CREATE TABLE `{0}` (
-        `org_id` bigint(20) unsigned NOT NULL,
-        `name` varchar(255) NOT NULL,
-        `display_name` varchar(255) DEFAULT NULL,
-        `lifecycle_state` enum('LIFECYCLE_STATE_UNSPECIFIED','ACTIVE',
-            'DELETE_REQUESTED', 'DELETED') NOT NULL,
-        `raw_org` json DEFAULT NULL,
-        `creation_time` datetime DEFAULT NULL,
-        PRIMARY KEY (`org_id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
-CREATE_ORG_IAM_POLICIES_TABLE = """
-    CREATE TABLE `{0}` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `org_id` bigint(20) DEFAULT NULL,
-        `role` varchar(255) DEFAULT NULL,
-        `member_type` varchar(255) DEFAULT NULL,
-        `member_name` varchar(255) DEFAULT NULL,
-        `member_domain` varchar(255) DEFAULT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
-CREATE_RAW_ORG_IAM_POLICIES_TABLE = """
-    CREATE TABLE `{0}` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `org_id` bigint(20) DEFAULT NULL,
-        `iam_policy` json DEFAULT NULL,
+        `bucket_acl_selflink` varchar(255) DEFAULT NULL,
+        `raw_bucket_acl` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -116,20 +97,75 @@ CREATE_GROUP_MEMBERS_TABLE = """
 
 # TODO: Add a RAW_GROUP_MEMBERS_TABLE.
 
-CREATE_BUCKETS_TABLE = """
+CREATE_ORGANIZATIONS_TABLE = """
+    CREATE TABLE `{0}` (
+        `org_id` bigint(20) unsigned NOT NULL,
+        `name` varchar(255) NOT NULL,
+        `display_name` varchar(255) DEFAULT NULL,
+        `lifecycle_state` enum('LIFECYCLE_STATE_UNSPECIFIED','ACTIVE',
+            'DELETE_REQUESTED', 'DELETED') NOT NULL,
+        `raw_org` json DEFAULT NULL,
+        `creation_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`org_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_ORG_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `org_id` bigint(20) DEFAULT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `member_type` varchar(255) DEFAULT NULL,
+        `member_name` varchar(255) DEFAULT NULL,
+        `member_domain` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_PROJECT_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `project_number` bigint(20) NOT NULL,
-        `bucket_id` varchar(255) DEFAULT NULL,
-        `bucket_name` varchar(255) DEFAULT NULL,
-        `bucket_kind` varchar(255) DEFAULT NULL,
-        `bucket_storage_class` varchar(255) DEFAULT NULL,
-        `bucket_location` varchar(255) DEFAULT NULL,
-        `bucket_create_time` datetime DEFAULT NULL,
-        `bucket_update_time` datetime DEFAULT NULL,
-        `bucket_selflink` varchar(255) DEFAULT NULL,
-        `bucket_lifecycle_raw` json DEFAULT NULL,
-        `raw_bucket` json DEFAULT NULL,
+        `project_id` varchar(255) NOT NULL,
+        `project_name` varchar(255) DEFAULT NULL,
+        `lifecycle_state` enum('LIFECYCLE_STATE_UNSPECIFIED','ACTIVE',
+            'DELETE_REQUESTED','DELETED') NOT NULL,
+        `parent_type` varchar(255) DEFAULT NULL,
+        `parent_id` varchar(255) DEFAULT NULL,
+        `raw_project` json DEFAULT NULL,
+        `create_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `project_id_UNIQUE` (`project_id`),
+        UNIQUE KEY `project_number_UNIQUE` (`project_number`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_PROJECT_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) DEFAULT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `member_type` varchar(255) DEFAULT NULL,
+        `member_name` varchar(255) DEFAULT NULL,
+        `member_domain` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_RAW_ORG_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `org_id` bigint(20) DEFAULT NULL,
+        `iam_policy` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_RAW_PROJECT_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) DEFAULT NULL,
+        `iam_policy` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -153,24 +189,6 @@ CREATE_VIOLATIONS_TABLE = """
         `violation_type` enum('UNSPECIFIED','ADDED','REMOVED') NOT NULL,
         `role` varchar(255) DEFAULT NULL,
         `member` varchar(255) DEFAULT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
-CREATE_BUCKETS_ACL_TABLE = """
-    CREATE TABLE `{0}` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `bucket` varchar(255) DEFAULT NULL,
-        `domain` varchar(255) DEFAULT NULL,
-        `email` varchar(255) DEFAULT NULL,
-        `entity` varchar(255) DEFAULT NULL,
-        `entity_id` varchar(255) DEFAULT NULL,
-        `acl_id` varchar(255) DEFAULT NULL,
-        `kind` varchar(255) DEFAULT NULL,
-        `project_team` json DEFAULT NULL,
-        `role` varchar(255) DEFAULT NULL,
-        `bucket_acl_selflink` varchar(255) DEFAULT NULL,
-        `raw_bucket_acl` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """

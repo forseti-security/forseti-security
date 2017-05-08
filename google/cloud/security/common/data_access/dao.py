@@ -31,19 +31,20 @@ from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
 
 CREATE_TABLE_MAP = {
+    'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE
+    'buckets': create_tables.CREATE_BUCKETS_TABLE,
+    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
+    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
     'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
-    'buckets': create_tables.CREATE_BUCKETS_TABLE,
-    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
-    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
 }
 
 SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'

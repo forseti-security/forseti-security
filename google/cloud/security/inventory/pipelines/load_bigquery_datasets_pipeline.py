@@ -24,7 +24,7 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 LOGGER = log_util.get_logger(__name__)
 
 
-class LoadBigQueryDatasets(base_pipeline.BasePipeline):
+class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
     """Pipeline to load bigquery datasets data into Inventory."""
 
     RESOURCE_NAME = 'bigquery'
@@ -39,6 +39,7 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
         Raises: inventory_errors.LoadDataPipelineError if MySQL errors are
         encountered
         """
+
         try:
             return self.dao.get_project_ids(self.api_client,
                                             self.cycle_timestamp)
@@ -58,6 +59,7 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
              {'projectId': 'string', 'datasetId': 'string'},
              {'projectId': 'string', 'datasetId': 'string'}]
         """
+
         try:
             return self.api_client.get_datasets_for_project_id(project_id)
         except api_errors.ApiExecutionError as e:
@@ -72,6 +74,7 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
 
         Returns: See bigquery.get_dataset_access().
         """
+
         try:
             return self.api_client.get_dataset_access(project_id, dataset_id)
         except api_errors.ApiExecutionError as e:
@@ -89,6 +92,7 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
              {'projectId': 'string', 'datasetId': 'string'},
              {'projectId': 'string', 'datasetId': 'string'}]
         """
+
         dataset_by_project_map = []
         for project_id in project_ids:
             try:
@@ -112,6 +116,7 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
             A list of tuples in the form of:
             [(project_id, dataset_id, {dataset_access_object}),...]
         """
+
         dataset_project_access_map = []
         for dataset_project in dataset_project_map:
             project_id = dataset_project.get('projectId')
@@ -135,6 +140,7 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
         Yields:
             An iterable of project_id, dataset_id, and access detail.
         """
+
         for (project_id, dataset_id, access_map) in dataset_project_access_map:
             for acl in access_map:
                 yield {
@@ -147,7 +153,8 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
                     'role': acl.get('role'),
                     'access_view_project_id': acl.get('view').get('projectId'),
                     'access_view_table_id': acl.get('view').get('table_id'),
-                    'access_view_dataset_id': acl.get('view').get('datasetId')
+                    'access_view_dataset_id': acl.get('view').get('datasetId'),
+                    'raw_access_map': acl
                 }
 
     def _retrieve(self):
@@ -159,13 +166,15 @@ class LoadBigQueryDatasets(base_pipeline.BasePipeline):
         Returns:
             A dataset access map. See _get_dataset_access_map().
         """
+
         project_ids = self._get_project_ids_from_dao()
         dataset_project_map = self._get_dataset_project_map(project_ids)
 
         return self._get_dataset_access_map(dataset_project_map)
 
     def run(self):
-        """Runs the data pipeline."""
+        """Runs the actual data fetching pipeline."""
+
         dataset_project_access_map = self._retrieve()
 
         loadable_datasets = self._transform(dataset_project_access_map)
