@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from anytree.node import NodeMixin
 
 """Provides the data access object (DAO) for Groups."""
 
@@ -20,6 +19,7 @@ from Queue import Queue
 from anytree import Node
 from anytree import RenderTree
 from anytree import AsciiStyle
+from anytree import node
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
@@ -161,7 +161,7 @@ class GroupDao(dao.Dao):
         return root
 
 
-class MemberNode(NodeMixin):
+class MemberNode(node.NodeMixin):
     """A custom anytree node with Group Member attributes."""
     
     def __init__(self, member_id, member_email, member_type, member_status,
