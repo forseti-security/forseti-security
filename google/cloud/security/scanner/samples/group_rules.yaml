@@ -1,18 +1,17 @@
-- name: Allow my company users to be in my company groups.
+- name: Allow my company users and gmail users to be in my company groups.
   group_email: my_customer
   mode: whitelist
   conditions:
     - member_email: '@<MY_COMPANY DOMAIN>'
     - member_email: '@gmail.com'
 
-- name: Allow gmail users to be in a group.
+- name: Allow mypartner users to be in a group.
   group_email: <FOO_GROUP>@henrychang.mygbiz.com
   mode: whitelist
   conditions:
     - member_email: '@<MY_PARTNER_DOMAIN>'
-    - member_email: '@<ANOTHER_PARTNER_DOMAIN>'
 
-- name: Allow gmail users to be in another group.
+- name: Allow mypartner users to be in another group.
   group_email: ufo@henrychang.mygbiz.com
   mode: whitelist
   conditions:
