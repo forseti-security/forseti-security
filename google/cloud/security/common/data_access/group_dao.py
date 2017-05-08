@@ -28,14 +28,14 @@ class GroupDao(dao.Dao):
     """Data access object (DAO) for Groups."""
 
     def get_all_groups(self, resource_name, timestamp):
-        """Get the group_id for the specified group_email.
+        """Get all the groups.
 
         Args:
             resource_name: String of the resource name.
             timestamp: The timestamp of the snapshot.
 
         Returns:
-             A tuple of the rows as dict.
+             A tuple of the groups as dict.
         """
         sql = select_data.GROUPS.format(timestamp)
         return self.execute_sql_with_fetch(resource_name, sql, None)
