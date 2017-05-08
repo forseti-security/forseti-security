@@ -61,9 +61,8 @@ message ListResourcesReply {
 }
 
 message AddGroupMemberRequest {
-  string member_name = 1;
-  string member_type = 2;
-  repeated string parent_names = 3;
+  string member_type_name = 1;
+  repeated string parent_type_names = 2;
 }
 
 message AddGroupMemberReply {

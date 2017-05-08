@@ -8,6 +8,7 @@ from playground import playground_pb2
 import binascii
 import os
 import grpc
+import logging
 
 def require_model(f):
     def wrapper(*args):
@@ -69,34 +70,34 @@ class PlaygroundClient(IAMClient):
     def is_available(self):
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(playground_pb2.PingRequest(data=data)).data == data
-    
+
     @require_model
     def add_role(self, role_name, permissions):
         return self.stub.AddRole(playground_pb2.AddRoleRequest(role_name=role_name, permissions=permissions), metadata=self.metadata())
-    
+
     @require_model
     def del_role(self, role_name):
         return self.stub.DelRole(playground_pb2.DelRoleRequest(role_name=role_name), metadata=self.metadata())
-    
+
     @require_model
     def list_roles(self, role_name_prefix):
-        return self.stub.ListRoles(playground_pb2.ListRoleRequest(prefix=role_name_prefix), metadata=self.metadata())
+        return self.stub.ListRoles(playground_pb2.ListRolesRequest(prefix=role_name_prefix), metadata=self.metadata())
 
     @require_model
     def add_resource(self, full_resource_name, resource_type, parent_full_resource_name, no_parent=False):
-        return self.stub.AddResource(playground_pb2.AddResourceRequest(full_resource_name=full_resource_name, resource_type=resource_type, parent_full_resource_nmae=parent_full_resource_name, no_require_parent=no_parent), self.metadata())
-    
+        return self.stub.AddResource(playground_pb2.AddResourceRequest(full_resource_name=full_resource_name, resource_type=resource_type, parent_full_resource_name=parent_full_resource_name, no_require_parent=no_parent), metadata=self.metadata())
+
     @require_model
     def del_resource(self, full_resource_name):
         return self.stub.DelResource(playground_pb2.DelResourceRequest(full_resource_name=full_resource_name), metadata=self.metadata())
-    
+
     @require_model
     def list_resources(self, resource_name_prefix):
         return self.stub.ListResources(playground_pb2.ListResourcesRequest(prefix=resource_name_prefix), metadata=self.metadata())
 
     @require_model
-    def add_member(self, member_name, member_type, parent_names):
-        return self.stub.AddGroupMember(playground_pb2.AddGroupMemberRequest(member_name=member_name, member_type=member_type, parent_names=parent_names), metadata=self.metadata())
+    def add_member(self, member_type_name, parent_type_names=[]):
+        return self.stub.AddGroupMember(playground_pb2.AddGroupMemberRequest(member_type_name=member_type_name, parent_type_names=parent_type_names), metadata=self.metadata())
 
     @require_model
     def del_member(self, member_name, parent_name=None, only_delete_relationship=False):
@@ -104,12 +105,12 @@ class PlaygroundClient(IAMClient):
 
     @require_model
     def list_members(self, member_name_prefix):
-        return self.stub.ListGroupMembers(playground_pb2.ListGroupMembersRequest(), metadata=self.metadata())
+        return self.stub.ListGroupMembers(playground_pb2.ListGroupMembersRequest(prefix=member_name_prefix), metadata=self.metadata())
 
     @require_model
     def set_iam_policy(self, full_resource_name, policy):
         bindingspb = [playground_pb2.Binding(role=role, members=members) for role, members in policy['bindings'].iteritems()]
-        policypb = playground_pb2.Policy(bindings=bindingspb)
+        policypb = playground_pb2.Policy(bindings=bindingspb, etag=policy['etag'])
         return self.stub.SetIamPolicy(playground_pb2.SetIamPolicyRequest(resource=full_resource_name, policy=policypb), metadata=self.metadata())
 
     @require_model
