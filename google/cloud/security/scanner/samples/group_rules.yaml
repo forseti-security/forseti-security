@@ -2,21 +2,21 @@
   group_email: my_customer
   mode: whitelist
   conditions:
-    - member_email: '@henrychang.mygbiz.com'
-
-- name: allow mypartner users to be in specific group
-  group_email: watchword-admins@henrychang.mygbiz.com
-  mode: whitelist
-  conditions:
+    - member_email: '@<MY_COMPANY DOMAIN>'
     - member_email: '@gmail.com'
 
-# Specific group can whitelist additional users.
+- name: Allow gmail users to be in a group.
+  group_email: <FOO_GROUP>@henrychang.mygbiz.com
+  mode: whitelist
+  conditions:
+    - member_email: '@<MY_PARTNER_DOMAIN>'
+    - member_email: '@<ANOTHER_PARTNER_DOMAIN>'
 
-- name: allow mypartner users to be in specific group
+- name: Allow gmail users to be in another group.
   group_email: ufo@henrychang.mygbiz.com
   mode: whitelist
   conditions:
-    - member_email: '@gmail.com'
+    - member_email: '@<MY_PARTNER_DOMAIN>'
 
-# Only employees can be added to group.
-# TODO
+# TODO: Only employees can be added to a group.
+# This will require user information to be related to members.
