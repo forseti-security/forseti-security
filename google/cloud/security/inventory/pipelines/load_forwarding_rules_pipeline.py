@@ -51,8 +51,8 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
                 try:
                     create_time = (
                         dateutil_parser
-                            .parse(fr_create_time)
-                            .strftime(self.MYSQL_DATETIME_FORMAT))
+                        .parse(fr_create_time)
+                        .strftime(self.MYSQL_DATETIME_FORMAT))
                 except (TypeError, ValueError) as e:
                     LOGGER.error(
                         'Unable to parse creation_timestamp from '
