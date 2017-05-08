@@ -48,7 +48,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         return root
 
     def run(self):
-        """Runs the data collection."""
+        """Runs the groups scanner."""
 
         dao = group_dao.GroupDao()
         root = dao.build_group_tree(self.snapshot_timestamp)
