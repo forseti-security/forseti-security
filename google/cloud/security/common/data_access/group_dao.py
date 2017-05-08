@@ -16,16 +16,15 @@
 
 from Queue import Queue
 
-from anytree import RenderTree
-from anytree import AsciiStyle
-from anytree import node
+import anytree
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
 
-LOGGER = log_util.get_logger(__name__)
 
+LOGGER = log_util.get_logger(__name__)
+MY_CUSTOMER = 'my_customer'
 
 class GroupDao(dao.Dao):
     """Data access object (DAO) for Groups."""
@@ -133,7 +132,7 @@ class GroupDao(dao.Dao):
                 member_node = MemberNode(member.get('member_id'),
                                          member.get('member_email'),
                                          member.get('member_type'),
-                                         member.get('member_satus'),
+                                         member.get('member_status'),
                                          queued_node)
                 if member_node.member_type == 'GROUP':
                     queue.put(member_node)
@@ -151,7 +150,7 @@ class GroupDao(dao.Dao):
             The root node that holds the tree structure of all the groups
                 in the organization.
         """
-        root = MemberNode('my_customer', 'my_customer', None, None, None)
+        root = MemberNode(MY_CUSTOMER, MY_CUSTOMER)
 
         all_groups = self.get_all_groups('groups', timestamp)
         for group in all_groups:
@@ -162,16 +161,16 @@ class GroupDao(dao.Dao):
                                     root)
             group_node = self.get_recursive_members(group_node, timestamp)
 
-        LOGGER.info(RenderTree(root, style=AsciiStyle()).by_attr(
-            'member_email'))
+        LOGGER.info(anytree.RenderTree(
+            root, style=anytree.AsciiStyle()).by_attr('member_email'))
         return root
 
 
-class MemberNode(node.NodeMixin):
+class MemberNode(anytree.node.NodeMixin):
     """A custom anytree node with Group Member attributes."""
 
-    def __init__(self, member_id, member_email, member_type, member_status,
-                 parent):
+    def __init__(self, member_id, member_email,
+                 member_type=None, member_status=None, parent=None):
         self.member_id = member_id
         self.member_email = member_email
         self.member_type = member_type

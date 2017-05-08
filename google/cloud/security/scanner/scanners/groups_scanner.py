@@ -14,7 +14,7 @@
 
 """Scanner for Google Groups."""
 
-from anytree import iterators
+import anytree
 import yaml
 
 from google.cloud.security.common.util import log_util
@@ -23,6 +23,7 @@ from google.cloud.security.scanner.scanners import base_scanner
 
 
 LOGGER = log_util.get_logger(__name__)
+MY_CUSTOMER = 'my_customer'
 
 
 class GroupsScanner(base_scanner.BaseScanner):
@@ -54,23 +55,29 @@ class GroupsScanner(base_scanner.BaseScanner):
             starting_node: Member node with all its recursive members, with
             the rule appended.
         """
-        for node in iterators.PreOrderIter(starting_node):
+        for node in anytree.iterators.PreOrderIter(starting_node):
             node.rules.append(rule)
         return starting_node
 
-    def run(self):
-        """Runs the groups scanner."""
+    def run(self, rules_path):
+        """Runs the groups scanner.
+
+        Args:
+            rules: String of the path to rules file (yaml/json).
+
+        Returns:
+            List of all the violations.
+        """
 
         dao = group_dao.GroupDao()
         root = dao.build_group_tree(self.snapshot_timestamp)
 
-        rules_path = 'google/cloud/security/scanner/samples/group_rules.yaml'
         with open(rules_path, 'r') as f:
             rules = yaml.load(f)
 
         # Apply all rules to applicable nodes.
         for rule in rules:
-            if rule.get('group_email') == 'my_customer':
+            if rule.get('group_email') == MY_CUSTOMER:
                 # Apply rule to every node.
                 # Because this is simply the root node, there is no need
                 # to find this node, i.e. just start at the root.
@@ -86,7 +93,7 @@ class GroupsScanner(base_scanner.BaseScanner):
                 # Start at the tree root, find all instances of the specified
                 # group, then add the rule to all the members of the specified
                 # group.
-                for node in iterators.PreOrderIter(root):
+                for node in anytree.iterators.PreOrderIter(root):
                     if node.member_email == rule.get('group_email'):
                         node = self._append_rule(node, rule)
 
@@ -116,11 +123,11 @@ class GroupsScanner(base_scanner.BaseScanner):
             A list of nodes that are in violation.
         """
         all_violations = []
-        for node in iterators.PreOrderIter(root):
+        for node in anytree.iterators.PreOrderIter(root):
 
             # No need to evaluate these nodes.
             # This represents the org, i.e. is not a group.
-            if node.member_email == 'my_customer':
+            if node.member_email == MY_CUSTOMER:
                 continue
             # This represents the auto-generated group, containing all the users
             # in the org.
@@ -141,7 +148,7 @@ class GroupsScanner(base_scanner.BaseScanner):
 
                     # All the conditions of this rule have evaluated.
                     # The rule is fulfilled, if any condition matches.
-                    if any(condition_statuses) is True:
+                    if any(condition_statuses):
                         whitelist_rule_statuses.append(True)
                     else:
                         whitelist_rule_statuses.append(False)
@@ -174,7 +181,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             # +-----------------------------------------+---------+---------+
             # | Empty Iterable                          |  False  |  True   |
             # +-----------------------------------------+---------+---------+
-            if any(whitelist_rule_statuses) is False:
+            if not any(whitelist_rule_statuses):
                 all_violations.append(node)
 
         return all_violations

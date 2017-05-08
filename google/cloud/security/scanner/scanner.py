@@ -126,7 +126,7 @@ def main(_):
                             resource_counts=resource_counts)
 
     else:
-        all_violations = scanner.run()
+        all_violations = scanner.run(FLAGS.rules)
         LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
 
     LOGGER.info('Done!')
