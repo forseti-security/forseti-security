@@ -58,11 +58,6 @@ flags.DEFINE_string('rules', None,
                      'If GCS object, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
 
-flags.DEFINE_string('group_rules', None,
-                    ('Path to rules file (yaml/json). '
-                     'If GCS object, include full path, e.g. '
-                     ' "gs://<bucketname>/path/to/file".'))
-
 flags.DEFINE_string('output_path', None,
                     ('Output path (do not include filename). If GCS location, '
                      'the format of the path should be '
@@ -102,9 +97,10 @@ def main(_):
         sys.exit(1)
 
     # Instantiate rules engine with supplied rules file
-    rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](rules_file_path=\
-                                                            FLAGS.rules)
-    rules_engine.build_rule_book()
+    if rules_engine_name != 'GroupsEngine':
+        rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](rules_file_path=\
+                                                                FLAGS.rules)
+        rules_engine.build_rule_book()
 
     snapshot_timestamp = _get_timestamp()
     if not snapshot_timestamp:
@@ -113,19 +109,25 @@ def main(_):
 
     # Load scanner from map
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
-    iter_objects, resource_counts = scanner.run()
+    
+    if rules_engine_name != 'GroupsEngine':
+        iter_objects, resource_counts = scanner.run()
+    
+        # Load violations processing function
+        all_violations = scanner.find_violations(
+            itertools.chain(
+                *iter_objects),
+            rules_engine)
 
-    # Load violations processing function
-    all_violations = scanner.find_violations(
-        itertools.chain(
-            *iter_objects),
-        rules_engine)
+        # If there are violations, send results.
+        if all_violations:
+            _output_results(all_violations,
+                            snapshot_timestamp,
+                            resource_counts=resource_counts)
 
-    # If there are violations, send results.
-    if all_violations:
-        _output_results(all_violations,
-                        snapshot_timestamp,
-                        resource_counts=resource_counts)
+    else:
+        all_violations = scanner.run()
+        LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
 
     LOGGER.info('Done!')
 

@@ -1,50 +1,22 @@
-rules:
-  # Only allow Organization users to be in the Organization groups.
-  - name: sample whitelist for group users
-    mode: whitelist
-    resource:
-      - type: group
-        applies_to: self_and_children
-        resource_ids:
-          - my_customer
-    inherit_from_parents: true
-    members:
-      - role: MEMBER
-        type: USER
-        email: '*@YOUR_ORG_EMAIL_DOMAIN'
+- name: Allow my company users to be in my company groups.
+  group_email: my_customer
+  mode: whitelist
+  conditions:
+    - member_email: '@henrychang.mygbiz.com'
 
-# Example response of group members from GCP on which the rules should be based.
-#
-# {
-#  "kind": "admin#directory#members",
-#  "etag": "\"aaaaa\"",
-#  "members": [
-#   {
-#    "kind": "admin#directory#member",
-#    "etag": "\"bbbbb\"",
-#    "id": "00lnx",
-#    "email": "foo@foobar.com",
-#    "role": "MEMBER",
-#    "type": "GROUP",
-#    "status": "ACTIVE"
-#   },
-#   {
-#    "kind": "admin#directory#member",
-#    "etag": "\"ccccc\"",
-#    "id": "11515",
-#    "email": "bar@foobar.com",
-#    "role": "MEMBER",
-#    "type": "USER",
-#    "status": "ACTIVE"
-#   },
-#   {
-#    "kind": "admin#directory#member",
-#    "etag": "\"ddddd\"",
-#    "id": "10488",
-#    "email": "baz@foobar.com",
-#    "role": "MEMBER",
-#    "type": "USER",
-#    "status": "ACTIVE"
-#   }
-#  ]
-# }
+- name: allow mypartner users to be in specific group
+  group_email: watchword-admins@henrychang.mygbiz.com
+  mode: whitelist
+  conditions:
+    - member_email: '@gmail.com'
+
+# Specific group can whitelist additional users.
+
+- name: allow mypartner users to be in specific group
+  group_email: ufo@henrychang.mygbiz.com
+  mode: whitelist
+  conditions:
+    - member_email: '@gmail.com'
+
+# Only employees can be added to group.
+# TODO
