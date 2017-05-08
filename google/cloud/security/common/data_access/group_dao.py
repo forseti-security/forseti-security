@@ -103,14 +103,24 @@ class GroupDao(dao.Dao):
                     queue.put(member.get('member_id'))
         return all_members
 
-    def get_recursive_members_of_group_node(self, group_node, timestamp):
+    def get_recursive_members_of_group_node(self, node, timestamp):
+        """Get all the recursive members of a group.
 
+        Args:
+            node: Member node from which to start getting the recursive
+                members.
+            timestamp: String of snapshot timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            node: Member node with all its recursive members.
+        """
         queue = Queue()
-        queue.put(group_node)
+        queue.put(node)
         
         while not queue.empty():
-            group_node = queue.get()
-            members = self.get_group_members('group_members', group_node.member_id,
+            node = queue.get()
+            members = self.get_group_members('group_members', node.member_id,
                                              timestamp)
 
             for member in members:
@@ -118,11 +128,11 @@ class GroupDao(dao.Dao):
                                          member.get('member_email'),
                                          member.get('member_type'),
                                          member.get('member_satus'),
-                                         group_node)
+                                         node)
                 if member_node.member_type == 'GROUP':
                     queue.put(member_node)
         
-        return group_node
+        return node
 
     def build_group_tree(self, timestamp):
         """Build a tree of all the groups in the organization.
