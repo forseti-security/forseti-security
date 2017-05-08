@@ -98,8 +98,8 @@ def main(_):
 
     # Instantiate rules engine with supplied rules file
     if rules_engine_name != 'GroupsEngine':
-        rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](rules_file_path=\
-                                                                FLAGS.rules)
+        rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
+            rules_file_path=FLAGS.rules)
         rules_engine.build_rule_book()
 
     snapshot_timestamp = _get_timestamp()
@@ -109,10 +109,10 @@ def main(_):
 
     # Load scanner from map
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
-    
+
     if rules_engine_name != 'GroupsEngine':
         iter_objects, resource_counts = scanner.run()
-    
+
         # Load violations processing function
         all_violations = scanner.find_violations(
             itertools.chain(

@@ -42,10 +42,21 @@ class GroupsScanner(base_scanner.BaseScanner):
             snapshot_timestamp)
 
     @staticmethod
-    def _append_rule(root, rule):
-        for node in iterators.PreOrderIter(root):
+    def _append_rule(starting_node, rule):
+        """Append the rule to all the applicable nodes.
+
+        Args:
+            starting_node: Member node from which to start appending the rule.
+            timestamp: String of snapshot timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            starting_node: Member node with all its recursive members, with
+            the rule appended.
+        """
+        for node in iterators.PreOrderIter(starting_node):
             node.rules.append(rule)
-        return root
+        return starting_node
 
     def run(self):
         """Runs the groups scanner."""
@@ -88,11 +99,11 @@ class GroupsScanner(base_scanner.BaseScanner):
         At this point, we can start to find violations at each node!
 
         We have a tree, with data populated at each node.
-        ...and rules are also applied at each node
+        ...and rules are also applied at each node.
         Traversal order should not matter, since we need to evaluate all nodes.
 
         Each node can have multiple rules.
-        Each rule can have multiple conditions
+        Each rule can have multiple conditions.
 
         If a rule is violated, then the node is in violation.
         i.e. if all rules pass, then the node is not in violation.
@@ -142,7 +153,7 @@ class GroupsScanner(base_scanner.BaseScanner):
 
                 else:
                     pass  # TODO
-    
+
             # Determine if the node is in violations or not.
             # All rules must be fulfilled, for a node to not be in violation.
             # If any rule is not fulfilled, then node is in violation.
