@@ -88,8 +88,8 @@ BUCKETS_BY_PROJECT_ID = """
 
 FORWARDING_RULES = """
     SELECT id, project_id, creation_timestamp, name, description, region,
-    ip_address, ip_protocol, port_range, ports, target, self_link,
-    load_balancing_scheme, subnetwork, network, backend_service
+    ip_address, ip_protocol, port_range, ports, target, load_balancing_scheme,
+    subnetwork, network, backend_service
     FROM forwarding_rules_{0}
 """
 
