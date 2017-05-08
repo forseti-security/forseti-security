@@ -246,4 +246,3 @@ class MemberNode(anytree.node.NodeMixin):
         self.member_status = member_status
         self.parent = parent
         self.rules = []
-
