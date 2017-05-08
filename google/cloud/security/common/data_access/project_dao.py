@@ -29,6 +29,7 @@ LOGGER = log_util.get_logger(__name__)
 class ProjectDao(dao.Dao):
     """Data access object (DAO)."""
 
+    # pylint: disable=arguments-differ
     @staticmethod
     def map_row_to_object(row):
         """Instantiate a Project from database row.
@@ -51,6 +52,7 @@ class ProjectDao(dao.Dao):
             parent=resource_util.create_resource(
                 resource_id=row['parent_id'],
                 resource_type=row['parent_type']))
+    # pylint: enable=arguments-differ
 
     def get_project_numbers(self, resource_name, timestamp):
         """Select the project numbers from a projects snapshot table.
