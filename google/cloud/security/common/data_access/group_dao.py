@@ -124,8 +124,9 @@ class GroupDao(dao.Dao):
         queue.put(starting_node)
 
         while not queue.empty():
-            node = queue.get()
-            members = self.get_group_members('group_members', node.member_id,
+            queued_node = queue.get()
+            members = self.get_group_members('group_members',
+                                             queued_node.member_id,
                                              timestamp)
 
             for member in members:
@@ -133,7 +134,7 @@ class GroupDao(dao.Dao):
                                          member.get('member_email'),
                                          member.get('member_type'),
                                          member.get('member_satus'),
-                                         node)
+                                         queued_node)
                 if member_node.member_type == 'GROUP':
                     queue.put(member_node)
 

@@ -67,7 +67,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         rules_path = 'google/cloud/security/scanner/samples/group_rules.yaml'
         with open(rules_path, 'r') as f:
             rules = yaml.load(f)
-    
+
         # Apply all rules to applicable nodes.
         for rule in rules:
             if rule.get('group_email') == 'my_customer':
@@ -92,8 +92,9 @@ class GroupsScanner(base_scanner.BaseScanner):
 
         return self.find_violations(root)
 
-
-    def find_violations(self, root):  # pylint: disable=arguments-differ
+    # pylint: disable=arguments-differ
+    # pylint: disable=too-many-branches
+    def find_violations(self, root):
         """Find violations, starting from the given root.
 
         At this point, we can start to find violations at each node!
