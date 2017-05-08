@@ -30,7 +30,7 @@ class ProjectLifecycleState(resource.LifecycleState):
 class Project(resource.Resource):
     """Project resource."""
 
-    RESOURCE_NAME_FMT = 'organizations/%s'
+    RESOURCE_NAME_FMT = 'projects/%s'
 
     def __init__(
             self,
