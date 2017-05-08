@@ -148,7 +148,7 @@ class GroupDao(dao.Dao):
                 YYYYMMDDTHHMMSSZ.
 
         Returns:
-            A tree (represented as the root node) of all the groups
+            The root node that holds the tree structure of all the groups
                 in the organization.
         """
         root = MemberNode('my_customer', 'my_customer', None, None, None)
