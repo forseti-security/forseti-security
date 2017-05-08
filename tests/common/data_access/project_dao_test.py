@@ -92,7 +92,7 @@ class ProjectDaoTest(basetest.TestCase):
         fake_query = select_data.PROJECT_IAM_POLICIES_RAW.format(
             self.fake_timestamp, self.fake_timestamp)
         self.project_dao.get_project_policies(
-            self.resource_name, self.fake_timestamp)
+            resource.ResourceType.PROJECT, self.fake_timestamp)
 
         self.fetch_mock.assert_called_once_with(
             resource.ResourceType.PROJECT, fake_query, ())
