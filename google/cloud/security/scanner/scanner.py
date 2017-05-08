@@ -16,7 +16,14 @@
 
 Usage:
 
-  $ forseti_scanner --rules <rules path> \\
+  List rules engines:
+  $ forseti_scanner --list_engines
+
+  Run scanner:
+  $ forseti_scanner \\
+      --rules <rules path> \\
+      --engine_name <rule engine name> \\
+      --use_scanner_basedir <scanner basedir> \\
       --output_path <output path (optional)> \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
@@ -40,7 +47,7 @@ from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
+from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.scanner.audit import engine_map as em
@@ -339,7 +346,7 @@ def _build_scan_summary(all_violations, total_resources):
         resource_type = violation.resource_type
         if resource_type not in resource_summaries:
             resource_summaries[resource_type] = {
-                'pluralized_resource_type': ResourceUtil.pluralize(
+                'pluralized_resource_type': resource_util.pluralize(
                     resource_type),
                 'total': total_resources[resource_type],
                 'violations': {}

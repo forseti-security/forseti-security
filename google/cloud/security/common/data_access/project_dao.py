@@ -16,17 +16,10 @@
 
 import json
 
-from MySQLdb import DataError
-from MySQLdb import IntegrityError
-from MySQLdb import InternalError
-from MySQLdb import NotSupportedError
-from MySQLdb import OperationalError
-from MySQLdb import ProgrammingError
-
 from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import project
+from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 
@@ -35,6 +28,29 @@ LOGGER = log_util.get_logger(__name__)
 
 class ProjectDao(dao.Dao):
     """Data access object (DAO)."""
+
+    @staticmethod
+    def map_row_to_object(row):
+        """Instantiate a Project from database row.
+
+        TODO: Make this go away when we start using an ORM.
+        ProjectDao has a special case because the database schema doesn't
+        match the GCP API fields.
+
+        Args:
+            row: The database row to map.
+
+        Returns:
+            A Project, created from the row.
+        """
+        return project.Project(
+            project_id=row['project_id'],
+            project_number=row['project_number'],
+            display_name=row['project_name'],
+            lifecycle_state=row['lifecycle_state'],
+            parent=resource_util.create_resource(
+                resource_id=row['parent_id'],
+                resource_type=row['parent_type']))
 
     def get_project_numbers(self, resource_name, timestamp):
         """Select the project numbers from a projects snapshot table.
@@ -54,6 +70,23 @@ class ProjectDao(dao.Dao):
             resource_name, project_numbers_sql, ())
         return [row['project_number'] for row in rows]
 
+    def get_projects(self, timestamp):
+        """Get projects from a particular snapshot.
+
+        Args:
+            timestamp: The snapshot timestamp.
+
+        Returns:
+            A list of Projects.
+
+        Raises:
+            MySQLError if a MySQL error occurs.
+        """
+        projects_query = select_data.PROJECTS.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource.ResourceType.PROJECT, projects_query, ())
+        return [self.map_row_to_object(row) for row in rows]
+
     def get_project_policies(self, resource_name, timestamp):
         """Get the project policies.
 
@@ -69,31 +102,14 @@ class ProjectDao(dao.Dao):
             and their iam policies (dict).
         """
         project_policies = {}
-        try:
-            cursor = self.conn.cursor()
-            cursor.execute(
-                select_data.PROJECT_IAM_POLICIES_RAW.format(
-                    timestamp, timestamp))
-            rows = cursor.fetchall()
-            for row in rows:
-                try:
-                    proj_parent = None
-                    if row[5] and row[4]:
-                        proj_parent = (
-                            resource_util.ResourceUtil.create_resource(
-                                resource_id=row[5],
-                                resource_type=row[4]))
-                    proj = project.Project(
-                        project_id=row[1],
-                        project_number=row[0],
-                        display_name=row[2],
-                        lifecycle_state=row[3],
-                        parent=proj_parent)
-                    iam_policy = json.loads(row[6])
-                    project_policies[proj] = iam_policy
-                except ValueError:
-                    LOGGER.warn('Error parsing json:\n %s', row[6])
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            LOGGER.error(errors.MySQLError(resource_name, e))
+        query = select_data.PROJECT_IAM_POLICIES_RAW.format(
+            timestamp, timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource_name, query, ())
+        for row in rows:
+            try:
+                proj = self.map_row_to_object(row)
+                project_policies[proj] = json.loads(row['iam_policy'])
+            except ValueError:
+                LOGGER.warn('Error parsing json:\n %s', row['iam_policy'])
         return project_policies

@@ -26,10 +26,10 @@
 # pylint: disable=too-few-public-methods
 # pylint: disable=duplicate-code
 
+from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.gcp_type import errors as resource_errors
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.common.gcp_type.group_member import GroupMember
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import rules as audit_rules
@@ -143,7 +143,7 @@ class GroupRuleBook(bre.BaseRuleBook):
             # For each resource id associated with the rule, create a
             # mapping of resource => rules.
             for resource_id in resource_ids:
-                gcp_resource = ResourceUtil.create_resource(
+                gcp_resource = resource_util.create_resource(
                     resource_id=resource_id,
                     resource_type=resource_type)
                 # Verify that this resource actually exists in GCP.

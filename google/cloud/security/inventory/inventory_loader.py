@@ -48,18 +48,21 @@ from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import bucket_dao as buck_dao
+from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipeline
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
@@ -173,11 +176,13 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     pipelines = []
     crm_api_client = crm.CloudResourceManagerClient()
     gcs_api_client = gcs.StorageClient()
+    compute_api_client = compute.ComputeClient()
 
     dao = kwargs.get('dao')
     project_dao = kwargs.get('project_dao')
     organization_dao = kwargs.get('organization_dao')
     bucket_dao = kwargs.get('bucket_dao')
+    fwd_rules_dao = kwargs.get('fwd_rules_dao')
 
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
@@ -194,6 +199,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             cycle_timestamp, configs, gcs_api_client, project_dao),
         load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
             cycle_timestamp, configs, gcs_api_client, bucket_dao),
+        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
+            cycle_timestamp, configs, compute_api_client, fwd_rules_dao),
     ]
 
     if configs.get('inventory_groups'):
@@ -313,6 +320,7 @@ def main(_):
         project_dao = proj_dao.ProjectDao()
         organization_dao = org_dao.OrganizationDao()
         bucket_dao = buck_dao.BucketDao()
+        fwd_rules_dao = fr_dao.ForwardingRulesDao()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
@@ -330,7 +338,8 @@ def main(_):
             dao=dao,
             project_dao=project_dao,
             organization_dao=organization_dao,
-            bucket_dao=bucket_dao)
+            bucket_dao=bucket_dao,
+            fwd_rules_dao=fwd_rules_dao)
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)

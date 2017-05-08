@@ -22,14 +22,10 @@ PROJECT_NUMBERS = """
     SELECT project_number from projects_{0};
 """
 
-PROJECT_IAM_POLICIES = """
-    SELECT p.project_number, p.project_id, p.project_name,
-    p.lifecycle_state as proj_lifecycle, p.parent_type, p.parent_id,
-    pol.role, pol.member_type, pol.member_name, pol.member_domain
-    FROM projects_{0} p INNER JOIN project_iam_policies_{1} pol
-    ON p.project_number = pol.project_number
-    ORDER BY p.project_number, pol.role, pol.member_type,
-    pol.member_domain, pol.member_name
+PROJECTS = """
+    SELECT project_number, project_id, project_name,
+    lifecycle_state, parent_type, parent_id
+    FROM projects_{0}
 """
 
 ORGANIZATIONS = """
@@ -88,4 +84,19 @@ BUCKETS_BY_PROJECT_ID = """
     SELECT bucket_name
     FROM buckets_{0}
     WHERE project_number = {1};
+"""
+
+FORWARDING_RULES = """
+    SELECT id, project_id, creation_timestamp, name, description, region,
+    ip_address, ip_protocol, port_range, ports, target, self_link,
+    load_balancing_scheme, subnetwork, network, backend_service
+    FROM forwarding_rules_{0}
+"""
+
+FORWARDING_RULES_BY_PROJECT_ID = """
+    SELECT id, project_id, creation_timestamp, name, description, region,
+    ip_address, ip_protocol, port_range, ports, target, load_balancing_scheme,
+    subnetwork, network, backend_service
+    FROM forwarding_rules_{0}
+    WHERE project_id = %s
 """

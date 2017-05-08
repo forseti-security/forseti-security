@@ -29,11 +29,13 @@ class ResourceType(object):
     FOLDER = 'folder'
     PROJECT = 'project'
     GROUP = 'group'
+    FORWARDING_RULE = 'forwarding_rule'
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,
         PROJECT,
-        GROUP
+        GROUP,
+        FORWARDING_RULE,
     ])
 
     @classmethod
