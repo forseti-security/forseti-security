@@ -14,6 +14,8 @@
 
 """Scanner for Google Groups."""
 
+from Queue import Queue
+
 import anytree
 import yaml
 
@@ -41,6 +43,65 @@ class GroupsScanner(base_scanner.BaseScanner):
         """
         super(GroupsScanner, self).__init__(
             snapshot_timestamp)
+        self.dao = group_dao.GroupDao()
+
+    def get_recursive_members(self, starting_node, timestamp):
+        """Get all the recursive members of a group.
+
+        Args:
+            starting_node: Member node from which to start getting the recursive
+                members.
+            timestamp: String of snapshot timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            starting_node: Member node with all its recursive members.
+        """
+        queue = Queue()
+        queue.put(starting_node)
+
+        while not queue.empty():
+            queued_node = queue.get()
+            members = self.dao.get_group_members('group_members',
+                                                 queued_node.member_id,
+                                                 timestamp)
+
+            for member in members:
+                member_node = MemberNode(member.get('member_id'),
+                                         member.get('member_email'),
+                                         member.get('member_type'),
+                                         member.get('member_status'),
+                                         queued_node)
+                if member_node.member_type == 'GROUP':
+                    queue.put(member_node)
+
+        return starting_node
+
+    def _build_group_tree(self, timestamp):
+        """Build a tree of all the groups in the organization.
+
+        Args:
+            timestamp: String of snapshot timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            The root node that holds the tree structure of all the groups
+                in the organization.
+        """
+        root = MemberNode(MY_CUSTOMER, MY_CUSTOMER)
+
+        all_groups = self.dao.get_all_groups('groups', timestamp)
+        for group in all_groups:
+            group_node = MemberNode(group.get('group_id'),
+                                    group.get('group_email'),
+                                    'group',
+                                    'ACTIVE',
+                                    root)
+            group_node = self.get_recursive_members(group_node, timestamp)
+
+        LOGGER.info(anytree.RenderTree(
+            root, style=anytree.AsciiStyle()).by_attr('member_email'))
+        return root
 
     @staticmethod
     def _append_rule(starting_node, rule):
@@ -70,8 +131,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             List of all the violations.
         """
 
-        dao = group_dao.GroupDao()
-        root = dao.build_group_tree(self.snapshot_timestamp)
+        root = self._build_group_tree(self.snapshot_timestamp)
 
         with open(rules_path, 'r') as f:
             rules = yaml.load(f)
@@ -173,3 +233,17 @@ class GroupsScanner(base_scanner.BaseScanner):
                 all_violations.append(node)
 
         return all_violations
+
+
+class MemberNode(anytree.node.NodeMixin):
+    """A custom anytree node with Group Member attributes."""
+
+    def __init__(self, member_id, member_email,
+                 member_type=None, member_status=None, parent=None):
+        self.member_id = member_id
+        self.member_email = member_email
+        self.member_type = member_type
+        self.member_status = member_status
+        self.parent = parent
+        self.rules = []
+
