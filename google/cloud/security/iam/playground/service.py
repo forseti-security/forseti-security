@@ -71,9 +71,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     def AddGroupMember(self, request, context):
         handle = self._get_handle(context)
         self.playgrounder.AddGroupMember(handle,
-                                         request.member_name,
-                                         request.member_type,
-                                         request.parent_names)
+                                         request.member_type_name,
+                                         request.parent_type_names)
         return playground_pb2.AddGroupMemberReply()
 
     def DelGroupMember(self, request, context):
@@ -103,6 +102,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         self.playgrounder.AddResource(handle,
                                          request.full_resource_name,
                                          request.resource_type,
+                                         request.parent_full_resource_name,
                                          request.no_require_parent)
         return playground_pb2.AddResourceReply()
 

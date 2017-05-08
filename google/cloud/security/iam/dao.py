@@ -5,6 +5,7 @@ import sqlalchemy
 import os
 import binascii
 import collections
+import logging
 import struct
 import hmac
 
@@ -102,6 +103,7 @@ def define_model(model_name, dbengine, model_seed):
 
         name = Column(String, primary_key=True)
         type = Column(String)
+        member_name = Column(String)
 
         parents  = relationship('Member', secondary=group_members,
             primaryjoin=name==group_members.c.group_name,
@@ -274,24 +276,25 @@ def define_model(model_name, dbengine, model_seed):
             session.commit()
         
         @staticmethod
-        def addGroupMember(session, member_name, member_type, parent_names):
-            parents = session.query(Member).filter(Member.name.in_(parent_names)).all()
-            ModelAccess.addMember(session, member_name, member_type, parents)
+        def addGroupMember(session, member_type_name, parent_type_names):
+            type, name = member_type_name.split('/',1)
+            parents = session.query(Member).filter(Member.name.in_(parent_type_names)).all()
+            ModelAccess.addMember(session, member_type_name, parent_type_names)
             session.commit()
 
         @staticmethod
-        def delGroupMember(session, member_name, parent_name, only_delete_relationship):
+        def delGroupMember(session, member_type_name, parent_type_name, only_delete_relationship):
             if only_delete_relationship:
-                session.query(group_members).filter(group_members.group_name==parent_name).filter(group_members.members_name==member_name).delete()
+                session.query(group_members).filter(group_members.group_name==parent_type_name).filter(group_members.members_name==member_name).delete()
             else:
-                session.query(binding_members).filter(binding_members.members_name==member_name).delete()
-                session.query(group_members).filter(group_members.group_name==member_name).delete()
-                session.query(Member).filter(Member.name==member_name).one().delete()
+                #session.query(binding_members).filter(binding_members.c.members_name==member_name).delete()
+                #session.query(group_members).filter(group_members.group_name==member_name).delete()
+                session.query(Member).filter(Member.name==member_type_name).delete()
             session.commit()
 
         @staticmethod
         def listGroupMembers(session, member_name_prefix):
-            return map(lambda m: m.name, session.query(Member).filter(Member.name.startswith(member_name_prefix)).all())
+            return map(lambda m: m.name, session.query(Member).filter(Member.member_name.startswith(member_name_prefix)).all())
 
         @staticmethod
         def listResourcesByPrefix(session, full_resource_name_prefix):
@@ -306,6 +309,7 @@ def define_model(model_name, dbengine, model_seed):
 
         @staticmethod
         def addResourceByName(session, full_name, full_parent_name, no_require_parent):
+            logging.critical('full_name={}, full_parent_name={}, no_require_parent={}'.format(full_name, full_parent_name, no_require_parent))
             if not no_require_parent:
                 parent = session.query(Resource).filter(Resource.full_name==full_parent_name).one()
             else:
@@ -337,8 +341,12 @@ def define_model(model_name, dbengine, model_seed):
             return binding
 
         @staticmethod
-        def addMember(session, name, type, parents=[]):
-            member = Member(name=name, type=type, parents=parents)
+        def addMember(session, type_name, parent_type_names=[]):
+            type, name = type_name.split('/',1)
+            parents = session.query(Member).filter(Member.name.in_(parent_type_names)).all()
+            if len(parents) != len(parent_type_names):
+                raise Exception("At least one parent not found")
+            member = Member(name=type_name,member_name=name, type=type, parents=parents)
             session.add(member)
             return member
 
