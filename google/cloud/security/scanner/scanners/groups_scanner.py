@@ -53,7 +53,8 @@ class GroupsScanner(base_scanner.BaseScanner):
         dao = group_dao.GroupDao()
         root = dao.build_group_tree(self.snapshot_timestamp)
 
-        with open('google/cloud/security/scanner/samples/group_rules.yaml', 'r') as f:
+        rules_path = 'google/cloud/security/scanner/samples/group_rules.yaml'
+        with open(rules_path, 'r') as f:
             rules = yaml.load(f)
     
         # Apply all rules to applicable nodes.

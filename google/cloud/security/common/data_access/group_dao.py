@@ -103,7 +103,7 @@ class GroupDao(dao.Dao):
                     queue.put(member.get('member_id'))
         return all_members
 
-    def get_recursive_members_of_group_node(self, node, timestamp):
+    def get_recursive_members(self, node, timestamp):
         """Get all the recursive members of a group.
 
         Args:
@@ -154,8 +154,7 @@ class GroupDao(dao.Dao):
                                     'group',
                                     'ACTIVE',
                                     root)
-            group_node = self.get_recursive_members_of_group_node(group_node,
-                                                                  timestamp)
+            group_node = self.get_recursive_members(group_node, timestamp)
         
         LOGGER.info(RenderTree(root, style=AsciiStyle()).by_attr(
             'member_email'))
@@ -165,7 +164,8 @@ class GroupDao(dao.Dao):
 class MemberNode(NodeMixin):
     """A custom anytree node with Group Member attributes."""
     
-    def __init__(self, member_id, member_email, member_type, member_status, parent):
+    def __init__(self, member_id, member_email, member_type, member_status,
+                 parent):
         self.member_id = member_id
         self.member_email = member_email
         self.member_type = member_type
