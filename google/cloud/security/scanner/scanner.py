@@ -96,12 +96,6 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    # Instantiate rules engine with supplied rules file
-    if rules_engine_name != 'GroupsEngine':
-        rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
-            rules_file_path=FLAGS.rules)
-        rules_engine.build_rule_book()
-
     snapshot_timestamp = _get_timestamp()
     if not snapshot_timestamp:
         LOGGER.warn('No snapshot timestamp found. Exiting.')
@@ -110,24 +104,31 @@ def main(_):
     # Load scanner from map
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
 
-    if rules_engine_name != 'GroupsEngine':
-        iter_objects, resource_counts = scanner.run()
-
-        # Load violations processing function
-        all_violations = scanner.find_violations(
-            itertools.chain(
-                *iter_objects),
-            rules_engine)
-
-        # If there are violations, send results.
-        if all_violations:
-            _output_results(all_violations,
-                            snapshot_timestamp,
-                            resource_counts=resource_counts)
-
-    else:
+    # TODO: Make the groups scanner run consistently with other scanners
+    # instead of it's own execution path.
+    if rules_engine_name == 'GroupsEngine':
         all_violations = scanner.run(FLAGS.rules)
         LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
+        sys.exit(1)
+
+    # Instantiate rules engine with supplied rules file
+    rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
+        rules_file_path=FLAGS.rules)
+    rules_engine.build_rule_book()
+
+    iter_objects, resource_counts = scanner.run()
+
+    # Load violations processing function
+    all_violations = scanner.find_violations(
+        itertools.chain(
+            *iter_objects),
+        rules_engine)
+
+    # If there are violations, send results.
+    if all_violations:
+        _output_results(all_violations,
+                        snapshot_timestamp,
+                        resource_counts=resource_counts)
 
     LOGGER.info('Done!')
 

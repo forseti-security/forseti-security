@@ -59,6 +59,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             node.rules.append(rule)
         return starting_node
 
+    # pylint: disable=arguments-differ
     def run(self, rules_path):
         """Runs the groups scanner.
 
@@ -168,19 +169,6 @@ class GroupsScanner(base_scanner.BaseScanner):
             #
             # truth table
             # http://stackoverflow.com/a/19389957/2830207
-            # +-----------------------------------------+---------+---------+
-            # |                                         |   any   |   all   |
-            # +-----------------------------------------+---------+---------+
-            # | All Truthy values                       |  True   |  True   |
-            # +-----------------------------------------+---------+---------+
-            # | All Falsy values                        |  False  |  False  |
-            # +-----------------------------------------+---------+---------+
-            # | One Truthy value (all others are Falsy) |  True   |  False  |
-            # +-----------------------------------------+---------+---------+
-            # | One Falsy value (all others are Truthy) |  True   |  False  |
-            # +-----------------------------------------+---------+---------+
-            # | Empty Iterable                          |  False  |  True   |
-            # +-----------------------------------------+---------+---------+
             if not any(whitelist_rule_statuses):
                 all_violations.append(node)
 
