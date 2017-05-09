@@ -14,10 +14,12 @@
 
 """Map for mapping rules engine to scanner class"""
 # pylint: disable=line-too-long
+from google.cloud.security.scanner.scanners.groups_scanner import GroupsScanner
 from google.cloud.security.scanner.scanners.iam_rules_scanner import IamPolicyScanner
 # pylint: enable=line-too-long
 
 
 SCANNER_MAP = {
+    'GroupsEngine': GroupsScanner,
     'IamRulesEngine': IamPolicyScanner,
 }

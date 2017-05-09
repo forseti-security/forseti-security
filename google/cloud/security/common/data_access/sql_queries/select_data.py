@@ -57,6 +57,10 @@ LATEST_SNAPSHOT_TIMESTAMP = """
     SELECT max(cycle_timestamp) FROM snapshot_cycles
 """
 
+GROUPS = """
+    SELECT * from groups_{0};
+"""
+
 GROUP_IDS = """
     SELECT group_id from groups_{0};
 """
