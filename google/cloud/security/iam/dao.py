@@ -10,7 +10,7 @@ import struct
 import hmac
 
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Table, Text, DateTime, Enum, join, select
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Table, Text, DateTime, Enum, join, select, or_
 from sqlalchemy.orm import relationship, state
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -139,7 +139,7 @@ def define_model(model_name, dbengine, model_seed):
             back_populates='bindings')
 
         def __repr__(self):
-            return "<Binding(id='%s')>" % (self.id)
+            return "<Binding(id='%s', role='%s', resource='%s' members=%s)>" % (self.id, self.role_name, self.resource_name, self.members)
 
     class Role(Base):
         __tablename__ = roles_tablename
@@ -180,6 +180,54 @@ def define_model(model_name, dbengine, model_seed):
             role_permissions.drop(engine)
             binding_members.drop(engine)
             group_members.drop(engine)
+
+        @staticmethod
+        def query_access_by_member(session, member_name, permission_names, expand_resources=False, per_yield=1024):
+            roles = ModelAccess.getRolesByPermissionNames(session, permission_names)
+            qry = session.query(Binding).join(binding_members).join(Member)
+            qry = qry.filter(Binding.role_name.in_(map(lambda r: r.name, roles)))
+            qry = qry.filter(Member.name==member_name)
+            bindings = qry.all()
+
+            if expand_resources:
+                def expand_resources(resource_names, depth=-1):
+                    resource_names_set = set(resource_names)
+                    if depth == 0 or len(resource_names) == 0:
+                        return resource_names_set
+                    else:
+                        new_resource_names = set(map(lambda r: r.name, session.query(Resource).filter(Resource.parent_name.in_(resource_names)).all()))
+                        return resource_names_set.union(expand_resources(new_resource_names, depth-1))
+            else:
+                def expand_resources(resource_names, depth=-1):
+                    return resource_names
+            
+            return [(binding.role_name, expand_resources([binding.resource_name])) for binding in bindings]
+
+        @staticmethod
+        def query_access_by_resource(session, resource_name, permission_names, expand_groups=False):
+            roles = ModelAccess.getRolesByPermissionNames(session, permission_names)
+            resources = ModelAccess.findResourcePath(session, resource_name)
+            bindings = session.query(Binding).filter(Binding.role_name.in_(map(lambda r: r.name, roles)), Binding.resource_name.in_(map(lambda r: r.name, resources))).all()
+
+            role_member_mapping = collections.defaultdict(set)
+            for binding in bindings:
+                role_member_mapping[binding.role_name] = set(map(lambda m: m.name, binding.members))
+            if expand_groups:
+                for role in role_member_mapping:
+                    role_member_mapping[role] = map(lambda m: m.name, ModelAccess.expandMembers(session, role_member_mapping[role]))
+
+            return role_member_mapping
+
+        @staticmethod
+        def query_permissions_by_roles(session, role_names, role_prefixes, per_yield=1024):
+            if not role_names and not role_prefixes:
+                raise Exception('No roles or role prefixes specified')
+            qry = session.query(Role, Permission).join(role_permissions).join(Permission)
+            if role_names:
+                qry = qry.filter(Role.name.in_(role_names))
+            if role_prefixes:
+                qry = qry.filter(or_(*[Role.name.startswith(prefix) for prefix in role_prefixes]))
+            return qry.all()
 
         @staticmethod
         def denormalize(session, per_yield=1024):            
@@ -245,7 +293,6 @@ def define_model(model_name, dbengine, model_seed):
             return policy
 
         @staticmethod
-        @logcall
         def checkIamPolicy(session, full_resource_name, permission_name, member_name):
             member_names = map(lambda m: m.name, ModelAccess.reverseExpandMembers(session, [member_name]))
             resource_names = map(lambda r: r.full_name, ModelAccess.findResourcePath(session, full_resource_name))

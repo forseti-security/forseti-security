@@ -62,8 +62,7 @@ message ListModelReply {
 
 message GetPermissionsByRolesRequest {
   repeated string role_names = 1;
-  repeated string role_patterns = 2;
-  bool return_all = 3;
+  repeated string role_prefixes = 2;
 }
 
 message GetPermissionsByRolesReply {
@@ -82,7 +81,7 @@ message GetAccessByResourcesRequest {
 
 message GetAccessByResourcesReply {
   message Access {
-    string member = 1;
+    repeated string members = 1;
     string resource = 2;
     string role = 3;
   }
@@ -90,14 +89,15 @@ message GetAccessByResourcesReply {
 }
 
 message GetAccessByMembersRequest {
-  repeated string member_names = 1;
-  bool expand_resources = 2;
+  string member_name = 1;
+  repeated string permission_names = 2;
+  bool expand_resources = 3;
 }
 
 message GetAccessByMembersReply {
   message Access {
     string member = 1;
-    string resource = 2;
+    repeated string resources = 2;
     string role = 3;
   }
   repeated Access accesses = 1;

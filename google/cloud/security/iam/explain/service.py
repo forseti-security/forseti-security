@@ -3,6 +3,7 @@
 from concurrent import futures
 import time
 import grpc
+from collections import defaultdict
 
 import explain_pb2
 import explain_pb2_grpc
@@ -39,16 +40,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def GetAccessByResources(self, request, context):
         model_name = self._get_handle(context)
-        members = self.explainer.GetAccessByResources(model_name,
+        mapping = self.explainer.GetAccessByResources(model_name,
                                                       request.resource_name,
                                                       request.permission_names,
                                                       request.expand_groups)
         accesses = []
-        for member in members:
-            access = explain_pb2.GetAccessByResourcesReply.Access()
-            access.member = member.name
-            access.resource = request.resource_name
-            access.role = ""
+        for role, members in mapping.iteritems():
+            access = explain_pb2.GetAccessByResourcesReply.Access(role=role, resource=request.resource_name, members=members)
             accesses.append(access)
 
         reply = explain_pb2.GetAccessByResourcesReply()
@@ -56,10 +54,36 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def GetAccessByMembers(self, request, context):
-        raise NotImplementedError()
+        model_name = self._get_handle(context)
+        accesses = []
+        for role, resources in self.explainer.GetAccessByMembers(model_name,
+                                                                 request.member_name,
+                                                                 request.permission_names,
+                                                                 request.expand_resources):
+        
+            access = explain_pb2.GetAccessByMembersReply.Access(role=role, resources=resources, member=request.member_name)
+            accesses.append(access)
+        reply = explain_pb2.GetAccessByMembersReply()
+        reply.accesses.extend(accesses)
+        return reply
 
     def GetPermissionsByRoles(self, request, context):
-        raise NotImplementedError()
+        model_name = self._get_handle(context)
+        result = self.explainer.GetPermissionsByRoles(model_name,
+                                                      request.role_names,
+                                                      request.role_prefixes)
+
+        permissions_by_roles_map = defaultdict(list)
+        for role, permission in result:
+            permissions_by_roles_map[role.name].append(permission.name)
+        
+        permissions_by_roles_list = []
+        for role, permissions in permissions_by_roles_map.iteritems():
+            permissions_by_roles_list.append(explain_pb2.GetPermissionsByRolesReply.PermissionsByRole(role=role, permissions=permissions))
+        
+        reply = explain_pb2.GetPermissionsByRolesReply()
+        reply.permissionsbyroles.extend(permissions_by_roles_list)
+        return reply
 
     def CreateModel(self, request, context):
         handle = self.explainer.CreateModel(request.type)

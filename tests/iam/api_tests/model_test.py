@@ -67,7 +67,7 @@ class ModelTest(basetest.TestCase):
     def setUp(self):
         self.setup = create_tester()
 
-    def test_check_model_subset_roles(self):
+    def test_check_policy(self):
 
         def test(client):
             self.assertTrue(client.playground.check_iam_policy('organization/org1/project/project2/vm/instance-1', 'c', 'user/d').result)
@@ -78,4 +78,48 @@ class ModelTest(basetest.TestCase):
             self.assertFalse(client.playground.check_iam_policy('organization/org1/project/project2', 'e', 'user/c').result)
             self.assertFalse(client.playground.check_iam_policy('organization/org1/project/project2/vm/instance-1', 'e', 'user/c').result)
 
+        self.setup.run(test)
+
+    def test_query_role_permissions(self):
+        def test(client):
+            response = client.explain.query_permissions_by_roles(role_names=['a','b'])
+            self.assertTrue(len(response.permissionsbyroles) == 2)
+            for mapping in response.permissionsbyroles:
+                if mapping.role == 'a':
+                    self.assertEquals(set(mapping.permissions), set(['a','b','c','d','e']))
+                elif mapping.role == 'b':
+                    self.assertEquals(set(mapping.permissions), set(['a','b','c']))
+                else:
+                    self.assertFalse(True)
+        self.setup.run(test)
+        
+    def test_query_access_by_resources(self):
+        def test(client):
+            response = client.explain.query_access_by_resources(resource_name='organization/org1/project/project2', permission_names=['a','c'], expand_groups=True)
+            self.assertTrue(len(response.accesses) == 2)
+            for access in response.accesses:
+                if access.role == 'a':
+                    self.assertEqual(set(access.members), set(['group/b', 'user/a', 'user/d']))
+                elif access.role == 'b':
+                    self.assertEqual(set(access.members), set(['group/a', 'user/a', 'user/b', 'user/c', 'user/d', 'group/b']))
+                else:
+                    self.assertFalse(True, 'Should never get here')
+        self.setup.run(test)
+
+    def test_query_access_by_members(self):
+        def test(client):
+            response = client.explain.query_access_by_members('group/a', 'a', expand_resources=True)
+            for access in response.accesses:
+                if access.role == 'b':
+                    self.assertEqual(set(access.resources),
+                                     set([
+                                         'organization/org1/project/project1/bucket/bucket1',
+                                         'organization/org1/project/project1',
+                                         'organization/org1/project/project2/vm/instance-1',
+                                         'organization/org1/project/project2/bucket/bucket2',
+                                         'organization/org1/project/project2',
+                                         'organization/org1',
+                                         ]))
+                else:
+                    self.assertFalse(True, 'Should never get here')
         self.setup.run(test)
