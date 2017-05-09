@@ -102,7 +102,6 @@ class ModelTestRunner(ApiTestRunner):
         if self._cyclic(parent_relationship):
             raise Exception("Cyclic membership relation not supported!")
 
-        print parent_relationship
         installed_members = set()
         while len(parent_relationship) > 0:
             for child, parents in parent_relationship.iteritems():
@@ -110,11 +109,9 @@ class ModelTestRunner(ApiTestRunner):
                     break
 
             installed_members.add(child)
-            member_type, member_name = child.split('/',1)
-            client.add_member(member_name, member_type, list(parents))
+            client.add_member(child, list(parents))
             parent_relationship.pop(child)
 
-#   def add_role(self, role_name, permissions):
     def _install_roles(self, model_view, client):
         for role, permissions in model_view.iteritems():
             client.add_role(role, permissions)

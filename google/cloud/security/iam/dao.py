@@ -16,6 +16,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from __builtin__ import staticmethod
 
+from utils import logcall
+
 def generateModelHandle():
     return binascii.hexlify(os.urandom(16))
 
@@ -187,8 +189,6 @@ def define_model(model_name, dbengine, model_seed):
         @staticmethod
         def setIamPolicy(session, full_resource_name, policy):
             old_policy = ModelAccess.getIamPolicy(session, full_resource_name)
-            print old_policy
-            print policy
             if policy['etag'] != old_policy['etag']:
                 raise Exception('Etags distinct, stored={}, provided={}'.format(old_policy['etag'], policy['etag']))
 
@@ -217,9 +217,9 @@ def define_model(model_name, dbengine, model_seed):
             for role, members in revocations.iteritems():
                 bindings = session.query(Binding).filter(Binding.resource_name == full_resource_name).filter(Binding.role_name == role).join(binding_members).join(Member).filter(Member.name.in_(members)).all()
                 map(lambda b: session.delete(b), bindings)
-            existing_bindings = session.query(Binding).filter(Binding.resource_name == full_resource_name).filter(Binding.role_name == role).all()
             for role, members in grants.iteritems():
                 inserted = False
+                existing_bindings = session.query(Binding).filter(Binding.resource_name == full_resource_name).filter(Binding.role_name == role).all()
                 for binding in existing_bindings:
                     if binding.role_name == role:
                         inserted = True
@@ -245,6 +245,7 @@ def define_model(model_name, dbengine, model_seed):
             return policy
 
         @staticmethod
+        @logcall
         def checkIamPolicy(session, full_resource_name, permission_name, member_name):
             member_names = map(lambda m: m.name, ModelAccess.reverseExpandMembers(session, [member_name]))
             resource_names = map(lambda r: r.full_name, ModelAccess.findResourcePath(session, full_resource_name))
@@ -309,7 +310,6 @@ def define_model(model_name, dbengine, model_seed):
 
         @staticmethod
         def addResourceByName(session, full_name, full_parent_name, no_require_parent):
-            logging.critical('full_name={}, full_parent_name={}, no_require_parent={}'.format(full_name, full_parent_name, no_require_parent))
             if not no_require_parent:
                 parent = session.query(Resource).filter(Resource.full_name==full_parent_name).one()
             else:
