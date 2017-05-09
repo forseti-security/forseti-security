@@ -33,6 +33,8 @@ class BasePipeline(object):
 
     RESOURCE_NAME = None
 
+    MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
     def __init__(self, cycle_timestamp, configs, api_client, dao):
         """Constructor for the base pipeline.
 

@@ -49,14 +49,13 @@ class BaseClient(object):
     def __repr__(self):
         return 'API: name=%s, version=%s' % (self.name, self.version)
 
+    @staticmethod
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
-    # pylint: disable=no-self-use
-    # TODO: Investigate if this could be a standalone methods to remove disable.
-    def _execute(self, request):
+    def _execute(request):
         """Executes requests in a rate-limited way.
 
         Args:
@@ -86,10 +85,6 @@ class BaseClient(object):
             A list of API response objects (dict).
 
         Raises:
-            When the retry is exceeded, exception will be thrown.  This
-            exception is not wrapped by the retry library, and will be handled
-            upstream.
-
             api_errors.ApiExecutionError when there is no list_next() method
             on the api_stub.
         """

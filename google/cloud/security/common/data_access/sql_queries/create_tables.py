@@ -210,3 +210,24 @@ CREATE_BUCKETS_ACL_TABLE = """
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
+
+CREATE_FORWARDING_RULES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL,
+        `project_id` varchar(255) NOT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `ip_address` varchar(255) DEFAULT NULL,
+        `ip_protocol` enum('TCP','UDP','ESP','AH','SCTP','ICMP') DEFAULT NULL,
+        `port_range` varchar(255) DEFAULT NULL,
+        `ports` json DEFAULT NULL,
+        `target` varchar(255) DEFAULT NULL,
+        `load_balancing_scheme` enum('INTERNAL','EXTERNAL') DEFAULT NULL,
+        `subnetwork` varchar(255) DEFAULT NULL,
+        `network` varchar(255) DEFAULT NULL,
+        `backend_service` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
