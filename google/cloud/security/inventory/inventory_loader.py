@@ -339,7 +339,6 @@ def main(_):
             cycle_timestamp,
             configs,
             dao=dao,
-            bigquery_datasets_dao=bigquery_datasets_dao,
             project_dao=project_dao,
             organization_dao=organization_dao,
             bucket_dao=bucket_dao)

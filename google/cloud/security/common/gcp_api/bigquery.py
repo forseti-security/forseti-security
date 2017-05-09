@@ -30,105 +30,172 @@ flags.DEFINE_integer('max_bigquery_api_calls_per_100_seconds', 17000,
 
 LOGGER = log_util.get_logger(__name__)
 
-def extract_dataset_access(dataset_objects):
-    """Return a list of just dataset access objects.
-
-    Args: A datset_object in the form of:
-        https://developers.google.com/resources/api-libraries/documentation/bigquery/v2/python/latest/bigquery_v2.datasets.html#get
-
-    Returns:
-        [{"domain": "A String",
-          "userByEmail": "A String",
-          "specialGroup": "A String",
-          "groupByEmail": "A String",
-          "role": "A String",
-          "view": {"projectId": "A String",
-                   "tableId": "A String",
-                   "datasetId": "A String"
-          },
-          {"domain": "A String",
-           "userByEmail": "A String",
-           "specialGroup": "A String",
-           "groupByEmail": "A String",
-           "role": "A String",
-           "view": {"projectId": "A String",
-                    "tableId": "A String",
-                    "datasetId": "A String"
-           }]
-    """
-    return [item.get('access', []) for item in dataset_objects]
-
-def extract_datasets(dataset_list_objects):
+def extract_datasets(dataset_list_objects, key='datasets'):
     """Return a list of just dataset objects.
 
-    Args: A dataset list object in the form of:
-        {"kind": "bigquery#datasetList",
-        "etag": etag,
-        "nextPageToken": string,
-        "datasets": [
-           {
-              "kind": "bigquery#dataset",
-              "id": "string",
-              "datasetReference": {
-                "datasetId": "string",
-                "projectId": "string"
-              },
-              "labels": {
-                "key": "string"
-              },
-              "friendlyName": "string"
-            },
-            {
-              "kind": "bigquery#dataset",
-              "id": "string",
-              "datasetReference": {
-                "datasetId": "string",
-                "projectId": "string"
-              },
-              "labels": {
-                "key": "string"
-              },
-              "friendlyName": "string"
-            }
-        ]}
-
+    Args: A list of dataset objects:
+        [{
+         "kind": "bigquery#datasetList",
+         "etag": 'etag',
+         "datasets": [
+          {
+           "kind": "bigquery#dataset",
+           "id": "bq-test:test",
+           "datasetReference": {
+            "datasetId": "test",
+            "projectId": "bq-test"
+           }
+          }
+         ]
+        },      
+        {
+         "kind": "bigquery#datasetList",
+         "etag": 'etag',
+         "datasets": [
+          {
+           "kind": "bigquery#dataset",
+           "id": "bq-test2:test2",
+           "datasetReference": {
+            "datasetId": "test2",
+            "projectId": "bq-test2"
+           }
+          }
+         ]
+        }]
+        
     Returns:
         A list of dataset objects like:
-        [{'friendlyName': 'string',
+        [{'friendlyName': 'A String',
           'kind': 'bigquery#dataset',
-          'labels': {'key': 'string'},
-          'id': 'string',
-          'datasetReference': {'projectId': 'string',
-                               'datasetId': 'string'}
-         },{...}
+          'labels': {'a_key': 'A String',},
+          'id': 'A String',
+          'datasetReference': {
+               'projectId': 'A String',
+               'datasetId': 'A String',
+          },
+          {'friendlyName': 'A String',
+           'kind': 'bigquery#dataset',
+           'labels': {'a_key': 'A String',},
+           'id': 'A String',
+           'datasetReference': {
+               'projectId': 'A String',
+               'datasetId': 'A String',
+          },
         ]
     """
-    return [item.get('datasets', []) for item in dataset_list_objects]
+    return [ item.get(key, []) for item in dataset_list_objects ]
 
-def extract_dataset_references(dataset_objects):
+def extract_dataset_references(datasets, key='datasetReference'):
     """Return a list of just datasetReference objects.
 
-    Args:
-        dataset_objects: A list of objects like:
-        [{'friendlyName': 'string',
-          'kind': 'bigquery#dataset',
-          'labels': {'key': 'string'},
-          'id': 'string',
-          'datasetReference': {'projectId': 'string',
-                               'datasetId': 'string'}
-         },{...}
-        ]
+    Args: A list of dataset list objects:
+       [[{'datasetReference': {'datasetId': 'test', 'projectId': 'bq-test'},
+       'id': 'bq-test:test',
+       'kind': 'bigquery#dataset'}],
+       [{'datasetReference': {'datasetId': 'test2', 'projectId': 'bq-test2'},
+       'id': 'bq-test2:test2',
+       'kind': 'bigquery#dataset'}]] 
 
     Returns:
         A list of objects like:
-        [{'projectId': 'string', 'datasetId': 'string'},
-         {'projectId': 'string', 'datasetId': 'string'},
-         {'projectId': 'string', 'datasetId': 'string'}]
+        [{'projectId': 'bq-test',
+          'datasetId': 'test'
+          }, {
+          'projectId': 'bq-test2',
+          'datasetId': 'test2'
+          }
+        ]
     """
-    return [item.get('datasetsReference', []) for item in dataset_objects]
+    return [ ref.get(key, []) for dataset in datasets for ref in dataset ]
+
+def extract_dataset_access(datasets, key='access'):
+    """Return a list of just dataset access objects.
+
+    Args: A datset_object in the form of:
+        [{
+            'kind': 'bigquery#dataset',
+            'etag': 'etag',
+            'id': 'bq-test:test',
+            'selfLink': 'link',
+            'datasetReference': {
+                'datasetId': 'test',
+                'projectId': 'bq-test'
+            },
+            'access': [
+                {
+                    'role': 'WRITER',
+                    'specialGroup': 'projectWriters'
+                },
+                {
+                    'role': 'OWNER',
+                    'specialGroup': 'projectOwners'
+                },
+                {
+                    'role': 'OWNER',
+                    'userByEmail': 'm@m.com'
+                },
+                {
+                    'role': 'READER',
+                    'specialGroup': 'projectReaders'
+                }
+            ],
+            'creationTime': '1',
+            'lastModifiedTime': '2'
+          }, {
+          'kind': 'bigquery#dataset',
+          'etag': 'etag',
+          'id': 'bq-test2:test2',
+          'selfLink': 'link',
+          'datasetReference': {
+            'datasetId': 'test2',
+            'projectId': 'bq-test2'
+          },
+          'access': [
+            {
+              'role': 'WRITER',
+              'specialGroup': 'projectWriters'
+            },
+            {
+              'role': 'OWNER',
+              'specialGroup': 'projectOwners'
+            },
+            {
+              'role': 'OWNER',
+              'userByEmail': 'm@m.com'
+            },
+            {
+              'role': 'READER',
+              'specialGroup': 'projectReaders'
+            }
+          ],
+          'creationTime': '1',
+          'lastModifiedTime': '2'
+          }]
+          
+    Returns:
+        [
+            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
+                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+                {'role': 'OWNER', 'userByEmail': 'm@m.com'},
+                {'role': 'READER', 'specialGroup': 'projectReaders'}],
+            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
+                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+                {'role': 'OWNER', 'userByEmail': 'm@m.com'},
+                {'role': 'READER', 'specialGroup': 'projectReaders'}],
+            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
+                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+                {'role': 'OWNER', 'userByEmail': 'm@m.com'},
+                {'role': 'READER', 'specialGroup': 'projectReaders'}],
+            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
+                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+                {'role': 'OWNER', 'userByEmail': 'm@m.com'},
+                {'role': 'READER', 'specialGroup': 'projectReaders'}]
+        ]
+    """
+    return [ ref.get(key, []) for dataset in datasets for ref in datasets ]
 
 class BigQueryClient(_base_client.BaseClient):
-    """BigQuery Client."""
+    """BigQuery Client manager."""
 
     API_NAME = 'bigquery'
 

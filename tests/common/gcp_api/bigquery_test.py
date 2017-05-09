@@ -16,16 +16,13 @@
 
 
 from googleapiclient.errors import HttpError
-from httplib2 import HttpLib2Error
 import mock
 
 from google.apputils import basetest
-from google.cloud.security.common.gcp_api import _base_client
-from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import bigquery as bq
+from google.cloud.security.common.gcp_api import _base_client as _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import log_util
-
+from tests.common.gcp_api.test_data import fake_bigquery as fbq
 
 class BigqueryTestCase(basetest.TestCase):
     """Test the Bigquery API Client."""
@@ -51,132 +48,44 @@ class BigqueryTestCase(basetest.TestCase):
             bq.BigQueryClient.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
             self.bq_api_client.rate_limiter.period)
 
-    def test_get_project(self):
-        """Test can get project."""
+    def test_extract_datasets(self):
+        return_value = bq.extract_datasets(fbq.DATASET_LISTS)
 
-        mock_project_stub = mock.MagicMock()
+        self.assertListEqual(fbq.EXPECTED_DATASETS_LISTS,
+                             return_value)
+
+    def test_extract_dataset_references(self):
+        return_value = bq.extract_dataset_references(
+                fbq.EXPECTED_DATASETS_LISTS)
+
+        self.assertListEqual(fbq.EXPECTED_DATASET_REFERENCES,
+                             return_value)
+
+    def test_extract_dataset_access(self):
+        return_value = bq.extract_dataset_access(fbq.DATASETS)
+
+        self.assertListEqual(fbq.EXPECTED_DATASET_ACCESS,
+                             return_value)
+
+    def test_getdatasets_for_projectid_raises(self):
+        mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.projects.return_value = mock_project_stub
-
-        project_id = '11111'
-        self.bq_api_client.get_project(project_id)
-        self.bq_api_client.service.projects.assert_called_once_with()
-        mock_project_stub.get.assert_called_once_with(projectId=project_id)
-
-        # test the error handling
-        bq.LOGGER = mock.MagicMock()
+        self.bq_api_client.service.datasets.return_value = mock_bq_stub
+        self.bq_api_client._build_paged_result = mock.MagicMock(
+            side_effect=HttpError)
         self.bq_api_client._execute = mock.MagicMock()
-        self.bq_api_client._execute.side_effect = HttpLib2Error
-
-        self.bq_api_client.get_project(project_id)
-        self.assertEquals(1, bq.LOGGER.error.call_count)
-
-    def test_get_projects(self):
-        """Test get projects."""
-
-        mock_project_stub = mock.MagicMock()
-        mock_project_stub.list_next.return_value = None
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.projects.return_value = mock_project_stub
-
-        fake_projects = {
-
-            }
-
-        expected_projects = [{
-
-            }]
-
-        self.bq_api_client._execute = mock.MagicMock(
-            return_value=fake_projects)
-
-        org_id = '11111'
-        result = list(self.bq_api_client.get_projects(
-            'foo'))
-        self.assertEquals(expected_projects[0], result[0])
-
-
-    def test_get_project_iam_policies(self):
-        """Test get project IAM policies."""
-
-        mock_project_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.projects.return_value = mock_project_stub
-
-        project_id = '11111'
-        self.bq_api_client.get_project_iam_policies('foo', project_id)
-        self.bq_api_client.service.projects.assert_called_once_with()
-        mock_project_stub.getIamPolicy.assert_called_once_with(
-            resource=project_id, body={})
-
-        # test the error handling
-        self.bq_api_client._execute = mock.MagicMock()
-        self.bq_api_client._execute.side_effect = HttpLib2Error
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.bq_api_client.get_project_iam_policies('foo', project_id)
+             self.bq_api_client.get_datasets_for_projectid(fbq.PROJECT_IDS)
 
-    def test_get_organization(self):
-        """Test get organizations."""
+    def test_getdatasets_for_projectid(self):
+        pass
 
-        mock_orgs_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.organizations.return_value = mock_orgs_stub
+    def test_get_dataset_access_raises(self):
+        pass
 
-        org_name = 'foo'
-        self.bq_api_client.get_organization(org_name)
-        self.bq_api_client.service.organizations.assert_called_once_with()
-        mock_orgs_stub.get.assert_called_once_with(name=org_name)
-
-        # test the error handling
-        bq.LOGGER = mock.MagicMock()
-        self.bq_api_client._execute = mock.MagicMock()
-        self.bq_api_client._execute.side_effect = HttpLib2Error
-
-        self.bq_api_client.get_organization(org_name)
-        self.assertEquals(1, bq.LOGGER.error.call_count)
-
-    def test_get_organizations(self):
-        """Test get organizations."""
-
-        mock_orgs_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.organizations.return_value = mock_orgs_stub
-
-        fake_orgs_response = fake_orgs.FAKE_ORGS_RESPONSE
-        expected_orgs = fake_orgs.EXPECTED_FAKE_ORGS_FROM_API
-
-        self.bq_api_client._execute = mock.MagicMock(
-            return_value=fake_orgs_response)
-
-        result = list(self.bq_api_client.get_organizations('organizations'))
-        self.assertEquals(expected_orgs, [fake_orgs_response])
-
-    def test_get_org_iam_policies(self):
-        """Test get org IAM policies."""
-
-        mock_orgs_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.organizations.return_value = mock_orgs_stub
-
-        org_id = '11111'
-        response = '22222'
-        expected_result = {'org_id': org_id, 'iam_policy': response}
-        self.bq_api_client._execute = mock.MagicMock(return_value=response)
-        result = self.bq_api_client.get_org_iam_policies('foo', org_id)
-
-        self.assertEquals(expected_result, result)
-        self.bq_api_client.service.organizations.assert_called_once_with()
-        mock_orgs_stub.getIamPolicy.assert_called_once_with(
-            resource='organizations/11111', body={})
-
-        # test the error handling
-        self.bq_api_client._execute = mock.MagicMock()
-        self.bq_api_client._execute.side_effect = HttpLib2Error
-
-        with self.assertRaises(api_errors.ApiExecutionError):
-            self.bq_api_client.get_project_iam_policies('foo', org_id)
-
+    def test_get_dataset_access(self):
+        pass
 
 if __name__ == '__main__':
     basetest.main()
