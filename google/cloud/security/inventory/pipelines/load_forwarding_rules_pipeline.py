@@ -82,21 +82,23 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
         compute forwarding rules for each.
 
         Returns:
-            A dict mapping region with a list of forwarding rules.
+            A dict mapping projects with their forwarding rules (list):
+            {project_id: [forwarding_rules]}
         """
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
         forwarding_rules = {}
         for project in projects:
+            project_fwd_rules = []
             try:
                 response = self.api_client.get_forwarding_rules(project.id)
                 for page in response:
                     items = page.get('items', {})
                     for region_fwd_rules in items.values():
-                        fwd_rules = region_fwd_rules.get('forwardingRules')
-                        if fwd_rules:
-                            forwarding_rules[project.id] = fwd_rules
+                        fwd_rules = region_fwd_rules.get('forwardingRules', [])
+                        project_fwd_rules.extend(fwd_rules)
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
+            forwarding_rules[project.id] = project_fwd_rules
         return forwarding_rules
 
     def run(self):
