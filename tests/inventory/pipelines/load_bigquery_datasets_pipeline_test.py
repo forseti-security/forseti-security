@@ -30,6 +30,7 @@ from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pip
 from google.cloud.security.inventory import util as inventory_util
 from tests.inventory.pipelines.test_data import fake_bigquery_datasets as fbq
 from tests.inventory.pipelines.test_data import fake_configs
+# pylint: enable=line-too-long
 
 
 class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
@@ -67,54 +68,54 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
             self.RESOURCE_NAME, self.cycle_timestamp)
 
     def test_get_dataset_by_projectid_raises(self):
-        self.pipeline.api_client.retrieve_datasets_for_projectid.side_effect = (
+        self.pipeline.api_client.get_datasets_for_projectid.side_effect = (
             api_errors.ApiExecutionError('', mock.MagicMock()))
 
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._get_dataset_by_projectid('1')
+            self.pipeline._retrieve_dataset_by_projectid('1')
 
     def test_get_dataset_by_project_id(self):
-        self.pipeline.api_client.retrieve_datasets_for_projectid.return_value = (
+        self.pipeline.api_client.get_datasets_for_projectid.return_value = (
             fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP)
 
-        return_value = self.pipeline._get_dataset_by_projectid('1')
+        return_value = self.pipeline._retrieve_dataset_by_projectid('1')
 
         self.assertListEqual(
             fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP,
             return_value)
 
     def test_get_dataset_access_raises(self):
-        self.pipeline.api_client.retrieve_dataset_access.side_effect = (
+        self.pipeline.api_client.get_dataset_access.side_effect = (
             api_errors.ApiExecutionError('', mock.MagicMock())
         )
 
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._get_dataset_access('1', '2')
+            self.pipeline._retrieve_dataset_access('1', '2')
 
     def test_get_dataset_access(self):
-        self.pipeline.api_client.retrieve_dataset_access.return_value = (
+        self.pipeline.api_client.get_dataset_access.return_value = (
             fbq.FAKE_DATASET_ACCESS
         )
 
-        return_value = self.pipeline._get_dataset_access('1', '2')
+        return_value = self.pipeline._retrieve_dataset_access('1', '2')
 
         self.assertListEqual(
             fbq.FAKE_DATASET_ACCESS,
             return_value)
 
     def test_get_dataset_project_map_raises(self):
-        self.pipeline.api_client.retrieve_datasets_for_projectid.side_effect = (
+        self.pipeline.api_client.get_datasets_for_projectid.side_effect = (
             api_errors.ApiExecutionError('', mock.MagicMock())
         )
 
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._get_dataset_project_map([''])
+            self.pipeline._retrieve_dataset_project_map([''])
 
     def test_get_dataset_project_map(self):
-        self.pipeline.api_client.retrieve_datasets_for_projectid.return_value = (
+        self.pipeline.api_client.get_datasets_for_projectid.return_value = (
             fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP)
 
-        return_value = self.pipeline._get_dataset_project_map(
+        return_value = self.pipeline._retrieve_dataset_project_map(
               [fbq.FAKE_BIGQUERY_PROJECTID])
 
         self.assertListEqual(
@@ -123,12 +124,12 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
 
     @mock.patch.object(
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
-        '_get_dataset_access' )
+        '_retrieve_dataset_access' )
     def test_get_dataset_access_map(self, mock_dataset_access):
         mock_dataset_access.return_value = (
             fbq.FAKE_DATASET_ACCESS)
 
-        return_value = self.pipeline._get_dataset_access_map(
+        return_value = self.pipeline._retrieve_dataset_access_map(
             fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP)
 
         self.assertListEqual(

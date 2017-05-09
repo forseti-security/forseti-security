@@ -47,7 +47,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
             LOGGER.error('Error fetching project ids from MySQL: %s', e)
             raise inventory_errors.LoadDataPipelineError
 
-    def _get_dataset_by_projectid(self, project_id):
+    def _retrieve_dataset_by_projectid(self, project_id):
         """Retrieve the bigquery dataset resources from GCP.
 
         Args:
@@ -61,26 +61,26 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         """
 
         try:
-            return self.api_client.retrieve_datasets_for_projectid(project_id)
+            return self.api_client.get_datasets_for_projectid(project_id)
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
-    def _get_dataset_access(self, project_id, dataset_id):
+    def _retrieve_dataset_access(self, project_id, dataset_id):
         """Retrieve the bigquery dataset resources from GCP.
 
         Args:
             project_id: A project id.
             dataset_id: A dataset id.
 
-        Returns: See bigquery.retrieve_dataset_access().
+        Returns: See bigquery.get_dataset_access().
         """
 
         try:
-            return self.api_client.retrieve_dataset_access(project_id, dataset_id)
+            return self.api_client.get_dataset_access(project_id, dataset_id)
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
-    def _get_dataset_project_map(self, project_ids):
+    def _retrieve_dataset_project_map(self, project_ids):
         """Retrieve the bigquery datasets for all requested project ids.
 
         Args:
@@ -96,7 +96,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         dataset_by_project_map = []
         for project_id in project_ids:
             try:
-                datasets = self.api_client.retrieve_datasets_for_projectid(
+                datasets = self.api_client.get_datasets_for_projectid(
                     project_id)
             except api_errors.ApiExecutionError as e:
                 raise inventory_errors.LoadDataPipelineError(e)
@@ -105,12 +105,12 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
 
         return dataset_by_project_map
 
-    def _get_dataset_access_map(self, dataset_project_map):
+    def _retrieve_dataset_access_map(self, dataset_project_map):
         """Iteriate through projects and their datasets to get ACLs.
 
         Args:
             dataset_project_map: A list of projects and their datasets.
-            See the output of _get_dataset_project_map().
+            See the output of _retrieve_dataset_project_map().
 
         Returns:
             A list of tuples in the form of:
@@ -124,7 +124,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         for dataset_project in dataset_project_map:
             project_id = dataset_project.get('projectId')
             dataset_id = dataset_project.get('datasetId')
-            dataset_acl = self._get_dataset_access(project_id, dataset_id)
+            dataset_acl = self._retrieve_dataset_access(project_id, dataset_id)
             dataset_project_access_map.append(
                 (project_id, dataset_id, dataset_acl)
             )
@@ -167,13 +167,13 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
             A list of project ids.
 
         Returns:
-            A bigquery dataset access map. See _get_dataset_access_map().
+            A bigquery dataset access map. See _retrieve_dataset_access_map().
         """
 
         project_ids = self._get_project_ids_from_dao()
-        dataset_project_map = self._get_dataset_project_map(project_ids)
+        dataset_project_map = self._retrieve_dataset_project_map(project_ids)
 
-        return self._get_dataset_access_map(dataset_project_map)
+        return self._retrieve_dataset_access_map(dataset_project_map)
 
     def run(self):
         """Runs the actual data fetching pipeline."""

@@ -147,7 +147,7 @@ class BigQueryClient(_base_client.BaseClient):
         return RateLimiter(FLAGS.max_bigquery_api_calls_per_100_seconds,
                            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def retrieve_datasets_for_projectid(self, project_id):
+    def get_datasets_for_projectid(self, project_id):
         """Return BigQuery datasets stored in the requested project_id.
 
         Args:
@@ -169,8 +169,8 @@ class BigQueryClient(_base_client.BaseClient):
 
         return self.extract_dataset_references(datasets)
 
-    def retrieve_dataset_access(self, project_id, dataset_id):
-        """Return access portion of the dataset resource object.
+    def get_dataset_access(self, project_id, dataset_id):
+        """Return the access portion of the dataset resource object.
 
         Args:
             project_id: String representing the project id.
