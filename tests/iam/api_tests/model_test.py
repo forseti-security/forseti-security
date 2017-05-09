@@ -13,7 +13,7 @@ class TestServiceConfig:
 
     def runInBackground(self, function):
         function()
-        
+
 model = {
         'resources':{
                 'organization/org1' : {
@@ -66,18 +66,16 @@ class ModelTest(basetest.TestCase):
 
     def setUp(self):
         self.setup = create_tester()
-        
 
     def test_check_model_subset_roles(self):
-        
+
         def test(client):
             self.assertTrue(client.playground.check_iam_policy('organization/org1/project/project2/vm/instance-1', 'c', 'user/d').result)
             self.assertTrue(client.playground.check_iam_policy('organization/org1/project/project2/vm/instance-1', 'e', 'user/d').result)
             self.assertTrue(client.playground.check_iam_policy('organization/org1/project/project2/vm/instance-1', 'e', 'user/a').result)
-           
+
             self.assertFalse(client.playground.check_iam_policy('organization/org1', 'e', 'user/a').result)
             self.assertFalse(client.playground.check_iam_policy('organization/org1/project/project2', 'e', 'user/c').result)
             self.assertFalse(client.playground.check_iam_policy('organization/org1/project/project2/vm/instance-1', 'e', 'user/c').result)
 
-        
         self.setup.run(test)
