@@ -165,9 +165,9 @@ class BigQueryClient(_base_client.BaseClient):
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(self.API_NAME, e)
 
-        datasets = self.extract_datasets(results)
+        datasets = extract_datasets(results)
 
-        return self.extract_dataset_references(datasets)
+        return extract_dataset_references(datasets)
 
     def get_dataset_access(self, project_id, dataset_id):
         """Return the access portion of the dataset resource object.
@@ -187,6 +187,6 @@ class BigQueryClient(_base_client.BaseClient):
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(self.API_NAME, e)
 
-        dataset_access = self.extract_dataset_access(results)
+        dataset_access = extract_dataset_access(results)
 
-        return self.extract_dataset_references(dataset_access)
+        return extract_dataset_references(dataset_access)

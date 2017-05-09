@@ -46,10 +46,8 @@ import gflags as flags
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.apputils import app
-from google.cloud.security.common.data_access import db_schema_version,\
-    bigquery_datasets_dao
+from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import bigquery_datasets_dao as bq_dao
 from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
