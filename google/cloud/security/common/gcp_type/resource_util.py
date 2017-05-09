@@ -14,7 +14,6 @@
 """Util for generic operations for Resources."""
 
 from google.cloud.security.common.gcp_type import folder
-from google.cloud.security.common.gcp_type import group
 from google.cloud.security.common.gcp_type import organization as org
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
@@ -40,10 +39,6 @@ class ResourceUtil(object):
             'class': project.Project,
             'plural': 'Projects',
         },
-        resource.ResourceType.GROUP: {
-            'class': group.Group,
-            'plural': 'Groups',
-        }
     }
 
     @classmethod
