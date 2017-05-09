@@ -8,12 +8,11 @@ from playground import playground_pb2
 import binascii
 import os
 import grpc
-import logging
 
 def require_model(f):
-    def wrapper(*args):
+    def wrapper(*args, **kwargs):
         if args[0].config.handle() != "":
-            return f(*args)
+            return f(*args, **kwargs)
         raise Exception("API requires model to be set")
     return wrapper
 
@@ -47,15 +46,19 @@ class ExplainClient(IAMClient):
         return self.stub.DeleteModel(explain_pb2.DeleteModelRequest(handle=model_name), metadata=self.metadata())
 
     @require_model
-    def query_access_by_resources(self):
-        raise NotImplementedError()
+    def query_access_by_resources(self, resource_name, permission_names, expand_groups=False):
+        request = explain_pb2.GetAccessByResourcesRequest(resource_name=resource_name, permission_names=permission_names, expand_groups=expand_groups)
+        return self.stub.GetAccessByResources(request, metadata=self.metadata())
 
     @require_model
-    def query_access_by_members(self):
-        raise NotImplementedError()
+    def query_access_by_members(self, member_name, permission_names, expand_resources=False):
+        request = explain_pb2.GetAccessByMembersRequest(member_name=member_name, permission_names=permission_names, expand_resources=expand_resources)
+        return self.stub.GetAccessByMembers(request, metadata=self.metadata())
 
     @require_model
-    def query_permissions_by_roles(self):
+    def query_permissions_by_roles(self, role_names=[], role_prefixes=[]):
+        request = explain_pb2.GetPermissionsByRolesRequest(role_names=role_names, role_prefixes=role_prefixes)
+        return self.stub.GetPermissionsByRoles(request, metadata=self.metadata())
         raise NotImplementedError()
 
     @require_model

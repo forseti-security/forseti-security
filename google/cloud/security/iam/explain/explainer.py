@@ -1,5 +1,6 @@
 from google.cloud.security.iam import dao
 from importer import importer
+from sqlalchemy.orm.scoping import scoped_session
 
 def inject_session(f):
     def wrapper(*args):
@@ -20,12 +21,11 @@ class Explainer():
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
-            members = dao.explainHasAccessToResource(session,
-                                                     data_access,
-                                                     resource_name,
-                                                     permission_names,
-                                                     expand_groups)
-            return members
+            mapping = data_access.query_access_by_resource(session,
+                                                           resource_name,
+                                                           permission_names,
+                                                           expand_groups)
+            return mapping
 
     def CreateModel(self, source):
         model_manager = self.config.model_manager
@@ -41,11 +41,22 @@ class Explainer():
             self.config.runInBackground(doImport)
             return model_name
 
-    def GetAccessByMembers(self, request, context):
-        raise NotImplementedError()
+    def GetAccessByMembers(self, model_name, member_name, permission_names, expand_resources):
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            for role, resources in data_access.query_access_by_member(session,
+                                                                      member_name,
+                                                                      permission_names,
+                                                                      expand_resources):
+                yield role, resources
 
-    def GetPermissionsByRoles(self, request, context):
-        raise NotImplementedError()
+    def GetPermissionsByRoles(self, model_name, role_names, role_prefixes):
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            for result in data_access.query_permissions_by_roles(session, role_names, role_prefixes):
+                yield result
     
     def ListModel(self):
         model_manager = self.config.model_manager
