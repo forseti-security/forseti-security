@@ -36,7 +36,7 @@ LOGGER = log_util.get_logger(__name__)
 class ProjectDao(dao.Dao):
     """Data access object (DAO)."""
 
-    def get_project_ids(self, resource_name, timestamp):
+    def retrieve_project_ids(self, resource_name, timestamp):
         """Select the project ids from a projects snapshot table.
 
         Args:

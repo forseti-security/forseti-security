@@ -30,6 +30,102 @@ flags.DEFINE_integer('max_bigquery_api_calls_per_100_seconds', 17000,
 
 LOGGER = log_util.get_logger(__name__)
 
+def extract_dataset_access(self, dataset_objects):
+    """Return a list of just dataset access objects.
+
+    Args: A datset_object in the form of:
+        https://developers.google.com/resources/api-libraries/documentation/bigquery/v2/python/latest/bigquery_v2.datasets.html#get
+
+    Returns:
+        [{"domain": "A String",
+          "userByEmail": "A String",
+          "specialGroup": "A String",
+          "groupByEmail": "A String",
+          "role": "A String",
+          "view": {"projectId": "A String",
+                   "tableId": "A String",
+                   "datasetId": "A String"
+          },
+          {"domain": "A String",
+           "userByEmail": "A String",
+           "specialGroup": "A String",
+           "groupByEmail": "A String",
+           "role": "A String",
+           "view": {"projectId": "A String",
+                    "tableId": "A String",
+                    "datasetId": "A String"
+           }]
+    """
+    return [item.get('access', []) for item in dataset_objects]
+
+def extract_datasets(self, dataset_list_objects):
+    """Return a list of just dataset objects.
+
+    Args: A dataset list object in the form of:
+        {"kind": "bigquery#datasetList",
+        "etag": etag,
+        "nextPageToken": string,
+        "datasets": [
+           {
+              "kind": "bigquery#dataset",
+              "id": "string",
+              "datasetReference": {
+                "datasetId": "string",
+                "projectId": "string"
+              },
+              "labels": {
+                "key": "string"
+              },
+              "friendlyName": "string"
+            },
+            {
+              "kind": "bigquery#dataset",
+              "id": "string",
+              "datasetReference": {
+                "datasetId": "string",
+                "projectId": "string"
+              },
+              "labels": {
+                "key": "string"
+              },
+              "friendlyName": "string"
+            }
+        ]}
+
+    Returns:
+        A list of dataset objects like:
+        [{'friendlyName': 'string',
+          'kind': 'bigquery#dataset',
+          'labels': {'key': 'string'},
+          'id': 'string',
+          'datasetReference': {'projectId': 'string',
+                               'datasetId': 'string'}
+         },{...}
+        ]
+    """
+    return [item.get('datasets', []) for item in dataset_list_objects]
+
+def extract_dataset_references(self, dataset_objects):
+    """Return a list of just datasetReference objects.
+
+    Args:
+        dataset_objects: A list of objects like:
+        [{'friendlyName': 'string',
+          'kind': 'bigquery#dataset',
+          'labels': {'key': 'string'},
+          'id': 'string',
+          'datasetReference': {'projectId': 'string',
+                               'datasetId': 'string'}
+         },{...}
+        ]
+
+    Returns:
+        A list of objects like:
+        [{'projectId': 'string', 'datasetId': 'string'},
+         {'projectId': 'string', 'datasetId': 'string'},
+         {'projectId': 'string', 'datasetId': 'string'}]
+    """
+    return [item.get('datasetsReference', []) for item in dataset_objects]
 
 class BigQueryClient(_base_client.BaseClient):
     """BigQuery Client."""
@@ -46,107 +142,12 @@ class BigQueryClient(_base_client.BaseClient):
             api_name=self.API_NAME)
         self.rate_limiter = self.get_rate_limiter()
 
-    # pylint: disable=no-self-use
-    def extract_dataset_access(self, dataset_objects):
-        """Return a list of just dataset access objects.
-
-        Args: A datset_object in the form of:
-            https://developers.google.com/resources/api-libraries/documentation/bigquery/v2/python/latest/bigquery_v2.datasets.html#get
-
-        Returns:
-            "access": [{"domain": "A String",
-                        "userByEmail": "A String",
-                        "specialGroup": "A String",
-                        "groupByEmail": "A String",
-                        "role": "A String",
-                        "view": {"projectId": "A String",
-                                 "tableId": "A String",
-                                 "datasetId": "A String"
-                        },
-                      }]
-        """
-        return [item.get('access', []) for item in dataset_objects]
-    # pylint: enable=no-self-use
-
-    # pylint: disable=no-self-use
-    def extract_datasets(self, dataset_list_objects):
-        """Return a list of just dataset objects.
-
-        Args: A dataset list object in the form of:
-            {"kind": "bigquery#datasetList",
-            "etag": etag,
-            "nextPageToken": string,
-            "datasets": [
-               {
-                  "kind": "bigquery#dataset",
-                  "id": "string",
-                  "datasetReference": {
-                    "datasetId": "string",
-                    "projectId": "string"
-                  },
-                  "labels": {
-                    "key": "string"
-                  },
-                  "friendlyName": "string"
-                },
-                {
-                  "kind": "bigquery#dataset",
-                  "id": "string",
-                  "datasetReference": {
-                    "datasetId": "string",
-                    "projectId": "string"
-                  },
-                  "labels": {
-                    "key": "string"
-                  },
-                  "friendlyName": "string"
-                }
-            ]}
-
-        Returns:
-            A list of dataset objects like:
-            [{'friendlyName': 'string',
-              'kind': 'bigquery#dataset',
-              'labels': {'key': 'string'},
-              'id': 'string',
-              'datasetReference': {'projectId': 'string',
-                                   'datasetId': 'string'}
-             },{...}
-            ]
-        """
-        return [item.get('datasets', []) for item in dataset_list_objects]
-    # pylint: enable=no-self-use
-
-    # pylint: disable=no-self-use
-    def extract_dataset_references(self, dataset_objects):
-        """Return a list of just datasetReference objects.
-
-        Args:
-            dataset_objects: A list of objects like:
-            [{'friendlyName': 'string',
-              'kind': 'bigquery#dataset',
-              'labels': {'key': 'string'},
-              'id': 'string',
-              'datasetReference': {'projectId': 'string',
-                                   'datasetId': 'string'}
-             },{...}
-            ]
-
-        Returns:
-            A list of objects like:
-            [{'projectId': 'string', 'datasetId': 'string'},
-             {'projectId': 'string', 'datasetId': 'string'},
-             {'projectId': 'string', 'datasetId': 'string'}]
-        """
-        return [item.get('datasetsReference', []) for item in dataset_objects]
-    # pylint: enable=no-self-use
-
     def get_rate_limiter(self):
         """Return an appropriate rate limiter."""
         return RateLimiter(FLAGS.max_bigquery_api_calls_per_100_seconds,
                            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def get_datasets_for_project_id(self, project_id):
+    def retrieve_datasets_for_projectid(self, project_id):
         """Return BigQuery datasets stored in the requested project_id.
 
         Args:
@@ -168,16 +169,14 @@ class BigQueryClient(_base_client.BaseClient):
 
         return self.extract_dataset_references(datasets)
 
-    def get_dataset_access(self, project_id, dataset_id):
+    def retrieve_dataset_access(self, project_id, dataset_id):
         """Return access portion of the dataset resource object.
 
         Args:
             project_id: String representing the project id.
             dataset_id: String representing the dataset id.
 
-        Returns:
-            A data set resource object as a dictionary, see:
-            https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets#resource
+        Returns: See extract_dataset_access()
         """
         bigquery_stub = self.service.datasets()
         request = bigquery_stub.get(projectId=project_id, datasetId=dataset_id)

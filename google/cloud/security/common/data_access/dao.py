@@ -31,7 +31,7 @@ from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
 
 CREATE_TABLE_MAP = {
-    'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE
+    'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE,
     'buckets': create_tables.CREATE_BUCKETS_TABLE,
     'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
     'groups': create_tables.CREATE_GROUPS_TABLE,

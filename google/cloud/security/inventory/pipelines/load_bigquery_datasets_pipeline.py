@@ -41,7 +41,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         """
 
         try:
-            return self.dao.get_project_ids(self.api_client,
+            return self.dao.retrieve_project_ids(self.RESOURCE_NAME,
                                             self.cycle_timestamp)
         except MySQLError as e:
             LOGGER.error('Error fetching project ids from MySQL: %s', e)
@@ -61,7 +61,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         """
 
         try:
-            return self.api_client.get_datasets_for_project_id(project_id)
+            return self.api_client.retrieve_datasets_for_projectid(project_id)
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
@@ -72,11 +72,11 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
             project_id: A project id.
             dataset_id: A dataset id.
 
-        Returns: See bigquery.get_dataset_access().
+        Returns: See bigquery.retrieve_dataset_access().
         """
 
         try:
-            return self.api_client.get_dataset_access(project_id, dataset_id)
+            return self.api_client.retrieve_dataset_access(project_id, dataset_id)
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
@@ -96,7 +96,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         dataset_by_project_map = []
         for project_id in project_ids:
             try:
-                datasets = self.api_client.retrieve_dataset_by_projectid(
+                datasets = self.api_client.retrieve_datasets_for_projectid(
                     project_id)
             except api_errors.ApiExecutionError as e:
                 raise inventory_errors.LoadDataPipelineError(e)
@@ -114,7 +114,10 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
 
         Returns:
             A list of tuples in the form of:
-            [(project_id, dataset_id, {dataset_access_object}),...]
+            [(project_id,
+              dataset_id,
+              {dataset_access_object}),
+            ...]
         """
 
         dataset_project_access_map = []
@@ -152,7 +155,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
                     'access_group_by_email': acl.get('groupByEmail'),
                     'role': acl.get('role'),
                     'access_view_project_id': acl.get('view').get('projectId'),
-                    'access_view_table_id': acl.get('view').get('table_id'),
+                    'access_view_table_id': acl.get('view').get('tableId'),
                     'access_view_dataset_id': acl.get('view').get('datasetId'),
                     'raw_access_map': acl
                 }
@@ -164,7 +167,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
             A list of project ids.
 
         Returns:
-            A dataset access map. See _get_dataset_access_map().
+            A bigquery dataset access map. See _get_dataset_access_map().
         """
 
         project_ids = self._get_project_ids_from_dao()
