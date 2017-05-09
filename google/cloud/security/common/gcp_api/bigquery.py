@@ -30,7 +30,7 @@ flags.DEFINE_integer('max_bigquery_api_calls_per_100_seconds', 17000,
 
 LOGGER = log_util.get_logger(__name__)
 
-def extract_dataset_access(self, dataset_objects):
+def extract_dataset_access(dataset_objects):
     """Return a list of just dataset access objects.
 
     Args: A datset_object in the form of:
@@ -58,7 +58,7 @@ def extract_dataset_access(self, dataset_objects):
     """
     return [item.get('access', []) for item in dataset_objects]
 
-def extract_datasets(self, dataset_list_objects):
+def extract_datasets(dataset_list_objects):
     """Return a list of just dataset objects.
 
     Args: A dataset list object in the form of:
@@ -105,7 +105,7 @@ def extract_datasets(self, dataset_list_objects):
     """
     return [item.get('datasets', []) for item in dataset_list_objects]
 
-def extract_dataset_references(self, dataset_objects):
+def extract_dataset_references(dataset_objects):
     """Return a list of just datasetReference objects.
 
     Args:

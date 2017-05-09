@@ -42,7 +42,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
 
         try:
             return self.dao.retrieve_project_ids(self.RESOURCE_NAME,
-                                            self.cycle_timestamp)
+                                                 self.cycle_timestamp)
         except MySQLError as e:
             LOGGER.error('Error fetching project ids from MySQL: %s', e)
             raise inventory_errors.LoadDataPipelineError

@@ -324,7 +324,6 @@ def main(_):
         project_dao = proj_dao.ProjectDao()
         organization_dao = org_dao.OrganizationDao()
         bucket_dao = buck_dao.BucketDao()
-        bigquery_datasets_dao = bq_dao.BigqueryDatasets()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
