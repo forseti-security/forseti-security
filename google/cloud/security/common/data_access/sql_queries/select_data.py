@@ -83,6 +83,10 @@ FOLDER_IAM_POLICIES = """
     ORDER BY f.folder_id
 """
 
+GROUPS = """
+    SELECT * from groups_{0};
+"""
+
 GROUP_IDS = """
     SELECT group_id from groups_{0};
 """
