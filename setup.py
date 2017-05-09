@@ -55,6 +55,7 @@ SETUP_REQUIRES = [
 ]
 
 TEST_REQUIRES = [
+    'mock==2.0.0',
     'SQLAlchemy==1.1.9',
 ]
 
