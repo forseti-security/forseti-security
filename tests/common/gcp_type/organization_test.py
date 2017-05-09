@@ -23,7 +23,6 @@ from google.cloud.security.common.gcp_type.organization import OrgLifecycleState
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource import ResourceType
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 
 
 class OrganizationTest(basetest.TestCase):
