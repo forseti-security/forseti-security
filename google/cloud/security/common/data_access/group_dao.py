@@ -20,11 +20,25 @@ from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
 
-LOGGER = log_util.get_logger(__name__)
 
+LOGGER = log_util.get_logger(__name__)
+MY_CUSTOMER = 'my_customer'
 
 class GroupDao(dao.Dao):
     """Data access object (DAO) for Groups."""
+
+    def get_all_groups(self, resource_name, timestamp):
+        """Get all the groups.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: The timestamp of the snapshot.
+
+        Returns:
+             A tuple of the groups as dict.
+        """
+        sql = select_data.GROUPS.format(timestamp)
+        return self.execute_sql_with_fetch(resource_name, sql, None)
 
     def get_group_id(self, resource_name, group_email, timestamp):
         """Get the group_id for the specified group_email.
