@@ -14,9 +14,10 @@
 
 """Tests the Bigquery client."""
 
+import mock
+import httplib2
 
 from googleapiclient.errors import HttpError
-import mock
 
 from google.apputils import basetest
 from google.cloud.security.common.gcp_api import bigquery as bq
@@ -37,6 +38,9 @@ class BigqueryTestCase(basetest.TestCase):
         mock_flags.max_bigquery_api_calls_per_100_seconds = (
             self.MAX_BIGQUERY_API_CALLS_PER_100_SECONDS)
         self.bq_api_client = bq.BigQueryClient()
+        self.http_response = httplib2.Response(
+                {'status': '400', 'content-type': 'application/json'}
+        )
 
     def test_api_client_is_initialized(self):
         """Test that the api client is initialized."""
@@ -71,21 +75,54 @@ class BigqueryTestCase(basetest.TestCase):
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
+
         self.bq_api_client._build_paged_result = mock.MagicMock(
-            side_effect=HttpError)
-        self.bq_api_client._execute = mock.MagicMock()
+            side_effect=HttpError(self.http_response, '{}')
+        )
 
         with self.assertRaises(api_errors.ApiExecutionError):
              self.bq_api_client.get_datasets_for_projectid(fbq.PROJECT_IDS)
 
     def test_getdatasets_for_projectid(self):
-        pass
+        mock_bq_stub = mock.MagicMock()
+        self.bq_api_client.service = mock.MagicMock()
+        self.bq_api_client.service.datasets.return_value = mock_bq_stub
+        self.bq_api_client._build_paged_result = mock.MagicMock(
+                return_value=fbq.DATASET_LISTS
+        )
+
+        return_value = self.bq_api_client.get_datasets_for_projectid(
+                fbq.PROJECT_IDS[0]
+        )
+
+        self.assertListEqual(return_value, fbq.EXPECTED_DATASET_REFERENCES)
 
     def test_get_dataset_access_raises(self):
-        pass
+        mock_bq_stub = mock.MagicMock()
+        self.bq_api_client.service = mock.MagicMock()
+        self.bq_api_client.service.datasets.return_value = mock_bq_stub
+
+        self.bq_api_client._build_paged_result = mock.MagicMock(
+                side_effect=HttpError(self.http_response, '{}')
+        )
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.bq_api_client.get_dataset_access(fbq.PROJECT_IDS[0],
+                                                  fbq.DATASET_ID)
 
     def test_get_dataset_access(self):
-        pass
+        mock_bq_stub = mock.MagicMock()
+        self.bq_api_client.service = mock.MagicMock()
+        self.bq_api_client.service.datasets.return_value = mock_bq_stub
+        self.bq_api_client._build_paged_result = mock.MagicMock(
+                return_value=fbq.DATASETS
+        )
+
+        return_value = self.bq_api_client.get_dataset_access(
+                fbq.PROJECT_IDS[0], fbq.DATASET_ID
+        )
+
+        self.assertListEqual(return_value, fbq.EXPECTED_DATASET_ACCESS)
 
 if __name__ == '__main__':
     basetest.main()

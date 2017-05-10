@@ -47,7 +47,7 @@ def extract_datasets(dataset_list_objects, key='datasets'):
            }
           }
          ]
-        },      
+        },
         {
          "kind": "bigquery#datasetList",
          "etag": 'etag',
@@ -62,7 +62,7 @@ def extract_datasets(dataset_list_objects, key='datasets'):
           }
          ]
         }]
-        
+
     Returns:
         A list of dataset objects like:
         [{'friendlyName': 'A String',
@@ -83,35 +83,14 @@ def extract_datasets(dataset_list_objects, key='datasets'):
           },
         ]
     """
-    return [ item.get(key, []) for item in dataset_list_objects ]
+    return [item.get(key, []) for item in dataset_list_objects]
 
-def extract_dataset_references(datasets, key='datasetReference'):
-    """Return a list of just datasetReference objects.
 
-    Args: A list of dataset list objects:
-       [[{'datasetReference': {'datasetId': 'test', 'projectId': 'bq-test'},
-       'id': 'bq-test:test',
-       'kind': 'bigquery#dataset'}],
-       [{'datasetReference': {'datasetId': 'test2', 'projectId': 'bq-test2'},
-       'id': 'bq-test2:test2',
-       'kind': 'bigquery#dataset'}]] 
-
-    Returns:
-        A list of objects like:
-        [{'projectId': 'bq-test',
-          'datasetId': 'test'
-          }, {
-          'projectId': 'bq-test2',
-          'datasetId': 'test2'
-          }
-        ]
-    """
-    return [ ref.get(key, []) for dataset in datasets for ref in dataset ]
 
 def extract_dataset_access(datasets, key='access'):
     """Return a list of just dataset access objects.
 
-    Args: A datset_object in the form of:
+    Args: A list of datset_objects in the form of:
         [{
             'kind': 'bigquery#dataset',
             'etag': 'etag',
@@ -171,7 +150,7 @@ def extract_dataset_access(datasets, key='access'):
           'creationTime': '1',
           'lastModifiedTime': '2'
           }]
-          
+
     Returns:
         [
             [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
@@ -192,7 +171,31 @@ def extract_dataset_access(datasets, key='access'):
                 {'role': 'READER', 'specialGroup': 'projectReaders'}]
         ]
     """
-    return [ ref.get(key, []) for dataset in datasets for ref in datasets ]
+    return [ref.get(key, []) for _ in datasets for ref in datasets]
+
+def extract_dataset_references(datasets, key='datasetReference'):
+    """Return a list of just datasetReference objects.
+
+    Args: A list of dataset list objects:
+       [[{'datasetReference': {'datasetId': 'test', 'projectId': 'bq-test'},
+       'id': 'bq-test:test',
+       'kind': 'bigquery#dataset'}],
+       [{'datasetReference': {'datasetId': 'test2', 'projectId': 'bq-test2'},
+       'id': 'bq-test2:test2',
+       'kind': 'bigquery#dataset'}]]
+
+    Returns:
+        A list of objects like:
+        [{'projectId': 'bq-test',
+          'datasetId': 'test'
+          }, {
+          'projectId': 'bq-test2',
+          'datasetId': 'test2'
+          }
+        ]
+    """
+    return [ref.get(key, []) for _ in datasets for ref in datasets]
+
 
 class BigQueryClient(_base_client.BaseClient):
     """BigQuery Client manager."""
@@ -254,6 +257,4 @@ class BigQueryClient(_base_client.BaseClient):
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(self.API_NAME, e)
 
-        dataset_access = extract_dataset_access(results)
-
-        return extract_dataset_references(dataset_access)
+        return extract_dataset_access(results)

@@ -16,7 +16,7 @@
 
 PROJECT_IDS = ['bq-test']
 
-DATASET_ID = 'bq-test'
+DATASET_ID = 'test'
 
 DATASET_LISTS = [{
   "kind": "bigquery#datasetList",
@@ -41,17 +41,20 @@ DATASET_LISTS = [{
   }]
 }]
 
-EXPECTED_DATASETS_LISTS = [[{
+EXPECTED_DATASETS_LISTS = [
+    [{
       'datasetReference': {
         'datasetId': 'test',
         'projectId': 'bq-test'
       },
       'id': 'bq-test:test',
       'kind': 'bigquery#dataset'
-      }], [{
+    }],
+    [{
       'datasetReference': {
         'datasetId': 'test2',
-        'projectId': 'bq-test2'},
+        'projectId': 'bq-test2'
+      },
       'id': 'bq-test2:test2',
       'kind': 'bigquery#dataset'
     }]
