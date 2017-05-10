@@ -44,6 +44,8 @@ CREATE_TABLE_MAP = {
     'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
     'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
+    'buckets_acl_violations':
+        create_tables.CREATE_BUCKETS_ACL_VIOLATIONS_TABLE,
 }
 
 SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'

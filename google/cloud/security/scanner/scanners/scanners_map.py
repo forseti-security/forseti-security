@@ -13,11 +13,24 @@
 # limitations under the License.
 
 """Map for mapping rules engine to scanner class"""
+
 # pylint: disable=line-too-long
 from google.cloud.security.scanner.scanners.iam_rules_scanner import IamPolicyScanner
+from google.cloud.security.scanner.scanners.bucket_rules_scanner import BucketsAclScanner
 # pylint: enable=line-too-long
 
 
 SCANNER_MAP = {
     'IamRulesEngine': IamPolicyScanner,
+    'BucketsRulesEngine': BucketsAclScanner,
+}
+
+FLATTENING_MAP = {
+    'IamRulesEngine': 'policy_violations',
+    'BucketsRulesEngine': 'buckets_acl_violations',
+}
+
+RESOURCE_MAP = {
+    'policy_violations': 'violations',
+    'buckets_acl_violations': 'buckets_acl_violations'
 }

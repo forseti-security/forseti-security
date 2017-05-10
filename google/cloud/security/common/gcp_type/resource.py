@@ -29,6 +29,7 @@ class ResourceType(object):
     FOLDER = 'folder'
     PROJECT = 'project'
     GROUP = 'group'
+    BUCKETS_ACL = 'buckets_acl'
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,

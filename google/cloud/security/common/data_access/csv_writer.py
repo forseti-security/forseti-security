@@ -133,9 +133,23 @@ BUCKETS_ACL_FIELDNAMES = [
     'raw_bucket_acl'
 ]
 
+BUCKETS_ACL_VIOLATIONS = [
+    'resource_type',
+    'resource_id',
+    'rule_name',
+    'rule_index',
+    'violation_type',
+    'role',
+    'entity',
+    'email',
+    'domain',
+    'bucket'
+]
+
 CSV_FIELDNAME_MAP = {
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
+    'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,

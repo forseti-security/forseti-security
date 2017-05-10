@@ -89,3 +89,9 @@ BUCKETS_BY_PROJECT_ID = """
     FROM buckets_{0}
     WHERE project_number = {1};
 """
+
+BUCKET_ACLS = """
+    select bucket, entity, email, domain, role, project_number
+    FROM buckets_{0}, buckets_acl_{0}
+    WHERE bucket=bucket_name;
+"""
