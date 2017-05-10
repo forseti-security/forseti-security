@@ -85,8 +85,6 @@ def extract_datasets(dataset_list_objects, key='datasets'):
     """
     return [item.get(key, []) for item in dataset_list_objects]
 
-
-
 def extract_dataset_access(datasets, key='access'):
     """Return a list of just dataset access objects.
 
@@ -194,7 +192,7 @@ def extract_dataset_references(datasets, key='datasetReference'):
           }
         ]
     """
-    return [item.get(key, []) for set in datasets for item in set]
+    return [item.get(key, []) for dataset in datasets for item in dataset]
 
 
 class BigQueryClient(_base_client.BaseClient):
