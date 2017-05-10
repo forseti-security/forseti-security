@@ -41,9 +41,9 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     API_NAME = 'cloudresourcemanager'
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(CloudResourceManagerClient, self).__init__(
-            api_name=self.API_NAME)
+            api_name=self.API_NAME, **kwargs)
 
         # TODO: we will need multiple rate limiters when we need to invoke
         # the CRM write API for enforcement.

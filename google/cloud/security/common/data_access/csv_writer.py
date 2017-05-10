@@ -21,6 +21,17 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+FOLDERS_FIELDNAMES = [
+    'folder_id',
+    'name',
+    'display_name',
+    'lifecycle_state',
+    'parent_type',
+    'parent_id',
+    'raw_folder',
+    'create_time',
+]
+
 
 GROUP_MEMBERS_FIELDNAMES = [
     'group_id',
@@ -154,6 +165,7 @@ FORWARDING_RULES_FIELDNAMES = [
 CSV_FIELDNAME_MAP = {
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
+    'folders': FOLDERS_FIELDNAMES,
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,

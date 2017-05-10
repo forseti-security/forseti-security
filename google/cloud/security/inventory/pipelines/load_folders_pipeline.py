@@ -19,6 +19,7 @@ import json
 from dateutil import parser as dateutil_parser
 
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
@@ -58,11 +59,17 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
             # formatted as "folders/<folder_id>".
             folder_name = folder.get('name')
             folder_id = folder_name[len('%s/' % self.RESOURCE_NAME):]
+            parent_type, parent_id = None, None
+            if folder.get('parent'):
+                parent_type, parent_id = folder.get('parent', '').split('/')
+                parent_type = resource_util.type_from_name(parent_type)
 
             yield {'folder_id': folder_id,
                    'name': folder_name,
                    'display_name': folder.get('displayName'),
                    'lifecycle_state': folder.get('lifecycleState'),
+                   'parent_type': parent_type,
+                   'parent_id': parent_id,
                    'raw_folder': folder_json,
                    'create_time': create_time_fmt}
 

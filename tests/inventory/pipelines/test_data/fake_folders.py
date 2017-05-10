@@ -22,12 +22,14 @@ FAKE_FOLDERS = [
                 'name': 'folders/111111111111',
                 'displayName': 'Folder1',
                 'lifecycleState': 'ACTIVE',
+                'parent': 'organizations/7777',
                 'createTime': '2016-10-22T16:57:36.096Z'
             },
             {
                 'name': 'folders/222222222222',
                 'displayName': 'Folder2',
                 'lifecycleState': 'ACTIVE',
+                'parent': 'folders/111111111111',
                 'createTime': '2016-11-13T05:32:10.930Z'
             },
             {
@@ -64,6 +66,8 @@ EXPECTED_LOADABLE_FOLDERS = [
         'display_name': 'Folder1',
         'lifecycle_state': 'ACTIVE',
         'create_time': '2016-10-22 16:57:36',
+        'parent_id': '7777',
+        'parent_type': 'organization',
         'raw_folder': ''
     },
     {
@@ -72,6 +76,8 @@ EXPECTED_LOADABLE_FOLDERS = [
         'display_name': 'Folder2',
         'lifecycle_state': 'ACTIVE',
         'create_time': '2016-11-13 05:32:10',
+        'parent_id': '111111111111',
+        'parent_type': 'folder',
         'raw_folder': ''
     },
     {
@@ -80,6 +86,8 @@ EXPECTED_LOADABLE_FOLDERS = [
         'display_name': 'Folder3',
         'lifecycle_state': 'ACTIVE',
         'create_time': '2016-11-13 05:32:49',
+        'parent_id': None,
+        'parent_type': None,
         'raw_folder': ''
     },
     {
@@ -88,6 +96,8 @@ EXPECTED_LOADABLE_FOLDERS = [
         'display_name': 'Folder4',
         'lifecycle_state': 'ACTIVE',
         'create_time': '2016-10-22 16:57:36',
+        'parent_id': None,
+        'parent_type': None,
         'raw_folder': ''
     },
     {
@@ -96,6 +106,8 @@ EXPECTED_LOADABLE_FOLDERS = [
         'display_name': 'Folder5',
         'lifecycle_state': 'ACTIVE',
         'create_time': '2016-11-13 05:32:10',
+        'parent_id': None,
+        'parent_type': None,
         'raw_folder': ''
     }
 ]
