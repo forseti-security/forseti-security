@@ -31,13 +31,10 @@ from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
 
 CREATE_TABLE_MAP = {
-<<<<<<< HEAD
     'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE,
     'buckets': create_tables.CREATE_BUCKETS_TABLE,
     'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
-=======
     'forwarding_rules': create_tables.CREATE_FORWARDING_RULES_TABLE,
->>>>>>> 81cd4b0416a687da4ca240b3f1c4c498b9862a1d
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
