@@ -20,14 +20,11 @@ from google.apputils import basetest
 import mock
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
-from google.cloud.security.inventory import util as inventory_util
 from tests.inventory.pipelines.test_data import fake_bigquery_datasets as fbq
 from tests.inventory.pipelines.test_data import fake_configs
 # pylint: enable=line-too-long
@@ -177,4 +174,4 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
             self.pipeline.RESOURCE_NAME,
             fbq.FAKE_EXPECTED_LOADABLE_DATASETS)
 
-        mock_get_loaded_count.assert_called_once
+        mock_get_loaded_count.assert_called_once()
