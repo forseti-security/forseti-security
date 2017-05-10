@@ -43,6 +43,8 @@ import sys
 
 import gflags as flags
 
+# TODO: Investigate improving so we can avoid the pylint disable.
+# pylint: disable=line-too-long
 from google.apputils import app
 from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import db_schema_version
@@ -73,7 +75,6 @@ from google.cloud.security.inventory.pipelines import load_projects_buckets_acls
 from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
-
 # pylint: enable=line-too-long
 
 LOGLEVELS = {

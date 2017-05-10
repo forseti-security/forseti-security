@@ -71,7 +71,7 @@ class ProjectDao(dao.Dao):
 
         project_ids_sql = select_data.PROJECT_IDS.format(timestamp)
         rows = self.execute_sql_with_fetch(
-                resource_name, project_ids_sql, None)
+            resource_name, project_ids_sql, None)
 
         return [row['project_id'] for row in rows]
 
