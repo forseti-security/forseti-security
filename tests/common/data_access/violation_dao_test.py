@@ -21,6 +21,7 @@ import MySQLdb
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao
+from google.cloud.security.common.data_access import violation_map as vm
 from google.cloud.security.common.data_access.sql_queries import load_data
 from google.cloud.security.common.gcp_type import iam_policy as iam
 from google.cloud.security.scanner.audit import rules
@@ -32,10 +33,11 @@ class ViolationDaoTest(basetest.TestCase):
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
     def setUp(self, mock_db_connector):
         mock_db_connector.return_value = None
+        self.resource_name = 'violations'
         self.dao = violation_dao.ViolationDao()
         self.fake_snapshot_timestamp = '12345'
         self.fake_table_name = ('%s_%s' %
-            (self.dao.RESOURCE_NAME, self.fake_snapshot_timestamp))
+            (self.resource_name, self.fake_snapshot_timestamp))
         self.fake_violations = [
             rules.RuleViolation(
                 resource_type='x',
@@ -81,8 +83,9 @@ class ViolationDaoTest(basetest.TestCase):
             property values accordingly.
         """
 
+        resource_name = 'violations'
         actual = [f for v in self.fake_violations
-                    for f in violation_dao._format_violation(v)]
+                    for f in violation_dao._format_violation(v, resource_name)]
 
         self.assertEquals(self.expected_fake_violations, actual)
 
@@ -113,7 +116,7 @@ class ViolationDaoTest(basetest.TestCase):
         self.dao.conn = conn_mock
         self.dao.execute_sql_with_commit = commit_mock
 
-        self.dao.insert_violations(self.fake_violations)
+        self.dao.insert_violations(self.fake_violations,self.resource_name)
 
         # Assert snapshot is retrieved because no snapshot timestamp was
         # provided to the method call.
@@ -122,7 +125,7 @@ class ViolationDaoTest(basetest.TestCase):
 
         # Assert that the snapshot table was created.
         self.dao._create_snapshot_table.assert_called_once_with(
-            self.dao.RESOURCE_NAME, self.fake_snapshot_timestamp)
+            self.resource_name, self.fake_snapshot_timestamp)
 
         # Assert that conn.commit() was called.
         self.assertEqual(3, commit_mock.call_count)
@@ -146,11 +149,13 @@ class ViolationDaoTest(basetest.TestCase):
         self.dao.conn = mock.MagicMock()
         self.dao._create_snapshot_table = mock.MagicMock()
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock()
-        self.dao.insert_violations(self.fake_violations, fake_custom_timestamp)
+        self.dao.insert_violations(self.fake_violations,
+            self.resource_name,
+            fake_custom_timestamp)
 
         self.dao.get_latest_snapshot_timestamp.assert_not_called()
         self.dao._create_snapshot_table.assert_called_once_with(
-            self.dao.RESOURCE_NAME, fake_custom_timestamp)
+            self.resource_name, fake_custom_timestamp)
 
     def test_insert_violations_raises_error_on_create(self):
         """Test raises MySQLError when getting a create table error.
@@ -165,7 +170,7 @@ class ViolationDaoTest(basetest.TestCase):
             side_effect=MySQLdb.DataError)
 
         with self.assertRaises(errors.MySQLError):
-            self.dao.insert_violations([])
+            self.dao.insert_violations([], self.resource_name)
 
     def test_insert_violations_with_error(self):
         """Test insert_violations handles errors during insert.
@@ -192,14 +197,15 @@ class ViolationDaoTest(basetest.TestCase):
         def insert_violation_side_effect(*args, **kwargs):
             if args[2] == self.expected_fake_violations[1]:
                 raise MySQLdb.DataError(
-                    self.dao.RESOURCE_NAME, mock.MagicMock())
+                    self.resource_name, mock.MagicMock())
             else:
                 return mock.DEFAULT
 
         self.dao.execute_sql_with_commit = mock.MagicMock(
             side_effect=insert_violation_side_effect)
 
-        actual = self.dao.insert_violations(self.fake_violations)
+        actual = self.dao.insert_violations(self.fake_violations,
+            self.resource_name)
         expected = (2, [self.expected_fake_violations[1]])
 
         self.assertEqual(expected, actual)

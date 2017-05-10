@@ -105,6 +105,11 @@ class IamRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
     def __init__(self, rules_file_path):
+        """Initialize.
+
+        Args:
+            rules_file_path: file location of rules
+        """
         super(IamRulesEngine, self).__init__(
             rules_file_path=rules_file_path)
         self.rule_book = None

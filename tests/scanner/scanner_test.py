@@ -264,6 +264,7 @@ class ScannerRunnerTest(basetest.TestCase):
         """
         fake_csv_name = 'fake.csv'
         fake_full_path = '/fake/output/path'
+        flattening_scheme = 'policy_violations'
 
         self.scanner.FLAGS.email_recipient = None
         self.scanner.FLAGS.output_path = fake_full_path
@@ -279,7 +280,8 @@ class ScannerRunnerTest(basetest.TestCase):
 
         mock_violation_dao.return_value = (1, [])
 
-        self.scanner._output_results(['a'], self.fake_timestamp)
+        self.scanner._output_results(['a'], self.fake_timestamp,
+            flattening_scheme=flattening_scheme)
 
         mock_upload.assert_called_once_with(
             fake_full_path, self.fake_utcnow, fake_csv_name)
@@ -322,6 +324,7 @@ class ScannerRunnerTest(basetest.TestCase):
         fake_counts = {'x': 2}
         fake_csv_name = 'fake.csv'
         fake_full_path = 'gs://fake-bucket/output/path'
+        flattening_scheme = 'policy_violations'
 
         self.scanner.FLAGS.email_recipient = 'fake@somewhere.com'
         self.scanner.FLAGS.output_path = fake_full_path
@@ -339,7 +342,8 @@ class ScannerRunnerTest(basetest.TestCase):
 
         self.scanner._output_results(fake_violations,
                                      self.fake_timestamp,
-                                     resource_counts=fake_counts)
+                                     resource_counts=fake_counts,
+                                     flattening_scheme=flattening_scheme)
 
         mock_upload.assert_called_once_with(
             fake_full_path, self.fake_utcnow, fake_csv_name)

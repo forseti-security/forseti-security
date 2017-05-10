@@ -26,3 +26,10 @@ INSERT_VIOLATION = """
      violation_type, role, member)
     VALUES (%s, %s, %s, %s, %s, %s, %s)
 """
+
+INSERT_BUCKETS_ACL_VIOLATION = """
+    INSERT INTO {0}
+    (resource_type, resource_id, rule_name, rule_index,
+     violation_type, role, entity, email, domain, bucket)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+"""

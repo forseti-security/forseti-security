@@ -38,6 +38,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """
         super(IamPolicyScanner, self).__init__(
             snapshot_timestamp)
+        self.snapshot_timestamp = snapshot_timestamp
 
     def _get_org_policies(self):
         """Get orgs from data source.
