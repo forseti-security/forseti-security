@@ -15,20 +15,20 @@
 """Fake folders data."""
 
 FAKE_FOLDERS_DB_ROWS = [
-    ['111111111111',
-     'folders/111111111111',
-     'Folder1',
-     'ACTIVE',
-     '2015-09-09 00:01:01',
-     None,
-     None],
-    ['222222222222',
-     'folders/222222222222',
-     'Folder2',
-     'ACTIVE',
-     '2015-10-10 00:02:02',
-     None,
-     None],
+    {'folder_id': '111111111111',
+     'name': 'folders/111111111111',
+     'display_name': 'Folder1',
+     'lifecycle_state': 'ACTIVE',
+     'create_time': '2015-09-09 00:01:01',
+     'parent_id': None,
+     'parent_type': None},
+    {'folder_id': '222222222222',
+     'name': 'folders/222222222222',
+     'display_name': 'Folder2',
+     'lifecycle_state': 'ACTIVE',
+     'create_time': '2015-10-10 00:02:02',
+     'parent_id': None,
+     'parent_type': None},
 ]
 
 FAKE_FOLDERS_RESPONSE = {
@@ -54,13 +54,33 @@ FAKE_FOLDERS_RESPONSE = {
 EXPECTED_FAKE_FOLDERS_FROM_API = [FAKE_FOLDERS_RESPONSE]
 
 FAKE_FOLDERS_OK_IAM_DB_ROWS = [
-    ['1111111111', 'Folder1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
-    ['2222222222', 'Folder2', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:d@e.f"]}]}'],
+    {'folder_id': '1111111111',
+     'display_name': 'Folder1',
+     'lifecycle_state': 'ACTIVE',
+     'parent_id': None,
+     'parent_type': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
+    {'folder_id': '2222222222',
+     'display_name': 'Folder2',
+     'lifecycle_state': 'ACTIVE',
+     'parent_id': None,
+     'parent_type': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:d@e.f"]}]}'},
 ]
 
 FAKE_FOLDERS_BAD_IAM_DB_ROWS = [
-    ['1111111111', 'Folder1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
-    ['2222222222', 'Folder2', 'ACTIVE', None, None, ''],
+    {'folder_id': '1111111111',
+     'display_name': 'Folder1',
+     'lifecycle_state': 'ACTIVE',
+     'parent_id': None,
+     'parent_type': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
+    {'folder_id': '2222222222',
+     'display_name': 'Folder2',
+     'lifecycle_state': 'ACTIVE',
+     'parent_id': None,
+     'parent_type': None,
+     'iam_policy': ''},
 ]
 
 FAKE_FOLDERS_API_RESPONSE1 = {
@@ -80,7 +100,7 @@ FAKE_FOLDERS_API_RESPONSE1 = {
         {
             'displayName': 'folder-3',
             'name': 'folders/333',
-            'parent': 'folders/111',
+            'parent': 'folders/3333333',
             'lifecycleState': 'ACTIVE'
         },
     ]

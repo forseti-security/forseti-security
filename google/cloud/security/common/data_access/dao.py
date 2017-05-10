@@ -31,28 +31,37 @@ from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
 
 CREATE_TABLE_MAP = {
-    'forwarding_rules': create_tables.CREATE_FORWARDING_RULES_TABLE,
-    'groups': create_tables.CREATE_GROUPS_TABLE,
-    'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+    # buckets
+    'buckets': create_tables.CREATE_BUCKETS_TABLE,
+    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
+    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
 
-    'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
-    'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
-    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
-
+    # folders
     'folders': create_tables.CREATE_FOLDERS_TABLE,
     'folder_iam_policies': create_tables.CREATE_FOLDER_IAM_POLICIES_TABLE,
     'raw_folder_iam_policies': (
         create_tables.CREATE_RAW_FOLDER_IAM_POLICIES_TABLE),
 
+    # load balancer
+    'forwarding_rules': create_tables.CREATE_FORWARDING_RULES_TABLE,
+
+    # groups
+    'groups': create_tables.CREATE_GROUPS_TABLE,
+    'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+
+    # organizations
+    'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
+    'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
+    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
+
+    # projects
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
-    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
-    'buckets': create_tables.CREATE_BUCKETS_TABLE,
-    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
+
+    # rule violations
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
-    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
 }
 
 SNAPSHOT_STATUS_FILTER_CLAUSE = ' where status in ({})'

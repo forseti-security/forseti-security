@@ -16,17 +16,10 @@
 
 import json
 
-from MySQLdb import DataError
-from MySQLdb import IntegrityError
-from MySQLdb import InternalError
-from MySQLdb import NotSupportedError
-from MySQLdb import OperationalError
-from MySQLdb import ProgrammingError
-
 from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import folder as gcp_folder
+from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 
@@ -39,6 +32,29 @@ class FolderDao(dao.Dao):
     def __init__(self):
         super(FolderDao, self).__init__()
 
+    # pylint: disable=arguments-differ
+    @staticmethod
+    def map_row_to_object(row):
+        """Instantiate a Folder from a database row.
+
+        TODO: Make this go away when we start using an ORM.
+
+        Args:
+            row: The database row to map to the Folder object.
+
+        Returns:
+            A Folder from the database row.
+        """
+        return gcp_folder.Folder(
+            folder_id=row.get('folder_id'),
+            name=row.get('name'),
+            display_name=row.get('display_name'),
+            lifecycle_state=row.get('lifecycle_state'),
+            parent=resource_util.create_resource(
+                resource_id=row.get('parent_id'),
+                resource_type=row.get('parent_type')))
+    # pylint: enable=arguments-differ
+
     def get_folders(self, resource_name, timestamp):
         """Get folders from snapshot table.
 
@@ -47,32 +63,13 @@ class FolderDao(dao.Dao):
 
         Returns:
             A list of Folders.
-
-        Raise:
-            MySQLError if there's an error fetching the folders.
         """
-        try:
-            cursor = self.conn.cursor()
-            cursor.execute(select_data.FOLDERS.format(timestamp))
-            rows = cursor.fetchall()
-            folders = []
-            for row in rows:
-                folder_parent = None
-                if row[6] and row[5]:
-                    folder_parent = (
-                        resource_util.ResourceUtil.create_resource(
-                            resource_id=row[6],
-                            resource_type=row[5]))
-                folder = gcp_folder.Folder(
-                    folder_id=row[0],
-                    display_name=row[2],
-                    lifecycle_state=row[3],
-                    parent=folder_parent)
-                folders.append(folder)
-            return folders
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            raise MySQLError(resource_name, e)
+        # TODO: remove this when we stop passing resource_name as an arg.
+        del resource_name
+        query = select_data.FOLDERS.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource.ResourceType.FOLDER, query, ())
+        return [self.map_row_to_object(row) for row in rows]
 
     def get_folder(self, timestamp, folder_id):
         """Get an folder from the database snapshot.
@@ -83,30 +80,13 @@ class FolderDao(dao.Dao):
 
         Returns:
             A Folder from the database snapshot.
-
-        Raises:
-            MySQLError if there was an error getting the folder.
         """
-        try:
-            cursor = self.conn.cursor()
-            query = select_data.FOLDER_BY_ID.format(timestamp)
-            cursor.execute(query, folder_id)
-            row = cursor.fetchone()
-            folder_parent = None
-            if row[6] and row[5]:
-                folder_parent = (
-                    resource_util.ResourceUtil.create_resource(
-                        resource_id=row[6],
-                        resource_type=row[5]))
-            folder = gcp_folder.Folder(
-                folder_id=row[0],
-                display_name=row[2],
-                lifecycle_state=row[3],
-                parent=folder_parent)
-            return folder
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            raise MySQLError(folder_id, e)
+        query = select_data.FOLDER_BY_ID.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource.ResourceType.FOLDER, query, (folder_id,))
+        if rows:
+            return self.map_row_to_object(rows[0])
+        return None
 
     def get_folder_iam_policies(self, resource_name, timestamp):
         """Get the folder policies.
@@ -122,29 +102,20 @@ class FolderDao(dao.Dao):
             (gcp_type.folder.Folder) and their iam policies (dict).
         """
         folder_iam_policies = {}
-        try:
-            cursor = self.conn.cursor()
-            cursor.execute(
-                select_data.FOLDER_IAM_POLICIES.format(timestamp, timestamp))
-            rows = cursor.fetchall()
-            for row in rows:
-                try:
-                    folder_parent = None
-                    if row[4] and row[3]:
-                        folder_parent = (
-                            resource_util.ResourceUtil.create_resource(
-                                resource_id=row[4],
-                                resource_type=row[3]))
-                    folder = gcp_folder.Folder(
-                        folder_id=row[0],
-                        display_name=row[1],
-                        lifecycle_state=row[2],
-                        parent=folder_parent)
-                    iam_policy = json.loads(row[5])
-                    folder_iam_policies[folder] = iam_policy
-                except ValueError:
-                    LOGGER.warn('Error parsing json:\n %s', row[5])
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            LOGGER.error(MySQLError(resource_name, e))
+        query = select_data.FOLDER_IAM_POLICIES.format(timestamp, timestamp)
+        rows = self.execute_sql_with_fetch(resource_name, query, ())
+        for row in rows:
+            try:
+                folder = gcp_folder.Folder(
+                    folder_id=row.get('folder_id'),
+                    display_name=row.get('display_name'),
+                    lifecycle_state=row.get('lifecycle_state'),
+                    parent=resource_util.create_resource(
+                        resource_id=row.get('parent_id'),
+                        resource_type=row.get('parent_type')))
+                iam_policy = json.loads(row.get('iam_policy'))
+                folder_iam_policies[folder] = iam_policy
+            except ValueError:
+                LOGGER.warn('Error parsing json:\n %s', row.get('iam_policy'))
+
         return folder_iam_policies

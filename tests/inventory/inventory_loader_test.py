@@ -27,7 +27,6 @@ from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.inventory import inventory_loader
-from google.cloud.security.scanner.audit import org_rules_engine as ore
 
 
 class InventoryLoaderTest(basetest.TestCase):
