@@ -69,7 +69,7 @@ class BasePipeline(object):
         pass
 
     def _load(self, resource_name, data):
-        """ Loads data into forseti storage.
+        """ Loads data into Forseti storage.
 
         Args:
             resource_name: String of the resource name.
@@ -81,6 +81,10 @@ class BasePipeline(object):
         Raises:
             LoadDataPipelineError: An error with loading data has occurred.
         """
+        if not data:
+            LOGGER.warn('No %s data to load into Cloud SQL, continuing...',
+                        resource_name)
+            return
         try:
             self.dao.load_data(resource_name, self.cycle_timestamp, data)
         except (data_access_errors.CSVFileError,
@@ -88,7 +92,10 @@ class BasePipeline(object):
             raise inventory_errors.LoadDataPipelineError(e)
 
     def _get_loaded_count(self):
-        """Get the count of how many of a resource has been loaded."""
+        """Get the count of how many of a resource has been loaded.
+
+        If select_record_count() fails, self.count should default to 0.
+        """
         try:
             self.count = self.dao.select_record_count(
                 self.RESOURCE_NAME,
@@ -96,3 +103,4 @@ class BasePipeline(object):
         except data_access_errors.MySQLError as e:
             LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
                          self.RESOURCE_NAME, self.cycle_timestamp, e)
+            self.count = 0
