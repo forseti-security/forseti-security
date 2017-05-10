@@ -194,7 +194,7 @@ def extract_dataset_references(datasets, key='datasetReference'):
           }
         ]
     """
-    return [ref.get(key, []) for _ in datasets for ref in datasets]
+    return [item.get(key, []) for set in datasets for item in set]
 
 
 class BigQueryClient(_base_client.BaseClient):
