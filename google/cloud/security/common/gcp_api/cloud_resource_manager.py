@@ -27,7 +27,10 @@ from google.cloud.security.common.util import log_util
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager queries per 100 seconds.')
+                     'Cloud Resource Manager read queries per 100 seconds.')
+
+flags.DEFINE_integer('max_crm_api_writes_per_100_seconds', 1000,
+                     'Cloud Resource Manager write requests per 100 seconds.')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -41,6 +44,9 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     def __init__(self):
         super(CloudResourceManagerClient, self).__init__(
             api_name=self.API_NAME)
+
+        # TODO: we will need multiple rate limiters when we need to invoke
+        # the CRM write API for enforcement.
         self.rate_limiter = RateLimiter(
             FLAGS.max_crm_api_calls_per_100_seconds,
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
@@ -148,9 +154,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
 
         Returns:
             The org response object if found, otherwise False.
-
-        Raises:
-            ApiExecutionError: An error has occurred when executing the API.
         """
         orgs_stub = self.service.organizations()
 
@@ -172,9 +175,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Yields:
             An iterator of the response from the organizations API, which
             contains is paginated and contains a list of organizations.
-
-        Raises:
-            ApiExecutionError: An error has occurred when executing the API.
         """
         orgs_api = self.service.organizations()
         next_page_token = None

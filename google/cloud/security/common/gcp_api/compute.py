@@ -14,10 +14,16 @@
 
 """Wrapper for Compute API client."""
 
+from googleapiclient.errors import HttpError
+from httplib2 import HttpLib2Error
+
 from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=too-few-public-methods
 class ComputeClient(_base_client.BaseClient):
     """Compute Client."""
 
@@ -29,3 +35,39 @@ class ComputeClient(_base_client.BaseClient):
 
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
+
+    def get_forwarding_rules(self, project_id, region=None):
+        """Get the forwarding rules for a project.
+
+        If no region name is specified, use aggregatedList() to query for
+        forwarding rules in all regions.
+
+        Args:
+            project_id: The project id.
+            region: The region name.
+
+        Yield:
+            An iterator of forwarding rules for this project.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        forwarding_rules_api = self.service.forwardingRules()
+        if region:
+            list_request = forwarding_rules_api.list(
+                project=project_id, region=region)
+            list_next_request = forwarding_rules_api.list_next
+        else:
+            list_request = forwarding_rules_api.aggregatedList(
+                project=project_id)
+            list_next_request = forwarding_rules_api.aggregatedList_next
+
+        try:
+            while list_request is not None:
+                response = self._execute(list_request)
+                yield response
+                list_request = list_next_request(
+                    previous_request=list_request,
+                    previous_response=response)
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError('forwarding_rules', e)

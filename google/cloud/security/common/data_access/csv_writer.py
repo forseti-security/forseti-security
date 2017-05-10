@@ -133,9 +133,28 @@ BUCKETS_ACL_FIELDNAMES = [
     'raw_bucket_acl'
 ]
 
+FORWARDING_RULES_FIELDNAMES = [
+    'id',
+    'project_id',
+    'creation_timestamp',
+    'name',
+    'description',
+    'region',
+    'ip_address',
+    'ip_protocol',
+    'port_range',
+    'ports', # json list
+    'target',
+    'load_balancing_scheme',
+    'subnetwork',
+    'network',
+    'backend_service',
+]
+
 CSV_FIELDNAME_MAP = {
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
+    'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,

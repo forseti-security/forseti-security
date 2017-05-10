@@ -18,11 +18,35 @@ TODO: consolidate with other fake project test data.
 """
 
 FAKE_PROJECTS_OK_IAM_DB_ROWS = [
-    [1111111111, 'project-1', 'Project 1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
-    [2222222222, 'project-2', 'Project 2', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
+    {'project_number': 1111111111,
+     'project_id': 'project-1',
+     'project_name': 'Project 1',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
+    {'project_number': 2222222222,
+     'project_id': 'project-2',
+     'project_name': 'Project 2',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
 ]
 
 FAKE_PROJECTS_BAD_IAM_DB_ROWS = [
-    [1111111111, 'project-1', 'Project 1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
-    [2222222222, 'project-2', 'Project 2', 'ACTIVE', None, None, ''],
+    {'project_number': 1111111111,
+     'project_id': 'project-1',
+     'project_name': 'Project 1',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
+    {'project_number': 2222222222,
+     'project_id': 'project-2',
+     'project_name': 'Project 2',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+     'iam_policy': ''},
 ]
