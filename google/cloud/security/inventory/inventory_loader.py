@@ -64,11 +64,8 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
-<<<<<<< HEAD
 from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
-=======
 from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipeline
->>>>>>> 81cd4b0416a687da4ca240b3f1c4c498b9862a1d
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
