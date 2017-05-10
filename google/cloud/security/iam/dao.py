@@ -182,6 +182,33 @@ def define_model(model_name, dbengine, model_seed):
             group_members.drop(engine)
 
         @staticmethod
+        def explain_granted(session, member_name, full_resource_name, role, permission):
+            members, member_graph = ModelAccess.reverseExpandMembers(session, [member_name], request_graph=True)
+            member_names = map(lambda m: m.name, members)
+            resource_names = map(lambda r: r.full_name, ModelAccess.findResourcePath(session, full_resource_name))
+            
+            if role:
+                roles = [role]
+                qry = session.query(Binding, Member).join(binding_members).join(Member)
+            else:
+                roles = ModelAccess.getRolesByPermissionNames(session, [permission])
+                qry = session.query(Binding, Member).join(binding_members).join(Member).join(Role).join(role_permissions).join(Permission)
+            qry = qry.filter(Binding.role_name.in_(roles)).filter(Member.name.in_(member_names)).filter(Binding.resource_name.in_(resource_names))
+            result = qry.all()
+            if not result:
+                raise Exception('Grant not found: ({},{},{})'.format(member_name, full_resource_name, role if role is not None else permission))
+            else:
+                bindings = [(b.resource_name, b.role_name, m.name) for b, m in result]
+                return bindings, member_graph, resource_names
+
+        @staticmethod
+        def explain_denied(session, member_names, resource_names, permission_names, role_names):
+            if not role_names:
+                role_names = map(lambda r: r.name, ModelAccess.getRolesByPermissionNames(session, permission_names))
+            # search for bindings granting the roles
+            raise Exception('Not yet implemented')
+
+        @staticmethod
         def query_access_by_member(session, member_name, permission_names, expand_resources=False, per_yield=1024):
             roles = ModelAccess.getRolesByPermissionNames(session, permission_names)
             qry = session.query(Binding).join(binding_members).join(Member)
@@ -200,7 +227,7 @@ def define_model(model_name, dbengine, model_seed):
             else:
                 def expand_resources(resource_names, depth=-1):
                     return resource_names
-            
+
             return [(binding.role_name, expand_resources([binding.resource_name])) for binding in bindings]
 
         @staticmethod
@@ -244,7 +271,7 @@ def define_model(model_name, dbengine, model_seed):
             policy = policy['bindings']
             additions = []
             subtractions = []
-            
+
             def filterEtag(policy):
                 return filter(lambda (k,v): k != 'etag', policy.iteritems())
 
@@ -258,7 +285,7 @@ def define_model(model_name, dbengine, model_seed):
                     else:
                         diff[role] = members
                 return diff
-            
+
             grants = calculateDiff(policy, old_policy)
             revocations = calculateDiff(old_policy, policy)
 
@@ -280,7 +307,6 @@ def define_model(model_name, dbengine, model_seed):
             resource = session.query(Resource).filter(Resource.full_name==full_resource_name).one()
             resource.incrementUpdateCounter()
             session.commit()
-                    
 
         @staticmethod
         def getIamPolicy(session, full_resource_name):
@@ -422,8 +448,9 @@ def define_model(model_name, dbengine, model_seed):
             return resource_set
             
         @staticmethod
-        def reverseExpandMembers(session, member_names):
+        def reverseExpandMembers(session, member_names, request_graph=False):
             members = session.query(Member).filter(Member.name.in_(member_names)).all()
+            membership_graph = collections.defaultdict(set)
 
             def isGroup(member):
                 return member.type == 'group'
@@ -431,19 +458,27 @@ def define_model(model_name, dbengine, model_seed):
             member_set = set()
             new_member_set = set()
 
-            def addToSets(members):
+            def addToSets(members, child):
                 for member in members:
+                    if request_graph and child:
+                        membership_graph[child.name].add(member.name)
+                    if request_graph and not child:
+                        membership_graph[member.name]
                     if member not in member_set:
                         new_member_set.add(member)
                         member_set.add(member)
 
-            addToSets(members)
+            addToSets(members, None)
             while len(new_member_set) > 0:
                 members_to_walk = new_member_set
                 new_member_set = set()
                 for member in members_to_walk:
-                    addToSets(member.parents)
-            return member_set
+                    addToSets(member.parents, member)
+                    
+            if request_graph:
+                return member_set, membership_graph
+            else:
+                return member_set
 
         @staticmethod
         def expandMembers(session, member_names):
