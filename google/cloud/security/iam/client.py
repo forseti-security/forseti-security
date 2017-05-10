@@ -4,6 +4,7 @@ from explain import explain_pb2_grpc
 from explain import explain_pb2
 from playground import playground_pb2_grpc
 from playground import playground_pb2
+from utils import oneof
 
 import binascii
 import os
@@ -44,6 +45,28 @@ class ExplainClient(IAMClient):
     
     def delete_model(self, model_name):
         return self.stub.DeleteModel(explain_pb2.DeleteModelRequest(handle=model_name), metadata=self.metadata())
+
+    def explain_denied(self, member_name, resource_name, roles=[], permission_names=[]):
+        if not oneof(roles != [], permission_names != []):
+            raise Exception('Either roles or permission names must be set')
+        request = explain_pb2.ExplainDeniedRequest()
+        if roles != None:
+            request.roles = roles
+        else:
+            request.permissions = permission_names
+        return self.stub.ExplainDenied(request, metadata=self.metadata())
+
+    def explain_granted(self, member_name, resource_name, role=None, permission=None):
+        if not oneof(role != None, permission!=None):
+            raise Exception('Either role or permission name must be set')
+        request = explain_pb2.ExplainGrantedRequest()
+        if role != None:
+            request.role = role
+        else:
+            request.permission = permission
+        request.resource = resource_name
+        request.member = member_name
+        return self.stub.ExplainGranted(request, metadata=self.metadata())
 
     @require_model
     def query_access_by_resources(self, resource_name, permission_names, expand_groups=False):

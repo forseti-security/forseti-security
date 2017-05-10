@@ -38,6 +38,32 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     def Ping(self, request, context):
         return explain_pb2.PingReply(data=request.data)
 
+    def ExplainDenied(self, request, context):
+        model_name = self._get_handle(context)
+        result = self.explainer.ExplainDenied(model_name,
+                                              request.member,
+                                              request.resources,
+                                              request.permissions,
+                                              request.roles)
+        raise Exception(result)
+
+    def ExplainGranted(self, request, context):
+        model_name = self._get_handle(context)
+        result = self.explainer.ExplainGranted(model_name,
+                                               request.member,
+                                               request.resource,
+                                               request.role,
+                                               request.permission)
+        reply = explain_pb2.ExplainGrantedReply()
+        bindings, member_graph, resource_names = result
+        memberships = []
+        for child, parents in member_graph.iteritems():
+            memberships.append(explain_pb2.Membership(member=child, parents=parents))
+        reply.memberships.extend(memberships)
+        reply.resource_ancestors.extend(resource_names)
+        reply.bindings.extend([explain_pb2.Binding(member=member, resource=resource, role=role) for resource, role, member in bindings])
+        return reply
+
     def GetAccessByResources(self, request, context):
         model_name = self._get_handle(context)
         mapping = self.explainer.GetAccessByResources(model_name,

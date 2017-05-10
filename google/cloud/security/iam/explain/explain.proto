@@ -19,6 +19,46 @@ service Explain {
 
   rpc Denormalize(DenormalizeRequest) returns (stream AuthorizationTuple) {}
 
+  rpc ExplainGranted(ExplainGrantedRequest) returns (ExplainGrantedReply) {}
+
+  rpc ExplainDenied(ExplainDeniedRequest) returns (ExplainDeniedReply) {}
+
+}
+
+message ExplainGrantedRequest {
+	string member = 1;
+	string resource = 2;
+	oneof access {
+		string permission = 3;
+		string role = 4;
+	}
+}
+
+message Binding {
+	string member = 1;
+	string resource = 2;
+	string role = 3;
+}
+
+message Membership {
+	string member = 1;
+	repeated string parents = 2;
+}
+
+message ExplainGrantedReply {
+	repeated Binding bindings = 1;
+	repeated Membership memberships = 2;
+	repeated string resource_ancestors = 3;
+}
+
+message ExplainDeniedReply {
+}
+
+message ExplainDeniedRequest {
+	repeated string permissions = 1;
+	repeated string roles = 2;
+	repeated string member = 3;
+	repeated string resources = 4;
 }
 
 message DenormalizeRequest {

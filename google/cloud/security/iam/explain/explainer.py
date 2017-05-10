@@ -1,6 +1,7 @@
 from google.cloud.security.iam import dao
 from importer import importer
 from sqlalchemy.orm.scoping import scoped_session
+from google.cloud.security.common import data_access
 
 def inject_session(f):
     def wrapper(*args):
@@ -16,6 +17,28 @@ def inject_session(f):
 class Explainer():
     def __init__(self, config):
         self.config = config
+
+    def ExplainDenied(self, model_name, member, resources, permissions, roles):
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            result = data_access.explain_denied(session,
+                                                member,
+                                                resources,
+                                                permissions,
+                                                roles)
+            return result
+
+    def ExplainGranted(self, model_name, member, resource, role, permission):
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            result = data_access.explain_granted(session,
+                                                 member,
+                                                 resource,
+                                                 role,
+                                                 permission)
+            return result
 
     def GetAccessByResources(self, model_name, resource_name, permission_names, expand_groups):
         model_manager = self.config.model_manager

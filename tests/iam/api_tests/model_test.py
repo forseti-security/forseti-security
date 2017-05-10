@@ -123,3 +123,9 @@ class ModelTest(basetest.TestCase):
                 else:
                     self.assertFalse(True, 'Should never get here')
         self.setup.run(test)
+
+    def test_explain(self):
+        def test(client):
+            response = client.explain.explain_granted(member_name='user/d', resource_name='organization/org1/project/project2/bucket/bucket2', role='b')
+            self.assertTrue(response, 'Expected to get a grant explanation')
+        self.setup.run(test)
