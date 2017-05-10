@@ -92,10 +92,7 @@ class BasePipeline(object):
             raise inventory_errors.LoadDataPipelineError(e)
 
     def _get_loaded_count(self):
-        """Get the count of how many of a resource has been loaded.
-
-        If select_record_count() fails, self.count should default to 0.
-        """
+        """Get the count of how many of a resource has been loaded."""
         try:
             self.count = self.dao.select_record_count(
                 self.RESOURCE_NAME,
@@ -103,4 +100,3 @@ class BasePipeline(object):
         except data_access_errors.MySQLError as e:
             LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
                          self.RESOURCE_NAME, self.cycle_timestamp, e)
-            self.count = 0

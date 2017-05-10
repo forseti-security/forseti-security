@@ -127,7 +127,7 @@ class LoadForwardingRulesPipelineTest(basetest.TestCase):
 
         self.pipeline.run()
 
-        self.assertEquals(0, self.pipeline.count)
+        self.assertEquals(None, self.pipeline.count)
 
     @mock.patch.object(
         load_forwarding_rules_pipeline.LoadForwardingRulesPipeline,
