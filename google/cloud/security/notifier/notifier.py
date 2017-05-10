@@ -82,10 +82,12 @@ def main(_):
 
     configs = FLAGS.FlagValuesDict()
 
+    pipelines = [
+        spotify_pipeline.SpotifyPipeline(timestamp, configs),
+    ]
 
-    np = spotify_pipeline.SpotifyPipeline(timestamp, configs)
-
-    np.run()
+    for p in pipelines:
+        p.run()
 
 
 if __name__ == '__main__':

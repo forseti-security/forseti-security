@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base pipeline to perform notifications"""
+"""Internal pipeline to perform notifications"""
 
 import json
 
@@ -35,7 +35,7 @@ LOGGER = log_util.get_logger(__name__)
 class SpotifyPipeline(notification_pipeline.NotificationPipeline):
     """Spotify pipeline to perform notifications"""
 
-    def _get_violation_project(self, violation):
+    def _get_clean_violation(self, violation):
         resource_type = violation['resource_type']
 
         resource_id = violation['resource_id']
@@ -48,15 +48,16 @@ class SpotifyPipeline(notification_pipeline.NotificationPipeline):
 
         if resource_type == 'project':
             violation_project['project_id'] = resource_id
-            violation_project['ownership'] = self._get_project_owner(
+            violation_project['ownership'] = self._get_project_ownership(
                 resource_id)
 
         return violation_project
 
-    def _get_clean_violation(self, project_id):
-        project_raw = self.project_dao.get_project_raw_data('projects',
-                                                 self.cycle_timestamp,
-                                                 project_id=project_id)
+    def _get_project_ownership(self, project_id):
+        project_raw = self.project_dao.get_project_raw_data(
+            'projects',
+            self.cycle_timestamp,
+            project_id=project_id)
         project_raw_d = json.loads(project_raw[0])
 
         ownership = {
