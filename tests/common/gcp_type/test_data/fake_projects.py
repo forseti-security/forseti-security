@@ -50,3 +50,34 @@ FAKE_PROJECTS_BAD_IAM_DB_ROWS = [
      'parent_id': None,
      'iam_policy': ''},
 ]
+
+FAKE_PROJECTS_API_RESPONSE1 = {
+    'projects': [
+        {
+            'name': 'project1',
+            'projectId': 'project1',
+            'projectNumber': '25621943694',
+            'lifecycleState': 'ACTIVE',
+        },
+        {
+            'name': 'project2',
+            'projectId': 'project2',
+            'projectNumber': '94226340476',
+            'lifecycleState': 'DELETE_REQUESTED',
+        },
+        {
+            'name': 'project3',
+            'projectId': 'project3',
+            'projectNumber': '133851422272',
+            'lifecycleState': 'ACTIVE',
+        }]
+}
+
+EXPECTED_FAKE_PROJECTS1 = [FAKE_PROJECTS_API_RESPONSE1]
+
+EXPECTED_FAKE_ACTIVE_PROJECTS1 = [{
+    'projects': [
+        p for p in FAKE_PROJECTS_API_RESPONSE1['projects']
+            if p['lifecycleState'] == 'ACTIVE'
+    ]
+}]
