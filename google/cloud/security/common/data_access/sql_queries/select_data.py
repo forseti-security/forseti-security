@@ -22,6 +22,14 @@ PROJECT_NUMBERS = """
     SELECT project_number from projects_{0};
 """
 
+PROJECT_RAW_ALL = """
+    SELECT raw_project from projects_{0};
+"""
+
+PROJECT_RAW = """
+    SELECT raw_project from projects_{0} where project_id = %s;
+"""
+
 PROJECT_IAM_POLICIES = """
     SELECT p.project_number, p.project_id, p.project_name,
     p.lifecycle_state as proj_lifecycle, p.parent_type, p.parent_id,

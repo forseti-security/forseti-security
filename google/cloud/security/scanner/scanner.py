@@ -27,6 +27,7 @@ Usage:
 """
 
 import itertools
+import json
 import os
 import shutil
 import sys
@@ -38,6 +39,7 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
+from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
@@ -108,6 +110,8 @@ def main(_):
     # instead of it's own execution path.
     if rules_engine_name == 'GroupsEngine':
         all_violations = scanner.run(FLAGS.rules)
+        for v in all_violations:
+            print _get_violation_project(v, snapshot_timestamp)
         LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
         sys.exit(1)
 
@@ -126,6 +130,9 @@ def main(_):
 
     # If there are violations, send results.
     if all_violations:
+        for v in all_violations:
+            print _get_violation_project(v, snapshot_timestamp)
+
         _output_results(all_violations,
                         snapshot_timestamp,
                         resource_counts=resource_counts)
@@ -360,6 +367,43 @@ def _build_scan_summary(all_violations, total_resources):
 
     return total_violations, resource_summaries
 
+def _get_violation_project(violation, snapshot_timestamp):
+    resource_type = violation.resource_type
+    if resource_type:
+        resource_type = resource_type[:255]
+
+    resource_id = violation.resource_id
+    if resource_id:
+        resource_id = str(resource_id)[:255]
+
+    violation_project = {
+        'project_id': None,
+        'ownership': None,
+        'violation': violation
+    }
+
+    if resource_type == 'project':
+        violation_project['project_id'] = resource_id
+        violation_project['ownership'] = _get_project_owner(resource_id, snapshot_timestamp)
+
+    return violation_project
+
+def _get_project_owner(project_id, snapshot_timestamp):
+    p_dao = project_dao.ProjectDao()
+    project_raw = p_dao.get_project_raw_data('projects', snapshot_timestamp, project_id=project_id)
+    project_raw_d = json.loads(project_raw[0])
+
+    ownership = {
+        'owner': None,
+        'creator': None
+    }
+
+    p_labels = project_raw_d.get('labels')
+    if p_labels is not None:
+        ownership['owner'] = p_labels.get('owner')
+        ownership['creator'] = p_labels.get('creator')
+
+    return ownership
 
 if __name__ == '__main__':
     app.run()

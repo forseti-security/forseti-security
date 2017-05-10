@@ -54,7 +54,7 @@ class ProjectDao(dao.Dao):
             resource_name, project_numbers_sql, ())
         return [row['project_number'] for row in rows]
 
-    def get_project_policies(self, resource_name, timestamp):
+    def get_project_policies(self, resource_name, timestamp,):
         """Get the project policies.
 
         This does not raise any errors on database or json parse errors
@@ -97,3 +97,28 @@ class ProjectDao(dao.Dao):
                 OperationalError, ProgrammingError) as e:
             LOGGER.error(errors.MySQLError(resource_name, e))
         return project_policies
+
+    def get_project_raw_data(self, resource_name, timestamp, **kwargs):
+        """Select the project raw data from a projects snapshot table.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            project_id (optional): project_id for specific project
+
+        Returns:
+             list of project numbers
+
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
+        project_id = kwargs.get('project_id')
+        if project_id is not None:
+            project_raw_sql = select_data.PROJECT_RAW.format(timestamp)
+            rows = self.execute_sql_with_fetch(
+                resource_name, project_raw_sql, (project_id,))
+        else:
+            project_raw_sql = select_data.PROJECT_RAW_ALL.format(timestamp)
+            rows = self.execute_sql_with_fetch(
+                resource_name, project_raw_sql, ())
+        return [row['raw_project'] for row in rows]
