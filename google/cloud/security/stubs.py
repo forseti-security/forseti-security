@@ -43,3 +43,8 @@ def RunForsetiEnforcer():
     """Run Forseti Enforcer module."""
     import google.cloud.security.enforcer.enforcer as forseti_enforcer
     run_script_module.RunScriptModule(forseti_enforcer)
+
+def RunForsetiNotifier():
+    """Run Forseti Notifier module."""
+    import google.cloud.security.notifier.notifier as forseti_notifier
+    run_script_module.RunScriptModule(forseti_notifier)

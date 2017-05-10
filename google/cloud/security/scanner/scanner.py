@@ -367,43 +367,6 @@ def _build_scan_summary(all_violations, total_resources):
 
     return total_violations, resource_summaries
 
-def _get_violation_project(violation, snapshot_timestamp):
-    resource_type = violation.resource_type
-    if resource_type:
-        resource_type = resource_type[:255]
-
-    resource_id = violation.resource_id
-    if resource_id:
-        resource_id = str(resource_id)[:255]
-
-    violation_project = {
-        'project_id': None,
-        'ownership': None,
-        'violation': violation
-    }
-
-    if resource_type == 'project':
-        violation_project['project_id'] = resource_id
-        violation_project['ownership'] = _get_project_owner(resource_id, snapshot_timestamp)
-
-    return violation_project
-
-def _get_project_owner(project_id, snapshot_timestamp):
-    p_dao = project_dao.ProjectDao()
-    project_raw = p_dao.get_project_raw_data('projects', snapshot_timestamp, project_id=project_id)
-    project_raw_d = json.loads(project_raw[0])
-
-    ownership = {
-        'owner': None,
-        'creator': None
-    }
-
-    p_labels = project_raw_d.get('labels')
-    if p_labels is not None:
-        ownership['owner'] = p_labels.get('owner')
-        ownership['creator'] = p_labels.get('creator')
-
-    return ownership
 
 if __name__ == '__main__':
     app.run()

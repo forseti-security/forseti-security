@@ -101,3 +101,7 @@ BUCKETS_BY_PROJECT_ID = """
     FROM buckets_{0}
     WHERE project_number = {1};
 """
+
+VIOLATIONS = """
+    SELECT * from violations_{0};
+"""

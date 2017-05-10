@@ -107,6 +107,7 @@ setup(
             'forseti_inventory = google.cloud.security.stubs:RunForsetiInventory',
             'forseti_scanner = google.cloud.security.stubs:RunForsetiScanner',
             'forseti_enforcer = google.cloud.security.stubs:RunForsetiEnforcer',
+            'forseti_notifier = google.cloud.security.stubs:RunForsetiNotifier',
         ]
     },
     zip_safe=False,   # Set to False: apputils doesn't like zip_safe eggs

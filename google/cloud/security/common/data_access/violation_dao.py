@@ -19,6 +19,7 @@ import MySQLdb
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.data_access.sql_queries import load_data
+from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -73,6 +74,20 @@ class ViolationDao(dao.Dao):
                     violation_errors.append(formatted_violation)
 
         return (inserted_rows, violation_errors)
+
+    def get_all_violations(self, timestamp):
+        """Get all the violations.
+
+        Args:
+            timestamp: The timestamp of the snapshot.
+
+        Returns:
+             A tuple of the violations as dict.
+        """
+        violations_sql = select_data.VIOLATIONS.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            self.RESOURCE_NAME, violations_sql, ())
+        return rows
 
 
 def _format_violation(violation):
