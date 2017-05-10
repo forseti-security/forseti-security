@@ -98,7 +98,8 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
                         project_fwd_rules.extend(fwd_rules)
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            forwarding_rules[project.id] = project_fwd_rules
+            if project_fwd_rules:
+                forwarding_rules[project.id] = project_fwd_rules
         return forwarding_rules
 
     def run(self):

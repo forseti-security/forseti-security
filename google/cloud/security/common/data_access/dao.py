@@ -105,7 +105,7 @@ class Dao(_db_connector.DbConnector):
 
     @staticmethod
     def _create_snapshot_table_name(resource_name, timestamp):
-        """Create the snapshot table if it doens't exist.
+        """Create the snapshot table if it doesn't exist.
 
         Args:
             resource_name: String of the resource name.

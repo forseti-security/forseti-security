@@ -26,11 +26,16 @@ from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import base_pipeline
 from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_forwarding_rules
 from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
+
+
+def _set_count(*args, **kwargs):
+    """Set the pipeline count."""
 
 
 class LoadForwardingRulesPipelineTest(basetest.TestCase):
@@ -106,6 +111,23 @@ class LoadForwardingRulesPipelineTest(basetest.TestCase):
         self.assertEqual(
             len(self.project_ids),
             load_forwarding_rules_pipeline.LOGGER.error.call_count)
+
+    @mock.patch.object(MySQLdb, 'connect')
+    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    def test_pipeline_no_rules_loads_nothing(
+            self, mock_get_projects, mock_conn):
+        """Test the pipeline with no forwarding rules."""
+        mock_get_projects.return_value = self.projects
+        base_pipeline.LOGGER = mock.MagicMock()
+        self.pipeline.api_client.get_forwarding_rules = mock.MagicMock(
+            side_effect=[[], []])
+        self.pipeline.dao.select_record_count = mock.MagicMock(
+            side_effect=data_access_errors.MySQLError(
+                'forwarding_rules', mock.MagicMock()))
+
+        self.pipeline.run()
+
+        self.assertEquals(None, self.pipeline.count)
 
     @mock.patch.object(
         load_forwarding_rules_pipeline.LoadForwardingRulesPipeline,
