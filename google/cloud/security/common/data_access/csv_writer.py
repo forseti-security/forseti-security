@@ -55,6 +55,17 @@ GROUPS_FIELDNAMES = [
     'raw_group'
 ]
 
+FOLDERS_FIELDNAMES = [
+    'folder_id',
+    'name',
+    'display_name',
+    'lifecycle_state',
+    'parent_type',
+    'parent_id',
+    'raw_folder',
+    'create_time',
+]
+
 ORGANIZATIONS_FIELDNAMES = [
     'org_id',
     'name',
@@ -165,10 +176,25 @@ FORWARDING_RULES_FIELDNAMES = [
     'backend_service',
 ]
 
+BUCKETS_ACL_VIOLATIONS = [
+    'resource_type',
+    'resource_id',
+    'rule_name',
+    'rule_index',
+    'violation_type',
+    'role',
+    'entity',
+    'email',
+    'domain',
+    'bucket'
+]
+
 CSV_FIELDNAME_MAP = {
     'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
+    'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
+    'folders': FOLDERS_FIELDNAMES,
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,

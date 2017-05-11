@@ -73,7 +73,7 @@ class BasePipeline(object):
         pass
 
     def _load(self, resource_name, data):
-        """ Loads data into forseti storage.
+        """ Loads data into Forseti storage.
 
         Args:
             resource_name: String of the resource name.
@@ -85,6 +85,10 @@ class BasePipeline(object):
         Raises:
             LoadDataPipelineError: An error with loading data has occurred.
         """
+        if not data:
+            LOGGER.warn('No %s data to load into Cloud SQL, continuing...',
+                        resource_name)
+            return
 
         try:
             self.dao.load_data(resource_name, self.cycle_timestamp, data)

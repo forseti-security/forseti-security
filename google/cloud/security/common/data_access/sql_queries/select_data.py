@@ -18,8 +18,8 @@ RECORD_COUNT = """
     SELECT COUNT(*) FROM {0}_{1};
 """
 
-PROJECT_IDS = """
-    SELECT project_id from projects_{0};
+LATEST_SNAPSHOT_TIMESTAMP = """
+    SELECT max(cycle_timestamp) FROM snapshot_cycles
 """
 
 PROJECT_NUMBERS = """
@@ -30,6 +30,14 @@ PROJECTS = """
     SELECT project_number, project_id, project_name,
     lifecycle_state, parent_type, parent_id
     FROM projects_{0}
+"""
+
+PROJECT_IAM_POLICIES_RAW = """
+    SELECT p.project_number, p.project_id, p.project_name, p.lifecycle_state,
+    p.parent_type, p.parent_id, i.iam_policy
+    FROM projects_{0} p INNER JOIN raw_project_iam_policies_{1} i
+    ON p.project_number = i.project_number
+    ORDER BY p.project_id
 """
 
 ORGANIZATIONS = """
@@ -44,21 +52,31 @@ ORGANIZATION_BY_ID = """
     WHERE org_id = %s
 """
 
-PROJECT_IAM_POLICIES_RAW = """
-    SELECT p.project_number, p.project_id, p.project_name, p.lifecycle_state,
-    p.parent_type, p.parent_id, i.iam_policy
-    FROM projects_{0} p INNER JOIN raw_project_iam_policies_{1} i
-    ON p.project_number = i.project_number
-    ORDER BY p.project_id
-"""
-
 ORG_IAM_POLICIES = """
     SELECT org_id, iam_policy
     FROM raw_org_iam_policies_{0}
 """
 
-LATEST_SNAPSHOT_TIMESTAMP = """
-    SELECT max(cycle_timestamp) FROM snapshot_cycles
+FOLDERS = """
+    SELECT folder_id, name, display_name, lifecycle_state, create_time,
+    parent_type, parent_id
+    FROM folders_{0}
+    ORDER BY display_name
+"""
+
+FOLDER_BY_ID = """
+    SELECT folder_id, name, display_name, lifecycle_state, create_time,
+    parent_type, parent_id
+    FROM folders_{0}
+    WHERE folder_id = %s
+"""
+
+FOLDER_IAM_POLICIES = """
+    SELECT f.folder_id, f.display_name, p.lifecycle_state,
+    f.parent_type, f.parent_id, i.iam_policy
+    FROM folders_{0} f INNER JOIN raw_folder_iam_policies_{1} i
+    ON f.folder_id = i.folder_id
+    ORDER BY f.folder_id
 """
 
 GROUPS = """
@@ -107,4 +125,10 @@ FORWARDING_RULES_BY_PROJECT_ID = """
     subnetwork, network, backend_service
     FROM forwarding_rules_{0}
     WHERE project_id = %s
+"""
+
+BUCKET_ACLS = """
+    SELECT bucket, entity, email, domain, role, project_number
+    FROM buckets_{0}, buckets_acl_{0}
+    WHERE bucket=bucket_name;
 """

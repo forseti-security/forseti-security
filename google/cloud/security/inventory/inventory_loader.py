@@ -46,9 +46,10 @@ import gflags as flags
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.apputils import app
-from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import bucket_dao as buck_dao
+from google.cloud.security.common.data_access import folder_dao as folder_resource_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
@@ -58,24 +59,29 @@ from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import compute
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import storage as gcs
-from google.cloud.security.common.util import errors as util_errors
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
+from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory import util
-from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
 from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipeline
-from google.cloud.security.inventory.pipelines import load_group_members_pipeline
+from google.cloud.security.inventory.pipelines import load_folders_pipeline
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
+from google.cloud.security.inventory.pipelines import load_group_members_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_orgs_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_buckets_acls_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_buckets_acls_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
+from google.cloud.security.inventory import util
 # pylint: enable=line-too-long
+
+FLAGS = flags.FLAGS
+
+flags.DEFINE_bool('inventory_groups', False,
+                  'Whether to inventory GSuite Groups.')
 
 LOGLEVELS = {
     'debug': logging.DEBUG,
@@ -83,11 +89,6 @@ LOGLEVELS = {
     'warning' : logging.WARN,
     'error' : logging.ERROR,
 }
-
-FLAGS = flags.FLAGS
-
-flags.DEFINE_bool('inventory_groups', False,
-                  'Whether to inventory GSuite Groups.')
 flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
@@ -179,7 +180,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     """
 
     pipelines = []
-    crm_api_client = crm.CloudResourceManagerClient()
+    crm_v1_api_client = crm.CloudResourceManagerClient()
+    crm_v2beta1 = crm.CloudResourceManagerClient(version='v2beta1')
     gcs_api_client = gcs.StorageClient()
     bq_api_client = bq.BigQueryClient()
     compute_api_client = compute.ComputeClient()
@@ -189,26 +191,29 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     organization_dao = kwargs.get('organization_dao')
     bucket_dao = kwargs.get('bucket_dao')
     fwd_rules_dao = kwargs.get('fwd_rules_dao')
+    folder_dao = kwargs.get('folder_dao')
 
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
     pipelines = [
         load_orgs_pipeline.LoadOrgsPipeline(
-            cycle_timestamp, configs, crm_api_client, organization_dao),
-        #load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-        #    cycle_timestamp, configs, crm_api_client, organization_dao),
-        #load_projects_pipeline.LoadProjectsPipeline(
-        #    cycle_timestamp, configs, crm_api_client, project_dao),
-        #load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-        #    cycle_timestamp, configs, crm_api_client, project_dao),
-        #load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-        #    cycle_timestamp, configs, gcs_api_client, project_dao),
-        #load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
-        #    cycle_timestamp, configs, gcs_api_client, bucket_dao),
+            cycle_timestamp, configs, crm_v1_api_client, organization_dao),
+        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_v1_api_client, organization_dao),
+        load_projects_pipeline.LoadProjectsPipeline(
+            cycle_timestamp, configs, crm_v1_api_client, project_dao),
+        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_v1_api_client, project_dao),
+        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
+            cycle_timestamp, configs, gcs_api_client, project_dao),
+        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
+            cycle_timestamp, configs, gcs_api_client, bucket_dao),
+        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
+            cycle_timestamp, configs, compute_api_client, fwd_rules_dao),
+        load_folders_pipeline.LoadFoldersPipeline(
+            cycle_timestamp, configs, crm_v2beta1, folder_dao),
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
             cycle_timestamp, configs, bq_api_client, project_dao),
-        #load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
-        #    cycle_timestamp, configs, compute_api_client, fwd_rules_dao),
     ]
 
     if configs.get('inventory_groups'):
@@ -332,6 +337,7 @@ def main(_):
         organization_dao = org_dao.OrganizationDao()
         bucket_dao = buck_dao.BucketDao()
         fwd_rules_dao = fr_dao.ForwardingRulesDao()
+        folder_dao = folder_resource_dao.FolderDao()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
@@ -350,7 +356,8 @@ def main(_):
             project_dao=project_dao,
             organization_dao=organization_dao,
             bucket_dao=bucket_dao,
-            fwd_rules_dao=fwd_rules_dao)
+            fwd_rules_dao=fwd_rules_dao,
+            folder_dao=folder_dao)
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)

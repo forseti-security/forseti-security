@@ -31,24 +31,47 @@ from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
 
 CREATE_TABLE_MAP = {
+    # bigquery
     'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE,
+
+    # buckets
+    'buckets': create_tables.CREATE_BUCKETS_TABLE,
+    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
+    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
+
+    # folders
+    'folders': create_tables.CREATE_FOLDERS_TABLE,
+    'folder_iam_policies': create_tables.CREATE_FOLDER_IAM_POLICIES_TABLE,
+    'raw_folder_iam_policies': (
+        create_tables.CREATE_RAW_FOLDER_IAM_POLICIES_TABLE),
+
+    # load balancer
     'buckets': create_tables.CREATE_BUCKETS_TABLE,
     'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
     'forwarding_rules': create_tables.CREATE_FORWARDING_RULES_TABLE,
+
+    # groups
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+
+    # organizations
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
+    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
+
+    # projects
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
-    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
-    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
+
+    # rule violations
+    'buckets_acl_violations':
+        create_tables.CREATE_BUCKETS_ACL_VIOLATIONS_TABLE,
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
 }
 
-SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'
+SNAPSHOT_STATUS_FILTER_CLAUSE = ' where status in ({})'
 
 
 class Dao(_db_connector.DbConnector):
@@ -89,7 +112,7 @@ class Dao(_db_connector.DbConnector):
 
     @staticmethod
     def _create_snapshot_table_name(resource_name, timestamp):
-        """Create the snapshot table if it doens't exist.
+        """Create the snapshot table if it doesn't exist.
 
         Args:
             resource_name: String of the resource name.
@@ -260,7 +283,7 @@ class Dao(_db_connector.DbConnector):
             statuses = ('SUCCESS',)
 
         status_params = ','.join(['%s']*len(statuses))
-        filter_clause = SNAPSHOT_FILTER_CLAUSE.format(status_params)
+        filter_clause = SNAPSHOT_STATUS_FILTER_CLAUSE.format(status_params)
         try:
             cursor = self.conn.cursor()
             cursor.execute(
