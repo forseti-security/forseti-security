@@ -65,7 +65,6 @@ class GroupsScanner(base_scanner.BaseScanner):
             members = self.dao.get_group_members('group_members',
                                                  queued_node.member_id,
                                                  timestamp)
-
             for member in members:
                 member_node = MemberNode(member.get('member_id'),
                                          member.get('member_email'),
@@ -104,7 +103,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         return root
 
     @staticmethod
-    def _append_rule(starting_node, rule):
+    def _apply_one_rule(starting_node, rule):
         """Append the rule to all the applicable nodes.
 
         Args:
@@ -119,6 +118,32 @@ class GroupsScanner(base_scanner.BaseScanner):
         for node in anytree.iterators.PreOrderIter(starting_node):
             node.rules.append(rule)
         return starting_node
+
+    def _apply_all_rules(self, root, rules):
+
+        # Apply all rules to applicable nodes.
+        for rule in rules:
+            if rule.get('group_email') == MY_CUSTOMER:
+                # Apply rule to every node.
+                # Because this is simply the root node, there is no need
+                # to find this node, i.e. just start at the root.
+                # Traversal order should not matter.
+                root = self._apply_one_rule(root, rule)
+            else:
+                # Apply rule to only specific node.
+                # Need to find this node.
+                # Traversal should not matter since we need to find all
+                # instances of the group (because a group can be added
+                # to multiple groups).
+                #
+                # Start at the tree root, find all instances of the specified
+                # group, then add the rule to all the members of the specified
+                # group.
+                for node in anytree.iterators.PreOrderIter(root):
+                    if node.member_email == rule.get('group_email'):
+                        node = self._apply_one_rule(node, rule)
+        
+        return root
 
     # pylint: disable=arguments-differ
     def run(self, rules_path):
@@ -136,27 +161,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         with open(rules_path, 'r') as f:
             rules = yaml.load(f)
 
-        # Apply all rules to applicable nodes.
-        for rule in rules:
-            if rule.get('group_email') == MY_CUSTOMER:
-                # Apply rule to every node.
-                # Because this is simply the root node, there is no need
-                # to find this node, i.e. just start at the root.
-                # Traversal order should not matter.
-                root = self._append_rule(root, rule)
-            else:
-                # Apply rule to only specific node.
-                # Need to find this node.
-                # Traversal should not matter since we need to find all
-                # instances of the group (because a group can be added
-                # to multiple groups).
-                #
-                # Start at the tree root, find all instances of the specified
-                # group, then add the rule to all the members of the specified
-                # group.
-                for node in anytree.iterators.PreOrderIter(root):
-                    if node.member_email == rule.get('group_email'):
-                        node = self._append_rule(node, rule)
+        root = self._apply_all_rules(root, rules)
 
         return self.find_violations(root)
 
