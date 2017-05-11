@@ -197,8 +197,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
     pipelines = [
-        #load_orgs_pipeline.LoadOrgsPipeline(
-        #    cycle_timestamp, configs, crm_v1_api_client, organization_dao),
+        load_orgs_pipeline.LoadOrgsPipeline(
+            cycle_timestamp, configs, crm_v1_api_client, organization_dao),
         #load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
         #    cycle_timestamp, configs, crm_v1_api_client, organization_dao),
         #load_projects_pipeline.LoadProjectsPipeline(
@@ -214,7 +214,7 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
         #load_folders_pipeline.LoadFoldersPipeline(
         #    cycle_timestamp, configs, crm_v2beta1, folder_dao),
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
-            cycle_timestamp, configs, bq_api_client, project_dao),
+            cycle_timestamp, configs, bq_api_client, dao),
     ]
 
     if configs.get('inventory_groups'):
