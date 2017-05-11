@@ -26,10 +26,6 @@ from google.cloud.security.common.util import errors
 from StringIO import StringIO
 
 
-def _default_side_effect(*args, **kwargs):
-    return mock.DEFAULT
-
-
 class _MockHttpError(socket.error):
     """Mock Http Error"""
     pass
@@ -78,7 +74,6 @@ class MetadataServerTest(basetest.TestCase):
             * A True result.
         """
         with mock.patch('httplib.HTTPResponse') as mock_http_resp:
-            mock_http_resp.side_effect = _default_side_effect
             mock_http_resp.return_value.status = httplib.OK
             mock_meta_req.side_effect = mock_http_resp
             actual_response = metadata_server.can_reach_metadata_server()
@@ -129,7 +124,6 @@ class MetadataServerTest(basetest.TestCase):
 
         with mock.patch('httplib.HTTPResponse',
                         mock.mock_open(read_data=mock_response)) as mock_http_resp:
-            mock_http_resp.side_effect = _default_side_effect
             mock_http_resp.return_value.status = httplib.OK
             mock_meta_req.side_effect = mock_http_resp
 

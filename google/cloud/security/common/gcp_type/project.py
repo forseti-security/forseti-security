@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """A Project Resource.
 
 See: https://cloud.google.com/resource-manager/reference/rest/v1/projects
@@ -30,7 +31,7 @@ class ProjectLifecycleState(resource.LifecycleState):
 class Project(resource.Resource):
     """Project resource."""
 
-    RESOURCE_NAME_FMT = 'organizations/%s'
+    RESOURCE_NAME_FMT = 'projects/%s'
 
     def __init__(
             self,

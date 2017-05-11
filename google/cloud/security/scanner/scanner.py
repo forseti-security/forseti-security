@@ -16,7 +16,14 @@
 
 Usage:
 
-  $ forseti_scanner --rules <rules path> \\
+  List rules engines:
+  $ forseti_scanner --list_engines
+
+  Run scanner:
+  $ forseti_scanner \\
+      --rules <rules path> \\
+      --engine_name <rule engine name> \\
+      --use_scanner_basedir <scanner basedir> \\
       --output_path <output path (optional)> \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
@@ -40,7 +47,7 @@ from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
+from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.scanner.audit import engine_map as em
@@ -54,11 +61,6 @@ FLAGS = flags.FLAGS
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
 flags.DEFINE_string('rules', None,
-                    ('Path to rules file (yaml/json). '
-                     'If GCS object, include full path, e.g. '
-                     ' "gs://<bucketname>/path/to/file".'))
-
-flags.DEFINE_string('group_rules', None,
                     ('Path to rules file (yaml/json). '
                      'If GCS object, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
@@ -101,11 +103,6 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    # Instantiate rules engine with supplied rules file
-    rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](rules_file_path=\
-                                                            FLAGS.rules)
-    rules_engine.build_rule_book()
-
     snapshot_timestamp = _get_timestamp()
     if not snapshot_timestamp:
         LOGGER.warn('No snapshot timestamp found. Exiting.')
@@ -113,6 +110,19 @@ def main(_):
 
     # Load scanner from map
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
+
+    # TODO: Make the groups scanner run consistently with other scanners
+    # instead of it's own execution path.
+    if rules_engine_name == 'GroupsEngine':
+        all_violations = scanner.run(FLAGS.rules)
+        LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
+        sys.exit(1)
+
+    # Instantiate rules engine with supplied rules file
+    rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
+        rules_file_path=FLAGS.rules)
+    rules_engine.build_rule_book()
+
     iter_objects, resource_counts = scanner.run()
 
     # Load violations processing function
@@ -339,7 +349,7 @@ def _build_scan_summary(all_violations, total_resources):
         resource_type = violation.resource_type
         if resource_type not in resource_summaries:
             resource_summaries[resource_type] = {
-                'pluralized_resource_type': ResourceUtil.pluralize(
+                'pluralized_resource_type': resource_util.pluralize(
                     resource_type),
                 'total': total_resources[resource_type],
                 'violations': {}

@@ -18,18 +18,26 @@ RECORD_COUNT = """
     SELECT COUNT(*) FROM {0}_{1};
 """
 
+LATEST_SNAPSHOT_TIMESTAMP = """
+    SELECT max(cycle_timestamp) FROM snapshot_cycles
+"""
+
 PROJECT_NUMBERS = """
     SELECT project_number from projects_{0};
 """
 
-PROJECT_IAM_POLICIES = """
-    SELECT p.project_number, p.project_id, p.project_name,
-    p.lifecycle_state as proj_lifecycle, p.parent_type, p.parent_id,
-    pol.role, pol.member_type, pol.member_name, pol.member_domain
-    FROM projects_{0} p INNER JOIN project_iam_policies_{1} pol
-    ON p.project_number = pol.project_number
-    ORDER BY p.project_number, pol.role, pol.member_type,
-    pol.member_domain, pol.member_name
+PROJECTS = """
+    SELECT project_number, project_id, project_name,
+    lifecycle_state, parent_type, parent_id
+    FROM projects_{0}
+"""
+
+PROJECT_IAM_POLICIES_RAW = """
+    SELECT p.project_number, p.project_id, p.project_name, p.lifecycle_state,
+    p.parent_type, p.parent_id, i.iam_policy
+    FROM projects_{0} p INNER JOIN raw_project_iam_policies_{1} i
+    ON p.project_number = i.project_number
+    ORDER BY p.project_id
 """
 
 ORGANIZATIONS = """
@@ -44,21 +52,35 @@ ORGANIZATION_BY_ID = """
     WHERE org_id = %s
 """
 
-PROJECT_IAM_POLICIES_RAW = """
-    SELECT p.project_number, p.project_id, p.project_name, p.lifecycle_state,
-    p.parent_type, p.parent_id, i.iam_policy
-    FROM projects_{0} p INNER JOIN raw_project_iam_policies_{1} i
-    ON p.project_number = i.project_number
-    ORDER BY p.project_id
-"""
-
 ORG_IAM_POLICIES = """
     SELECT org_id, iam_policy
     FROM raw_org_iam_policies_{0}
 """
 
-LATEST_SNAPSHOT_TIMESTAMP = """
-    SELECT max(cycle_timestamp) FROM snapshot_cycles
+FOLDERS = """
+    SELECT folder_id, name, display_name, lifecycle_state, create_time,
+    parent_type, parent_id
+    FROM folders_{0}
+    ORDER BY display_name
+"""
+
+FOLDER_BY_ID = """
+    SELECT folder_id, name, display_name, lifecycle_state, create_time,
+    parent_type, parent_id
+    FROM folders_{0}
+    WHERE folder_id = %s
+"""
+
+FOLDER_IAM_POLICIES = """
+    SELECT f.folder_id, f.display_name, p.lifecycle_state,
+    f.parent_type, f.parent_id, i.iam_policy
+    FROM folders_{0} f INNER JOIN raw_folder_iam_policies_{1} i
+    ON f.folder_id = i.folder_id
+    ORDER BY f.folder_id
+"""
+
+GROUPS = """
+    SELECT * from groups_{0};
 """
 
 GROUP_IDS = """
@@ -88,4 +110,19 @@ BUCKETS_BY_PROJECT_ID = """
     SELECT bucket_name
     FROM buckets_{0}
     WHERE project_number = {1};
+"""
+
+FORWARDING_RULES = """
+    SELECT id, project_id, creation_timestamp, name, description, region,
+    ip_address, ip_protocol, port_range, ports, target, load_balancing_scheme,
+    subnetwork, network, backend_service
+    FROM forwarding_rules_{0}
+"""
+
+FORWARDING_RULES_BY_PROJECT_ID = """
+    SELECT id, project_id, creation_timestamp, name, description, region,
+    ip_address, ip_protocol, port_range, ports, target, load_balancing_scheme,
+    subnetwork, network, backend_service
+    FROM forwarding_rules_{0}
+    WHERE project_id = %s
 """

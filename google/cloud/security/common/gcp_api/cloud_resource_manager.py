@@ -27,7 +27,10 @@ from google.cloud.security.common.util import log_util
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager queries per 100 seconds.')
+                     'Cloud Resource Manager read queries per 100 seconds.')
+
+flags.DEFINE_integer('max_crm_api_writes_per_100_seconds', 1000,
+                     'Cloud Resource Manager write requests per 100 seconds.')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -38,9 +41,12 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     API_NAME = 'cloudresourcemanager'
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(CloudResourceManagerClient, self).__init__(
-            api_name=self.API_NAME)
+            api_name=self.API_NAME, **kwargs)
+
+        # TODO: we will need multiple rate limiters when we need to invoke
+        # the CRM write API for enforcement.
         self.rate_limiter = RateLimiter(
             FLAGS.max_crm_api_calls_per_100_seconds,
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
@@ -65,8 +71,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(project_id, e))
-        return None
+            raise api_errors.ApiExecutionError(project_id, e)
 
     def get_projects(self, resource_name, **filterargs):
         """Get all the projects this application has access to.
@@ -148,9 +153,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
 
         Returns:
             The org response object if found, otherwise False.
-
-        Raises:
-            ApiExecutionError: An error has occurred when executing the API.
         """
         orgs_stub = self.service.organizations()
 
@@ -160,8 +162,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(org_name, e))
-        return None
+            raise api_errors.ApiExecutionError(org_name, e)
 
     def get_organizations(self, resource_name):
         """Get organizations that this application has access to.
@@ -172,9 +173,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Yields:
             An iterator of the response from the organizations API, which
             contains is paginated and contains a list of organizations.
-
-        Raises:
-            ApiExecutionError: An error has occurred when executing the API.
         """
         orgs_api = self.service.organizations()
         next_page_token = None
@@ -192,7 +190,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                     if not next_page_token:
                         break
         except (HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(resource_name, e))
+            raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_org_iam_policies(self, resource_name, org_id):
         """Get all the iam policies of an org.
@@ -240,3 +238,38 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 return response
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(folder_name, e)
+
+    def get_folders(self, resource_name, **kwargs):
+        """Find all folders Forseti can access.
+
+        Args:
+            kwargs: Extra args.
+            resource_name: The resource name. TODO: why include this?
+
+        Returns:
+            The folders API response.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        folders_api = self.service.folders()
+        next_page_token = None
+
+        lifecycle_state_filter = kwargs.get('lifecycle_state')
+
+        try:
+            with self.rate_limiter:
+                while True:
+                    req_body = {}
+                    if next_page_token:
+                        req_body['pageToken'] = next_page_token
+                    if lifecycle_state_filter:
+                        req_body['lifecycleState'] = lifecycle_state_filter
+                    request = folders_api.search(body=req_body)
+                    response = self._execute(request)
+                    yield response
+                    next_page_token = response.get('nextPageToken')
+                    if not next_page_token:
+                        break
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_name, e)
