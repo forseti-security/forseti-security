@@ -9,14 +9,15 @@ import logging
 import struct
 import hmac
 
+
 from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Table, Text, DateTime, Enum, join, select, or_
-from sqlalchemy.orm import relationship, state
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import relationship, state, aliased, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from __builtin__ import staticmethod
 
 from utils import logcall
+from test.test_os import resource
 
 def generateModelHandle():
     return binascii.hexlify(os.urandom(16))
@@ -83,8 +84,8 @@ def define_model(model_name, dbengine, model_seed):
         type = Column(String)
         policy_update_counter = Column(Integer, default=0)
 
-        parent_name = Column(String, ForeignKey('{}.name'.format(resources_tablename)))
-        parent = relationship("Resource", remote_side=[name])
+        parent_name = Column(String, ForeignKey('{}.full_name'.format(resources_tablename)))
+        parent = relationship("Resource", remote_side=[full_name])
         bindings = relationship('Binding', back_populates="resource")
 
         def incrementUpdateCounter(self):
@@ -202,11 +203,52 @@ def define_model(model_name, dbengine, model_seed):
                 return bindings, member_graph, resource_names
 
         @staticmethod
-        def explain_denied(session, member_names, resource_names, permission_names, role_names):
+        @logcall
+        def explain_denied(session, member_name, resource_names, permission_names, role_names):
             if not role_names:
                 role_names = map(lambda r: r.name, ModelAccess.getRolesByPermissionNames(session, permission_names))
-            # search for bindings granting the roles
-            raise Exception('Not yet implemented')
+                if not role_names:
+                    raise Exception('No roles covering requested permission set')
+
+            resource_hierarchy = ModelAccess.resolve_resource_ancestors(session, resource_names)
+        
+            def find_binding_candidates(resource_hierarchy):
+                root = None
+                for parent in resource_hierarchy.iterkeys():
+                    is_root = True
+                    for children in resource_hierarchy.itervalues():
+                        if parent in children:
+                            is_root=False
+                            break
+                    if is_root:
+                        root = parent
+                chain = [root]
+                cur = root
+                while len(resource_hierarchy[cur]) == 1:
+                    cur = iter(resource_hierarchy[cur]).next()
+                    chain.append(cur)
+                return chain
+
+            binding_resource_candidates = find_binding_candidates(resource_hierarchy)
+            bindings = session.query(Binding, Member).join(binding_members).join(Member).join(Role).filter(Binding.resource_name.in_(binding_resource_candidates)).filter(Role.name.in_(role_names)).all()
+            
+            class Strategy:
+                def __init__(self, resource, role, member, overgranting):
+                    self.resource = resource
+                    self.role = role
+                    self.member = member
+                    self.overgranting = overgranting
+            strategies = []
+            for resource in binding_resource_candidates:
+                for role_name in role_names:
+                    overgranting = len(binding_resource_candidates) - binding_resource_candidates.index(resource) - 1
+                    strategies.append((overgranting, [ (role, member_name, resource) for role in [role_name]]))
+            if bindings:
+                for binding, member in bindings:
+                    for role_name in role_names:
+                        overgranting = len(binding_resource_candidates) - binding_resource_candidates.index(binding.resource_name) -1
+                        strategies.append((overgranting, [ (role, member.name, binding.resource_name) for role in [role_name]]))
+            return strategies
 
         @staticmethod
         def query_access_by_member(session, member_name, permission_names, expand_resources=False, per_yield=1024):
@@ -511,9 +553,42 @@ def define_model(model_name, dbengine, model_seed):
             return group_set.union(non_group_set)
 
         @staticmethod
+        def resolve_resource_ancestors(session, full_resource_names):
+            resources = session.query(Resource).filter(Resource.full_name.in_(full_resource_names)).all()
+            resource_names = set(map(lambda r: r.name, resources))
+
+            resource_graph = collections.defaultdict(set)
+
+            resource_children = aliased(Resource, name='resource_children')
+            resource_parent = aliased(Resource, name='resource_parent')
+
+            resources_set = set(resource_names)
+            resources_new = set(resource_names)
+            for resource in resources_new:
+                resource_graph[resource] = set()
+
+            while resources_new:
+                resources_new = set()
+                for parent, child in session.query(resource_parent, resource_children).\
+                                            filter(resource_children.full_name.in_(resources_set)).\
+                                            filter(resource_children.parent_name==resource_parent.full_name).all():
+
+
+
+                    if parent.full_name not in resources_set:
+                        resources_new.add(parent.full_name)
+
+                    resources_set.add(parent.full_name)
+                    resources_set.add(child.full_name)
+
+                    resource_graph[parent.full_name].add(child.full_name)
+
+            return resource_graph
+
+        @staticmethod
         def findResourcePath(session, full_resource_name):
             resources = session.query(Resource).filter(Resource.full_name == full_resource_name).all()
-            if len(resources) < 1:
+            if not resources:
                 return []
 
             path = []

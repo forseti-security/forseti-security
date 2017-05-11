@@ -36,10 +36,13 @@ model = {
                                 'user/d' : {},
                             },
                     },
+                'user/e' : {},
             },
         'roles':{
                 'a' : ['a','b','c','d','e'],
                 'b' : ['a','b','c'],
+                'c' : ['f','g','h'],
+                'd' : ['f','g','i']
             },
         'bindings':{
                 'organization/org1' : {
@@ -124,8 +127,18 @@ class ModelTest(basetest.TestCase):
                     self.assertFalse(True, 'Should never get here')
         self.setup.run(test)
 
-    def test_explain(self):
+    def test_explain_granted(self):
         def test(client):
             response = client.explain.explain_granted(member_name='user/d', resource_name='organization/org1/project/project2/bucket/bucket2', role='b')
             self.assertTrue(response, 'Expected to get a grant explanation')
+        self.setup.run(test)
+
+    def test_explain_denied(self):
+        def test(client):
+            response = client.explain.explain_denied(member_name='user/d', resource_names=['organization/org1/project/project2/bucket/bucket2'], permission_names=['f','i'])
+            self.assertTrue(response, 'Expected to get a deny explanation')
+            
+            response = client.explain.explain_denied(member_name='user/e', resource_names=['organization/org1/project/project2/bucket/bucket2'], permission_names=['a'])
+            print response
+            self.assertTrue(response, 'Expected to get a deny explanation')
         self.setup.run(test)
