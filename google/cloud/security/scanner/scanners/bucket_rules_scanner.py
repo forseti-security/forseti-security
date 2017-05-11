@@ -57,8 +57,8 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies: organisation policies from inventory.
-            project_pollicies: project policies from inventory.
+            org_policies: organization policies from inventory.
+            project_policies: project policies from inventory.
         Returns:
             Resource count map
         """

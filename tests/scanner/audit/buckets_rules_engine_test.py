@@ -82,5 +82,5 @@ class BucketsRulesEngineTest(basetest.TestCase):
         rules_local_path = get_datafile_path(__file__,
         	'buckets_test_rules_2.yaml')
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
