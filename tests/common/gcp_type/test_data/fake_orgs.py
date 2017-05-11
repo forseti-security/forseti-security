@@ -28,7 +28,8 @@ FAKE_ORGS_DB_ROWS = [
 ]
 
 FAKE_ORGS_RESPONSE = {
-    'organizations': [{
+    'organizations': [
+        {
           'name': 'organizations/1111111111',
           'display_name': 'Organization1',
           'lifecycleState': 'ACTIVE',

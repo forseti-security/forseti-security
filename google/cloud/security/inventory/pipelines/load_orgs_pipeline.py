@@ -34,7 +34,7 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
     def _transform(self, orgs):
-        """Yield an iterator of loadable iam policies.
+        """Yield an iterator of loadable organizations.
 
         Args:
             orgs: An iterable of resource manager org search response.
@@ -59,7 +59,7 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
             # org_name is the unique identifier for the org, formatted as
             # "organizations/<organization_id>".
             org_name = org.get('name')
-            org_id = org_name[len('organizations/'):]
+            org_id = org_name[len('%s/' % self.RESOURCE_NAME):]
 
             yield {'org_id': org_id,
                    'name': org_name,

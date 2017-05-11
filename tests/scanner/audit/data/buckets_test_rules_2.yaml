@@ -1,0 +1,18 @@
+rules:
+  - name: sample bucket acls rule to search for public buckets
+    bucket: '*'
+    email: '*'
+    domain: '*'
+    role: '*'
+    resource:
+      - resource_ids:
+          - some-resource-1
+  - name: sample bucket acls rule to search for exposed buckets
+    bucket: '*'
+    entity: allAuthenticatedUsers
+    email: '*'
+    domain: '*'
+    role: '*' 
+    resource:
+      - resource_ids:
+          - some-resource-1

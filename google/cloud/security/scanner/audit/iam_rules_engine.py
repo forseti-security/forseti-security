@@ -22,10 +22,10 @@ determine whether there are violations.
 import itertools
 import threading
 
+from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.gcp_type import errors as resource_errors
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.resource import ResourceType
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import rules as scanner_rules
@@ -105,6 +105,11 @@ class IamRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
     def __init__(self, rules_file_path):
+        """Initialize.
+
+        Args:
+            rules_file_path: file location of rules
+        """
         super(IamRulesEngine, self).__init__(
             rules_file_path=rules_file_path)
         self.rule_book = None
@@ -284,7 +289,7 @@ class IamRuleBook(bre.BaseRuleBook):
                 # For each resource id associated with the rule, create a
                 # mapping of resource => rules.
                 for resource_id in resource_ids:
-                    gcp_resource = ResourceUtil.create_resource(
+                    gcp_resource = resource_util.create_resource(
                         resource_id=resource_id,
                         resource_type=resource_type)
 

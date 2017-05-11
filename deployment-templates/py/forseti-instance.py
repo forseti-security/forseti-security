@@ -44,15 +44,16 @@ def GenerateConfig(context):
 
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
 
-    inventory_command = '/usr/local/bin/forseti_inventory --organization_id {} --db_name {} '.format(
-        context.properties['organization-id'],
+    inventory_command = '/usr/local/bin/forseti_inventory --db_name {} '.format(
         DATABASE_NAME,
     )
 
-    scanner_command = '/usr/local/bin/forseti_scanner --rules {} --output_path {} --organization_id {} --db_name {} '.format(
+    scanner_command = '/usr/local/bin/forseti_scanner --rules {} --output_path {} --engine_name {} --db_name {} '.format(
         'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
         'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
-        context.properties['organization-id'],
+        # TODO: temporary hack; remove --engine_name flag when we run scanner
+        # totally in batch with the other rule engines
+        'IamRulesEngine',
         DATABASE_NAME,
     )
 

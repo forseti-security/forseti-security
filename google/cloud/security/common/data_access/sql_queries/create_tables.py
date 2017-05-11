@@ -87,6 +87,42 @@ CREATE_RAW_ORG_IAM_POLICIES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_FOLDERS_TABLE = """
+    CREATE TABLE `{0}` (
+        `folder_id` bigint(20) unsigned NOT NULL,
+        `name` varchar(255) NOT NULL,
+        `display_name` varchar(255) DEFAULT NULL,
+        `lifecycle_state` enum('ACTIVE','DELETE_REQUESTED',
+            'DELETED','LIFECYCLE_STATE_UNSPECIFIED') DEFAULT NULL,
+        `parent_type` varchar(255) DEFAULT NULL,
+        `parent_id` varchar(255) DEFAULT NULL,
+        `raw_folder` json DEFAULT NULL,
+        `create_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`folder_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_FOLDER_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `folder_id` bigint(20) DEFAULT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `member_type` varchar(255) DEFAULT NULL,
+        `member_name` varchar(255) DEFAULT NULL,
+        `member_domain` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_RAW_FOLDER_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `folder_id` bigint(20) DEFAULT NULL,
+        `iam_policy` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_GROUPS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -171,6 +207,44 @@ CREATE_BUCKETS_ACL_TABLE = """
         `role` varchar(255) DEFAULT NULL,
         `bucket_acl_selflink` varchar(255) DEFAULT NULL,
         `raw_bucket_acl` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_FORWARDING_RULES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL,
+        `project_id` varchar(255) NOT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `ip_address` varchar(255) DEFAULT NULL,
+        `ip_protocol` enum('TCP','UDP','ESP','AH','SCTP','ICMP') DEFAULT NULL,
+        `port_range` varchar(255) DEFAULT NULL,
+        `ports` json DEFAULT NULL,
+        `target` varchar(255) DEFAULT NULL,
+        `load_balancing_scheme` enum('INTERNAL','EXTERNAL') DEFAULT NULL,
+        `subnetwork` varchar(255) DEFAULT NULL,
+        `network` varchar(255) DEFAULT NULL,
+        `backend_service` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_BUCKETS_ACL_VIOLATIONS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `resource_type` varchar(255) NOT NULL,
+        `resource_id` varchar(255) NOT NULL,
+        `rule_name` varchar(255) DEFAULT NULL,
+        `rule_index` int DEFAULT NULL,
+        `violation_type` enum('BUCKET_VIOLATION') NOT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `entity` varchar(255) DEFAULT NULL,
+        `email` varchar(255) DEFAULT NULL,
+        `domain` varchar(255) DEFAULT NULL,
+        `bucket` varchar(255) DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """

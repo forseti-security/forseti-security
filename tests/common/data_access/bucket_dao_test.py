@@ -72,3 +72,22 @@ class BucketDaoTest(basetest.TestCase):
 				self.resource_name, 
 				self.fake_timestamp, 
 				self.FAKE_PROJECT_NUMBERS[0])
+
+	def test_get_buckets_acls(self):
+		"""Test get_buckets_acls()."""
+		conn_mock = mock.MagicMock()
+		cursor_mock = mock.MagicMock()
+		fetch_mock = mock.MagicMock()
+
+		self.bucket_dao.conn = conn_mock
+		self.bucket_dao.conn.cursor.return_value = cursor_mock
+		cursor_mock.fetchall.return_value = fetch_mock
+
+		fake_query_acls = select_data.BUCKET_ACLS.format(
+			self.fake_timestamp)
+		self.bucket_dao.get_buckets_acls(
+			self.resource_name, 
+			self.fake_timestamp)
+
+		cursor_mock.execute.assert_called_once_with(fake_query_acls, None)
+		cursor_mock.fetchall.assert_called_once_with()
