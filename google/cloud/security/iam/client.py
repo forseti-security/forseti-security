@@ -9,6 +9,7 @@ from utils import oneof
 import binascii
 import os
 import grpc
+from test.test_os import resource
 
 def require_model(f):
     def wrapper(*args, **kwargs):
@@ -46,14 +47,10 @@ class ExplainClient(IAMClient):
     def delete_model(self, model_name):
         return self.stub.DeleteModel(explain_pb2.DeleteModelRequest(handle=model_name), metadata=self.metadata())
 
-    def explain_denied(self, member_name, resource_name, roles=[], permission_names=[]):
+    def explain_denied(self, member_name, resource_names, roles=[], permission_names=[]):
         if not oneof(roles != [], permission_names != []):
             raise Exception('Either roles or permission names must be set')
-        request = explain_pb2.ExplainDeniedRequest()
-        if roles != None:
-            request.roles = roles
-        else:
-            request.permissions = permission_names
+        request = explain_pb2.ExplainDeniedRequest(member=member_name, resources=resource_names, roles=roles, permissions=permission_names)
         return self.stub.ExplainDenied(request, metadata=self.metadata())
 
     def explain_granted(self, member_name, resource_name, role=None, permission=None):

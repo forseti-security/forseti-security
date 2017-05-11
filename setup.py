@@ -44,6 +44,7 @@ INSTALL_REQUIRES = [
     'retrying==1.3.3',
     'sendgrid==3.6.3',
     'SQLAlchemy==1.1.9',
+    'pygraph>=0.2.1',
 ]
 
 SETUP_REQUIRES = [

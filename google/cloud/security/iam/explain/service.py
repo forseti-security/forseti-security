@@ -40,12 +40,19 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def ExplainDenied(self, request, context):
         model_name = self._get_handle(context)
-        result = self.explainer.ExplainDenied(model_name,
-                                              request.member,
-                                              request.resources,
-                                              request.permissions,
-                                              request.roles)
-        raise Exception(result)
+        binding_strategies = self.explainer.ExplainDenied(model_name,
+                                                  request.member,
+                                                  request.resources,
+                                                  request.permissions,
+                                                  request.roles)
+        reply = explain_pb2.ExplainDeniedReply()
+        strategies = []
+        for overgranting, bindings in binding_strategies:
+            strategy = explain_pb2.BindingStrategy(overgranting=overgranting)
+            strategy.bindings.extend([explain_pb2.Binding(member=b[1],resource=b[2],role=b[0]) for b in bindings])
+            strategies.append(strategy)
+        reply.strategies.extend(strategies)
+        return reply
 
     def ExplainGranted(self, request, context):
         model_name = self._get_handle(context)

@@ -51,13 +51,19 @@ message ExplainGrantedReply {
 	repeated string resource_ancestors = 3;
 }
 
+message BindingStrategy {
+	repeated Binding bindings = 1;
+	int32 overgranting = 2;
+}
+
 message ExplainDeniedReply {
+	repeated BindingStrategy strategies = 1;
 }
 
 message ExplainDeniedRequest {
-	repeated string permissions = 1;
-	repeated string roles = 2;
-	repeated string member = 3;
+	string member = 1;
+	repeated string permissions = 2;
+	repeated string roles = 3;
 	repeated string resources = 4;
 }
 
