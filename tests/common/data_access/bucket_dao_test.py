@@ -89,5 +89,5 @@ class BucketDaoTest(basetest.TestCase):
 			self.resource_name, 
 			self.fake_timestamp)
 
-		cursor_mock.execute.assert_called_once_with(fake_query_acls)
+		cursor_mock.execute.assert_called_once_with(fake_query_acls, None)
 		cursor_mock.fetchall.assert_called_once_with()
