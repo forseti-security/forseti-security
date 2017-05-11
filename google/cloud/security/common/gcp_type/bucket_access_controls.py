@@ -27,7 +27,7 @@ class BucketAccessControls(object):
             email: email
             domain: domain
             role: GCS role
-            project_numer: the project number
+            project_number: the project number
         """
         self.bucket = bucket
         self.entity = entity

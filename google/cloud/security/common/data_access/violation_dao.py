@@ -85,7 +85,7 @@ def _format_violation(violation, resource_name):
         resource_name: String that defines a resource
 
     Returns:
-        Formated violations
+        Formatted violations
     """
-    formated_output = vm.VIOLATION_MAP[resource_name](violation)
-    return formated_output
+    formatted_output = vm.VIOLATION_MAP[resource_name](violation)
+    return formatted_output

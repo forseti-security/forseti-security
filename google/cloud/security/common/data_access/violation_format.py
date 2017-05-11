@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides formating functions for violations"""
+"""Provides formatting functions for violations"""
 
 def format_policy_violation(violation):
     """Format the policy violation data into a tuple.
@@ -62,7 +62,7 @@ def format_policy_violation(violation):
                member)
 
 def format_buckets_acl_violation(violation):
-    """Format the bucket clas violation data into a tuple.
+    """Format the bucket acls violation data into a tuple.
 
     Also flattens the RuleViolation, since it consists of the resource,
     rule, and members that don't meet the rule criteria.

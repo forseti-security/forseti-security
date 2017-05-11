@@ -25,7 +25,7 @@ from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import select_data
 # pylint: disable=line-too-long
-from google.cloud.security.common.gcp_type.bucket_access_controls import BucketAccessControls
+from google.cloud.security.common.gcp_type import bucket_access_controls as bkt_acls
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
 
@@ -73,16 +73,18 @@ class BucketDao(project_dao.ProjectDao):
         bucket_acls = {}
         cnt = 0
         try:
-            cursor = self.conn.cursor()
-            cursor.execute(select_data.BUCKET_ACLS.format(timestamp))
-            rows = cursor.fetchall()
+            bucket_acls_sql = select_data.BUCKET_ACLS.format(timestamp)
+            rows = self.execute_sql_with_fetch(resource_name,
+                                               bucket_acls_sql,
+                                               None)
             for row in rows:
-                bucket_acl = BucketAccessControls(bucket=row[0],
-                                                  entity=row[1],
-                                                  email=row[2],
-                                                  domain=row[3],
-                                                  role=row[4],
-                                                  project_number=row[5])
+                bucket_acl = bkt_acls.\
+                BucketAccessControls(bucket=row['bucket'],
+                                     entity=row['entity'],
+                                     email=row['email'],
+                                     domain=row['domain'],
+                                     role=row['role'],
+                                     project_number=row['project_number'])
                 bucket_acls[cnt] = bucket_acl
                 cnt += 1
         except (DataError, IntegrityError, InternalError, NotSupportedError,

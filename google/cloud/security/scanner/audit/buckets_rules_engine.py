@@ -17,10 +17,9 @@
 from collections import namedtuple
 import itertools
 import re
-import sys
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.gcp_type.bucket_access_controls import BucketAccessControls
+from google.cloud.security.common.gcp_type import bucket_access_controls as bkt_acls
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
@@ -116,6 +115,9 @@ class BucketsRuleBook(bre.BaseRuleBook):
             rule_def: A dictionary containing rule definition properties.
             rule_index: The index of the rule from the rule definitions.
             Assigned automatically when the rule book is built.
+
+        Raises:
+
         """
 
         resources = rule_def.get('resource')
@@ -135,10 +137,10 @@ class BucketsRuleBook(bre.BaseRuleBook):
 
             if (bucket is None) or (entity is None) or (email is None) or\
                (domain is None) or (role is None):
-                LOGGER.error('Faulty rule: %s', rule_def.get('name'))
-                sys.exit()
+                raise audit_errors.InvalidRulesSchemaError(
+                    'Faulty rule {}'.format(rule_def.get('name')))
 
-            rule_def_resource = BucketAccessControls(
+            rule_def_resource = bkt_acls.BucketAccessControls(
                 escape_and_globify(bucket),
                 escape_and_globify(entity),
                 escape_and_globify(email),
@@ -189,7 +191,7 @@ class Rule(object):
         self.rules = rules
 
     def find_policy_violations(self, bucket_acl):
-        """Find bucker policy acl violations in the rule book.
+        """Find bucket policy acl violations in the rule book.
 
         Args:
             bucket_acl: Bucket ACL resource
