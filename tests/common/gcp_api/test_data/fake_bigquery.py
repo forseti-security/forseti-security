@@ -14,9 +14,30 @@
 
 """Test data for bigquery GCP api responses."""
 
-PROJECT_IDS = ['bq-test']
+PROJECT_IDS = ['bq-test','bq-test2']
 
 DATASET_ID = 'test'
+
+BIGQUERY_PROJECTIDS = {
+  'etag': 'string',
+  'kind': 'bigquery#projectList',
+  'nextPageToken': '1',
+  'projects': [{'friendlyName': '',
+              'id': 'bq-test',
+              'kind': 'bigquery#project',
+              'numericId': '1',
+              'projectReference': {
+                'projectId': 'bq-test'}
+               },
+             {'friendlyName': '',
+              'id': 'bq-test2',
+              'kind': 'bigquery#project',
+              'numericId': '2',
+              'projectReference': {
+                'projectId': 'bq-test2'}
+              }],
+  'totalItems': 62,
+}
 
 DATASET_LISTS = [{
   "kind": "bigquery#datasetList",

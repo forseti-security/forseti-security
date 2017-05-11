@@ -27,7 +27,7 @@ CREATE_BIGQUERY_DATASETS_TABLE = """
         `access_view_project_id` varchar(255) DEFAULT NULL,
         `access_view_table_id` varchar(255) DEFAULT NULL,
         `access_view_dataset_id` varchar(255) DEFAULT NULL,
-        `raw_access_map`: json DEFAULT NULL,
+        `raw_access_map` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """

@@ -21,6 +21,20 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+# Details: https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets#resource
+BIGQUERY_DATASET_FIELDNAMES = [
+    'project_id',
+    'dataset_id',
+    'access_domain',
+    'access_user_by_email',
+    'access_special_group',
+    'access_group_by_email',
+    'role',
+    'access_view_project_id',
+    'access_view_table_id',
+    'access_view_dataset_id',
+    'raw_access_map'
+]
 
 GROUP_MEMBERS_FIELDNAMES = [
     'group_id',
@@ -152,6 +166,7 @@ FORWARDING_RULES_FIELDNAMES = [
 ]
 
 CSV_FIELDNAME_MAP = {
+    'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,

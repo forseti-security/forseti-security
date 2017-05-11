@@ -89,17 +89,16 @@ class BaseClient(object):
             on the api_stub.
         """
         if not hasattr(api_stub, 'list_next'):
-            raise api_errors.ApiExecutionError(
-                api_stub, 'No list_next() method.')
+          raise api_errors.ApiExecutionError(
+              api_stub, 'No list_next() method.')
 
         results = []
-        response = []
 
         while request is not None:
             try:
                 with rate_limiter:
-                    response.append(self._execute(request))
-                    results.extend(response)
+                    response = self._execute(request)
+                    results.append(response)
                     request = api_stub.list_next(request, response)
             except (HttpError, HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)

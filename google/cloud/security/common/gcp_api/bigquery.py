@@ -30,171 +30,6 @@ flags.DEFINE_integer('max_bigquery_api_calls_per_100_seconds', 17000,
 
 LOGGER = log_util.get_logger(__name__)
 
-def extract_datasets(dataset_list_objects, key='datasets'):
-    """Return a list of just dataset objects.
-
-    Args: A list of dataset objects:
-        [{
-         "kind": "bigquery#datasetList",
-         "etag": 'etag',
-         "datasets": [
-          {
-           "kind": "bigquery#dataset",
-           "id": "bq-test:test",
-           "datasetReference": {
-            "datasetId": "test",
-            "projectId": "bq-test"
-           }
-          }
-         ]
-        },
-        {
-         "kind": "bigquery#datasetList",
-         "etag": 'etag',
-         "datasets": [
-          {
-           "kind": "bigquery#dataset",
-           "id": "bq-test2:test2",
-           "datasetReference": {
-            "datasetId": "test2",
-            "projectId": "bq-test2"
-           }
-          }
-         ]
-        }]
-
-    Returns:
-        A list of dataset objects like:
-        [{'friendlyName': 'A String',
-          'kind': 'bigquery#dataset',
-          'labels': {'a_key': 'A String',},
-          'id': 'A String',
-          'datasetReference': {
-               'projectId': 'A String',
-               'datasetId': 'A String',
-          },
-          {'friendlyName': 'A String',
-           'kind': 'bigquery#dataset',
-           'labels': {'a_key': 'A String',},
-           'id': 'A String',
-           'datasetReference': {
-               'projectId': 'A String',
-               'datasetId': 'A String',
-          },
-        ]
-    """
-    return [item.get(key, []) for item in dataset_list_objects]
-
-def extract_dataset_access(datasets, key='access'):
-    """Return a list of just dataset access objects.
-
-    Args: A list of datset_objects in the form of:
-        [{
-            'kind': 'bigquery#dataset',
-            'etag': 'etag',
-            'id': 'bq-test:test',
-            'selfLink': 'link',
-            'datasetReference': {
-                'datasetId': 'test',
-                'projectId': 'bq-test'
-            },
-            'access': [
-                {
-                    'role': 'WRITER',
-                    'specialGroup': 'projectWriters'
-                },
-                {
-                    'role': 'OWNER',
-                    'specialGroup': 'projectOwners'
-                },
-                {
-                    'role': 'OWNER',
-                    'userByEmail': 'm@m.com'
-                },
-                {
-                    'role': 'READER',
-                    'specialGroup': 'projectReaders'
-                }
-            ],
-            'creationTime': '1',
-            'lastModifiedTime': '2'
-          }, {
-          'kind': 'bigquery#dataset',
-          'etag': 'etag',
-          'id': 'bq-test2:test2',
-          'selfLink': 'link',
-          'datasetReference': {
-            'datasetId': 'test2',
-            'projectId': 'bq-test2'
-          },
-          'access': [
-            {
-              'role': 'WRITER',
-              'specialGroup': 'projectWriters'
-            },
-            {
-              'role': 'OWNER',
-              'specialGroup': 'projectOwners'
-            },
-            {
-              'role': 'OWNER',
-              'userByEmail': 'm@m.com'
-            },
-            {
-              'role': 'READER',
-              'specialGroup': 'projectReaders'
-            }
-          ],
-          'creationTime': '1',
-          'lastModifiedTime': '2'
-          }]
-
-    Returns:
-        [
-            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-                {'role': 'OWNER', 'userByEmail': 'm@m.com'},
-                {'role': 'READER', 'specialGroup': 'projectReaders'}],
-            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-                {'role': 'OWNER', 'userByEmail': 'm@m.com'},
-                {'role': 'READER', 'specialGroup': 'projectReaders'}],
-            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-                {'role': 'OWNER', 'userByEmail': 'm@m.com'},
-                {'role': 'READER', 'specialGroup': 'projectReaders'}],
-            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-                {'role': 'OWNER', 'userByEmail': 'm@m.com'},
-                {'role': 'READER', 'specialGroup': 'projectReaders'}]
-        ]
-    """
-    return [ref.get(key, []) for _ in datasets for ref in datasets]
-
-def extract_dataset_references(datasets, key='datasetReference'):
-    """Return a list of just datasetReference objects.
-
-    Args: A list of dataset list objects:
-       [[{'datasetReference': {'datasetId': 'test', 'projectId': 'bq-test'},
-       'id': 'bq-test:test',
-       'kind': 'bigquery#dataset'}],
-       [{'datasetReference': {'datasetId': 'test2', 'projectId': 'bq-test2'},
-       'id': 'bq-test2:test2',
-       'kind': 'bigquery#dataset'}]]
-
-    Returns:
-        A list of objects like:
-        [{'projectId': 'bq-test',
-          'datasetId': 'test'
-          }, {
-          'projectId': 'bq-test2',
-          'datasetId': 'test2'
-          }
-        ]
-    """
-    return [item.get(key, []) for dataset in datasets for item in dataset]
-
-
 class BigQueryClient(_base_client.BaseClient):
     """BigQuery Client manager."""
 
@@ -215,7 +50,25 @@ class BigQueryClient(_base_client.BaseClient):
         return RateLimiter(FLAGS.max_bigquery_api_calls_per_100_seconds,
                            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def get_datasets_for_projectid(self, project_id):
+    def get_bigquery_projectids(self):
+        """Request and page through bigquery projectids.
+
+        Returns: A list of projectids enabled for bigquery.
+        """
+
+        bigquery_stub = self.service.projects()
+        request = bigquery_stub.list()
+
+        results = self._build_paged_result(request, bigquery_stub,
+                                            self.rate_limiter)
+        project_ids = []
+        for result in results:
+            for project in result.get('projects'):
+                project_ids.append(project.get('id'))
+
+        return project_ids
+
+    def get_datasets_for_projectid(self, project_id, key='datasets'):
         """Return BigQuery datasets stored in the requested project_id.
 
         Args:
@@ -224,20 +77,21 @@ class BigQueryClient(_base_client.BaseClient):
         Returns: A list of datasetReference objects for a given project_id.
             See extract_dataset_reference for details.
         """
+        key = 'datasets'
         bigquery_stub = self.service.datasets()
         request = bigquery_stub.list(projectId=project_id, all=True)
 
-        try:
-            results = self._build_paged_result(
-                request, bigquery_stub, self.rate_limiter)
-        except (HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(self.API_NAME, e)
+        results = self._build_paged_result(request, bigquery_stub,
+                                           self.rate_limiter)
+        datasets = []
+        for result in results:
+            if key in result:
+                for item in result.get(key):
+                    datasets.append(item.get('datasetReference'))
 
-        datasets = extract_datasets(results)
+        return datasets
 
-        return extract_dataset_references(datasets)
-
-    def get_dataset_access(self, project_id, dataset_id):
+    def get_dataset_access(self, project_id, dataset_id, key='access'):
         """Return the access portion of the dataset resource object.
 
         Args:
@@ -249,10 +103,12 @@ class BigQueryClient(_base_client.BaseClient):
         bigquery_stub = self.service.datasets()
         request = bigquery_stub.get(projectId=project_id, datasetId=dataset_id)
 
-        try:
-            results = self._build_paged_result(
-                request, bigquery_stub, self.rate_limiter)
-        except (HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(self.API_NAME, e)
+        results = self._build_paged_result(request, bigquery_stub,
+                                           self.rate_limiter)
+        access_list = []
+        for result in results:
+            if key in result:
+                for item in result.get(key):
+                    access_list.append(item)
 
-        return extract_dataset_access(results)
+        return access_list
