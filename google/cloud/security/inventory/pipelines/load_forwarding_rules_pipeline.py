@@ -22,6 +22,7 @@ import json
 from dateutil import parser as dateutil_parser
 
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.data_access import errors as da_errors
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
@@ -63,7 +64,7 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
 
                 try:
                     ports_json = json.dumps(rule.get('ports', []))
-                except Exception:
+                except da_errors.Error:
                     ports_json = None
 
                 yield {'project_id': project_id,
