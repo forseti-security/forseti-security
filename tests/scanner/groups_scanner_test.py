@@ -46,7 +46,7 @@ class GroupsScannerTest(basetest.TestCase):
             filename: String of the pickle filename to load.
 
         Returns:
-            obj: The object that was pickled.
+            The object that was pickled.
         """
         return pickle.load(open('tests/scanner/test_data/' + filename, 'rb'))
 

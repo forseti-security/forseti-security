@@ -119,7 +119,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         return starting_node
 
     def _apply_all_rules(self, starting_node, rules):
-        """Append all rules to all the applicable nodes.
+        """Apply all rules to all the applicable nodes.
 
         Args:
             starting_node: Member node from which to start appending the rule.
@@ -160,7 +160,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             rules: String of the path to rules file (yaml/json).
 
         Returns:
-            List of all the violations.
+            List of all the nodes in violations.
         """
 
         root = self._build_group_tree(self.snapshot_timestamp)
