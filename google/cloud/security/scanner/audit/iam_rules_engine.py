@@ -104,9 +104,10 @@ def _check_required_members(rule_members=None, policy_members=None):
 class IamRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
-    def __init__(self, rules_file_path):
+    def __init__(self, rules_file_path, snapshot_timestamp=None):
         super(IamRulesEngine, self).__init__(
-            rules_file_path=rules_file_path)
+            rules_file_path=rules_file_path,
+            snapshot_timestamp=snapshot_timestamp)
         self.rule_book = None
 
     def build_rule_book(self):
@@ -350,6 +351,8 @@ class IamRuleBook(bre.BaseRuleBook):
             A generator of the rule violations.
         """
         violations = itertools.chain()
+        if resource.id.startswith('lucid-arch'):
+            print list(resource.get_ancestors())
         for curr_resource in resource.get_ancestors():
             resource_rules = self._get_resource_rules(curr_resource)
             # Set to None, because if the direct resource (e.g. project)

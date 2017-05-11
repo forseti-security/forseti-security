@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """A Folder Resource."""
 
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm

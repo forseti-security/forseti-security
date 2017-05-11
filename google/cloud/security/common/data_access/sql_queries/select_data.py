@@ -32,6 +32,13 @@ PROJECTS = """
     FROM projects_{0}
 """
 
+PROJECT_BY_ID = """
+    SELECT project_number, project_id, project_name,
+    lifecycle_state, parent_type, parent_id
+    FROM projects_{0}
+    WHERE project_id = %s
+"""
+
 PROJECT_IAM_POLICIES_RAW = """
     SELECT p.project_number, p.project_id, p.project_name, p.lifecycle_state,
     p.parent_type, p.parent_id, i.iam_policy
