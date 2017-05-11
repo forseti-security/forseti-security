@@ -32,7 +32,7 @@ CREATE_BIGQUERY_DATASETS_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
-CREATE_BUCKETS_TABLE = """
+CREATE_PROJECT_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `project_number` bigint(20) NOT NULL,
