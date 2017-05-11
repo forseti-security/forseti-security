@@ -101,7 +101,6 @@ class GroupsScannerTest(basetest.TestCase):
         all_violations = scanner.find_violations(root)
         
         self.assertEquals(3, len(all_violations))
-        
         for violation in all_violations:
             self.assertEquals('christy@gmail.com', violation.member_email)
 
