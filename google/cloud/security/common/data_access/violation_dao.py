@@ -18,7 +18,7 @@ import MySQLdb
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.data_access.sql_queries import load_data
+from google.cloud.security.common.data_access import violation_map as vm
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -27,13 +27,13 @@ LOGGER = log_util.get_logger(__name__)
 class ViolationDao(dao.Dao):
     """Data access object (DAO) for rule violations."""
 
-    RESOURCE_NAME = 'violations'
-
-    def insert_violations(self, violations, snapshot_timestamp=None):
+    def insert_violations(self, violations, resource_name,
+                          snapshot_timestamp=None):
         """Import violations into database.
 
         Args:
             violations: An iterator of RuleViolations.
+            resource_name: String that defines a resource
             snapshot_timestamp: The snapshot timestamp to associate these
                 violations with.
 
@@ -53,18 +53,19 @@ class ViolationDao(dao.Dao):
 
             # Create the violations snapshot table.
             snapshot_table = self._create_snapshot_table(
-                self.RESOURCE_NAME, snapshot_timestamp)
+                resource_name, snapshot_timestamp)
         except MySQLdb.Error, e:
-            raise db_errors.MySQLError(self.RESOURCE_NAME, e)
+            raise db_errors.MySQLError(resource_name, e)
 
         inserted_rows = 0
         violation_errors = []
         for violation in violations:
-            for formatted_violation in _format_violation(violation):
+            for formatted_violation in _format_violation(violation,
+                                                         resource_name):
                 try:
                     self.execute_sql_with_commit(
-                        self.RESOURCE_NAME,
-                        load_data.INSERT_VIOLATION.format(snapshot_table),
+                        resource_name,
+                        vm.VIOLATION_INSERT_MAP[resource_name](snapshot_table),
                         formatted_violation)
                     inserted_rows += 1
                 except MySQLdb.Error, e:
@@ -75,49 +76,16 @@ class ViolationDao(dao.Dao):
         return (inserted_rows, violation_errors)
 
 
-def _format_violation(violation):
-    """Format the violation data into a tuple.
-
-    Also flattens the RuleViolation, since it consists of the resource,
-    rule, and members that don't meet the rule criteria.
-
-    Various properties of RuleViolation may also have values that exceed the
-    declared column length, so truncate as necessary to prevent MySQL errors.
+def _format_violation(violation, resource_name):
+    """Violation formating stub that uses a map to call the formating
+    function for the resource.
 
     Args:
-        violation: The RuleViolation.
+        violation: An iterator of RuleViolations.
+        resource_name: String that defines a resource
 
-    Yields:
-        A tuple of the rule violation properties.
+    Returns:
+        Formatted violations
     """
-
-    resource_type = violation.resource_type
-    if resource_type:
-        resource_type = resource_type[:255]
-
-    resource_id = violation.resource_id
-    if resource_id:
-        resource_id = str(resource_id)[:255]
-
-    rule_name = violation.rule_name
-    if rule_name:
-        rule_name = rule_name[:255]
-
-    role = violation.role
-    if role:
-        role = role[:255]
-
-    iam_members = violation.members
-    if iam_members:
-        members = [str(iam_member)[:255] for iam_member in iam_members]
-    else:
-        members = []
-
-    for member in members:
-        yield (resource_type,
-               resource_id,
-               rule_name,
-               violation.rule_index,
-               violation.violation_type,
-               role,
-               member)
+    formatted_output = vm.VIOLATION_MAP[resource_name](violation)
+    return formatted_output

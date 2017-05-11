@@ -14,8 +14,19 @@
 
 """Provides the data access object (DAO) for buckets."""
 
+from MySQLdb import DataError
+from MySQLdb import IntegrityError
+from MySQLdb import InternalError
+from MySQLdb import NotSupportedError
+from MySQLdb import OperationalError
+from MySQLdb import ProgrammingError
+
+from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import select_data
+# pylint: disable=line-too-long
+from google.cloud.security.common.gcp_type import bucket_access_controls as bkt_acls
+# pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -23,9 +34,6 @@ LOGGER = log_util.get_logger(__name__)
 
 class BucketDao(project_dao.ProjectDao):
     """Data access object (DAO) for Organizations."""
-
-    def __init__(self):
-        super(BucketDao, self).__init__()
 
     def get_buckets_by_project_number(self, resource_name,
                                       timestamp, project_number):
@@ -48,3 +56,38 @@ class BucketDao(project_dao.ProjectDao):
         rows = self.execute_sql_with_fetch(
             resource_name, buckets_sql, None)
         return [row['bucket_name'] for row in rows]
+
+    def get_buckets_acls(self, resource_name, timestamp):
+        """Select the bucket acls from a bucket acls snapshot table.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            List of bucket acls.
+
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
+        bucket_acls = {}
+        cnt = 0
+        try:
+            bucket_acls_sql = select_data.BUCKET_ACLS.format(timestamp)
+            rows = self.execute_sql_with_fetch(resource_name,
+                                               bucket_acls_sql,
+                                               None)
+            for row in rows:
+                bucket_acl = bkt_acls.\
+                BucketAccessControls(bucket=row['bucket'],
+                                     entity=row['entity'],
+                                     email=row['email'],
+                                     domain=row['domain'],
+                                     role=row['role'],
+                                     project_number=row['project_number'])
+                bucket_acls[cnt] = bucket_acl
+                cnt += 1
+        except (DataError, IntegrityError, InternalError, NotSupportedError,
+                OperationalError, ProgrammingError) as e:
+            LOGGER.error(errors.MySQLError(resource_name, e))
+        return bucket_acls

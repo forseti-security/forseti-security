@@ -61,6 +61,8 @@ CREATE_TABLE_MAP = {
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
 
     # rule violations
+    'buckets_acl_violations':
+        create_tables.CREATE_BUCKETS_ACL_VIOLATIONS_TABLE,
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
 }
 

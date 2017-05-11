@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Map for the rule engine names to rule engine classes."""
+"""Provides violations map"""
 
-from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
-# pylint: disable=line-too-long
-from google.cloud.security.scanner.audit.buckets_rules_engine import BucketsRulesEngine
-# pylint: enable=line-too-long
+from google.cloud.security.common.data_access import violation_format as vf
+from google.cloud.security.common.data_access.sql_queries import load_data
 
+VIOLATION_MAP = {
+	   'violations': vf.format_policy_violation,
+	   'buckets_acl_violations': vf.format_buckets_acl_violation,
+}
 
-ENGINE_TO_DATA_MAP = {
-    'IamRulesEngine': IamRulesEngine,
-    'BucketsRulesEngine': BucketsRulesEngine,
+VIOLATION_INSERT_MAP = {
+	   'violations': load_data.INSERT_VIOLATION.format,
+	   'buckets_acl_violations': load_data.INSERT_BUCKETS_ACL_VIOLATION.format,
 }
