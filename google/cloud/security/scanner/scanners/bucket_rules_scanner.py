@@ -47,7 +47,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
     def _get_bucket_acls(self):
         """Get bucket acls from data source.
         """
-        buckets_acls = []
+        buckets_acls = {}
         buckets_acls = bucket_dao.BucketDao().\
                        get_buckets_acls('buckets_acl', self.snapshot_timestamp)
         return buckets_acls

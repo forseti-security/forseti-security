@@ -14,6 +14,7 @@
 """A Bucket ACL Resource."""
 
 
+# pylint: disable=too-few-public-methods
 class BucketAccessControls(object):
     """Bucket ACL Resource.
     """
