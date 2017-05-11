@@ -17,6 +17,8 @@
 This pipeline depends on the LoadProjectsPipeline.
 """
 
+import json
+
 from dateutil import parser as dateutil_parser
 
 from google.cloud.security.common.gcp_api import errors as api_errors
@@ -59,6 +61,11 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
                         'forwarding rule: %s\n%s', fr_create_time, e)
                     create_time = None
 
+                try:
+                    ports_json = json.dumps(rule.get('ports', []))
+                except Exception:
+                    ports_json = None
+
                 yield {'project_id': project_id,
                        'id': rule.get('id'),
                        'creation_timestamp': create_time,
@@ -68,7 +75,7 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
                        'ip_address': rule.get('IPAddress'),
                        'ip_protocol': rule.get('IPProtocol'),
                        'port_range': rule.get('portRange'),
-                       'ports': rule.get('ports', []),
+                       'ports': ports_json,
                        'target': rule.get('target'),
                        'load_balancing_scheme': rule.get('loadBalancingScheme'),
                        'subnetwork': rule.get('subnetwork'),
