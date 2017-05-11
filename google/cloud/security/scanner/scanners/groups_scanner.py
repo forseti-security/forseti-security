@@ -108,8 +108,7 @@ class GroupsScanner(base_scanner.BaseScanner):
 
         Args:
             starting_node: Member node from which to start appending the rule.
-            timestamp: String of snapshot timestamp, formatted as
-                YYYYMMDDTHHMMSSZ.
+            rule: A dictionary representation of a rule.
 
         Returns:
             starting_node: Member node with all its recursive members, with
@@ -119,16 +118,24 @@ class GroupsScanner(base_scanner.BaseScanner):
             node.rules.append(rule)
         return starting_node
 
-    def _apply_all_rules(self, root, rules):
+    def _apply_all_rules(self, starting_node, rules):
+        """Append all rules to all the applicable nodes.
 
-        # Apply all rules to applicable nodes.
+        Args:
+            starting_node: Member node from which to start appending the rule.
+            rules: A list of rules, in dictionary form.
+
+        Returns:
+            starting_node: Member node with all the rules applied
+               to all the nodes.
+        """
         for rule in rules:
             if rule.get('group_email') == MY_CUSTOMER:
                 # Apply rule to every node.
                 # Because this is simply the root node, there is no need
                 # to find this node, i.e. just start at the root.
                 # Traversal order should not matter.
-                root = self._apply_one_rule(root, rule)
+                starting_node = self._apply_one_rule(starting_node, rule)
             else:
                 # Apply rule to only specific node.
                 # Need to find this node.
@@ -139,11 +146,11 @@ class GroupsScanner(base_scanner.BaseScanner):
                 # Start at the tree root, find all instances of the specified
                 # group, then add the rule to all the members of the specified
                 # group.
-                for node in anytree.iterators.PreOrderIter(root):
+                for node in anytree.iterators.PreOrderIter(starting_node):
                     if node.member_email == rule.get('group_email'):
                         node = self._apply_one_rule(node, rule)
-        
-        return root
+
+        return starting_node
 
     # pylint: disable=arguments-differ
     def run(self, rules_path):
@@ -183,7 +190,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         i.e. if all rules pass, then the node is not in violation.
 
         Args:
-            root: The list of policies to find violations in.
+            root: The nodes (tree structure) to find violations in.
 
         Returns:
             A list of nodes that are in violation.
