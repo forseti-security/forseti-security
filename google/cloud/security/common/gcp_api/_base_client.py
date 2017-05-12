@@ -119,8 +119,8 @@ class BaseClient(object):
             on the api_stub.
         """
         if not hasattr(api_stub, 'list_next'):
-          raise api_errors.ApiExecutionError(
-              api_stub, 'No list_next() method.')
+            raise api_errors.ApiExecutionError(
+                api_stub, 'No list_next() method.')
 
         results = []
 

@@ -14,8 +14,6 @@
 
 """Pipeline to load bigquery datasets data into Inventory."""
 
-from MySQLdb import MySQLError
-
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors

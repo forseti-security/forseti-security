@@ -46,8 +46,6 @@ CREATE_TABLE_MAP = {
         create_tables.CREATE_RAW_FOLDER_IAM_POLICIES_TABLE),
 
     # load balancer
-    'buckets': create_tables.CREATE_BUCKETS_TABLE,
-    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
     'forwarding_rules': create_tables.CREATE_FORWARDING_RULES_TABLE,
 
     # groups

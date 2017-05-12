@@ -21,7 +21,6 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
-# Details: https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets#resource
 BIGQUERY_DATASET_FIELDNAMES = [
     'project_id',
     'dataset_id',

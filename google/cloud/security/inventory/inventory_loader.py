@@ -181,40 +181,59 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     """
 
     pipelines = []
-    crm_v1_api_client = crm.CloudResourceManagerClient()
-    crm_v2beta1 = crm.CloudResourceManagerClient(version='v2beta1')
-    gcs_api_client = gcs.StorageClient()
-    bq_api_client = bq.BigQueryClient()
-    compute_api_client = compute.ComputeClient()
 
-    dao = kwargs.get('dao')
-    project_dao = kwargs.get('project_dao')
-    organization_dao = kwargs.get('organization_dao')
-    bucket_dao = kwargs.get('bucket_dao')
-    fwd_rules_dao = kwargs.get('fwd_rules_dao')
-    folder_dao = kwargs.get('folder_dao')
+    # Commonly used clients, we'll stuff these in a variable for re-use.
+    crm_v1_api_client = crm.CloudResourceManagerClient()
+    gcs_api_client = gcs.StorageClient()
 
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
     pipelines = [
-        #load_orgs_pipeline.LoadOrgsPipeline(
-        #    cycle_timestamp, configs, crm_v1_api_client, organization_dao),
-        #load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-        #    cycle_timestamp, configs, crm_v1_api_client, organization_dao),
-        #load_projects_pipeline.LoadProjectsPipeline(
-        #    cycle_timestamp, configs, crm_v1_api_client, project_dao),
-        #load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-        #    cycle_timestamp, configs, crm_v1_api_client, project_dao),
-        #load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-        #    cycle_timestamp, configs, gcs_api_client, project_dao),
-        #load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
-        #    cycle_timestamp, configs, gcs_api_client, bucket_dao),
-        #load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
-        #    cycle_timestamp, configs, compute_api_client, fwd_rules_dao),
-        #load_folders_pipeline.LoadFoldersPipeline(
-        #    cycle_timestamp, configs, crm_v2beta1, folder_dao),
+        load_orgs_pipeline.LoadOrgsPipeline(
+            cycle_timestamp, configs, crm_v1_api_client,
+            kwargs.get('organization_dao')
+        ),
+        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_v1_api_client,
+            kwargs.get('organization_dao')
+        ),
+        load_projects_pipeline.LoadProjectsPipeline(
+            cycle_timestamp, configs, crm_v1_api_client,
+            kwargs.get('project_dao')
+        ),
+        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
+            cycle_timestamp, configs, crm_v1_api_client,
+            kwargs.get('project_dao')
+        ),
+        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
+            cycle_timestamp, configs,
+            gcs_api_client,
+            kwargs.get('project_dao')
+        ),
+        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
+            cycle_timestamp,
+            configs,
+            gcs_api_client,
+            kwargs.get('bucket_dao')
+        ),
+        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('fwd_rules_dao')
+        ),
+        load_folders_pipeline.LoadFoldersPipeline(
+            cycle_timestamp,
+            configs,
+            crm.CloudResourceManagerClient(version='v2beta1'),
+            kwargs.get('folder_dao')
+        ),
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
-            cycle_timestamp, configs, bq_api_client, dao),
+            cycle_timestamp,
+            configs,
+            bq.BigQueryClient(),
+            kwargs.get('dao')
+        ),
     ]
 
     if configs.get('inventory_groups'):

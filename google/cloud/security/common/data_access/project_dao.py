@@ -55,26 +55,6 @@ class ProjectDao(dao.Dao):
                 resource_type=row['parent_type']))
     # pylint: enable=arguments-differ
 
-    def retrieve_project_ids(self, resource_name, timestamp):
-        """Select the project ids from a projects snapshot table.
-
-        Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-
-        Returns:
-             A list of project ids.
-
-        Raises:
-            MySQLError: An error with MySQL has occurred.
-        """
-
-        project_ids_sql = select_data.PROJECT_IDS.format(timestamp)
-        rows = self.execute_sql_with_fetch(
-            resource_name, project_ids_sql, None)
-
-        return [row['project_id'] for row in rows]
-
     def get_project_numbers(self, resource_name, timestamp):
         """Select the project numbers from a projects snapshot table.
 

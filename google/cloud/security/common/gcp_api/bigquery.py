@@ -60,7 +60,7 @@ class BigQueryClient(_base_client.BaseClient):
         request = bigquery_stub.list()
 
         results = self._build_paged_result(request, bigquery_stub,
-                                            self.rate_limiter)
+                                           self.rate_limiter)
         project_ids = []
         for result in results:
             for project in result.get('projects'):
