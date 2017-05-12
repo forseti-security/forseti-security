@@ -29,6 +29,10 @@ from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.errors import NoResultsError
 from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
+from google.cloud.security.common.util import log_util
+
+
+LOGGER = log_util.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
     # bigquery
@@ -163,6 +167,7 @@ class Dao(_db_connector.DbConnector):
                     resource_name, timestamp)
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
                     resource_name, csv_file.name, snapshot_table_name)
+                LOGGER.debug('SQL: %s', load_data_sql)
                 cursor = self.conn.cursor()
                 cursor.execute(load_data_sql)
                 self.conn.commit()

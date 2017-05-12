@@ -38,8 +38,8 @@ To see all the dependent flags:
 """
 
 from datetime import datetime
-import logging
 import sys
+import logging
 
 import gflags as flags
 
@@ -107,7 +107,6 @@ def _exists_snapshot_cycles_table(dao):
     Returns:
         True if the snapshot cycle table exists. False otherwise.
     """
-
     try:
         sql = snapshot_cycles_sql.SELECT_SNAPSHOT_CYCLES_TABLE
         result = dao.execute_sql_with_fetch(snapshot_cycles_sql.RESOURCE_NAME,
@@ -127,7 +126,6 @@ def _create_snapshot_cycles_table(dao):
     Args:
         dao: Data access object.
     """
-
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
         dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
@@ -146,7 +144,6 @@ def _start_snapshot_cycle(dao):
         cycle_time: Datetime object of the cycle, in UTC.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
     """
-
     cycle_time = datetime.utcnow()
     cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
 
@@ -263,12 +260,11 @@ def _run_pipelines(pipelines):
         run_statuses: List of boolean whether each pipeline was run
             successfully or not.
     """
-
     # TODO: Define these status codes programmatically.
     run_statuses = []
     for pipeline in pipelines:
         try:
-            LOGGER.debug('Executing %s pipeline', pipeline.RESOURCE_NAME)
+            LOGGER.debug('Running pipeline %s', pipeline.__class__.__name__)
             pipeline.run()
             pipeline.status = 'SUCCESS'
         except inventory_errors.LoadDataPipelineError as e:
@@ -344,14 +340,12 @@ def _send_email(cycle_time, cycle_timestamp, status, pipelines,
 
 def _configure_logging(configs):
     """Configures the loglevel for all loggers."""
-
     desc = configs.get('loglevel')
     level = LOGLEVELS.setdefault(desc, 'info')
     log_util.set_logger_level(level)
 
 def main(_):
     """Runs the Inventory Loader."""
-
     try:
         dao = Dao()
         project_dao = proj_dao.ProjectDao()
