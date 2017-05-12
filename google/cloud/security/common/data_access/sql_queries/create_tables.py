@@ -248,3 +248,85 @@ CREATE_BUCKETS_ACL_VIOLATIONS_TABLE = """
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
+
+CREATE_CLOUDSQL_INSTANCES_TABLE = """
+    CREATE TABLE {0} (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `project` varchar(255) DEFAULT NULL,
+        `backendType` varchar(255) DEFAULT NULL,
+        `connectionName` varchar(255) DEFAULT NULL,
+        `currentDiskSize` bigint DEFAULT NULL,
+        `databaseVersion` varchar(255) DEFAULT NULL,
+        `failoverReplica_available` varchar(255) DEFAULT NULL, 
+        `failoverReplica_name` varchar(255) DEFAULT NULL,
+        `instanceType` varchar(255) DEFAULT NULL,
+        `ipv6Address` varchar(255) DEFAULT NULL,
+        `kind` varchar(255) DEFAULT NULL,
+        `masterInstanceName` varchar(255) DEFAULT NULL,
+        `maxDiskSize` bigint DEFAULT NULL,
+        `onPremisesConfiguration_hostPort` varchar(255) DEFAULT NULL,
+        `onPremisesConfiguration_kind` varchar(255) DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `replicaConfiguration` json DEFAULT NULL,
+        `replicaNames` json DEFAULT NULL,
+        `selfLink` varchar(255) DEFAULT NULL,
+        `serverCaCert` json DEFAULT NULL,
+        `serviceAccountEmailAddress` varchar(255) DEFAULT NULL,
+        `settings_activationPolicy` varchar(255) DEFAULT NULL,
+        `settings_authorizedGaeApplications` json DEFAULT NULL,
+        `settings_availabilityType` varchar(255) DEFAULT NULL,
+        `settings_backupConfiguration_binaryLogEnabled` varchar(255) DEFAULT NULL,
+        `settings_backupConfiguration_enabled` varchar(255) DEFAULT NULL,
+        `settings_backupConfiguration_kind` varchar(255) DEFAULT NULL,
+        `settings_backupConfiguration_startTime` varchar(255) DEFAULT NULL,
+        `settings_crashSafeReplicationEnabled` varchar(255) DEFAULT NULL,
+        `settings_dataDiskSizeGb` bigint DEFAULT NULL,
+        `settings_dataDiskType` varchar(255) DEFAULT NULL,
+        `settings_databaseFlags` json DEFAULT NULL,
+        `settings_databaseReplicationEnabled` varchar(255) DEFAULT NULL,
+        `settings_ipConfiguration_ipv4Enabled` varchar(255) DEFAULT NULL,
+        `settings_ipConfiguration_requireSsl` varchar(255) DEFAULT NULL,
+        `settings_kind` varchar(255) DEFAULT NULL,
+        `settings_labels` json DEFAULT NULL,
+        `settings_locationPreference_followGaeApplication` varchar(255) DEFAULT NULL,
+        `settings_locationPreference_kind` varchar(255) DEFAULT NULL,
+        `settings_locationPreference_zone` varchar(255) DEFAULT NULL,
+        `settings_maintenanceWindow` json DEFAULT NULL,
+        `settings_pricingPlan` varchar(255) DEFAULT NULL,
+        `settings_replicationType` varchar(255) DEFAULT NULL,
+        `settings_settingsVersion` bigint DEFAULT NULL,
+        `settings_storageAutoResize` varchar(255) DEFAULT NULL,
+        `settings_storageAutoResizeLimit` bigint DEFAULT NULL,
+        `settings_tier` varchar(255) DEFAULT NULL,
+        `state` varchar(255) DEFAULT NULL,
+        `suspensionReason` json DEFAULT NULL,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_CLOUDSQL_IPADDRESSES_TABLE = """
+    CREATE TABLE {0} (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,    
+        `instance_name` varchar(255) DEFAULT NULL,
+        `type` varchar(255) DEFAULT NULL,
+        `ipAddress` varchar(255) DEFAULT NULL,
+        `timeToRetire` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS = """
+    CREATE TABLE {0} (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,    
+        `project_number` bigint(20) NOT NULL,    
+        `instance_name` varchar(255) DEFAULT NULL,
+        `kind` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `value` varchar(255) DEFAULT NULL,
+        `expirationTime` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""

@@ -52,12 +52,14 @@ from google.cloud.security.common.data_access import folder_dao as folder_resour
 from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
+from google.cloud.security.common.data_access import cloudsql_dao as sql_dao
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory as ad
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import storage as gcs
+from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
@@ -73,6 +75,7 @@ from google.cloud.security.inventory.pipelines import load_projects_buckets_pipe
 from google.cloud.security.inventory.pipelines import load_projects_buckets_acls_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_cloudsql_pipeline
 from google.cloud.security.inventory import util
 # pylint: enable=line-too-long
 
@@ -178,11 +181,13 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     crm_v2beta1 = crm.CloudResourceManagerClient(version='v2beta1')
     gcs_api_client = gcs.StorageClient()
     compute_api_client = compute.ComputeClient()
+    cloudsql_api_client = cloudsql.CloudsqlClient()
 
     dao = kwargs.get('dao')
     project_dao = kwargs.get('project_dao')
     organization_dao = kwargs.get('organization_dao')
     bucket_dao = kwargs.get('bucket_dao')
+    cloudsql_dao = kwargs.get('cloudsql_dao')
     fwd_rules_dao = kwargs.get('fwd_rules_dao')
     folder_dao = kwargs.get('folder_dao')
 
@@ -205,6 +210,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             cycle_timestamp, configs, compute_api_client, fwd_rules_dao),
         load_folders_pipeline.LoadFoldersPipeline(
             cycle_timestamp, configs, crm_v2beta1, folder_dao),
+        load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline(
+            cycle_timestamp, configs, cloudsql_api_client, cloudsql_dao),
     ]
 
     if configs.get('inventory_groups'):
@@ -324,6 +331,7 @@ def main(_):
         project_dao = proj_dao.ProjectDao()
         organization_dao = org_dao.OrganizationDao()
         bucket_dao = buck_dao.BucketDao()
+        cloudsql_dao = sql_dao.CloudsqlDao()
         fwd_rules_dao = fr_dao.ForwardingRulesDao()
         folder_dao = folder_resource_dao.FolderDao()
     except data_access_errors.MySQLError as e:
@@ -345,7 +353,8 @@ def main(_):
             organization_dao=organization_dao,
             bucket_dao=bucket_dao,
             fwd_rules_dao=fwd_rules_dao,
-            folder_dao=folder_dao)
+            folder_dao=folder_dao,
+            cloudsql_dao=cloudsql_dao)
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)

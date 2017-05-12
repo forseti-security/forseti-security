@@ -12,32 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The APIs supported by the discovery service.
+"""Provides the data access object (DAO) for buckets."""
 
-Not intended to be an exhaustive list (which can be retrieved from
-discovery.get()).
-"""
+from google.cloud.security.common.data_access import project_dao
+from google.cloud.security.common.util import log_util
 
-SUPPORTED_APIS = {
-    'cloudbilling': {
-        'version': 'v1'
-    },
-    'cloudresourcemanager': {
-        'version': 'v1'
-    },
-    'compute': {
-        'version': 'v1'
-    },
-    'iam': {
-        'version': 'v1'
-    },
-    'storage': {
-        'version': 'v1'
-    },
-    'admin': {
-        'version': 'directory_v1'
-    },
-    'sqladmin': {
-        'version': 'v1beta4'
-    }
-}
+LOGGER = log_util.get_logger(__name__)
+
+
+class CloudsqlDao(project_dao.ProjectDao):
+    """Data access object (DAO) for Organizations."""
+
+    def __init__(self):
+        super(CloudsqlDao, self).__init__()

@@ -36,6 +36,12 @@ CREATE_TABLE_MAP = {
     'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
     'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
 
+    # cloudsql
+    'cloudsql_instances': create_tables.CREATE_CLOUDSQL_INSTANCES_TABLE,
+    'cloudsql_ipaddresses': create_tables.CREATE_CLOUDSQL_IPADDRESSES_TABLE,
+    'cloudsql_ipconfiguration_authorizednetworks': \
+        create_tables.CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS,
+
     # folders
     'folders': create_tables.CREATE_FOLDERS_TABLE,
     'folder_iam_policies': create_tables.CREATE_FOLDER_IAM_POLICIES_TABLE,
