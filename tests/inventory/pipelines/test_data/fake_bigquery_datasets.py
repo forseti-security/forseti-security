@@ -14,6 +14,7 @@
 
 """Pipeline to load bigquery datasets data into Inventory."""
 
+import json
 
 DATASET_PROJECT_MAP = [
     [{'datasetId': 'test', 'projectId': 'bq-test'}],
@@ -65,7 +66,8 @@ EXPECTED_TRANSFORM = [
     'access_view_table_id': None,
     'dataset_id': 'test',
     'project_id': 'bq-test',
-    'raw_access_map': {'role': 'WRITER', 'specialGroup': 'projectWriters'},
+    'raw_access_map': json.dumps({'role': 'WRITER',
+                                  'specialGroup': 'projectWriters'}),
     'role': 'WRITER'},
     {'access_domain': None,
     'access_group_by_email': None,
@@ -76,7 +78,8 @@ EXPECTED_TRANSFORM = [
     'access_view_table_id': None,
     'dataset_id': 'test',
     'project_id': 'bq-test',
-    'raw_access_map': {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+    'raw_access_map': json.dumps({'role': 'OWNER',
+                                  'specialGroup': 'projectOwners'}),
     'role': 'OWNER'},
     {'access_domain': None,
     'access_group_by_email': None,
@@ -87,7 +90,8 @@ EXPECTED_TRANSFORM = [
     'access_view_table_id': None,
     'dataset_id': 'test',
     'project_id': 'bq-test',
-    'raw_access_map': {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+    'raw_access_map': json.dumps({'role': 'OWNER',
+                                  'userByEmail': 'user@domain.com'}),
     'role': 'OWNER'},
     {'access_domain': None,
     'access_group_by_email': None,
@@ -98,7 +102,8 @@ EXPECTED_TRANSFORM = [
     'access_view_table_id': None,
     'dataset_id': 'test',
     'project_id': 'bq-test',
-    'raw_access_map': {'role': 'READER', 'specialGroup': 'projectReaders'},
+    'raw_access_map': json.dumps({'role': 'READER',
+                                  'specialGroup': 'projectReaders'}),
     'role': 'READER'},
     {'access_domain': None,
     'access_group_by_email': None,
@@ -109,7 +114,8 @@ EXPECTED_TRANSFORM = [
     'access_view_table_id': None,
     'dataset_id': 'test',
     'project_id': 'bq-test',
-    'raw_access_map': {'role': 'WRITER', 'specialGroup': 'projectWriters'},
+    'raw_access_map': json.dumps({'role': 'WRITER',
+                                  'specialGroup': 'projectWriters'}),
     'role': 'WRITER'},
     {'access_domain': None,
     'access_group_by_email': None,
@@ -120,7 +126,8 @@ EXPECTED_TRANSFORM = [
     'access_view_table_id': None,
     'dataset_id': 'test',
     'project_id': 'bq-test',
-    'raw_access_map': {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+    'raw_access_map': json.dumps({'role': 'OWNER',
+                                  'specialGroup': 'projectOwners'}),
     'role': 'OWNER'},
     {'access_domain': None,
     'access_group_by_email': None,
@@ -131,7 +138,8 @@ EXPECTED_TRANSFORM = [
     'access_view_table_id': None,
     'dataset_id': 'test',
     'project_id': 'bq-test',
-    'raw_access_map': {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+    'raw_access_map': json.dumps({'role': 'OWNER',
+                                  'userByEmail': 'user@domain.com'}),
     'role': 'OWNER'},
     {'access_domain': None,
     'access_group_by_email': None,
@@ -142,7 +150,8 @@ EXPECTED_TRANSFORM = [
     'access_view_table_id': None,
     'dataset_id': 'test',
     'project_id': 'bq-test',
-    'raw_access_map': {'role': 'READER', 'specialGroup': 'projectReaders'},
+    'raw_access_map': json.dumps({'role': 'READER',
+                                  'specialGroup': 'projectReaders'}),
     'role': 'READER'}
 ]
 

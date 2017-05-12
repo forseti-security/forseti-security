@@ -123,7 +123,7 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
         for v in self.pipeline._transform(fbq.DATASET_PROJECT_ACCESS_MAP):
             return_values.append(v)
 
-        self.assertListEqual(fbq.EXPECTED_TRANSFORM,return_values)
+        self.assertListEqual(fbq.EXPECTED_TRANSFORM, return_values)
 
     @mock.patch.object(
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
