@@ -35,8 +35,8 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         """Retrieve a list of bigquery projectids.
 
         Returns: A list of project ids.
-        
-        Raises: inventory_errors.LoadDataPipelineError when we encouter an 
+
+        Raises: inventory_errors.LoadDataPipelineError when we encounter an
         error in the underlying bigquery API.
         """
         try:
@@ -52,11 +52,10 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
             dataset_id: A dataset id.
 
         Returns: See bigquery.get_dataset_access().
-        
-        Raises: inventory_errors.LoadDataPipelineError when we encouter an 
+
+        Raises: inventory_errors.LoadDataPipelineError when we encounter an
         error in the underlying bigquery API.
         """
-
         try:
             return self.api_client.get_dataset_access(project_id, dataset_id)
         except api_errors.ApiExecutionError as e:
@@ -70,14 +69,14 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
 
         Returns:
             A list of objects like:
-            [{'projectId': 'string', 'datasetId': 'string'},
-             {'projectId': 'string', 'datasetId': 'string'},
-             {'projectId': 'string', 'datasetId': 'string'}]
-             
-        Raises: inventory_errors.LoadDataPipelineError when we encouter an 
+                [[{'datasetId': 'test', 'projectId': 'bq-test'},
+                 {'datasetId': 'test', 'projectId': 'bq-test'}],
+                [{'datasetId': 'test', 'projectId': 'bq-test'},
+                 {'datasetId': 'test', 'projectId': 'bq-test'}]]
+
+        Raises: inventory_errors.LoadDataPipelineError when we encounter an
         error in the underlying bigquery API.
         """
-
         dataset_project_map = []
         for project_id in project_ids:
             try:
@@ -104,18 +103,18 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
               {dataset_access_object}),
             ...]
         """
-
         dataset_project_access_map = []
-        for map in dataset_project_map:
-            for item in map:
-              project_id = item.get('projectId')
-              dataset_id = item.get('datasetId')
-              dataset_acl = self._retrieve_dataset_access(project_id,
-                                                          dataset_id)
+        for map_item in dataset_project_map:
+            for item in map_item:
+                project_id = item.get('projectId')
+                dataset_id = item.get('datasetId')
+                dataset_acl = self._retrieve_dataset_access(project_id,
+                                                            dataset_id)
 
-              if dataset_acl:
-                  dataset_project_access_map.append((project_id,
-                                                     dataset_id, dataset_acl))
+                if dataset_acl:
+                    dataset_project_access_map.append(
+                        (project_id, dataset_id, dataset_acl)
+                        )
 
         return dataset_project_access_map
 

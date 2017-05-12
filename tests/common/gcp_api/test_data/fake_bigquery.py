@@ -18,154 +18,70 @@ PROJECT_IDS = ['bq-test','bq-test2']
 
 DATASET_ID = 'test'
 
-BIGQUERY_PROJECTIDS = {
-  'etag': 'string',
-  'kind': 'bigquery#projectList',
-  'nextPageToken': '1',
-  'projects': [{'friendlyName': '',
-              'id': 'bq-test',
-              'kind': 'bigquery#project',
-              'numericId': '1',
-              'projectReference': {
-                'projectId': 'bq-test'}
-               },
-             {'friendlyName': '',
-              'id': 'bq-test2',
-              'kind': 'bigquery#project',
-              'numericId': '2',
-              'projectReference': {
-                'projectId': 'bq-test2'}
-              }],
-  'totalItems': 62,
-}
-
-DATASET_LISTS = [{
-  "kind": "bigquery#datasetList",
-  "etag": 'etag',
-  "datasets": [{
-      "kind": "bigquery#dataset",
-      "id": "bq-test:test",
-            "datasetReference": {
-              "datasetId": "test",
-              "projectId": "bq-test"}
-      }]
-   }, {
-  "kind": "bigquery#datasetList",
-  "etag": 'etag',
-  "datasets": [{
-      "kind": "bigquery#dataset",
-      "id": "bq-test2:test2",
-      "datasetReference": {
-          "datasetId": "test2",
-          "projectId": "bq-test2"
-      }
-  }]
-}]
-
-EXPECTED_DATASETS_LISTS = [
-    [{
-      'datasetReference': {
-        'datasetId': 'test',
-        'projectId': 'bq-test'
-      },
-      'id': 'bq-test:test',
-      'kind': 'bigquery#dataset'
-    }],
-    [{
-      'datasetReference': {
-        'datasetId': 'test2',
-        'projectId': 'bq-test2'
-      },
-      'id': 'bq-test2:test2',
-      'kind': 'bigquery#dataset'
-    }]
+DATASETS_GET_REQUEST_RESPONSE = [
+    {'access': [
+        {'role': 'WRITER', 'specialGroup': 'projectWriters'},
+        {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+        {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+        {'role': 'READER', 'specialGroup': 'projectReaders'}
+    ],
+        'creationTime': '1',
+        'datasetReference': {'datasetId': 'test',
+                             'projectId': 'bq-test'},
+          'etag': '"T"',
+          'id': 'bq-test:test',
+          'kind': 'bigquery#dataset',
+          'lastModifiedTime': '1',
+          'location': 'US',
+          'selfLink': ''}
 ]
 
-EXPECTED_DATASET_REFERENCES = [{
-  'projectId': 'bq-test',
-  'datasetId': 'test'
-  }, {
-  'projectId': 'bq-test2',
-  'datasetId': 'test2'
-  }
+DATASETS_GET_EXPECTED = [
+    {'role': 'WRITER', 'specialGroup': 'projectWriters'},
+    {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+    {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+    {'role': 'READER', 'specialGroup': 'projectReaders'}
 ]
 
-DATASETS = [{
-    'kind': 'bigquery#dataset',
-    'etag': 'etag',
-    'id': 'bq-test:test',
-    'selfLink': 'link',
-    'datasetReference': {
-        'datasetId': 'test',
-        'projectId': 'bq-test'
-    },
-    'access': [
-        {
-            'role': 'WRITER',
-            'specialGroup': 'projectWriters'
-        },
-        {
-            'role': 'OWNER',
-            'specialGroup': 'projectOwners'
-        },
-        {
-            'role': 'OWNER',
-            'userByEmail': 'm@m.com'
-        },
-        {
-            'role': 'READER',
-            'specialGroup': 'projectReaders'
+PROJECTS_LIST_REQUEST_RESPONSE = [
+    {'etag': '"T"',
+     'kind': 'bigquery#projectList',
+     'nextPageToken': '50',
+     'projects': [{
+         'friendlyName': '',
+         'id': 'bq-test',
+         'kind': 'bigquery#project',
+         'numericId': '7',
+         'projectReference': {'projectId': 'bq-test'}},
+         ],
+     'totalItems': 2},
+    {'etag': '"T"',
+     'kind': 'bigquery#projectList',
+     'projects': [{
+         'friendlyName': 'my_special_bq_test',
+         'id': 'bq-test2',
+         'kind': 'bigquery#project',
+         'numericId': '5',
+         'projectReference': {'projectId': 'bq-test2'}},
+         ],
+    'totalItems': 2}
+]
+
+PROJECTS_LIST_EXPECTED = PROJECT_IDS
+
+DATASETS_LIST_REQUEST_RESPONSE = [
+    {'datasets': [
+        {'datasetReference': {
+            'datasetId': 'test',
+            'projectId': 'bq-test'
+            },
+            'id': 'bq-test:test',
+            'kind': 'bigquery#dataset'
         }
     ],
-    'creationTime': '1',
-    'lastModifiedTime': '2'
-  }, {
-  'kind': 'bigquery#dataset',
-  'etag': 'etag',
-  'id': 'bq-test2:test2',
-  'selfLink': 'link',
-  'datasetReference': {
-    'datasetId': 'test2',
-    'projectId': 'bq-test2'
-  },
-  'access': [
-    {
-      'role': 'WRITER',
-      'specialGroup': 'projectWriters'
-    },
-    {
-      'role': 'OWNER',
-      'specialGroup': 'projectOwners'
-    },
-    {
-      'role': 'OWNER',
-      'userByEmail': 'm@m.com'
-    },
-    {
-      'role': 'READER',
-      'specialGroup': 'projectReaders'
+        'etag': '"T"',
+        'kind': 'bigquery#datasetList'
     }
-  ],
-  'creationTime': '1',
-  'lastModifiedTime': '2'
-  }
 ]
 
-EXPECTED_DATASET_ACCESS = [
-    [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-        {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-        {'role': 'OWNER', 'userByEmail': 'm@m.com'},
-        {'role': 'READER', 'specialGroup': 'projectReaders'}],
-    [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-        {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-        {'role': 'OWNER', 'userByEmail': 'm@m.com'},
-        {'role': 'READER', 'specialGroup': 'projectReaders'}],
-    [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-        {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-        {'role': 'OWNER', 'userByEmail': 'm@m.com'},
-        {'role': 'READER', 'specialGroup': 'projectReaders'}],
-    [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-        {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-        {'role': 'OWNER', 'userByEmail': 'm@m.com'},
-        {'role': 'READER', 'specialGroup': 'projectReaders'}]
-]
+DATASETS_LIST_EXPECTED = [{'datasetId': 'test', 'projectId': 'bq-test'}]

@@ -197,8 +197,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
     pipelines = [
-        load_orgs_pipeline.LoadOrgsPipeline(
-            cycle_timestamp, configs, crm_v1_api_client, organization_dao),
+        #load_orgs_pipeline.LoadOrgsPipeline(
+        #    cycle_timestamp, configs, crm_v1_api_client, organization_dao),
         #load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
         #    cycle_timestamp, configs, crm_v1_api_client, organization_dao),
         #load_projects_pipeline.LoadProjectsPipeline(

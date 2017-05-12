@@ -48,40 +48,26 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
                 self.mock_bigquery_client,
                 self.mock_dao))
 
-    def test_get_project_ids_from_dao_raises(self):
-        self.mock_dao.retrieve_project_ids.side_effect = MySQLError
-
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._get_project_ids_from_dao()
-
-    def test_get_project_ids_from_dao_returns(self):
-        mock_project_ids = ['1', '2', '3']
-        self.mock_dao.retrieve_project_ids.return_value = mock_project_ids
-
-        return_value = self.pipeline._get_project_ids_from_dao()
-
-        self.assertListEqual(mock_project_ids, return_value)
-        self.mock_dao.retrieve_project_ids.assert_called_once_with(
-            self.RESOURCE_NAME, self.cycle_timestamp)
-
-    def test_get_dataset_by_projectid_raises(self):
+    def test_retrieve_dataset_project_map_raises(self):
         self.pipeline.api_client.get_datasets_for_projectid.side_effect = (
             api_errors.ApiExecutionError('', mock.MagicMock()))
 
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve_dataset_by_projectid('1')
+            self.pipeline._retrieve_dataset_project_map(['1','2'])
 
-    def test_get_dataset_by_project_id(self):
-        self.pipeline.api_client.get_datasets_for_projectid.return_value = (
-            fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP)
+    def test_retrieve_dataset_project_map(self):
+        self.pipeline.api_client.get_datasets_for_projectid.side_effect = [
+            fbq.GET_DATASETS_FOR_PROJECTIDS_RETURN,
+            fbq.GET_DATASETS_FOR_PROJECTIDS_RETURN
+        ]
 
-        return_value = self.pipeline._retrieve_dataset_by_projectid('1')
+        return_value = self.pipeline._retrieve_dataset_project_map(['1', '2'])
 
         self.assertListEqual(
-            fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP,
+            fbq.RETRIEVE_DATASET_PROJECT_MAP_EXPECTED,
             return_value)
 
-    def test_get_dataset_access_raises(self):
+    def test_retrieve_dataset_access_raises(self):
         self.pipeline.api_client.get_dataset_access.side_effect = (
             api_errors.ApiExecutionError('', mock.MagicMock())
         )
@@ -89,18 +75,16 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve_dataset_access('1', '2')
 
-    def test_get_dataset_access(self):
+    def test_retrieve_dataset_access(self):
         self.pipeline.api_client.get_dataset_access.return_value = (
-            fbq.FAKE_DATASET_ACCESS
+            fbq.GET_DATASET_ACCESS_RETURN
         )
 
         return_value = self.pipeline._retrieve_dataset_access('1', '2')
 
-        self.assertListEqual(
-            fbq.FAKE_DATASET_ACCESS,
-            return_value)
+        self.assertListEqual(fbq.RETRIEVE_DATASET_ACCESS_RETURN, return_value)
 
-    def test_get_dataset_project_map_raises(self):
+    def test_retrieve_dataset_project_map_raises(self):
         self.pipeline.api_client.get_datasets_for_projectid.side_effect = (
             api_errors.ApiExecutionError('', mock.MagicMock())
         )
@@ -108,15 +92,16 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve_dataset_project_map([''])
 
-    def test_get_dataset_project_map(self):
-        self.pipeline.api_client.get_datasets_for_projectid.return_value = (
-            fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP)
+    def test_retrieve_dataset_project_map(self):
+        self.pipeline.api_client.get_datasets_for_projectid.side_effect = (
+            fbq.GET_DATASETS_FOR_PROJECTIDS_RETURN,
+            fbq.GET_DATASETS_FOR_PROJECTIDS_RETURN
+            )
 
-        return_value = self.pipeline._retrieve_dataset_project_map(
-              [fbq.FAKE_BIGQUERY_PROJECTID])
+        return_value = self.pipeline._retrieve_dataset_project_map(['1', '2'])
 
         self.assertListEqual(
-            [fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP],
+            fbq.DATASET_PROJECT_MAP_EXPECTED,
             return_value)
 
     @mock.patch.object(
@@ -124,26 +109,21 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
         '_retrieve_dataset_access' )
     def test_get_dataset_access_map(self, mock_dataset_access):
         mock_dataset_access.return_value = (
-            fbq.FAKE_DATASET_ACCESS)
+            fbq.RETRIEVE_DATASET_ACCESS_RETURN)
 
         return_value = self.pipeline._retrieve_dataset_access_map(
-            fbq.FAKE_BIGQUERY_DATASET_PROJECT_MAP)
+            fbq.DATASET_PROJECT_MAP)
 
-        self.assertListEqual(
-            fbq.FAKE_DATASET_PROJECT_ACCESS_MAP,
-            return_value)
+        self.assertListEqual(fbq.DATASET_PROJECT_ACCESS_MAP_EXPECTED,
+                             return_value)
 
     def test_transform(self):
-        self.maxDiff = None
         return_values = []
 
-        for v in self.pipeline._transform(
-            fbq.FAKE_DATASET_PROJECT_ACCESS_MAP):
+        for v in self.pipeline._transform(fbq.DATASET_PROJECT_ACCESS_MAP):
             return_values.append(v)
 
-        self.assertListEqual(
-            fbq.FAKE_EXPECTED_LOADABLE_DATASETS,
-            return_values)
+        self.assertListEqual(fbq.EXPECTED_TRANSFORM,return_values)
 
     @mock.patch.object(
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
@@ -161,17 +141,16 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
             mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""
 
-        mock_retrieve.return_value = fbq.FAKE_DATASET_PROJECT_ACCESS_MAP
-        mock_transform.return_value = fbq.FAKE_EXPECTED_LOADABLE_DATASETS
+        mock_retrieve.return_value = fbq.DATASET_PROJECT_MAP
+        mock_transform.return_value = fbq.EXPECTED_TRANSFORM
         self.pipeline.run()
 
         mock_retrieve.assert_called_once_with()
 
-        mock_transform.assert_called_once_with(
-            fbq.FAKE_DATASET_PROJECT_ACCESS_MAP)
+        mock_transform.assert_called_once_with(fbq.DATASET_PROJECT_MAP)
 
         mock_load.assert_called_once_with(
             self.pipeline.RESOURCE_NAME,
-            fbq.FAKE_EXPECTED_LOADABLE_DATASETS)
+            fbq.EXPECTED_TRANSFORM)
 
         mock_get_loaded_count.assert_called_once()

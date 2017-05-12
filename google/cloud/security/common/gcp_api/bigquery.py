@@ -15,12 +15,9 @@
 """Wrapper for the BigQuery API client."""
 
 import gflags as flags
-from googleapiclient.errors import HttpError
-from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 
 FLAGS = flags.FLAGS
@@ -53,9 +50,12 @@ class BigQueryClient(_base_client.BaseClient):
     def get_bigquery_projectids(self):
         """Request and page through bigquery projectids.
 
-        Returns: A list of projectids enabled for bigquery.
-        """
+        Returns: A list of project_ids enabled for bigquery.
 
+            ['project-id',
+             'project-id',
+             '...']
+        """
         bigquery_stub = self.service.projects()
         request = bigquery_stub.list()
 
@@ -72,12 +72,14 @@ class BigQueryClient(_base_client.BaseClient):
         """Return BigQuery datasets stored in the requested project_id.
 
         Args:
-            project_id: A String representing the unique project_id.
+            project_id: String representing the project id.
 
         Returns: A list of datasetReference objects for a given project_id.
-            See extract_dataset_reference for details.
+
+            [{'datasetId': 'dataset-id',
+              'projectId': 'project-id'},
+             {...}]
         """
-        key = 'datasets'
         bigquery_stub = self.service.datasets()
         request = bigquery_stub.list(projectId=project_id, all=True)
 
@@ -98,7 +100,11 @@ class BigQueryClient(_base_client.BaseClient):
             project_id: String representing the project id.
             dataset_id: String representing the dataset id.
 
-        Returns: See extract_dataset_access()
+        Returns: A list of access lists for a given project_id and dataset_id.
+           [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
+            {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+            {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+            {'role': 'READER', 'specialGroup': 'projectReaders'}]
         """
         bigquery_stub = self.service.datasets()
         request = bigquery_stub.get(projectId=project_id, datasetId=dataset_id)

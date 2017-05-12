@@ -52,57 +52,60 @@ class BigqueryTestCase(basetest.TestCase):
             bq.BigQueryClient.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
             self.bq_api_client.rate_limiter.period)
 
-    def test_extract_datasets(self):
-        return_value = bq.extract_datasets(fbq.DATASET_LISTS)
+    def test_get_bigquery_projectids_raises(self):
+        mock_bq_stub = mock.MagicMock()
+        self.bq_api_client.service = mock.MagicMock()
+        self.bq_api_client.service.projects.return_value = mock_bq_stub
 
-        self.assertListEqual(fbq.EXPECTED_DATASETS_LISTS,
-                             return_value)
+        self.bq_api_client._execute = mock.MagicMock(
+            side_effect=HttpError(self.http_response, '{}')
+            )
 
-    def test_extract_dataset_references(self):
-        return_value = bq.extract_dataset_references(
-                fbq.EXPECTED_DATASETS_LISTS)
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.bq_api_client.get_bigquery_projectids()
 
-        self.assertListEqual(fbq.EXPECTED_DATASET_REFERENCES,
-                             return_value)
+    def test_get_bigquery_projectids(self):
+        mock_bq_stub = mock.MagicMock()
+        self.bq_api_client.service = mock.MagicMock()
+        self.bq_api_client.service.projects.return_value = mock_bq_stub
+        self.bq_api_client._build_paged_result = mock.MagicMock(
+            return_value=fbq.PROJECTS_LIST_REQUEST_RESPONSE
+            )
 
-    def test_extract_dataset_access(self):
-        return_value = bq.extract_dataset_access(fbq.DATASETS)
+        return_value = self.bq_api_client.get_bigquery_projectids()
 
-        self.assertListEqual(fbq.EXPECTED_DATASET_ACCESS,
-                             return_value)
+        self.assertListEqual(return_value, fbq.PROJECTS_LIST_EXPECTED)
 
-    def test_getdatasets_for_projectid_raises(self):
+    def test_get_datasets_for_projectid_raises(self):
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
 
-        self.bq_api_client._build_paged_result = mock.MagicMock(
+        self.bq_api_client._execute = mock.MagicMock(
             side_effect=HttpError(self.http_response, '{}')
         )
 
         with self.assertRaises(api_errors.ApiExecutionError):
-             self.bq_api_client.get_datasets_for_projectid(fbq.PROJECT_IDS)
+             self.bq_api_client.get_datasets_for_projectid(fbq.PROJECT_IDS[0])
 
     def test_getdatasets_for_projectid(self):
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
         self.bq_api_client._build_paged_result = mock.MagicMock(
-                return_value=fbq.DATASET_LISTS
+                return_value=fbq.DATASETS_LIST_REQUEST_RESPONSE
         )
 
-        return_value = self.bq_api_client.get_datasets_for_projectid(
-                fbq.PROJECT_IDS[0]
-        )
+        return_value = self.bq_api_client.get_datasets_for_projectid('')
 
-        self.assertListEqual(return_value, fbq.EXPECTED_DATASET_REFERENCES)
+        self.assertListEqual(return_value, fbq.DATASETS_LIST_EXPECTED)
 
     def test_get_dataset_access_raises(self):
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
 
-        self.bq_api_client._build_paged_result = mock.MagicMock(
+        self.bq_api_client._execute = mock.MagicMock(
                 side_effect=HttpError(self.http_response, '{}')
         )
 
@@ -115,14 +118,12 @@ class BigqueryTestCase(basetest.TestCase):
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
         self.bq_api_client._build_paged_result = mock.MagicMock(
-                return_value=fbq.DATASETS
+                return_value=fbq.DATASETS_GET_REQUEST_RESPONSE
         )
 
-        return_value = self.bq_api_client.get_dataset_access(
-                fbq.PROJECT_IDS[0], fbq.DATASET_ID
-        )
+        return_value = self.bq_api_client.get_dataset_access('','')
 
-        self.assertListEqual(return_value, fbq.EXPECTED_DATASET_ACCESS)
+        self.assertListEqual(return_value, fbq.DATASETS_GET_EXPECTED)
 
 if __name__ == '__main__':
     basetest.main()
