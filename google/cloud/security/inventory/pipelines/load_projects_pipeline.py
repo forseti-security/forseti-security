@@ -14,8 +14,6 @@
 
 """Pipeline to load projects data into Inventory."""
 
-from dateutil import parser as dateutil_parser
-
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
