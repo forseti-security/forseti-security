@@ -133,3 +133,9 @@ FORWARDING_RULES_BY_PROJECT_ID = """
     FROM forwarding_rules_{0}
     WHERE project_id = %s
 """
+
+BUCKET_ACLS = """
+    SELECT bucket, entity, email, domain, role, project_number
+    FROM buckets_{0}, buckets_acl_{0}
+    WHERE bucket=bucket_name;
+"""

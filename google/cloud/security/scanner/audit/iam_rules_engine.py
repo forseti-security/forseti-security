@@ -105,6 +105,12 @@ class IamRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
+        """Initialize.
+
+        Args:
+            rules_file_path: File location of rules.
+            snapshot_timestamp: The snapshot to work with.
+        """
         super(IamRulesEngine, self).__init__(
             rules_file_path=rules_file_path,
             snapshot_timestamp=snapshot_timestamp)
@@ -301,8 +307,7 @@ class IamRuleBook(bre.BaseRuleBook):
                     rule_key = (gcp_resource, rule_applies_to)
 
                     # See if we have a mapping of the resource and rule
-                    resource_rules = self.resource_rules_map.get(
-                        rule_key)
+                    resource_rules = self.resource_rules_map.get(rule_key)
 
                     # If no mapping exists, create it.
                     if not resource_rules:

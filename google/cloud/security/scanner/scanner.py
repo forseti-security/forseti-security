@@ -22,7 +22,6 @@ Usage:
   $ forseti_scanner \\
       --rules <rules path> \\
       --engine_name <rule engine name> \\
-      --use_scanner_basedir <scanner basedir> \\
       --output_path <output path (optional)> \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
@@ -125,6 +124,7 @@ def main(_):
 
     iter_objects, resource_counts = scanner.run()
 
+    flattening_scheme = sm.FLATTENING_MAP[rules_engine_name]
     # Load violations processing function
     all_violations = scanner.find_violations(
         itertools.chain(
@@ -135,7 +135,8 @@ def main(_):
     if all_violations:
         _output_results(all_violations,
                         snapshot_timestamp,
-                        resource_counts=resource_counts)
+                        resource_counts=resource_counts,
+                        flattening_scheme=flattening_scheme)
 
     LOGGER.info('Scan complete!')
 
@@ -184,19 +185,32 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     return latest_timestamp
 
-def _flatten_violations(violations):
+def _flatten_violations(violations, flattening_scheme):
     """Flatten RuleViolations into a dict for each RuleViolation member.
 
     Args:
         violations: The RuleViolations to flatten.
+        flattening_scheme: Which flattening scheme to use
 
     Yield:
         Iterator of RuleViolations as a dict per member.
     """
 
+    # TODO: Make this nicer
     LOGGER.info('Writing violations to csv...')
     for violation in violations:
-        for member in violation.members:
+        if flattening_scheme == 'policy_violations':
+            for member in violation.members:
+                yield {
+                    'resource_id': violation.resource_id,
+                    'resource_type': violation.resource_type,
+                    'rule_index': violation.rule_index,
+                    'rule_name': violation.rule_name,
+                    'violation_type': violation.violation_type,
+                    'role': violation.role,
+                    'member': '{}:{}'.format(member.type, member.name)
+                }
+        if flattening_scheme == 'buckets_acl_violations':
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
@@ -204,7 +218,10 @@ def _flatten_violations(violations):
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'role': violation.role,
-                'member': '{}:{}'.format(member.type, member.name)
+                'entity': violation.entity,
+                'email': violation.email,
+                'domain': violation.domain,
+                'bucket': violation.bucket,
             }
 
 def _output_results(all_violations, snapshot_timestamp, **kwargs):
@@ -217,11 +234,14 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
     """
 
     # Write violations to database.
+    flattening_scheme = kwargs.get('flattening_scheme')
+    resource_name = sm.RESOURCE_MAP[flattening_scheme]
     (inserted_row_count, violation_errors) = (0, [])
     try:
         vdao = violation_dao.ViolationDao()
         (inserted_row_count, violation_errors) = vdao.insert_violations(
-            all_violations, snapshot_timestamp=snapshot_timestamp)
+            all_violations, resource_name=resource_name,
+            snapshot_timestamp=snapshot_timestamp)
     except db_errors.MySQLError as err:
         LOGGER.error('Error importing violations to database: %s', err)
 
@@ -233,8 +253,9 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
 
     # Write the CSV for all the violations.
     with csv_writer.write_csv(
-        resource_name='policy_violations',
-        data=_flatten_violations(all_violations),
+        resource_name=flattening_scheme,
+        data=_flatten_violations(all_violations,
+                                 flattening_scheme),
         write_header=True) as csv_file:
         output_csv_name = csv_file.name
         LOGGER.info('CSV filename: %s', output_csv_name)

@@ -142,7 +142,7 @@ EXPECTED_LOADABLE_PROJECTS = [
     },
     {
         'project_name': 'project5',
-        'create_time': '0000-00-00 00:00:00',
+        'create_time': None,
         'parent_id': '888888888888',
         'project_number': '133851422255',
         'parent_type': 'organization',
