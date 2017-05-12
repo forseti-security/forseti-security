@@ -14,6 +14,15 @@
 
 """Utility functions for parsing various data."""
 
+import json
+
+from dateutil import parser as dateutil_parser
+
+from google.cloud.security.common.data_access import errors as da_errors
+from google.cloud.security.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
+
 
 def parse_member_info(member):
     """Parse out the component info in the member string.
@@ -36,3 +45,39 @@ def parse_member_info(member):
         member_domain = email
 
     return member_type, member_name, member_domain
+
+def format_timestamp(timestamp_str, datetime_formatter):
+    """Parse and stringify a timestamp to a specified format.
+
+    Args:
+        timestamp_str: A string timestamp.
+        datetime_formatter: A string format.
+
+    Returns:
+        The formatted stringified timestamp.
+    """
+    try:
+        formatted_timestamp = (
+            dateutil_parser
+            .parse(timestamp_str)
+            .strftime(datetime_formatter))
+    except (TypeError, ValueError) as e:
+        LOGGER.warn('Unable to parse/format timestamp: %s\n%s',
+                    timestamp_str, e)
+        formatted_timestamp = None
+    return formatted_timestamp
+
+def json_stringify(obj_to_jsonify):
+    """Convert a python object to json string.
+
+    Args:
+        obj_to_jsonify: The object to json stringify.
+
+    Returns:
+        The json-stringified dict.
+    """
+    try:
+        json_str = json.dumps(obj_to_jsonify)
+    except da_errors.Error:
+        json_str = None
+    return json_str

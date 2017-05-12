@@ -17,14 +17,10 @@
 This pipeline depends on the LoadProjectsPipeline.
 """
 
-import json
-
-from dateutil import parser as dateutil_parser
-
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.data_access import errors as da_errors
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
@@ -50,33 +46,18 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
         """
         for (project_id, forwarding_rules) in project_fwd_rules.iteritems():
             for rule in forwarding_rules:
-                fr_create_time = rule.get('creationTimestamp')
-                try:
-                    create_time = (
-                        dateutil_parser
-                        .parse(fr_create_time)
-                        .strftime(self.MYSQL_DATETIME_FORMAT))
-                except (TypeError, ValueError) as e:
-                    LOGGER.error(
-                        'Unable to parse creation_timestamp from '
-                        'forwarding rule: %s\n%s', fr_create_time, e)
-                    create_time = None
-
-                try:
-                    ports_json = json.dumps(rule.get('ports', []))
-                except da_errors.Error:
-                    ports_json = None
-
                 yield {'project_id': project_id,
                        'id': rule.get('id'),
-                       'creation_timestamp': create_time,
+                       'creation_timestamp': parser.format_timestamp(
+                           rule.get('creationTimestamp'),
+                           self.MYSQL_DATETIME_FORMAT),
                        'name': rule.get('name'),
                        'description': rule.get('description'),
                        'region': rule.get('region'),
                        'ip_address': rule.get('IPAddress'),
                        'ip_protocol': rule.get('IPProtocol'),
                        'port_range': rule.get('portRange'),
-                       'ports': ports_json,
+                       'ports': parser.json_stringify(rule.get('ports', [])),
                        'target': rule.get('target'),
                        'load_balancing_scheme': rule.get('loadBalancingScheme'),
                        'subnetwork': rule.get('subnetwork'),
