@@ -184,6 +184,7 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
 
     # Commonly used clients, we'll stuff these in a variable for re-use.
     crm_v1_api_client = crm.CloudResourceManagerClient()
+    dao = kwargs.get('dao')
     gcs_api_client = gcs.StorageClient()
 
     # The order here matters, e.g. groups_pipeline must come before
@@ -226,13 +227,13 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             cycle_timestamp,
             configs,
             crm.CloudResourceManagerClient(version='v2beta1'),
-            kwargs.get('folder_dao')
+            dao
         ),
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
             cycle_timestamp,
             configs,
             bq.BigQueryClient(),
-            kwargs.get('dao')
+            dao
         ),
     ]
 
