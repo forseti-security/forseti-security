@@ -130,7 +130,7 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
         '_get_loaded_count')
     @mock.patch.object(
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
-        '_load')    
+        '_load')
     @mock.patch.object(
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
         '_transform')

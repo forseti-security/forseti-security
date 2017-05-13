@@ -179,7 +179,7 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
 
     pipelines = []
 
-    # Commonly used clients, we'll stuff these in a variable for re-use.
+    # Commonly used clients for shared ratelimiter re-use.
     crm_v1_api_client = crm.CloudResourceManagerClient()
     dao = kwargs.get('dao')
     gcs_api_client = gcs.StorageClient()

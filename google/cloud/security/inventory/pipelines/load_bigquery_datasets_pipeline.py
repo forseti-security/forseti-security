@@ -30,7 +30,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-    def _retreive_bigquery_projectids(self):
+    def _retrieve_bigquery_projectids(self):
         """Retrieve a list of bigquery projectids.
 
         Returns: A list of project ids.
@@ -74,7 +74,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
                  {'datasetId': 'test', 'projectId': 'bq-test'}]]
 
         Raises: inventory_errors.LoadDataPipelineError when we encounter an
-        error in the underlying bigquery API.
+            error in the underlying bigquery API.
         """
         dataset_project_map = []
         for project_id in project_ids:
@@ -157,7 +157,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
             A bigquery dataset access map. See _retrieve_dataset_access_map().
         """
 
-        project_ids = self._retreive_bigquery_projectids()
+        project_ids = self._retrieve_bigquery_projectids()
 
         dataset_project_map = self._retrieve_dataset_project_map(project_ids)
 
