@@ -53,7 +53,7 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
             api_errors.ApiExecutionError('', mock.MagicMock()))
 
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve_bigquery_projectids(['1','2'])
+            self.pipeline._retrieve_bigquery_projectids()
 
     def test_retrieve_bigquery_projectids(self):
         self.pipeline.api_client.get_bigquery_projectids.return_value = (
