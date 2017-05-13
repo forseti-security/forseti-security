@@ -44,7 +44,6 @@ class ProjectDao(dao.Dao):
         Returns:
             A Project, created from the row.
         """
-
         return project.Project(
             project_id=row['project_id'],
             project_number=row['project_number'],
@@ -68,7 +67,6 @@ class ProjectDao(dao.Dao):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-
         project_numbers_sql = select_data.PROJECT_NUMBERS.format(timestamp)
         rows = self.execute_sql_with_fetch(
             resource_name, project_numbers_sql, ())
@@ -86,7 +84,6 @@ class ProjectDao(dao.Dao):
         Raises:
             MySQLError if a MySQL error occurs.
         """
-
         projects_query = select_data.PROJECTS.format(timestamp)
         rows = self.execute_sql_with_fetch(
             resource.ResourceType.PROJECT, projects_query, ())
@@ -106,7 +103,6 @@ class ProjectDao(dao.Dao):
             A dict containing the projects (gcp_type.project.Project)
             and their iam policies (dict).
         """
-
         project_policies = {}
         query = select_data.PROJECT_IAM_POLICIES_RAW.format(
             timestamp, timestamp)
