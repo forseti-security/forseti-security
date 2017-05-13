@@ -16,6 +16,12 @@
 
 import json
 
+GET_PROJECTIDS_RETURN = [
+    'bq-test', 'bq-test'
+]
+
+EXPECTED_PROJECTIDS = GET_PROJECTIDS_RETURN
+
 DATASET_PROJECT_MAP = [
     [{'datasetId': 'test', 'projectId': 'bq-test'}],
     [{'datasetId': 'test', 'projectId': 'bq-test'}]

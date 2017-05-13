@@ -127,7 +127,6 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of project_id, dataset_id, and access detail.
         """
-
         for (project_id, dataset_id, access) in project_dataset_access_map:
             for acl in access:
                 yield {
@@ -156,7 +155,6 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         Returns:
             A bigquery dataset access map. See _retrieve_dataset_access_map().
         """
-
         project_ids = self._retrieve_bigquery_projectids()
 
         dataset_project_map = self._retrieve_dataset_project_map(project_ids)
@@ -165,7 +163,6 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
 
     def run(self):
         """Runs the actual data fetching pipeline."""
-
         dataset_project_access_map = self._retrieve()
 
         loadable_datasets = self._transform(dataset_project_access_map)

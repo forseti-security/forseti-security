@@ -48,6 +48,24 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
                 self.mock_bigquery_client,
                 self.mock_dao))
 
+    def test_retrieve_bigquery_projectids_raises(self):
+        self.pipeline.api_client.get_bigquery_projectids.side_effect = (
+            api_errors.ApiExecutionError('', mock.MagicMock()))
+
+        with self.assertRaises(inventory_errors.LoadDataPipelineError):
+            self.pipeline._retrieve_bigquery_projectids(['1','2'])
+
+    def test_retrieve_bigquery_projectids(self):
+        self.pipeline.api_client.get_bigquery_projectids.return_value = (
+            fbq.GET_PROJECTIDS_RETURN
+        )
+
+        return_value = self.pipeline._retrieve_bigquery_projectids()
+
+        self.assertListEqual(
+            fbq.EXPECTED_PROJECTIDS,
+            return_value)
+
     def test_retrieve_dataset_project_map_raises(self):
         self.pipeline.api_client.get_datasets_for_projectid.side_effect = (
             api_errors.ApiExecutionError('', mock.MagicMock()))
@@ -124,6 +142,26 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
             return_values.append(v)
 
         self.assertListEqual(fbq.EXPECTED_TRANSFORM, return_values)
+
+    def test_retrieve(self):
+        self.pipeline.api_client.get_bigquery_projectids.return_value = (
+            fbq.GET_PROJECTIDS_RETURN
+        )
+
+        self.pipeline.api_client.get_datasets_for_projectid.side_effect = [
+            fbq.GET_DATASETS_FOR_PROJECTIDS_RETURN,
+            fbq.GET_DATASETS_FOR_PROJECTIDS_RETURN
+        ]
+
+        self.pipeline.api_client.get_dataset_access.return_value = (
+            fbq.GET_DATASET_ACCESS_RETURN
+        )
+
+        return_value = self.pipeline._retrieve()
+
+        self.assertListEqual(fbq.DATASET_PROJECT_ACCESS_MAP_EXPECTED,
+                             return_value)
+
 
     @mock.patch.object(
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
