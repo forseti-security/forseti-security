@@ -162,7 +162,7 @@ class OrgDaoTest(basetest.TestCase):
 
         org_id = self.fake_orgs_db_rows[0][0]
         fake_query = select_data.ORGANIZATION_BY_ID.format(self.fake_timestamp)
-        self.org_dao.get_organization(self.fake_timestamp, org_id)
+        self.org_dao.get_organization(org_id, self.fake_timestamp)
 
         conn_mock.cursor.assert_called_once_with()
         cursor_mock.execute.assert_called_once_with(fake_query, org_id)
@@ -192,7 +192,7 @@ class OrgDaoTest(basetest.TestCase):
         cursor_mock.fetchone.return_value = fake_org
 
         org_id = fake_org[0]
-        org = self.org_dao.get_organization(self.fake_timestamp, org_id)
+        org = self.org_dao.get_organization(org_id, self.fake_timestamp)
 
         expected_org = organization.Organization(
             fake_org[0],
@@ -223,7 +223,7 @@ class OrgDaoTest(basetest.TestCase):
         org_id = self.fake_orgs_db_rows[0][0]
 
         with self.assertRaises(errors.MySQLError):
-            org = self.org_dao.get_organization(self.fake_timestamp, org_id)
+            org = self.org_dao.get_organization(org_id, self.fake_timestamp)
 
     def test_get_org_iam_policies_is_called(self):
         """Test that get_org_iam_policies() database methods are called.

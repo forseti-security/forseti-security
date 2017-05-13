@@ -35,6 +35,8 @@ LOGGER = log_util.get_logger(__name__)
 class OrganizationDao(dao.Dao):
     """Data access object (DAO) for Organizations."""
 
+    # TODO: refactor to use execute_sql_with_fetch()
+
     def get_organizations(self, resource_name, timestamp):
         """Get organizations from snapshot table.
 
@@ -63,12 +65,12 @@ class OrganizationDao(dao.Dao):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
-    def get_organization(self, timestamp, org_id):
+    def get_organization(self, org_id, timestamp):
         """Get an organization from the database snapshot.
 
         Args:
-            timestamp: The timestamp of the snapshot.
             org_id: The Organization to retrieve.
+            timestamp: The timestamp of the snapshot.
 
         Returns:
             An Organization from the database snapshot.
