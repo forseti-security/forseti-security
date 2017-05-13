@@ -119,7 +119,7 @@ def main(_):
 
     # Instantiate rules engine with supplied rules file
     rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
-        rules_file_path=FLAGS.rules)
+        rules_file_path=FLAGS.rules, snapshot_timestamp=snapshot_timestamp)
     rules_engine.build_rule_book()
 
     iter_objects, resource_counts = scanner.run()

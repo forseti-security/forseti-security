@@ -78,19 +78,14 @@ class OrganizationDao(dao.Dao):
         Raises:
             MySQLError if there was an error getting the organization.
         """
-        try:
-            cursor = self.conn.cursor()
-            query = select_data.ORGANIZATION_BY_ID.format(timestamp)
-            cursor.execute(query, org_id)
-            row = cursor.fetchone()
-            org = organization.Organization(
-                organization_id=row[0],
-                display_name=row[2],
-                lifecycle_state=row[3])
-            return org
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            raise MySQLError(org_id, e)
+        query = select_data.ORGANIZATION_BY_ID.format(timestamp)
+        rows = self.execute_sql_with_fetch('organization', query, (org_id,))
+        if rows:
+            return organization.Organization(
+                organization_id=rows[0]['org_id'],
+                display_name=rows[0]['display_name'],
+                lifecycle_state=rows[0]['lifecycle_state'])
+        return None
 
     def get_org_iam_policies(self, resource_name, timestamp):
         """Get the organization policies.
