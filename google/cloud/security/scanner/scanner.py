@@ -111,11 +111,11 @@ def main(_):
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
 
     # TODO: Make the groups scanner run consistently with other scanners
-    # instead of it's own execution path.
+    # instead of its own execution path.
     if rules_engine_name == 'GroupsEngine':
         all_violations = scanner.run(FLAGS.rules)
         LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
-        sys.exit(1)
+        sys.exit(0)
 
     # Instantiate rules engine with supplied rules file
     rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](

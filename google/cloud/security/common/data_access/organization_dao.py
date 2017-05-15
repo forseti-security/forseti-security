@@ -16,15 +16,8 @@
 
 import json
 
-from MySQLdb import DataError
-from MySQLdb import IntegrityError
-from MySQLdb import InternalError
-from MySQLdb import NotSupportedError
-from MySQLdb import OperationalError
-from MySQLdb import ProgrammingError
-
 from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access.errors import MySQLError
+from google.cloud.security.common.data_access import errors as da_errors
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.util import log_util
@@ -35,8 +28,6 @@ LOGGER = log_util.get_logger(__name__)
 class OrganizationDao(dao.Dao):
     """Data access object (DAO) for Organizations."""
 
-    # TODO: refactor to use execute_sql_with_fetch()
-
     def get_organizations(self, resource_name, timestamp):
         """Get organizations from snapshot table.
 
@@ -45,25 +36,17 @@ class OrganizationDao(dao.Dao):
 
         Returns:
             A list of Organizations.
-
-        Raise:
-            MySQLError if there's an error fetching the organizations.
         """
-        try:
-            cursor = self.conn.cursor()
-            cursor.execute(select_data.ORGANIZATIONS.format(timestamp))
-            rows = cursor.fetchall()
-            orgs = []
-            for row in rows:
-                org = organization.Organization(
-                    organization_id=row[0],
-                    display_name=row[2],
-                    lifecycle_state=row[3])
-                orgs.append(org)
-            return orgs
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            raise MySQLError(resource_name, e)
+        query = select_data.ORGANIZATIONS.format(timestamp)
+        rows = self.execute_sql_with_fetch(resource_name, query, ())
+        orgs = []
+        for row in rows:
+            org = organization.Organization(
+                organization_id=row['org_id'],
+                display_name=row['display_name'],
+                lifecycle_state=row['lifecycle_state'])
+            orgs.append(org)
+        return orgs
 
     def get_organization(self, org_id, timestamp):
         """Get an organization from the database snapshot.
@@ -101,18 +84,15 @@ class OrganizationDao(dao.Dao):
             (gcp_type.organization.Organization) and their iam policies (dict).
         """
         org_iam_policies = {}
-        try:
-            cursor = self.conn.cursor()
-            cursor.execute(select_data.ORG_IAM_POLICIES.format(timestamp))
-            rows = cursor.fetchall()
-            for row in rows:
-                try:
-                    org = organization.Organization(organization_id=row[0])
-                    iam_policy = json.loads(row[1])
-                    org_iam_policies[org] = iam_policy
-                except ValueError:
-                    LOGGER.warn('Error parsing json:\n %s', row[1])
-        except (DataError, IntegrityError, InternalError, NotSupportedError,
-                OperationalError, ProgrammingError) as e:
-            LOGGER.error(MySQLError(resource_name, e))
+        query = select_data.ORG_IAM_POLICIES.format(timestamp)
+        rows = self.execute_sql_with_fetch(resource_name, query, ())
+        for row in rows:
+            try:
+                org = organization.Organization(
+                    organization_id=row['org_id'])
+                iam_policy = json.loads(row.get('iam_policy', {}))
+                org_iam_policies[org] = iam_policy
+            except ValueError:
+                LOGGER.warn(
+                    'Error parsing json:\n %s', row.get('iam_policy'))
         return org_iam_policies
