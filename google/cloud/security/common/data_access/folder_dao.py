@@ -29,9 +29,6 @@ LOGGER = log_util.get_logger(__name__)
 class FolderDao(dao.Dao):
     """Data access object (DAO) for Folders."""
 
-    def __init__(self):
-        super(FolderDao, self).__init__()
-
     # pylint: disable=arguments-differ
     @staticmethod
     def map_row_to_object(row):
@@ -71,12 +68,12 @@ class FolderDao(dao.Dao):
             resource.ResourceType.FOLDER, query, ())
         return [self.map_row_to_object(row) for row in rows]
 
-    def get_folder(self, timestamp, folder_id):
+    def get_folder(self, folder_id, timestamp):
         """Get an folder from the database snapshot.
 
         Args:
-            timestamp: The timestamp of the snapshot.
             folder_id: The Folder to retrieve.
+            timestamp: The timestamp of the snapshot.
 
         Returns:
             A Folder from the database snapshot.

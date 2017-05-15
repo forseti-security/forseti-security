@@ -22,10 +22,11 @@ determine whether there are violations.
 import itertools
 import threading
 
-from google.cloud.security.common.gcp_type import resource_util
+from google.cloud.security.common.data_access import org_resource_rel_dao
 from google.cloud.security.common.gcp_type import errors as resource_errors
-from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
-from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.gcp_type import iam_policy
+from google.cloud.security.common.gcp_type import resource as resource_mod
+from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import rules as scanner_rules
@@ -104,19 +105,23 @@ def _check_required_members(rule_members=None, policy_members=None):
 class IamRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
-    def __init__(self, rules_file_path):
+    def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
 
         Args:
-            rules_file_path: file location of rules
+            rules_file_path: File location of rules.
+            snapshot_timestamp: The snapshot to work with.
         """
         super(IamRulesEngine, self).__init__(
-            rules_file_path=rules_file_path)
+            rules_file_path=rules_file_path,
+            snapshot_timestamp=snapshot_timestamp)
         self.rule_book = None
 
     def build_rule_book(self):
         """Build IamRuleBook from the rules definition file."""
-        self.rule_book = IamRuleBook(self._load_rule_definitions())
+        self.rule_book = IamRuleBook(
+            self._load_rule_definitions(),
+            snapshot_timestamp=self.snapshot_timestamp)
 
     def find_policy_violations(self, resource, policy, force_rebuild=False):
         """Determine whether policy violates rules.
@@ -180,12 +185,15 @@ class IamRuleBook(bre.BaseRuleBook):
 
     """
 
-    def __init__(self, rule_defs=None):
+    def __init__(self,
+                 rule_defs=None,
+                 snapshot_timestamp=None):
         """Initialize.
 
         Args:
             rule_defs: The parsed dictionary of rules from the YAML
-                       definition file.
+                definition file.
+            snapshot_timestamp: The snapshot to lookup data.
         """
         super(IamRuleBook, self).__init__()
         self._rules_sema = threading.BoundedSemaphore(value=1)
@@ -195,6 +203,9 @@ class IamRuleBook(bre.BaseRuleBook):
         else:
             self.rule_defs = rule_defs
             self.add_rules(rule_defs)
+        if snapshot_timestamp:
+            self.snapshot_timestamp = snapshot_timestamp
+        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao()
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -277,7 +288,8 @@ class IamRuleBook(bre.BaseRuleBook):
                 # since we still want to try and run as many rules as
                 # possible.
                 try:
-                    resource_type = ResourceType.verify(resource.get('type'))
+                    resource_type = resource_mod.ResourceType.verify(
+                        resource.get('type'))
                 except resource_errors.InvalidResourceTypeError:
                     raise audit_errors.InvalidRulesSchemaError(
                         'Missing resource type in rule {}'.format(rule_index))
@@ -294,7 +306,7 @@ class IamRuleBook(bre.BaseRuleBook):
                         resource_type=resource_type)
 
                     rule_bindings = [
-                        IamPolicyBinding.create_from(b)
+                        iam_policy.IamPolicyBinding.create_from(b)
                         for b in rule_def.get('bindings')]
                     rule = scanner_rules.Rule(rule_name=rule_def.get('name'),
                                               rule_index=rule_index,
@@ -305,8 +317,7 @@ class IamRuleBook(bre.BaseRuleBook):
                     rule_key = (gcp_resource, rule_applies_to)
 
                     # See if we have a mapping of the resource and rule
-                    resource_rules = self.resource_rules_map.get(
-                        rule_key)
+                    resource_rules = self.resource_rules_map.get(rule_key)
 
                     # If no mapping exists, create it.
                     if not resource_rules:
@@ -355,7 +366,12 @@ class IamRuleBook(bre.BaseRuleBook):
             A generator of the rule violations.
         """
         violations = itertools.chain()
-        for curr_resource in resource.get_ancestors():
+        resource_ancestors = [resource]
+        resource_ancestors.extend(
+            self.org_res_rel_dao.find_ancestors(
+                resource, self.snapshot_timestamp))
+
+        for curr_resource in resource_ancestors:
             resource_rules = self._get_resource_rules(curr_resource)
             # Set to None, because if the direct resource (e.g. project)
             # doesn't have a specific rule, we still should check the
@@ -471,7 +487,8 @@ class ResourceRules(object):
         Returns:
             A generator of RuleViolations.
         """
-        policy_binding = IamPolicyBinding.create_from(binding_to_match)
+        policy_binding = iam_policy.IamPolicyBinding.create_from(
+            binding_to_match)
 
         for rule in self.rules:
             found_role = False

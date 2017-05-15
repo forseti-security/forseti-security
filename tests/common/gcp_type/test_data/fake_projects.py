@@ -17,6 +17,23 @@
 TODO: consolidate with other fake project test data.
 """
 
+FAKE_PROJECTS_DB_ROWS = [
+    {'project_number': 1111111111,
+     'project_id': 'project-1',
+     'project_name': 'Project 1',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+    },
+    {'project_number': 2222222222,
+     'project_id': 'project-2',
+     'project_name': 'Project 2',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+    },
+]
+
 FAKE_PROJECTS_OK_IAM_DB_ROWS = [
     {'project_number': 1111111111,
      'project_id': 'project-1',

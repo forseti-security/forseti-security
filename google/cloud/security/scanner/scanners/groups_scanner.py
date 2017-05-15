@@ -98,7 +98,7 @@ class GroupsScanner(base_scanner.BaseScanner):
                                     root)
             group_node = self.get_recursive_members(group_node, timestamp)
 
-        LOGGER.info(anytree.RenderTree(
+        LOGGER.debug(anytree.RenderTree(
             root, style=anytree.AsciiStyle()).by_attr('member_email'))
         return root
 
