@@ -14,6 +14,24 @@
 
 """SQL queries to create Cloud SQL tables."""
 
+CREATE_BIGQUERY_DATASETS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `dataset_id` varchar(255) DEFAULT NULL,
+        `access_domain` varchar(255) DEFAULT NULL,
+        `access_user_by_email` varchar(255) DEFAULT NULL,
+        `access_special_group` varchar(255) DEFAULT NULL,
+        `access_group_by_email` varchar(255) DEFAULT NULL,
+        `role` varchar(255) DEFAULT NULL,
+        `access_view_project_id` varchar(255) DEFAULT NULL,
+        `access_view_table_id` varchar(255) DEFAULT NULL,
+        `access_view_dataset_id` varchar(255) DEFAULT NULL,
+        `raw_access_map` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_PROJECT_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
