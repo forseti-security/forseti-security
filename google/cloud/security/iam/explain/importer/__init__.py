@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti Security."""
-
-__version__ = '1.0.2'
+""" Data model importers."""
 
 __import__('pkg_resources').declare_namespace(__name__)

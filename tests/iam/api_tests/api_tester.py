@@ -30,7 +30,7 @@ class ApiTestRunner(object):
         server = grpc.server(futures.ThreadPoolExecutor(1))
         server.add_insecure_port('[::]:{}'.format(self.service_port))
         for factory in self.service_factories:
-            factory(self.service_config).createAndRegisterService(server)
+            factory(self.service_config).create_and_register_service(server)
         server.start()
         try:
             client = ClientComposition(endpoint='localhost:{}'.format(self.service_port))

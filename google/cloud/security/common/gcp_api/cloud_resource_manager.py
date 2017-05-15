@@ -139,7 +139,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
 
         try:
             with self.rate_limiter:
-                request = projects_stub.getIamPolicy(
+                request = projects_stub.get_iam_policy(
                     resource=project_identifier, body={})
                 return self._execute(request)
         except (HttpError, HttpLib2Error) as e:
@@ -210,7 +210,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         resource_id = 'organizations/%s' % org_id
         try:
             with self.rate_limiter:
-                request = orgs_stub.getIamPolicy(
+                request = orgs_stub.get_iam_policy(
                     resource=resource_id, body={})
                 return {'org_id': org_id,
                         'iam_policy': self._execute(request)}
