@@ -29,9 +29,6 @@ LOGGER = log_util.get_logger(__name__)
 class FolderDao(dao.Dao):
     """Data access object (DAO) for Folders."""
 
-    def __init__(self):
-        super(FolderDao, self).__init__()
-
     # pylint: disable=arguments-differ
     @staticmethod
     def map_row_to_object(row):

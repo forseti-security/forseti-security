@@ -41,11 +41,11 @@ class OrgResourceRelDao(object):
             }
         }
 
-    def find_ancestors(self, resource, snapshot_timestamp=None):
+    def find_ancestors(self, org_resource, snapshot_timestamp=None):
         """Find ancestors of a particular resource.
 
         Args:
-            resource: A Resource.
+            org_resource: A Resource.
             snapshot_timestamp: The timestamp to use for data lookup.
 
         Returns:
@@ -54,14 +54,14 @@ class OrgResourceRelDao(object):
         # TODO: handle case where snapshot is None
 
         ancestors = []
-        curr_resource = resource
+        curr_resource = org_resource
 
         while curr_resource is not None:
             parent_resource = None
 
             if (curr_resource.parent and
-                curr_resource.parent.type and
-                curr_resource.parent.id):
+                    curr_resource.parent.type and
+                    curr_resource.parent.id):
                 resource_lookup = self._resource_db_lookup.get(
                     curr_resource.parent.type, {})
 
