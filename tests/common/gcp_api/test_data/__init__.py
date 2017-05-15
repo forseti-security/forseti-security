@@ -12,32 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The APIs supported by the discovery service.
-
-Not intended to be an exhaustive list (which can be retrieved from
-discovery.get()).
-"""
-
-SUPPORTED_APIS = {
-    'bigquery': {
-        'version': 'v2'
-    },
-    'cloudbilling': {
-        'version': 'v1'
-    },
-    'cloudresourcemanager': {
-        'version': 'v1'
-    },
-    'compute': {
-        'version': 'v1'
-    },
-    'iam': {
-        'version': 'v1'
-    },
-    'storage': {
-        'version': 'v1'
-    },
-    'admin': {
-        'version': 'directory_v1'
-    },
-}
+"""Test data for common/gcp_api tests."""

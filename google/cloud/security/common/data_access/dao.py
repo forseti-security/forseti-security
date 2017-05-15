@@ -35,6 +35,9 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
+    # bigquery
+    'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE,
+
     # buckets
     'buckets': create_tables.CREATE_BUCKETS_TABLE,
     'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,

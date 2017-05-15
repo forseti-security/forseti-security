@@ -62,7 +62,7 @@ class ProjectDao(dao.Dao):
             timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-             list of project numbers
+             A list of project numbers.
 
         Raises:
             MySQLError: An error with MySQL has occurred.

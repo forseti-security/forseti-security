@@ -21,17 +21,19 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
-FOLDERS_FIELDNAMES = [
-    'folder_id',
-    'name',
-    'display_name',
-    'lifecycle_state',
-    'parent_type',
-    'parent_id',
-    'raw_folder',
-    'create_time',
+BIGQUERY_DATASET_FIELDNAMES = [
+    'project_id',
+    'dataset_id',
+    'access_domain',
+    'access_user_by_email',
+    'access_special_group',
+    'access_group_by_email',
+    'role',
+    'access_view_project_id',
+    'access_view_table_id',
+    'access_view_dataset_id',
+    'raw_access_map'
 ]
-
 
 GROUP_MEMBERS_FIELDNAMES = [
     'group_id',
@@ -50,6 +52,17 @@ GROUPS_FIELDNAMES = [
     'group_kind',
     'direct_member_count',
     'raw_group'
+]
+
+FOLDERS_FIELDNAMES = [
+    'folder_id',
+    'name',
+    'display_name',
+    'lifecycle_state',
+    'parent_type',
+    'parent_id',
+    'raw_folder',
+    'create_time',
 ]
 
 ORGANIZATIONS_FIELDNAMES = [
@@ -176,6 +189,7 @@ BUCKETS_ACL_VIOLATIONS = [
 ]
 
 CSV_FIELDNAME_MAP = {
+    'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
     'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
