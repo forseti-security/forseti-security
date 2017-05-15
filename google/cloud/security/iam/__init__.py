@@ -12,4 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""gRPC services for IAM Explain."""
+
 __import__('pkg_resources').declare_namespace(__name__)

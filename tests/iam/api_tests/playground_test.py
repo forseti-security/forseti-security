@@ -13,7 +13,7 @@ class TestServiceConfig:
         engine = create_test_engine()
         self.model_manager = ModelManager(engine)
 
-    def runInBackground(self, function):
+    def run_in_background(self, function):
         function()
         
 def create_tester():

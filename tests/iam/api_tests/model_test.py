@@ -11,7 +11,7 @@ class TestServiceConfig:
         engine = create_test_engine()
         self.model_manager = ModelManager(engine)
 
-    def runInBackground(self, function):
+    def run_in_background(self, function):
         function()
 
 model = {
@@ -139,6 +139,5 @@ class ModelTest(basetest.TestCase):
             self.assertTrue(response, 'Expected to get a deny explanation')
             
             response = client.explain.explain_denied(member_name='user/e', resource_names=['organization/org1/project/project2/bucket/bucket2'], permission_names=['a'])
-            print response
             self.assertTrue(response, 'Expected to get a deny explanation')
         self.setup.run(test)
