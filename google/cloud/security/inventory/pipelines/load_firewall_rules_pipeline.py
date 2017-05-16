@@ -56,16 +56,16 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                        'firewall_rule_network': firewall_rule.get('network'),
                        'firewall_rule_source_ranges':
                            parser.json_stringify(
-                                firewall_rule.get('sourceRanges')),
+                               firewall_rule.get('sourceRanges')),
                        'firewall_rule_source_tags':
                            parser.json_stringify(
-                                firewall_rule.get('sourceTags')),
+                               firewall_rule.get('sourceTags')),
                        'firewall_rule_target_tags':
                            parser.json_stringify(
-                                firewall_rule.get('targetTags')),
+                               firewall_rule.get('targetTags')),
                        'firewall_rule_allowed':
                            parser.json_stringify(
-                                firewall_rule.get('targetTags')),
+                               firewall_rule.get('targetTags')),
                        'firewall_rule_self_link': firewall_rule.get('selfLink'),
                        'firewall_rule_create_time': parser.format_timestamp(
                            firewall_rule.get('creationTimestamp'),
