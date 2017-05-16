@@ -89,8 +89,9 @@ class ComputeClient(_base_client.BaseClient):
         firewall_rules_api = self.service.firewalls()
         request = firewall_rules_api.list(project=project_id)
 
-        paged_results = self._build_paged_result(request, firewall_rules_api, self.rate_limiter)
-        
+        paged_results = self._build_paged_result(request, firewall_rules_api,
+                                                 self.rate_limiter)
+
         firewall_rules = []
         for page in paged_results:
             firewall_rules.extend(page.get('items', []))
