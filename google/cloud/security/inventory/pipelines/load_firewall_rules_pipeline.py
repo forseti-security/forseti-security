@@ -56,12 +56,17 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                 yield {'firewall_rule_id': firewall_rule.get('id'),
                        'project_id': project_id,
                        'firewall_rule_name': firewall_rule.get('name'),
-                       'firewall_rule_description': firewall_rule.get('description'),
+                       'firewall_rule_description':
+                           firewall_rule.get('description'),
                        'firewall_rule_network': firewall_rule.get('network'),
-                       'firewall_rule_source_ranges': json.dumps(firewall_rule.get('sourceRanges')),
-                       'firewall_rule_source_tags': json.dumps(firewall_rule.get('sourceTags')),
-                       'firewall_rule_target_tags': json.dumps(firewall_rule.get('targetTags')),
-                       'firewall_rule_allowed': json.dumps(firewall_rule.get('targetTags')),
+                       'firewall_rule_source_ranges':
+                           json.dumps(firewall_rule.get('sourceRanges')),
+                       'firewall_rule_source_tags':
+                           json.dumps(firewall_rule.get('sourceTags')),
+                       'firewall_rule_target_tags':
+                           json.dumps(firewall_rule.get('targetTags')),
+                       'firewall_rule_allowed':
+                           json.dumps(firewall_rule.get('targetTags')),
                        'firewall_rule_self_link': firewall_rule.get('selfLink'),
                        'firewall_rule_create_time': creation_timestamp,
                        'raw_firewall_rule': json.dumps(firewall_rule)}
