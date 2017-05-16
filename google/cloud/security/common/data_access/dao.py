@@ -51,6 +51,9 @@ CREATE_TABLE_MAP = {
 
     # load balancer
     'forwarding_rules': create_tables.CREATE_FORWARDING_RULES_TABLE,
+    
+    # firewall_rules
+    'firewall_rules': create_tables.CREATE_FIREWALL_RULES_TABLE,
 
     # groups
     'groups': create_tables.CREATE_GROUPS_TABLE,

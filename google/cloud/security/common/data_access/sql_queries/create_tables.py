@@ -266,3 +266,22 @@ CREATE_BUCKETS_ACL_VIOLATIONS_TABLE = """
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
+
+CREATE_FIREWALL_RULES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `firewall_rule_id` bigint(20) unsigned NOT NULL,
+        `project_id` varchar(255) NOT NULL,
+        `firewall_rule_name` varchar(255) DEFAULT NULL,
+        `firewall_rule_description` varchar(255) DEFAULT NULL,
+        `firewall_rule_network` varchar(255) DEFAULT NULL,
+        `firewall_rule_source_ranges` json DEFAULT NULL,
+        `firewall_rule_source_tags` json DEFAULT NULL,
+        `firewall_rule_target_tags` json DEFAULT NULL,
+        `firewall_rule_allowed` json DEFAULT NULL,
+        `firewall_rule_self_link` varchar(255) DEFAULT NULL,
+        `firewall_rule_create_time` datetime(3) DEFAULT NULL,
+        `raw_firewall_rule` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""

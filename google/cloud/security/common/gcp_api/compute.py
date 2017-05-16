@@ -16,6 +16,7 @@
 
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
+from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
@@ -32,6 +33,7 @@ class ComputeClient(_base_client.BaseClient):
     def __init__(self, credentials=None):
         super(ComputeClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
+        self.rate_limiter = RateLimiter(100, 100)
 
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
@@ -71,3 +73,26 @@ class ComputeClient(_base_client.BaseClient):
                     previous_response=response)
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('forwarding_rules', e)
+
+    def get_firewall_rules(self, project_id):
+        """Get the firewall rules for a project.
+
+        Args:
+            project_id: String of the project id.  Project number is
+                not accepted.
+
+        Yield:
+            An iterator of firewall rules for this project.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        firewall_rules_api = self.service.firewalls()
+        request = firewall_rules_api.list(project=project_id)
+
+        paged_results = self._build_paged_result(request, firewall_rules_api, self.rate_limiter)
+        
+        firewall_rules = []
+        for page in paged_results:
+            firewall_rules.extend(page.get('items', []))
+        return firewall_rules

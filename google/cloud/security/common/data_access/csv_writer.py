@@ -188,11 +188,27 @@ BUCKETS_ACL_VIOLATIONS = [
     'bucket'
 ]
 
+FIREWALL_RULES_FIELDNAMES = [
+    'firewall_rule_id',
+    'project_id',
+    'firewall_rule_name',
+    'firewall_rule_description',
+    'firewall_rule_network',
+    'firewall_rule_source_ranges',
+    'firewall_rule_source_tags',
+    'firewall_rule_target_tags',
+    'firewall_rule_allowed',
+    'firewall_rule_self_link',
+    'firewall_rule_create_time',
+    'raw_firewall_rule'
+]
+
 CSV_FIELDNAME_MAP = {
     'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
     'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
+    'firewall_rules': FIREWALL_RULES_FIELDNAMES,
     'folders': FOLDERS_FIELDNAMES,
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
