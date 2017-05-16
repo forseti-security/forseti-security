@@ -41,7 +41,6 @@ INSTALL_REQUIRES = [
     'Jinja2==2.9.5',
     'MySQL-python==1.2.5',
     'protobuf==3.2.0',
-    'python-dateutil==2.6.0',
     'PyYAML==3.12',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the load_groups_pipeline."""
+"""Tests the load_firewall_rules_pipeline."""
 
 from google.apputils import basetest
 import mock

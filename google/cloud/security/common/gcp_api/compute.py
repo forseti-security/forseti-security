@@ -14,6 +14,7 @@
 
 """Wrapper for Compute API client."""
 
+import gflags as flags
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
@@ -21,6 +22,11 @@ from ratelimiter import RateLimiter
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
+
+FLAGS = flags.FLAGS
+
+flags.DEFINE_integer('max_compute_api_calls_per_second', 20,
+                     'Compute API calls per seconds.')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -30,12 +36,15 @@ class ComputeClient(_base_client.BaseClient):
 
     API_NAME = 'compute'
 
-    def __init__(self, credentials=None):
+    def __init__(self, credentials=None, version=None):
+        # The beta api provides more complete firewall rules data.
+        # TODO: Remove beta when it becomes GA.
         super(ComputeClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+            credentials=credentials, api_name=self.API_NAME, version=version)
         # TODO: Make these into flags.  20 requests per second.
         # https://cloud.google.com/compute/docs/api-rate-limits
-        self.rate_limiter = RateLimiter(20, 1)
+        self.rate_limiter = RateLimiter(
+            FLAGS.max_compute_api_calls_per_second, 1)
 
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
@@ -77,14 +86,14 @@ class ComputeClient(_base_client.BaseClient):
             raise api_errors.ApiExecutionError('forwarding_rules', e)
 
     def get_firewall_rules(self, project_id):
-        """Get the firewall rules for a project.
+        """Get the firewall rules for a given project id.
 
         Args:
-            project_id: String of the project id.  Project number is
+            project_id: String of the project id. Project number is
                 not accepted.
 
         Return:
-            A list of firewall rules for this project.
+            A list of firewall rules for this project id.
         """
         firewall_rules_api = self.service.firewalls()
         request = firewall_rules_api.list(project=project_id)

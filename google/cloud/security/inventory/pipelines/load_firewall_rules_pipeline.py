@@ -17,12 +17,9 @@
 This pipeline depends on the LoadProjectsPipeline.
 """
 
-import json
-
-from dateutil.parser import parse
-
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 LOGGER = log_util.get_logger(__name__)
@@ -42,17 +39,15 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
         Args:
             firewall_rules_map: A dict mapping projects with a list of their
                 firewall rules.
-                {project_id: [firewall_rules]}
+                {project_id1: [firewall_rule1a, firewall_rule1b],
+                 project_id2: [firewall_rule2a, firewall_rule2b],
+                 project_id3: [firewall_rule3a, firewall_rule3b]}
 
         Yields:
             An iterable of loadable firewall rules as a per-firewall dictionary.
         """
         for project_id, firewall_rules in firewall_rules_map.iteritems():
             for firewall_rule in firewall_rules:
-                # Drop the timezone which causes mysql to throw warning.
-                creation_time = parse(firewall_rule.get('creationTimestamp'))
-                creation_timestamp = creation_time.strftime('%Y-%m-%dT%H:%M:%S')
-
                 yield {'firewall_rule_id': firewall_rule.get('id'),
                        'project_id': project_id,
                        'firewall_rule_name': firewall_rule.get('name'),
@@ -60,16 +55,23 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                            firewall_rule.get('description'),
                        'firewall_rule_network': firewall_rule.get('network'),
                        'firewall_rule_source_ranges':
-                           json.dumps(firewall_rule.get('sourceRanges')),
+                           parser.json_stringify(
+                                firewall_rule.get('sourceRanges')),
                        'firewall_rule_source_tags':
-                           json.dumps(firewall_rule.get('sourceTags')),
+                           parser.json_stringify(
+                                firewall_rule.get('sourceTags')),
                        'firewall_rule_target_tags':
-                           json.dumps(firewall_rule.get('targetTags')),
+                           parser.json_stringify(
+                                firewall_rule.get('targetTags')),
                        'firewall_rule_allowed':
-                           json.dumps(firewall_rule.get('targetTags')),
+                           parser.json_stringify(
+                                firewall_rule.get('targetTags')),
                        'firewall_rule_self_link': firewall_rule.get('selfLink'),
-                       'firewall_rule_create_time': creation_timestamp,
-                       'raw_firewall_rule': json.dumps(firewall_rule)}
+                       'firewall_rule_create_time': parser.format_timestamp(
+                           firewall_rule.get('creationTimestamp'),
+                           self.MYSQL_DATETIME_FORMAT),
+                       'raw_firewall_rule':
+                           parser.json_stringify(firewall_rule)}
 
     def _retrieve(self):
         """Retrieve firewall rules from GCP.
@@ -80,7 +82,9 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
 
         Returns:
             A dict mapping projects with a list of their firewall rules.
-            {project_id: [firewall_rules]}
+            {project_id1: [firewall_rule1a, firewall_rule1b],
+             project_id2: [firewall_rule2a, firewall_rule2b],
+             project_id3: [firewall_rule3a, firewall_rule3b]}
         """
         firewall_rules_map = {}
         projects = self.dao.get_projects(self.cycle_timestamp)

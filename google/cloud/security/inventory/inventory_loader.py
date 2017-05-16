@@ -185,29 +185,41 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     dao = kwargs.get('dao')
     gcs_api_client = gcs.StorageClient()
 
+    organization_dao_name = 'organization_dao'
+    project_dao_name = 'project_dao'
+
     # The order here matters, e.g. groups_pipeline must come before
     # group_members_pipeline.
     pipelines = [
         load_orgs_pipeline.LoadOrgsPipeline(
-            cycle_timestamp, configs, crm_v1_api_client,
-            kwargs.get('organization_dao')
+            cycle_timestamp,
+            configs,
+            crm_v1_api_client,
+            kwargs.get(organization_dao_name)
         ),
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_v1_api_client,
-            kwargs.get('organization_dao')
+            cycle_timestamp,
+            configs,
+            crm_v1_api_client,
+            kwargs.get(organization_dao_name)
         ),
         load_projects_pipeline.LoadProjectsPipeline(
-            cycle_timestamp, configs, crm_v1_api_client,
-            kwargs.get('project_dao')
+            cycle_timestamp,
+            configs,
+            crm_v1_api_client,
+            kwargs.get(project_dao_name)
         ),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_v1_api_client,
-            kwargs.get('project_dao')
+            cycle_timestamp,
+            configs,
+            crm_v1_api_client,
+            kwargs.get(project_dao_name)
         ),
         load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-            cycle_timestamp, configs,
+            cycle_timestamp,
+            configs,
             gcs_api_client,
-            kwargs.get('project_dao')
+            kwargs.get(project_dao_name)
         ),
         load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
             cycle_timestamp,
@@ -236,8 +248,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
         load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
             cycle_timestamp,
             configs,
-            compute.ComputeClient(),
-            kwargs.get('project_dao')
+            compute.ComputeClient(version='beta'),
+            kwargs.get(project_dao_name)
         ),
     ]
 
@@ -246,9 +258,15 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             admin_api_client = ad.AdminDirectoryClient()
             pipelines.extend([
                 load_groups_pipeline.LoadGroupsPipeline(
-                    cycle_timestamp, configs, admin_api_client, dao),
+                    cycle_timestamp,
+                    configs,
+                    admin_api_client,
+                    dao),
                 load_group_members_pipeline.LoadGroupMembersPipeline(
-                    cycle_timestamp, configs, admin_api_client, dao)
+                    cycle_timestamp,
+                    configs,
+                    admin_api_client,
+                    dao)
             ])
         else:
             raise inventory_errors.LoadDataPipelineError(
