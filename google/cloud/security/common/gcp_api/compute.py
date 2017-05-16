@@ -33,7 +33,9 @@ class ComputeClient(_base_client.BaseClient):
     def __init__(self, credentials=None):
         super(ComputeClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
-        self.rate_limiter = RateLimiter(100, 100)
+        # TODO: Make these into flags.  20 requests per second.
+        # https://cloud.google.com/compute/docs/api-rate-limits
+        self.rate_limiter = RateLimiter(20, 1)
 
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
@@ -81,11 +83,8 @@ class ComputeClient(_base_client.BaseClient):
             project_id: String of the project id.  Project number is
                 not accepted.
 
-        Yield:
-            An iterator of firewall rules for this project.
-
-        Raise:
-            api_errors.ApiExecutionError if API raises an error.
+        Return:
+            A list of firewall rules for this project.
         """
         firewall_rules_api = self.service.firewalls()
         request = firewall_rules_api.list(project=project_id)
