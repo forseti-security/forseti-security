@@ -41,8 +41,6 @@ class ComputeClient(_base_client.BaseClient):
         # TODO: Remove beta when it becomes GA.
         super(ComputeClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME, version=version)
-        # TODO: Make these into flags.  20 requests per second.
-        # https://cloud.google.com/compute/docs/api-rate-limits
         self.rate_limiter = RateLimiter(
             FLAGS.max_compute_api_calls_per_second, 1)
 
