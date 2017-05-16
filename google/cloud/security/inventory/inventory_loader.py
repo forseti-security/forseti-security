@@ -65,6 +65,7 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import load_firewall_rules_pipeline
 from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipeline
 from google.cloud.security.inventory.pipelines import load_folders_pipeline
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
@@ -231,6 +232,12 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             configs,
             bq.BigQueryClient(),
             dao
+        ),
+        load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('project_dao')
         ),
     ]
 
