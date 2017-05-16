@@ -248,7 +248,7 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
         load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
             cycle_timestamp,
             configs,
-            compute.ComputeClient(version='beta'),
+            compute.ComputeClient(),
             kwargs.get(project_dao_name)
         ),
     ]
