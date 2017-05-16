@@ -20,13 +20,14 @@ import mock
 import yaml
 
 from google.apputils import basetest
+from google.cloud.security.common.data_access import _db_connector
+from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import iam_rules_engine as ire
 from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
@@ -38,6 +39,7 @@ class IamRulesEngineTest(basetest.TestCase):
 
     def setUp(self):
         """Set up."""
+        self.fake_timestamp = '12345'
         self.org789 = Organization('778899', display_name='My org')
         self.project1 = Project(
             'my-project-1', 12345,
@@ -45,6 +47,14 @@ class IamRulesEngineTest(basetest.TestCase):
             parent=self.org789)
         self.project2 = Project('my-project-2', 12346,
             display_name='My project 2')
+
+        # patch the organization resource relation dao
+        self.patcher = mock.patch('google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
+        self.mock_org_rel_dao = self.patcher.start()
+        self.mock_org_rel_dao.return_value = None
+
+    def tearDown(self):
+        self.patcher.stop()
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
@@ -100,7 +110,7 @@ class IamRulesEngineTest(basetest.TestCase):
 
     def test_add_single_rule_builds_correct_map(self):
         """Test that adding a single rule builds the correct map."""
-        rule_book = ire.IamRuleBook(test_rules.RULES1)
+        rule_book = ire.IamRuleBook(test_rules.RULES1, self.fake_timestamp)
         actual_rules = rule_book.resource_rules_map
 
         # expected
@@ -309,7 +319,13 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES1)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES1, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         policy = {
             'bindings': [{
@@ -361,7 +377,14 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES1)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES1, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
         policy = {
             'bindings': [{
               'role': 'roles/editor',
@@ -388,10 +411,19 @@ class IamRulesEngineTest(basetest.TestCase):
         Expected results:
             No policy violations found.
         """
+        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
+            side_effect=[self.org789])
+
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook({})
+        rules_engine.rule_book = ire.IamRuleBook({}, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
         policy = {
             'bindings': [{
                 'role': 'roles/editor',
@@ -420,7 +452,13 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES1)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES1, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         actual_violations = set(rules_engine.find_policy_violations(
             self.project1, {}))
@@ -434,6 +472,7 @@ class IamRulesEngineTest(basetest.TestCase):
         """Test a ruleset with whitelist and blacklist violating rules.
 
         Setup:
+            * Mock find_ancestors().
             * Create a RulesEngine with RULES2 rule set.
             * Create policy.
 
@@ -442,8 +481,15 @@ class IamRulesEngineTest(basetest.TestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES2)
+        rules_engine = ire.IamRulesEngine(rules_local_path, self.fake_timestamp)
+        # TODO: mock the rules local path to return RULES2
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES2, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789], []])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         policy = {
             'bindings': [
@@ -525,7 +571,13 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES1)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES1, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         policy = {
             'bindings': [
@@ -560,7 +612,13 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES3)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES3, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[], [self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         org_policy = {
             'bindings': [
@@ -650,7 +708,13 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES4)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES4, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[], [self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         org_policy = {
             'bindings': [
@@ -729,7 +793,13 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES5)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES5, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -773,7 +843,13 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES6)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES6, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -828,7 +904,12 @@ class IamRulesEngineTest(basetest.TestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules5 = copy.deepcopy(test_rules.RULES5)
         rules5['rules'][1]['inherit_from_parents'] = True
-        rules_engine.rule_book = ire.IamRuleBook(rules5)
+        rules_engine.rule_book = ire.IamRuleBook(rules5, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -885,7 +966,12 @@ class IamRulesEngineTest(basetest.TestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules5 = copy.deepcopy(test_rules.RULES5)
         rules5['rules'][0]['resource'][0]['applies_to'] = 'self'
-        rules_engine.rule_book = ire.IamRuleBook(rules5)
+        rules_engine.rule_book = ire.IamRuleBook(rules5, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         project_policy = {
             'bindings': [{
@@ -923,7 +1009,12 @@ class IamRulesEngineTest(basetest.TestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules6 = copy.deepcopy(test_rules.RULES6)
         rules6['rules'][0]['resource'][0]['applies_to'] = 'self'
-        rules_engine.rule_book = ire.IamRuleBook(rules6)
+        rules_engine.rule_book = ire.IamRuleBook(rules6, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[], [self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         org_policy = {
             'bindings': [
@@ -988,7 +1079,13 @@ class IamRulesEngineTest(basetest.TestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook(test_rules.RULES6)
+        rules_engine.rule_book = ire.IamRuleBook(
+            test_rules.RULES6, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
 
         project_policy = {
             'bindings': [

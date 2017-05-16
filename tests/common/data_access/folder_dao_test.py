@@ -83,7 +83,8 @@ class FolderDaoTest(basetest.TestCase):
         fake_query = select_data.FOLDER_BY_ID.format(
             self.fake_timestamp, self.fake_timestamp)
         actual = self.folder_dao.get_folder(
-            self.fake_timestamp, fake_folder['folder_id'])
+            fake_folder['folder_id'],
+            self.fake_timestamp)
 
         self.assertEqual(
             self.folder_dao.map_row_to_object(fake_folder),

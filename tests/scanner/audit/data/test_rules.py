@@ -246,8 +246,8 @@ RULES5 = {
     ]
 }
 
-# Org children whitelist allows any roles/members with
-# Org children blacklist blocks particular user
+# Org children whitelist allows any roles/members for users @company.com
+# Org children blacklist blocks owner@company.com.
 RULES6 = {
     'rules': [
         {

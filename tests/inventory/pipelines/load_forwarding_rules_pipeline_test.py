@@ -14,7 +14,6 @@
 
 """Tests the load_forwarding_rules_pipeline."""
 
-
 from google.apputils import basetest
 import mock
 import MySQLdb
