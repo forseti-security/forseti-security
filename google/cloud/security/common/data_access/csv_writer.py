@@ -35,90 +35,31 @@ BIGQUERY_DATASET_FIELDNAMES = [
     'raw_access_map'
 ]
 
-GROUP_MEMBERS_FIELDNAMES = [
-    'group_id',
-    'member_kind',
-    'member_role',
-    'member_type',
-    'member_status',
-    'member_id',
-    'member_email',
-    'raw_member'
-]
-
-GROUPS_FIELDNAMES = [
-    'group_id',
-    'group_email',
-    'group_kind',
-    'direct_member_count',
-    'raw_group'
-]
-
-FOLDERS_FIELDNAMES = [
-    'folder_id',
-    'name',
-    'display_name',
-    'lifecycle_state',
-    'parent_type',
-    'parent_id',
-    'raw_folder',
-    'create_time',
-]
-
-ORGANIZATIONS_FIELDNAMES = [
-    'org_id',
-    'name',
-    'display_name',
-    'lifecycle_state',
-    'raw_org',
-    'creation_time',
-]
-
-ORG_IAM_POLICIES_FIELDNAMES = [
-    'org_id',
+BUCKETS_ACL_FIELDNAMES = [
+    'bucket',
+    'domain',
+    'email',
+    'entity',
+    'entity_id',
+    'acl_id',
+    'kind',
+    'project_team',  # TODO: flatten this
     'role',
-    'member_type',
-    'member_name',
-    'member_domain'
+    'bucket_acl_selflink',
+    'raw_bucket_acl'
 ]
 
-POLICY_VIOLATION_FIELDNAMES = [
-    'resource_id',
+BUCKETS_ACL_VIOLATIONS = [
     'resource_type',
-    'rule_index',
+    'resource_id',
     'rule_name',
+    'rule_index',
     'violation_type',
     'role',
-    'member'
-]
-
-PROJECTS_FIELDNAMES = [
-    'project_number',
-    'project_id',
-    'project_name',
-    'lifecycle_state',
-    'parent_type',
-    'parent_id',
-    'raw_project',
-    'create_time'
-]
-
-PROJECT_IAM_POLICIES_FIELDNAMES = [
-    'project_number',
-    'role',
-    'member_type',
-    'member_name',
-    'member_domain'
-]
-
-RAW_ORG_IAM_POLICIES_FIELDNAMES = [
-    'org_id',
-    'iam_policy'
-]
-
-RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
-    'project_number',
-    'iam_policy'
+    'entity',
+    'email',
+    'domain',
+    'bucket'
 ]
 
 # TODO: Add pydoc to describe the mapping of the custom field naming
@@ -138,23 +79,30 @@ BUCKETS_FIELDNAMES = [
     'raw_bucket'
 ]
 
-RAW_BUCKETS_FIELDNAMES = [
-    'project_number',
-    'buckets'
+FIREWALL_RULES_FIELDNAMES = [
+    'firewall_rule_id',
+    'project_id',
+    'firewall_rule_name',
+    'firewall_rule_description',
+    'firewall_rule_network',
+    'firewall_rule_source_ranges',
+    'firewall_rule_source_tags',
+    'firewall_rule_target_tags',
+    'firewall_rule_allowed',
+    'firewall_rule_self_link',
+    'firewall_rule_create_time',
+    'raw_firewall_rule'
 ]
 
-BUCKETS_ACL_FIELDNAMES = [
-    'bucket',
-    'domain',
-    'email',
-    'entity',
-    'entity_id',
-    'acl_id',
-    'kind',
-    'project_team',  # TODO: flatten this
-    'role',
-    'bucket_acl_selflink',
-    'raw_bucket_acl'
+FOLDERS_FIELDNAMES = [
+    'folder_id',
+    'name',
+    'display_name',
+    'lifecycle_state',
+    'parent_type',
+    'parent_id',
+    'raw_folder',
+    'create_time',
 ]
 
 FORWARDING_RULES_FIELDNAMES = [
@@ -175,17 +123,86 @@ FORWARDING_RULES_FIELDNAMES = [
     'backend_service',
 ]
 
-BUCKETS_ACL_VIOLATIONS = [
-    'resource_type',
+GROUP_MEMBERS_FIELDNAMES = [
+    'group_id',
+    'member_kind',
+    'member_role',
+    'member_type',
+    'member_status',
+    'member_id',
+    'member_email',
+    'raw_member'
+]
+
+GROUPS_FIELDNAMES = [
+    'group_id',
+    'group_email',
+    'group_kind',
+    'direct_member_count',
+    'raw_group'
+]
+
+ORG_IAM_POLICIES_FIELDNAMES = [
+    'org_id',
+    'role',
+    'member_type',
+    'member_name',
+    'member_domain'
+]
+
+
+ORGANIZATIONS_FIELDNAMES = [
+    'org_id',
+    'name',
+    'display_name',
+    'lifecycle_state',
+    'raw_org',
+    'creation_time',
+]
+
+
+POLICY_VIOLATION_FIELDNAMES = [
     'resource_id',
-    'rule_name',
+    'resource_type',
     'rule_index',
+    'rule_name',
     'violation_type',
     'role',
-    'entity',
-    'email',
-    'domain',
-    'bucket'
+    'member'
+]
+
+PROJECT_IAM_POLICIES_FIELDNAMES = [
+    'project_number',
+    'role',
+    'member_type',
+    'member_name',
+    'member_domain'
+]
+
+PROJECTS_FIELDNAMES = [
+    'project_number',
+    'project_id',
+    'project_name',
+    'lifecycle_state',
+    'parent_type',
+    'parent_id',
+    'raw_project',
+    'create_time'
+]
+
+RAW_BUCKETS_FIELDNAMES = [
+    'project_number',
+    'buckets'
+]
+
+RAW_ORG_IAM_POLICIES_FIELDNAMES = [
+    'org_id',
+    'iam_policy'
+]
+
+RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
+    'project_number',
+    'iam_policy'
 ]
 
 CSV_FIELDNAME_MAP = {
@@ -193,6 +210,7 @@ CSV_FIELDNAME_MAP = {
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
     'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
+    'firewall_rules': FIREWALL_RULES_FIELDNAMES,
     'folders': FOLDERS_FIELDNAMES,
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
