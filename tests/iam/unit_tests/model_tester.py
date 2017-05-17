@@ -1,47 +1,27 @@
-import grpc
-import uuid
-from concurrent import futures
-import logging
+
+"""Installing test models against a session."""
+
 from collections import defaultdict
 
-from google.cloud.security.iam.client import ClientComposition
-from google.cloud.security.iam.dao import create_engine
+class ModelCreatorClient:
+    def __init__(self, session, data_access):
+        self.session = session
+        self.data_access = data_access
+        self.playground = self
+        self.explain = self
 
-def cleanup(test_callback):
-    def wrapper(client):
-        for handle in client.list_models().handles:
-            client.delete_model(handle)
-        test_callback(client)
-    return wrapper
+    def add_resource(self, full_res_name, res_type, parent, no_parent):
+        return self.data_access.add_resource_by_name(self.session, full_res_name, parent, no_parent)
 
-def create_test_engine():
-    tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
-    logging.info('Creating database at {}'.format(tmpfile))
-    return create_engine('sqlite:///{}'.format(tmpfile))
+    def add_member(self, child, parents):
+        return self.data_access.add_member(self.session, child, parents)
 
-class ApiTestRunner(object):
-    def __init__(self, service_config, service_factories, port=50058):
-        super(ApiTestRunner, self).__init__()
-        self.service_config = service_config
-        self.service_factories = service_factories
-        self.service_port = port
+    def add_role(self, role_name, permissions):
+        return self.data_access.add_role_by_name(self.session, role_name, permissions)
 
-    def run(self, test_callback):
-        server = grpc.server(futures.ThreadPoolExecutor(1))
-        server.add_insecure_port('[::]:{}'.format(self.service_port))
-        for factory in self.service_factories:
-            factory(self.service_config).create_and_register_service(server)
-        server.start()
-        try:
-            client = ClientComposition(endpoint='localhost:{}'.format(self.service_port))
-            test_callback(client)
-        finally:
-            server.stop(0)
-
-class ModelTestRunner(ApiTestRunner):
-    def __init__(self, model, *args, **kwargs):
-        super(ModelTestRunner, self).__init__(*args, **kwargs)
-        self.model = model
+class ModelCreator:
+    def __init__(self, model, client):
+        self._install_model(model, client)
 
     def _install_model(self, model, client):
         resource_full_name_map = self._install_resources(model['resources'], client.playground)
@@ -123,10 +103,3 @@ class ModelTestRunner(ApiTestRunner):
             if len(reply.policy.bindings) > 0:
                 raise Exception('policy should have been empty')
             client.set_iam_policy(full_resource_name, {'bindings':bindings, 'etag':reply.policy.etag})
-
-    def run(self, test_callback):
-        def callback_wrapper(client):
-            client.switch_model(client.new_model('EMPTY').handle)
-            self._install_model(self.model, client)
-            test_callback(client)
-        super(ModelTestRunner, self).run(callback_wrapper)

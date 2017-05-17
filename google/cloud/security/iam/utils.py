@@ -28,6 +28,21 @@ def logcall(f, level=logging.CRITICAL):
     return wrapper
 
 
+def mutual_exclusive(lock):
+    """ Mutex decorator. """
+    def wrap(f):
+        """Decorator generator."""
+        def function(*args, **kw):
+            """Decorated functionality, mutexing wrapped function."""
+            lock.acquire()
+            try:
+                return f(*args, **kw)
+            finally:
+                lock.release()
+        return function
+    return wrap
+
+
 def oneof(*args):
     """Returns true iff one of the parameters is true."""
     return len([x for x in args if x]) == 1

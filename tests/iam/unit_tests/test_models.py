@@ -1,0 +1,116 @@
+
+"""Compilation of serialized models for testing purposes."""
+
+RESOURCE_EXPANSION_1 = {
+        'resources':{
+                'r/res1' : {
+                        'r/res2' : {},
+                        'r/res3' : {},
+                        'r/res4' : {},
+                        'r/res5' : {
+                                'r/res6' : {
+                                        'r/res7' : {},
+                                        'r/res8' : {},
+                                    },
+                            },
+                    },
+            },
+        'memberships':{},
+        'roles':{},
+        'bindings':{},
+    }
+
+RESOURCE_EXPANSION_2 = {
+        'resources':{
+                'r/res1' : {
+                        'r/res2' : {
+                                'r/res3' : {
+                                        'r/res4' : {
+                                                'r/res5' : {},
+                                            },
+                                    },
+                                'r/res6' : {
+                                        'r/res7' : {
+                                                'r/res8' : {},
+                                            },
+                                    },
+                            },
+                    },
+            },
+        'memberships':{},
+        'roles':{},
+        'bindings':{},
+    }
+
+MEMBER_TESTING_1 = {
+        'resources':{},
+        'memberships': {
+            'group/g1' : {
+                    'group/g1g1' : {
+                            'user/g1g1u1' : {}
+                        },
+                },
+            'group/g2' : {
+                    'user/g2u1' : {},
+                    'user/g2u2' : {},
+                    'user/g2u3' : {},
+                },
+            'group/g3' : {
+                    'user/g3u1' : {},
+                    'user/g3u2' : {},
+                    'user/g3u3' : {},
+                    'group/g3g1' : {
+                            'user/g3g1u1' : {},
+                            'user/g3g1u2' : {},
+                            'user/g3g1u3' : {},
+                        },
+                },
+            },
+        'roles':{},
+        'bindings':{},
+    }
+
+RESOURCE_PATH_TESTING_1 = {
+        'resources':{
+                'r/r1' : {
+                        'r/r1r1' : {},
+                        'r/r1r2' : {},
+                        'r/r1r3' : {
+                                'r/r1r3r1' : {
+                                        'r/r1r3r1r1' : {},
+                                    }
+                            },
+                        'r/r1r4' : {},
+                        'r/r1r5' : {
+                                'r/r1r6r1' : {
+                                        'r/r1r6r1r1' : {
+                                                'r/r1r6r1r1r1' : {},
+                                            },
+                                    }, 
+                            },
+                    },
+                'r/r2' : {},
+                'r/r3' : {},
+                'r/r4' : {},
+                'r/r5' : {},
+            },
+        'memberships': {},
+        'roles':{},
+        'bindings':{},
+    }
+
+ROLES_PERMISSIONS_TESTING_1 = {
+        'resources':{},
+        'memberships':{},
+        'roles':{
+                'a' : ['a', 'b', 'c', 'd', 'e', 'f'],
+                'b' : ['a', 'b', 'c', 'd', 'e'],
+                'c' : ['a', 'b', 'c', 'd'],
+                'd' : ['a', 'b', 'c'],
+                'e' : ['a', 'b'],
+                'f' : ['a'],
+                'g' : ['a', 'c', 'e'],
+                'h' : ['b', 'd', 'f'],
+            },
+        'bindings':{},
+    }
