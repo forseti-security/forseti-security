@@ -195,23 +195,71 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     # group_members_pipeline.
     pipelines = [
         load_orgs_pipeline.LoadOrgsPipeline(
-            cycle_timestamp, configs, crm_v1_api_client, organization_dao),
+            cycle_timestamp,
+            configs,
+            crm_v1_api_client,
+            organization_dao
+        ),
         load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_v1_api_client, organization_dao),
+            cycle_timestamp,
+            configs,
+            crm_v1_api_client,
+            organization_dao
+        ),
         load_projects_pipeline.LoadProjectsPipeline(
-            cycle_timestamp, configs, crm_v1_api_client, project_dao),
+            cycle_timestamp,
+            configs,
+            crm_v1_api_client,
+            project_dao
+        ),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp, configs, crm_v1_api_client, project_dao),
+            cycle_timestamp,
+            configs,
+            crm_v1_api_client,
+            project_dao
+        ),
         load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-            cycle_timestamp, configs, gcs_api_client, project_dao),
+            cycle_timestamp,
+            configs,
+            gcs_api_client,
+            project_dao
+        ),
         load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
-            cycle_timestamp, configs, gcs_api_client, bucket_dao),
-        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
-            cycle_timestamp, configs, compute_api_client, fwd_rules_dao),
-        load_folders_pipeline.LoadFoldersPipeline(
-            cycle_timestamp, configs, crm_v2beta1, folder_dao),
+            cycle_timestamp,
+            configs,
+            gcs_api_client,
+            bucket_dao
+        ),
         load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline(
-            cycle_timestamp, configs, cloudsql_api_client, cloudsql_dao),
+            cycle_timestamp,
+            configs,
+            cloudsql_api_client,
+            cloudsql_dao
+        ),
+        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
+            cycle_timestamp,
+            configs,
+            compute_api_client,
+            fwd_rules_dao
+        ),
+        load_folders_pipeline.LoadFoldersPipeline(
+            cycle_timestamp,
+            configs,
+            crm_v2beta1,
+            folder_dao
+        ),
+        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
+            cycle_timestamp,
+            configs,
+            bq.BigQueryClient(),
+            dao
+        ),
+        load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(version='beta'),
+            kwargs.get(project_dao_name)
+        ),
     ]
 
     if configs.get('inventory_groups'):

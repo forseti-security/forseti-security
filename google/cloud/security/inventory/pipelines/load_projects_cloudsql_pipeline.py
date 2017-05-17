@@ -37,7 +37,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
     RESOURCE_NAME_INSTANCES = 'cloudsql_instances'
     RESOURCE_NAME_IPADDRESSES = 'cloudsql_ipaddresses'
-    RESOURCE_NAME_AUTHORIZEDNETWORKS = \
+    RESOURCE_NAME_AUTHORIZED_NETWORKS =\
         'cloudsql_ipconfiguration_authorizednetworks'
 
 
@@ -268,7 +268,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                         'timeToRetire': formatted_timetoretire
                     }
 
-
+    # pylint: disable=arguments-differ
     def _transform(self, cloudsql_instances_map):
         """returns a dictionary of generators for a different types of resources
 
@@ -285,7 +285,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         data_dict = {}
         data_dict[self.RESOURCE_NAME_INSTANCES] = \
             self._transform_data(cloudsql_instances_map)
-        data_dict[self.RESOURCE_NAME_AUTHORIZEDNETWORKS] = \
+        data_dict[self.RESOURCE_NAME_AUTHORIZED_NETWORKS] = \
             self._transform_authorizednetworks(cloudsql_instances_map)
         data_dict[self.RESOURCE_NAME_IPADDRESSES] = \
             self._transform_ipaddresses(cloudsql_instances_map)
@@ -350,7 +350,9 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                 loadable_instances_dict[self.RESOURCE_NAME_INSTANCES])
         self._load(self.RESOURCE_NAME_IPADDRESSES, \
                 loadable_instances_dict[self.RESOURCE_NAME_IPADDRESSES])
-        self._load(self.RESOURCE_NAME_AUTHORIZEDNETWORKS, \
-                loadable_instances_dict[self.RESOURCE_NAME_AUTHORIZEDNETWORKS])
+        self._load(self.RESOURCE_NAME_AUTHORIZED_NETWORKS, \
+                loadable_instances_dict[
+                    self.RESOURCE_NAME_AUTHORIZED_NETWORKS
+                    ])
 
         self._get_loaded_count()

@@ -21,6 +21,85 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+
+BIGQUERY_DATASET_FIELDNAMES = [
+    'project_id',
+    'dataset_id',
+    'access_domain',
+    'access_user_by_email',
+    'access_special_group',
+    'access_group_by_email',
+    'role',
+    'access_view_project_id',
+    'access_view_table_id',
+    'access_view_dataset_id',
+    'raw_access_map'
+]
+
+BUCKETS_ACL_FIELDNAMES = [
+    'bucket',
+    'domain',
+    'email',
+    'entity',
+    'entity_id',
+    'acl_id',
+    'kind',
+    'project_team',  # TODO: flatten this
+    'role',
+    'bucket_acl_selflink',
+    'raw_bucket_acl'
+]
+
+BUCKETS_ACL_VIOLATIONS = [
+    'resource_type',
+    'resource_id',
+    'rule_name',
+    'rule_index',
+    'violation_type',
+    'role',
+    'entity',
+    'email',
+    'domain',
+    'bucket'
+]
+
+# TODO: Add pydoc to describe the mapping of the custom field naming
+# to the field names in the resource objects.
+# https://cloud.google.com/storage/docs/json_api/v1/buckets#resource
+BUCKETS_FIELDNAMES = [
+    'project_number',
+    'bucket_id',
+    'bucket_name',
+    'bucket_kind',
+    'bucket_storage_class',
+    'bucket_location',
+    'bucket_create_time',
+    'bucket_update_time',
+    'bucket_selflink',
+    'bucket_lifecycle_raw',
+    'raw_bucket'
+]
+
+FIREWALL_RULES_FIELDNAMES = [
+    'firewall_rule_id',
+    'project_id',
+    'firewall_rule_name',
+    'firewall_rule_description',
+    'firewall_rule_kind',
+    'firewall_rule_network',
+    'firewall_rule_priority',
+    'firewall_rule_direction',
+    'firewall_rule_source_ranges',
+    'firewall_rule_destination_ranges',
+    'firewall_rule_source_tags',
+    'firewall_rule_target_tags',
+    'firewall_rule_allowed',
+    'firewall_rule_denied',
+    'firewall_rule_self_link',
+    'firewall_rule_create_time',
+    'raw_firewall_rule'
+]
+
 FOLDERS_FIELDNAMES = [
     'folder_id',
     'name',

@@ -21,7 +21,6 @@ from MySQLdb import NotSupportedError
 from MySQLdb import OperationalError
 from MySQLdb import ProgrammingError
 
-from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access.sql_queries import select_data
@@ -40,10 +39,23 @@ class CloudsqlDao(project_dao.ProjectDao):
         super(CloudsqlDao, self).__init__()
 
     def get_cloudsql_acls(self, resource_name, timestamp):
+        """Select the cloudsql acls for project from a snapshot table.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            List of cloudsql acls.
+
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
         cloudsql_acls = {}
         cnt = 0
         try:
-            cloudsql_instances_sql = select_data.CLOUDSQL_INSTANCES.format(timestamp)
+            cloudsql_instances_sql = select_data.CLOUDSQL_INSTANCES.\
+                                                 format(timestamp)
             rows = self.execute_sql_with_fetch(resource_name,
                                                cloudsql_instances_sql,
                                                None)
@@ -72,6 +84,18 @@ class CloudsqlDao(project_dao.ProjectDao):
         return cloudsql_acls
 
     def _get_cloudsql_instance_acl_map(self, resource_name, timestamp):
+        """Create CloudSQL instance acl map.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            Map of instance acls.
+
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
         cloudsql_acls_map = {}
         try:
             cloudsql_acls_sql = select_data.CLOUDSQL_ACLS.format(timestamp)
@@ -98,9 +122,18 @@ class CloudsqlDao(project_dao.ProjectDao):
 
     def _get_networks_for_instance(self, acl_map, project_number,
                                    instance_name):
+        """Create a list of authorized networks for instance
+
+        Args:
+            acl_map: acl map
+            project_number: project number
+            instance_name: name of the instance
+
+        Returns:
+            List of authorizes networks
+        """
         authorized_networks = []
         hash_key = hash(str(project_number) + ',' + instance_name)
         if hash_key in acl_map:
             authorized_networks = acl_map[hash_key]
         return authorized_networks
-

@@ -17,7 +17,7 @@
 # pylint: disable=too-few-public-methods
 class ClodSqlAccessControl(object):
     """CloudSQL ACL Resource."""
-    
+
     def __init__(self, instance_name, authorized_networks, ssl_enabled,
                  project_number=None):
         """Initialize

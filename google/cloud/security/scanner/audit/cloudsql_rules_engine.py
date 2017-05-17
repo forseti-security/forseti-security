@@ -245,5 +245,5 @@ class Rule(object):
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'rule_name',
                                 'rule_index', 'violation_type',
-                                'instance_name', 'authorized_networks', 
+                                'instance_name', 'authorized_networks',
                                 'ssl_enabled'])
