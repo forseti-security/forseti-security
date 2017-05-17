@@ -209,46 +209,46 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             crm_v1_api_client,
             kwargs.get(project_dao_name)
         ),
-        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-            cycle_timestamp,
-            configs,
-            gcs_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
-            cycle_timestamp,
-            configs,
-            gcs_api_client,
-            kwargs.get('bucket_dao')
-        ),
-        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
-            cycle_timestamp,
-            configs,
-            compute.ComputeClient(),
-            kwargs.get('fwd_rules_dao')
-        ),
-        load_folders_pipeline.LoadFoldersPipeline(
-            cycle_timestamp,
-            configs,
-            crm.CloudResourceManagerClient(version='v2beta1'),
-            dao
-        ),
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
-            cycle_timestamp,
-            configs,
-            bq.BigQueryClient(),
-            dao
-        ),
+#        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
+#            cycle_timestamp,
+#            configs,
+#            crm_v1_api_client,
+#            kwargs.get(project_dao_name)
+#        ),
+#        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
+#            cycle_timestamp,
+#            configs,
+#            gcs_api_client,
+#            kwargs.get(project_dao_name)
+#        ),
+#        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
+#            cycle_timestamp,
+#            configs,
+#            gcs_api_client,
+#            kwargs.get('bucket_dao')
+#        ),
+#        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
+#            cycle_timestamp,
+#            configs,
+#            compute.ComputeClient(),
+#            kwargs.get('fwd_rules_dao')
+#        ),
+#        load_folders_pipeline.LoadFoldersPipeline(
+#            cycle_timestamp,
+#            configs,
+#            crm.CloudResourceManagerClient(version='v2beta1'),
+#            dao
+#        ),
+#        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
+#            cycle_timestamp,
+#            configs,
+#            bq.BigQueryClient(),
+#            dao
+#        ),
         load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
             cycle_timestamp,
             configs,
-            compute.ComputeClient(),
+            compute.ComputeClient(version='beta'),
             kwargs.get(project_dao_name)
         ),
     ]
@@ -256,6 +256,7 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     if configs.get('inventory_groups'):
         if util.can_inventory_groups(configs):
             admin_api_client = ad.AdminDirectoryClient()
+            """
             pipelines.extend([
                 load_groups_pipeline.LoadGroupsPipeline(
                     cycle_timestamp,
@@ -267,7 +268,7 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
                     configs,
                     admin_api_client,
                     dao)
-            ])
+            ])"""
         else:
             raise inventory_errors.LoadDataPipelineError(
                 'Unable to inventory groups with specified arguments:\n%s',
