@@ -50,9 +50,9 @@ class LoadFirewallRulesTest(basetest.TestCase):
 
         counter = 0
         for loadable_firewall_rule in loadable_firewall_rules:
-#            self.assertDictEqual(
-#                fake_firewall_rules.EXPECTED_LOADABLE_FIREWALL_RULES[counter],
-#                loadable_firewall_rule)
+            self.assertDictEqual(
+                fake_firewall_rules.EXPECTED_LOADABLE_FIREWALL_RULES[counter],
+                loadable_firewall_rule)
             counter +=1
 
     def test_can_retrieve_firewall_rules_from_gcp(self):
