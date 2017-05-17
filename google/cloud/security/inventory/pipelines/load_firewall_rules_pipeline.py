@@ -53,10 +53,17 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                        'firewall_rule_name': firewall_rule.get('name'),
                        'firewall_rule_description':
                            firewall_rule.get('description'),
+                       'firewall_rule_kind': firewall_rule.get('kind'),
                        'firewall_rule_network': firewall_rule.get('network'),
+                       'firewall_rule_priority': firewall_rule.get('priority'),
+                       'firewall_rule_direction':
+                           firewall_rule.get('direction'),
                        'firewall_rule_source_ranges':
                            parser.json_stringify(
                                firewall_rule.get('sourceRanges')),
+                       'firewall_rule_destination_ranges':
+                           parser.json_stringify(
+                               firewall_rule.get('destinationRanges')),
                        'firewall_rule_source_tags':
                            parser.json_stringify(
                                firewall_rule.get('sourceTags')),
@@ -65,7 +72,10 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                                firewall_rule.get('targetTags')),
                        'firewall_rule_allowed':
                            parser.json_stringify(
-                               firewall_rule.get('targetTags')),
+                               firewall_rule.get('allowed')),
+                       'firewall_rule_denied':
+                           parser.json_stringify(
+                               firewall_rule.get('denied')),
                        'firewall_rule_self_link': firewall_rule.get('selfLink'),
                        'firewall_rule_create_time': parser.format_timestamp(
                            firewall_rule.get('creationTimestamp'),
