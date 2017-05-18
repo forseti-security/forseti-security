@@ -16,38 +16,25 @@
 
 Usage:
 
-  $ forseti_scanner --rules <rules path> \\
-      --output_path <output path (optional)> \\
-      --db_host <Cloud SQL database hostname/IP> \\
+  $ forseti_notifier --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
-      --sendgrid_api_key <API key to auth SendGrid email service> \\
-      --email_sender <email address of the email sender> \\
-      --email_recipient <email address of the email recipient>
+      --pipeline <Notification pipeline> \\
+      --timestamp <Snapshot timestamp to search for violations>
 """
 
-import itertools
-import os
-import shutil
-import sys
-
-from datetime import datetime
-
 import gflags as flags
-
-from google.apputils import app
-from google.cloud.security.common.data_access import csv_writer
-from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import violation_dao
-from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.util import log_util
-from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.scanner.audit import engine_map as em
-from google.cloud.security.scanner.scanners import scanners_map as sm
-from google.cloud.security.notifier.pipelines.notification_pipeline import NotificationPipeline
-from google.cloud.security.notifier.pipelines import spotify_pipeline
 import importlib
 import inspect
+
+# pylint: disable=line-too-long
+from google.apputils import app
+from google.cloud.security.common.data_access import dao
+from google.cloud.security.common.data_access import errors as db_errors
+from google.cloud.security.common.util import log_util
+from google.cloud.security.notifier.pipelines.notification_pipeline import NotificationPipeline
+# pylint: enable=line-too-long
+
 
 # Setup flags
 FLAGS = flags.FLAGS
@@ -68,11 +55,13 @@ def find_pipelines(pipeline_name):
         The class in the sub module
     """
     try:
-        module = importlib.import_module('google.cloud.security.notifier.pipelines.{0}'.format(pipeline_name))
+        module = importlib.import_module(
+         'google.cloud.security.notifier.pipelines.{0}'.format(pipeline_name))
         for x in dir(module):
             obj = getattr(module, x)
 
-            if inspect.isclass(obj) and issubclass(obj, NotificationPipeline) and obj is not NotificationPipeline:
+            if inspect.isclass(obj) and issubclass(obj, NotificationPipeline) \
+               and obj is not NotificationPipeline:
                 return obj
     except ImportError:
         return None

@@ -18,13 +18,10 @@ import abc
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import log_util
-from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.inventory import errors as inventory_errors
 # pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
@@ -56,10 +53,7 @@ class NotificationPipeline(object):
         # Get violations
         self.violations = self._get_violations(cycle_timestamp)
 
-    def _get_violations(self, timestamp=None):
-        if not timestamp:
-            timestamp = _get_timestamp()
-
+    def _get_violations(self, timestamp):
         v = {
             'violations': self.violation_dao.get_all_violations(
                             timestamp,
