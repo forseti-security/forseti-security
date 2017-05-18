@@ -62,6 +62,11 @@ LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 def find_pipelines(pipeline_name):
+    """Get the first class in the given sub module
+
+    Return:
+        The class in the sub module
+    """
     try:
         module = importlib.import_module('google.cloud.security.notifier.pipelines.{0}'.format(pipeline_name))
         for x in dir(module):
