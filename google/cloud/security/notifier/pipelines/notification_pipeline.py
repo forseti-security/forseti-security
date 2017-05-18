@@ -60,8 +60,16 @@ class NotificationPipeline(object):
         if not timestamp:
             timestamp = _get_timestamp()
 
-        violations = self.violation_dao.get_all_violations(timestamp)
-        return violations
+        v = {
+            'violations': self.violation_dao.get_all_violations(
+                            timestamp,
+                            'violations'),
+            'bucket_acl_violations': self.violation_dao.get_all_violations(
+                            timestamp,
+                            'buckets_acl_violations')
+        }
+
+        return v
 
     @abc.abstractmethod
     def run(self):

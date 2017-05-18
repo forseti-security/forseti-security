@@ -54,18 +54,34 @@ class SpotifyPipeline(notification_pipeline.NotificationPipeline):
         return violation_project
 
     def _get_project_ownership(self, project_id):
-        project_raw = self.project_dao.get_project_raw_data(
-            'projects',
-            self.cycle_timestamp,
-            project_id=project_id)
+        # currently the bucket scanner includes propject_number isntead of
+        # project_id, so I must make this method tolerant until a fix is pushed.
+        # TODO: push a fix to bucket scanner to add project_id instenad of
+        # project_number
+
+        if project_id.isdigit():
+            # assume the provided project_id is instead the project_number
+            print " i think it is a project number"
+            project_raw = self.project_dao.get_project_raw_data(
+                'projects',
+                self.cycle_timestamp,
+                project_number=project_id)
+        else:
+            project_raw = self.project_dao.get_project_raw_data(
+                'projects',
+                self.cycle_timestamp,
+                project_id=project_id)
+
         project_raw_d = json.loads(project_raw[0])
 
         ownership = {
+            'project_id': None,
             'owner': None,
             'creator': None
         }
 
         p_labels = project_raw_d.get('labels')
+        ownership['project_id'] = project_raw_d.get('projectId')
         if p_labels is not None:
             ownership['owner'] = p_labels.get('owner')
             ownership['creator'] = p_labels.get('creator')
@@ -74,5 +90,8 @@ class SpotifyPipeline(notification_pipeline.NotificationPipeline):
 
 
     def run(self):
-        for v in self.violations:
+        for v in self.violations['violations']:
+            print self._get_clean_violation(v)
+
+        for v in self.violations['bucket_acl_violations']:
             print self._get_clean_violation(v)

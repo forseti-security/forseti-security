@@ -35,6 +35,10 @@ PROJECT_RAW = """
     SELECT raw_project from projects_{0} where project_id = %s;
 """
 
+PROJECT_RAW_BY_NUMBER = """
+    SELECT raw_project from projects_{0} where project_number = %s;
+"""
+
 PROJECT_IAM_POLICIES = """
     SELECT p.project_number, p.project_id, p.project_name,
     p.lifecycle_state as proj_lifecycle, p.parent_type, p.parent_id,
@@ -56,6 +60,13 @@ PROJECT_BY_ID = """
     lifecycle_state, parent_type, parent_id
     FROM projects_{0}
     WHERE project_id = %s
+"""
+
+PROJECT_BY_NUMBER = """
+    SELECT project_number, project_id, project_name,
+    lifecycle_state, parent_type, parent_id
+    FROM projects_{0}
+    WHERE project_number = %s
 """
 
 PROJECT_IAM_POLICIES_RAW = """
@@ -139,8 +150,12 @@ BUCKETS_BY_PROJECT_ID = """
 """
 
 
-VIOLATIONS = """
+SELECT_VIOLATIONS = """
     SELECT * from violations_{0};
+"""
+
+SELECT_BUCKETS_ACL_VIOLATIONS = """
+    SELECT * from buckets_acl_violations_{0};
 """
 
 FORWARDING_RULES = """

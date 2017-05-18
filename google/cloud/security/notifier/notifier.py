@@ -40,7 +40,6 @@ from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.scanner.audit import engine_map as em

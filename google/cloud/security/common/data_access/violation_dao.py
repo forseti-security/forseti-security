@@ -75,7 +75,7 @@ class ViolationDao(dao.Dao):
 
         return (inserted_rows, violation_errors)
 
-    def get_all_violations(self, timestamp):
+    def get_all_violations(self, timestamp, resource_name):
         """Get all the violations.
 
         Args:
@@ -84,9 +84,9 @@ class ViolationDao(dao.Dao):
         Returns:
              A tuple of the violations as dict.
         """
-        violations_sql = select_data.VIOLATIONS.format(timestamp)
+        violations_sql = vm.VIOLATION_SELECT_MAP[resource_name](timestamp)
         rows = self.execute_sql_with_fetch(
-            self.RESOURCE_NAME, violations_sql, ())
+            resource_name, violations_sql, ())
         return rows
 
 
