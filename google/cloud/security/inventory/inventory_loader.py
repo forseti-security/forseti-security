@@ -210,13 +210,6 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             kwargs.get(project_dao_name)
         ),
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-<<<<<<< HEAD
-            cycle_timestamp, configs, crm_api_client, project_dao),
-        # load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-        #     cycle_timestamp, configs, gcs_api_client, project_dao),
-        # load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
-        #     cycle_timestamp, configs, gcs_api_client, bucket_dao),
-=======
             cycle_timestamp,
             configs,
             crm_v1_api_client,
@@ -258,7 +251,6 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             compute.ComputeClient(version='beta'),
             kwargs.get(project_dao_name)
         ),
->>>>>>> master
     ]
 
     if configs.get('inventory_groups'):
