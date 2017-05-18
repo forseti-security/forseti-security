@@ -162,3 +162,25 @@ ROLES_PREFIX_TESTING_1 = {
             },
         'bindings':{},
     }
+
+MEMBER_TESTING_2 = {
+        'resources':{},
+        'memberships':{
+                'group/g1' : {
+                    },
+                'group/g2' : {
+                    },
+                'group/g3' : {
+                        'group/g3g2' : {
+                                'group/g3g2g1' : {
+                                    },
+                            },
+                    },
+                'user/u1' : {
+                    },
+                'user/u2' : {
+                    },
+            },
+        'roles':{},
+        'bindings':{},
+    }

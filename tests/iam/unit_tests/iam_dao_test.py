@@ -22,7 +22,7 @@ from google.cloud.security.iam.dao import ModelManager, session_creator, create_
 from google.cloud.security.common.util.threadpool import ThreadPool
 from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPANSION_2,\
     MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1, ROLES_PERMISSIONS_TESTING_1,\
-    DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1
+    DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2
 from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
 
 def create_test_engine():
@@ -46,6 +46,7 @@ class DaoTest(basetest.TestCase):
         data_access.TBL_RESOURCE(full_name='full_name', type='test').__repr__()
 
     def test_list_roles_by_prefix(self):
+        """Test list_roles_by_prefix."""
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
@@ -76,22 +77,132 @@ class DaoTest(basetest.TestCase):
             self.assertEqual(expected_roles, set(role_names))
 
     def test_add_role_by_name(self):
-        pass
+        """Test add_role_by_name."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(ROLES_PREFIX_TESTING_1, client)
+
+        # Check that initially nothing is found
+        res = data_access.list_roles_by_prefix(session, 'test')
+        self.assertEqual(set(), set(res))
+
+        # Add a new role
+        data_access.add_role_by_name(session, u'test_role', ['perm1'])
+        res = data_access.list_roles_by_prefix(session, 'test')
+        self.assertEqual(set([u'test_role']), set(res))
+
+        # Get role by permission to check it's queryable
+        res = data_access.get_roles_by_permission_names(session, ['perm1'])
+        res = [r.name for r in res]
+        self.assertEqual(set([u'test_role']), set(res))
 
     def test_del_role_by_name(self):
-        pass
+        """Test del_role_by_name."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(ROLES_PREFIX_TESTING_1, client)
+
+        # Check that initially nothing is found
+        res = data_access.list_roles_by_prefix(session, 'test')
+        self.assertEqual(set(), set(res))
+
+        # Add a new role
+        data_access.add_role_by_name(session, u'test_role', ['perm1'])
+        res = data_access.list_roles_by_prefix(session, 'test')
+        self.assertEqual(set([u'test_role']), set(res))
+
+        # Get role by permission to check it's queryable
+        res = data_access.get_roles_by_permission_names(session, ['perm1'])
+        res = [r.name for r in res]
+        self.assertEqual(set([u'test_role']), set(res))
+
+        # Delete the new role
+        data_access.del_role_by_name(session, u'test_role')
+
+        # Get role by permission to check it's queryable
+        res = data_access.get_roles_by_permission_names(session, ['perm1'])
+        self.assertEqual(set(), set(res))
 
     def test_add_group_member(self):
-        pass
+        """Test add_group_member."""
+        return
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(MEMBER_TESTING_2, client)
+
+        memberships = {
+                'user/t1' : ['group/g1'],
+                'user/t2' : ['group/g2', 'group/g3'],
+                'user/t3' : ['group/g3g2g1', 'group/g3'],
+                'group/t4' : ['group/g3g2g1', 'group/g3'],
+                'group/t5' : ['group/t4'],
+                'user/t6' : ['group/t5','group/t4'],
+            }
+        
+        checks = {
+                'user/t1' : ['group/g1'],
+                'user/t2' : ['group/g2', 'group/g3'],
+                'user/t3' : ['group/g3g2'],
+                'group/t5': ['group/g3g2'],
+            }
+
+        for member, parents in memberships.iteritems():
+            data_access.add_group_member(session, member, parents)
+
+        for member, groups in checks.iteritems():
+            res = data_access.reverse_expand_members(session, [member])
+            for group in groups:
+                self.assertTrue(group in res)
 
     def test_del_group_member(self):
         pass
 
     def test_list_group_members(self):
-        pass
+        """Test listing of group members."""
+        return
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(MEMBER_TESTING_2, client)
+        
+        all_member_names = data_access.list_group_members(session, '')
+        
+        print session.query(data_access.TBL_MEMBER).all()
+        
+        checks = {u'group/g1',
+                  u'group/g2',
+                  u'group/g3',
+                  u'user/u1',
+                  u'user/u2',
+                  u'group/g3g2',
+                  u'group/g3g2g1'
+                  }
+        
+        print all_member_names
+        for check in checks:
+            self.assertTrue(check in all_member_names)
 
     def test_list_resources_by_prefix(self):
-        pass
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(RESOURCE_EXPANSION_1, client)
+
+        check_resources = {u'r/res{}'.format(i) for i in range(1,9)}
+        full_resource_names = data_access.list_resources_by_prefix(session, '')
+        resource_names = ['/'.join(r.split('/')[-2:]) for r in full_resource_names]
+        self.assertEqual(check_resources, set(resource_names))
+
+        full_resource_names = data_access.list_resources_by_prefix(session, 'res8')
+        resource_names = ['/'.join(r.split('/')[-2:]) for r in full_resource_names]
+        self.assertEqual(set([u'r/res8']), set(resource_names))
+        
+        full_resource_names = data_access.list_resources_by_prefix(session, 'res89')
+        resource_names = ['/'.join(r.split('/')[-2:]) for r in full_resource_names]
+        self.assertEqual(set(), set(resource_names))
 
     def test_del_resource_by_name(self):
         pass
@@ -110,8 +221,6 @@ class DaoTest(basetest.TestCase):
 
     def test_add_binding(self):
         pass
-
-
 
     def test_reverse_expand_members(self):
         pass
@@ -309,7 +418,7 @@ class DaoTest(basetest.TestCase):
         self.assertTrue(1 == len(data_access.get_member(session, 'group/g3')))
         self.assertTrue(1 == len(data_access.get_member(session, 'group/g1g1')))
         self.assertTrue(1 == len(data_access.get_member(session, 'group/g3g1')))
-        
+
         # Check names as well
         self.assertEquals('group/g1', data_access.get_member(session, 'group/g1')[0].name)
         self.assertEquals('user/g3g1u2', data_access.get_member(session, 'user/g3g1u2')[0].name)

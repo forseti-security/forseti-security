@@ -577,8 +577,9 @@ def define_model(model_name, dbengine, model_seed):
         def del_role_by_name(cls, session, role_name):
             """Deletes a role by name."""
             session.query(Role).filter(Role.name == role_name).delete()
-            session.query(role_permissions).filter(
-                role_permissions.roles_name == role_name).delete()
+            role_permission_delete = role_permissions.delete(
+                role_permissions.c.roles_name == role_name)
+            session.execute(role_permission_delete)
             session.commit()
 
         @classmethod
@@ -613,7 +614,7 @@ def define_model(model_name, dbengine, model_seed):
         def list_resources_by_prefix(cls, session, full_resource_name_prefix):
             """Returns resources filtered by prefix."""
             return [r.full_name for r in session.query(Resource).filter(
-                Resource.full_name.startswith(full_resource_name_prefix))
+                Resource.name.startswith(full_resource_name_prefix))
                     .all()]
 
         @classmethod
@@ -679,12 +680,14 @@ def define_model(model_name, dbengine, model_seed):
             parents = session.query(Member).filter(
                 Member.name.in_(parent_type_names)).all()
             if len(parents) != len(parent_type_names):
-                raise Exception("At least one parent not found")
-            member = Member(
-                name=type_name,
-                member_name=name,
-                type=res_type,
-                parents=parents)
+                msg = 'parents: {}, expected: {}'.format(
+                    parents, parent_type_names)
+                raise Exception('At least one parent not found: {}'.format(msg))
+
+            member = Member(name=type_name,
+                            member_name=name,
+                            type=res_type,
+                            parents=parents)
             session.add(member)
             return member
 
