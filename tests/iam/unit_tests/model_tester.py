@@ -2,6 +2,7 @@
 """Installing test models against a session."""
 
 from collections import defaultdict
+from google.cloud.security.iam.utils import logcall
 
 class ModelCreatorClient:
     def __init__(self, session, data_access):
@@ -18,6 +19,19 @@ class ModelCreatorClient:
 
     def add_role(self, role_name, permissions):
         return self.data_access.add_role_by_name(self.session, role_name, permissions)
+
+    def get_iam_policy(self, full_resource_name):
+        policy_dict = self.data_access.get_iam_policy(self.session, full_resource_name)
+        class PolicyAccessor(dict):
+            def __init__(self, *args, **kwargs):
+                super(PolicyAccessor, self).__init__(*args, **kwargs)
+                self.policy = self
+                self.bindings = self['bindings'] if 'bindings' in self else []
+                self.etag = self['etag'] if 'etag' in self else None
+        return PolicyAccessor(policy_dict)
+
+    def set_iam_policy(self, full_resource_name, policy):
+        return self.data_access.set_iam_policy(self.session, full_resource_name, policy)
 
 class ModelCreator:
     def __init__(self, model, client):

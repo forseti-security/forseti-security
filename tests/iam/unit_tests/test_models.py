@@ -114,3 +114,51 @@ ROLES_PERMISSIONS_TESTING_1 = {
             },
         'bindings':{},
     }
+
+DENORMALIZATION_TESTING_1 = {
+        'resources':{
+                'r/res1' : {
+                        'r/res2' : {
+                                'r/res3' : {},
+                            },
+                    },
+            },
+        'memberships':{
+                'user/u1' : {},
+                'user/u2' : {},
+                'group/g1' : {},
+                'group/g2' : {
+                        'user/g2u1' : {},
+                        'group/g2g1' : {
+                                'user/g2g1u1' : {},
+                            },
+                    },
+            },
+        'roles':{
+                'a':['a'],
+            },
+        'bindings':{
+            'r/res3' : {
+                    'a' : ['user/u1', 'group/g2'],
+                },
+            'r/res2' : {
+                    'a' : ['user/u2']
+                },
+            'r/res1' : {
+                    'a' : ['group/g1', 'user/u1'],
+                },
+            },
+    }
+
+ROLES_PREFIX_TESTING_1 = {
+        'resources':{},
+        'memberships':{},
+        'roles':{
+                'cloud.admin' : ['cloud.admin'],
+                'cloud.reader': ['cloud.reader'],
+                'cloud.writer': ['cloud.writer'],
+                'db.viewer' : ['db.viewer'],
+                'db.writer' : ['db.writer'],
+            },
+        'bindings':{},
+    }
