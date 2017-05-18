@@ -21,7 +21,8 @@ import os
 from google.cloud.security.iam.dao import ModelManager, session_creator, create_engine
 from google.cloud.security.common.util.threadpool import ThreadPool
 from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPANSION_2,\
-    MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1, ROLES_PERMISSIONS_TESTING_1
+    MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1, ROLES_PERMISSIONS_TESTING_1,\
+    DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1
 from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
 
 def create_test_engine():
@@ -44,37 +45,35 @@ class DaoTest(basetest.TestCase):
         data_access.TBL_ROLE(name='role').__repr__()
         data_access.TBL_RESOURCE(full_name='full_name', type='test').__repr__()
 
-    def test_explain_granted(self):
-        """Test explain_granted."""
-        pass
-
-    def test_explain_denied(self):
-        """Test explain_denied."""
-        pass
-
-    def test_query_access_by_member(self):
-        pass
-
-    def test_query_access_by_resource(self):
-        pass
-
-    def test_query_permissions_by_roles(self):
-        pass
-
-    def test_set_iam_policy(self):
-        pass
-
-    def test_get_iam_policy(self):
-        pass
-
-    def test_check_iam_policy(self):
-        pass
-
-    def test_denormalize(self):
-        pass
-
     def test_list_roles_by_prefix(self):
-        pass
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(ROLES_PREFIX_TESTING_1, client)
+
+        expectations = {
+                '' : {
+                    'cloud.admin',
+                    'cloud.reader',
+                    'cloud.writer',
+                    'db.viewer',
+                    'db.writer'
+                    },
+                'cloud' : {
+                    'cloud.admin',
+                    'cloud.reader',
+                    'cloud.writer',
+                    },
+                'db' : {
+                    'db.viewer',
+                    'db.writer',
+                    },
+                'admin' : set(),
+            }
+
+        for prefix, expected_roles in expectations.iteritems():
+            role_names = data_access.list_roles_by_prefix(session, prefix)
+            self.assertEqual(expected_roles, set(role_names))
 
     def test_add_role_by_name(self):
         pass
@@ -112,11 +111,71 @@ class DaoTest(basetest.TestCase):
     def test_add_binding(self):
         pass
 
+
+
     def test_reverse_expand_members(self):
         pass
 
     def test_expand_members(self):
         pass
+
+    def test_explain_granted(self):
+        """Test explain_granted."""
+        pass
+
+    def test_explain_denied(self):
+        """Test explain_denied."""
+        pass
+
+    def test_query_access_by_member(self):
+        pass
+
+    def test_query_access_by_resource(self):
+        pass
+
+    def test_query_permissions_by_roles(self):
+        pass
+
+    def test_set_iam_policy(self):
+        pass
+
+    def test_get_iam_policy(self):
+        pass
+
+    def test_check_iam_policy(self):
+        pass
+
+    def test_denormalize(self):
+        return
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(DENORMALIZATION_TESTING_1, client)
+
+        denormalization_expected_1 = set([
+                ('a', 'r/res3', 'user/u1'),
+                ('a', 'r/res3', 'group/g2'),
+                ('a', 'r/res3', 'user/g2u1'),
+                ('a', 'r/res3', 'group/g2g1'),
+                ('a', 'r/res3', 'user/g2g1u1'),
+
+                ('a', 'r/res2', 'user/u2'),
+                ('a', 'r/res3', 'user/u2'),
+
+                ('a', 'r/res1', 'group/g1'),
+                ('a', 'r/res2', 'group/g1'),
+                ('a', 'r/res3', 'group/g1'),
+                ('a', 'r/res1', 'user/u1'),
+                ('a', 'r/res2', 'user/u1'),
+                ('a', 'r/res3', 'user/u1'),
+            ])
+        
+        self.assertTrue(('a','r/res3','user/u1') in denormalization_expected_1)
+
+        for perm, res, member in data_access.denormalize(session):
+            triple = (str(perm.name), str(res.full_name), str(member.name))
+            print "Triple: {}".format(triple)
+            #self.assertTrue(triple in denormalization_expected_1)
 
     def test_get_roles_by_permission_names(self):
         session_maker, data_access = session_creator('test')
