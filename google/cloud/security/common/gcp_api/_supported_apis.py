@@ -19,6 +19,9 @@ discovery.get()).
 """
 
 SUPPORTED_APIS = {
+    'bigquery': {
+        'version': 'v2'
+    },
     'cloudbilling': {
         'version': 'v1'
     },

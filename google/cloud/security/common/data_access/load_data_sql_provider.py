@@ -18,20 +18,7 @@ from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access.sql_queries import load_data
 
 
-FIELDNAME_MAP = {
-    'groups': csv_writer.GROUPS_FIELDNAMES,
-    'group_members': csv_writer.GROUP_MEMBERS_FIELDNAMES,
-    'organizations': csv_writer.ORGANIZATIONS_FIELDNAMES,
-    'org_iam_policies': csv_writer.ORG_IAM_POLICIES_FIELDNAMES,
-    'projects': csv_writer.PROJECTS_FIELDNAMES,
-    'project_iam_policies': csv_writer.PROJECT_IAM_POLICIES_FIELDNAMES,
-    'raw_org_iam_policies': csv_writer.RAW_ORG_IAM_POLICIES_FIELDNAMES,
-    'raw_project_iam_policies': csv_writer.RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
-    'buckets': csv_writer.BUCKETS_FIELDNAMES,
-    'raw_buckets': csv_writer.RAW_BUCKETS_FIELDNAMES,
-    'buckets_acl': csv_writer.BUCKETS_ACL_FIELDNAMES,
-}
-
+FIELDNAME_MAP = csv_writer.CSV_FIELDNAME_MAP
 
 def provide_load_data_sql(resource_name, csv_filename, snapshot_table_name):
     """Provide the load data sql for projects.

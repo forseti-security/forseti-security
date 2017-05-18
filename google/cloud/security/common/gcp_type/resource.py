@@ -29,11 +29,14 @@ class ResourceType(object):
     FOLDER = 'folder'
     PROJECT = 'project'
     GROUP = 'group'
+    FORWARDING_RULE = 'forwarding_rule'
+    BUCKETS_ACL = 'buckets_acl'
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,
         PROJECT,
-        GROUP
+        GROUP,
+        FORWARDING_RULE,
     ])
 
     @classmethod
@@ -149,27 +152,6 @@ class Resource(object):
     def lifecycle_state(self):
         """Lifecycle state."""
         return self._lifecycle_state
-
-    def get_ancestors(self, include_self=True):
-        """Get the resource ancestors.
-
-        Args:
-            include_self: Include self in returned iterator.
-
-        Returns:
-            Iterator of Resources.
-        """
-        if include_self:
-            curr = self
-        else:
-            curr = self._parent
-
-        while curr:
-            yield curr
-            # TODO: in each respective resource's class, implement a .parent
-            # property that will query the database for the actual parent
-            # resource properties. This is a must for getting folders to work.
-            curr = curr.parent
 
     @abc.abstractmethod
     def exists(self):

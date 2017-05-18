@@ -13,10 +13,15 @@
 # limitations under the License.
 """GCP Resource scanner.
 
-
 Usage:
 
-  $ forseti_scanner --rules <rules path> \\
+  List rules engines:
+  $ forseti_scanner --list_engines
+
+  Run scanner:
+  $ forseti_scanner \\
+      --rules <rules path> \\
+      --engine_name <rule engine name> \\
       --output_path <output path (optional)> \\
       --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
@@ -26,6 +31,7 @@ Usage:
       --email_recipient <email address of the email recipient>
 """
 
+import collections
 import itertools
 import json
 import os
@@ -42,7 +48,7 @@ from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
+from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.scanner.audit import engine_map as em
@@ -107,21 +113,22 @@ def main(_):
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
 
     # TODO: Make the groups scanner run consistently with other scanners
-    # instead of it's own execution path.
+    # instead of its own execution path.
     if rules_engine_name == 'GroupsEngine':
         all_violations = scanner.run(FLAGS.rules)
         for v in all_violations:
             print _get_violation_project(v, snapshot_timestamp)
         LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
-        sys.exit(1)
+        sys.exit(0)
 
     # Instantiate rules engine with supplied rules file
     rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
-        rules_file_path=FLAGS.rules)
+        rules_file_path=FLAGS.rules, snapshot_timestamp=snapshot_timestamp)
     rules_engine.build_rule_book()
 
     iter_objects, resource_counts = scanner.run()
 
+    flattening_scheme = sm.FLATTENING_MAP[rules_engine_name]
     # Load violations processing function
     all_violations = scanner.find_violations(
         itertools.chain(
@@ -135,9 +142,10 @@ def main(_):
 
         _output_results(all_violations,
                         snapshot_timestamp,
-                        resource_counts=resource_counts)
+                        resource_counts=resource_counts,
+                        flattening_scheme=flattening_scheme)
 
-    LOGGER.info('Done!')
+    LOGGER.info('Scan complete!')
 
 def _list_rules_engines():
     """List rules engines.
@@ -155,7 +163,8 @@ def _get_output_filename(now_utc):
     """Create the output filename.
 
     Args:
-        now_utc: The datetime now in UTC.
+        now_utc: The datetime now in UTC. Generated at the top level to be
+            consistent across the scan.
 
     Returns:
         The output filename for the csv, formatted with the now_utc timestamp.
@@ -167,6 +176,9 @@ def _get_output_filename(now_utc):
 
 def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
+
+    Args:
+        statuses: The snapshot statuses to search for latest timestamp.
 
     Returns:
         The latest snapshot timestamp string.
@@ -180,19 +192,32 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     return latest_timestamp
 
-def _flatten_violations(violations):
+def _flatten_violations(violations, flattening_scheme):
     """Flatten RuleViolations into a dict for each RuleViolation member.
 
     Args:
         violations: The RuleViolations to flatten.
+        flattening_scheme: Which flattening scheme to use
 
     Yield:
         Iterator of RuleViolations as a dict per member.
     """
 
+    # TODO: Make this nicer
     LOGGER.info('Writing violations to csv...')
     for violation in violations:
-        for member in violation.members:
+        if flattening_scheme == 'policy_violations':
+            for member in violation.members:
+                yield {
+                    'resource_id': violation.resource_id,
+                    'resource_type': violation.resource_type,
+                    'rule_index': violation.rule_index,
+                    'rule_name': violation.rule_name,
+                    'violation_type': violation.violation_type,
+                    'role': violation.role,
+                    'member': '{}:{}'.format(member.type, member.name)
+                }
+        if flattening_scheme == 'buckets_acl_violations':
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
@@ -200,7 +225,10 @@ def _flatten_violations(violations):
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'role': violation.role,
-                'member': '{}:{}'.format(member.type, member.name)
+                'entity': violation.entity,
+                'email': violation.email,
+                'domain': violation.domain,
+                'bucket': violation.bucket,
             }
 
 def _output_results(all_violations, snapshot_timestamp, **kwargs):
@@ -208,15 +236,19 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
 
     Args:
         all_violations: The list of violations to report.
+        snapshot_timestamp: The snapshot timetamp associated with this scan.
         **kwargs: The rest of the args.
     """
 
     # Write violations to database.
+    flattening_scheme = kwargs.get('flattening_scheme')
+    resource_name = sm.RESOURCE_MAP[flattening_scheme]
     (inserted_row_count, violation_errors) = (0, [])
     try:
         vdao = violation_dao.ViolationDao()
         (inserted_row_count, violation_errors) = vdao.insert_violations(
-            all_violations, snapshot_timestamp=snapshot_timestamp)
+            all_violations, resource_name=resource_name,
+            snapshot_timestamp=snapshot_timestamp)
     except db_errors.MySQLError as err:
         LOGGER.error('Error importing violations to database: %s', err)
 
@@ -228,8 +260,9 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
 
     # Write the CSV for all the violations.
     with csv_writer.write_csv(
-        resource_name='policy_violations',
-        data=_flatten_violations(all_violations),
+        resource_name=flattening_scheme,
+        data=_flatten_violations(all_violations,
+                                 flattening_scheme),
         write_header=True) as csv_file:
         output_csv_name = csv_file.name
         LOGGER.info('CSV filename: %s', output_csv_name)
@@ -314,7 +347,7 @@ def _send_email(csv_name, now_utc, all_violations,
         disposition='attachment',
         content_id='Scanner Violations'
     )
-    scanner_subject = 'Policy Scan Complete - {} violations found'.format(
+    scanner_subject = 'Policy Scan Complete - {} violation(s) found'.format(
         total_violations)
     mail_util.send(email_sender=FLAGS.email_sender,
                    email_recipient=FLAGS.email_recipient,
@@ -326,6 +359,22 @@ def _send_email(csv_name, now_utc, all_violations,
 def _build_scan_summary(all_violations, total_resources):
     """Build the scan summary.
 
+    Build a summary of the violations and counts for the email.
+
+    resource summary:
+        {
+            RESOURCE_TYPE: {
+                'pluralized_resource_type': '{RESOURCE_TYPE}s'
+                'total': TOTAL,
+                'violations': {
+                    RESOURCE_ID: NUM_VIOLATIONS,
+                    RESOURCE_ID: NUM_VIOLATIONS,
+                    ...
+                }
+            },
+            ...
+        }
+
     Args:
         all_violations: List of violations.
         total_resources: A dict of the resources and their count.
@@ -336,23 +385,15 @@ def _build_scan_summary(all_violations, total_resources):
 
     resource_summaries = {}
     total_violations = 0
-    # Build a summary of the violations and counts for the email.
-    # resource summary:
-    # {
-    #     RESOURCE_TYPE: {
-    #         'total': TOTAL,
-    #         'ids': [...] # resource_ids
-    #     },
-    #     ...
-    # }
-    for violation in all_violations:
+
+    for violation in sorted(all_violations, key=lambda v: v.resource_id):
         resource_type = violation.resource_type
         if resource_type not in resource_summaries:
             resource_summaries[resource_type] = {
-                'pluralized_resource_type': ResourceUtil.pluralize(
+                'pluralized_resource_type': resource_util.pluralize(
                     resource_type),
                 'total': total_resources[resource_type],
-                'violations': {}
+                'violations': collections.OrderedDict()
             }
 
         # Keep track of # of violations per resource id.

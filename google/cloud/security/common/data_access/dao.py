@@ -29,28 +29,73 @@ from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.data_access.errors import NoResultsError
 from google.cloud.security.common.data_access.sql_queries import create_tables
 from google.cloud.security.common.data_access.sql_queries import select_data
+from google.cloud.security.common.util import log_util
+
+
+LOGGER = log_util.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
+    # bigquery
+    'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE,
+
+    # buckets
+    'buckets': create_tables.CREATE_BUCKETS_TABLE,
+    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
+    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
+
+    # folders
+    'folders': create_tables.CREATE_FOLDERS_TABLE,
+    'folder_iam_policies': create_tables.CREATE_FOLDER_IAM_POLICIES_TABLE,
+    'raw_folder_iam_policies': (
+        create_tables.CREATE_RAW_FOLDER_IAM_POLICIES_TABLE),
+
+    # load balancer
+    'forwarding_rules': create_tables.CREATE_FORWARDING_RULES_TABLE,
+
+    # firewall_rules
+    'firewall_rules': create_tables.CREATE_FIREWALL_RULES_TABLE,
+
+    # groups
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+
+    # organizations
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
+    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
+
+    # projects
     'projects': create_tables.CREATE_PROJECT_TABLE,
     'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
-    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
-    'buckets': create_tables.CREATE_BUCKETS_TABLE,
-    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
+
+    # rule violations
+    'buckets_acl_violations':
+        create_tables.CREATE_BUCKETS_ACL_VIOLATIONS_TABLE,
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
-    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
 }
 
-SNAPSHOT_FILTER_CLAUSE = ' where status in ({})'
+SNAPSHOT_STATUS_FILTER_CLAUSE = ' where status in ({})'
 
 
 class Dao(_db_connector.DbConnector):
     """Data access object (DAO)."""
+
+    @staticmethod
+    def map_row_to_object(object_class, row):
+        """Instantiate an object from database row.
+
+        TODO: Make this go away when we start using an ORM.
+
+        Args:
+            object_class: The object class to create.
+            row: The database row to map.
+
+        Returns:
+            A new "obj_class", created from the row.
+        """
+        return object_class(**row)
 
     def _create_snapshot_table(self, resource_name, timestamp):
         """Creates a snapshot table.
@@ -72,7 +117,7 @@ class Dao(_db_connector.DbConnector):
 
     @staticmethod
     def _create_snapshot_table_name(resource_name, timestamp):
-        """Create the snapshot table if it doens't exist.
+        """Create the snapshot table if it doesn't exist.
 
         Args:
             resource_name: String of the resource name.
@@ -125,6 +170,7 @@ class Dao(_db_connector.DbConnector):
                     resource_name, timestamp)
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
                     resource_name, csv_file.name, snapshot_table_name)
+                LOGGER.debug('SQL: %s', load_data_sql)
                 cursor = self.conn.cursor()
                 cursor.execute(load_data_sql)
                 self.conn.commit()
@@ -243,7 +289,7 @@ class Dao(_db_connector.DbConnector):
             statuses = ('SUCCESS',)
 
         status_params = ','.join(['%s']*len(statuses))
-        filter_clause = SNAPSHOT_FILTER_CLAUSE.format(status_params)
+        filter_clause = SNAPSHOT_STATUS_FILTER_CLAUSE.format(status_params)
         try:
             cursor = self.conn.cursor()
             cursor.execute(

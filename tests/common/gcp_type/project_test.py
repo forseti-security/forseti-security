@@ -23,7 +23,7 @@ from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import ProjectLifecycleState
 from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource import ResourceType
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
+
 
 class ProjectTest(basetest.TestCase):
 
@@ -100,24 +100,6 @@ class ProjectTest(basetest.TestCase):
         org = Organization(id_2, display_name=name_2)
 
         self.assertTrue(project != org)
-
-    def test_project_in_org_returns_org_ancestor(self):
-        """Test that a Project with Org ancestor returns Org ancestor."""
-        expected = [self.org]
-        actual = [a for a in self.project2.get_ancestors(include_self=False)]
-        self.assertEqual(expected, actual)
-
-    def test_project_no_parent_returns_empty_ancestors(self):
-        """Test that a Project with no parent has no ancestors."""
-        expected = []
-        actual = [a for a in self.project1.get_ancestors(include_self=False)]
-        self.assertEqual(expected, actual)
-
-    def test_project_ancestors_include_self(self):
-        """Test Project ancestors when including self."""
-        expected = [self.project3, self.folder, self.org]
-        actual = [a for a in self.project3.get_ancestors()]
-        self.assertEqual(expected, actual)
 
     @mock.patch.object(CloudResourceManagerClient, 'get_project',
                        autospec=True)

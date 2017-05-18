@@ -65,7 +65,6 @@ class GroupsScanner(base_scanner.BaseScanner):
             members = self.dao.get_group_members('group_members',
                                                  queued_node.member_id,
                                                  timestamp)
-
             for member in members:
                 member_node = MemberNode(member.get('member_id'),
                                          member.get('member_email'),
@@ -99,18 +98,18 @@ class GroupsScanner(base_scanner.BaseScanner):
                                     root)
             group_node = self.get_recursive_members(group_node, timestamp)
 
-        # LOGGER.info(anytree.RenderTree(
-        #    root, style=anytree.AsciiStyle()).by_attr('member_email'))
+        LOGGER.debug(anytree.RenderTree(
+            root, style=anytree.AsciiStyle()).by_attr('member_email'))
+            
         return root
 
     @staticmethod
-    def _append_rule(starting_node, rule):
+    def _apply_one_rule(starting_node, rule):
         """Append the rule to all the applicable nodes.
 
         Args:
             starting_node: Member node from which to start appending the rule.
-            timestamp: String of snapshot timestamp, formatted as
-                YYYYMMDDTHHMMSSZ.
+            rule: A dictionary representation of a rule.
 
         Returns:
             starting_node: Member node with all its recursive members, with
@@ -120,30 +119,24 @@ class GroupsScanner(base_scanner.BaseScanner):
             node.rules.append(rule)
         return starting_node
 
-    # pylint: disable=arguments-differ
-    def run(self, rules_path):
-        """Runs the groups scanner.
+    def _apply_all_rules(self, starting_node, rules):
+        """Apply all rules to all the applicable nodes.
 
         Args:
-            rules: String of the path to rules file (yaml/json).
+            starting_node: Member node from which to start appending the rule.
+            rules: A list of rules, in dictionary form.
 
         Returns:
-            List of all the violations.
+            starting_node: Member node with all the rules applied
+               to all the nodes.
         """
-
-        root = self._build_group_tree(self.snapshot_timestamp)
-
-        with open(rules_path, 'r') as f:
-            rules = yaml.load(f)
-
-        # Apply all rules to applicable nodes.
         for rule in rules:
             if rule.get('group_email') == MY_CUSTOMER:
                 # Apply rule to every node.
                 # Because this is simply the root node, there is no need
                 # to find this node, i.e. just start at the root.
                 # Traversal order should not matter.
-                root = self._append_rule(root, rule)
+                starting_node = self._apply_one_rule(starting_node, rule)
             else:
                 # Apply rule to only specific node.
                 # Need to find this node.
@@ -154,9 +147,29 @@ class GroupsScanner(base_scanner.BaseScanner):
                 # Start at the tree root, find all instances of the specified
                 # group, then add the rule to all the members of the specified
                 # group.
-                for node in anytree.iterators.PreOrderIter(root):
+                for node in anytree.iterators.PreOrderIter(starting_node):
                     if node.member_email == rule.get('group_email'):
-                        node = self._append_rule(node, rule)
+                        node = self._apply_one_rule(node, rule)
+
+        return starting_node
+
+    # pylint: disable=arguments-differ
+    def run(self, rules_path):
+        """Runs the groups scanner.
+
+        Args:
+            rules: String of the path to rules file (yaml/json).
+
+        Returns:
+            List of all the nodes in violations.
+        """
+
+        root = self._build_group_tree(self.snapshot_timestamp)
+
+        with open(rules_path, 'r') as f:
+            rules = yaml.load(f)
+
+        root = self._apply_all_rules(root, rules)
 
         return self.find_violations(root)
 
@@ -178,7 +191,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         i.e. if all rules pass, then the node is not in violation.
 
         Args:
-            root: The list of policies to find violations in.
+            root: The nodes (tree structure) to find violations in.
 
         Returns:
             A list of nodes that are in violation.

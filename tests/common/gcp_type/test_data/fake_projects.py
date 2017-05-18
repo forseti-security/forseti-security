@@ -17,12 +17,84 @@
 TODO: consolidate with other fake project test data.
 """
 
+FAKE_PROJECTS_DB_ROWS = [
+    {'project_number': 1111111111,
+     'project_id': 'project-1',
+     'project_name': 'Project 1',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+    },
+    {'project_number': 2222222222,
+     'project_id': 'project-2',
+     'project_name': 'Project 2',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+    },
+]
+
 FAKE_PROJECTS_OK_IAM_DB_ROWS = [
-    [1111111111, 'project-1', 'Project 1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
-    [2222222222, 'project-2', 'Project 2', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
+    {'project_number': 1111111111,
+     'project_id': 'project-1',
+     'project_name': 'Project 1',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
+    {'project_number': 2222222222,
+     'project_id': 'project-2',
+     'project_name': 'Project 2',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
 ]
 
 FAKE_PROJECTS_BAD_IAM_DB_ROWS = [
-    [1111111111, 'project-1', 'Project 1', 'ACTIVE', None, None, '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'],
-    [2222222222, 'project-2', 'Project 2', 'ACTIVE', None, None, ''],
+    {'project_number': 1111111111,
+     'project_id': 'project-1',
+     'project_name': 'Project 1',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+     'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
+    {'project_number': 2222222222,
+     'project_id': 'project-2',
+     'project_name': 'Project 2',
+     'lifecycle_state': 'ACTIVE',
+     'parent_type': None,
+     'parent_id': None,
+     'iam_policy': ''},
 ]
+
+FAKE_PROJECTS_API_RESPONSE1 = {
+    'projects': [
+        {
+            'name': 'project1',
+            'projectId': 'project1',
+            'projectNumber': '25621943694',
+            'lifecycleState': 'ACTIVE',
+        },
+        {
+            'name': 'project2',
+            'projectId': 'project2',
+            'projectNumber': '94226340476',
+            'lifecycleState': 'DELETE_REQUESTED',
+        },
+        {
+            'name': 'project3',
+            'projectId': 'project3',
+            'projectNumber': '133851422272',
+            'lifecycleState': 'ACTIVE',
+        }]
+}
+
+EXPECTED_FAKE_PROJECTS1 = [FAKE_PROJECTS_API_RESPONSE1]
+
+EXPECTED_FAKE_ACTIVE_PROJECTS1 = [{
+    'projects': [
+        p for p in FAKE_PROJECTS_API_RESPONSE1['projects']
+            if p['lifecycleState'] == 'ACTIVE'
+    ]
+}]

@@ -21,6 +21,112 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+BIGQUERY_DATASET_FIELDNAMES = [
+    'project_id',
+    'dataset_id',
+    'access_domain',
+    'access_user_by_email',
+    'access_special_group',
+    'access_group_by_email',
+    'role',
+    'access_view_project_id',
+    'access_view_table_id',
+    'access_view_dataset_id',
+    'raw_access_map'
+]
+
+BUCKETS_ACL_FIELDNAMES = [
+    'bucket',
+    'domain',
+    'email',
+    'entity',
+    'entity_id',
+    'acl_id',
+    'kind',
+    'project_team',  # TODO: flatten this
+    'role',
+    'bucket_acl_selflink',
+    'raw_bucket_acl'
+]
+
+BUCKETS_ACL_VIOLATIONS = [
+    'resource_type',
+    'resource_id',
+    'rule_name',
+    'rule_index',
+    'violation_type',
+    'role',
+    'entity',
+    'email',
+    'domain',
+    'bucket'
+]
+
+# TODO: Add pydoc to describe the mapping of the custom field naming
+# to the field names in the resource objects.
+# https://cloud.google.com/storage/docs/json_api/v1/buckets#resource
+BUCKETS_FIELDNAMES = [
+    'project_number',
+    'bucket_id',
+    'bucket_name',
+    'bucket_kind',
+    'bucket_storage_class',
+    'bucket_location',
+    'bucket_create_time',
+    'bucket_update_time',
+    'bucket_selflink',
+    'bucket_lifecycle_raw',
+    'raw_bucket'
+]
+
+FIREWALL_RULES_FIELDNAMES = [
+    'firewall_rule_id',
+    'project_id',
+    'firewall_rule_name',
+    'firewall_rule_description',
+    'firewall_rule_kind',
+    'firewall_rule_network',
+    'firewall_rule_priority',
+    'firewall_rule_direction',
+    'firewall_rule_source_ranges',
+    'firewall_rule_destination_ranges',
+    'firewall_rule_source_tags',
+    'firewall_rule_target_tags',
+    'firewall_rule_allowed',
+    'firewall_rule_denied',
+    'firewall_rule_self_link',
+    'firewall_rule_create_time',
+    'raw_firewall_rule'
+]
+
+FOLDERS_FIELDNAMES = [
+    'folder_id',
+    'name',
+    'display_name',
+    'lifecycle_state',
+    'parent_type',
+    'parent_id',
+    'raw_folder',
+    'create_time',
+]
+
+FORWARDING_RULES_FIELDNAMES = [
+    'id',
+    'project_id',
+    'creation_timestamp',
+    'name',
+    'description',
+    'region',
+    'ip_address',
+    'ip_protocol',
+    'port_range',
+    'ports', # json list
+    'target',
+    'load_balancing_scheme',
+    'subnetwork',
+    'network',
+    'backend_service',
+]
 
 GROUP_MEMBERS_FIELDNAMES = [
     'group_id',
@@ -41,6 +147,15 @@ GROUPS_FIELDNAMES = [
     'raw_group'
 ]
 
+ORG_IAM_POLICIES_FIELDNAMES = [
+    'org_id',
+    'role',
+    'member_type',
+    'member_name',
+    'member_domain'
+]
+
+
 ORGANIZATIONS_FIELDNAMES = [
     'org_id',
     'name',
@@ -50,13 +165,6 @@ ORGANIZATIONS_FIELDNAMES = [
     'creation_time',
 ]
 
-ORG_IAM_POLICIES_FIELDNAMES = [
-    'org_id',
-    'role',
-    'member_type',
-    'member_name',
-    'member_domain'
-]
 
 POLICY_VIOLATION_FIELDNAMES = [
     'resource_id',
@@ -66,6 +174,14 @@ POLICY_VIOLATION_FIELDNAMES = [
     'violation_type',
     'role',
     'member'
+]
+
+PROJECT_IAM_POLICIES_FIELDNAMES = [
+    'project_number',
+    'role',
+    'member_type',
+    'member_name',
+    'member_domain'
 ]
 
 PROJECTS_FIELDNAMES = [
@@ -79,12 +195,9 @@ PROJECTS_FIELDNAMES = [
     'create_time'
 ]
 
-PROJECT_IAM_POLICIES_FIELDNAMES = [
+RAW_BUCKETS_FIELDNAMES = [
     'project_number',
-    'role',
-    'member_type',
-    'member_name',
-    'member_domain'
+    'buckets'
 ]
 
 RAW_ORG_IAM_POLICIES_FIELDNAMES = [
@@ -97,45 +210,14 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
     'iam_policy'
 ]
 
-# TODO: Add pydoc to describe the mapping of the custom field naming
-# to the field names in the resource objects.
-# https://cloud.google.com/storage/docs/json_api/v1/buckets#resource
-BUCKETS_FIELDNAMES = [
-    'project_number',
-    'bucket_id',
-    'bucket_name',
-    'bucket_kind',
-    'bucket_storage_class',
-    'bucket_location',
-    'bucket_create_time',
-    'bucket_update_time',
-    'bucket_selflink',
-    'bucket_lifecycle_raw',
-    'raw_bucket'
-]
-
-RAW_BUCKETS_FIELDNAMES = [
-    'project_number',
-    'buckets'
-]
-
-BUCKETS_ACL_FIELDNAMES = [
-    'bucket',
-    'domain',
-    'email',
-    'entity',
-    'entity_id',
-    'acl_id',
-    'kind',
-    'project_team',  # TODO: flatten this
-    'role',
-    'bucket_acl_selflink',
-    'raw_bucket_acl'
-]
-
 CSV_FIELDNAME_MAP = {
+    'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
+    'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
+    'firewall_rules': FIREWALL_RULES_FIELDNAMES,
+    'folders': FOLDERS_FIELDNAMES,
+    'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,

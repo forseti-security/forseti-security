@@ -15,6 +15,7 @@
 # The toplevel deployment script for Forseti Security.
 # Be sure to edit this file and its templates to suit your environment.
 
+# Change these import paths as necessary to suit your environement.
 imports:
 - path: py/inventory/cloudsql-instance.py
   name: cloudsql-instance.py

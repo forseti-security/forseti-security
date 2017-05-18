@@ -15,8 +15,12 @@
 """Map for the rule engine names to rule engine classes."""
 
 from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
+# pylint: disable=line-too-long
+from google.cloud.security.scanner.audit.buckets_rules_engine import BucketsRulesEngine
+# pylint: enable=line-too-long
 
 
 ENGINE_TO_DATA_MAP = {
     'IamRulesEngine': IamRulesEngine,
+    'BucketsRulesEngine': BucketsRulesEngine,
 }

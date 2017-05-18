@@ -23,7 +23,6 @@ from google.cloud.security.common.gcp_type.organization import OrgLifecycleState
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource import ResourceType
-from google.cloud.security.common.gcp_type.resource_util import ResourceUtil
 
 
 class OrganizationTest(basetest.TestCase):
@@ -92,18 +91,6 @@ class OrganizationTest(basetest.TestCase):
 
         self.assertTrue(org1 != project1)
         self.assertTrue(org1 != folder1)
-
-    def test_org_empty_ancestors(self):
-        """Test that an Organization has no ancestors."""
-        expected = []
-        actual = [a for a in self.org1.get_ancestors(include_self=False)]
-        self.assertEqual(expected, actual)
-
-    def test_org_ancestors_include_self(self):
-        """Test getting ancestry when including self."""
-        expected = [self.org1]
-        actual = [a for a in self.org1.get_ancestors()]
-        self.assertEqual(expected, actual)
 
     @mock.patch.object(CloudResourceManagerClient, 'get_organization',
                        autospec=True)
