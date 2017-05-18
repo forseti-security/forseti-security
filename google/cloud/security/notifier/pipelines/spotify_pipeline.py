@@ -26,7 +26,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.notifier.pipelines import notification_pipeline
-
 # pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
@@ -61,7 +60,6 @@ class SpotifyPipeline(notification_pipeline.NotificationPipeline):
 
         if project_id.isdigit():
             # assume the provided project_id is instead the project_number
-            print " i think it is a project number"
             project_raw = self.project_dao.get_project_raw_data(
                 'projects',
                 self.cycle_timestamp,
@@ -88,10 +86,13 @@ class SpotifyPipeline(notification_pipeline.NotificationPipeline):
 
         return ownership
 
-
     def run(self):
+        clean_violations = []
         for v in self.violations['violations']:
-            print self._get_clean_violation(v)
+            clean_violations.append(self._get_clean_violation(v))
 
         for v in self.violations['bucket_acl_violations']:
-            print self._get_clean_violation(v)
+            clean_violations.append(self._get_clean_violation(v))
+
+        for cv in clean_violations:
+            print cv

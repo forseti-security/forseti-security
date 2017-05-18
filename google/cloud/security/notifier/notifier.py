@@ -44,9 +44,10 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.scanner.audit import engine_map as em
 from google.cloud.security.scanner.scanners import scanners_map as sm
-from google.cloud.security.notifier.pipelines import notification_pipeline
+from google.cloud.security.notifier.pipelines.notification_pipeline import NotificationPipeline
 from google.cloud.security.notifier.pipelines import spotify_pipeline
-
+import importlib
+import inspect
 
 # Setup flags
 FLAGS = flags.FLAGS
@@ -55,9 +56,21 @@ FLAGS = flags.FLAGS
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
 flags.DEFINE_string('timestamp', None, 'Snapshot timestamp')
+flags.DEFINE_string('pipeline', None, 'Pipeline to use')
 
 LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
+
+def find_pipelines(pipeline_name):
+    try:
+        module = importlib.import_module('google.cloud.security.notifier.pipelines.{0}'.format(pipeline_name))
+        for x in dir(module):
+            obj = getattr(module, x)
+
+            if inspect.isclass(obj) and issubclass(obj, NotificationPipeline) and obj is not NotificationPipeline:
+                return obj
+    except ImportError:
+        return None
 
 def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
@@ -77,12 +90,16 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 def main(_):
     timestamp = FLAGS.timestamp if FLAGS.timestamp is not None \
                 else _get_timestamp()
-    print timestamp
+
+    if FLAGS.pipeline is None:
+        LOGGER.error('You must sepcify a notification pipeline')
+        exit()
 
     configs = FLAGS.FlagValuesDict()
 
+    chosen_pipeline = find_pipelines(FLAGS.pipeline)
     pipelines = [
-        spotify_pipeline.SpotifyPipeline(timestamp, configs),
+        chosen_pipeline(timestamp, configs),
     ]
 
     for p in pipelines:
