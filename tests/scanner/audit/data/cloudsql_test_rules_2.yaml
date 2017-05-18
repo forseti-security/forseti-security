@@ -1,0 +1,8 @@
+rules:
+  - name: sample cloudsql rule to search for publicly exposed instances
+    instance_name: '*'
+    authorized_networks: '*'
+    ssl_enabled: 'False'
+    resource:
+      - type: organization
+          - 1234567890

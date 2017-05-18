@@ -119,3 +119,52 @@ def format_buckets_acl_violation(violation):
            email,
            domain,
            bucket)
+
+def format_cloudsql_acl_violation(violation):
+    """Format the CloudSQL acls violation data into a tuple.
+
+    Also flattens the RuleViolation, since it consists of the resource,
+    rule, and members that don't meet the rule criteria.
+
+    Various properties of RuleViolation may also have values that exceed the
+    declared column length, so truncate as necessary to prevent MySQL errors.
+
+    Args:
+        violation: The cloudsql acls RuleViolation.
+
+    Yields:
+        A tuple of the rule violation properties.
+    """
+
+    resource_type = violation.resource_type
+    if resource_type:
+        resource_type = resource_type[:255]
+
+    resource_id = violation.resource_id
+    if resource_id:
+        resource_id = str(resource_id)[:255]
+
+    rule_name = violation.rule_name
+    if rule_name:
+        rule_name = rule_name[:255]
+
+    instance_name = violation.instance_name
+    if instance_name:
+        instance_name = instance_name[:255]
+
+    authorized_networks = violation.authorized_networks
+    if authorized_networks:
+        authorized_networks = authorized_networks[:255]
+
+    ssl_enabled = violation.ssl_enabled
+    #if ssl_enabled:
+    #    ssl_enabled = ssl_enabled[:255]
+
+    yield (resource_type,
+           resource_id,
+           rule_name,
+           violation.rule_index,
+           violation.violation_type,
+           instance_name,
+           authorized_networks,
+           ssl_enabled)

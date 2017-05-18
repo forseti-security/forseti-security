@@ -31,6 +31,7 @@ class ResourceType(object):
     GROUP = 'group'
     FORWARDING_RULE = 'forwarding_rule'
     BUCKETS_ACL = 'buckets_acl'
+    CLOUDSQL_ACL = 'cloudsql_instances'
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,

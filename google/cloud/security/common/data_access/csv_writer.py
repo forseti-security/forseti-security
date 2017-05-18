@@ -245,6 +245,17 @@ CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES = [
     'expirationTime',
 ]
 
+CLOUDSQL_ACL_VIOLATIONS = [
+    'resource_type',
+    'resource_id',
+    'rule_name',
+    'rule_index',
+    'violation_type',
+    'instance_name',
+    'authorized_networks',
+    'ssl_enabled',
+]
+
 CSV_FIELDNAME_MAP = {
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
@@ -253,6 +264,7 @@ CSV_FIELDNAME_MAP = {
     'cloudsql_ipaddresses': CLOUDSQL_IPADDRESSES_FIELDNAMES,
     'cloudsql_ipconfiguration_authorizednetworks': \
         CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES,
+    'cloudsql_acl_violations': CLOUDSQL_ACL_VIOLATIONS,
     'folders': FOLDERS_FIELDNAMES,
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,

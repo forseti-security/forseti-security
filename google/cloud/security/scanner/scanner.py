@@ -73,8 +73,6 @@ flags.DEFINE_boolean('list_engines', False, 'List all rule engines')
 
 flags.DEFINE_string('engine_name', None, 'Which engine to use')
 
-flags.DEFINE_string('use_scanner_basedir', None, 'Which rule basedir to use')
-
 LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
@@ -218,6 +216,17 @@ def _flatten_violations(violations, flattening_scheme):
                 'email': violation.email,
                 'domain': violation.domain,
                 'bucket': violation.bucket,
+            }
+        if flattening_scheme == 'cloudsql_acl_violations':
+            yield {
+                'resource_id': violation.resource_id,
+                'resource_type': violation.resource_type,
+                'rule_index': violation.rule_index,
+                'rule_name': violation.rule_name,
+                'violation_type': violation.violation_type,
+                'instance_name': violation.instance_name,
+                'authorized_networks': violation.authorized_networks,
+                'ssl_enabled': violation.ssl_enabled,
             }
 
 def _output_results(all_violations, snapshot_timestamp, **kwargs):

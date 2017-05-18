@@ -330,3 +330,18 @@ CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS = """
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
+
+CREATE_CLOUDSQL_ACL_VIOLATIONS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `resource_type` varchar(255) NOT NULL,
+        `resource_id` varchar(255) NOT NULL,
+        `rule_name` varchar(255) DEFAULT NULL,
+        `rule_index` int DEFAULT NULL,
+        `violation_type` enum('CLOUD_SQL_VIOLATION') NOT NULL,
+        `instance_name` varchar(255) DEFAULT NULL,
+        `authorized_networks` varchar(255) DEFAULT NULL,
+        `ssl_enabled` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""

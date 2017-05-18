@@ -315,7 +315,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         # Retrieve data from GCP.
 
         instances_maps = []
-        #project_numbers = [1031993113401]
+
         for project_number in project_numbers:
             try:
                 instances = self.api_client.get_instances(

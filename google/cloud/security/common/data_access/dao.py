@@ -39,8 +39,10 @@ CREATE_TABLE_MAP = {
     # cloudsql
     'cloudsql_instances': create_tables.CREATE_CLOUDSQL_INSTANCES_TABLE,
     'cloudsql_ipaddresses': create_tables.CREATE_CLOUDSQL_IPADDRESSES_TABLE,
-    'cloudsql_ipconfiguration_authorizednetworks': \
+    'cloudsql_ipconfiguration_authorizednetworks':\
         create_tables.CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS,
+    'cloudsql_acl_violations':\
+        create_tables.CREATE_CLOUDSQL_ACL_VIOLATIONS_TABLE,
 
     # folders
     'folders': create_tables.CREATE_FOLDERS_TABLE,
