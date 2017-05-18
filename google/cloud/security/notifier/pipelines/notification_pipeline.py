@@ -36,14 +36,14 @@ class NotificationPipeline(object):
         Args:
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
             configs: Dictionary of configurations.
-            api_client: API client object.
 
         Returns:
             None
         """
         self.cycle_timestamp = cycle_timestamp
         self.configs = configs
-        #self.api_client = api_client
+        # TODO: import api_client
+        # self.api_client = api_client
 
         # Initializing DAOs
         self.dao = dao.Dao()
