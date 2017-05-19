@@ -27,21 +27,17 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
 
 
-
 LOGGER = log_util.get_logger(__name__)
 
 
 class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
-    """Pipeline to load project buckets data into Inventory."""
+    """Pipeline to load project CloudSql data into Inventory."""
 
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
     RESOURCE_NAME_INSTANCES = 'cloudsql_instances'
     RESOURCE_NAME_IPADDRESSES = 'cloudsql_ipaddresses'
     RESOURCE_NAME_AUTHORIZED_NETWORKS =\
         'cloudsql_ipconfiguration_authorizednetworks'
-
-
-
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -229,7 +225,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable ipAddresses of cloudsql instances.
 
         Args:
-            cloudsql_instnces_maps: An iterable of instances as per-project
+            cloudsql_instances_maps: An iterable of instances as per-project
                 dictionary.
                 Example: {'project_number': 11111,
                           'instances': instances_dict}
@@ -263,9 +259,9 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                     yield {
                         'project_number': instances_map['project_number'],
                         'instance_name': item.get('name'),
-                        'ipAddress': ipaddress.get('ipAddress'),
+                        'ip_address': ipaddress.get('ipAddress'),
                         'type': ipaddress.get('type'),
-                        'timeToRetire': formatted_timetoretire
+                        'time_to_retire': formatted_timetoretire
                     }
 
     # pylint: disable=arguments-differ
@@ -339,9 +335,8 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
             LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
                          self.RESOURCE_NAME_INSTANCES, self.cycle_timestamp, e)
 
-
     def run(self):
-        """Runs the load buckets data pipeline."""
+        """Runs the load Cloudsql data pipeline."""
         instances_maps = self._retrieve()
 
         loadable_instances_dict = self._transform(instances_maps)

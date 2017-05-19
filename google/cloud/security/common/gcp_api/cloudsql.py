@@ -56,5 +56,4 @@ class CloudsqlClient(_base_client.BaseClient):
             return instances
         except (HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
-            # TODO: pass in "buckets" as resource_name variable
             raise api_errors.ApiExecutionError('instances', e)

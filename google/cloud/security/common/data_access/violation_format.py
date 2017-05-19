@@ -157,8 +157,6 @@ def format_cloudsql_acl_violation(violation):
         authorized_networks = authorized_networks[:255]
 
     ssl_enabled = violation.ssl_enabled
-    #if ssl_enabled:
-    #    ssl_enabled = ssl_enabled[:255]
 
     yield (resource_type,
            resource_id,

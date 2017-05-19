@@ -125,7 +125,6 @@ class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
         load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline,
         '_retrieve')
 
-
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
         mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""

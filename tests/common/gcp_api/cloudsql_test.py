@@ -24,6 +24,8 @@ from tests.common.gcp_type.test_data import fake_cloudsql
 
 
 from pprint import pprint as pp
+
+
 class CloudsqlTest(basetest.TestCase):
     """Test the StorageClient."""
 
@@ -46,7 +48,6 @@ class CloudsqlTest(basetest.TestCase):
             return_value=fake_cloudsql_response)
         
         result = [self.sql_api_client.get_instances(project_number)]
-        #result[0]['items'][0]['backendType']='xxx'
 
         self.assertEquals(expected_cloudsql, result)
 

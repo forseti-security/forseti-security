@@ -115,9 +115,6 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
             rule_def: A dictionary containing rule definition properties.
             rule_index: The index of the rule from the rule definitions.
             Assigned automatically when the rule book is built.
-
-        Raises:
-
         """
 
         resources = rule_def.get('resource')
@@ -138,7 +135,7 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_def.get('name')))
 
-            rule_def_resource = csql_acls.ClodSqlAccessControl(
+            rule_def_resource = csql_acls.CloudSqlAccessControl(
                 escape_and_globify(instance_name),
                 escape_and_globify(authorized_networks),
                 ssl_enabled)

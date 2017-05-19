@@ -54,8 +54,8 @@ class CloudsqlDao(project_dao.ProjectDao):
         cloudsql_acls = {}
         cnt = 0
         try:
-            cloudsql_instances_sql = select_data.CLOUDSQL_INSTANCES.\
-                                                 format(timestamp)
+            cloudsql_instances_sql = (
+                select_data.CLOUDSQL_INSTANCES.format(timestamp))
             rows = self.execute_sql_with_fetch(resource_name,
                                                cloudsql_instances_sql,
                                                None)
@@ -72,7 +72,7 @@ class CloudsqlDao(project_dao.ProjectDao):
                                            instance_name)
 
                 cloudsql_acl = csql_acls.\
-                ClodSqlAccessControl(instance_name=instance_name,
+                CloudSqlAccessControl(instance_name=instance_name,
                                      authorized_networks=authorized_networks,
                                      ssl_enabled=ssl_enabled,
                                      project_number=project_number)
