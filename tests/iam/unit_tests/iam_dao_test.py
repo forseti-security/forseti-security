@@ -400,7 +400,46 @@ class DaoTest(basetest.TestCase):
             self.assertEqual(set(members), set(res[permissions[0]]))
 
     def test_query_permissions_by_roles(self):
-        pass
+        """Test query_permissions_by_roles."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(ROLES_PERMISSIONS_TESTING_1, client)
+
+        prefix_checks = [
+                ([''], ['a','b','c','d','e','f']),
+                (['f'], ['a']),
+            ]
+        name_checks = [
+                (['h','g'], ['a','c','e','b','d','f']),
+                (['f'], ['a']),
+                (['e'], ['a','b']),
+                (['d','e'], ['a','b','c']),
+            ]
+
+        for prefixes, expectations in prefix_checks:
+            res = data_access.query_permissions_by_roles(
+                session,
+                role_names=[],
+                role_prefixes=prefixes)
+            mapping = defaultdict(set)
+            all_set = set()
+            for role, permission in res:
+                mapping[role.name].add(permission.name)
+                all_set.add(permission.name)
+            self.assertEqual(set(expectations), all_set)
+
+        for names, expectations in name_checks:
+            res = data_access.query_permissions_by_roles(
+                session,
+                role_names=names,
+                role_prefixes=[])
+            mapping = defaultdict(set)
+            all_set = set()
+            for role, permission in res:
+                mapping[role.name].add(permission.name)
+                all_set.add(permission.name)
+            self.assertEqual(set(expectations), all_set)
 
     def test_set_iam_policy(self):
         pass
