@@ -27,15 +27,14 @@ import importlib
 import inspect
 import gflags as flags
 
-# pylint: disable=line-too-long
-# pylint: disable=no-name-in-module
+# pylint: disable=line-too-long,no-name-in-module
 from google.apputils import app
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
+from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.notification_pipeline import NotificationPipeline
-# pylint: enable=line-too-long
-# pylint: enable=no-name-in-module
+# pylint: enable=line-too-long,no-name-in-module
 
 
 # Setup flags
@@ -90,15 +89,21 @@ def main(_):
     timestamp = FLAGS.timestamp if FLAGS.timestamp is not None \
                 else _get_timestamp()
 
+    if FLAGS.config is None:
+        LOGGER.error('You must specify a notification pipeline')
+        exit()
+
     if FLAGS.pipeline is None:
         LOGGER.error('You must specify a notification pipeline')
         exit()
 
-    configs = FLAGS.FlagValuesDict()
+    configs = file_loader.read_and_parse_file(FLAGS.config)
+    print configs
+    notifier_configs = FLAGS.FlagValuesDict()
 
     chosen_pipeline = find_pipelines(FLAGS.pipeline)
     pipelines = [
-        chosen_pipeline(timestamp, configs),
+        chosen_pipeline(timestamp, notifier_configs),
     ]
 
     for pipeline in pipelines:
