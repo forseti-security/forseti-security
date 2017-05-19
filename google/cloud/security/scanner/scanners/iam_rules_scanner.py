@@ -16,6 +16,7 @@
 import sys
 
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.data_access import errors as da_errors
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
@@ -50,9 +51,12 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             The org policies.
         """
         org_policies = {}
-        org_dao = organization_dao.OrganizationDao()
-        org_policies = org_dao.get_org_iam_policies('organizations',
-                                                    self.snapshot_timestamp)
+        try:
+            org_dao = organization_dao.OrganizationDao()
+            org_policies = org_dao.get_org_iam_policies(
+                'organizations', self.snapshot_timestamp)
+        except da_errors.MySQLError as e:
+            LOGGER.error('Error getting Organization IAM policies: %s', e)
         return org_policies
 
     def _get_project_policies(self):

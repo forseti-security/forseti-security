@@ -14,12 +14,9 @@
 
 """Pipeline to load organizations data into Inventory."""
 
-import json
-
-from dateutil import parser as dateutil_parser
-
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
@@ -30,8 +27,6 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
     """Pipeline to load org IAM policies data into Inventory."""
 
     RESOURCE_NAME = 'organizations'
-
-    MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
     def _transform(self, orgs):
         """Yield an iterator of loadable organizations.
@@ -45,17 +40,6 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
             An iterable of loadable orgs, each org as a dict.
         """
         for org in (o for d in orgs for o in d.get('organizations', [])):
-            org_json = json.dumps(org)
-            try:
-                parsed_time = dateutil_parser.parse(org.get('creationTime'))
-                create_time_fmt = (
-                    parsed_time.strftime(self.MYSQL_DATETIME_FORMAT))
-            except (TypeError, ValueError) as e:
-                LOGGER.error(
-                    'Unable to parse creation_time from org: %s\n%s',
-                    org.get('creationTime', ''), e)
-                create_time_fmt = '0000-00-00 00:00:00'
-
             # org_name is the unique identifier for the org, formatted as
             # "organizations/<organization_id>".
             org_name = org.get('name')
@@ -65,8 +49,10 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
                    'name': org_name,
                    'display_name': org.get('displayName'),
                    'lifecycle_state': org.get('lifecycleState'),
-                   'raw_org': org_json,
-                   'creation_time': create_time_fmt}
+                   'raw_org': parser.json_stringify(org),
+                   'creation_time': parser.format_timestamp(
+                       org.get('creationTime'),
+                       self.MYSQL_DATETIME_FORMAT)}
 
     def _retrieve(self):
         """Retrieve the organizations resources from GCP.

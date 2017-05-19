@@ -47,24 +47,9 @@ class FolderTest(basetest.TestCase):
         self.assertEqual(folder.FolderLifecycleState.ACTIVE,
                          f1.lifecycle_state)
 
-    def test_project_in_folder_returns_folder_ancestor(self):
-        """Test whether the ancestry includes the folder, for a project."""
-        project1 = project.Project('my-project-id', 333,
-                                    display_name='My project',
-                                    parent=self.folder1)
-        expected = [self.folder1]
-        actual = [a for a in project1.get_ancestors(include_self=False)]
-        self.assertEqual(expected, actual)
-
-    def test_folder_no_parent_returns_empty_ancestors(self):
-        """Test that a folder with no parents has no ancestors."""
-        expected = []
-        actual = [a for a in self.folder1.get_ancestors(include_self=False)]
-        self.assertEqual(expected, actual)
-
     @mock.patch.object(
         crm.CloudResourceManagerClient, 'get_folder', autospec=True)
-    def test_org_exists(self, mock_crm):
+    def test_folder_exists(self, mock_crm):
         """Tests that the folder exists."""
         mock_crm.return_value = True
         self.assertTrue(self.folder1.exists())
