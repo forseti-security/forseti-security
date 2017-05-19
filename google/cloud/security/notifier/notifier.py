@@ -91,7 +91,7 @@ def main(_):
                 else _get_timestamp()
 
     if FLAGS.pipeline is None:
-        LOGGER.error('You must sepcify a notification pipeline')
+        LOGGER.error('You must specify a notification pipeline')
         exit()
 
     configs = FLAGS.FlagValuesDict()
