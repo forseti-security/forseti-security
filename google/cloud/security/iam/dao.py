@@ -594,14 +594,17 @@ def define_model(model_name, dbengine, model_seed):
                              only_delete_relationship):
             """Delete member."""
             if only_delete_relationship:
-                session.query(group_members)\
-                    .filter(group_members.group_name == parent_type_name)\
-                    .filter(group_members.members_name == member_type_name)\
-                    .delete()
+                group_members_delete = group_members.delete(
+                        and_(group_members.c.group_name == member_type_name,
+                             group_members.c.members_name == parent_type_name))
+                session.execute(group_members_delete)
             else:
                 session.query(Member)\
                     .filter(Member.name == member_type_name)\
                     .delete()
+                group_members_delete = group_members.delete(
+                        group_members.c.group_name == member_type_name)
+                session.execute(group_members_delete)
             session.commit()
 
         @classmethod

@@ -2,7 +2,6 @@
 """Installing test models against a session."""
 
 from collections import defaultdict
-from google.cloud.security.iam.utils import logcall
 
 class ModelCreatorClient:
     def __init__(self, session, data_access):
@@ -64,9 +63,10 @@ class ModelCreator:
         return resource_full_name_map
 
     def _recursive_invert_membership(self, node, model, parentship):
+        if node not in parentship:
+            parentship[node] = set()
         for child in model.iterkeys():
             parentship[child].add(node)
-            parentship[node]
         for root, tree in model.iteritems():
             self._recursive_invert_membership(root, tree, parentship)
         return parentship
