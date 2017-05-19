@@ -31,6 +31,7 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
+from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.notification_pipeline import NotificationPipeline
@@ -97,15 +98,42 @@ def main(_):
         LOGGER.error('You must specify a notification pipeline')
         exit()
 
-    configs = file_loader.read_and_parse_file(FLAGS.config)
-    print configs
     notifier_configs = FLAGS.FlagValuesDict()
+    configs = file_loader.read_and_parse_file(FLAGS.config)
 
-    chosen_pipeline = find_pipelines(FLAGS.pipeline)
-    pipelines = [
-        chosen_pipeline(timestamp, notifier_configs),
-    ]
+    # get violations
+    v_dao = violation_dao.ViolationDao()
+    violations = {
+        'violations': v_dao.get_all_violations(
+                      timestamp,
+                      'violations'),
+        'bucket_acl_violations': v_dao.get_all_violations(
+                      timestamp,
+                      'buckets_acl_violations')
+    }
+    for retrieved_v in violations:
+        LOGGER.info('retrieved %d violations for resource \'%s\'' % (
+            len(violations[retrieved_v]), retrieved_v))
 
+    # build notification pipelines
+    pipelines = []
+    for resource in configs:
+        if violations.get(resource['resource']) is None:
+            LOGGER.error('The resource name \'%s\' is invalid, skipping' %
+                         resource['resource'])
+            continue
+        if resource['should_notify'] is False:
+            continue
+        for pipeline in resource['pipelines']:
+            print pipeline
+            chosen_pipeline = find_pipelines(pipeline['name'])
+            pipelines.append(chosen_pipeline(resource['resource'],
+                                             timestamp,
+                                             violations[resource['resource']],
+                                             notifier_configs,
+                                             pipeline['configuration']))
+
+    # run the pipelines
     for pipeline in pipelines:
         pipeline.run()
 

@@ -17,12 +17,12 @@
 import abc
 
 # TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,no-name-in-module
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import log_util
-# pylint: enable=line-too-long
+# pylint: enable=line-too-long,no-name-in-module
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -30,7 +30,8 @@ LOGGER = log_util.get_logger(__name__)
 class NotificationPipeline(object):
     """Base pipeline to perform notifications"""
 
-    def __init__(self, cycle_timestamp, configs):
+    def __init__(self, resource, cycle_timestamp,
+                 violations, notifier_config, pipeline_config):
         """Constructor for the base pipeline.
 
         Args:
@@ -41,7 +42,9 @@ class NotificationPipeline(object):
             None
         """
         self.cycle_timestamp = cycle_timestamp
-        self.configs = configs
+        self.resource = resource
+        self.notifier_config = notifier_config
+        self.pipeline_config = pipeline_config
         # TODO: import api_client
         # self.api_client = api_client
 
@@ -51,19 +54,25 @@ class NotificationPipeline(object):
         self.violation_dao = violation_dao.ViolationDao()
 
         # Get violations
-        self.violations = self._get_violations(cycle_timestamp)
+        self.violations = violations
 
     def _get_violations(self, timestamp):
-        v = {
+        """Get all violtions.
+
+        Args:
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            Dictonary of violations organized per resource type
+        """
+        violations = {
             'violations': self.violation_dao.get_all_violations(
-                            timestamp,
-                            'violations'),
+                timestamp, 'violations'),
             'bucket_acl_violations': self.violation_dao.get_all_violations(
-                            timestamp,
-                            'buckets_acl_violations')
+                timestamp, 'buckets_acl_violations')
         }
 
-        return v
+        return violations
 
     @abc.abstractmethod
     def run(self):
