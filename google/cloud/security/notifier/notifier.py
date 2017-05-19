@@ -23,17 +23,19 @@ Usage:
       --timestamp <Snapshot timestamp to search for violations>
 """
 
-import gflags as flags
 import importlib
 import inspect
+import gflags as flags
 
 # pylint: disable=line-too-long
+# pylint: disable=no-name-in-module
 from google.apputils import app
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.notification_pipeline import NotificationPipeline
 # pylint: enable=line-too-long
+# pylint: enable=no-name-in-module
 
 
 # Setup flags
@@ -44,6 +46,7 @@ FLAGS = flags.FLAGS
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
 flags.DEFINE_string('timestamp', None, 'Snapshot timestamp')
 flags.DEFINE_string('pipeline', None, 'Pipeline to use')
+flags.DEFINE_string('config', None, 'Config file to use', short_name='c')
 
 LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
@@ -56,9 +59,10 @@ def find_pipelines(pipeline_name):
     """
     try:
         module = importlib.import_module(
-         'google.cloud.security.notifier.pipelines.{0}'.format(pipeline_name))
-        for x in dir(module):
-            obj = getattr(module, x)
+            'google.cloud.security.notifier.pipelines.{0}'.format(
+                pipeline_name))
+        for filename in dir(module):
+            obj = getattr(module, filename)
 
             if inspect.isclass(obj) and issubclass(obj, NotificationPipeline) \
                and obj is not NotificationPipeline:
@@ -82,6 +86,7 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     return latest_timestamp
 
 def main(_):
+    """main function"""
     timestamp = FLAGS.timestamp if FLAGS.timestamp is not None \
                 else _get_timestamp()
 
@@ -96,8 +101,8 @@ def main(_):
         chosen_pipeline(timestamp, configs),
     ]
 
-    for p in pipelines:
-        p.run()
+    for pipeline in pipelines:
+        pipeline.run()
 
 
 if __name__ == '__main__':
