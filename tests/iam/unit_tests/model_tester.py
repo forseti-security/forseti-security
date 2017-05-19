@@ -11,7 +11,7 @@ class ModelCreatorClient:
         self.explain = self
 
     def add_resource(self, full_res_name, res_type, parent, no_parent):
-        return self.data_access.add_resource_by_name(self.session, full_res_name, parent, no_parent)
+        return self.data_access.add_resource_by_name(self.session, full_res_name, no_parent)
 
     def add_member(self, child, parents):
         return self.data_access.add_member(self.session, child, parents)

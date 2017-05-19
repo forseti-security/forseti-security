@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from sqlalchemy.orm.exc import NoResultFound
 
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
@@ -219,6 +220,7 @@ class DaoTest(basetest.TestCase):
             self.assertTrue(check in all_member_names)
 
     def test_list_resources_by_prefix(self):
+        """Test listing of resources."""
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
@@ -232,16 +234,42 @@ class DaoTest(basetest.TestCase):
         full_resource_names = data_access.list_resources_by_prefix(session, 'res8')
         resource_names = ['/'.join(r.split('/')[-2:]) for r in full_resource_names]
         self.assertEqual(set([u'r/res8']), set(resource_names))
-        
+
         full_resource_names = data_access.list_resources_by_prefix(session, 'res89')
         resource_names = ['/'.join(r.split('/')[-2:]) for r in full_resource_names]
         self.assertEqual(set(), set(resource_names))
 
     def test_del_resource_by_name(self):
-        pass
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(RESOURCE_EXPANSION_1, client)
+
+        self.assertTrue(8 == len(data_access.list_resources_by_prefix(session, '')))
+        data_access.del_resource_by_type_name(session, 'r/res8')
+        self.assertTrue(7 == len(data_access.list_resources_by_prefix(session, '')))
+        data_access.del_resource_by_type_name(session, 'r/res6')
+        self.assertTrue(5 == len(data_access.list_resources_by_prefix(session, '')))
+        data_access.del_resource_by_type_name(session, 'r/res2')
+        self.assertTrue(4 == len(data_access.list_resources_by_prefix(session, '')))
+        data_access.del_resource_by_type_name(session, 'r/res1')
+        self.assertTrue(0 == len(data_access.list_resources_by_prefix(session, '')))
 
     def test_add_resource_by_name(self):
-        pass
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(RESOURCE_EXPANSION_1, client)
+
+        data_access.add_resource_by_name(session, 'r/res1/r/res9', False)
+        data_access.add_resource_by_name(session, 'r/res1/r/res9/r/res10', False)
+        data_access.add_resource_by_name(session, 'r/res1/r/res3/r/res11', False)
+
+        self.assertRaises(NoResultFound,
+                          lambda : data_access.add_resource_by_name(
+                              session, 'r/res13/r/res14', False))
+        self.assertTrue(11 == len(data_access.list_resources_by_prefix(
+                                    session, '')))
 
     def test_add_resource(self):
         pass
@@ -254,6 +282,8 @@ class DaoTest(basetest.TestCase):
 
     def test_add_binding(self):
         pass
+
+
 
     def test_reverse_expand_members(self):
         pass
