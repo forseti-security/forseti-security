@@ -169,6 +169,7 @@ MEMBER_TESTING_2 = {
                 'group/g1' : {
                     },
                 'group/g2' : {
+                        'group/g3g2g1' : {},
                     },
                 'group/g3' : {
                         'group/g3g2' : {

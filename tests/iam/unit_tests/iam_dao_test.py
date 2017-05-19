@@ -127,7 +127,6 @@ class DaoTest(basetest.TestCase):
 
     def test_add_group_member(self):
         """Test add_group_member."""
-        return
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
@@ -154,24 +153,59 @@ class DaoTest(basetest.TestCase):
 
         for member, groups in checks.iteritems():
             res = data_access.reverse_expand_members(session, [member])
+            res = [m.name for m in res]
             for group in groups:
                 self.assertTrue(group in res)
 
     def test_del_group_member(self):
-        pass
-
-    def test_list_group_members(self):
-        """Test listing of group members."""
-        return
+        """Test del_group_member."""
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
         _ = ModelCreator(MEMBER_TESTING_2, client)
-        
+
+        # Check that the ancestor relationship is existing
+        ancestors = data_access.reverse_expand_members(session, ['group/g3g2g1'])
+        ancestors = [m.name for m in ancestors]
+        for group in ['group/g3', 'group/g3g2', 'group/g2']:
+            self.assertTrue(group in ancestors)
+
+        # Delete membership with group/g3g2
+        data_access.del_group_member(session, 'group/g3g2g1', 'group/g3g2', True)
+
+        # Check that the ancestor relationship is existing
+        ancestors = data_access.reverse_expand_members(session, ['group/g3g2g1'])
+        ancestors = [m.name for m in ancestors]
+        for group in ['group/g2']:
+            self.assertTrue(group in ancestors)
+        for group in ['group/g3', 'group/g3g2']:
+            self.assertTrue(group not in ancestors)
+
+        # Delete membership with group/g3g2
+        data_access.del_group_member(session, 'group/g3g2g1', 'group/g2', True)
+        self.assertTrue(1 == len(data_access.reverse_expand_members(session, ['group/g3g2g1'])))
+
+        # Delete the group
+        data_access.del_group_member(session, 'group/g3g2g1', '', False)
+        self.assertTrue(0 == len(data_access.reverse_expand_members(session, ['group/g3g2g1'])))
+
+        # Create a new model for immediate group deletion
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(MEMBER_TESTING_2, client)
+        # Delete the group
+        data_access.del_group_member(session, 'group/g3g2g1', '', False)
+        self.assertTrue(0 == len(data_access.reverse_expand_members(session, ['group/g3g2g1'])))
+
+    def test_list_group_members(self):
+        """Test listing of group members."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(MEMBER_TESTING_2, client)
+
         all_member_names = data_access.list_group_members(session, '')
-        
-        print session.query(data_access.TBL_MEMBER).all()
-        
         checks = {u'group/g1',
                   u'group/g2',
                   u'group/g3',
@@ -180,8 +214,7 @@ class DaoTest(basetest.TestCase):
                   u'group/g3g2',
                   u'group/g3g2g1'
                   }
-        
-        print all_member_names
+
         for check in checks:
             self.assertTrue(check in all_member_names)
 
@@ -283,8 +316,9 @@ class DaoTest(basetest.TestCase):
 
         for perm, res, member in data_access.denormalize(session):
             triple = (str(perm.name), str(res.full_name), str(member.name))
+            triple = (triple[0], '/'.join(triple[1].split('/')[-2:]), triple[2])
             print "Triple: {}".format(triple)
-            #self.assertTrue(triple in denormalization_expected_1)
+            self.assertTrue(triple in denormalization_expected_1)
 
     def test_get_roles_by_permission_names(self):
         session_maker, data_access = session_creator('test')
