@@ -30,10 +30,7 @@ class CloudSqlAccessControl(object):
         """
         self.instance_name = instance_name
         self.authorized_networks = authorized_networks
-        if ssl_enabled == 'True':
-            self.ssl_enabled = True
-        else:
-            self.ssl_enabled = False
+        self.ssl_enabled = (ssl_enabled == 'True')
         self.project_number = project_number
 
     def __hash__(self):

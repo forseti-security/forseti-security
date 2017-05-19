@@ -204,14 +204,12 @@ class Rule(object):
                                                    authorized_networks)
             filter_list = filter(authorized_networks_regex.match,
                                  cloudsql_acl.authorized_networks)
+
             authorized_networks_bool = (len(filter_list) > 0)
         else:
             authorized_networks_bool = True
 
-        if self.rules.ssl_enabled == cloudsql_acl.ssl_enabled:
-            ssl_enabled_bool = True
-        else:
-            ssl_enabled_bool = False
+        ssl_enabled_bool = (self.rules.ssl_enabled == cloudsql_acl.ssl_enabled)
 
         should_raise_violation = (
             (instance_name_bool is not None and instance_name_bool) and\

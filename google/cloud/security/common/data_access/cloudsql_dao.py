@@ -35,9 +35,6 @@ LOGGER = log_util.get_logger(__name__)
 class CloudsqlDao(project_dao.ProjectDao):
     """Data access object (DAO) for CloudSQL."""
 
-    def __init__(self):
-        super(CloudsqlDao, self).__init__()
-
     def get_cloudsql_acls(self, resource_name, timestamp):
         """Select the cloudsql acls for project from a snapshot table.
 
@@ -120,7 +117,8 @@ class CloudsqlDao(project_dao.ProjectDao):
 
         return cloudsql_acls_map
 
-    def _get_networks_for_instance(self, acl_map, project_number,
+    @staticmethod
+    def _get_networks_for_instance(acl_map, project_number,
                                    instance_name):
         """Create a list of authorized networks for instance
 

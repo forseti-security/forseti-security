@@ -30,10 +30,10 @@ from google.cloud.security.inventory.pipelines import \
 from tests.inventory.pipelines.test_data import fake_cloudsql
 from tests.inventory.pipelines.test_data import fake_configs
 
-from pprint import pprint 
+from pprint import pprint
+
+
 # pylint: enable=line-too-long
-
-
 class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
     """Tests for the load_projects_cloudsql_pipeline."""
 
@@ -124,7 +124,6 @@ class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
     @mock.patch.object(
         load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline,
         '_retrieve')
-
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
         mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""

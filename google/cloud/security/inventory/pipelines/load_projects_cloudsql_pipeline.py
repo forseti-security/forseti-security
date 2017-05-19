@@ -36,7 +36,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
     RESOURCE_NAME_INSTANCES = 'cloudsql_instances'
     RESOURCE_NAME_IPADDRESSES = 'cloudsql_ipaddresses'
-    RESOURCE_NAME_AUTHORIZED_NETWORKS =\
+    RESOURCE_NAME_AUTHORIZED_NETWORKS = \
         'cloudsql_ipconfiguration_authorizednetworks'
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -55,7 +55,6 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         """
         super(LoadProjectsCloudsqlPipeline, self).__init__(
             cycle_timestamp, configs, sqladmin_client, dao)
-
 
     def _transform_data(self, cloudsql_instances_map):
         """Yield an iterator of loadable instances.
@@ -308,10 +307,8 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                 self.PROJECTS_RESOURCE_NAME, self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
-        # Retrieve data from GCP.
 
         instances_maps = []
-
         for project_number in project_numbers:
             try:
                 instances = self.api_client.get_instances(
@@ -338,7 +335,6 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     def run(self):
         """Runs the load Cloudsql data pipeline."""
         instances_maps = self._retrieve()
-
         loadable_instances_dict = self._transform(instances_maps)
 
         self._load(self.RESOURCE_NAME_INSTANCES, \
@@ -349,5 +345,4 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                 loadable_instances_dict[
                     self.RESOURCE_NAME_AUTHORIZED_NETWORKS
                     ])
-
         self._get_loaded_count()
