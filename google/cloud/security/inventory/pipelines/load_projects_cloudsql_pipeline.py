@@ -78,100 +78,100 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                     'project_number': instances_map['project_number'],
                     'name': item.get('name'),
                     'project': item.get('project'),
-                    'backendType': item.get('backendType'),
-                    'connectionName': item.get('connectionName'),
-                    'currentDiskSize': int(item.get('currentDiskSize', 0)),
-                    'databaseVersion': item.get('databaseVersion'),
-                    'failoverReplica_available':\
+                    'backend_type': item.get('backendType'),
+                    'connection_name': item.get('connectionName'),
+                    'current_disk_size': int(item.get('currentDiskSize', 0)),
+                    'database_version': item.get('databaseVersion'),
+                    'failover_replica_available':\
                          item.get('failoverReplica', {}).get('available'),
-                    'failoverReplica_name':\
+                    'failover_replica_name':\
                          item.get('failoverReplica', {}).get('name'),
-                    'instanceType': item.get('instanceType'),
-                    'ipv6Address': item.get('ipv6Address'),
+                    'instance_type': item.get('instanceType'),
+                    'ipv6_address': item.get('ipv6Address'),
                     'kind': item.get('kind'),
-                    'masterInstanceName': item.get('masterInstanceName'),
-                    'maxDiskSize': int(item.get('maxDiskSize', 0)),
-                    'onPremisesConfiguration_hostPort':\
+                    'master_instance_name': item.get('masterInstanceName'),
+                    'max_disk_size': int(item.get('maxDiskSize', 0)),
+                    'on_premises_configuration_host_port':\
                          item.get('onPremisesConfiguration', {})\
                             .get('hostPort'),
-                    'onPremisesConfiguration_kind':\
+                    'on_premises_configuration_kind':\
                          item.get('onPremisesConfiguration', {}).get('kind'),
                     'region': item.get('region'),
-                    'replicaConfiguration':\
+                    'replica_configuration':\
                          json.dumps(item.get('replicaConfiguration')),
-                    'replicaNames': json.dumps(item.get('replicaNames')),
-                    'selfLink': item.get('selfLink'),
-                    'serverCaCert': json.dumps(item.get('serverCaCert')),
-                    'serviceAccountEmailAddress':\
+                    'replica_names': json.dumps(item.get('replicaNames')),
+                    'self_link': item.get('selfLink'),
+                    'server_ca_cert': json.dumps(item.get('serverCaCert')),
+                    'service_account_email_address':\
                          item.get('serviceAccountEmailAddress'),
-                    'settings_activationPolicy':\
+                    'settings_activation_policy':\
                          item.get('settings', {}).get('activationPolicy'),
-                    'settings_authorizedGaeApplications':\
+                    'settings_authorized_gae_applications':\
                          json.dumps(item.get('settings', {})\
                         .get('authorizedGaeApplications')),
-                    'settings_availabilityType':\
+                    'settings_availability_type':\
                         item.get('settings', {}).get('availabilityType'),
-                    'settings_backupConfiguration_binaryLogEnabled':\
+                    'settings_backup_configuration_binary_log_enabled':\
                         item.get('settings', {})\
                             .get('backupConfiguration', {})\
                                 .get('binaryLogEnabled'),
-                    'settings_backupConfiguration_enabled':\
+                    'settings_backup_configuration_enabled':\
                         item.get('settings', {})\
                             .get('backupConfiguration', {}).get('enabled'),
-                    'settings_backupConfiguration_kind':\
+                    'settings_backup_configuration_kind':\
                          item.get('settings', {})\
                             .get('backupConfiguration', {}).get('kind'),
-                    'settings_backupConfiguration_startTime':\
+                    'settings_backup_configuration_start_time':\
                         item.get('settings', {})\
                             .get('backupConfiguration', {}).get('startTime'),
-                    'settings_crashSafeReplicationEnabled':\
+                    'settings_crash_safe_replication_enabled':\
                         item.get('settings', {})\
                             .get('crashSafeReplicationEnabled'),
-                    'settings_dataDiskSizeGb':\
+                    'settings_data_disk_size_gb':\
                         int(item.get('settings', {}).get('dataDiskSizeGb', 0)),
-                    'settings_dataDiskType':
+                    'settings_data_disk_type':
                         item.get('settings', {}).get('dataDiskType'),
-                    'settings_databaseFlags':
+                    'settings_database_flags':
                         json.dumps(item.get('settings', {})\
                             .get('databaseFlags')),
-                    'settings_databaseReplicationEnabled':
+                    'settings_database_replication_enabled':
                         item.get('settings', {})\
                             .get('databaseReplicationEnabled', {}),
-                    'settings_ipConfiguration_ipv4Enabled':
+                    'settings_ip_configuration_ipv4_enabled':
                         item.get('settings', {}).get('ipConfiguration', {})\
                             .get('ipv4Enabled', {}),
-                    'settings_ipConfiguration_requireSsl':
+                    'settings_ip_configuration_require_ssl':
                         item.get('settings', {}).get('ipConfiguration', {})\
                             .get('requireSsl', {}),
                     'settings_kind': item.get('settings', {}).get('kind'),
                     'settings_labels':
                         json.dumps(item.get('settings', {}).get('labels')),
-                    'settings_locationPreference_followGaeApplication':\
+                    'settings_location_preference_follow_gae_application':\
                         item.get('settings', {}).get('locationPreference', {})\
                             .get('followGaeApplication'),
-                    'settings_locationPreference_kind':\
+                    'settings_location_preference_kind':\
                         item.get('settings', {}).get('locationPreference', {})\
                             .get('kind'),
-                    'settings_locationPreference_zone':\
+                    'settings_location_preference_zone':\
                         item.get('settings', {}).get('locationPreference', {})\
                             .get('zone'),
-                    'settings_maintenanceWindow':\
+                    'settings_maintenance_window':\
                         json.dumps(item.get('settings', {})\
                             .get('maintenanceWindow')),
-                    'settings_pricingPlan':\
+                    'settings_pricing_plan':\
                         item.get('settings', {}).get('pricingPlan'),
-                    'settings_replicationType':\
+                    'settings_replication_type':\
                         item.get('settings', {}).get('replicationType'),
-                    'settings_settingsVersion':\
+                    'settings_settings_version':\
                         int(item.get('settings', {}).get('settingsVersion', 0)),
-                    'settings_storageAutoResize':\
+                    'settings_storage_auto_resize':\
                         item.get('settings', {}).get('storageAutoResize'),
-                    'settings_storageAutoResizeLimit':\
+                    'settings_storage_auto_resize_limit':\
                         int(item.get('settings', {})\
                             .get('storageAutoResizeLimit', 0)),
                     'settings_tier': item.get('settings', {}).get('tier'),
                     'state': item.get('state'),
-                    'suspensionReason': \
+                    'suspension_reason': \
                         json.dumps(item.get('suspensionReason')),
                 }
 
@@ -218,7 +218,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                         'kind': network.get('kind'),
                         'name': network.get('name'),
                         'value': network.get('value'),
-                        'expirationTime': formatted_expirationtime
+                        'expiration_time': formatted_expirationtime
                     }
 
     def _transform_ipaddresses(self, cloudsql_instances_map):

@@ -65,7 +65,7 @@ class CloudsqlDao(project_dao.ProjectDao):
             for row in rows:
                 project_number = row['project_number']
                 instance_name = row['name']
-                ssl_enabled = row['settings_ipConfiguration_requireSsl']
+                ssl_enabled = row['settings_ip_configuration_require_ssl']
                 authorized_networks = self.\
                 _get_networks_for_instance(acl_map,
                                            project_number,
@@ -73,9 +73,9 @@ class CloudsqlDao(project_dao.ProjectDao):
 
                 cloudsql_acl = csql_acls.\
                 CloudSqlAccessControl(instance_name=instance_name,
-                                     authorized_networks=authorized_networks,
-                                     ssl_enabled=ssl_enabled,
-                                     project_number=project_number)
+                                      authorized_networks=authorized_networks,
+                                      ssl_enabled=ssl_enabled,
+                                      project_number=project_number)
                 cloudsql_acls[cnt] = cloudsql_acl
                 cnt += 1
         except (DataError, IntegrityError, InternalError, NotSupportedError,

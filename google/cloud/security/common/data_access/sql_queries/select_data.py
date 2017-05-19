@@ -136,7 +136,7 @@ BUCKET_ACLS = """
 CLOUDSQL_INSTANCES = """
     SELECT project_number, 
            name,
-           settings_ipConfiguration_requireSsl
+           settings_ip_configuration_require_ssl
     FROM cloudsql_instances_{0}
 """
 
