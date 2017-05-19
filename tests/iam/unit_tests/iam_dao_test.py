@@ -367,16 +367,37 @@ class DaoTest(basetest.TestCase):
 
     def test_query_access_by_resource(self):
         """Test query_access_by_resource."""
-        #session_maker, data_access = session_creator('test')
-        #session = session_maker()
-        #client = ModelCreatorClient(session, data_access)
-        #_ = ModelCreator(DENORMALIZATION_TESTING_1, client)
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(DENORMALIZATION_TESTING_1, client)
 
-        #data_access.query_access_by_resource(session, )
+        checks = [
+                ('r/res1', ['a'], False, [u'group/g1',
+                                          u'user/u1']),
+                ('r/res1/r/res2', ['a'], False, [u'group/g1',
+                                                 u'user/u1',
+                                                 u'user/u2']),
+                ('r/res1/r/res2/r/res3', ['a'], False, [u'group/g1',
+                                                        u'user/u1',
+                                                        u'user/u2',
+                                                        u'group/g2']),
+                ('r/res1/r/res2/r/res3', ['a'], True, [u'group/g1',
+                                                        u'user/u1',
+                                                        u'user/u2',
+                                                        u'group/g2',
+                                                        u'user/g2u1',
+                                                        u'group/g2g1',
+                                                        u'user/g2g1u1'])
+            ]
 
-        #@classmethod
-        #def query_access_by_resource(cls, session, resource_name,
-        #                             permission_names, expand_groups=False):
+        for resource, permissions, expansion, members in checks:
+            res = data_access.query_access_by_resource(
+                session,
+                resource,
+                permission_names=permissions,
+                expand_groups=expansion)
+            self.assertEqual(set(members), set(res[permissions[0]]))
 
     def test_query_permissions_by_roles(self):
         pass

@@ -412,16 +412,17 @@ def define_model(model_name, dbengine, model_seed):
             roles = cls.get_roles_by_permission_names(
                 session, permission_names)
             resources = cls.find_resource_path(session, resource_name)
-            bindings = session.query(Binding)\
+
+            res = session.query(Binding, Member)\
                 .filter(
                     Binding.role_name.in_([r.name for r in roles]),
-                    Binding.resource_name.in_([r.name for r in resources])
-                ).all()
+                    Binding.resource_name.in_([r.full_name for r in resources])
+                ).join(binding_members).join(Member)
 
             role_member_mapping = collections.defaultdict(set)
-            for binding in bindings:
-                role_member_mapping[binding.role_name] = set(
-                    [m.name for m in binding.members])
+            for binding, member in res:
+                role_member_mapping[binding.role_name].add(member.name)
+
             if expand_groups:
                 for role in role_member_mapping:
                     role_member_mapping[role] =\
