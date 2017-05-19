@@ -11,14 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from sqlalchemy.orm.exc import NoResultFound
+
 
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
 from google.apputils import basetest
 import uuid
 import os
+from collections import defaultdict
+from sqlalchemy.orm.exc import NoResultFound
 
+from google.cloud.security.iam.utils import full_to_type_name
 from google.cloud.security.iam.dao import ModelManager, session_creator, create_engine
 from google.cloud.security.common.util.threadpool import ThreadPool
 from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPANSION_2,\
@@ -240,6 +243,7 @@ class DaoTest(basetest.TestCase):
         self.assertEqual(set(), set(resource_names))
 
     def test_del_resource_by_name(self):
+        """Test del_resource_by_name."""
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
@@ -256,6 +260,7 @@ class DaoTest(basetest.TestCase):
         self.assertTrue(0 == len(data_access.list_resources_by_prefix(session, '')))
 
     def test_add_resource_by_name(self):
+        """Test add_resource_by_name."""
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
@@ -271,25 +276,61 @@ class DaoTest(basetest.TestCase):
         self.assertTrue(11 == len(data_access.list_resources_by_prefix(
                                     session, '')))
 
-    def test_add_resource(self):
-        pass
-
-    def test_add_role(self):
-        pass
-
-    def test_add_permission(self):
-        pass
-
-    def test_add_binding(self):
-        pass
-
-
-
     def test_reverse_expand_members(self):
-        pass
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(MEMBER_TESTING_2, client)
+
+        members = data_access.reverse_expand_members(session,
+                                                     ['group/g2','group/g3'])
+
+        members = set([m.name for m in members])
+        self.assertEqual(set([u'group/g2', u'group/g3']), members)
+
+        members = data_access.reverse_expand_members(session,
+                                                     ['group/g3g2g1'])
+        members = set([m.name for m in members])
+        self.assertEqual(set([
+            u'group/g3',
+            u'group/g3g2',
+            u'group/g3g2g1',
+            u'group/g2']), members)
+
+        members = data_access.reverse_expand_members(session,
+                                                     ['group/g3g2g1', 'group/g1'])
+        members = set([m.name for m in members])
+        self.assertEqual(set([
+            u'group/g3',
+            u'group/g3g2',
+            u'group/g3g2g1',
+            u'group/g2',
+            u'group/g1']), members)
 
     def test_expand_members(self):
-        pass
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(MEMBER_TESTING_2, client)
+
+        members = data_access.expand_members(session, ['group/g1', 'group/g3'])
+        members = set([m.name for m in members])
+
+        self.assertEqual(set([
+            u'group/g1',
+            u'group/g3',
+            u'group/g3g2',
+            u'group/g3g2g1'
+            ]), members)
+
+        members = data_access.expand_members(session, ['group/g1', 'group/g2'])
+        members = set([m.name for m in members])
+
+        self.assertEqual(set([
+            u'group/g1',
+            u'group/g2',
+            u'group/g3g2g1'
+            ]), members)
 
     def test_explain_granted(self):
         """Test explain_granted."""
@@ -300,10 +341,42 @@ class DaoTest(basetest.TestCase):
         pass
 
     def test_query_access_by_member(self):
-        pass
+        """Test query_access_by_member."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(DENORMALIZATION_TESTING_1, client)
+
+        checks = [
+                ('user/u1', [u'a'], False, {u'r/res3', u'r/res1'}),
+                ('user/u2', [u'a'], False, {u'r/res2'}),
+                ('user/g2g1u1', [u'a'], False, {u'r/res3'}),
+                ('user/g2u1', [u'a'], False, {u'r/res3'}),
+                ('user/u1', [u'a'], True, {u'r/res1',u'r/res2',u'r/res3'}),
+                ('user/u1', [u'b'], True, {u'r/res2', u'r/res3'}),
+            ]
+
+        for user, permissions, expansion, expected_result in checks:
+            res = data_access.query_access_by_member(
+                session, user, permissions, expansion)
+            mapping = defaultdict(set)
+            for role, resources in res:
+                for resource in resources:
+                    mapping[role].add(full_to_type_name(resource))
+            self.assertEqual(expected_result, mapping[permissions[0]])
 
     def test_query_access_by_resource(self):
-        pass
+        """Test query_access_by_resource."""
+        #session_maker, data_access = session_creator('test')
+        #session = session_maker()
+        #client = ModelCreatorClient(session, data_access)
+        #_ = ModelCreator(DENORMALIZATION_TESTING_1, client)
+
+        #data_access.query_access_by_resource(session, )
+
+        #@classmethod
+        #def query_access_by_resource(cls, session, resource_name,
+        #                             permission_names, expand_groups=False):
 
     def test_query_permissions_by_roles(self):
         pass

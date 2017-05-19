@@ -136,13 +136,15 @@ DENORMALIZATION_TESTING_1 = {
             },
         'roles':{
                 'a':['a'],
+                'b':['b'],
             },
         'bindings':{
             'r/res3' : {
                     'a' : ['user/u1', 'group/g2'],
                 },
             'r/res2' : {
-                    'a' : ['user/u2']
+                    'a' : ['user/u2'],
+                    'b' : ['user/u2', 'user/u1'],
                 },
             'r/res1' : {
                     'a' : ['group/g1', 'user/u1'],

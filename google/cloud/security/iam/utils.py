@@ -46,3 +46,6 @@ def mutual_exclusive(lock):
 def oneof(*args):
     """Returns true iff one of the parameters is true."""
     return len([x for x in args if x]) == 1
+
+def full_to_type_name(full_resource_name):
+    return '/'.join(full_resource_name.split('/')[-2:])
