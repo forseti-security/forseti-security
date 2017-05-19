@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from sqlalchemy.sql import expression
+from _collections import defaultdict
 
 """ Database abstraction objects for IAM Explain. """
 
@@ -28,7 +30,8 @@ from sqlalchemy import create_engine, Table, DateTime, or_, and_
 from sqlalchemy.orm import relationship, aliased, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from google.cloud.security.iam.utils import mutual_exclusive
+from google.cloud.security.iam.utils import mutual_exclusive,\
+    full_to_type_name
 
 
 def generate_model_handle():
@@ -366,38 +369,41 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def query_access_by_member(cls, session, member_name, permission_names,
-                                   expand_resources=False):
+                                   expand_resources=False,
+                                   reverse_expand_members=True):
             """Return the set of resources the member has access to."""
+
+            if reverse_expand_members:
+                member_names = [m.name for m in
+                                cls.reverse_expand_members(
+                                    session,
+                                    [member_name], False)]
+            else:
+                member_names = [member_name]
+
             roles = cls.get_roles_by_permission_names(
                 session, permission_names)
             qry = session.query(Binding).join(binding_members).join(Member)
             qry = qry.filter(Binding.role_name.in_([r.name for r in roles]))
-            qry = qry.filter(Member.name == member_name)
+            qry = qry.filter(Member.name.in_(member_names))
             bindings = qry.all()
 
-            if expand_resources:
-                def expand_resources_recursive(resource_names, depth=-1):
-                    """Expand the resource tree downward."""
-                    resource_names_set = set(resource_names)
-                    if depth == 0 or len(resource_names) == 0:
-                        return resource_names_set
-                    else:
-                        new_resource_names =\
-                            set([r.name for r in session.query(Resource)
-                                 .filter(Resource.parent_name.in_(
-                                     resource_names))
-                                 .all()])
-                        return resource_names_set.union(
-                            expand_resources_recursive(
-                                new_resource_names, depth - 1))
+            if not expand_resources:
+                return [(binding.role_name,
+                         [binding.resource_name]) for binding in bindings]
             else:
-                def expand_resources_recursive(resource_names, _=-1):
-                    """Dummy implementation that does not expand."""
-                    return resource_names
+                r_type_names = ['/'.join(binding.resource_name.split('/')[-2:])
+                                for binding in bindings]
+                expansion = cls.expand_resources_by_type_names(
+                    session,
+                    r_type_names)
+                m = {'{}/{}'.format(k.type, k.name):
+                      ['{}/{}'.format(v.type, v.name) for v in values]
+                        for k,values in expansion.iteritems()}
 
-            return [(binding.role_name,
-                     expand_resources_recursive([binding.resource_name]))
-                    for binding in bindings]
+                return [(binding.role_name,
+                          m[full_to_type_name(binding.resource_name)])
+                            for binding in bindings]
 
         @classmethod
         def query_access_by_resource(cls, session, resource_name,
@@ -702,6 +708,30 @@ def define_model(model_name, dbengine, model_seed):
                             parents=parents)
             session.add(member)
             return member
+
+        @classmethod
+        def expand_resources_by_type_names(cls, session, res_type_names):
+            """
+            Expand resources by type/name format.
+
+            Returns: {res_type_name: Expansion(res_type_name), ... }
+            """
+            res_key = aliased(Resource, name='res_key')
+            res_values = aliased(Resource, name='res_values')
+
+            expressions = []
+            for res_type_name in res_type_names:
+                res_type, res_name = res_type_name.split('/')
+                expressions.append(and_(
+                    res_key.name==res_name,
+                    res_key.type==res_type))
+
+            res = session.query(res_key, res_values).filter(or_(*expressions)).filter(
+                res_values.full_name.startswith(res_key.full_name)).all()
+            mapping = defaultdict(set)
+            for k,v in res:
+                mapping[k].add(v)
+            return mapping
 
         @classmethod
         def expand_resources_by_names(cls, session, res_names):
