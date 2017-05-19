@@ -152,8 +152,8 @@ def define_model(model_name, dbengine, model_seed):
 
         def __repr__(self):
             """String representation."""
-            return "<Resource(full_name='{}', type='{}')>".format(
-                self.full_name, self.type)
+            return "<Resource(full_name='{}', name='{}' type='{}')>".format(
+                self.full_name, self.name, self.type)
 
     Resource.children = relationship(
         "Resource", order_by=Resource.name, back_populates="parent")
@@ -621,21 +621,30 @@ def define_model(model_name, dbengine, model_seed):
                     .all()]
 
         @classmethod
+        def del_resource_by_type_name(cls, session, resource_type_name):
+            """Deletes a resource specified by type/name."""
+            res_type, res_name = resource_type_name.split('/')
+            resource = session.query(Resource).filter(
+                and_(Resource.type == res_type,
+                     Resource.name == res_name)).one()
+            return cls.del_resource_by_name(session, resource.full_name)
+
+        @classmethod
         def del_resource_by_name(cls, session, full_resource_name):
-            """Deletes a resource specified via name."""
-            expanded_resources = cls.expand_resources(
-                session, [full_resource_name])
-            session.query(Binding).filter(Binding.resource_name.in_(
-                [r.full_name for r in expanded_resources])).delete()
-            for res in expanded_resources:
-                session.delete(res)
+            """Deletes a resource specified via full name."""
+            session.query(Binding).filter(
+                Binding.resource_name.startswith(full_resource_name)).delete(
+                    synchronize_session='fetch')
+            session.query(Resource).filter(
+                Resource.full_name.startswith(full_resource_name)).delete(
+                    synchronize_session='fetch')
             session.commit()
 
         @classmethod
-        def add_resource_by_name(cls, session, full_name, full_parent_name,
-                                 no_require_parent):
-            """Adds resource specified via name."""
+        def add_resource_by_name(cls, session, full_name, no_require_parent):
+            """Adds resource specified via full name."""
             if not no_require_parent:
+                full_parent_name = '/'.join(full_name.split("/")[:-2])
                 parent = session.query(Resource).filter(
                     Resource.full_name == full_parent_name).one()
             else:
