@@ -62,17 +62,31 @@ class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
                 fake_cloudsql.FAKE_CLOUDSQL_MAP).iteritems():
            loadable_cloudsql[resource] = list(data_map)
 
-        expected_loadable_cloudsql = {
-            self.pipeline.RESOURCE_NAME_INSTANCES:
-                fake_cloudsql.EXPECTED_LOADED_INSTANCES,
-            self.pipeline.RESOURCE_NAME_IPADDRESSES:
-                fake_cloudsql.EXPECTED_LOADED_IPADDRESSES,
-            self.pipeline.RESOURCE_NAME_AUTHORIZEDNETWORKS:
-                fake_cloudsql.EXPECTED_LOADED_AUTHORIZEDNETWORKS
-        }
+        actual_loaded_instances = loadable_cloudsql.values()[2]
+        actual_loaded_ipaddresses = loadable_cloudsql.values()[1]
+        actual_authorizednetworks = loadable_cloudsql.values()[0]
+
         self.assertEquals(
-           expected_loadable_cloudsql,
-           loadable_cloudsql)
+            fake_cloudsql.EXPECTED_LOADED_INSTANCES,
+            actual_loaded_instances)
+        self.assertEquals(
+            fake_cloudsql.EXPECTED_LOADED_IPADDRESSES,
+            actual_loaded_ipaddresses)
+        self.assertEquals(
+             fake_cloudsql.EXPECTED_LOADED_AUTHORIZEDNETWORKS,
+             actual_authorizednetworks)
+
+        #expected_loadable_cloudsql = {
+        #    self.pipeline.RESOURCE_NAME_INSTANCES:
+        #        fake_cloudsql.EXPECTED_LOADED_INSTANCES,
+        #    self.pipeline.RESOURCE_NAME_IPADDRESSES:
+        #        fake_cloudsql.EXPECTED_LOADED_IPADDRESSES,
+        #    self.pipeline.RESOURCE_NAME_AUTHORIZEDNETWORKS:
+        #        fake_cloudsql.EXPECTED_LOADED_AUTHORIZEDNETWORKS
+        #}
+        #self.assertEquals(
+        #   expected_loadable_cloudsql,
+        #   loadable_cloudsql)
 
     
     def test_api_is_called_to_retrieve_cloudsql(self):
