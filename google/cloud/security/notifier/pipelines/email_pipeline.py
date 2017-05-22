@@ -35,6 +35,13 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
     """Email pipeline to perform notifications"""
 
+    def __init__(self, resource, cycle_timestamp,
+                 violations, notifier_config, pipeline_config):
+        super(EmailPipeline, self).__init__(resource, cycle_timestamp,
+                                            violations, notifier_config,
+                                            pipeline_config)
+        self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
+
     def _get_output_filename(self):
         """Create the output filename.
 
@@ -119,8 +126,6 @@ class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
 
     def run(self):
         """Run the email pipeline"""
-        self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
-
         attachment = self._make_attachment()
         subject, content = self._make_content()
 

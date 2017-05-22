@@ -35,8 +35,11 @@ class BaseNotificationPipeline(object):
         """Constructor for the base pipeline.
 
         Args:
+            resource: violation resource name
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
+            violations: Dictonary of violations
+            notifier_config: Dictionary of notifier configurations.
+            pipeline_config: Dictonary of pipeline confogurations.
 
         Returns:
             None
