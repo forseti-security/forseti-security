@@ -49,9 +49,9 @@ class CloudsqlClient(_base_client.BaseClient):
               ]
             }
         """
-        cloudsql_service_api = self.service.instances()
+        instances_api = self.service.instances()
         try:
-            instances_request = cloudsql_service_api.list(project=project_id)
+            instances_request = instances_api.list(project=project_id)
             instances = instances_request.execute()
             return instances
         except (HttpError, HttpLib2Error) as e:
