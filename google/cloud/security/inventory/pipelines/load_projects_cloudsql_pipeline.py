@@ -36,7 +36,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
     RESOURCE_NAME_INSTANCES = 'cloudsql_instances'
     RESOURCE_NAME_IPADDRESSES = 'cloudsql_ipaddresses'
-    RESOURCE_NAME_AUTHORIZEDNETWORKS = (
+    RESOURCE_NAME_AUTHORIZEDNETWORKS = (  # pylint: disable=invalid-name
         'cloudsql_ipconfiguration_authorizednetworks')
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
