@@ -95,7 +95,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         members_api = self.service.members()
         request = members_api.list(groupKey=group_key,
-                                    maxResults=FLAGS.max_results_admin_api)
+                                   maxResults=FLAGS.max_results_admin_api)
 
         paged_results = self._build_paged_result(
             request, members_api, self.rate_limiter)
