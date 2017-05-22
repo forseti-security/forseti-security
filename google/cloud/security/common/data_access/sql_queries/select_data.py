@@ -23,20 +23,20 @@ LATEST_SNAPSHOT_TIMESTAMP = """
 """
 
 PROJECT_NUMBERS = """
-    SELECT project_number from projects_{0};
+    SELECT project_number FROM projects_{0};
 """
 
 
 PROJECT_RAW_ALL = """
-    SELECT raw_project from projects_{0};
+    SELECT raw_project FROM projects_{0};
 """
 
 PROJECT_RAW = """
-    SELECT raw_project from projects_{0} where project_id = %s;
+    SELECT raw_project FROM projects_{0} WHERE project_id = %s;
 """
 
 PROJECT_RAW_BY_NUMBER = """
-    SELECT raw_project from projects_{0} where project_number = %s;
+    SELECT raw_project FROM projects_{0} WHERE project_number = %s;
 """
 
 PROJECT_IAM_POLICIES = """
@@ -117,11 +117,11 @@ FOLDER_IAM_POLICIES = """
 """
 
 GROUPS = """
-    SELECT * from groups_{0};
+    SELECT * FROM groups_{0};
 """
 
 GROUP_IDS = """
-    SELECT group_id from groups_{0};
+    SELECT group_id FROM groups_{0};
 """
 
 GROUP_ID = """
@@ -151,11 +151,11 @@ BUCKETS_BY_PROJECT_ID = """
 
 
 SELECT_VIOLATIONS = """
-    SELECT * from violations_{0};
+    SELECT * FROM violations_{0};
 """
 
 SELECT_BUCKETS_ACL_VIOLATIONS = """
-    SELECT * from buckets_acl_violations_{0};
+    SELECT * FROM buckets_acl_violations_{0};
 """
 
 FORWARDING_RULES = """
