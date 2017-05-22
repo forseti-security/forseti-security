@@ -36,7 +36,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
     RESOURCE_NAME_INSTANCES = 'cloudsql_instances'
     RESOURCE_NAME_IPADDRESSES = 'cloudsql_ipaddresses'
-    RESOURCE_NAME_AUTHORIZED_NETWORKS = (
+    RESOURCE_NAME_AUTHORIZEDNETWORKS = (
         'cloudsql_ipconfiguration_authorizednetworks')
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -281,7 +281,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         data_dict = {}
         data_dict[self.RESOURCE_NAME_INSTANCES] = \
             self._transform_data(cloudsql_instances_map)
-        data_dict[self.RESOURCE_NAME_AUTHORIZED_NETWORKS] = \
+        data_dict[self.RESOURCE_NAME_AUTHORIZEDNETWORKS] = \
             self._transform_authorizednetworks(cloudsql_instances_map)
         data_dict[self.RESOURCE_NAME_IPADDRESSES] = \
             self._transform_ipaddresses(cloudsql_instances_map)
@@ -342,8 +342,8 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                 loadable_instances_dict[self.RESOURCE_NAME_INSTANCES])
         self._load(self.RESOURCE_NAME_IPADDRESSES, \
                 loadable_instances_dict[self.RESOURCE_NAME_IPADDRESSES])
-        self._load(self.RESOURCE_NAME_AUTHORIZED_NETWORKS, \
+        self._load(self.RESOURCE_NAME_AUTHORIZEDNETWORKS, \
                 loadable_instances_dict[
-                    self.RESOURCE_NAME_AUTHORIZED_NETWORKS
+                    self.RESOURCE_NAME_AUTHORIZEDNETWORKS
                     ])
         self._get_loaded_count()
