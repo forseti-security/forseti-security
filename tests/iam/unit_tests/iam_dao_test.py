@@ -26,7 +26,8 @@ from google.cloud.security.iam.dao import ModelManager, session_creator, create_
 from google.cloud.security.common.util.threadpool import ThreadPool
 from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPANSION_2,\
     MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1, ROLES_PERMISSIONS_TESTING_1,\
-    DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2
+    DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2,\
+    MEMBER_TESTING_3
 from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
 
 def create_test_engine():
@@ -308,6 +309,7 @@ class DaoTest(basetest.TestCase):
             u'group/g1']), members)
 
     def test_expand_members(self):
+        """Test expand_members."""
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
@@ -331,6 +333,22 @@ class DaoTest(basetest.TestCase):
             u'group/g2',
             u'group/g3g2g1'
             ]), members)
+
+    def test_expand_members_map(self):
+        """Test expand_members_map."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(MEMBER_TESTING_3, client)
+
+        map = data_access.expand_members_map(session, ['group/g1'])
+        self.assertEqual(set([
+                u'group/g1',
+                u'group/g1g1',
+                u'user/g1g1u1',
+                u'user/g1g1u2',
+                u'user/g1g1u3',
+            ]), map[u'group/g1'])
 
     def test_explain_granted(self):
         """Test explain_granted."""
@@ -451,8 +469,7 @@ class DaoTest(basetest.TestCase):
         pass
 
     def test_denormalize(self):
-        return
-        session_maker, data_access = session_creator('test')
+        session_maker, data_access = session_creator('test',None,None,False)
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
         _ = ModelCreator(DENORMALIZATION_TESTING_1, client)
@@ -473,15 +490,17 @@ class DaoTest(basetest.TestCase):
                 ('a', 'r/res1', 'user/u1'),
                 ('a', 'r/res2', 'user/u1'),
                 ('a', 'r/res3', 'user/u1'),
-            ])
-        
-        self.assertTrue(('a','r/res3','user/u1') in denormalization_expected_1)
 
+                ('b', 'r/res2', 'user/u1'),
+                ('b', 'r/res2', 'user/u2'),
+                ('b', 'r/res3', 'user/u1'),
+                ('b', 'r/res3', 'user/u2'),
+            ])
+
+        triples = set()
         for perm, res, member in data_access.denormalize(session):
-            triple = (str(perm.name), str(res.full_name), str(member.name))
-            triple = (triple[0], '/'.join(triple[1].split('/')[-2:]), triple[2])
-            print "Triple: {}".format(triple)
-            self.assertTrue(triple in denormalization_expected_1)
+            triples.add((perm, res, member))
+        self.assertEqual(denormalization_expected_1, triples)
 
     def test_get_roles_by_permission_names(self):
         session_maker, data_access = session_creator('test')
