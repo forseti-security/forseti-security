@@ -26,7 +26,7 @@ from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
 
-
+# pylint: disable=too-many-instance-attributes
 class BaseNotificationPipeline(object):
     """Base pipeline to perform notifications"""
 
@@ -44,7 +44,6 @@ class BaseNotificationPipeline(object):
         Returns:
             None
         """
-        # pylint: disable=too-many-instance-attributes
         self.cycle_timestamp = cycle_timestamp
         self.resource = resource
         self.notifier_config = notifier_config
@@ -59,7 +58,6 @@ class BaseNotificationPipeline(object):
 
         # Get violations
         self.violations = violations
-        # pylint: enable=too-many-instance-attributes
 
     def _get_violations(self, timestamp):
         """Get all violtions.
