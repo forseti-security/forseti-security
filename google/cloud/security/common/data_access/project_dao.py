@@ -114,9 +114,6 @@ class ProjectDao(dao.Dao):
 
         Returns:
             A list of Projects.
-
-        Raises:
-            MySQLError if a MySQL error occurs.
         """
         projects_query = select_data.PROJECTS.format(timestamp)
         rows = self.execute_sql_with_fetch(
