@@ -34,16 +34,18 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-    def _transform(self, folders):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable folders.
 
         Args:
-            folders: An iterable of resource manager folders search response.
+            resource_from_api: An iterable of resource manager folders
+                search response.
 
         Yields:
             An iterable of loadable folders, each folder as a dict.
         """
-        for folder in (f for d in folders for f in d.get('folders', [])):
+        for folder in (f for d in resource_from_api for f in d.get('folders',
+                                                                   [])):
             folder_json = json.dumps(folder)
             try:
                 parsed_time = dateutil_parser.parse(folder.get('createTime'))

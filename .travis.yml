@@ -24,7 +24,7 @@ addons:
     packages:
     - "libmysqlclient-dev"
 install:
-  - "pip install -q coveralls pylint==1.6.5"
+  - "pip install -q --upgrade coveralls pylint"
   - "bash scripts/travis/install_protoc.sh"
   - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
 script:

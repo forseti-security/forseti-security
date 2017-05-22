@@ -32,22 +32,6 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
     RESOURCE_NAME = 'group_members'
     GROUP_CHUNK_SIZE = 20
 
-
-    def __init__(self, cycle_timestamp, configs, admin_client, dao):
-        """Constructor for the data pipeline.
-
-        Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
-            admin_client: Admin API client.
-            dao: Data access object.
-
-        Returns:
-            None
-        """
-        super(LoadGroupMembersPipeline, self).__init__(
-            cycle_timestamp, configs, admin_client, dao)
-
     def _fetch_groups_from_dao(self):
         """Fetch the latest group ids previously stored in Cloud SQL.
 
@@ -67,16 +51,16 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         return group_ids
 
 
-    def _transform(self, groups_members_map):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable groups.
 
         Args:
-            groups_members_map: A tuple of (group_object, group_object_members)
+            resource_from_api: A tuple of (group_object, group_object_members)
 
         Yields:
             An iterable of loadable groups as a per-group dictionary.
         """
-        for (group, group_member) in groups_members_map:
+        for (group, group_member) in resource_from_api:
             for member in group_member:
                 yield {'group_id': group,
                        'member_kind': member.get('kind'),
