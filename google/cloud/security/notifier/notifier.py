@@ -63,7 +63,8 @@ def find_pipelines(pipeline_name):
         for filename in dir(module):
             obj = getattr(module, filename)
 
-            if inspect.isclass(obj) and issubclass(obj, BaseNotificationPipeline) \
+            if inspect.isclass(obj) \
+               and issubclass(obj, BaseNotificationPipeline) \
                and obj is not BaseNotificationPipeline:
                 return obj
     except ImportError:
