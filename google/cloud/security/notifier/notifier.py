@@ -19,7 +19,7 @@ Usage:
   $ forseti_notifier --db_host <Cloud SQL database hostname/IP> \\
       --db_user <Cloud SQL database user> \\
       --db_name <Cloud SQL database name (required)> \\
-      --pipeline <Notification pipeline> \\
+      --config <Notification configuration> \\
       --timestamp <Snapshot timestamp to search for violations>
 """
 
@@ -45,7 +45,6 @@ FLAGS = flags.FLAGS
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
 flags.DEFINE_string('timestamp', None, 'Snapshot timestamp')
-flags.DEFINE_string('pipeline', None, 'Pipeline to use')
 flags.DEFINE_string('config', None, 'Config file to use', short_name='c')
 
 LOGGER = log_util.get_logger(__name__)
@@ -91,10 +90,6 @@ def main(_):
                 else _get_timestamp()
 
     if FLAGS.config is None:
-        LOGGER.error('You must specify a notification pipeline')
-        exit()
-
-    if FLAGS.pipeline is None:
         LOGGER.error('You must specify a notification pipeline')
         exit()
 
