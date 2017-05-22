@@ -120,7 +120,8 @@ def main(_):
         if resource['should_notify'] is False:
             continue
         for pipeline in resource['pipelines']:
-            print pipeline
+            LOGGER.info('Running \'%s\' pipeline for resource \'%s\'' %
+                        (pipeline['name'], resource['resource']))
             chosen_pipeline = find_pipelines(pipeline['name'])
             pipelines.append(chosen_pipeline(resource['resource'],
                                              timestamp,
