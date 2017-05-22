@@ -21,6 +21,7 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+
 BIGQUERY_DATASET_FIELDNAMES = [
     'project_id',
     'dataset_id',
@@ -77,6 +78,87 @@ BUCKETS_FIELDNAMES = [
     'bucket_selflink',
     'bucket_lifecycle_raw',
     'raw_bucket'
+]
+
+CLOUDSQL_ACL_VIOLATIONS = [
+    'resource_type',
+    'resource_id',
+    'rule_name',
+    'rule_index',
+    'violation_type',
+    'instance_name',
+    'authorized_networks',
+    'ssl_enabled',
+]
+
+CLOUDSQL_INSTANCES_FIELDNAMES = [
+    'project_number',
+    'name',
+    'project',
+    'backend_type',
+    'connection_name',
+    'current_disk_size',
+    'database_version',
+    'failover_replica_available',
+    'failover_replica_name',
+    'instance_type',
+    'ipv6_address',
+    'kind',
+    'master_instance_name',
+    'max_disk_size',
+    'on_premises_configuration_host_port',
+    'on_premises_configuration_kind',
+    'region',
+    'replica_configuration',
+    'replica_names',
+    'self_link',
+    'server_ca_cert',
+    'service_account_email_address',
+    'settings_activation_policy',
+    'settings_authorized_gae_applications',
+    'settings_availability_type',
+    'settings_backup_configuration_binary_log_enabled',
+    'settings_backup_configuration_enabled',
+    'settings_backup_configuration_kind',
+    'settings_backup_configuration_start_time',
+    'settings_crash_safe_replication_enabled',
+    'settings_data_disk_size_gb',
+    'settings_data_disk_type',
+    'settings_database_flags',
+    'settings_database_replication_enabled',
+    'settings_ip_configuration_ipv4_enabled',
+    'settings_ip_configuration_require_ssl',
+    'settings_kind',
+    'settings_labels',
+    'settings_location_preference_follow_gae_application',
+    'settings_location_preference_kind',
+    'settings_location_preference_zone',
+    'settings_maintenance_window',
+    'settings_pricing_plan',
+    'settings_replication_type',
+    'settings_settings_version',
+    'settings_storage_auto_resize',
+    'settings_storage_auto_resize_limit',
+    'settings_tier',
+    'state',
+    'suspension_reason',
+]
+
+CLOUDSQL_IPADDRESSES_FIELDNAMES = [
+    'project_number',
+    'instance_name',
+    'type',
+    'ip_address',
+    'time_to_retire',
+]
+
+CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES = [
+    'project_number',
+    'instance_name',
+    'kind',
+    'name',
+    'value',
+    'expiration_time',
 ]
 
 FIREWALL_RULES_FIELDNAMES = [
@@ -215,6 +297,11 @@ CSV_FIELDNAME_MAP = {
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
     'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
+    'cloudsql_acl_violations': CLOUDSQL_ACL_VIOLATIONS,
+    'cloudsql_instances': CLOUDSQL_INSTANCES_FIELDNAMES,
+    'cloudsql_ipaddresses': CLOUDSQL_IPADDRESSES_FIELDNAMES,
+    'cloudsql_ipconfiguration_authorizednetworks': \
+        CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES,
     'firewall_rules': FIREWALL_RULES_FIELDNAMES,
     'folders': FOLDERS_FIELDNAMES,
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
