@@ -34,7 +34,7 @@ from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
-from google.cloud.security.notifier.pipelines.notification_pipeline import NotificationPipeline
+from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 # pylint: enable=line-too-long,no-name-in-module
 
 
@@ -63,8 +63,8 @@ def find_pipelines(pipeline_name):
         for filename in dir(module):
             obj = getattr(module, filename)
 
-            if inspect.isclass(obj) and issubclass(obj, NotificationPipeline) \
-               and obj is not NotificationPipeline:
+            if inspect.isclass(obj) and issubclass(obj, BaseNotificationPipeline) \
+               and obj is not BaseNotificationPipeline:
                 return obj
     except ImportError:
         return None

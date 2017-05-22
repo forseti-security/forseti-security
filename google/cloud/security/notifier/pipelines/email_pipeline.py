@@ -19,13 +19,13 @@
 # pylint: disable=line-too-long,no-name-in-module
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.notifier.pipelines import notification_pipeline
+from google.cloud.security.notifier.pipelines import base_notification_pipeline
 # pylint: enable=line-too-long,no-name-in-module
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class EmailPipeline(notification_pipeline.NotificationPipeline):
+class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
     """Email pipeline to perform notifications"""
 
     def _send_email(self):

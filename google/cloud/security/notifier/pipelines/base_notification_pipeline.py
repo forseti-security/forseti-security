@@ -27,7 +27,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class NotificationPipeline(object):
+class BaseNotificationPipeline(object):
     """Base pipeline to perform notifications"""
 
     def __init__(self, resource, cycle_timestamp,
