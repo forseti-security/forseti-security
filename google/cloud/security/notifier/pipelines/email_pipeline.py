@@ -98,8 +98,18 @@ class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
             pretty_timestamp, self.resource)
         return email_subject, email_content
 
-    def _send(self, subject, content, attachment):
-        """Send a summary email of the scan."""
+    def _send(self, **kwargs):
+        """Send a summary email of the scan.
+
+        Args:
+            subject: Email subject
+            conetent: Email content
+            attachment: Attachment object
+        """
+        subject = kwargs.get('subject')
+        content = kwargs.get('content')
+        attachment = kwargs.get('attachment')
+
         self.mail_util.send(email_sender=self.pipeline_config['sender'],
                             email_recipient=self.pipeline_config['recipient'],
                             email_subject=subject,
@@ -114,4 +124,4 @@ class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
         attachment = self._make_attachment()
         subject, content = self._make_content()
 
-        self._send(subject, content, attachment)
+        self._send(subject=subject, content=content, attachment=attachment)
