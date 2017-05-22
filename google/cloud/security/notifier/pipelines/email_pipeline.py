@@ -15,48 +15,103 @@
 
 """Email pipeline to perform notifications"""
 
+from datetime import datetime
+
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long,no-name-in-module
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.notifier.pipelines import base_notification_pipeline
 # pylint: enable=line-too-long,no-name-in-module
 
 LOGGER = log_util.get_logger(__name__)
 
+TEMP_DIR = '/tmp'
+VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
+OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
+
 
 class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
     """Email pipeline to perform notifications"""
 
-    def _send(self):
-        """Send a summary email of the scan."""
+    def _get_output_filename(self):
+        """Create the output filename.
 
-        mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
+        Returns:
+            The output filename for the violations json.
+        """
+        now_utc = datetime.utcnow()
+        output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
+        output_filename = VIOLATIONS_JSON_FMT.format(self.resource,
+                                                     self.cycle_timestamp,
+                                                     output_timestamp)
+        return output_filename
 
-        # Render the email template with values.
-        scan_date = self.cycle_timestamp
-        email_content = EmailUtil.render_from_template(
-            'scanner_summary.jinja', {
-                'scan_date':  self.cycle_timestamp,
-                'resource_summaries': {}, #TODO
+    def _write_temp_attachment(self):
+        """Write the attachment to a temp file.
+
+        Returns:
+            The output filename for the violations json just written.
+        """
+        # Make attachment
+        output_file_name = self._get_output_filename()
+        output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
+        with open(output_file_path, 'w+') as f:
+            f.write(parser.json_stringify(self.violations))
+        return output_file_name
+
+    def _make_attachment(self):
+        """Create the attachment object.
+
+        Returns:
+            The attachment object.
+        """
+        output_file_name = self._write_temp_attachment()
+        attachment = self.mail_util.create_attachment(
+            file_location='{}/{}'.format(TEMP_DIR, output_file_name),
+            content_type='text/json',
+            filename=output_file_name,
+            disposition='attachment',
+            content_id='Violations'
+        )
+
+        return attachment
+
+    def _make_content(self):
+        """Create the email content.
+
+        Returns:
+            A tuple containing the email subject and the content
+        """
+        timestamp = datetime.strptime(
+            self.cycle_timestamp, '%Y%m%dT%H%M%SZ')
+        pretty_timestamp = timestamp.strftime("%d %B %Y - %H:%M:%S")
+        email_content = self.mail_util.render_from_template(
+            'notification_summary.jinja', {
+                'scan_date':  pretty_timestamp,
+                'resource': self.resource,
                 'violation_errors': self.violations,
             })
 
-        # Create an attachment out of the csv file and base64 encode the content.
-        """
-        attachment = EmailUtil.create_attachment(
-            file_location=csv_name,
-            content_type='text/csv',
-            filename=_get_output_filename(now_utc),
-            disposition='attachment',
-            content_id='Scanner Violations'
-        )
-        """
-        mail_util.send(email_sender=self.pipeline_config['sender'],
-                       email_recipient=self.pipeline_config['recipient'],
-                       email_subject='Forseti Violations {0}'.format(scan_date),
-                       email_content=email_content,
-                       content_type='text/html')
+        email_subject = 'Forseti Violations {} - {}'.format(
+            pretty_timestamp, self.resource)
+        return email_subject, email_content
+
+    def _send(self, subject, content, attachment):
+        """Send a summary email of the scan."""
+        self.mail_util.send(email_sender=self.pipeline_config['sender'],
+                            email_recipient=self.pipeline_config['recipient'],
+                            email_subject=subject,
+                            email_content=content,
+                            content_type='text/html',
+                            attachment=attachment)
 
     def run(self):
-        self._send()
+        """Run the email pipeline"""
+        self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
+
+        attachment = self._make_attachment()
+        subject, content = self._make_content()
+
+        self._send(subject, content, attachment)
