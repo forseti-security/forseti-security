@@ -75,6 +75,11 @@ class BaseNotificationPipeline(object):
         return violations
 
     @abc.abstractmethod
+    def _send(self):
+        """Send notifications."""
+        pass
+
+    @abc.abstractmethod
     def run(self):
         """Runs the pipeline."""
         pass

@@ -28,7 +28,7 @@ LOGGER = log_util.get_logger(__name__)
 class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
     """Email pipeline to perform notifications"""
 
-    def _send_email(self):
+    def _send(self):
         """Send a summary email of the scan."""
 
         mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
@@ -59,4 +59,4 @@ class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
                        content_type='text/html')
 
     def run(self):
-        self._send_email()
+        self._send()
