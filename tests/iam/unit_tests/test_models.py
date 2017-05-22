@@ -187,3 +187,18 @@ MEMBER_TESTING_2 = {
         'roles':{},
         'bindings':{},
     }
+
+MEMBER_TESTING_3 = {
+        'resources':{},
+        'memberships':{
+                'group/g1' : {
+                        'group/g1g1' : {
+                                'user/g1g1u1' : {},
+                                'user/g1g1u2' : {},
+                                'user/g1g1u3' : {},
+                            },
+                    },
+            },
+        'roles':{},
+        'bindings':{},
+    }

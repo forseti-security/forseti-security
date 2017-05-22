@@ -49,3 +49,6 @@ def oneof(*args):
 
 def full_to_type_name(full_resource_name):
     return '/'.join(full_resource_name.split('/')[-2:])
+
+def resource_to_type_name(resource):
+    return '{}/{}'.format(resource.type, resource.name)

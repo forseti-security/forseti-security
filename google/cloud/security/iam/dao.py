@@ -31,7 +31,7 @@ from sqlalchemy.orm import relationship, aliased, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive,\
-    full_to_type_name
+    full_to_type_name, resource_to_type_name
 
 
 def generate_model_handle():
@@ -451,12 +451,43 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def denormalize(cls, session, per_yield=1024):
             """Denormalize the model into access triples."""
-            for triples in session.query(Permission, Resource, Member)\
-                    .join(role_permissions)\
-                    .join(Role).join(Binding)\
-                    .join(binding_members).join(Member)\
-                    .yield_per(per_yield):
-                yield triples
+            qry = session.query(Binding)\
+                .join(binding_members)\
+                .join(Member)
+
+            members = set()
+            for binding in qry.all():
+                for member in binding.members:
+                    members.add(member.name)
+
+            expanded_members = cls.expand_members_map(session, members)
+            role_permissions_map = defaultdict(set)
+            for role, permission in \
+                session.query(Role, Permission)\
+                .join(role_permissions)\
+                .filter(Role.name == role_permissions.c.roles_name)\
+                .filter(Permission.name == role_permissions.c.permissions_name)\
+                .all():
+                role_permissions_map[role.name].add(permission.name)
+
+            for binding, member in \
+                session.query(Binding, Member)\
+                .join(binding_members)\
+                .filter(binding_members.c.bindings_id==Binding.id)\
+                .filter(binding_members.c.members_name==Member.name)\
+                .yield_per(per_yield):
+
+                resource_type_name = full_to_type_name(binding.resource_name)
+                resource_mapping = cls.expand_resources_by_type_names(session, [resource_type_name])
+
+                f = resource_to_type_name
+                resource_mapping = {f(k):set([f(m) for m in v]) for k,v in resource_mapping.iteritems()}
+ 
+                for expanded_member in expanded_members[member.name]:
+                    for permission in role_permissions_map[binding.role_name]:
+                        for res in resource_mapping[resource_type_name]:
+                            triple = (permission, res, expanded_member)
+                            yield triple
 
         @classmethod
         def set_iam_policy(cls, session, full_resource_name, policy):
@@ -809,6 +840,58 @@ def define_model(model_name, dbengine, model_seed):
                 return member_set
 
         @classmethod
+        def expand_members_map(cls, session, member_names):
+            """Expand group membership keyed by member."""
+            members = session.query(Member).filter(
+                Member.name.in_(member_names)).all()
+
+            member_map = defaultdict(set)
+            for member in members:
+                member_map[member.name] = set()
+
+            def is_group(member):
+                """Returns true iff the member is a group."""
+                return member.type == 'group'
+
+            all_member_set = set([m.name for m in members])
+            new_member_set = set([m.name for m in members if is_group(m)])
+
+            member_child  = aliased(Member, name='member_child')
+            member_parent = aliased(Member, name='member_parent')
+
+            while new_member_set:
+                to_query_set = new_member_set
+                new_member_set = set()
+
+                for member, parent in \
+                    session.query(group_members)\
+                        .filter(group_members.c.members_name.in_(to_query_set))\
+                        .all():
+
+                    member_map[parent].add(member)
+
+                    if member.startswith('group/') and member not in all_member_set:
+                        new_member_set.add(member)
+
+                    all_member_set.add(parent)
+                    all_member_set.add(member)
+
+            def denormalize_membership(parent_name, member_map, cur_member_set):
+                """Parent->members map to Parent->transitive members."""
+                cur_member_set.add(parent_name)
+                if parent_name not in member_map:
+                    return set()
+                members_to_add = member_map[parent_name].difference(cur_member_set)
+                for member in members_to_add:
+                    cur_member_set.add(member)
+                    new_members = denormalize_membership(member, member_map, cur_member_set)
+                    cur_member_set = cur_member_set.union(new_members)
+                return cur_member_set
+
+            result =  {m:denormalize_membership(m, member_map, set()) for m in member_names}
+            return result
+
+        @classmethod
         def expand_members(cls, session, member_names):
             """Expand group membership towards the members."""
             members = session.query(Member).filter(
@@ -1055,12 +1138,12 @@ class ModelManager(object):
                 Model.handle == model_name).one()
 
 
-def session_creator(model_name, filename=None, seed=None):
+def session_creator(model_name, filename=None, seed=None, echo=False):
     """Create a session maker for the model and db file."""
     if filename:
         engine = create_engine('sqlite:///{}'.format(filename))
     else:
-        engine = create_engine('sqlite:///:memory:', echo=False)
+        engine = create_engine('sqlite:///:memory:', echo=echo)
     if seed is None:
         seed = generate_model_seed()
     session_maker, data_access = define_model(model_name, engine, seed)
