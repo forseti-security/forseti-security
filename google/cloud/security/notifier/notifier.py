@@ -100,9 +100,9 @@ def main(_):
     v_dao = violation_dao.ViolationDao()
     violations = {
         'violations': v_dao.get_all_violations(
-         timestamp, 'violations'),
+            timestamp, 'violations'),
         'bucket_acl_violations': v_dao.get_all_violations(
-         timestamp, 'buckets_acl_violations')
+            timestamp, 'buckets_acl_violations')
     }
     for retrieved_v in violations:
         LOGGER.info('retrieved %d violations for resource \'%s\'' % (
