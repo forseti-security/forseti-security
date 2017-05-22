@@ -62,7 +62,7 @@ class ProjectDao(dao.Dao):
             timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-             list of project numbers
+             A list of project numbers.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
@@ -71,6 +71,23 @@ class ProjectDao(dao.Dao):
         rows = self.execute_sql_with_fetch(
             resource_name, project_numbers_sql, ())
         return [row['project_number'] for row in rows]
+
+    def get_project(self, project_id, timestamp):
+        """Get a project from a particular snapshot.
+
+        Args:
+            project_id: The id of the project.
+            timestamp: The snapshot timestamp.
+
+        Returns:
+            A Project, if found.
+        """
+        project_query = select_data.PROJECT_BY_ID.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource.ResourceType.PROJECT, project_query, (project_id,))
+        if rows:
+            return self.map_row_to_object(rows[0])
+        return None
 
     def get_projects(self, timestamp):
         """Get projects from a particular snapshot.

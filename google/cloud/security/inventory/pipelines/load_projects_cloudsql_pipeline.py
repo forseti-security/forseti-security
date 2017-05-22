@@ -36,8 +36,8 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
     RESOURCE_NAME_INSTANCES = 'cloudsql_instances'
     RESOURCE_NAME_IPADDRESSES = 'cloudsql_ipaddresses'
-    RESOURCE_NAME_AUTHORIZED_NETWORKS = \
-        'cloudsql_ipconfiguration_authorizednetworks'
+    RESOURCE_NAME_AUTHORIZEDNETWORKS = (  # pylint: disable=invalid-name
+        'cloudsql_ipconfiguration_authorizednetworks')
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -56,7 +56,8 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         super(LoadProjectsCloudsqlPipeline, self).__init__(
             cycle_timestamp, configs, sqladmin_client, dao)
 
-    def _transform_data(self, cloudsql_instances_map):
+    @staticmethod
+    def _transform_data(cloudsql_instances_map):
         """Yield an iterator of loadable instances.
 
         Args:
@@ -280,7 +281,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         data_dict = {}
         data_dict[self.RESOURCE_NAME_INSTANCES] = \
             self._transform_data(cloudsql_instances_map)
-        data_dict[self.RESOURCE_NAME_AUTHORIZED_NETWORKS] = \
+        data_dict[self.RESOURCE_NAME_AUTHORIZEDNETWORKS] = \
             self._transform_authorizednetworks(cloudsql_instances_map)
         data_dict[self.RESOURCE_NAME_IPADDRESSES] = \
             self._transform_ipaddresses(cloudsql_instances_map)
@@ -341,8 +342,8 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                 loadable_instances_dict[self.RESOURCE_NAME_INSTANCES])
         self._load(self.RESOURCE_NAME_IPADDRESSES, \
                 loadable_instances_dict[self.RESOURCE_NAME_IPADDRESSES])
-        self._load(self.RESOURCE_NAME_AUTHORIZED_NETWORKS, \
+        self._load(self.RESOURCE_NAME_AUTHORIZEDNETWORKS, \
                 loadable_instances_dict[
-                    self.RESOURCE_NAME_AUTHORIZED_NETWORKS
+                    self.RESOURCE_NAME_AUTHORIZEDNETWORKS
                     ])
         self._get_loaded_count()
