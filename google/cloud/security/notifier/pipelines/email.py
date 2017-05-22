@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Internal pipeline to perform notifications"""
+"""Email pipeline to perform notifications"""
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long,no-name-in-module
