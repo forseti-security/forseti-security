@@ -17,10 +17,12 @@
 from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
 # pylint: disable=line-too-long
 from google.cloud.security.scanner.audit.buckets_rules_engine import BucketsRulesEngine
+from google.cloud.security.scanner.audit.cloudsql_rules_engine import CloudSqlRulesEngine
 # pylint: enable=line-too-long
 
 
 ENGINE_TO_DATA_MAP = {
     'IamRulesEngine': IamRulesEngine,
     'BucketsRulesEngine': BucketsRulesEngine,
+    'CloudSqlRulesEngine': CloudSqlRulesEngine,
 }

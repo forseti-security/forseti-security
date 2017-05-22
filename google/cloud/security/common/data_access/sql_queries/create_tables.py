@@ -86,6 +86,103 @@ CREATE_BUCKETS_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_CLOUDSQL_ACL_VIOLATIONS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `resource_type` varchar(255) NOT NULL,
+        `resource_id` varchar(255) NOT NULL,
+        `rule_name` varchar(255) DEFAULT NULL,
+        `rule_index` int DEFAULT NULL,
+        `violation_type` enum('CLOUD_SQL_VIOLATION') NOT NULL,
+        `instance_name` varchar(255) DEFAULT NULL,
+        `authorized_networks` varchar(255) DEFAULT NULL,
+        `ssl_enabled` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_CLOUDSQL_INSTANCES_TABLE = """
+    CREATE TABLE {0} (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `project` varchar(255) DEFAULT NULL,
+        `backend_type` varchar(255) DEFAULT NULL,
+        `connection_name` varchar(255) DEFAULT NULL,
+        `current_disk_size` bigint DEFAULT NULL,
+        `database_version` varchar(255) DEFAULT NULL,
+        `failover_replica_available` varchar(255) DEFAULT NULL, 
+        `failover_replica_name` varchar(255) DEFAULT NULL,
+        `instance_type` varchar(255) DEFAULT NULL,
+        `ipv6_address` varchar(255) DEFAULT NULL,
+        `kind` varchar(255) DEFAULT NULL,
+        `master_instance_name` varchar(255) DEFAULT NULL,
+        `max_disk_size` bigint DEFAULT NULL,
+        `on_premises_configuration_host_port` varchar(255) DEFAULT NULL,
+        `on_premises_configuration_kind` varchar(255) DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `replica_configuration` json DEFAULT NULL,
+        `replica_names` json DEFAULT NULL,
+        `self_link` varchar(255) DEFAULT NULL,
+        `server_ca_cert` json DEFAULT NULL,
+        `service_account_email_address` varchar(255) DEFAULT NULL,
+        `settings_activation_policy` varchar(255) DEFAULT NULL,
+        `settings_authorized_gae_applications` json DEFAULT NULL,
+        `settings_availability_type` varchar(255) DEFAULT NULL,
+        `settings_backup_configuration_binary_log_enabled` varchar(255) DEFAULT NULL,
+        `settings_backup_configuration_enabled` varchar(255) DEFAULT NULL,
+        `settings_backup_configuration_kind` varchar(255) DEFAULT NULL,
+        `settings_backup_configuration_start_time` varchar(255) DEFAULT NULL,
+        `settings_crash_safe_replication_enabled` varchar(255) DEFAULT NULL,
+        `settings_data_disk_size_gb` bigint DEFAULT NULL,
+        `settings_data_disk_type` varchar(255) DEFAULT NULL,
+        `settings_database_flags` json DEFAULT NULL,
+        `settings_database_replication_enabled` varchar(255) DEFAULT NULL,
+        `settings_ip_configuration_ipv4_enabled` varchar(255) DEFAULT NULL,
+        `settings_ip_configuration_require_ssl` varchar(255) DEFAULT NULL,
+        `settings_kind` varchar(255) DEFAULT NULL,
+        `settings_labels` json DEFAULT NULL,
+        `settings_location_preference_follow_gae_application` varchar(255) DEFAULT NULL,
+        `settings_location_preference_kind` varchar(255) DEFAULT NULL,
+        `settings_location_preference_zone` varchar(255) DEFAULT NULL,
+        `settings_maintenance_window` json DEFAULT NULL,
+        `settings_pricing_plan` varchar(255) DEFAULT NULL,
+        `settings_replication_type` varchar(255) DEFAULT NULL,
+        `settings_settings_version` bigint DEFAULT NULL,
+        `settings_storage_auto_resize` varchar(255) DEFAULT NULL,
+        `settings_storage_auto_resize_limit` bigint DEFAULT NULL,
+        `settings_tier` varchar(255) DEFAULT NULL,
+        `state` varchar(255) DEFAULT NULL,
+        `suspension_reason` json DEFAULT NULL,
+        PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_CLOUDSQL_IPADDRESSES_TABLE = """
+    CREATE TABLE {0} (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,    
+        `instance_name` varchar(255) DEFAULT NULL,
+        `type` varchar(255) DEFAULT NULL,
+        `ip_address` varchar(255) DEFAULT NULL,
+        `time_to_retire` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS = """
+    CREATE TABLE {0} (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,    
+        `project_number` bigint(20) NOT NULL,    
+        `instance_name` varchar(255) DEFAULT NULL,
+        `kind` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `value` varchar(255) DEFAULT NULL,
+        `expiration_time` datetime DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_FIREWALL_RULES_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
