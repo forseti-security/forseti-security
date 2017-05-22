@@ -75,19 +75,6 @@ class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
         self.assertEquals(
              fake_cloudsql.EXPECTED_LOADED_AUTHORIZEDNETWORKS,
              actual_authorizednetworks)
-
-        #expected_loadable_cloudsql = {
-        #    self.pipeline.RESOURCE_NAME_INSTANCES:
-        #        fake_cloudsql.EXPECTED_LOADED_INSTANCES,
-        #    self.pipeline.RESOURCE_NAME_IPADDRESSES:
-        #        fake_cloudsql.EXPECTED_LOADED_IPADDRESSES,
-        #    self.pipeline.RESOURCE_NAME_AUTHORIZEDNETWORKS:
-        #        fake_cloudsql.EXPECTED_LOADED_AUTHORIZEDNETWORKS
-        #}
-        #self.assertEquals(
-        #   expected_loadable_cloudsql,
-        #   loadable_cloudsql)
-
     
     def test_api_is_called_to_retrieve_cloudsql(self):
         """Test that api is called to retrive cloudsql instances."""
