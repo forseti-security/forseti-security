@@ -105,21 +105,21 @@ def main(_):
             timestamp, 'buckets_acl_violations')
     }
     for retrieved_v in violations:
-        LOGGER.info('retrieved %d violations for resource \'%s\'' % (
-            len(violations[retrieved_v]), retrieved_v))
+        LOGGER.info('retrieved %d violations for resource \'%s\'',
+                    len(violations[retrieved_v]), retrieved_v)
 
     # build notification pipelines
     pipelines = []
     for resource in configs['resources']:
         if violations.get(resource['resource']) is None:
-            LOGGER.error('The resource name \'%s\' is invalid, skipping' %
+            LOGGER.error('The resource name \'%s\' is invalid, skipping',
                          resource['resource'])
             continue
         if resource['should_notify'] is False:
             continue
         for pipeline in resource['pipelines']:
-            LOGGER.info('Running \'%s\' pipeline for resource \'%s\'' %
-                        (pipeline['name'], resource['resource']))
+            LOGGER.info('Running \'%s\' pipeline for resource \'%s\'',
+                        pipeline['name'], resource['resource'])
             chosen_pipeline = find_pipelines(pipeline['name'])
             pipelines.append(chosen_pipeline(resource['resource'],
                                              timestamp,
