@@ -51,7 +51,7 @@ def escape_and_globify(pattern_string):
 class BucketsRulesEngine(bre.BaseRulesEngine):
     """Rules engine for bucket acls"""
 
-    def __init__(self, rules_file_path):
+    def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
 
         Args:

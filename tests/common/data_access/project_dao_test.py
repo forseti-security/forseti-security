@@ -41,6 +41,7 @@ class ProjectDaoTest(basetest.TestCase):
         self.project_dao.execute_sql_with_fetch = self.fetch_mock
         self.resource_name = 'projects'
         self.fake_timestamp = '12345'
+        self.fake_projects_db_rows = fake_projects.FAKE_PROJECTS_DB_ROWS
         self.fake_projects_bad_iam_db_rows = \
             fake_projects.FAKE_PROJECTS_BAD_IAM_DB_ROWS
 
@@ -79,6 +80,29 @@ class ProjectDaoTest(basetest.TestCase):
         with self.assertRaises(errors.MySQLError):
             self.project_dao.get_project_numbers(
                 self.resource_name, self.fake_timestamp)
+
+    def test_get_project(self):
+        """Test that get_project() returns expected data.
+
+        Setup:
+            Mock execute_sql_with_fetch() return value.
+            Create fake row of project data.
+
+        Expect:
+            get_project() call returns expected data: a single Project.
+        """
+        fake_project = self.fake_projects_db_rows[0]
+        self.fetch_mock.return_value = [fake_project]
+
+        fake_query = select_data.PROJECT_BY_ID.format(
+            self.fake_timestamp, self.fake_timestamp)
+        actual = self.project_dao.get_project(
+            fake_project['project_id'],
+            self.fake_timestamp)
+
+        self.assertEqual(
+            self.project_dao.map_row_to_object(fake_project),
+            actual)
 
     def test_get_project_iam_policies(self):
         """Test that get_project_iam_policies() database methods are called.

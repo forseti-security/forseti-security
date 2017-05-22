@@ -14,13 +14,10 @@
 
 """Pipeline to load projects data into Inventory."""
 
-import json
-
-from dateutil import parser as dateutil_parser
-
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
@@ -31,8 +28,6 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
     """Pipeline to load project data into Inventory."""
 
     RESOURCE_NAME = 'projects'
-
-    MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
     def _transform(self, projects):
         """Yield an iterator of loadable iam policies.
@@ -46,25 +41,16 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         """
         for project in (project for d in projects \
                         for project in d.get('projects', [])):
-            project_json = json.dumps(project)
-            try:
-                parsed_time = dateutil_parser.parse(project.get('createTime'))
-                formatted_project_create_time = (
-                    parsed_time.strftime(self.MYSQL_DATETIME_FORMAT))
-            except (TypeError, ValueError) as e:
-                LOGGER.error(
-                    'Unable to parse create_time from project: %s\n%s',
-                    project.get('createTime', ''), e)
-                formatted_project_create_time = '0000-00-00 00:00:00'
-
             yield {'project_number': project.get('projectNumber'),
                    'project_id': project.get('projectId'),
                    'project_name': project.get('name'),
                    'lifecycle_state': project.get('lifecycleState'),
                    'parent_type': project.get('parent', {}).get('type'),
                    'parent_id': project.get('parent', {}).get('id'),
-                   'raw_project': project_json,
-                   'create_time': formatted_project_create_time}
+                   'raw_project': parser.json_stringify(project),
+                   'create_time': parser.format_timestamp(
+                       project.get('createTime'),
+                       self.MYSQL_DATETIME_FORMAT)}
 
     def _retrieve(self):
         """Retrieve the project resources from GCP.

@@ -85,6 +85,7 @@ class BasePipeline(object):
             LOGGER.warn('No %s data to load into Cloud SQL, continuing...',
                         resource_name)
             return
+
         try:
             self.dao.load_data(resource_name, self.cycle_timestamp, data)
         except (data_access_errors.CSVFileError,

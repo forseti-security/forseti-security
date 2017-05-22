@@ -13,7 +13,6 @@
 # limitations under the License.
 """GCP Resource scanner.
 
-
 Usage:
 
   List rules engines:
@@ -32,6 +31,7 @@ Usage:
       --email_recipient <email address of the email recipient>
 """
 
+import collections
 import itertools
 import os
 import shutil
@@ -109,15 +109,15 @@ def main(_):
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
 
     # TODO: Make the groups scanner run consistently with other scanners
-    # instead of it's own execution path.
+    # instead of its own execution path.
     if rules_engine_name == 'GroupsEngine':
         all_violations = scanner.run(FLAGS.rules)
         LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
-        sys.exit(1)
+        sys.exit(0)
 
     # Instantiate rules engine with supplied rules file
     rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
-        rules_file_path=FLAGS.rules)
+        rules_file_path=FLAGS.rules, snapshot_timestamp=snapshot_timestamp)
     rules_engine.build_rule_book()
 
     iter_objects, resource_counts = scanner.run()
@@ -136,7 +136,7 @@ def main(_):
                         resource_counts=resource_counts,
                         flattening_scheme=flattening_scheme)
 
-    LOGGER.info('Done!')
+    LOGGER.info('Scan complete!')
 
 def _list_rules_engines():
     """List rules engines.
@@ -154,7 +154,8 @@ def _get_output_filename(now_utc):
     """Create the output filename.
 
     Args:
-        now_utc: The datetime now in UTC.
+        now_utc: The datetime now in UTC. Generated at the top level to be
+            consistent across the scan.
 
     Returns:
         The output filename for the csv, formatted with the now_utc timestamp.
@@ -166,6 +167,9 @@ def _get_output_filename(now_utc):
 
 def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
+
+    Args:
+        statuses: The snapshot statuses to search for latest timestamp.
 
     Returns:
         The latest snapshot timestamp string.
@@ -234,6 +238,7 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
 
     Args:
         all_violations: The list of violations to report.
+        snapshot_timestamp: The snapshot timetamp associated with this scan.
         **kwargs: The rest of the args.
     """
 
@@ -344,7 +349,7 @@ def _send_email(csv_name, now_utc, all_violations,
         disposition='attachment',
         content_id='Scanner Violations'
     )
-    scanner_subject = 'Policy Scan Complete - {} violations found'.format(
+    scanner_subject = 'Policy Scan Complete - {} violation(s) found'.format(
         total_violations)
     mail_util.send(email_sender=FLAGS.email_sender,
                    email_recipient=FLAGS.email_recipient,
@@ -356,6 +361,22 @@ def _send_email(csv_name, now_utc, all_violations,
 def _build_scan_summary(all_violations, total_resources):
     """Build the scan summary.
 
+    Build a summary of the violations and counts for the email.
+
+    resource summary:
+        {
+            RESOURCE_TYPE: {
+                'pluralized_resource_type': '{RESOURCE_TYPE}s'
+                'total': TOTAL,
+                'violations': {
+                    RESOURCE_ID: NUM_VIOLATIONS,
+                    RESOURCE_ID: NUM_VIOLATIONS,
+                    ...
+                }
+            },
+            ...
+        }
+
     Args:
         all_violations: List of violations.
         total_resources: A dict of the resources and their count.
@@ -366,23 +387,15 @@ def _build_scan_summary(all_violations, total_resources):
 
     resource_summaries = {}
     total_violations = 0
-    # Build a summary of the violations and counts for the email.
-    # resource summary:
-    # {
-    #     RESOURCE_TYPE: {
-    #         'total': TOTAL,
-    #         'ids': [...] # resource_ids
-    #     },
-    #     ...
-    # }
-    for violation in all_violations:
+
+    for violation in sorted(all_violations, key=lambda v: v.resource_id):
         resource_type = violation.resource_type
         if resource_type not in resource_summaries:
             resource_summaries[resource_type] = {
                 'pluralized_resource_type': resource_util.pluralize(
                     resource_type),
                 'total': total_resources[resource_type],
-                'violations': {}
+                'violations': collections.OrderedDict()
             }
 
         # Keep track of # of violations per resource id.
