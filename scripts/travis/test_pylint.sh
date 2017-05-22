@@ -15,9 +15,9 @@
 
 # A script to perform the linting of python code submits.
 
-echo "Running $(which pylint)."
+echo "Running $(which pylint).\n"
 
-pylint --version
+echo "Pylint version: $(pylint --version).\n"
 
 # The disables specified allow us to have 'I' level messages, just
 # not the ones specified.
@@ -26,9 +26,9 @@ PYTHONPATH=./ \
   --rcfile=./pylintrc
 
 if [ $? -ne 0 ]; then
-  echo "pylint had errors."
+  echo "Oops, pylint had errors.\n"
   exit 1
 else
-  echo "pylint had no errors."
+  echo "Success, pylint had no errors.\n"
   exit 0
 fi
