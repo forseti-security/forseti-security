@@ -23,7 +23,8 @@ echo "Pylint version: $(pip show pylint).\n"
 # not the ones specified.
 PYTHONPATH=./ \
   pylint google/ \
-  --rcfile=./pylintrc
+  --rcfile=pylintrc \
+  --ignore-patterns=".*_test.*,.*test_.*,.*test.py,.*pb2.*" 
 
 if [ $? -ne 0 ]; then
   echo "Oops, pylint had errors.\n"
