@@ -30,6 +30,8 @@ LOGGER = log_util.get_logger(__name__)
 class BaseNotificationPipeline(object):
     """Base pipeline to perform notifications"""
 
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self, resource, cycle_timestamp,
                  violations, notifier_config, pipeline_config):
         """Constructor for the base pipeline.
@@ -80,6 +82,11 @@ class BaseNotificationPipeline(object):
     @abc.abstractmethod
     def _send(self, **kwargs):
         """Send notifications."""
+        pass
+
+    @abc.abstractmethod
+    def _compose(self, **kwargs):
+        """Compose notifications."""
         pass
 
     @abc.abstractmethod
