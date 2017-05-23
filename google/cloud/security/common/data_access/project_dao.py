@@ -158,9 +158,6 @@ class ProjectDao(dao.Dao):
 
         Returns:
              list of project numbers
-
-        Raises:
-            MySQLError: An error with MySQL has occurred.
         """
         project_id = kwargs.get('project_id')
         project_number = kwargs.get('project_number')
