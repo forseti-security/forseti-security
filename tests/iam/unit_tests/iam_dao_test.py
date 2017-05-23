@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from test.test_xml_etree import check_element
 
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
@@ -351,7 +352,6 @@ class DaoTest(basetest.TestCase):
 
     def test_explain_granted(self):
         """Test explain_granted."""
-        return
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
@@ -362,17 +362,129 @@ class DaoTest(basetest.TestCase):
         callable = lambda: data_access.explain_granted(session, 'user/u3', 'r/res1', None, 'delete')
         self.assertRaises(Exception, callable)
 
-        explanation = data_access.explain_granted(session,
-                                                  'user/u3',
-                                                  'r/res1/r/res3/r/res4',
-                                                  None,
-                                                  'read')
-        import code
-        code.interact(local=locals())
+ 
+
+        check_1 = {
+            'parameters' : ('user/u3', 'r/res1/r/res3/r/res4', None, 'read'),
+            'bindings' : [
+                ('r/res1', 'viewer', 'group/g1'),
+                ('r/res1/r/res3', 'viewer', 'group/g1'),
+                ('r/res1/r/res3', 'writer', 'group/g3'),
+            ],
+
+            'member_graph' : {
+                'user/u3' : set(['group/g3g1','group/g2','group/g1']),
+                'group/g3g1' : set(['group/g3']),
+            },
+
+            'ancestors' : [
+                'r/res1/r/res3/r/res4',
+                'r/res1/r/res3',
+                'r/res1'
+            ]
+        }
+
+        check_2 = {
+            'parameters' : ('user/u4', 'r/res1/r/res3/r/res4', None, 'write'),
+            'bindings' : [
+                    ('r/res1/r/res3', 'writer', 'group/g3'),
+                ],
+            'member_graph' : {
+                'user/u4' : set(['group/g3g1']),
+                'group/g3g1' : set(['group/g3']),
+                },
+            'ancestors' : [
+                'r/res1/r/res3/r/res4',
+                'r/res1/r/res3',
+                'r/res1'         
+                ]
+            }
+        
+        check_3 = {
+            'parameters' : ('user/u1', 'r/res1', 'admin', None),
+            'bindings' : [
+                    ('r/res1', 'admin', 'user/u1'),
+                ],
+            'member_graph' : {
+                'user/u1' : set([]),
+                },
+            'ancestors' : [
+                'r/res1',
+                ]
+            }
+
+        def test_scenario(checks):
+            """Test a declarative explanation scenario."""
+            user, resource, role, permission = checks['parameters']
+            explanation = data_access.explain_granted(session,
+                                                  user,
+                                                  resource,
+                                                  role,
+                                                  permission)
+            bindings, graph, ancestors = explanation
+            bindings = checks['bindings']
+            member_graph = checks['member_graph']
+            check_ancestors = checks['ancestors']
+            for check in bindings:
+                self.assertTrue(check in bindings)
+            self.assertEqual(set(member_graph.keys()), set(graph.keys()))
+            for key, value in member_graph.iteritems():
+                self.assertEqual(value, graph[key])
+            self.assertEqual(check_ancestors, ancestors)
+
+        test_scenario(check_1)
+        test_scenario(check_2)
+        test_scenario(check_3)
 
     def test_explain_denied(self):
         """Test explain_denied."""
-        pass
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(EXPLAIN_GRANTED_1, client)
+
+        def explain_denied(member_name, resource_names,
+                           permission_names, role_names):
+            """data_access.explain_denied wrapper."""
+            return data_access.explain_denied(session,
+                                              member_name,
+                                              resource_names,
+                                              permission_names,
+                                              role_names)
+
+        explanation = explain_denied('user/u4',
+                                     ['r/res1/r/res2',
+                                      'r/res1/r/res3'],
+                                     ['delete'],
+                                     None)
+        expectation = [
+                (0, [(u'admin', u'user/u4', u'r/res1')]),
+            ]
+        self.assertEqual(expectation, explanation)
+
+        explanation = explain_denied('user/u2',
+                                     ['r/res1/r/res3/r/res4'],
+                                     ['read'],
+                                     None)
+        expectation = [
+                (2, [(u'admin', 'user/u2', u'r/res1')]),
+                (2, [(u'viewer', 'user/u2', u'r/res1')]),
+                (2, [(u'writer', 'user/u2', u'r/res1')]),
+                (1, [(u'admin', 'user/u2', u'r/res1/r/res3')]),
+                (1, [(u'viewer', 'user/u2', u'r/res1/r/res3')]),
+                (1, [(u'writer', 'user/u2', u'r/res1/r/res3')]),
+                (0, [(u'admin', 'user/u2', u'r/res1/r/res3/r/res4')]),
+                (0, [(u'viewer', 'user/u2', u'r/res1/r/res3/r/res4')]),
+                (0, [(u'writer', 'user/u2', u'r/res1/r/res3/r/res4')]),
+                (0, [(u'admin', u'group/g2', u'r/res1/r/res3/r/res4')]),
+                (2, [(u'viewer', u'group/g1', u'r/res1')]),
+                (1, [(u'viewer', u'group/g1', u'r/res1/r/res3')]),
+                (1, [(u'writer', u'group/g3', u'r/res1/r/res3')])
+            ]
+
+        self.assertEqual(len(expectation), len(explanation))
+        for item in expectation:
+            self.assertIn(item, explanation)
 
     def test_query_access_by_member(self):
         """Test query_access_by_member."""
@@ -699,7 +811,7 @@ class DaoTest(basetest.TestCase):
 
         # parent, set(child) relation
         test_resources = [chain[-1] for chain in tests]
-        graph = data_access.resolve_resource_ancestors_by_name(session, test_resources)
+        graph = data_access.resource_ancestors_by_name(session, test_resources)
         for chain in tests:
             for i in range(0, len(chain)-1):
                 parent = unicode('/'.join(chain[:i+1]))

@@ -116,11 +116,11 @@ class ModelTest(basetest.TestCase):
                 if access.role == 'b':
                     self.assertEqual(set(access.resources),
                                      set([
-                                         'organization/org1/project/project1/bucket/bucket1',
-                                         'organization/org1/project/project1',
-                                         'organization/org1/project/project2/vm/instance-1',
-                                         'organization/org1/project/project2/bucket/bucket2',
-                                         'organization/org1/project/project2',
+                                         'bucket/bucket1',
+                                         'project/project1',
+                                         'vm/instance-1',
+                                         'bucket/bucket2',
+                                         'project/project2',
                                          'organization/org1',
                                          ]))
                 else:

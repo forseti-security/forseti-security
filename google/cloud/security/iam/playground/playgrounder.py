@@ -87,7 +87,6 @@ class Playgrounder(object):
             data_access.add_resource_by_name(
                 session,
                 full_resource_name,
-                parent_full_resource_name,
                 no_require_parent)
             session.commit()
 
