@@ -107,6 +107,21 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             pretty_timestamp, self.resource)
         return email_subject, email_content
 
+    def _compose(self, **kwargs):
+        """Compose the email pipeline map
+
+        Returns:
+            Returns a map with subject, content, attachemnt
+        """
+        email_map = {}
+
+        attachment = self._make_attachment()
+        subject, content = self._make_content()
+        email_map['subject'] = subject
+        email_map['content'] = content
+        email_map['attachment'] = attachment
+        return email_map
+
     def _send(self, **kwargs):
         """Send a summary email of the scan.
 
@@ -115,9 +130,10 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             conetent: Email content
             attachment: Attachment object
         """
-        subject = kwargs.get('subject')
-        content = kwargs.get('content')
-        attachment = kwargs.get('attachment')
+        notification_map = kwargs.get('notification')
+        subject = notification_map['subject']
+        content = notification_map['content']
+        attachment = notification_map['attachment']
 
         self.mail_util.send(email_sender=self.pipeline_config['sender'],
                             email_recipient=self.pipeline_config['recipient'],
@@ -128,6 +144,5 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
 
     def run(self):
         """Run the email pipeline"""
-        attachment = self._make_attachment()
-        subject, content = self._make_content()
-        self._send(subject=subject, content=content, attachment=attachment)
+        email_notification = self._compose()
+        self._send(notification=email_notification)
