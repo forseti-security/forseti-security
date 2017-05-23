@@ -63,11 +63,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        projects_stub = self.service.projects()
+        projects_api = self.service.projects()
 
         try:
             with self.rate_limiter:
-                request = projects_stub.get(projectId=project_id)
+                request = projects_api.get(projectId=project_id)
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
@@ -90,6 +90,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         projects_api = self.service.projects()
         project_filter = []
         lifecycle_state = filterargs.get('lifecycleState')
+
         if lifecycle_state:
             project_filter.append('lifecycleState:%s' % lifecycle_state)
 
@@ -135,11 +136,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             IAM policies of the project.
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
         """
-        projects_stub = self.service.projects()
+        projects_api = self.service.projects()
 
         try:
             with self.rate_limiter:
-                request = projects_stub.getIamPolicy(
+                request = projects_api.getIamPolicy(
                     resource=project_identifier, body={})
                 return self._execute(request)
         except (HttpError, HttpLib2Error) as e:
@@ -154,11 +155,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Returns:
             The org response object if found, otherwise False.
         """
-        orgs_stub = self.service.organizations()
+        organizations_api = self.service.organizations()
 
         try:
             with self.rate_limiter:
-                request = orgs_stub.get(name=org_name)
+                request = organizations_api.get(name=org_name)
                 response = self._execute(request)
                 return response
         except (HttpError, HttpLib2Error) as e:
@@ -174,7 +175,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             An iterator of the response from the organizations API, which
             contains is paginated and contains a list of organizations.
         """
-        orgs_api = self.service.organizations()
+        organizations_api = self.service.organizations()
         next_page_token = None
 
         try:
@@ -183,7 +184,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                     req_body = {}
                     if next_page_token:
                         req_body['pageToken'] = next_page_token
-                    request = orgs_api.search(body=req_body)
+                    request = organizations_api.search(body=req_body)
                     response = self._execute(request)
                     yield response
                     next_page_token = response.get('nextPageToken')
@@ -206,11 +207,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        orgs_stub = self.service.organizations()
+        organizations_api = self.service.organizations()
         resource_id = 'organizations/%s' % org_id
         try:
             with self.rate_limiter:
-                request = orgs_stub.getIamPolicy(
+                request = organizations_api.getIamPolicy(
                     resource=resource_id, body={})
                 return {'org_id': org_id,
                         'iam_policy': self._execute(request)}

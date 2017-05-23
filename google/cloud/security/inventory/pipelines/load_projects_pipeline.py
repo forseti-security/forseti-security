@@ -29,17 +29,18 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
 
     RESOURCE_NAME = 'projects'
 
-    def _transform(self, projects):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable iam policies.
 
         Args:
-            projects: An iterable of resource manager project list response.
+            resource_from_api: An iterable of resource manager project list
+                response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
 
         Yields:
             An iterable of loadable projects, as a per-project dictionary.
         """
-        for project in (project for d in projects \
+        for project in (project for d in resource_from_api\
                         for project in d.get('projects', [])):
             yield {'project_number': project.get('projectNumber'),
                    'project_id': project.get('projectId'),

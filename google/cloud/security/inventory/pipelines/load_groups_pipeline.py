@@ -30,22 +30,7 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
 
     RESOURCE_NAME = 'groups'
 
-    def __init__(self, cycle_timestamp, configs, admin_client, dao):
-        """Constructor for the data pipeline.
-
-        Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
-            admin_client: Admin API client.
-            dao: Data access object.
-
-        Returns:
-            None
-        """
-        super(LoadGroupsPipeline, self).__init__(
-            cycle_timestamp, configs, admin_client, dao)
-
-    def _transform(self, groups_map):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable groups.
 
         Args:
@@ -54,7 +39,7 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of loadable groups as a per-group dictionary.
         """
-        for group in groups_map:
+        for group in resource_from_api:
             yield {'group_id': group.get('id'),
                    'group_email': group.get('email'),
                    'group_kind': group.get('kind'),
