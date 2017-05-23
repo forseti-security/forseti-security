@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
 from google.apputils import basetest
@@ -27,7 +26,7 @@ from google.cloud.security.common.util.threadpool import ThreadPool
 from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPANSION_2,\
     MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1, ROLES_PERMISSIONS_TESTING_1,\
     DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2,\
-    MEMBER_TESTING_3
+    MEMBER_TESTING_3, EXPLAIN_GRANTED_1
 from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
 
 def create_test_engine():
@@ -352,7 +351,24 @@ class DaoTest(basetest.TestCase):
 
     def test_explain_granted(self):
         """Test explain_granted."""
-        pass
+        return
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(EXPLAIN_GRANTED_1, client)
+
+        callable = lambda: data_access.explain_granted(session, 'user/u3', 'r/res1', 'admin', None)
+        self.assertRaises(Exception, callable)
+        callable = lambda: data_access.explain_granted(session, 'user/u3', 'r/res1', None, 'delete')
+        self.assertRaises(Exception, callable)
+
+        explanation = data_access.explain_granted(session,
+                                                  'user/u3',
+                                                  'r/res1/r/res3/r/res4',
+                                                  None,
+                                                  'read')
+        import code
+        code.interact(local=locals())
 
     def test_explain_denied(self):
         """Test explain_denied."""
@@ -460,15 +476,117 @@ class DaoTest(basetest.TestCase):
             self.assertEqual(set(expectations), all_set)
 
     def test_set_iam_policy(self):
-        pass
+        """Test check_iam_policy."""
+        session_maker, data_access = session_creator('test',None,None,False)
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(EXPLAIN_GRANTED_1, client)
+
+        set_policy = data_access.set_iam_policy
+        get_policy = data_access.get_iam_policy
+
+        callable = lambda: set_policy(session, 'r/res1', {
+                'bindings' :{}, 'etag':'somehash',
+            })
+        self.assertRaises(Exception, callable)
+
+        policy = get_policy(session, 'r/res1')
+        self.assertNotEqual(set([u'user/u1',u'group/g2']),
+                            set(policy['bindings']['viewer']))
+
+        policy = get_policy(session, 'r/res1')
+        policy['bindings']['viewer'] = ['user/u1','group/g2']
+        set_policy(session, 'r/res1', policy)
+
+        policy = get_policy(session, 'r/res1')
+        self.assertEqual(set([u'user/u1',u'group/g2']),
+                         set(policy['bindings']['viewer']))
+
+        resource = 'r/res1/r/res3/r/res4'
+        policy = get_policy(session, resource)
+        self.assertEqual(set([u'group/g2']),
+                         set(policy['bindings']['admin']))
+        policy['bindings']['writer'] = ['user/u3','user/u4']
+        set_policy(session, resource, policy)
+        policy = get_policy(session, resource)
+        self.assertEqual(set([u'user/u3',u'user/u4']),
+                         set(policy['bindings']['writer']))
+
 
     def test_get_iam_policy(self):
-        pass
+        """Test check_iam_policy."""
+        session_maker, data_access = session_creator('test',None,None,False)
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(EXPLAIN_GRANTED_1, client)
+
+        checks = (
+                ('r/res1', {
+                        u'viewer' : [u'group/g1'],
+                        u'admin'  : [u'user/u1'],
+                    }),
+                ('r/res1/r/res2', {
+                        u'viewer' : [u'group/g1'],
+                    }),
+                ('r/res1/r/res3', {
+                        u'viewer' : [u'group/g1'],
+                        u'writer' : [u'group/g3'],
+                    }),
+                ('r/res1/r/res3/r/res4', {
+                        u'admin'  : [u'group/g2'],
+                    })
+            )
+
+        f = data_access.get_iam_policy
+        for resource, policy_expected in checks:
+            res = f(session, resource)
+            self.assertEqual(policy_expected, res['bindings'])
+            self.assertIn('etag', res, 'Etag must be in policy')
+            self.assertEqual(resource, res['resource'])
 
     def test_check_iam_policy(self):
-        pass
+        """Test check_iam_policy."""
+        session_maker, data_access = session_creator('test',None,None,False)
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(EXPLAIN_GRANTED_1, client)
+
+        checks = [
+                ('r/res1', 'read', 'user/u1', True),
+                ('r/res1', 'list', 'user/u1', True),
+                ('r/res1', 'write', 'user/u1', True),
+                ('r/res1', 'delete', 'user/u1', True),
+
+                ('r/res1', 'read', 'user/u3', True),
+                ('r/res1', 'list', 'user/u3', True),
+                ('r/res1', 'write', 'user/u3', False),
+                ('r/res1', 'delete', 'user/u3', False),
+
+                ('r/res1/r/res3/r/res4', 'read', 'user/u3', True),
+                ('r/res1/r/res3/r/res4', 'list', 'user/u3', True),
+                ('r/res1/r/res3/r/res4', 'write', 'user/u3', True),
+                ('r/res1/r/res3/r/res4', 'delete', 'user/u3', True),
+
+                ('r/res1/r/res3', 'read', 'user/u4', True),
+                ('r/res1/r/res3', 'list', 'user/u4', True),
+                ('r/res1/r/res3', 'write', 'user/u4', True),
+                ('r/res1/r/res3', 'delete', 'user/u4', False),
+
+                ('r/res1/r/res2', 'read', 'user/u4', False),
+                ('r/res1/r/res2', 'list', 'user/u4', False),
+                ('r/res1/r/res2', 'write', 'user/u4', False),
+                ('r/res1/r/res2', 'delete', 'user/u4', False),
+            ]
+
+        f = data_access.check_iam_policy
+        for frn, perm, member, expectation in checks:
+            if expectation:
+                self.assertTrue(f(session, frn, perm, member))
+            else:
+                self.assertFalse(f(session, frn, perm, member))
 
     def test_denormalize(self):
+        """Test denormalization."""
         session_maker, data_access = session_creator('test',None,None,False)
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
