@@ -22,7 +22,7 @@ from datetime import datetime
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.notifier.pipelines import base_notification_pipeline
+from google.cloud.security.notifier.pipelines import base_notification_pipeline as bnp
 # pylint: enable=line-too-long,no-name-in-module
 
 LOGGER = log_util.get_logger(__name__)
@@ -32,14 +32,16 @@ VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
-class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
+class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
     """Email pipeline to perform notifications"""
 
     def __init__(self, resource, cycle_timestamp,
                  violations, notifier_config, pipeline_config):
-        super(EmailPipeline, self).__init__(resource, cycle_timestamp,
-                                            violations, notifier_config,
-                                            pipeline_config)
+        super(EmailViolationsPipeline, self).__init__(resource,
+                                                      cycle_timestamp,
+                                                      violations,
+                                                      notifier_config,
+                                                      pipeline_config)
         self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
 
     def _get_output_filename(self):
@@ -128,5 +130,4 @@ class EmailPipeline(base_notification_pipeline.BaseNotificationPipeline):
         """Run the email pipeline"""
         attachment = self._make_attachment()
         subject, content = self._make_content()
-
         self._send(subject=subject, content=content, attachment=attachment)

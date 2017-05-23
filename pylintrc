@@ -56,7 +56,7 @@ ignore-patterns=.*enforcer_log_pb2
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=locally-disabled,locally-enable,E0611
+disable=locally-disabled,locally-enable,no-name-in-module
 
 [REPORTS]
 

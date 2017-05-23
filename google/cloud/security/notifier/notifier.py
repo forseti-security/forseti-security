@@ -87,8 +87,10 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
 def main(_):
     """main function"""
-    timestamp = FLAGS.timestamp if FLAGS.timestamp is not None \
-                else _get_timestamp()
+    if FLAGS.timestamp is not None:
+        timestamp = FLAGS.timestamp
+    else:
+        timestamp = _get_timestamp()
 
     if FLAGS.config is None:
         LOGGER.error('You must specify a notification pipeline')

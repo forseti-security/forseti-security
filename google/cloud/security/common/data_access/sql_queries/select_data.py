@@ -177,5 +177,4 @@ BUCKET_ACLS = """
     SELECT bucket, entity, email, domain, role, project_number
     FROM buckets_{0}, buckets_acl_{0}
     WHERE bucket=bucket_name;
-
 """

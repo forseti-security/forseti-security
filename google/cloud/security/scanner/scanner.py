@@ -116,8 +116,6 @@ def main(_):
     # instead of its own execution path.
     if rules_engine_name == 'GroupsEngine':
         all_violations = scanner.run(FLAGS.rules)
-        for v in all_violations:
-            print _get_violation_project(v, snapshot_timestamp)
         LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
         sys.exit(0)
 
@@ -137,9 +135,6 @@ def main(_):
 
     # If there are violations, send results.
     if all_violations:
-        for v in all_violations:
-            print _get_violation_project(v, snapshot_timestamp)
-
         _output_results(all_violations,
                         snapshot_timestamp,
                         resource_counts=resource_counts,
