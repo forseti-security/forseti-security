@@ -21,7 +21,6 @@ from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
 FLAGS = flags.FLAGS
@@ -89,10 +88,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """
         projects_api = self.service.projects()
         project_filter = []
-        lifecycle_state = filterargs.get('lifecycleState')
-
-        if lifecycle_state:
-            project_filter.append('lifecycleState:%s' % lifecycle_state)
 
         for filter_key in filterargs:
             project_filter.append('%s:%s' %
