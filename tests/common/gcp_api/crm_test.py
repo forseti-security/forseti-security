@@ -91,7 +91,7 @@ class CloudResourceManagerTest(basetest.TestCase):
             .projects.return_value.list_next.return_value = None
 
         self.crm_api_client._execute = mock.MagicMock(
-            return_value=self.fake_projects_api_response1)
+            return_value=fake_projects.FAKE_ACTIVE_PROJECTS_API_RESPONSE)
 
         result = list(self.crm_api_client.get_projects(
             'projects', lifecycleState=LifecycleState.ACTIVE))

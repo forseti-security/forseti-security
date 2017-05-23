@@ -21,7 +21,6 @@ from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
 FLAGS = flags.FLAGS
@@ -89,10 +88,6 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """
         projects_api = self.service.projects()
         project_filter = []
-        lifecycle_state = filterargs.get('lifecycleState')
-
-        if lifecycle_state:
-            project_filter.append('lifecycleState:%s' % lifecycle_state)
 
         for filter_key in filterargs:
             project_filter.append('%s:%s' %
@@ -104,20 +99,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             with self.rate_limiter:
                 while request is not None:
                     response = self._execute(request)
-
-                    # TODO: once CRM API allows for direct filtering on
-                    # lifecycleState, add it to the project_filter list
-                    # and don't manually filter here.
-                    if lifecycle_state == resource.LifecycleState.ACTIVE:
-                        yield {
-                            'projects': [
-                                p for p in response.get('projects')
-                                if (p.get('lifecycleState') ==
-                                    resource.LifecycleState.ACTIVE)
-                            ]
-                        }
-                    else:
-                        yield response
+                    yield response
 
                     request = projects_api.list_next(
                         previous_request=request,
