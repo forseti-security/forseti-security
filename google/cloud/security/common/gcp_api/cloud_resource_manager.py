@@ -104,20 +104,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             with self.rate_limiter:
                 while request is not None:
                     response = self._execute(request)
-
-                    # TODO: once CRM API allows for direct filtering on
-                    # lifecycleState, add it to the project_filter list
-                    # and don't manually filter here.
-                    if lifecycle_state == resource.LifecycleState.ACTIVE:
-                        yield {
-                            'projects': [
-                                p for p in response.get('projects')
-                                if (p.get('lifecycleState') ==
-                                    resource.LifecycleState.ACTIVE)
-                            ]
-                        }
-                    else:
-                        yield response
+                    yield response
 
                     request = projects_api.list_next(
                         previous_request=request,
