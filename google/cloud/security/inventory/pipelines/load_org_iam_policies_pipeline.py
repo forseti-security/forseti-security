@@ -32,11 +32,11 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
     RESOURCE_NAME = 'org_iam_policies'
     RAW_RESOURCE_NAME = 'raw_org_iam_policies'
 
-    def _transform(self, iam_policies):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable iam policies.
 
         Args:
-            iam_policies: An iterable of iam policies as per-org
+            resource_from_api: An iterable of iam policies as per-org
                 dictionary.
                 Example: [{'org_id': '11111',
                           'iam_policy': policy}]
@@ -45,7 +45,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of loadable iam policies, as a per-org dictionary.
         """
-        for org_policy_map in iam_policies:
+        for org_policy_map in resource_from_api:
             iam_policy = org_policy_map['iam_policy']
             bindings = iam_policy.get('bindings', [])
             for binding in bindings:

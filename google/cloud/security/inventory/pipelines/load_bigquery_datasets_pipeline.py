@@ -117,7 +117,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
 
         return dataset_project_access_map
 
-    def _transform(self, project_dataset_access_map):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable groups.
 
         Args:
@@ -127,7 +127,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of project_id, dataset_id, and access detail.
         """
-        for (project_id, dataset_id, access) in project_dataset_access_map:
+        for (project_id, dataset_id, access) in resource_from_api:
             for acl in access:
                 yield {
                     'project_id': project_id,

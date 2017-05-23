@@ -39,26 +39,11 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-    def __init__(self, cycle_timestamp, configs, gcs_client, dao):
-        """Constructor for the data pipeline.
-
-        Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
-            gcs_client: GCS API client.
-            dao: Data access object.
-
-        Returns:
-            None
-        """
-        super(LoadProjectsBucketsPipeline, self).__init__(
-            cycle_timestamp, configs, gcs_client, dao)
-
-    def _transform(self, buckets_maps):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable buckets.
 
         Args:
-            buckets_maps: An iterable of buckets as per-project
+            resource_from_api: An iterable of buckets as per-project
                 dictionary.
                 Example: {'project_number': 11111,
                           'buckets': buckets_json}
@@ -66,7 +51,7 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of buckets, as a per-org dictionary.
         """
-        for buckets_map in buckets_maps:
+        for buckets_map in resource_from_api:
             buckets = buckets_map['buckets']
             items = buckets.get('items', [])
 

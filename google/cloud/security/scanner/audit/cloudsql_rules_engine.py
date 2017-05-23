@@ -205,7 +205,7 @@ class Rule(object):
             filter_list = filter(authorized_networks_regex.match,
                                  cloudsql_acl.authorized_networks)
 
-            authorized_networks_bool = (len(filter_list) > 0)
+            authorized_networks_bool = bool(filter_list)
         else:
             authorized_networks_bool = True
 

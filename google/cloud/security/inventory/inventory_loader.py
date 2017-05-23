@@ -119,7 +119,7 @@ def _exists_snapshot_cycles_table(dao):
         LOGGER.error('Error in attempt to find snapshot_cycles table: %s', e)
         sys.exit()
 
-    if len(result) > 0 and result[0]['TABLE_NAME'] == 'snapshot_cycles':
+    if result and result[0]['TABLE_NAME'] == 'snapshot_cycles':
         return True
 
     return False
