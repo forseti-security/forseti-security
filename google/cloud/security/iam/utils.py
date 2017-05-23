@@ -47,8 +47,12 @@ def oneof(*args):
     """Returns true iff one of the parameters is true."""
     return len([x for x in args if x]) == 1
 
+
 def full_to_type_name(full_resource_name):
+    """Creates a type/name format from full resource name."""
     return '/'.join(full_resource_name.split('/')[-2:])
 
+
 def resource_to_type_name(resource):
+    """Creates a type/name format from a resource dbo."""
     return '{}/{}'.format(resource.type, resource.name)
