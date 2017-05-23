@@ -279,8 +279,10 @@ def define_model(model_name, dbengine, model_seed):
                 qry = session.query(Binding, Member).join(
                     binding_members).join(Member)
             else:
-                roles = cls.get_roles_by_permission_names(
-                    session, [permission])
+                roles = [r.name for r in
+                         cls.get_roles_by_permission_names(
+                             session,
+                             [permission])]
                 qry = session.query(Binding, Member)
                 qry = qry.join(binding_members).join(Member)
                 qry = qry.join(Role).join(role_permissions).join(Permission)
@@ -343,10 +345,17 @@ def define_model(model_name, dbengine, model_seed):
 
             bind_res_candidates = find_binding_candidates(
                 resource_hierarchy)
+
             bindings = session.query(Binding, Member)\
                 .join(binding_members).join(Member).join(Role)\
                 .filter(Binding.resource_name.in_(bind_res_candidates))\
-                .filter(Role.name.in_(role_names)).all()
+                .filter(Role.name.in_(role_names))\
+                .filter(or_(Member.type == 'group',
+                            Member.name == member_name))\
+                .filter(and_(binding_members.c.bindings_id == Binding.id,
+                             binding_members.c.members_name == Member.name))\
+                .filter(Role.name == Binding.role_name)\
+                .all()
 
             strategies = []
             for resource in bind_res_candidates:
@@ -359,13 +368,13 @@ def define_model(model_name, dbengine, model_seed):
                             for role in [role_name]]))
             if bindings:
                 for binding, member in bindings:
-                    for role_name in role_names:
-                        overgranting = len(bind_res_candidates) - 1\
-                            - bind_res_candidates.index(binding.resource_name)
-                        strategies.append(
-                            (overgranting, [
-                                (role, member.name, binding.resource_name)
-                                for role in [role_name]]))
+                    overgranting = len(bind_res_candidates) - 1\
+                        - bind_res_candidates.index(binding.resource_name)
+                    strategies.append(
+                        (overgranting, [
+                            (binding.role_name,
+                             member.name,
+                             binding.resource_name)]))
             return strategies
 
         @classmethod
@@ -871,8 +880,7 @@ def define_model(model_name, dbengine, model_seed):
                 new_member_set = set()
 
                 qry = session.query(group_members)\
-                    .filter(group_members.c.members_name.in_(to_query_set))\
-                    .all()
+                    .filter(group_members.c.members_name.in_(to_query_set))
                 for member, parent in qry.all():
 
                     member_map[parent].add(member)
