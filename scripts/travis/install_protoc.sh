@@ -13,22 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# A script to perform the linting of python code submits.
+# A script to perform the download and installation of protobuf.
 
-echo "Running $(which pylint)."
+set -e
 
-pylint --version
+PROTOC_DOWNLOAD_PATH="/tmp/protoc"
+FORSETI_PROTOC_URL="https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/scripts/data/protoc_url.txt"
 
-# The disables specified allow us to have 'I' level messages, just
-# not the ones specified.
-PYTHONPATH=./ \
-  pylint google/ \
-  --rcfile=./pylintrc
-
-if [ $? -ne 0 ]; then
-  echo "pylint had errors."
-  exit 1
-else
-  echo "pylint had no errors."
-  exit 0
-fi
+echo "Downloading protoc.\n"
+mkdir -p $PROTOC_DOWNLOAD_PATH
+cd $PROTOC_DOWNLOAD_PATH
+PROTOC_DOWNLOAD_URL=$(curl -s $FORSETI_PROTOC_URL)
+wget -P $PROTOC_DOWNLOAD_PATH $PROTOC_DOWNLOAD_URL
+unzip -d $PROTOC_DOWNLOAD_PATH $(basename $PROTOC_DOWNLOAD_URL)

@@ -40,4 +40,7 @@ SUPPORTED_APIS = {
     'admin': {
         'version': 'directory_v1'
     },
+    'sqladmin': {
+        'version': 'v1beta4'
+    }
 }
