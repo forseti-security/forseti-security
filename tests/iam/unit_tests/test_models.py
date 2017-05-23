@@ -202,3 +202,52 @@ MEMBER_TESTING_3 = {
         'roles':{},
         'bindings':{},
     }
+
+EXPLAIN_GRANTED_1 = {
+        'resources':{
+            'r/res1' : {
+                'r/res2' : {
+                    },
+                'r/res3' : {
+                        'r/res4' : {},
+                    },
+                },
+            },
+        'memberships':{
+                'user/u1' : {},
+                'user/u2' : {},
+                'group/g1' : {
+                        'user/u3' : {},
+                    },
+                'group/g2' : {
+                        'user/u3' : {},
+                    },
+                'group/g3' : {
+                        'group/g3g1' : {
+                                'user/u3' : {},
+                                'user/u4' : {},
+                            },
+                    },
+            },
+        'roles':{
+            'viewer' : ['read','list'],
+            'writer' : ['read','list','write'],
+            'admin'  : ['read','list','write','delete'],
+            },
+        'bindings':{
+            'r/res1' : {
+                    'viewer' : ['group/g1'],
+                    'admin'  : ['user/u1'],
+                },
+            'r/res2' : {
+                    'viewer' : ['group/g1'],
+                },
+            'r/res3' : {
+                    'viewer' : ['group/g1'],
+                    'writer' : ['group/g3'],
+                },
+            'r/res4' : {
+                    'admin' : ['group/g2'],
+                },
+            },
+    }
