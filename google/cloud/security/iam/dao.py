@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from sqlalchemy.sql import expression
-from _collections import defaultdict
 
 """ Database abstraction objects for IAM Explain. """
+
+# Disable too-many-lines check
+# pylint: disable=C0302
 
 import datetime
 import os
@@ -78,7 +79,7 @@ class Model(MODEL_BASE):
 
 # pylint: disable=R0914
 # pylint: disable=R0903
-# pyling: disable=R0904
+# pylint: disable=R0904
 # pylint: disable=E1101
 def define_model(model_name, dbengine, model_seed):
     """
@@ -397,13 +398,17 @@ def define_model(model_name, dbengine, model_seed):
                 expansion = cls.expand_resources_by_type_names(
                     session,
                     r_type_names)
-                m = {'{}/{}'.format(k.type, k.name):
-                      ['{}/{}'.format(v.type, v.name) for v in values]
-                        for k,values in expansion.iteritems()}
+
+                def fmt(first, second):
+                    """Formatting helper."""
+                    return '{}/{}'.format(first, second)
+                res_exp = {fmt(k.type, k.name):
+                           [fmt(v.type, v.name) for v in values]
+                           for k, values in expansion.iteritems()}
 
                 return [(binding.role_name,
-                          m[full_to_type_name(binding.resource_name)])
-                            for binding in bindings]
+                         res_exp[full_to_type_name(binding.resource_name)])
+                        for binding in bindings]
 
         @classmethod
         def query_access_by_resource(cls, session, resource_name,
@@ -461,28 +466,32 @@ def define_model(model_name, dbengine, model_seed):
                     members.add(member.name)
 
             expanded_members = cls.expand_members_map(session, members)
-            role_permissions_map = defaultdict(set)
-            for role, permission in \
-                session.query(Role, Permission)\
+            role_permissions_map = collections.defaultdict(set)
+
+            qry = session.query(Role, Permission)\
                 .join(role_permissions)\
                 .filter(Role.name == role_permissions.c.roles_name)\
-                .filter(Permission.name == role_permissions.c.permissions_name)\
-                .all():
+                .filter(Permission.name == role_permissions.c.permissions_name)
+
+            for role, permission in qry.all():
                 role_permissions_map[role.name].add(permission.name)
 
             for binding, member in \
-                session.query(Binding, Member)\
-                .join(binding_members)\
-                .filter(binding_members.c.bindings_id==Binding.id)\
-                .filter(binding_members.c.members_name==Member.name)\
-                .yield_per(per_yield):
+                    session.query(Binding, Member)\
+                    .join(binding_members)\
+                    .filter(binding_members.c.bindings_id == Binding.id)\
+                    .filter(binding_members.c.members_name == Member.name)\
+                    .yield_per(per_yield):
 
                 resource_type_name = full_to_type_name(binding.resource_name)
-                resource_mapping = cls.expand_resources_by_type_names(session, [resource_type_name])
+                resource_mapping = cls.expand_resources_by_type_names(
+                    session,
+                    [resource_type_name])
 
                 f = resource_to_type_name
-                resource_mapping = {f(k):set([f(m) for m in v]) for k,v in resource_mapping.iteritems()}
- 
+                resource_mapping = {f(k): set([f(m) for m in v])
+                                    for k, v in resource_mapping.iteritems()}
+
                 for expanded_member in expanded_members[member.name]:
                     for permission in role_permissions_map[binding.role_name]:
                         for res in resource_mapping[resource_type_name]:
@@ -633,15 +642,15 @@ def define_model(model_name, dbengine, model_seed):
             """Delete member."""
             if only_delete_relationship:
                 group_members_delete = group_members.delete(
-                        and_(group_members.c.group_name == member_type_name,
-                             group_members.c.members_name == parent_type_name))
+                    and_(group_members.c.group_name == member_type_name,
+                         group_members.c.members_name == parent_type_name))
                 session.execute(group_members_delete)
             else:
                 session.query(Member)\
                     .filter(Member.name == member_type_name)\
                     .delete()
                 group_members_delete = group_members.delete(
-                        group_members.c.group_name == member_type_name)
+                    group_members.c.group_name == member_type_name)
                 session.execute(group_members_delete)
             session.commit()
 
@@ -732,7 +741,7 @@ def define_model(model_name, dbengine, model_seed):
             if len(parents) != len(parent_type_names):
                 msg = 'parents: {}, expected: {}'.format(
                     parents, parent_type_names)
-                raise Exception('At least one parent not found: {}'.format(msg))
+                raise Exception('Parent not found, {}'.format(msg))
 
             member = Member(name=type_name,
                             member_name=name,
@@ -755,14 +764,15 @@ def define_model(model_name, dbengine, model_seed):
             for res_type_name in res_type_names:
                 res_type, res_name = res_type_name.split('/')
                 expressions.append(and_(
-                    res_key.name==res_name,
-                    res_key.type==res_type))
+                    res_key.name == res_name,
+                    res_key.type == res_type))
 
-            res = session.query(res_key, res_values).filter(or_(*expressions)).filter(
-                res_values.full_name.startswith(res_key.full_name)).all()
-            mapping = defaultdict(set)
-            for k,v in res:
-                mapping[k].add(v)
+            res = session.query(res_key, res_values)\
+                .filter(or_(*expressions)).filter(
+                    res_values.full_name.startswith(res_key.full_name)).all()
+            mapping = collections.defaultdict(set)
+            for k, value in res:
+                mapping[k].add(value)
             return mapping
 
         @classmethod
@@ -845,7 +855,7 @@ def define_model(model_name, dbengine, model_seed):
             members = session.query(Member).filter(
                 Member.name.in_(member_names)).all()
 
-            member_map = defaultdict(set)
+            member_map = collections.defaultdict(set)
             for member in members:
                 member_map[member.name] = set()
 
@@ -856,39 +866,42 @@ def define_model(model_name, dbengine, model_seed):
             all_member_set = set([m.name for m in members])
             new_member_set = set([m.name for m in members if is_group(m)])
 
-            member_child  = aliased(Member, name='member_child')
-            member_parent = aliased(Member, name='member_parent')
-
             while new_member_set:
                 to_query_set = new_member_set
                 new_member_set = set()
 
-                for member, parent in \
-                    session.query(group_members)\
-                        .filter(group_members.c.members_name.in_(to_query_set))\
-                        .all():
+                qry = session.query(group_members)\
+                    .filter(group_members.c.members_name.in_(to_query_set))\
+                    .all()
+                for member, parent in qry.all():
 
                     member_map[parent].add(member)
 
-                    if member.startswith('group/') and member not in all_member_set:
+                    if member.startswith('group/') and\
+                       member not in all_member_set:
                         new_member_set.add(member)
 
                     all_member_set.add(parent)
                     all_member_set.add(member)
 
-            def denormalize_membership(parent_name, member_map, cur_member_set):
+            def denormalize_membership(parent_name, member_map,
+                                       cur_member_set):
                 """Parent->members map to Parent->transitive members."""
                 cur_member_set.add(parent_name)
                 if parent_name not in member_map:
                     return set()
-                members_to_add = member_map[parent_name].difference(cur_member_set)
+                members_to_add = member_map[parent_name]\
+                    .difference(cur_member_set)
                 for member in members_to_add:
                     cur_member_set.add(member)
-                    new_members = denormalize_membership(member, member_map, cur_member_set)
+                    new_members = denormalize_membership(member,
+                                                         member_map,
+                                                         cur_member_set)
                     cur_member_set = cur_member_set.union(new_members)
                 return cur_member_set
 
-            result =  {m:denormalize_membership(m, member_map, set()) for m in member_names}
+            result = {m: denormalize_membership(m, member_map, set())
+                      for m in member_names}
             return result
 
         @classmethod
@@ -926,7 +939,7 @@ def define_model(model_name, dbengine, model_seed):
             return group_set.union(non_group_set)
 
         @classmethod
-        def resolve_resource_ancestors_by_name(cls, session, res_names):
+        def resource_ancestors_by_name(cls, session, res_names):
             """Resolve the transitive ancestors by type/name format."""
             expressions = []
             for res_type, res_name in [r.split('/') for r in res_names]:
@@ -962,7 +975,7 @@ def define_model(model_name, dbengine, model_seed):
                         .filter(res_childs.full_name.in_(resources_set))\
                         .filter(res_childs.parent_name == res_anc.full_name)\
                         .all():
-                    
+
                     if parent.full_name not in resources_set:
                         resources_new.add(parent.full_name)
 
@@ -1071,6 +1084,8 @@ class ScopedSessionMaker(object):
 
 
 LOCK = Lock()
+
+
 class ModelManager(object):
     """
     ModelManager is the central class to create,list,get and delete models.
