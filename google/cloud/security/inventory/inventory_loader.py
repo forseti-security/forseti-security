@@ -36,10 +36,10 @@ To see all the dependent flags:
   $ forseti_inventory --helpfull
 
 """
-import importlib
 from datetime import datetime
-import sys
+import importlib
 import logging
+import sys
 
 import anytree
 import gflags as flags
