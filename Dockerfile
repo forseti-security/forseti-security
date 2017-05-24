@@ -5,8 +5,8 @@ RUN git clone --branch=dockerization_rebase https://github.com/felixbb/forseti-s
 
 WORKDIR /forseti-security
 
-RUN PYTHONPATH=. python build_protos.py
-RUN PYTHONPATH=. python setup.py build
 RUN pip install mock
+RUN PYTHONPATH=. python setup.py install
+RUN yes | pip uninstall -q forseti-security
 RUN coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p "*_test.py" || echo "anyway"
 RUN coverage report
