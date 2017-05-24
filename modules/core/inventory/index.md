@@ -2,11 +2,10 @@
 permalink: /modules/core/inventory/
 ---
 # Inventory
-This is the Inventory component of Forseti Security tool.
+Inventory collects GCP resource data and stores it in a database so Forseti can perform other operations (e.g. security scans and enforcement).
 
 ## Executing inventory
-After running setup.py, as long as your virtualenv is activated, then you can be in
-any directory to invoke the console script:
+After you install Forseti, you can access the Inventory tool with the command below. If you installed Forseti in a virtualenv, remember to activate the virtualenv first.
 
 ```sh
 $ forseti_inventory
@@ -14,10 +13,12 @@ $ forseti_inventory
 
 ### Executing inventory to collect GSuite Google Groups
 
+The `--inventory_groups` is an optional flag. If you provide it as an argument, it will instruct `forseti_inventory` to read your GSuite Google Groups information.
+
 ```sh
-$ forset_inventory --inventory_groups
---domain_super_admin_email EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN \
---groups_service_account_key_file PATH_THE_DOWNLOADED_KEY_OF_THE_GROUPS_SERVICE_ACCOUNT
+$ forset_inventory --inventory_groups \
+  --domain_super_admin_email EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN \
+  --groups_service_account_key_file PATH_THE_DOWNLOADED_KEY_OF_THE_GROUPS_SERVICE_ACCOUNT
 ```
 
 Where
@@ -25,31 +26,30 @@ Where
   domain-wide-delegation key created for the groups-only service account
   ([details]({{ site.baseurl }}{% link common/service_accounts.md %}).
 
-You can also use the convenience [dev\_inventory.sh script](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/scripts/dev_inventory.sh.sample)
-to run forseti\_inventory. Make a copy of dev\_inventory.sh.sample as
-dev\_inventory.sh, edit the script for the appropriate commandline flags, and
+You can also use the convenience [dev\_inventory.sh script](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/inventory/dev_inventory.sh.sample)
+to run `forseti_inventory`. Make a copy of `dev_inventory.sh.sample` as
+`dev_inventory.sh`, edit the script for the appropriate commandline flags, and
 invoke the script from the repo root to run inventory.
 
 ```sh
-$ cd path/to/forseti-security
-$ scripts/dev_inventory.sh
+$ ./dev_inventory.sh
 ```
 ## Developing on inventory
 ### Collecting and storing new data with inventory
 
-It's straightforward to add a new resource to inventory for collection. This workflow is designed to be generic across resource types.
+This is the generic workflow for adding new GCP resource types to Forseti Inventory.
 
-1. Define a new table schema for the 'flattened' data you need to store.
+1. Define a new table schema for the "flattened" data you need to store.
 Each relevant field of data you retrieve from an API should correspond to a column in the table schema.
 
-2. Define a new table schema for the 'raw data you need to store.
-Additionally, we aim to store the raw API data as json to assist troubleshooting.
+2. Define a new table schema for the "raw data" you need to store.
+We store the raw API data as json to assist troubleshooting.
 
 Once you've completed these steps create a [Pull Request](https://help.github.com/articles/creating-a-pull-request/)
 ([an example PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/159)).
 
-3. Once the database PR is merged create a [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines)
-to fetch your data. This possibly requires adding new API support, and
+3. Once the database PR is merged, create a [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines)
+to fetch your data. You might also need to extend Forseti's API support and
 different authentication. If your change does not require adding new API
 support you can skip step 4.
 
@@ -97,6 +97,7 @@ To store this data in CSV or in a normalized storage system requires flattening 
     25621943694 project1  project1  ACTIVE  organization  888888888888  2016-10-22 16:57:36
     94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
     ```
+
 Here's an example of [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/transform_util.py#L29)
 
 6. Load the flattened data into database table

@@ -5,10 +5,10 @@ permalink: /modules/core/scanner/
 
 The Forseti Scanner takes a rules definition file (either json or
 yaml) as input and uses it to audit your Google Cloud Platform resources (e.g.
-organizations, projects). After running the audit, it outputs a csv file and
-optionally writes it to a bucket in Google Cloud Storage.
+organizations, projects). After running the audit, it outputs rule violations
+to Cloud SQL and optionally writes it to a bucket in Google Cloud Storage.
 
-If you are interested in vulnerability scanning please see [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
+Note: This is different from the Cloud Security Scanner, which does AppEngine vulnerability scanning. Please refer to the documentation for [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
 
 ## Running the scanner
 
@@ -52,8 +52,7 @@ to run scanner so you don't have to set PYTHONPATH and other commandline flags
 manually.
 
 ```sh
-$ cd path/to/forseti-security
-$ scripts/dev_scanner.sh
+$ ./dev_scanner.sh
 ```
 
 ## Defining rules

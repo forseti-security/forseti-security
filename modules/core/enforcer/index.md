@@ -2,7 +2,7 @@
 permalink: /modules/core/enforcer/
 ---
 # Enforcer
-The Forseti enforcer compares policy files defining the desired state of a
+The Forseti Enforcer compares policy files defining the desired state of a
 resource against the current state of the resource. Any required changes are
 made using the Google Cloud APIs.
 

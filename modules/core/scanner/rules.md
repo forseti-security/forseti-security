@@ -1,7 +1,7 @@
 ---
 permalink: /modules/core/scanner/rules/
 ---
-# Defining rules
+# Defining IAM policy rules
 The Forseti Scanner recognizes the following rule grammar (either in YAML or JSON):
 
 ```yaml
@@ -48,3 +48,9 @@ rules:
 In the members list, specify IAM members, e.g. user:someone@company.com. You can also use wildcards on the member name, e.g. serviceAccount:*@*.gserviceaccount.com ("any service accounts").
 
 More information about IAM users types can be found in the [policy documentation](https://cloud.google.com/iam/reference/rest/v1/Policy).
+
+# Defining Google Groups rules
+Coming soon.
+
+# Defining GCS bucket rules
+Coming soon.

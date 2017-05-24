@@ -1,4 +1,4 @@
-### Create a GCP project
+### Create a GCP project for Forseti
 * Create a new project within your Google Cloud Organization.
   * You can also re-use a project that is dedicated for Forseti Security.
   * Ensure billing is enabled for the project.
@@ -6,10 +6,6 @@
 **Note**: Forseti Security depends on having a GCP organization set up.
 Take note of your organization ID, either by looking it up in
 your Cloud Console IAM settings or asking your Organization Admin.
-You will need to use it as a flag value when running the individual tools.
-
-### Create a service account
-{% include install_service_accounts.md %}
 
 ### Install `gcloud`
 [Download and install](https://cloud.google.com/sdk/gcloud/) `gcloud`.
@@ -36,6 +32,18 @@ Ensure gcloud is configured for your Forseti Security project.
 
     ... more info ...
   ```
+
+If your gcloud environment is not configured for your Forseti project and Google credentials, then:
+
+   ```sh
+   $ gcloud auth login
+
+   # Use your Google credentials to authenticate.
+
+   $ gcloud init
+
+   # Pick your Forseti project and Google account from above.
+   ```
 
 ### Enable required APIs
 Use `gcloud` to enable required APIs.
@@ -67,6 +75,9 @@ Use `gcloud` to enable required APIs.
 {% if page.install_type == 'gcp' %}
     {% include install_gcp_prerequisites.md %}
 {% endif %}
+
+### Create a service account
+{% include install_service_accounts.md %}
 
 ### Obtain a SendGrid API Key (optional)
 SendGrid is currently the only supported email service provider. To use it,
