@@ -25,8 +25,6 @@ from google.apputils import basetest
 from google.protobuf import text_format
 from tests.unittest_utils import get_datafile_path
 
-from google.cloud.security.enforcer import enforcer
-
 # Used anywhere a real timestamp could be generated to ensure consistent
 # comparisons in tests
 MOCK_TIMESTAMP = 1234567890
