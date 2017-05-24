@@ -19,7 +19,16 @@ import os
 import unittest
 
 class ForsetiTestCase(unittest.TestCase):
-    pass
+    """Forseti base class for tests."""
+
+    def assertStartsWith(self, actual, expected_start):
+        """Assert that actual.startswith(expected_start) is True.
+            Args:
+            actual: str
+            expected_start: str
+        """
+        if not actual.startswith(expected_start):
+            self.fail('%r does not start with %r' % (actual, expected_start))
 
 def get_datafile_path(start_loc, filename):
     """Get the path for a data file."""
