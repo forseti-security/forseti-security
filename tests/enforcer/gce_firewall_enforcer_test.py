@@ -21,12 +21,12 @@ import threading
 import mock
 
 import testing_constants as constants
-from google.apputils import basetest
+import unittest
 
 from google.cloud.security.enforcer import gce_firewall_enforcer as fe
 
 
-class HelperFunctionTest(basetest.TestCase):
+class HelperFunctionTest(unittest.TestCase):
     """Unit tests for helper functions."""
 
     def test_get_network_name_from_url(self):
@@ -47,7 +47,7 @@ class HelperFunctionTest(basetest.TestCase):
                                               constants.TEST_NETWORK))
 
 
-class ComputeFirewallAPITest(basetest.TestCase):
+class ComputeFirewallAPITest(unittest.TestCase):
     """Tests for the ComputeFirewallAPI class."""
 
     def setUp(self):
@@ -223,7 +223,7 @@ class ComputeFirewallAPITest(basetest.TestCase):
         self.assertEqual(completed_responses, completed)
 
 
-class FirewallRulesTest(basetest.TestCase):
+class FirewallRulesTest(unittest.TestCase):
     """Tests for the FirewallRules class."""
 
     def setUp(self):
@@ -440,7 +440,7 @@ class FirewallRulesTest(basetest.TestCase):
         self.assertEqual(self.firewall_rules, new_firewall_rules)
 
 
-class FirewallRulesCheckRuleTest(basetest.TestCase):
+class FirewallRulesCheckRuleTest(unittest.TestCase):
     """Multiple tests for FirewallRules._check_rule_before_adding."""
 
     def setUp(self):
@@ -521,7 +521,7 @@ class FirewallRulesCheckRuleTest(basetest.TestCase):
             self.firewall_rules._check_rule_before_adding(new_rule)
 
 
-class FirewallEnforcerTest(basetest.TestCase):
+class FirewallEnforcerTest(unittest.TestCase):
     """Tests for the FirewallEnforcer class."""
 
     def setUp(self):
@@ -1169,7 +1169,7 @@ class FirewallEnforcerTest(basetest.TestCase):
         self.enforcer._rules_to_update = []
 
 
-class FirewallRulesAreEqualTest(basetest.TestCase):
+class FirewallRulesAreEqualTest(unittest.TestCase):
     """Multiple tests for (in)equality between two firewall rules."""
 
     def setUp(self):
@@ -1287,4 +1287,4 @@ class FirewallRulesAreEqualTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

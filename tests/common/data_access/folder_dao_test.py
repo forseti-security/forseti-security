@@ -16,7 +16,7 @@
 
 import json
 
-from google.apputils import basetest
+import unittest
 import mock
 
 from google.cloud.security.common.data_access import _db_connector
@@ -27,7 +27,7 @@ from google.cloud.security.common.gcp_type import folder as gcp_folder
 from tests.common.gcp_type.test_data import fake_folders
 
 
-class FolderDaoTest(basetest.TestCase):
+class FolderDaoTest(unittest.TestCase):
     """Tests for the FolderDao."""
 
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
@@ -157,4 +157,4 @@ class FolderDaoTest(basetest.TestCase):
         self.assertEqual(expected, actual)
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

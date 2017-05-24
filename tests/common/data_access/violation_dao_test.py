@@ -14,7 +14,7 @@
 
 """Tests the Dao."""
 
-from google.apputils import basetest
+import unittest
 import mock
 import MySQLdb
 
@@ -27,7 +27,7 @@ from google.cloud.security.common.gcp_type import iam_policy as iam
 from google.cloud.security.scanner.audit import rules
 
 
-class ViolationDaoTest(basetest.TestCase):
+class ViolationDaoTest(unittest.TestCase):
     """Tests for the Dao."""
 
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
@@ -213,4 +213,4 @@ class ViolationDaoTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

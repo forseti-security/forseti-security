@@ -14,7 +14,7 @@
 
 """Tests the GroupDao."""
 
-from google.apputils import basetest
+import unittest
 import mock
 
 from google.cloud.security.common.data_access import dao
@@ -23,7 +23,7 @@ from google.cloud.security.common.data_access import group_dao
 from tests.common.data_access.test_data import fake_group_dao_data as fake_data
 
 
-class GroupDaoTest(basetest.TestCase):
+class GroupDaoTest(unittest.TestCase):
     """Tests for the GroupDao."""
 
     @mock.patch.object(dao.Dao, '__init__', autospec=True)
@@ -70,4 +70,4 @@ class GroupDaoTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

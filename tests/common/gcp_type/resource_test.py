@@ -16,7 +16,7 @@
 
 import mock
 
-from google.apputils import basetest
+import unittest
 from google.cloud.security.common.gcp_type import errors
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.gcp_type.organization import Organization
@@ -25,7 +25,7 @@ from google.cloud.security.common.gcp_type.resource import Resource
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
 
-class ResourceTest(basetest.TestCase):
+class ResourceTest(unittest.TestCase):
     """Test Resource."""
 
     def test_create_resource_raises_notimplemented(self):
@@ -57,7 +57,7 @@ class ResourceTest(basetest.TestCase):
             ResourceType.verify('fake')
 
 
-class ResourceUtilTest(basetest.TestCase):
+class ResourceUtilTest(unittest.TestCase):
     """Test ResourceUtil."""
 
     def test_create_resource_is_ok(self):
@@ -90,4 +90,4 @@ class ResourceUtilTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

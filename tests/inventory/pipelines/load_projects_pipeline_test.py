@@ -14,7 +14,7 @@
 
 """Tests the load_projects_pipeline."""
 
-from google.apputils import basetest
+import unittest
 import mock
 
 # pylint: disable=line-too-long
@@ -30,7 +30,7 @@ from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
 
 
-class LoadProjectsPipelineTest(basetest.TestCase):
+class LoadProjectsPipelineTest(unittest.TestCase):
     """Tests for the load_projects_pipeline."""
 
     def setUp(self):

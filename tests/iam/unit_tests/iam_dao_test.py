@@ -15,7 +15,7 @@ from test.test_xml_etree import check_element
 
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
-from google.apputils import basetest
+import unittest
 import uuid
 import os
 from collections import defaultdict
@@ -34,7 +34,7 @@ def create_test_engine():
     tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
     return create_engine('sqlite:///{}'.format(tmpfile)), tmpfile
 
-class DaoTest(basetest.TestCase):
+class DaoTest(unittest.TestCase):
     """General data abstraction layer use case tests."""
 
     def setUp(self):

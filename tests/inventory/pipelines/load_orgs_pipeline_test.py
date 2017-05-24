@@ -14,7 +14,7 @@
 
 """Tests the load_orgs_pipeline."""
 
-from google.apputils import basetest
+import unittest
 import json
 import mock
 
@@ -35,7 +35,7 @@ def _setup_raw_orgs():
     for (i, o) in enumerate(fake_orgs.EXPECTED_LOADABLE_ORGS):
         fake_orgs.EXPECTED_LOADABLE_ORGS[i]['raw_org'] = json.dumps(fakes[i])
 
-class LoadOrgsPipelineTest(basetest.TestCase):
+class LoadOrgsPipelineTest(unittest.TestCase):
     """Tests for the load_orgs_pipeline."""
 
     @classmethod

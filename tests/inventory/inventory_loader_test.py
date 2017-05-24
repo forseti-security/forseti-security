@@ -19,7 +19,7 @@ from datetime import datetime
 import mock
 import MySQLdb
 
-from google.apputils import basetest
+import unittest
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.gcp_type import iam_policy
@@ -29,7 +29,7 @@ from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.inventory import inventory_loader
 
 
-class InventoryLoaderTest(basetest.TestCase):
+class InventoryLoaderTest(unittest.TestCase):
 
     @mock.patch.object(inventory_loader, 'FLAGS')
     @mock.patch.object(inventory_loader, 'LOGGER')
@@ -39,4 +39,4 @@ class InventoryLoaderTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

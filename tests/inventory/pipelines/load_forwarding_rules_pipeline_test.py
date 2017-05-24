@@ -14,7 +14,7 @@
 
 """Tests the load_forwarding_rules_pipeline."""
 
-from google.apputils import basetest
+import unittest
 import mock
 import MySQLdb
 
@@ -37,7 +37,7 @@ def _set_count(*args, **kwargs):
     """Set the pipeline count."""
 
 
-class LoadForwardingRulesPipelineTest(basetest.TestCase):
+class LoadForwardingRulesPipelineTest(unittest.TestCase):
     """Tests for the load_forwarding_rules_pipeline."""
 
     def setUp(self):

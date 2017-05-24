@@ -15,7 +15,7 @@
 """Tests the load_org_iam_policies_pipeline."""
 
 
-from google.apputils import basetest
+import unittest
 import mock
 import MySQLdb
 
@@ -32,7 +32,7 @@ from tests.inventory.pipelines.test_data import fake_iam_policies
 # pylint: enable=line-too-long
 
 
-class LoadOrgIamPoliciesPipelineTest(basetest.TestCase):
+class LoadOrgIamPoliciesPipelineTest(unittest.TestCase):
     """Tests for the load_org_iam_policies_pipeline."""
 
     def setUp(self):

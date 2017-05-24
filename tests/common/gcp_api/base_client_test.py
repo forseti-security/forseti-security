@@ -19,12 +19,12 @@ from httplib2 import HttpLib2Error
 import mock
 
 from apiclient import discovery
-from google.apputils import basetest
+import unittest
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import _supported_apis
 
 
-class BaseClientTest(basetest.TestCase):
+class BaseClientTest(unittest.TestCase):
 
     def setUp(self):
         self.supported_apis = _supported_apis.SUPPORTED_APIS
@@ -87,4 +87,4 @@ class BaseClientTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

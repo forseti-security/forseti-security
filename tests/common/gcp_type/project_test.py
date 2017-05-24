@@ -16,7 +16,7 @@
 
 import mock
 
-from google.apputils import basetest
+import unittest
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.gcp_type.folder import Folder
 from google.cloud.security.common.gcp_type.organization import Organization
@@ -25,7 +25,7 @@ from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
 
-class ProjectTest(basetest.TestCase):
+class ProjectTest(unittest.TestCase):
 
     def setUp(self):
         self.org = Organization('1234567890', display_name='My org name')
@@ -110,4 +110,4 @@ class ProjectTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

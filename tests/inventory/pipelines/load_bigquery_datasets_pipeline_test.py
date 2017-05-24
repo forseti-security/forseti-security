@@ -16,7 +16,7 @@
 
 from MySQLdb import MySQLError
 
-from google.apputils import basetest
+import unittest
 import mock
 
 # pylint: disable=line-too-long
@@ -30,7 +30,7 @@ from tests.inventory.pipelines.test_data import fake_configs
 # pylint: enable=line-too-long
 
 
-class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
+class LoadBigQueryDatasetsPipelineTest(unittest.TestCase):
     """Tests for the load_bigquery_datasets_pipeline."""
 
     def setUp(self):

@@ -16,14 +16,14 @@
 
 import mock
 
-from google.apputils import basetest
+import unittest
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
 
 
-class FolderTest(basetest.TestCase):
+class FolderTest(unittest.TestCase):
     """Test Folder resource."""
 
     def setUp(self):
@@ -56,4 +56,4 @@ class FolderTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

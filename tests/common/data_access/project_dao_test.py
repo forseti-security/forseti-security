@@ -16,7 +16,7 @@
 
 import json
 
-from google.apputils import basetest
+import unittest
 import mock
 
 from MySQLdb import DataError
@@ -30,7 +30,7 @@ from google.cloud.security.common.gcp_type import resource
 from tests.common.gcp_type.test_data import fake_projects
 
 
-class ProjectDaoTest(basetest.TestCase):
+class ProjectDaoTest(unittest.TestCase):
     """Tests for the ProjectDao."""
 
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
@@ -224,4 +224,4 @@ class ProjectDaoTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

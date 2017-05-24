@@ -16,13 +16,13 @@
 
 import mock
 
-from google.apputils import basetest
+import unittest
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import rules as audit_rules
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
-class BaseRulesEngineTest(basetest.TestCase):
+class BaseRulesEngineTest(unittest.TestCase):
     """Test BaseRulesEngine."""
 
     def test_init_with_rules_no_error(self):
@@ -47,7 +47,7 @@ class BaseRulesEngineTest(basetest.TestCase):
             base.build_rule_book()
 
 
-class BaseRulesBookTest(basetest.TestCase):
+class BaseRulesBookTest(unittest.TestCase):
     """Test BaseRulesBook."""
 
     def test_cannot_instantiate(self):
@@ -56,7 +56,7 @@ class BaseRulesBookTest(basetest.TestCase):
             bre.BaseRuleBook()
 
 
-class RuleAppliesToTest(basetest.TestCase):
+class RuleAppliesToTest(unittest.TestCase):
     """Test RuleAppliesTo."""
 
     def test_rule_applies_is_verified(self):
@@ -82,4 +82,4 @@ class RuleAppliesToTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()
