@@ -40,53 +40,12 @@ def GenerateConfig(context):
 
     SCANNER_BUCKET = context.properties['scanner-bucket']
     DATABASE_NAME = context.properties['database-name']
-    SHOULD_INVENTORY_GROUPS = bool(context.properties['inventory-groups'])
-
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-
-    inventory_command = '/usr/local/bin/forseti_inventory --db_name {} '.format(
-        DATABASE_NAME,
-    )
-
-    scanner_command = '/usr/local/bin/forseti_scanner --rules {} --output_path {} --engine_name {} --db_name {} '.format(
-        'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
-        'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
-        # TODO: temporary hack; remove --engine_name flag when we run scanner
-        # totally in batch with the other rule engines
-        'IamRulesEngine',
-        DATABASE_NAME,
-    )
-
-    # Extend the commands, based on whether email is required.
-    SENDGRID_API_KEY = context.properties.get('sendgrid-api-key')
-    EMAIL_SENDER = context.properties.get('email-sender')
-    EMAIL_RECIPIENT = context.properties.get('email-recipient')
-    if EMAIL_RECIPIENT is not None:
-        email_flags = '--sendgrid_api_key {} --email_sender {} --email_recipient {}'.format(
-            SENDGRID_API_KEY,
-            EMAIL_SENDER,
-            EMAIL_RECIPIENT,
-        )
-        inventory_command = inventory_command + email_flags
-        scanner_command = scanner_command + email_flags
-
-    # Extend the commands, based on whether inventory-groups is set.
-    if SHOULD_INVENTORY_GROUPS:
-        GROUPS_DOMAIN_SUPER_ADMIN_EMAIL = context.properties[
-            'groups-domain-super-admin-email']
-        GROUPS_SERVICE_ACCOUNT_KEY_FILE = context.properties[
-            'groups-service-account-key-file']
-
-        inventory_groups_flags = ' --inventory_groups --domain_super_admin_email {} --groups_service_account_key_file {}'.format(
-            GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
-            GROUPS_SERVICE_ACCOUNT_KEY_FILE,
-        )
-        inventory_command = inventory_command + inventory_groups_flags
 
     resources = []
 
     resources.append({
-        'name': '{}-vm'.format(context.env['deployment']),
+        'name': '{}-explain-vm'.format(context.env['deployment']),
         'type': 'compute.v1.instance',
         'properties': {
             'zone': context.properties['zone'],
@@ -134,7 +93,7 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y libmysqlclient-dev python-pip python-dev
 
 USER_HOME=/home/ubuntu
-FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/scripts/data/protoc_url.txt
+FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
 
 # Install fluentd if necessary
 FLUENTD=$(ls /usr/sbin/google-fluentd)
@@ -208,19 +167,24 @@ cd $USER_HOME
 {}
 python setup.py install
 
-# Create the startup run script
-read -d '' RUN_FORSETI << EOF
-#!/bin/bash
-# inventory command
-{}
-# scanner command
-{}
 
+# Create upstart script for API server
+read -d '' API_SERVER << EOF
+description "Explain API Server"
+author "Felix Matenaar <fmatenaar@google.com>"
+
+start on runlevel [234]
+stop on runlevel[0156]
+
+chdir $USER_HOME
+export PYTHONPATH=.
+respawn
+exec /usr/local/bin/forseti_api
 EOF
-echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
-chmod +x $USER_HOME/run_forseti.sh
+echo "$API_SERVER" > /etc/init/forseti_api.conf
 
-(echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
+initctl reload-configuration
+start forseti_api
 """.format(
     # cloud_sql_proxy
     context.properties['cloudsqlproxy-os-arch'],
@@ -235,13 +199,6 @@ chmod +x $USER_HOME/run_forseti.sh
 
     # install forseti
     DOWNLOAD_FORSETI,
-
-    # run_forseti.sh
-    # - forseti_inventory
-    inventory_command,
-
-    # - forseti_scanner
-    scanner_command,
 )
                 }]
             }

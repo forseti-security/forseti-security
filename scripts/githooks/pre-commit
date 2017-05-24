@@ -22,11 +22,13 @@ if [ -z $VIRTUAL_ENV ]; then
 fi
 
 # Check if pylintrc exists and user is in the top repository directory
-if [ -e "./pylintrc" ]; then
-	echo "Executing pylint..."
-	pylint --rcfile=pylintrc --output-format=text google || exit 1
-else
-	echo "Need to commit from top level repository dir"
+if [ ! -e "./pylintrc" ]; then
+	echo "You must commit from top repository directory"
 	exit 1
 fi
 
+echo "Executing pylint..."
+pylint --rcfile=pylintrc --ignore-patterns=".*_test.*,.*test_.*,.*test.py,.*pb2.*" --output-format=text google || exit 1
+
+echo "Executing tests..."
+python setup.py google_test --test-dir tests/
