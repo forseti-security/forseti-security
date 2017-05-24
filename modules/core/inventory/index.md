@@ -98,7 +98,7 @@ project_number, project_id, project_name, lifecycle_status, parent_type, parent_
 94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
 ```
 
-Here's an example of [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/transform_util.py#L29)
+Here's an example of [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/pipelines/load_projects_pipeline.py#L32)
 
 6. Load the flattened data into database table
 For an example of steps 3 through 6 see this [PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/165)
