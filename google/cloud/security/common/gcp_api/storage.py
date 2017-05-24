@@ -120,9 +120,9 @@ class StorageClient(_base_client.BaseClient):
               ]
             }
         """
-        storage_service_api = self.service.buckets()
+        buckets_api = self.service.buckets()
         try:
-            buckets_request = storage_service_api.list(project=project_id)
+            buckets_request = buckets_api.list(project=project_id)
             buckets = buckets_request.execute()
             return buckets
         except (HttpError, HttpLib2Error) as e:
@@ -138,8 +138,8 @@ class StorageClient(_base_client.BaseClient):
 
         Returns: ACL json for bucket
         """
-        storage_service_api = self.service.bucketAccessControls()
-        bucket_acl_request = storage_service_api.list(bucket=bucket_name)
+        bucket_access_controls_api = self.service.bucketAccessControls()
+        bucket_acl_request = bucket_access_controls_api.list(bucket=bucket_name)
         try:
             return bucket_acl_request.execute()
         except (HttpError, HttpLib2Error) as e:

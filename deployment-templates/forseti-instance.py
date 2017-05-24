@@ -134,7 +134,7 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y libmysqlclient-dev python-pip python-dev
 
 USER_HOME=/home/ubuntu
-FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
+FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/scripts/data/protoc_url.txt
 
 # Install fluentd if necessary
 FLUENTD=$(ls /usr/sbin/google-fluentd)

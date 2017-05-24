@@ -33,3 +33,10 @@ INSERT_BUCKETS_ACL_VIOLATION = """
      violation_type, role, entity, email, domain, bucket)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
+
+INSERT_CLOUDSQL_ACL_VIOLATION = """
+    INSERT INTO {0}
+    (resource_type, resource_id, rule_name, rule_index,
+     violation_type, instance_name, authorized_networks, ssl_enabled)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+"""

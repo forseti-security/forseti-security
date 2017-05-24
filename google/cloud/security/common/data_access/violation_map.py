@@ -21,11 +21,14 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 VIOLATION_MAP = {
 	   'violations': vf.format_policy_violation,
 	   'buckets_acl_violations': vf.format_buckets_acl_violation,
+	   'cloudsql_acl_violations': vf.format_cloudsql_acl_violation,
 }
 
 VIOLATION_INSERT_MAP = {
 	   'violations': load_data.INSERT_VIOLATION.format,
 	   'buckets_acl_violations': load_data.INSERT_BUCKETS_ACL_VIOLATION.format,
+	   'cloudsql_acl_violations':\
+	          load_data.INSERT_CLOUDSQL_ACL_VIOLATION.format
 }
 
 VIOLATION_SELECT_MAP = {

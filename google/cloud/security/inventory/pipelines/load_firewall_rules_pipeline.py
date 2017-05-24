@@ -30,14 +30,14 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
 
     RESOURCE_NAME = 'firewall_rules'
 
-    def _transform(self, firewall_rules_map):
+    def _transform(self, resource_from_api):
         """Transform firewall rules map into loadable format for Cloud SQL.
 
         Loading the project id as project number is not supported by the
         GCP firewall api.
 
         Args:
-            firewall_rules_map: A dict mapping projects with a list of their
+            resource_from_api: A dict mapping projects with a list of their
                 firewall rules.
                 {project_id1: [firewall_rule1a, firewall_rule1b],
                  project_id2: [firewall_rule2a, firewall_rule2b],
@@ -46,7 +46,7 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of loadable firewall rules as a per-firewall dictionary.
         """
-        for project_id, firewall_rules in firewall_rules_map.iteritems():
+        for project_id, firewall_rules in resource_from_api.iteritems():
             for firewall_rule in firewall_rules:
                 yield {'firewall_rule_id': firewall_rule.get('id'),
                        'project_id': project_id,

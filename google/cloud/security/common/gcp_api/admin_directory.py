@@ -93,12 +93,12 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Raises:
             api_errors.ApiExecutionError
         """
-        members_stub = self.service.members()
-        request = members_stub.list(groupKey=group_key,
-                                    maxResults=FLAGS.max_results_admin_api)
+        members_api = self.service.members()
+        request = members_api.list(groupKey=group_key,
+                                   maxResults=FLAGS.max_results_admin_api)
 
         paged_results = self._build_paged_result(
-            request, members_stub, self.rate_limiter)
+            request, members_api, self.rate_limiter)
 
         group_members = []
         for page in paged_results:
@@ -123,11 +123,11 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Raises:
             api_errors.ApiExecutionError
         """
-        groups_stub = self.service.groups()
-        request = groups_stub.list(customer=customer_id)
+        groups_api = self.service.groups()
+        request = groups_api.list(customer=customer_id)
 
         paged_results = self._build_paged_result(
-            request, groups_stub, self.rate_limiter)
+            request, groups_api, self.rate_limiter)
 
         # TODO: Refactor this to a helper function, where a key string can
         # be passed in, to extract the right values to merge.

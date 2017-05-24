@@ -53,6 +53,7 @@ from google.cloud.security.common.data_access import folder_dao as folder_resour
 from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
+from google.cloud.security.common.data_access import cloudsql_dao as sql_dao
 from google.cloud.security.common.data_access.dao import Dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import admin_directory as ad
@@ -60,6 +61,7 @@ from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import storage as gcs
+from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
@@ -74,6 +76,7 @@ from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipe
 from google.cloud.security.inventory.pipelines import load_orgs_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_buckets_acls_pipeline
+from google.cloud.security.inventory.pipelines import load_projects_cloudsql_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
@@ -116,7 +119,7 @@ def _exists_snapshot_cycles_table(dao):
         LOGGER.error('Error in attempt to find snapshot_cycles table: %s', e)
         sys.exit()
 
-    if len(result) > 0 and result[0]['TABLE_NAME'] == 'snapshot_cycles':
+    if result and result[0]['TABLE_NAME'] == 'snapshot_cycles':
         return True
 
     return False
@@ -226,6 +229,12 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             configs,
             gcs_api_client,
             kwargs.get('bucket_dao')
+        ),
+        load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline(
+            cycle_timestamp,
+            configs,
+            cloudsql.CloudsqlClient(),
+            kwargs.get('cloudsql_dao')
         ),
         load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
             cycle_timestamp,
@@ -376,6 +385,7 @@ def main(_):
         project_dao = proj_dao.ProjectDao()
         organization_dao = org_dao.OrganizationDao()
         bucket_dao = buck_dao.BucketDao()
+        cloudsql_dao = sql_dao.CloudsqlDao()
         fwd_rules_dao = fr_dao.ForwardingRulesDao()
         folder_dao = folder_resource_dao.FolderDao()
     except data_access_errors.MySQLError as e:
@@ -397,7 +407,8 @@ def main(_):
             organization_dao=organization_dao,
             bucket_dao=bucket_dao,
             fwd_rules_dao=fwd_rules_dao,
-            folder_dao=folder_dao)
+            folder_dao=folder_dao,
+            cloudsql_dao=cloudsql_dao)
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)

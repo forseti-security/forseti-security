@@ -178,3 +178,15 @@ BUCKET_ACLS = """
     FROM buckets_{0}, buckets_acl_{0}
     WHERE bucket=bucket_name;
 """
+
+CLOUDSQL_INSTANCES = """
+    SELECT project_number, 
+           name,
+           settings_ip_configuration_require_ssl
+    FROM cloudsql_instances_{0}
+"""
+
+CLOUDSQL_ACLS = """
+    SELECT project_number, instance_name, value
+    FROM cloudsql_ipconfiguration_authorizednetworks_{0}
+"""
