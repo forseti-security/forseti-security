@@ -200,9 +200,10 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     map_of_all_pipeline_nodes = {}
     for i in inventory_pipeline_configs:
         map_of_all_pipeline_nodes[i.get('resource')] = PipelineNode(
-            i.get('resource'), i.get('should_inventory'), i.get('module_name'))
+            i.get('resource'), i.get('should_run'), i.get('module_name'))
 
-    # another pass: set the parents correctly on all the nodes
+    # another pass: build the dependency tree by setting the parents
+    # correctly on all the nodes
     for i in inventory_pipeline_configs:
         parent_name = i.get('depends_on')
         if parent_name is not None:
@@ -211,23 +212,23 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
 
     root = map_of_all_pipeline_nodes.get('organizations')
 
-    # Manually traverse the parents since anytree walker api doesn't make sense.
     # If child pipeline is true, then all parents will become true.
     # Even if the parent(s) is(are) false.
+    # Manually traverse the parents since anytree walker api doesn't make sense.
     for node in anytree.iterators.PostOrderIter(root):
-        if node.should_inventory:
+        if node.should_run:
             while node.parent is not None:
-                node.parent.should_inventory = node.should_inventory
+                node.parent.should_run = node.should_run
                 node = node.parent
 
     print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('resource_name')
-    print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('should_inventory')
+    print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('should_run')
 
     # Now, we have the true state of whether a pipeline should be run or not.
-    # Get a list of pipelines that will actually be run.
+    # Get a list of pipeline instances that will actually be run.
     pipelines_to_run = []
     for node in anytree.iterators.PreOrderIter(root):
-        if node.should_inventory:
+        if node.should_run:
             module_name = 'google.cloud.security.inventory.pipelines.{}'.format(node.module_name)
             module = importlib.import_module(module_name)
             class_name = node.module_name.title().replace('_', '')
@@ -396,10 +397,10 @@ def main(_):
 class PipelineNode(anytree.node.NodeMixin):
     """A custom anytree node with pipeline attributes."""
 
-    def __init__(self, resource_name, should_inventory, 
+    def __init__(self, resource_name, should_run, 
                  module_name, parent=None):
         self.resource_name = resource_name
-        self.should_inventory = should_inventory
+        self.should_run = should_run
         self.module_name = module_name
         self.parent = parent
 
