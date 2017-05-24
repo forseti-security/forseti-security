@@ -33,7 +33,6 @@ Usage:
 
 import collections
 import itertools
-import json
 import os
 import shutil
 import sys
@@ -45,7 +44,6 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.gcp_type import resource_util
