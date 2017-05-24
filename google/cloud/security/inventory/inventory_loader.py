@@ -195,7 +195,8 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     inventory_pipeline_configs = file_loader.read_and_parse_file(
         'google/cloud/security/inventory/inventory_pipeline_configs.yaml')
     
-    # first pass: map all the pipeline nodes, regardless if they should run or not
+    # first pass: map all the pipelines to their own nodes,
+    # regardless if they should run or not
     map_of_all_pipeline_nodes = {}
     for i in inventory_pipeline_configs:
         map_of_all_pipeline_nodes[i.get('resource')] = PipelineNode(
