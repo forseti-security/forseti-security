@@ -14,6 +14,7 @@
 
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
+import mock
 from google.apputils import basetest
 import uuid
 import os
