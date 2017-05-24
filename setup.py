@@ -34,7 +34,7 @@ NAMESPACE_PACKAGES = [
 
 INSTALL_REQUIRES = [
     'anytree==2.1.4',
-    'futures==3.0.5',
+    'futures>=3.0.5',
     'google-api-python-client==1.6.1',
     'Jinja2==2.9.5',
     'MySQL-python==1.2.5',
