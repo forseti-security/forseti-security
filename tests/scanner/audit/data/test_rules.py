@@ -312,6 +312,34 @@ RULES7 = {
     ]
 }
 
+# A whitelist for:
+# * Folder 1 (id=333)
+# * projects "my-project-3"
+# No inheritance of rules
+# Allow members of any role and pattern "user:*@company.com"
+FOLDER_RULES1 = {
+    'rules': [{
+            'name': 'folder rule 1',
+            'mode': 'whitelist',
+            'resource': [{
+                    'type': 'organization',
+                    'applies_to': 'self_and_children',
+                    'resource_ids': ['778899']
+                }, {
+                    'type': 'project',
+                    'applies_to': 'self',
+                    'resource_ids': [
+                        'my-project-3',
+                    ]
+                }],
+            'inherit_from_parents': True,
+            'bindings': [{
+                    'role': 'roles/*',
+                    'members': ['user:*@company.com']
+                }]
+        }]
+}
+
 # Simple whitelist to allow any users @ company.com to be present with
 # any roles inside any organization.
 RULES8 = {

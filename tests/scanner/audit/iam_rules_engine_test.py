@@ -22,6 +22,7 @@ import yaml
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
+from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
 from google.cloud.security.common.gcp_type.organization import Organization
@@ -47,6 +48,13 @@ class IamRulesEngineTest(ForsetiTestCase):
             parent=self.org789)
         self.project2 = Project('my-project-2', 12346,
             display_name='My project 2')
+
+        self.folder1 = folder.Folder(
+            '333', display_name='Folder 1', parent=self.org789)
+        self.project3 = Project(
+            'my-project-3', 12347,
+            display_name='My project 3',
+            parent=self.folder1)
 
         # patch the organization resource relation dao
         self.patcher = mock.patch('google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
@@ -1266,6 +1274,69 @@ class IamRulesEngineTest(ForsetiTestCase):
                 members=tuple(expected_outstanding_proj['roles/editor'])),
         ])
 
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_folder_rule_whitelist(self):
+        """Test a simple folder whitelist rule."""
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.FOLDER_RULES1, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789], [self.folder1, self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
+        # one violation for folder because of organization 778899
+        # one violation for project because of project3's parent
+        folder_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:someone@other.com',
+                    ]
+                }
+            ]
+        }
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = set(itertools.chain(
+                rules_engine.find_policy_violations(
+                    self.folder1, folder_policy),
+                rules_engine.find_policy_violations(
+                    self.project3, project_policy)
+            )
+        )
+
+        # expected
+        expected_outstanding = {
+            'roles/editor': [
+                IamPolicyMember.create_from('user:someone@other.com')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='folder rule 1',
+                resource_id=self.folder1.id,
+                resource_type=self.folder1.type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding['roles/editor'])),
+        ])
         self.assertItemsEqual(expected_violations, actual_violations)
 
 
