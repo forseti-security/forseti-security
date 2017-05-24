@@ -16,13 +16,13 @@
 
 import mock
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import storage
 from tests.common.gcp_type.test_data import fake_buckets
 
-class StorageTest(unittest.TestCase):
+class StorageTest(ForsetiTestCase):
     """Test the StorageClient."""
 
     @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)

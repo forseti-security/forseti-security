@@ -16,14 +16,14 @@
 
 import mock
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
 
 
-class FolderTest(unittest.TestCase):
+class FolderTest(ForsetiTestCase):
     """Test Folder resource."""
 
     def setUp(self):

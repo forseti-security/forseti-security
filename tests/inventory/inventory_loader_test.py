@@ -19,7 +19,7 @@ from datetime import datetime
 import mock
 import MySQLdb
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.gcp_type import iam_policy
@@ -29,7 +29,7 @@ from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.inventory import inventory_loader
 
 
-class InventoryLoaderTest(unittest.TestCase):
+class InventoryLoaderTest(ForsetiTestCase):
 
     @mock.patch.object(inventory_loader, 'FLAGS')
     @mock.patch.object(inventory_loader, 'LOGGER')

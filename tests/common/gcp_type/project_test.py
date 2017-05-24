@@ -16,7 +16,7 @@
 
 import mock
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.gcp_type.folder import Folder
 from google.cloud.security.common.gcp_type.organization import Organization
@@ -25,7 +25,7 @@ from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
 
-class ProjectTest(unittest.TestCase):
+class ProjectTest(ForsetiTestCase):
 
     def setUp(self):
         self.org = Organization('1234567890', display_name='My org name')

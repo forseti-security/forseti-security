@@ -1,4 +1,4 @@
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
@@ -65,7 +65,7 @@ def create_tester():
                       GrpcPlaygrounderFactory,\
                       ])
 
-class ModelTest(unittest.TestCase):
+class ModelTest(ForsetiTestCase):
 
     def setUp(self):
         self.setup = create_tester()

@@ -16,6 +16,10 @@
 
 import json
 import os
+import unittest
+
+class ForsetiTestCase(unittest.TestCase):
+    pass
 
 def get_datafile_path(start_loc, filename):
     """Get the path for a data file."""

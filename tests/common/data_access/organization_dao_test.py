@@ -16,7 +16,7 @@
 
 import json
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 from MySQLdb import DataError
@@ -29,7 +29,7 @@ from google.cloud.security.common.gcp_type import organization
 from tests.common.gcp_type.test_data import fake_orgs
 
 
-class OrgDaoTest(unittest.TestCase):
+class OrgDaoTest(ForsetiTestCase):
     """Tests for the OrganizationDao."""
 
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)

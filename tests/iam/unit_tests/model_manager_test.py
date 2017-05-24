@@ -14,7 +14,7 @@
 
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import uuid
 import os
 
@@ -25,7 +25,7 @@ def create_test_engine():
     tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
     return create_engine('sqlite:///{}'.format(tmpfile)), tmpfile
 
-class ModelManagerTest(unittest.TestCase):
+class ModelManagerTest(ForsetiTestCase):
     """Test for dao.ModelManager create/delete/list."""
 
     def setUp(self):

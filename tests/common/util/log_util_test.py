@@ -15,10 +15,10 @@
 """Tests the Logging utility."""
 import logging
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import log_util
 
-class LogUtilTest(unittest.TestCase):
+class LogUtilTest(ForsetiTestCase):
     """Test the Logging utility."""
 
     def test_set_logger_level_changes_existing_loggers(self):

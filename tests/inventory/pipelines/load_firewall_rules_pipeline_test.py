@@ -14,7 +14,7 @@
 
 """Tests the load_firewall_rules_pipeline."""
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 # pylint: disable=line-too-long
@@ -26,7 +26,7 @@ from tests.inventory.pipelines.test_data import fake_firewall_rules
 # pylint: enable=line-too-long
 
 
-class LoadFirewallRulesTest(unittest.TestCase):
+class LoadFirewallRulesTest(ForsetiTestCase):
     """Tests for the load firewall rules pipeline."""
 
     def setUp(self):

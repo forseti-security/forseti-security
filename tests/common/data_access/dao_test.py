@@ -16,7 +16,7 @@
 
 import json
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 from google.cloud.security.common.data_access import _db_connector
@@ -25,7 +25,7 @@ from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
 
 
-class DaoTest(unittest.TestCase):
+class DaoTest(ForsetiTestCase):
     """Tests for the Dao."""
 
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)

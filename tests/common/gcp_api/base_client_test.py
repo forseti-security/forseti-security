@@ -19,12 +19,12 @@ from httplib2 import HttpLib2Error
 import mock
 
 from apiclient import discovery
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import _supported_apis
 
 
-class BaseClientTest(unittest.TestCase):
+class BaseClientTest(ForsetiTestCase):
 
     def setUp(self):
         self.supported_apis = _supported_apis.SUPPORTED_APIS

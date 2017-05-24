@@ -19,7 +19,7 @@ from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 import mock
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
@@ -31,7 +31,7 @@ from tests.common.gcp_type.test_data import fake_orgs
 from tests.common.gcp_type.test_data import fake_projects
 
 
-class CloudResourceManagerTest(unittest.TestCase):
+class CloudResourceManagerTest(ForsetiTestCase):
     """Test the Cloud Resource Manager API Client."""
 
     MAX_CRM_API_CALLS_PER_100_SECONDS = 88888

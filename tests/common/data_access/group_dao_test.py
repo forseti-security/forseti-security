@@ -14,7 +14,7 @@
 
 """Tests the GroupDao."""
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 from google.cloud.security.common.data_access import dao
@@ -23,7 +23,7 @@ from google.cloud.security.common.data_access import group_dao
 from tests.common.data_access.test_data import fake_group_dao_data as fake_data
 
 
-class GroupDaoTest(unittest.TestCase):
+class GroupDaoTest(ForsetiTestCase):
     """Tests for the GroupDao."""
 
     @mock.patch.object(dao.Dao, '__init__', autospec=True)

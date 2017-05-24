@@ -16,7 +16,7 @@
 
 import json
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 from MySQLdb import DataError
@@ -27,7 +27,7 @@ from google.cloud.security.common.data_access import bucket_dao
 from google.cloud.security.common.data_access.sql_queries import select_data
 
 
-class BucketDaoTest(unittest.TestCase):
+class BucketDaoTest(ForsetiTestCase):
 	"""Tests for the BucketDao."""
 
 	FAKE_PROJECT_NUMBERS = ['11111']

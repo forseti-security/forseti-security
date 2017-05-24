@@ -21,12 +21,12 @@ import threading
 import mock
 
 import testing_constants as constants
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.security.enforcer import gce_firewall_enforcer as fe
 
 
-class HelperFunctionTest(unittest.TestCase):
+class HelperFunctionTest(ForsetiTestCase):
     """Unit tests for helper functions."""
 
     def test_get_network_name_from_url(self):
@@ -47,7 +47,7 @@ class HelperFunctionTest(unittest.TestCase):
                                               constants.TEST_NETWORK))
 
 
-class ComputeFirewallAPITest(unittest.TestCase):
+class ComputeFirewallAPITest(ForsetiTestCase):
     """Tests for the ComputeFirewallAPI class."""
 
     def setUp(self):
@@ -223,7 +223,7 @@ class ComputeFirewallAPITest(unittest.TestCase):
         self.assertEqual(completed_responses, completed)
 
 
-class FirewallRulesTest(unittest.TestCase):
+class FirewallRulesTest(ForsetiTestCase):
     """Tests for the FirewallRules class."""
 
     def setUp(self):
@@ -440,7 +440,7 @@ class FirewallRulesTest(unittest.TestCase):
         self.assertEqual(self.firewall_rules, new_firewall_rules)
 
 
-class FirewallRulesCheckRuleTest(unittest.TestCase):
+class FirewallRulesCheckRuleTest(ForsetiTestCase):
     """Multiple tests for FirewallRules._check_rule_before_adding."""
 
     def setUp(self):
@@ -521,7 +521,7 @@ class FirewallRulesCheckRuleTest(unittest.TestCase):
             self.firewall_rules._check_rule_before_adding(new_rule)
 
 
-class FirewallEnforcerTest(unittest.TestCase):
+class FirewallEnforcerTest(ForsetiTestCase):
     """Tests for the FirewallEnforcer class."""
 
     def setUp(self):
@@ -1169,7 +1169,7 @@ class FirewallEnforcerTest(unittest.TestCase):
         self.enforcer._rules_to_update = []
 
 
-class FirewallRulesAreEqualTest(unittest.TestCase):
+class FirewallRulesAreEqualTest(ForsetiTestCase):
     """Multiple tests for (in)equality between two firewall rules."""
 
     def setUp(self):

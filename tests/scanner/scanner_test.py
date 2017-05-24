@@ -20,7 +20,7 @@ import os
 import mock
 import MySQLdb
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
@@ -36,7 +36,7 @@ from google.cloud.security.scanner.scanners import iam_rules_scanner as irs
 from tests.inventory.pipelines.test_data import fake_iam_policies
 
 
-class ScannerRunnerTest(unittest.TestCase):
+class ScannerRunnerTest(ForsetiTestCase):
 
     def setUp(self):
         fake_utcnow = datetime(

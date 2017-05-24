@@ -14,7 +14,7 @@
 
 """Tests the load_folders_pipeline."""
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import json
 import mock
 
@@ -36,7 +36,7 @@ def _setup_raw_folders():
         fake_folders.EXPECTED_LOADABLE_FOLDERS[i]['raw_folder'] = \
             json.dumps(fakes[i])
 
-class LoadFoldersPipelineTest(unittest.TestCase):
+class LoadFoldersPipelineTest(ForsetiTestCase):
     """Tests for the load_folders_pipeline."""
 
     @classmethod

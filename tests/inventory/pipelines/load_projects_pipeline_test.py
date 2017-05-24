@@ -14,7 +14,7 @@
 
 """Tests the load_projects_pipeline."""
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 # pylint: disable=line-too-long
@@ -30,7 +30,7 @@ from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
 
 
-class LoadProjectsPipelineTest(unittest.TestCase):
+class LoadProjectsPipelineTest(ForsetiTestCase):
     """Tests for the load_projects_pipeline."""
 
     def setUp(self):

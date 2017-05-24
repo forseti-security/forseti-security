@@ -19,7 +19,7 @@ import json
 import mock
 import socket
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import metadata_server
 from google.cloud.security.common.util import errors
 
@@ -36,7 +36,7 @@ class _MockMetadataServerHttpError(errors.MetadataServerHttpError):
     pass
 
 
-class MetadataServerTest(unittest.TestCase):
+class MetadataServerTest(ForsetiTestCase):
     """Test the Metadata Server util."""
 
     @mock.patch.object(httplib.HTTPConnection, 'request', autospec=True)

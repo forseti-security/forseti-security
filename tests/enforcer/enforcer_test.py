@@ -21,7 +21,7 @@ import httplib2
 import mock
 
 import testing_constants as constants
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.protobuf import text_format
 from tests.unittest_utils import get_datafile_path
 
@@ -33,7 +33,7 @@ from google.cloud.security.enforcer import enforcer
 MOCK_TIMESTAMP = 1234567890
 
 
-class EnforcerTest(unittest.TestCase):
+class EnforcerTest(ForsetiTestCase):
     """Extended unit tests for BatchFirewallEnforcer class."""
 
     def setUp(self):

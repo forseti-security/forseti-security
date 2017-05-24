@@ -16,7 +16,7 @@
 
 import mock
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_type import errors
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.gcp_type.organization import Organization
@@ -25,7 +25,7 @@ from google.cloud.security.common.gcp_type.resource import Resource
 from google.cloud.security.common.gcp_type.resource import ResourceType
 
 
-class ResourceTest(unittest.TestCase):
+class ResourceTest(ForsetiTestCase):
     """Test Resource."""
 
     def test_create_resource_raises_notimplemented(self):
@@ -57,7 +57,7 @@ class ResourceTest(unittest.TestCase):
             ResourceType.verify('fake')
 
 
-class ResourceUtilTest(unittest.TestCase):
+class ResourceUtilTest(ForsetiTestCase):
     """Test ResourceUtil."""
 
     def test_create_resource_is_ok(self):

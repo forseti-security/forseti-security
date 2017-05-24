@@ -21,7 +21,7 @@ import httplib2
 import mock
 
 import testing_constants as constants
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.security.enforcer import enforcer_log_pb2
 from google.cloud.security.enforcer import project_enforcer
@@ -31,7 +31,7 @@ from google.cloud.security.enforcer import project_enforcer
 MOCK_TIMESTAMP = 1234567890
 
 
-class ProjectEnforcerTest(unittest.TestCase):
+class ProjectEnforcerTest(ForsetiTestCase):
     """Extended unit tests for ProjectEnforcer class."""
 
     def setUp(self):

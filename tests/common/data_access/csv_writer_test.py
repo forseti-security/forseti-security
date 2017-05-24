@@ -14,13 +14,13 @@
 
 """Tests the CSV Writer."""
 
-import unittest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 from google.cloud.security.common.data_access import csv_writer
 
 
-class CsvWriterTest(unittest.TestCase):
+class CsvWriterTest(ForsetiTestCase):
     """Tests for the CSV Writer."""
 
     @mock.patch.object(csv_writer, 'os')
