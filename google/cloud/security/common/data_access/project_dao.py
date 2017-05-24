@@ -89,6 +89,23 @@ class ProjectDao(dao.Dao):
             return self.map_row_to_object(rows[0])
         return None
 
+    def get_project_by_number(self, project_number, timestamp):
+        """Get a project from a particular snapshot.
+
+        Args:
+            project_number: The number of the project.
+            timestamp: The snapshot timestamp.
+
+        Returns:
+            A Project, if found.
+        """
+        project_query = select_data.PROJECT_BY_NUMBER.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource.ResourceType.PROJECT, project_query, (project_number,))
+        if rows:
+            return self.map_row_to_object(rows[0])
+        return None
+
     def get_projects(self, timestamp):
         """Get projects from a particular snapshot.
 
@@ -97,9 +114,6 @@ class ProjectDao(dao.Dao):
 
         Returns:
             A list of Projects.
-
-        Raises:
-            MySQLError if a MySQL error occurs.
         """
         projects_query = select_data.PROJECTS.format(timestamp)
         rows = self.execute_sql_with_fetch(
@@ -132,3 +146,32 @@ class ProjectDao(dao.Dao):
             except ValueError:
                 LOGGER.warn('Error parsing json:\n %s', row['iam_policy'])
         return project_policies
+
+    def get_project_raw_data(self, resource_name, timestamp, **kwargs):
+        """Select the project raw data from a projects snapshot table.
+
+        Args:
+            resource_name: String of the resource name.
+            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            project_id (optional): project_id for specific project
+            project_number (optional): project_number for specific project
+
+        Returns:
+             list of project numbers
+        """
+        project_id = kwargs.get('project_id')
+        project_number = kwargs.get('project_number')
+        if project_id is not None:
+            project_raw_sql = select_data.PROJECT_RAW.format(timestamp)
+            rows = self.execute_sql_with_fetch(
+                resource_name, project_raw_sql, (project_id,))
+        elif project_number is not None:
+            project_raw_sql = select_data.PROJECT_RAW_BY_NUMBER.format(
+                timestamp)
+            rows = self.execute_sql_with_fetch(
+                resource_name, project_raw_sql, (project_number,))
+        else:
+            project_raw_sql = select_data.PROJECT_RAW_ALL.format(timestamp)
+            rows = self.execute_sql_with_fetch(
+                resource_name, project_raw_sql, ())
+        return [row['raw_project'] for row in rows]

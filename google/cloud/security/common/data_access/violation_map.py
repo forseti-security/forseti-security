@@ -16,6 +16,7 @@
 
 from google.cloud.security.common.data_access import violation_format as vf
 from google.cloud.security.common.data_access.sql_queries import load_data
+from google.cloud.security.common.data_access.sql_queries import select_data
 
 VIOLATION_MAP = {
 	   'violations': vf.format_policy_violation,
@@ -28,4 +29,9 @@ VIOLATION_INSERT_MAP = {
 	   'buckets_acl_violations': load_data.INSERT_BUCKETS_ACL_VIOLATION.format,
 	   'cloudsql_acl_violations':\
 	          load_data.INSERT_CLOUDSQL_ACL_VIOLATION.format
+}
+
+VIOLATION_SELECT_MAP = {
+    'violations': select_data.SELECT_VIOLATIONS.format,
+    'buckets_acl_violations': select_data.SELECT_BUCKETS_ACL_VIOLATIONS.format,
 }

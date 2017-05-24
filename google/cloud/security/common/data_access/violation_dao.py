@@ -75,6 +75,20 @@ class ViolationDao(dao.Dao):
 
         return (inserted_rows, violation_errors)
 
+    def get_all_violations(self, timestamp, resource_name):
+        """Get all the violations.
+
+        Args:
+            timestamp: The timestamp of the snapshot.
+
+        Returns:
+             A tuple of the violations as dict.
+        """
+        violations_sql = vm.VIOLATION_SELECT_MAP[resource_name](timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource_name, violations_sql, ())
+        return rows
+
 
 def _format_violation(violation, resource_name):
     """Violation formating stub that uses a map to call the formating
