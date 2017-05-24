@@ -1,7 +1,7 @@
 FROM forseti:base_1404
 
 # Get Forseti source code
-RUN git clone --branch=dockerization https://github.com/felixbb/forseti-security.git
+RUN git clone --branch=dockerization_rebase https://github.com/felixbb/forseti-security.git
 
 WORKDIR /forseti-security
 
