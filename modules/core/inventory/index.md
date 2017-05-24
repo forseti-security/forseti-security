@@ -60,7 +60,7 @@ support you can skip step 4.
   Data retrieved from the Google Cloud APIs can have nested and repeating children, e.g. JSON.
 
     ```json
-    Example API Data
+    /* Example API Data */
     {
         "projects": [
           {

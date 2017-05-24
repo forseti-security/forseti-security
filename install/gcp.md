@@ -5,7 +5,7 @@ permalink: /install/gcp/
 # Google Cloud Platform installation
 
 One of the goals of Forseti Security is to provide continuous scanning
-and enforcement in your Google Cloud Platform (GCP)environment.
+and enforcement in your Google Cloud Platform (GCP) environment.
 [Deployment Manager](https://cloud.google.com/deployment-manager/docs/) (DM)
 is a Google Cloud service that helps you automate the deployment and
 management of your GCP resources. We are using DM to do the following:
@@ -42,15 +42,12 @@ The provided DM templates are samples for you to use. Make a copy of
   * **Note**: use the same SCANNER\_BUCKET name for both the "Cloud Storage" and
     "Compute Engine" sections in the template.
 * YOUR\_SERVICE\_ACCOUNT
-  * This can be the application default service account, i.e.
-    `PROJECTNUMBER-compute@developer.gserviceaccount.com`.
-  * You must assign the `Browser` role to this service account on
-    the **organization-level** IAM policy.
+  * This is the service account you created for reading GCP resource data.
 * YOUR\_ORG\_ID (the organization id number; get it from the Organization
   IAM settings or ask your Organization Administrator)
 * YOUR\_SENDGRID\_API\_KEY (the API key for SendGrid email service)
-* EMAIL\_ADDRESS\_OF_YOUR\_SENDER (email address of your email sender)
-* EMAIL\_ADDRESS\_OF\_YOUR\_RECIPIENT (email address of your email recipient)
+* EMAIL\_ADDRESS\_OF_YOUR\_SENDER (sender email address for notifications)
+* EMAIL\_ADDRESS\_OF\_YOUR\_RECIPIENT (email address of notification recipient)
 * `src-path` and `release-version`: The default is to retrieve the
   latest stable branch (currently hardcoded). If you want to get a different
   release archive, e.g. master, change the following:
@@ -73,6 +70,7 @@ The provided DM templates are samples for you to use. Make a copy of
       release-version: "1.0"
       src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.tar.gz
   ```
+
 There are other templates that you can modify:
 
 * `py/inventory/cloudsql-instance.py`:  The template for the
@@ -111,30 +109,32 @@ Once completed you can update the following variables in your version of the
 By default, the DM template has a rules.yaml that will allow service accounts on
 the organization and its children (e.g. projects) IAM policies. For more
 information, refer to the [rules schema]({{ site.baseurl }}{% link modules/core/scanner/rules.md %})
-for detail.
+for more details.
 
 Once you finish customizing rules.yaml, upload it to your SCANNER\_BUCKET.
 The `py/forseti_instance.py` template looks for the rules.yaml
 in gs://SCANNER\_BUCKET/rules, so if you have a different location
-for your rules.yaml, be sure to update the template
-accordingly (e.g. replace every instance of "rules/rules.yaml"
+for your rules.yaml, be sure to update the template accordingly
+(e.g. replace every instance of "rules/rules.yaml"
 with the appropriate path so the scanner knows where to find it).
 
 ## Deploy Forseti Security
-After you configure the deployment template variables you can create a
-new deployment.
+After you configure the deployment template variables, create a new deployment.
 
-### Deploy without GSuite Google Groups collection enabled
 ```sh
 $ gcloud deployment-manager deployments create forseti-security \
   --config path/to/deploy-forseti.yaml
 ```
+
+You can view the details of your deployment in the Cloud Console
+[Deployment Manager dashboard](https://console.cloud.google.com/deployments).
+Also, if you're using the default startup script, Forseti Security
+should run on the top of the hour, drop a
+csv in `gs://SCANNER_BUCKET/scanner_violations/`, and email you the inventory
+and scanner results.
 
 ### Deploy with GSuite Google Groups collection enabled
-```sh
-$ gcloud deployment-manager deployments create forseti-security \
-  --config path/to/deploy-forseti.yaml
-```
+Create your deployment first, then run these commands:
 
 ```sh
 $ gcloud compute copy-files <path_to_downloaded_key> \
@@ -148,13 +148,6 @@ $ <your_instance>: sudo mv /tmp/service-account-key.json <the_path_you_specified
 **Note**: The remote destination path of where you put the key on the vm
 instance should match what you specified in your deployment YAML for
 `groups-service-account-key-file:`.
-
-You can view the details of your deployment in the Cloud Console
-[Deployment Manager dashboard](https://console.cloud.google.com/deployments).
-Also, if you're using the default startup script, Forseti Security
-should run on the top of the hour, drop a
-csv in `gs://SCANNER_BUCKET/scanner_violations/`, and email you the inventory
-and scanner results.
 
 ## Making changes to your deployment
 If you need to make changes to your deployment, refer to the
