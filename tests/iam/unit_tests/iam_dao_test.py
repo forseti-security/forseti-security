@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from test.test_xml_etree import check_element
 
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import uuid
 import os
 from collections import defaultdict
@@ -34,7 +33,7 @@ def create_test_engine():
     tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
     return create_engine('sqlite:///{}'.format(tmpfile)), tmpfile
 
-class DaoTest(basetest.TestCase):
+class DaoTest(ForsetiTestCase):
     """General data abstraction layer use case tests."""
 
     def setUp(self):

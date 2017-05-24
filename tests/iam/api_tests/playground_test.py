@@ -1,5 +1,5 @@
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
@@ -23,7 +23,7 @@ def create_tester():
                       GrpcPlaygrounderFactory,\
                       ])
 
-class ApiTest(basetest.TestCase):
+class ApiTest(ForsetiTestCase):
 
     def setUp(self):
         self.setup = create_tester()

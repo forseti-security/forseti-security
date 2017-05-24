@@ -19,7 +19,7 @@ import json
 import mock
 import yaml
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util import file_loader
@@ -28,7 +28,7 @@ from google.cloud.security.common.util import errors
 from StringIO import StringIO
 
 
-class FileLoaderTest(basetest.TestCase):
+class FileLoaderTest(ForsetiTestCase):
     """Test the file loader utility."""
 
     def test_get_filetype_parser_works(self):
@@ -83,5 +83,5 @@ class FileLoaderTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()
 

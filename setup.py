@@ -23,6 +23,7 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
+import google.cloud.security
 
 FORSETI_VERSION = '1.0.1'
 

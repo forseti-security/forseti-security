@@ -20,12 +20,12 @@ import mock
 import anytree
 import yaml
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.scanner.scanners import groups_scanner
 from tests.scanner.test_data import fake_groups_scanner_data as fake_data
 
 
-class GroupsScannerTest(basetest.TestCase):
+class GroupsScannerTest(ForsetiTestCase):
 
     def _pickle_dump(self, obj, filename):
         """Dump object to pickle file.
@@ -106,4 +106,4 @@ class GroupsScannerTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()
