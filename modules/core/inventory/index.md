@@ -40,24 +40,24 @@ $ ./dev_inventory.sh
 This is the generic workflow for adding new GCP resource types to Forseti Inventory.
 
 1. Define a new table schema for the "flattened" data you need to store.
-  Each relevant field of data you retrieve from an API should correspond to a column in the table schema.
+    Each relevant field of data you retrieve from an API should correspond to a column in the table schema.
 
 2. Define a new table schema for the "raw data" you need to store.
-  We store the raw API data as json to assist troubleshooting.
+    We store the raw API data as json to assist troubleshooting.
 
-  Once you've completed these steps create a [Pull Request](https://help.github.com/articles/creating-a-pull-request/)
+3. Create a [Pull Request](https://help.github.com/articles/creating-a-pull-request/)
   ([an example PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/159)).
 
-3. Once the database PR is merged, create a [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines)
+4. Once the database PR is merged, create a [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines)
 to fetch your data. You might also need to extend Forseti's API support and
 different authentication. If your change does not require adding new API
 support you can skip step 4.
 
-4. Add your pipeline to [`inventory_loader.py`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/inventory_loader.py).
-  Doing this might require protecting the processing of this pipeline with new flags.
+5. Add your pipeline to [`inventory_loader.py`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/inventory_loader.py).
+    You might need to create additional commandline flags to configure your pipeline.
 
-5. Flattening the data collected from your API
-  Data retrieved from the Google Cloud APIs can have nested and repeating children, e.g. JSON.
+6. Flatten the data collected from your API.
+    Data retrieved from the Google Cloud APIs can have nested and repeating children, e.g. JSON.
 
     ```json
     /* Example API Data */
@@ -100,5 +100,5 @@ support you can skip step 4.
 
     Here's an example of [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/pipelines/load_projects_pipeline.py#L32)
 
-6. Load the flattened data into database table
-   For an example of steps 3 through 6 see this [PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/165)
+6. Load the flattened data into database table.
+     For an example of steps 3 through 6 see this [PR](https://github.com/GoogleCloudPlatform/forseti-security/pull/165)
