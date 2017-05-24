@@ -166,7 +166,8 @@ class ProjectDao(dao.Dao):
             rows = self.execute_sql_with_fetch(
                 resource_name, project_raw_sql, (project_id,))
         elif project_number is not None:
-            project_raw_sql = select_data.PROJECT_RAW_BY_NUMBER.format(timestamp)
+            project_raw_sql = select_data.PROJECT_RAW_BY_NUMBER.format(
+                timestamp)
             rows = self.execute_sql_with_fetch(
                 resource_name, project_raw_sql, (project_number,))
         else:
