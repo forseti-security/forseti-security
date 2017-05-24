@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from anytree.walker import Walker
 
 """Loads requested data into inventory.
 
@@ -36,11 +37,12 @@ To see all the dependent flags:
   $ forseti_inventory --helpfull
 
 """
-
+import importlib
 from datetime import datetime
 import sys
 import logging
 
+import anytree
 import gflags as flags
 
 # TODO: Investigate improving so we can avoid the pylint disable.
@@ -63,6 +65,7 @@ from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util import errors as util_errors
@@ -181,8 +184,6 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     Raises: inventory_errors.LoadDataPipelineError.
     """
 
-    pipelines = []
-
     # Commonly used clients for shared ratelimiter re-use.
     crm_v1_api_client = crm.CloudResourceManagerClient()
     dao = kwargs.get('dao')
@@ -191,98 +192,54 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
     organization_dao_name = 'organization_dao'
     project_dao_name = 'project_dao'
 
-    # The order here matters, e.g. groups_pipeline must come before
-    # group_members_pipeline.
-    pipelines = [
-        load_orgs_pipeline.LoadOrgsPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(organization_dao_name)
-        ),
-        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(organization_dao_name)
-        ),
-        load_projects_pipeline.LoadProjectsPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-            cycle_timestamp,
-            configs,
-            gcs_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
-            cycle_timestamp,
-            configs,
-            gcs_api_client,
-            kwargs.get('bucket_dao')
-        ),
-        load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline(
-            cycle_timestamp,
-            configs,
-            cloudsql.CloudsqlClient(),
-            kwargs.get('cloudsql_dao')
-        ),
-        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
-            cycle_timestamp,
-            configs,
-            compute.ComputeClient(),
-            kwargs.get('fwd_rules_dao')
-        ),
-        load_folders_pipeline.LoadFoldersPipeline(
-            cycle_timestamp,
-            configs,
-            crm.CloudResourceManagerClient(version='v2beta1'),
-            dao
-        ),
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
-            cycle_timestamp,
-            configs,
-            bq.BigQueryClient(),
-            dao
-        ),
-        load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
-            cycle_timestamp,
-            configs,
-            compute.ComputeClient(version='beta'),
-            kwargs.get(project_dao_name)
-        ),
-    ]
 
-    if configs.get('inventory_groups'):
-        if util.can_inventory_groups(configs):
-            admin_api_client = ad.AdminDirectoryClient()
-            pipelines.extend([
-                load_groups_pipeline.LoadGroupsPipeline(
+    inventory_pipeline_configs = file_loader.read_and_parse_file(
+        'google/cloud/security/inventory/inventory_pipeline_configs.yaml')
+    
+    # first pass: map all the pipeline nodes, regardless if they should run or not
+    map_of_all_pipeline_nodes = {}
+    for i in inventory_pipeline_configs:
+        map_of_all_pipeline_nodes[i.get('resource')] = PipelineNode(
+            i.get('resource'), i.get('should_inventory'), i.get('module_name'))
+
+    # another pass: set the parents correctly on all the nodes
+    for i in inventory_pipeline_configs:
+        parent_name = i.get('depends_on')
+        if parent_name is not None:
+            parent_node = map_of_all_pipeline_nodes[parent_name]
+            map_of_all_pipeline_nodes[i.get('resource')].parent = parent_node
+
+    root = map_of_all_pipeline_nodes.get('organizations')
+
+    # Manually traverse the parents since anytree walker api doesn't make sense.
+    # If child pipeline is true, then all parents will become true.
+    # Even if the parent(s) is(are) false.
+    for node in anytree.iterators.PostOrderIter(root):
+        if node.should_inventory:
+            while node.parent is not None:
+                node.parent.should_inventory = node.should_inventory
+                node = node.parent
+
+    print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('resource_name')
+    print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('should_inventory')
+
+    # Now, we have the true state of whether a pipeline should be run or not.
+    # Get a list of pipelines that will actually be run.
+    pipelines_to_run = []
+    for node in anytree.iterators.PreOrderIter(root):
+        if node.should_inventory:
+            module_name = 'google.cloud.security.inventory.pipelines.{}'.format(node.module_name)
+            module = importlib.import_module(module_name)
+            class_name = node.module_name.title().replace('_', '')
+            pipeline_class = getattr(module, class_name)
+            pipelines_to_run.append(
+                pipeline_class(
                     cycle_timestamp,
                     configs,
-                    admin_api_client,
-                    dao),
-                load_group_members_pipeline.LoadGroupMembersPipeline(
-                    cycle_timestamp,
-                    configs,
-                    admin_api_client,
-                    dao)
-            ])
-        else:
-            raise inventory_errors.LoadDataPipelineError(
-                'Unable to inventory groups with specified arguments:\n%s',
-                configs)
+                    crm_v1_api_client,
+                    kwargs.get(organization_dao_name)))
 
-    return pipelines
+    return pipelines_to_run
 
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
@@ -380,6 +337,7 @@ def _configure_logging(configs):
 
 def main(_):
     """Runs the Inventory Loader."""
+   
     try:
         dao = Dao()
         project_dao = proj_dao.ProjectDao()
@@ -435,5 +393,17 @@ def main(_):
                     configs.get('email_recipient'))
 
 
+class PipelineNode(anytree.node.NodeMixin):
+    """A custom anytree node with pipeline attributes."""
+
+    def __init__(self, resource_name, should_inventory, 
+                 module_name, parent=None):
+        self.resource_name = resource_name
+        self.should_inventory = should_inventory
+        self.module_name = module_name
+        self.parent = parent
+
+
 if __name__ == '__main__':
     app.run()
+

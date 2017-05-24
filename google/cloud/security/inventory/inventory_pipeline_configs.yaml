@@ -1,0 +1,66 @@
+
+- resource: bigquery_datasets
+  should_inventory: true
+  depends_on: projects
+  module_name: load_bigquery_datasets_pipeline
+
+- resource: firewall_rules
+  should_inventory: false
+  depends_on: projects
+  module_name: load_firewall_rules_pipeline
+
+- resource: folders
+  should_inventory: false
+  depends_on: organizations
+  module_name: load_folders_pipeline
+
+- resource: forwarding_rules
+  should_inventory: true
+  depends_on: projects
+  module_name: load_forwarding_rules_pipeline
+
+- resource: group_members
+  should_inventory: true
+  depends_on: groups
+  module_name: load_group_members_pipeline
+
+- resource: groups
+  should_inventory: false
+  depends_on: organizations
+  module_name: load_groups_pipeline
+
+- resource: org_iam_policies
+  should_inventory: true
+  depends_on: organizations
+  module_name: load_org_iam_policies_pipeline
+
+- resource: organizations
+  should_inventory: true
+  depends_on: null
+  module_name: load_orgs_pipeline
+
+- resource: buckets_acls
+  should_inventory: true
+  depends_on: buckets
+  module_name: load_projects_buckets_acls_pipeline
+
+- resource: buckets
+  should_inventory: false
+  depends_on: projects
+  module_name: load_projects_buckets_pipeline
+
+- resource: cloudsql
+  should_inventory: true
+  depends_on: projects
+  module_name: load_projects_cloudsql_pipeline
+
+- resource: projects_iam_policies
+  should_inventory: true
+  depends_on: projects
+  module_name: load_projects_iam_policies_pipeline
+
+- resource: projects
+  should_inventory: false
+  depends_on: organizations
+  module_name: load_projects_pipeline
+  
