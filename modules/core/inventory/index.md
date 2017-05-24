@@ -91,12 +91,12 @@ Data retrieved from the Google Cloud APIs can have nested and repeating children
 
 To store this data in CSV or in a normalized storage system requires flattening the data into rows.
 
-    ```
-    Example Transformed (Flattened) Data
-    project_number, project_id, project_name, lifecycle_status, parent_type, parent_id, create_time
-    25621943694 project1  project1  ACTIVE  organization  888888888888  2016-10-22 16:57:36
-    94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
-    ```
+```sh
+# Example Transformed (Flattened) Data
+project_number, project_id, project_name, lifecycle_status, parent_type, parent_id, create_time
+25621943694 project1  project1  ACTIVE  organization  888888888888  2016-10-22 16:57:36
+94226340476 project2  project2  ACTIVE  organization  888888888888  2016-11-13 05:32:10
+```
 
 Here's an example of [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/transform_util.py#L29)
 
