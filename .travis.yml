@@ -24,6 +24,7 @@ services:
 before_install:
   - docker build -t forseti/build .
   - docker run -it -d --name build forseti/build /bin/bash
+script:
   - docker exec -it build /bin/sh -c "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
   - docker cp build:/forseti-security/.coverage .
 
