@@ -194,6 +194,13 @@ class PipelineBuilder(object):
         return runnable_pipelines
 
     def _build_dependency_tree(self):
+        """Build the dependency tree with all the pipeline nodes.
+        
+        Returns:
+            PipelineNode representing the top-level starting point
+                of the pipeline dependency tree.  The entire pipeline
+                dependency tree are children of this root.
+        """
         # First pass: map all the pipelines to their own nodes,
         # regardless if they should run or not.
         map_of_all_pipeline_nodes = {}
