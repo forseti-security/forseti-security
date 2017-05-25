@@ -189,7 +189,7 @@ class PipelineBuilder(object):
 
                 pipeline = pipeline_class(
                     self.cycle_timestamp, self.flag_configs, api, dao)
-                pipelines_to_run.append(pipeline)
+                runnable_pipelines.append(pipeline)
 
         return runnable_pipelines
 
