@@ -29,6 +29,7 @@ class ResourceType(object):
     FOLDER = 'folder'
     PROJECT = 'project'
     GROUP = 'group'
+    BACKEND_SERVICE = 'backend_service'
     FORWARDING_RULE = 'forwarding_rule'
     BUCKETS_ACL = 'buckets_acl'
     CLOUDSQL_ACL = 'cloudsql_instances'
