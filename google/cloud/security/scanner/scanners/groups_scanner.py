@@ -100,6 +100,7 @@ class GroupsScanner(base_scanner.BaseScanner):
 
         LOGGER.debug(anytree.RenderTree(
             root, style=anytree.AsciiStyle()).by_attr('member_email'))
+
         return root
 
     @staticmethod

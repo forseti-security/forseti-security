@@ -23,7 +23,30 @@ LATEST_SNAPSHOT_TIMESTAMP = """
 """
 
 PROJECT_NUMBERS = """
-    SELECT project_number from projects_{0};
+    SELECT project_number FROM projects_{0};
+"""
+
+
+PROJECT_RAW_ALL = """
+    SELECT raw_project FROM projects_{0};
+"""
+
+PROJECT_RAW = """
+    SELECT raw_project FROM projects_{0} WHERE project_id = %s;
+"""
+
+PROJECT_RAW_BY_NUMBER = """
+    SELECT raw_project FROM projects_{0} WHERE project_number = %s;
+"""
+
+PROJECT_IAM_POLICIES = """
+    SELECT p.project_number, p.project_id, p.project_name,
+    p.lifecycle_state as proj_lifecycle, p.parent_type, p.parent_id,
+    pol.role, pol.member_type, pol.member_name, pol.member_domain
+    FROM projects_{0} p INNER JOIN project_iam_policies_{1} pol
+    ON p.project_number = pol.project_number
+    ORDER BY p.project_number, pol.role, pol.member_type,
+    pol.member_domain, pol.member_name
 """
 
 PROJECTS = """
@@ -37,6 +60,13 @@ PROJECT_BY_ID = """
     lifecycle_state, parent_type, parent_id
     FROM projects_{0}
     WHERE project_id = %s
+"""
+
+PROJECT_BY_NUMBER = """
+    SELECT project_number, project_id, project_name,
+    lifecycle_state, parent_type, parent_id
+    FROM projects_{0}
+    WHERE project_number = %s
 """
 
 PROJECT_IAM_POLICIES_RAW = """
@@ -87,11 +117,11 @@ FOLDER_IAM_POLICIES = """
 """
 
 GROUPS = """
-    SELECT * from groups_{0};
+    SELECT * FROM groups_{0};
 """
 
 GROUP_IDS = """
-    SELECT group_id from groups_{0};
+    SELECT group_id FROM groups_{0};
 """
 
 GROUP_ID = """
@@ -117,6 +147,15 @@ BUCKETS_BY_PROJECT_ID = """
     SELECT bucket_name
     FROM buckets_{0}
     WHERE project_number = {1};
+"""
+
+
+SELECT_VIOLATIONS = """
+    SELECT * FROM violations_{0};
+"""
+
+SELECT_BUCKETS_ACL_VIOLATIONS = """
+    SELECT * FROM buckets_acl_violations_{0};
 """
 
 FORWARDING_RULES = """

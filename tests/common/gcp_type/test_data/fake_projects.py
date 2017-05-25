@@ -90,6 +90,13 @@ FAKE_PROJECTS_API_RESPONSE1 = {
         }]
 }
 
+FAKE_ACTIVE_PROJECTS_API_RESPONSE = {
+    'projects': [
+        p for p in FAKE_PROJECTS_API_RESPONSE1['projects']
+        if p['lifecycleState'] == 'ACTIVE'
+    ]
+}
+
 EXPECTED_FAKE_PROJECTS1 = [FAKE_PROJECTS_API_RESPONSE1]
 
 EXPECTED_FAKE_ACTIVE_PROJECTS1 = [{
