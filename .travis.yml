@@ -12,23 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cache: "pip"
-sudo: "false"
-dist: "trusty"
-language:
-  - "python"
+sudo: required
+
+language: python
 python:
   - "2.7"
-addons:
-  apt:
-    packages:
-    - "libmysqlclient-dev"
-install:
-  - "pip install -q --upgrade coveralls pylint"
-  - "bash scripts/travis/install_protoc.sh"
-  - "PROTOC=/tmp/protoc/bin/protoc python setup.py install"
+
+services:
+  - docker
+
+before_install:
+  - docker build -t forseti/build .
+  - docker run -it -d --name build forseti/build /bin/bash
 script:
-  - "coverage run --source='google.cloud.security' --omit='__init__.py' setup.py google_test"
-  - "bash scripts/travis/test_pylint.sh"
+  - docker exec -it build /bin/sh -c "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
+  - docker cp build:/forseti-security/.coverage .
+#  - docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc --ignore-patterns='.*_test.*,.*test_.*,.*test.py,.*pb2.*' --output-format=text google"
+
 after_success:
   - "coveralls"

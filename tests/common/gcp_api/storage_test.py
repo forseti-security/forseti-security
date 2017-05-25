@@ -30,7 +30,8 @@ class StorageTest(ForsetiTestCase):
         """Set up."""
         self.gcs_api_client = storage.StorageClient()
 
-    def test_get_bucket_and_path_from(self):
+    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
+    def test_get_bucket_and_path_from(self, mock_base):
         """Given a valid bucket object path, return the bucket and path."""
         expected_bucket = 'my-bucket'
         expected_obj_path = 'path/to/object'
