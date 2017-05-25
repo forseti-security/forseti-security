@@ -18,7 +18,7 @@ Usage examples: docs/inventory/README.md
 
 Usage:
   $ forseti_inventory \\
-      --pipeline_config (required) \\
+      --config_path (required) \\
       --groups_service_account_key_file <path to file> (optional)\\
       --domain_super_admin_email <user@domain.com> (optional) \\
       --db_host <Cloud SQL database hostname/IP> (required) \\
@@ -78,8 +78,8 @@ LOGLEVELS = {
 }
 flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 
-flags.DEFINE_string('pipeline_configs', None,
-                    'Path to the inventory pipeline configs file.')
+flags.DEFINE_string('config_path', None,
+                    'Path to the inventory config file.')
 
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
@@ -242,19 +242,18 @@ def _send_email(cycle_time, cycle_timestamp, status, pipelines,
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
 
-def _configure_logging(flag_configs):
+def _configure_logging(loglevel):
     """Configures the loglevel for all loggers."""
-    desc = flag_configs.get('loglevel')
-    level = LOGLEVELS.setdefault(desc, 'info')
+    level = LOGLEVELS.setdefault(loglevel, 'info')
     log_util.set_logger_level(level)
 
 def main(_):
     """Runs the Inventory Loader."""
 
-    flag_configs = FLAGS.FlagValuesDict()
-    _configure_logging(flag_configs)
+    flags = FLAGS.FlagValuesDict()
+    _configure_logging(flags.get('loglevel'))
 
-    if FLAGS.pipeline_configs is None:
+    if FLAGS.config_path is None:
         LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
@@ -268,7 +267,8 @@ def main(_):
             'compute_api': compute.ComputeClient(),
             'compute_beta_api': compute.ComputeClient(version='beta'),
             'crm_api': crm.CloudResourceManagerClient(),
-            'crm_v2beta1': crm.CloudResourceManagerClient(version='v2beta1'),
+            'crm_v2beta1_api': crm.CloudResourceManagerClient(
+                version='v2beta1'),
             'gcs_api': gcs.StorageClient(),
         }
     # A lot of potential errors can be thrown by different APIs.
@@ -298,8 +298,8 @@ def main(_):
     try:
         pipeline_builder = builder.PipelineBuilder(
             cycle_timestamp,
-            FLAGS.pipeline_configs,
-            flag_configs,
+            FLAGS.config_path,
+            flags,
             api_map,
             dao_map)
         pipelines = pipeline_builder.build()
@@ -319,14 +319,14 @@ def main(_):
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
 
-    if flag_configs.get('email_recipient') is not None:
+    if flags.get('email_recipient') is not None:
         _send_email(cycle_time,
                     cycle_timestamp,
                     snapshot_cycle_status,
                     pipelines,
-                    flag_configs.get('sendgrid_api_key'),
-                    flag_configs.get('email_sender'),
-                    flag_configs.get('email_recipient'))
+                    flags.get('sendgrid_api_key'),
+                    flags.get('email_sender'),
+                    flags.get('email_recipient'))
 
 if __name__ == '__main__':
     app.run()

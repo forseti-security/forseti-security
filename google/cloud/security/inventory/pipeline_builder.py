@@ -28,6 +28,9 @@ LOGGER = log_util.get_logger(__name__)
 class PipelineBuilder(object):
     """Inventory Pipeline Builder."""
 
+    # TODO: Add a flag --list_resources that will print a list of resources
+    # that are stored here.
+
     REQUIREMENTS_MAP = {
         'bigquery_datasets': 
             {'module_name': 'load_bigquery_datasets_pipeline',
@@ -96,14 +99,14 @@ class PipelineBuilder(object):
              'dao_name': 'project_dao'},
     }
 
-    def __init__(self, cycle_timestamp, pipeline_configs, flag_configs,
+    def __init__(self, cycle_timestamp, pipeline_configs, flags,
                  api_map, dao_map):
         """Initialize the pipeline builder.
 
         Args:
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            pipeline_configs: String of the path to the pipeline configs file.
-            flag_configs: Dictionary of flag values.
+            config_path: String of the path to the inventory config file.
+            flags: Dictionary of flag values.
             api_map: Dictionary of GCP API instances, mapped to each resource.
             dao_map: Dictionary of DAO instances, mapped to each resource.
 
@@ -113,7 +116,7 @@ class PipelineBuilder(object):
         self.cycle_timestamp = cycle_timestamp
         self.pipeline_configs = file_loader.read_and_parse_file(
             pipeline_configs)
-        self.flag_configs = flag_configs
+        self.flags = flags
         self.api_map = api_map
         self.dao_map = dao_map
 
@@ -122,33 +125,43 @@ class PipelineBuilder(object):
 
         Args:
             root: PipelineNode representing the top-level starting point
-                of the pipeline dependency tree.  The entire pipeline
-                dependency tree are children of this root.
+                of the pipeline dependency tree. The entire pipeline
+                dependency tree are tuple of children PipelineNodes
+                of this root.
+                Example:
+                root.resource_name = 'organizations'
+                root.enabled = True
+                root.parent = None
+                root.children = (pipeline_node1, pipeline_node2, ...)
 
         Returns:
-            runnable_pipelines: List of the pipelines that will be run.  The
-                order in list represents the order they need to be run.
+            runnable_pipelines: List of the pipelines that will be run. The
+                order in the list represents the order they need to be run.
                 i.e. going top-down in the dependency tree.
         """
         # If child pipeline is true, then all parents will become true.
         # Even if the parent(s) is(are) false.
         # Manually traverse the parents since anytree walker api doesn't make sense.
         for node in anytree.iterators.PostOrderIter(root):
-            if node.should_run:
+            if node.enabled:
                 while node.parent is not None:
-                    node.parent.should_run = node.should_run
+                    node.parent.enabled = node.enabled
                     node = node.parent
 
-        print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('resource_name')
-        print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('should_run')
+        LOGGER.debug('Dependency tree of the pipelines: %s',
+                     anytree.RenderTree(root, style=anytree.AsciiStyle())
+                        .by_attr('resource_name'))
+        LOGGER.debug('Whether the pipelines are enabled: %s',
+                     anytree.RenderTree(root, style=anytree.AsciiStyle())
+                        .by_attr('enabled'))
 
         # Now, we have the true state of whether a pipeline should be run or not.
         # Get a list of pipeline instances that will actually be run.
-        # The order matters: must go top-down in the tree.  Run the piplelines
+        # The order matters: must go top-down in the tree. Run the piplelines
         # in each level before running the pipelines in the next level.
         runnable_pipelines = []
         for node in anytree.iterators.PreOrderIter(root):
-            if node.should_run:
+            if node.enabled:
                 module_path = 'google.cloud.security.inventory.pipelines.{}'
                 module_name = module_path.format(
                     self.REQUIREMENTS_MAP
@@ -189,7 +202,7 @@ class PipelineBuilder(object):
                     continue
 
                 pipeline = pipeline_class(
-                    self.cycle_timestamp, self.flag_configs, api, dao)
+                    self.cycle_timestamp, self.flags, api, dao)
                 runnable_pipelines.append(pipeline)
 
         return runnable_pipelines
@@ -199,15 +212,20 @@ class PipelineBuilder(object):
         
         Returns:
             PipelineNode representing the top-level starting point
-                of the pipeline dependency tree.  The entire pipeline
+                of the pipeline dependency tree. The entire pipeline
                 dependency tree are children of this root.
+                Example:
+                root.resource_name = 'organizations'
+                root.enabled = True
+                root.parent = None
+                root.children = (pipeline_node1, pipeline_node2, ...)
         """
         # First pass: map all the pipelines to their own nodes,
         # regardless if they should run or not.
         map_of_all_pipeline_nodes = {}
         for i in self.pipeline_configs:
             map_of_all_pipeline_nodes[i.get('resource')] = PipelineNode(
-                i.get('resource'), i.get('should_run'))
+                i.get('resource'), i.get('enabled'))
 
         # Another pass: build the dependency tree by setting the parents
         # correctly on all the nodes.
@@ -233,9 +251,23 @@ class PipelineBuilder(object):
 
 
 class PipelineNode(anytree.node.NodeMixin):
-    """A custom anytree node with pipeline attributes."""
+    """A custom anytree node with pipeline attributes.
+    
+    More info at anytree's documentation.
+    http://anytree.readthedocs.io/en/latest/apidoc/anytree.node.html
+    """
 
-    def __init__(self, resource_name, should_run, parent=None):
+    def __init__(self, resource_name, enabled, parent=None):
+        """Initialize the pipeline node.
+
+        Args:
+            resource_name: String of name of the resource.
+            enabled: Boolean whether the pipeline should run.
+            parent: PipelineNode of this node's parent.
+
+        Returns:
+            None
+        """
         self.resource_name = resource_name
-        self.should_run = should_run
+        self.enabled = enabled
         self.parent = parent
