@@ -1,10 +1,8 @@
 
 - resource: bigquery_datasets
-  depends_on: projects
   should_run: true
 
 - resource: buckets
-  depends_on: projects
   should_run: false
 
 - resource: buckets_acls
@@ -12,41 +10,31 @@
   should_run: true
 
 - resource: cloudsql
-  depends_on: projects
   should_run: true
 
 - resource: firewall_rules
-  depends_on: projects
   should_run: true
 
 - resource: folders
-  depends_on: organizations
   should_run: false
 
 - resource: forwarding_rules
-  depends_on: projects
   should_run: true
 
 - resource: group_members
-  depends_on: groups
   should_run: true
 
 - resource: groups
-  depends_on: organizations
   should_run: false
 
 - resource: org_iam_policies
-  depends_on: organizations
   should_run: true
 
 - resource: organizations
-  depends_on: null
   should_run: true
 
 - resource: projects
-  depends_on: organizations
   should_run: false
 
 - resource: projects_iam_policies
-  depends_on: projects
   should_run: true

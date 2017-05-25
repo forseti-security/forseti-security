@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from concurrent.futures._base import LOGGER
 
 """Loads requested data into inventory.
 
@@ -260,6 +259,8 @@ def main(_):
         LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
+    # Make these re-usable so that the rate-limiter can apply across
+    # different pipelines.
     try:
         api_map = {
             'admin_api': admin_directory.AdminDirectoryClient(),
@@ -276,6 +277,8 @@ def main(_):
     except:
         LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
 
+    # Make these re-usable so that the db connection can apply across
+    # different pipelines.
     try:
         dao_map = {
             'bucket_dao': bucket_dao.BucketDao(),
