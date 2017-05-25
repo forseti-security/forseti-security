@@ -275,6 +275,7 @@ def main(_):
     # So, handle generically.
     except:
         LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
+        sys.exit()
 
     # Make these re-usable so that the db connection can apply across
     # different pipelines.
