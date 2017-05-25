@@ -37,6 +37,8 @@ To see all the dependent flags:
 
 """
 
+# pylint: disable=relative-import
+
 from datetime import datetime
 import sys
 import logging

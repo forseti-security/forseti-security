@@ -248,9 +248,6 @@ def define_model(model_name, dbengine, model_seed):
         TBL_ROLE = Role
         TBL_RESOURCE = Resource
 
-        def __init__(self):
-            super(ModelAccess, self).__init__()
-
         @classmethod
         def delete_all(cls, engine):
             """Delete all data from the model."""
@@ -401,23 +398,23 @@ def define_model(model_name, dbengine, model_seed):
             if not expand_resources:
                 return [(binding.role_name,
                          [binding.resource_name]) for binding in bindings]
-            else:
-                r_type_names = ['/'.join(binding.resource_name.split('/')[-2:])
-                                for binding in bindings]
-                expansion = cls.expand_resources_by_type_names(
-                    session,
-                    r_type_names)
 
-                def fmt(first, second):
-                    """Formatting helper."""
-                    return '{}/{}'.format(first, second)
-                res_exp = {fmt(k.type, k.name):
-                           [fmt(v.type, v.name) for v in values]
-                           for k, values in expansion.iteritems()}
+            r_type_names = ['/'.join(binding.resource_name.split('/')[-2:])
+                            for binding in bindings]
+            expansion = cls.expand_resources_by_type_names(
+                session,
+                r_type_names)
 
-                return [(binding.role_name,
-                         res_exp[full_to_type_name(binding.resource_name)])
-                        for binding in bindings]
+            def fmt(first, second):
+                """Formatting helper."""
+                return '{}/{}'.format(first, second)
+            res_exp = {fmt(k.type, k.name):
+                       [fmt(v.type, v.name) for v in values]
+                       for k, values in expansion.iteritems()}
+
+            return [(binding.role_name,
+                     res_exp[full_to_type_name(binding.resource_name)])
+                    for binding in bindings]
 
         @classmethod
         def query_access_by_resource(cls, session, resource_name,
@@ -816,7 +813,7 @@ def define_model(model_name, dbengine, model_seed):
                         new_resource_set.add(resource)
                         resource_set.add(resource)
 
-            while len(new_resource_set) > 0:
+            while new_resource_set:
                 resources_to_walk = new_resource_set
                 new_resource_set = set()
                 for resource in resources_to_walk:
@@ -847,7 +844,7 @@ def define_model(model_name, dbengine, model_seed):
                         member_set.add(member)
 
             add_to_sets(members, None)
-            while len(new_member_set) > 0:
+            while new_member_set:
                 members_to_walk = new_member_set
                 new_member_set = set()
                 for member in members_to_walk:
@@ -855,8 +852,7 @@ def define_model(model_name, dbengine, model_seed):
 
             if request_graph:
                 return member_set, membership_graph
-            else:
-                return member_set
+            return member_set
 
         @classmethod
         def expand_members_map(cls, session, member_names):
@@ -938,7 +934,7 @@ def define_model(model_name, dbengine, model_seed):
 
             add_to_sets(members)
 
-            while len(new_group_set) > 0:
+            while new_group_set:
                 groups_to_walk = new_group_set
                 new_group_set = set()
                 for group in groups_to_walk:

@@ -17,6 +17,8 @@
 Simplifies the interface with the compute API for managing firewall policies.
 """
 
+# pylint: disable=relative-import
+
 import hashlib
 import httplib
 import json

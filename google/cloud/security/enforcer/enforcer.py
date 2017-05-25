@@ -20,6 +20,9 @@ Usage for enforcing a single project's firewall:
       --policy_file <policy file path>
 
 """
+
+# pylint: disable=relative-import
+
 import threading
 
 import gflags as flags

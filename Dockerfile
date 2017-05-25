@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip
-RUN pip install --upgrade coveralls coverage pylint grpcio grpcio-tools protobuf mock
+RUN pip install --upgrade coveralls coverage pylint grpcio grpcio-tools protobuf mock google-apputils
 
 ADD . /forseti-security/
 WORKDIR /forseti-security/

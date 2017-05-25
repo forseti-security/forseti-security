@@ -27,7 +27,7 @@ import importlib
 import inspect
 import gflags as flags
 
-# pylint: disable=line-too-long,no-name-in-module
+# pylint: disable=line-too-long,no-name-in-module,relative-import
 from google.apputils import app
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors

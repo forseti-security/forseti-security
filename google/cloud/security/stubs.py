@@ -22,6 +22,7 @@ https://github.com/google/google-apputils/blob/master/google/apputils/run_script
 """
 
 # pylint: disable=invalid-name
+# pylint: disable=relative-import
 
 from google.apputils import run_script_module
 
@@ -47,6 +48,7 @@ def RunForsetiNotifier():
 
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=invalid-name
+# pylint: disable=E0401
 def RunForsetiApi():
     """Run Forseti API server."""
     import google.cloud.security.api.server as forseti_api

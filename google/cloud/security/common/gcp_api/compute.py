@@ -14,11 +14,11 @@
 
 """Wrapper for Compute API client."""
 
+import sys
 import gflags as flags
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
-import sys
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
