@@ -271,7 +271,7 @@ def main(_):
             'crm_v2beta1': crm.CloudResourceManagerClient(version='v2beta1'),
             'gcs_api': gcs.StorageClient(),
         }
-    # A lot of potential errors can be thrown by different errors.
+    # A lot of potential errors can be thrown by different APIs.
     # So, handle generically.
     except:
         LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
