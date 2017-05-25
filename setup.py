@@ -19,18 +19,18 @@ import os
 import subprocess
 import sys
 
+import google.cloud.security
+
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-import google.cloud.security
-
-FORSETI_VERSION = '1.0.1'
+FORSETI_VERSION = google.cloud.security.__version__
 
 NAMESPACE_PACKAGES = [
     'google',
     'google.cloud',
-    'google.cloud.security'
+    'google.cloud.security',
 ]
 
 INSTALL_REQUIRES = [
@@ -39,8 +39,8 @@ INSTALL_REQUIRES = [
     'google-api-python-client==1.6.1',
     'Jinja2==2.9.5',
     'MySQL-python==1.2.5',
-    'protobuf==3.2.0',
     'PyYAML==3.12',
+    'protobuf>=3.2.0',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
     'sendgrid==3.6.3',
@@ -50,10 +50,10 @@ INSTALL_REQUIRES = [
 
 SETUP_REQUIRES = [
     'google-apputils==0.4.2',
+    'protobuf>=3.2.0',
     'python-gflags==3.1.1',
     'grpcio>=1.2.1',
     'grpcio-tools>=1.2.1',
-    'protobuf==3.2.0',
 ]
 
 TEST_REQUIRES = [
@@ -75,7 +75,7 @@ class PostInstallCommand(install):
     """Post installation command."""
 
     def run(self):
-        build_protos()
+        #build_protos()
         install.do_egg_install(self)
 
 setup(
@@ -96,6 +96,7 @@ setup(
     install_requires=SETUP_REQUIRES + INSTALL_REQUIRES,
     setup_requires=SETUP_REQUIRES,
     tests_require=INSTALL_REQUIRES + SETUP_REQUIRES + TEST_REQUIRES,
+    dependency_links=SETUP_REQUIRES,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
