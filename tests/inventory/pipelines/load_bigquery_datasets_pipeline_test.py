@@ -123,7 +123,7 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
             return_value)
 
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_retrieve_dataset_access' )
     def test_get_dataset_access_map(self, mock_dataset_access):
         mock_dataset_access.return_value = (
@@ -164,16 +164,16 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
 
 
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_get_loaded_count')
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_load')
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_transform')
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_retrieve')
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
             mock_load, mock_get_loaded_count):

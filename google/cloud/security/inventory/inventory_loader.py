@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from concurrent.futures._base import LOGGER
 
 """Loads requested data into inventory.
 
@@ -18,7 +19,7 @@ Usage examples: docs/inventory/README.md
 
 Usage:
   $ forseti_inventory \\
-      --inventory_groups <true|false> (optional) \\
+      --pipeline_config (required) \\
       --groups_service_account_key_file <path to file> (optional)\\
       --domain_super_admin_email <user@domain.com> (optional) \\
       --db_host <Cloud SQL database hostname/IP> (required) \\
@@ -37,11 +38,9 @@ To see all the dependent flags:
 
 """
 from datetime import datetime
-import importlib
 import logging
 import sys
 
-import anytree
 import gflags as flags
 
 # TODO: Investigate improving so we can avoid the pylint disable.
@@ -49,46 +48,29 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import bucket_dao as buck_dao
-from google.cloud.security.common.data_access import folder_dao as folder_resource_dao
-from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
-from google.cloud.security.common.data_access import organization_dao as org_dao
-from google.cloud.security.common.data_access import project_dao as proj_dao
-from google.cloud.security.common.data_access import cloudsql_dao as sql_dao
-from google.cloud.security.common.data_access.dao import Dao
+from google.cloud.security.common.data_access import bucket_dao
+from google.cloud.security.common.data_access import folder_dao
+from google.cloud.security.common.data_access import forwarding_rules_dao
+from google.cloud.security.common.data_access import organization_dao
+from google.cloud.security.common.data_access import project_dao
+from google.cloud.security.common.data_access import cloudsql_dao
+from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
-from google.cloud.security.common.gcp_api import admin_directory as ad
-from google.cloud.security.common.gcp_api import bigquery as bq
+from google.cloud.security.common.gcp_api import admin_directory
+from google.cloud.security.common.gcp_api import bigquery
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import load_firewall_rules_pipeline
-from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipeline
-from google.cloud.security.inventory.pipelines import load_folders_pipeline
-from google.cloud.security.inventory.pipelines import load_groups_pipeline
-from google.cloud.security.inventory.pipelines import load_group_members_pipeline
-from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
-from google.cloud.security.inventory.pipelines import load_orgs_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_buckets_acls_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_cloudsql_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_pipeline
-from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
-from google.cloud.security.inventory import util
+from google.cloud.security.inventory import pipeline_builder as builder
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
-
-flags.DEFINE_bool('inventory_groups', False,
-                  'Whether to inventory GSuite Groups.')
 
 LOGLEVELS = {
     'debug': logging.DEBUG,
@@ -97,6 +79,10 @@ LOGLEVELS = {
     'error' : logging.ERROR,
 }
 flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
+
+flags.DEFINE_string('pipeline_configs', None,
+                    'Path to the inventory pipeline configs file.')
+
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -169,78 +155,6 @@ def _start_snapshot_cycle(dao):
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
 
-def _build_pipelines(cycle_timestamp, configs, **kwargs):
-    """Build the pipelines to load data.
-
-    Args:
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        configs: Dictionary of configurations.
-        kwargs: Extra configs.
-
-    Returns:
-        List of pipelines that will be run.
-
-    Raises: inventory_errors.LoadDataPipelineError.
-    """
-
-    # Commonly used clients for shared ratelimiter re-use.
-    crm_v1_api_client = crm.CloudResourceManagerClient()
-    dao = kwargs.get('dao')
-    gcs_api_client = gcs.StorageClient()
-
-    organization_dao_name = 'organization_dao'
-    project_dao_name = 'project_dao'
-
-
-    inventory_pipeline_configs = file_loader.read_and_parse_file(
-        'google/cloud/security/inventory/inventory_pipeline_configs.yaml')
-    
-    # first pass: map all the pipelines to their own nodes,
-    # regardless if they should run or not
-    map_of_all_pipeline_nodes = {}
-    for i in inventory_pipeline_configs:
-        map_of_all_pipeline_nodes[i.get('resource')] = PipelineNode(
-            i.get('resource'), i.get('should_run'), i.get('module_name'))
-
-    # another pass: build the dependency tree by setting the parents
-    # correctly on all the nodes
-    for i in inventory_pipeline_configs:
-        parent_name = i.get('depends_on')
-        if parent_name is not None:
-            parent_node = map_of_all_pipeline_nodes[parent_name]
-            map_of_all_pipeline_nodes[i.get('resource')].parent = parent_node
-
-    root = map_of_all_pipeline_nodes.get('organizations')
-
-    # If child pipeline is true, then all parents will become true.
-    # Even if the parent(s) is(are) false.
-    # Manually traverse the parents since anytree walker api doesn't make sense.
-    for node in anytree.iterators.PostOrderIter(root):
-        if node.should_run:
-            while node.parent is not None:
-                node.parent.should_run = node.should_run
-                node = node.parent
-
-    print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('resource_name')
-    print anytree.RenderTree(root, style=anytree.AsciiStyle()).by_attr('should_run')
-
-    # Now, we have the true state of whether a pipeline should be run or not.
-    # Get a list of pipeline instances that will actually be run.
-    pipelines_to_run = []
-    for node in anytree.iterators.PreOrderIter(root):
-        if node.should_run:
-            module_name = 'google.cloud.security.inventory.pipelines.{}'.format(node.module_name)
-            module = importlib.import_module(module_name)
-            class_name = node.module_name.title().replace('_', '')
-            pipeline_class = getattr(module, class_name)
-            pipelines_to_run.append(
-                pipeline_class(
-                    cycle_timestamp,
-                    configs,
-                    crm_v1_api_client,
-                    kwargs.get(organization_dao_name)))
-
-    return pipelines_to_run
 
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
@@ -330,46 +244,63 @@ def _send_email(cycle_time, cycle_timestamp, status, pipelines,
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
 
-def _configure_logging(configs):
+def _configure_logging(flag_configs):
     """Configures the loglevel for all loggers."""
-    desc = configs.get('loglevel')
+    desc = flag_configs.get('loglevel')
     level = LOGLEVELS.setdefault(desc, 'info')
     log_util.set_logger_level(level)
 
 def main(_):
     """Runs the Inventory Loader."""
-   
-    try:
-        dao = Dao()
-        project_dao = proj_dao.ProjectDao()
-        organization_dao = org_dao.OrganizationDao()
-        bucket_dao = buck_dao.BucketDao()
-        cloudsql_dao = sql_dao.CloudsqlDao()
-        fwd_rules_dao = fr_dao.ForwardingRulesDao()
-        folder_dao = folder_resource_dao.FolderDao()
-    except data_access_errors.MySQLError as e:
-        LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
+
+    flag_configs = FLAGS.FlagValuesDict()
+    _configure_logging(flag_configs)
+
+    if FLAGS.pipeline_configs is None:
+        LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
-    cycle_time, cycle_timestamp = _start_snapshot_cycle(dao)
-
-    configs = FLAGS.FlagValuesDict()
-
-    _configure_logging(configs)
+    try:
+        api_map = {
+            'admin_api': admin_directory.AdminDirectoryClient(),
+            'bigquery_api': bigquery.BigQueryClient(),
+            'cloudsql_api': cloudsql.CloudsqlClient(),
+            'compute_api': compute.ComputeClient(),
+            'compute_beta_api': compute.ComputeClient(version='beta'),
+            'crm_api': crm.CloudResourceManagerClient(),
+            'crm_v2beta1': crm.CloudResourceManagerClient(version='v2beta1'),
+            'gcs_api': gcs.StorageClient(),
+        }
+    # A lot of potential errors can be thrown by different errors.
+    # So, handle generically.
+    except:
+        LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
 
     try:
-        pipelines = _build_pipelines(
+        dao_map = {
+            'bucket_dao': bucket_dao.BucketDao(),
+            'cloudsql_dao': cloudsql_dao.CloudsqlDao(),
+            'dao': dao.Dao(),
+            'folder_dao': folder_dao.FolderDao(),
+            'forwarding_rules_dao': forwarding_rules_dao.ForwardingRulesDao(),
+            'organization_dao': organization_dao.OrganizationDao(),
+            'project_dao': project_dao.ProjectDao(),
+        }
+    except data_access_errors.MySQLError as e:
+        LOGGER.error('Encountered error to create dao map.\n%s', e)
+        sys.exit()
+
+    cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
+
+    try:
+        pipeline_builder = builder.PipelineBuilder(
             cycle_timestamp,
-            configs,
-            dao=dao,
-            project_dao=project_dao,
-            organization_dao=organization_dao,
-            bucket_dao=bucket_dao,
-            fwd_rules_dao=fwd_rules_dao,
-            folder_dao=folder_dao,
-            cloudsql_dao=cloudsql_dao)
-    except (api_errors.ApiExecutionError,
-            inventory_errors.LoadDataPipelineError) as e:
+            FLAGS.pipeline_configs,
+            flag_configs,
+            api_map,
+            dao_map)
+        pipelines = pipeline_builder.build()
+    except inventory_errors.LoadDataPipelineError as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)
         sys.exit()
 
@@ -382,28 +313,17 @@ def main(_):
     else:
         snapshot_cycle_status = 'FAILURE'
 
-    _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
+    _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
+                             snapshot_cycle_status)
 
-    if configs.get('email_recipient') is not None:
+    if flag_configs.get('email_recipient') is not None:
         _send_email(cycle_time,
                     cycle_timestamp,
                     snapshot_cycle_status,
                     pipelines,
-                    configs.get('sendgrid_api_key'),
-                    configs.get('email_sender'),
-                    configs.get('email_recipient'))
-
-
-class PipelineNode(anytree.node.NodeMixin):
-    """A custom anytree node with pipeline attributes."""
-
-    def __init__(self, resource_name, should_run, 
-                 module_name, parent=None):
-        self.resource_name = resource_name
-        self.should_run = should_run
-        self.module_name = module_name
-        self.parent = parent
-
+                    flag_configs.get('sendgrid_api_key'),
+                    flag_configs.get('email_sender'),
+                    flag_configs.get('email_recipient'))
 
 if __name__ == '__main__':
     app.run()
