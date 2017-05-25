@@ -26,6 +26,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class PipelineBuilder(object):
+    """Inventory Pipeline Builder."""
 
     REQUIREMENTS_MAP = {
         'bigquery_datasets': 
