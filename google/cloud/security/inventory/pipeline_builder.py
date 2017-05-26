@@ -99,7 +99,7 @@ class PipelineBuilder(object):
              'dao_name': 'project_dao'},
     }
 
-    def __init__(self, cycle_timestamp, pipeline_configs, flags,
+    def __init__(self, cycle_timestamp, config_path, flags,
                  api_map, dao_map):
         """Initialize the pipeline builder.
 
@@ -114,8 +114,7 @@ class PipelineBuilder(object):
             None
         """
         self.cycle_timestamp = cycle_timestamp
-        self.pipeline_configs = file_loader.read_and_parse_file(
-            pipeline_configs)
+        self.config = file_loader.read_and_parse_file(config_path)
         self.flags = flags
         self.api_map = api_map
         self.dao_map = dao_map
@@ -141,7 +140,8 @@ class PipelineBuilder(object):
         """
         # If child pipeline is true, then all parents will become true.
         # Even if the parent(s) is(are) false.
-        # Manually traverse the parents since anytree walker api doesn't make sense.
+        # Manually traverse the parents since anytree walker api doesn't
+        # make sense.
         for node in anytree.iterators.PostOrderIter(root):
             if node.enabled:
                 while node.parent is not None:
@@ -150,15 +150,15 @@ class PipelineBuilder(object):
 
         LOGGER.debug('Dependency tree of the pipelines: %s',
                      anytree.RenderTree(root, style=anytree.AsciiStyle())
-                        .by_attr('resource_name'))
+                         .by_attr('resource_name'))
         LOGGER.debug('Which pipelines are enabled: %s',
                      anytree.RenderTree(root, style=anytree.AsciiStyle())
-                        .by_attr('enabled'))
+                         .by_attr('enabled'))
 
         # Now, we have the true state of whether a pipeline should be run or not.
         # Get a list of pipeline instances that will actually be run.
-        # The order matters: must go top-down in the tree. Run the piplelines
-        # in each level before running the pipelines in the next level.
+        # The order matters: must go top-down in the tree, by PreOrder.
+        # http://anytree.readthedocs.io/en/latest/apidoc/anytree.iterators.html
         runnable_pipelines = []
         for node in anytree.iterators.PreOrderIter(root):
             if node.enabled:
@@ -223,13 +223,13 @@ class PipelineBuilder(object):
         # First pass: map all the pipelines to their own nodes,
         # regardless if they should run or not.
         map_of_all_pipeline_nodes = {}
-        for i in self.pipeline_configs:
+        for i in self.config:
             map_of_all_pipeline_nodes[i.get('resource')] = PipelineNode(
                 i.get('resource'), i.get('enabled'))
 
         # Another pass: build the dependency tree by setting the parents
         # correctly on all the nodes.
-        for i in self.pipeline_configs:
+        for i in self.config:
             parent_name = (
                 self.REQUIREMENTS_MAP.get(i.get('resource')).get('depends_on'))
             if parent_name is not None:
