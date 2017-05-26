@@ -178,11 +178,11 @@ def _run_pipelines(pipelines):
         run_statuses.append(pipeline.status == 'SUCCESS')
     return run_statuses
 
-def _complete_snapshot_cycle(dao, cycle_timestamp, status):
+def _complete_snapshot_cycle(dao_, cycle_timestamp, status):
     """Complete the snapshot cycle.
 
     Args:
-        dao: Data access object.
+        dao_: Data access object.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status: String of the current cycle's status.
 
@@ -194,7 +194,7 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     try:
         values = (status, complete_time, cycle_timestamp)
         sql = snapshot_cycles_sql.UPDATE_CYCLE
-        dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+        dao_.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
                                     sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to complete update snapshot cycle: %s', e)

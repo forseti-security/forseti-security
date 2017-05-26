@@ -14,9 +14,10 @@
 
 """Builds the inventory pipelines to run, and in the correct order to run."""
 
-import anytree
 import importlib
 import sys
+
+import anytree
 
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
@@ -212,7 +213,7 @@ class PipelineBuilder(object):
 
     def _build_dependency_tree(self):
         """Build the dependency tree with all the pipeline nodes.
-        
+
         Returns:
             PipelineNode representing the top-level starting point
                 of the pipeline dependency tree. The entire pipeline
@@ -239,13 +240,13 @@ class PipelineBuilder(object):
                 parent_node = map_of_all_pipeline_nodes[parent_name]
                 map_of_all_pipeline_nodes[i.get('resource')].parent = (
                     parent_node)
-    
+
         # Assume root is organizations.
         return map_of_all_pipeline_nodes.get('organizations')
 
     def build(self):
         """Build the pipelines to load data.
-    
+
         Returns:
             List of pipelines instances that will be run.
         """
