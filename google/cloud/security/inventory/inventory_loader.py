@@ -250,10 +250,10 @@ def _configure_logging(loglevel):
 def main(_):
     """Runs the Inventory Loader."""
 
-    flags = FLAGS.FlagValuesDict()
-    _configure_logging(flags.get('loglevel'))
+    forseti_flags = FLAGS.FlagValuesDict()
+    _configure_logging(forseti_flags.get('loglevel'))
 
-    if FLAGS.config_path is None:
+    if forseti_flags.get('config_path') is None:
         LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
@@ -300,7 +300,7 @@ def main(_):
     try:
         pipeline_builder = builder.PipelineBuilder(
             cycle_timestamp,
-            FLAGS.config_path,
+            forseti_flags.get('config_path'),
             flags,
             api_map,
             dao_map)
@@ -321,14 +321,14 @@ def main(_):
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
 
-    if flags.get('email_recipient') is not None:
+    if forseti_flags.get('email_recipient') is not None:
         _send_email(cycle_time,
                     cycle_timestamp,
                     snapshot_cycle_status,
                     pipelines,
-                    flags.get('sendgrid_api_key'),
-                    flags.get('email_sender'),
-                    flags.get('email_recipient'))
+                    forseti_flags.get('sendgrid_api_key'),
+                    forseti_flags.get('email_sender'),
+                    forseti_flags.get('email_recipient'))
 
 if __name__ == '__main__':
     app.run()
