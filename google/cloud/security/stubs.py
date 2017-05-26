@@ -50,5 +50,5 @@ def RunForsetiNotifier():
 # pylint: disable=E0401
 def RunForsetiApi():
     """Run Forseti API server."""
-    import google.cloud.security.api.server as forseti_api
+    import google.cloud.security.iam.server as forseti_api
     run_script_module.RunScriptModule(forseti_api)
