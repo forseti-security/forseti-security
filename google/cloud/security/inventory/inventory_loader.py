@@ -195,7 +195,7 @@ def _complete_snapshot_cycle(dao_, cycle_timestamp, status):
         values = (status, complete_time, cycle_timestamp)
         sql = snapshot_cycles_sql.UPDATE_CYCLE
         dao_.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                    sql, values)
+                                     sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to complete update snapshot cycle: %s', e)
         sys.exit()
