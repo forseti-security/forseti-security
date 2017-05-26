@@ -48,10 +48,6 @@ class PipelineBuilderTest(basetest.TestCase):
 
     """
 
-    def setUp(self):
-        """Set up."""
-        pass
-
     def _verify_resource_names_in_pipelines(self, expected_pipelines,
                                             actual_pipelines):
         counter = 0

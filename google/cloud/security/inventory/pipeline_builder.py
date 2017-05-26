@@ -32,27 +32,27 @@ class PipelineBuilder(object):
     # that are stored here.
 
     REQUIREMENTS_MAP = {
-        'bigquery_datasets': 
+        'bigquery_datasets':
             {'module_name': 'load_bigquery_datasets_pipeline',
              'depends_on': 'projects',
              'api_name': 'bigquery_api',
              'dao_name': 'dao'},
-        'buckets': 
+        'buckets':
             {'module_name': 'load_projects_buckets_pipeline',
              'depends_on': 'projects',
              'api_name': 'gcs_api',
              'dao_name': 'project_dao'},
-        'buckets_acls': 
+        'buckets_acls':
             {'module_name': 'load_projects_buckets_acls_pipeline',
              'depends_on': 'buckets',
              'api_name': 'gcs_api',
              'dao_name': 'bucket_dao'},
-        'cloudsql': 
+        'cloudsql':
             {'module_name': 'load_projects_cloudsql_pipeline',
              'depends_on': 'projects',
              'api_name': 'cloudsql_api',
              'dao_name': 'cloudsql_dao'},
-        'firewall_rules': 
+        'firewall_rules':
             {'module_name': 'load_firewall_rules_pipeline',
              'depends_on': 'projects',
              'api_name': 'compute_beta_api',
@@ -62,7 +62,7 @@ class PipelineBuilder(object):
              'depends_on': 'organizations',
              'api_name': 'crm_v2beta1_api',
              'dao_name': 'dao'},
-        'forwarding_rules': 
+        'forwarding_rules':
             {'module_name': 'load_forwarding_rules_pipeline',
              'depends_on': 'projects',
              'api_name': 'compute_api',
@@ -82,7 +82,7 @@ class PipelineBuilder(object):
              'depends_on': 'organizations',
              'api_name': 'crm_api',
              'dao_name': 'organization_dao'},
-        'organizations': 
+        'organizations':
             {'module_name': 'load_orgs_pipeline',
              'depends_on': None,
              'api_name': 'crm_api',
@@ -150,12 +150,12 @@ class PipelineBuilder(object):
 
         LOGGER.debug('Dependency tree of the pipelines: %s',
                      anytree.RenderTree(root, style=anytree.AsciiStyle())
-                         .by_attr('resource_name'))
+                     .by_attr('resource_name'))
         LOGGER.debug('Which pipelines are enabled: %s',
                      anytree.RenderTree(root, style=anytree.AsciiStyle())
-                         .by_attr('enabled'))
+                     .by_attr('enabled'))
 
-        # Now, we have the true state of whether a pipeline should be run or not.
+        # Now, we have the true state of whether a pipeline should be run.
         # Get a list of pipeline instances that will actually be run.
         # The order matters: must go top-down in the tree, by PreOrder.
         # http://anytree.readthedocs.io/en/latest/apidoc/anytree.iterators.html
@@ -165,40 +165,43 @@ class PipelineBuilder(object):
                 module_path = 'google.cloud.security.inventory.pipelines.{}'
                 module_name = module_path.format(
                     self.REQUIREMENTS_MAP
-                        .get(node.resource_name)
-                        .get('module_name'))
+                    .get(node.resource_name)
+                    .get('module_name'))
                 try:
                     module = importlib.import_module(module_name)
                 except (ImportError, TypeError, ValueError) as e:
-                    LOGGER.error('Unable to import %s\n%s' % (module_name, e))
+                    LOGGER.error('Unable to import %s\n%s', module_name, e)
                     continue
 
                 class_name = (
                     self.REQUIREMENTS_MAP
-                        .get(node.resource_name)
-                        .get('module_name')
-                        .title()
-                        .replace('_', ''))
+                    .get(node.resource_name)
+                    .get('module_name')
+                    .title()
+                    .replace('_', ''))
                 try:
                     pipeline_class = getattr(module, class_name)
-                except (AttributeError):
-                    LOGGER.error('Unable to instantiate %s\n%s' % (class_name, sys.exc_info()[0]))
+                except AttributeError:
+                    LOGGER.error('Unable to instantiate %s\n%s',
+                                 class_name, sys.exc_info()[0])
                     continue
 
                 api = self.api_map.get(
                     self.REQUIREMENTS_MAP
-                        .get(node.resource_name)
-                        .get('api_name'))
+                    .get(node.resource_name)
+                    .get('api_name'))
                 if api is None:
-                    LOGGER.error('Unable to find api for %s', node.resource_name)
+                    LOGGER.error('Unable to find api for %s',
+                                 node.resource_name)
                     continue
 
                 dao = self.dao_map.get(
                     self.REQUIREMENTS_MAP
-                        .get(node.resource_name)
-                        .get('dao_name'))
+                    .get(node.resource_name)
+                    .get('dao_name'))
                 if dao is None:
-                    LOGGER.error('Unable to find dao for %s', node.resource_name)
+                    LOGGER.error('Unable to find dao for %s',
+                                 node.resource_name)
                     continue
 
                 pipeline = pipeline_class(
@@ -252,7 +255,7 @@ class PipelineBuilder(object):
 
 class PipelineNode(anytree.node.NodeMixin):
     """A custom anytree node with pipeline attributes.
-    
+
     More info at anytree's documentation.
     http://anytree.readthedocs.io/en/latest/apidoc/anytree.node.html
     """

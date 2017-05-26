@@ -88,19 +88,19 @@ CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
 LOGGER = log_util.get_logger(__name__)
 
 
-def _exists_snapshot_cycles_table(dao):
+def _exists_snapshot_cycles_table(dao_):
     """Whether the snapshot_cycles table exists.
 
     Args:
-        dao: Data access object.
+        dao_: Data access object.
 
     Returns:
         True if the snapshot cycle table exists. False otherwise.
     """
     try:
         sql = snapshot_cycles_sql.SELECT_SNAPSHOT_CYCLES_TABLE
-        result = dao.execute_sql_with_fetch(snapshot_cycles_sql.RESOURCE_NAME,
-                                            sql, values=None)
+        result = dao_.execute_sql_with_fetch(snapshot_cycles_sql.RESOURCE_NAME,
+                                             sql, values=None)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error in attempt to find snapshot_cycles table: %s', e)
         sys.exit()
@@ -110,25 +110,25 @@ def _exists_snapshot_cycles_table(dao):
 
     return False
 
-def _create_snapshot_cycles_table(dao):
+def _create_snapshot_cycles_table(dao_):
     """Create snapshot cycle table.
 
     Args:
-        dao: Data access object.
+        dao_: Data access object.
     """
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
-        dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                    sql, values=None)
+        dao_.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+                                     sql, values=None)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to create snapshot cycles table: %s', e)
         sys.exit()
 
-def _start_snapshot_cycle(dao):
+def _start_snapshot_cycle(dao_):
     """Start snapshot cycle.
 
     Args:
-        dao: Data access object.
+        dao_: Data access object.
 
     Returns:
         cycle_time: Datetime object of the cycle, in UTC.
@@ -137,15 +137,15 @@ def _start_snapshot_cycle(dao):
     cycle_time = datetime.utcnow()
     cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
 
-    if not _exists_snapshot_cycles_table(dao):
+    if not _exists_snapshot_cycles_table(dao_):
         LOGGER.info('snapshot_cycles is not created yet.')
-        _create_snapshot_cycles_table(dao)
+        _create_snapshot_cycles_table(dao_)
 
     try:
         sql = snapshot_cycles_sql.INSERT_CYCLE
         values = (cycle_timestamp, cycle_time, 'RUNNING', db_schema_version)
-        dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                    sql, values)
+        dao_.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+                                     sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to insert new snapshot cycle: %s', e)
         sys.exit()
@@ -273,9 +273,9 @@ def main(_):
         }
     # A lot of potential errors can be thrown by different APIs.
     # So, handle generically.
-    # Replace this generic except by handling specific exceptions from
-    # lower level and then handle here.
-    except:
+    # TODO: Replace this generic except by handling specific exceptions from
+    # lower levels and then handle here.
+    except:  # pylint: disable=bare-except
         LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
         sys.exit()
 
@@ -332,4 +332,3 @@ def main(_):
 
 if __name__ == '__main__':
     app.run()
-
