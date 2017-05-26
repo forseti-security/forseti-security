@@ -29,8 +29,8 @@ LOGGER = log_util.get_logger(__name__)
 class PipelineBuilder(object):
     """Inventory Pipeline Builder."""
 
-    # TODO: Add a flag --list_resources that will print a list of resources
-    # that are stored here.
+    # TODO: Add a flag --list_resources in inventory_loader.py that
+    # will print all the keys() in REQUIREMENTS_MAP.
 
     REQUIREMENTS_MAP = {
         'bigquery_datasets':
@@ -128,6 +128,7 @@ class PipelineBuilder(object):
                 of the pipeline dependency tree. The entire pipeline
                 dependency tree are tuple of children PipelineNodes
                 of this root.
+
                 Example:
                 root.resource_name = 'organizations'
                 root.enabled = True
@@ -174,6 +175,9 @@ class PipelineBuilder(object):
                     LOGGER.error('Unable to import %s\n%s', module_name, e)
                     continue
 
+                # Convert module naming to class naming.
+                # Module naming is "this_is_foo"
+                # Class naming is "ThisIsFoo"
                 class_name = (
                     self.REQUIREMENTS_MAP
                     .get(node.resource_name)
@@ -218,6 +222,7 @@ class PipelineBuilder(object):
             PipelineNode representing the top-level starting point
                 of the pipeline dependency tree. The entire pipeline
                 dependency tree are children of this root.
+
                 Example:
                 root.resource_name = 'organizations'
                 root.enabled = True
@@ -227,18 +232,19 @@ class PipelineBuilder(object):
         # First pass: map all the pipelines to their own nodes,
         # regardless if they should run or not.
         map_of_all_pipeline_nodes = {}
-        for i in self.config:
-            map_of_all_pipeline_nodes[i.get('resource')] = PipelineNode(
-                i.get('resource'), i.get('enabled'))
+        for config in self.config:
+            map_of_all_pipeline_nodes[config.get('resource')] = PipelineNode(
+                config.get('resource'), config.get('enabled'))
 
         # Another pass: build the dependency tree by setting the parents
         # correctly on all the nodes.
-        for i in self.config:
+        for config in self.config:
             parent_name = (
-                self.REQUIREMENTS_MAP.get(i.get('resource')).get('depends_on'))
+                self.REQUIREMENTS_MAP.get(
+                    config.get('resource')).get('depends_on'))
             if parent_name is not None:
                 parent_node = map_of_all_pipeline_nodes[parent_name]
-                map_of_all_pipeline_nodes[i.get('resource')].parent = (
+                map_of_all_pipeline_nodes[config.get('resource')].parent = (
                     parent_node)
 
         # Assume root is organizations.
@@ -251,6 +257,7 @@ class PipelineBuilder(object):
             List of pipelines instances that will be run.
         """
         root = self._build_dependency_tree()
+
         return self._find_runnable_pipelines(root)
 
 

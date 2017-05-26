@@ -32,6 +32,8 @@ Usage:
       --email_recipient <email address of the email recipient> (optional) \\
       --loglevel <debug|info|warning|error>
 
+TODO: Move all these flags to the config file.
+
 To see all the dependent flags:
   $ forseti_inventory --helpfull
 
@@ -88,19 +90,19 @@ CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
 LOGGER = log_util.get_logger(__name__)
 
 
-def _exists_snapshot_cycles_table(dao_):
+def _exists_snapshot_cycles_table(inventory_dao):
     """Whether the snapshot_cycles table exists.
 
     Args:
-        dao_: Data access object.
+        inventory_dao: Data access object.
 
     Returns:
         True if the snapshot cycle table exists. False otherwise.
     """
     try:
         sql = snapshot_cycles_sql.SELECT_SNAPSHOT_CYCLES_TABLE
-        result = dao_.execute_sql_with_fetch(snapshot_cycles_sql.RESOURCE_NAME,
-                                             sql, values=None)
+        result = inventory_dao.execute_sql_with_fetch(
+            snapshot_cycles_sql.RESOURCE_NAME, sql, values=None)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error in attempt to find snapshot_cycles table: %s', e)
         sys.exit()
@@ -110,25 +112,25 @@ def _exists_snapshot_cycles_table(dao_):
 
     return False
 
-def _create_snapshot_cycles_table(dao_):
+def _create_snapshot_cycles_table(inventory_dao):
     """Create snapshot cycle table.
 
     Args:
-        dao_: Data access object.
+        inventory_dao: Data access object.
     """
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
-        dao_.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+        inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
                                      sql, values=None)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to create snapshot cycles table: %s', e)
         sys.exit()
 
-def _start_snapshot_cycle(dao_):
+def _start_snapshot_cycle(inventory_dao):
     """Start snapshot cycle.
 
     Args:
-        dao_: Data access object.
+        inventory_dao: Data access object.
 
     Returns:
         cycle_time: Datetime object of the cycle, in UTC.
@@ -137,14 +139,14 @@ def _start_snapshot_cycle(dao_):
     cycle_time = datetime.utcnow()
     cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
 
-    if not _exists_snapshot_cycles_table(dao_):
+    if not _exists_snapshot_cycles_table(inventory_dao):
         LOGGER.info('snapshot_cycles is not created yet.')
-        _create_snapshot_cycles_table(dao_)
+        _create_snapshot_cycles_table(inventory_dao)
 
     try:
         sql = snapshot_cycles_sql.INSERT_CYCLE
         values = (cycle_timestamp, cycle_time, 'RUNNING', db_schema_version)
-        dao_.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+        inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
                                      sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to insert new snapshot cycle: %s', e)
@@ -178,11 +180,11 @@ def _run_pipelines(pipelines):
         run_statuses.append(pipeline.status == 'SUCCESS')
     return run_statuses
 
-def _complete_snapshot_cycle(dao_, cycle_timestamp, status):
+def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     """Complete the snapshot cycle.
 
     Args:
-        dao_: Data access object.
+        inventory_dao: Data access object.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status: String of the current cycle's status.
 
@@ -194,7 +196,7 @@ def _complete_snapshot_cycle(dao_, cycle_timestamp, status):
     try:
         values = (status, complete_time, cycle_timestamp)
         sql = snapshot_cycles_sql.UPDATE_CYCLE
-        dao_.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+        inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
                                      sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to complete update snapshot cycle: %s', e)
@@ -250,10 +252,10 @@ def _configure_logging(loglevel):
 def main(_):
     """Runs the Inventory Loader."""
 
-    forseti_flags = FLAGS.FlagValuesDict()
-    _configure_logging(forseti_flags.get('loglevel'))
+    inventory_flags = FLAGS.FlagValuesDict()
+    _configure_logging(inventory_flags.get('loglevel'))
 
-    if forseti_flags.get('config_path') is None:
+    if inventory_flags.get('config_path') is None:
         LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
@@ -300,7 +302,7 @@ def main(_):
     try:
         pipeline_builder = builder.PipelineBuilder(
             cycle_timestamp,
-            forseti_flags.get('config_path'),
+            inventory_flags.get('config_path'),
             flags,
             api_map,
             dao_map)
@@ -321,14 +323,14 @@ def main(_):
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
 
-    if forseti_flags.get('email_recipient') is not None:
+    if inventory_flags.get('email_recipient') is not None:
         _send_email(cycle_time,
                     cycle_timestamp,
                     snapshot_cycle_status,
                     pipelines,
-                    forseti_flags.get('sendgrid_api_key'),
-                    forseti_flags.get('email_sender'),
-                    forseti_flags.get('email_recipient'))
+                    inventory_flags.get('sendgrid_api_key'),
+                    inventory_flags.get('email_sender'),
+                    inventory_flags.get('email_recipient'))
 
 if __name__ == '__main__':
     app.run()
