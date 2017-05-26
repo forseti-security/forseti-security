@@ -16,8 +16,6 @@
 
 from google.apputils import basetest
 import mock
-import gflags as flags
-import sys
 
 
 # pylint: disable=line-too-long
@@ -31,9 +29,6 @@ from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
-
-FLAGS = flags.FLAGS
-FLAGS(sys.argv)
 
 
 class LoadProjectsPipelineTest(basetest.TestCase):
