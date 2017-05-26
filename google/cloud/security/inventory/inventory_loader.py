@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: Move all these flags to the config file.
+
 """Loads requested data into inventory.
 
 Usage examples: docs/inventory/README.md
@@ -31,8 +33,6 @@ Usage:
       --email_sender <email address of the email sender> (optional) \\
       --email_recipient <email address of the email recipient> (optional) \\
       --loglevel <debug|info|warning|error>
-
-TODO: Move all these flags to the config file.
 
 To see all the dependent flags:
   $ forseti_inventory --helpfull
@@ -243,26 +243,23 @@ def _send_email(cycle_time, cycle_timestamp, status, pipelines,
     except util_errors.EmailSendError:
         LOGGER.error('Unable to send email that inventory snapshot completed.')
 
-
 def _configure_logging(loglevel):
     """Configures the loglevel for all loggers."""
     level = LOGLEVELS.setdefault(loglevel, 'info')
     log_util.set_logger_level(level)
 
-def main(_):
-    """Runs the Inventory Loader."""
+def _create_api_map():
+    """Create a map of GCP APIs.
 
-    inventory_flags = FLAGS.FlagValuesDict()
-    _configure_logging(inventory_flags.get('loglevel'))
+    These will be re-usable so that the rate-limiter can apply across
+    different pipelines.
 
-    if inventory_flags.get('config_path') is None:
-        LOGGER.error('Path to pipeline config needs to be specified.')
-        sys.exit()
+    Returns:
+        Dictionary of GCP APIs.
+    """
 
-    # Make these re-usable so that the rate-limiter can apply across
-    # different pipelines.
     try:
-        api_map = {
+        return {
             'admin_api': admin_directory.AdminDirectoryClient(),
             'bigquery_api': bigquery.BigQueryClient(),
             'cloudsql_api': cloudsql.CloudsqlClient(),
@@ -281,10 +278,18 @@ def main(_):
         LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
         sys.exit()
 
-    # Make these re-usable so that the db connection can apply across
-    # different pipelines.
+def _create_dao_map():
+    """Create a map of DAOs.
+
+    These will be re-usable so that the db connection can apply across
+    different pipelines.
+
+    Returns:
+        Dictionary of DAOs.
+    """
+
     try:
-        dao_map = {
+        return {
             'bucket_dao': bucket_dao.BucketDao(),
             'cloudsql_dao': cloudsql_dao.CloudsqlDao(),
             'dao': dao.Dao(),
@@ -296,6 +301,20 @@ def main(_):
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error to create dao map.\n%s', e)
         sys.exit()
+
+
+def main(_):
+    """Runs the Inventory Loader."""
+
+    inventory_flags = FLAGS.FlagValuesDict()
+    _configure_logging(inventory_flags.get('loglevel'))
+
+    if inventory_flags.get('config_path') is None:
+        LOGGER.error('Path to pipeline config needs to be specified.')
+        sys.exit()
+
+    api_map = _create_api_map()
+    dao_map = _create_dao_map()
 
     cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
 
