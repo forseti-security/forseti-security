@@ -121,7 +121,7 @@ def _create_snapshot_cycles_table(inventory_dao):
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
         inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                     sql, values=None)
+                                              sql, values=None)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to create snapshot cycles table: %s', e)
         sys.exit()
@@ -147,7 +147,7 @@ def _start_snapshot_cycle(inventory_dao):
         sql = snapshot_cycles_sql.INSERT_CYCLE
         values = (cycle_timestamp, cycle_time, 'RUNNING', db_schema_version)
         inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                     sql, values)
+                                              sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to insert new snapshot cycle: %s', e)
         sys.exit()
@@ -197,7 +197,7 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
         values = (status, complete_time, cycle_timestamp)
         sql = snapshot_cycles_sql.UPDATE_CYCLE
         inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                     sql, values)
+                                              sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to complete update snapshot cycle: %s', e)
         sys.exit()
