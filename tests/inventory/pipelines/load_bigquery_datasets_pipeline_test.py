@@ -30,7 +30,7 @@ from tests.inventory.pipelines.test_data import fake_configs
 # pylint: enable=line-too-long
 
 
-class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
+class LoadBigqueryDatasetsPipelineTest(basetest.TestCase):
     """Tests for the load_bigquery_datasets_pipeline."""
 
     def setUp(self):
@@ -42,7 +42,7 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
         self.mock_bigquery_client = mock.create_autospec(bq.BigQueryClient)
         self.mock_dao = mock.create_autospec(project_dao.ProjectDao)
         self.pipeline = (
-            load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
+            load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline(
                 self.cycle_timestamp,
                 self.configs,
                 self.mock_bigquery_client,
