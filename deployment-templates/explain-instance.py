@@ -170,21 +170,18 @@ python setup.py install
 
 # Create upstart script for API server
 read -d '' API_SERVER << EOF
-description "Explain API Server"
-author "Felix Matenaar <fmatenaar@google.com>"
-
-start on runlevel [234]
-stop on runlevel[0156]
-
-chdir $USER_HOME
-export PYTHONPATH=.
-respawn
-exec /usr/local/bin/forseti_api
+[Unit]
+Description=Forseti API Server
+[Service]
+Restart=always
+RestartSec=3
+ExecStart=/usr/local/bin/forseti_api '[::]:50051' playground explain
+[Install]
+WantedBy=multi-user.target
 EOF
-echo "$API_SERVER" > /etc/init/forseti_api.conf
+echo "$API_SERVER" > /lib/systemd/system/forseti.service
 
-initctl reload-configuration
-start forseti_api
+systemctl start forseti
 """.format(
     # cloud_sql_proxy
     context.properties['cloudsqlproxy-os-arch'],
