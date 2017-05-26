@@ -14,6 +14,31 @@
 
 """SQL queries to create Cloud SQL tables."""
 
+CREATE_BACKEND_SERVICES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `affinity_cookie_ttl_sec` int DEFAULT NULL,
+        `backends` json DEFAULT NULL,
+        `cdn_policy` json DEFAULT NULL,
+        `connection_draining` json DEFAULT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `enable_cdn` bool DEFAULT NULL,
+        `health_checks` json DEFAULT NULL,
+        `iap` json DEFAULT NULL,
+        `load_balancing_scheme` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `port_name` varchar(255) DEFAULT NULL,
+        `port` int DEFAULT NULL,
+        `protocol` varchar(255) DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `session_affinity` varchar(255) DEFAULT NULL,
+        `timeout_sec` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_BIGQUERY_DATASETS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

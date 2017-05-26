@@ -47,6 +47,33 @@ class ComputeClient(_base_client.BaseClient):
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
 
+    def get_backend_services(self, project_id):
+        """Get the backend services for a project.
+
+        Args:
+            project_id: The project id.
+
+        Yield:
+            An iterator of backend services for this project.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        backend_services_api = self.service.backendServices()
+        list_request = backend_services_api.aggregatedList(
+            project=project_id)
+        list_next_request = backend_services_api.aggregatedList_next
+
+        try:
+            while list_request is not None:
+                response = self._execute(list_request)
+                yield response
+                list_request = list_next_request(
+                    previous_request=list_request,
+                    previous_response=response)
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError('backend_services', e)
+
     def get_forwarding_rules(self, project_id, region=None):
         """Get the forwarding rules for a project.
 
