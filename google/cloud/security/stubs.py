@@ -22,7 +22,6 @@ https://github.com/google/google-apputils/blob/master/google/apputils/run_script
 """
 
 # pylint: disable=invalid-name
-# pylint: disable=relative-import
 
 from google.apputils import run_script_module
 

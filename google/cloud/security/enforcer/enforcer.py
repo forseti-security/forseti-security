@@ -21,7 +21,6 @@ Usage for enforcing a single project's firewall:
 
 """
 
-# pylint: disable=relative-import
 
 import threading
 

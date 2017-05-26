@@ -19,5 +19,3 @@ WORKDIR /forseti-security/
 RUN PYTHONPATH=. python setup.py install
 RUN yes | pip uninstall -q forseti-security
 
-#RUN coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p "*_test.py" || echo "anyway"
-#RUN coverage report

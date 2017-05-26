@@ -31,7 +31,6 @@ Usage:
       --email_recipient <email address of the email recipient>
 """
 
-# pylint: disable=relative-import
 
 import collections
 import itertools

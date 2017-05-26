@@ -81,7 +81,8 @@ class ModelManagerTest(ForsetiTestCase):
                 self.model_manager.delete(model)
                 self.assertTrue(model not in self.model_manager.models())
             return True
-        [thread_pool.add_func(test_func) for _ in range(num_threads)]
+        for _ in range(num_threads):
+            thread_pool.add_func(test_func)
         thread_pool.join()
-        self.assertTrue(0 == len(self.model_manager.models()),
+        self.assertTrue(len(self.model_manager.models()) == 0,
                         'Expecting no models to stick around')
