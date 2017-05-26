@@ -273,6 +273,8 @@ def main(_):
         }
     # A lot of potential errors can be thrown by different APIs.
     # So, handle generically.
+    # Replace this generic except by handling specific exceptions from
+    # lower level and then handle here.
     except:
         LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
         sys.exit()

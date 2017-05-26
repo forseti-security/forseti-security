@@ -151,7 +151,7 @@ class PipelineBuilder(object):
         LOGGER.debug('Dependency tree of the pipelines: %s',
                      anytree.RenderTree(root, style=anytree.AsciiStyle())
                         .by_attr('resource_name'))
-        LOGGER.debug('Whether the pipelines are enabled: %s',
+        LOGGER.debug('Which pipelines are enabled: %s',
                      anytree.RenderTree(root, style=anytree.AsciiStyle())
                         .by_attr('enabled'))
 
