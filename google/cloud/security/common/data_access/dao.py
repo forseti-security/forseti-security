@@ -73,6 +73,9 @@ CREATE_TABLE_MAP = {
     # instances
     'instances': create_tables.CREATE_INSTANCES_TABLE,
 
+    # instance groups
+    'instance_groups': create_tables.CREATE_INSTANCE_GROUPS_TABLE,
+
     # instance group managers
     'instance_group_managers': (
         create_tables.CREATE_INSTANCE_GROUP_MANAGERS_TABLE),

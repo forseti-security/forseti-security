@@ -270,6 +270,20 @@ INSTANCES_FIELDNAMES = [
     'zone',
 ]
 
+INSTANCE_GROUPS_FIELDNAMES = [
+    'id',
+    'project_id',
+    'creation_timestamp',
+    'description',
+    'name',
+    'named_ports',
+    'network',
+    'region',
+    'size',
+    'subnetwork',
+    'zone',
+]
+
 INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
     'id',
     'project_id',
@@ -367,6 +381,7 @@ CSV_FIELDNAME_MAP = {
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
     'instances': INSTANCES_FIELDNAMES,
+    'instance_groups': INSTANCE_GROUPS_FIELDNAMES,
     'instance_group_managers': INSTANCE_GROUP_MANAGERS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,

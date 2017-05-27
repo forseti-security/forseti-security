@@ -85,7 +85,7 @@ FAKE_API_RESPONSE2 = [{
             }
         },
     },
-    'selfLink': 'https://www.googleapis.com/compute/v1/projects/project1/aggregated/instances'
+    'selfLink': 'https://www.googleapis.com/compute/v1/projects/project1/aggregated/instanceGroupManagers'
 }]
 
 FAKE_PROJECT_INSTANCE_GROUP_MANAGERS_MAP = {

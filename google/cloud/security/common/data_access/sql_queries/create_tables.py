@@ -331,6 +331,23 @@ CREATE_INSTANCES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_INSTANCE_GROUPS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `named_ports` json DEFAULT NULL,
+        `network` varchar(255) DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `size` int DEFAULT NULL,
+        `subnetwork` varchar(255) DEFAULT NULL,
+        `zone` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_INSTANCE_GROUP_MANAGERS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

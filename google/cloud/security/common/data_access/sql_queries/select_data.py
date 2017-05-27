@@ -189,12 +189,18 @@ INSTANCES = """
     FROM instances_{0}
 """
 
+INSTANCE_GROUPS = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    named_ports, network, region, size, subnetwork, zone
+    FROM instance_groups_{0}
+"""
+
 INSTANCE_GROUP_MANAGERS = """
     SELECT id, project_id, creation_timestamp, name, description,
     base_instance_name, current_actions, instance_group,
     instance_template, named_ports, region, target_pools, target_size,
     zone
-    FROM instances_{0}
+    FROM instance_group_managers_{0}
 """
 
 BUCKET_ACLS = """

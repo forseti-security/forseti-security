@@ -159,6 +159,25 @@ class ComputeClient(_base_client.BaseClient):
         return self._get_paged_list(
             'instances', list_request, list_next_request)
 
+    def get_instance_groups(self, project_id):
+        """Get the instance groups for a project.
+
+        Args:
+            project_id: The project id.
+
+        Yield:
+            An iterator of instance groups for this project.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        instance_groups_api = self.service.instanceGroups()
+        list_request = instance_groups_api.aggregatedList(
+            project=project_id)
+        list_next_request = instance_groups_api.aggregatedList_next
+        return self._get_paged_list(
+            'instance_groups', list_request, list_next_request)
+
     def get_instance_group_managers(self, project_id):
         """Get the instance group managers for a project.
 
