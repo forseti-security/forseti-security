@@ -181,6 +181,14 @@ FORWARDING_RULES_BY_PROJECT_ID = """
     WHERE project_id = %s
 """
 
+INSTANCES = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    can_ip_forward, cpu_platform, disks, machine_type, metadata,
+    network_interfaces, scheduling, service_accounts, status,
+    status_message, tags, zone
+    FROM instances_{0}
+"""
+
 BUCKET_ACLS = """
     SELECT bucket, entity, email, domain, role, project_number
     FROM buckets_{0}, buckets_acl_{0}

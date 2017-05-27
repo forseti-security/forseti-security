@@ -70,6 +70,9 @@ CREATE_TABLE_MAP = {
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
 
+    # instances
+    'instances': create_tables.CREATE_INSTANCES_TABLE,
+
     # organizations
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,

@@ -250,6 +250,26 @@ GROUPS_FIELDNAMES = [
     'raw_group'
 ]
 
+INSTANCES_FIELDNAMES = [
+    'id',
+    'project_id',
+    'can_ip_forward',
+    'cpu_platform',
+    'creation_timestamp',
+    'description',
+    'disks',
+    'machine_type',
+    'metadata',
+    'name',
+    'network_interfaces',
+    'scheduling',
+    'service_accounts',
+    'status',
+    'status_message',
+    'tags',
+    'zone',
+]
+
 ORG_IAM_POLICIES_FIELDNAMES = [
     'org_id',
     'role',
@@ -329,6 +349,7 @@ CSV_FIELDNAME_MAP = {
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
+    'instances': INSTANCES_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,

@@ -308,6 +308,29 @@ CREATE_GROUPS_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_INSTANCES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `can_ip_forward` bool DEFAULT NULL,
+        `cpu_platform` varchar(255) DEFAULT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `disks` json DEFAULT NULL,
+        `machine_type` varchar(255) DEFAULT NULL,
+        `metadata` json DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `network_interfaces` json DEFAULT NULL,
+        `scheduling` json DEFAULT NULL,
+        `service_accounts` json DEFAULT NULL,
+        `status` varchar(255) DEFAULT NULL,
+        `status_message` varchar(255) DEFAULT NULL,
+        `tags` json DEFAULT NULL,
+        `zone` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_ORG_IAM_POLICIES_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

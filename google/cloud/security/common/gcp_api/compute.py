@@ -130,3 +130,30 @@ class ComputeClient(_base_client.BaseClient):
         for page in paged_results:
             firewall_rules.extend(page.get('items', []))
         return firewall_rules
+
+    def get_instances(self, project_id):
+        """Get the instances for a project.
+
+        Args:
+            project_id: The project id.
+
+        Yield:
+            An iterator of instances for this project.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        instances_api = self.service.instances()
+        list_request = instances_api.aggregatedList(
+            project=project_id)
+        list_next_request = instances_api.aggregatedList_next
+
+        try:
+            while list_request is not None:
+                response = self._execute(list_request)
+                yield response
+                list_request = list_next_request(
+                    previous_request=list_request,
+                    previous_response=response)
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError('instances', e)
