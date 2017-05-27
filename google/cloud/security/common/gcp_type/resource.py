@@ -39,6 +39,7 @@ class ResourceType(object):
     INSTANCE = 'instance'
     INSTANCE_GROUP = 'instance_group'
     INSTANCE_GROUP_MANAGER = 'instance_group_manager'
+    INSTANCE_TEMPLATE = 'instance_template'
 
     # Data storage
     BUCKETS_ACL = 'buckets_acl'

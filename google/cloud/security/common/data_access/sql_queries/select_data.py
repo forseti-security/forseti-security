@@ -195,6 +195,12 @@ INSTANCE_GROUPS = """
     FROM instance_groups_{0}
 """
 
+INSTANCE_TEMPLATES = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    properties
+    FROM instance_templates_{0}
+"""
+
 INSTANCE_GROUP_MANAGERS = """
     SELECT id, project_id, creation_timestamp, name, description,
     base_instance_name, current_actions, instance_group,

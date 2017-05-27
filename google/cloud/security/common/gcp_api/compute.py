@@ -178,6 +178,25 @@ class ComputeClient(_base_client.BaseClient):
         return self._get_paged_list(
             'instance_groups', list_request, list_next_request)
 
+    def get_instance_templates(self, project_id):
+        """Get the instance templates for a project.
+
+        Args:
+            project_id: The project id.
+
+        Yield:
+            An iterator of instance templates for this project.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        instance_templates_api = self.service.instanceTemplates()
+        list_request = instance_templates_api.list(
+            project=project_id)
+        list_next_request = instance_templates_api.list_next
+        return self._get_paged_list(
+            'instance_templates', list_request, list_next_request)
+
     def get_instance_group_managers(self, project_id):
         """Get the instance group managers for a project.
 
