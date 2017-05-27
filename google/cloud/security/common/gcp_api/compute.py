@@ -87,7 +87,7 @@ class ComputeClient(_base_client.BaseClient):
         list_request = backend_services_api.aggregatedList(
             project=project_id)
         list_next_request = backend_services_api.aggregatedList_next
-        yield self._get_paged_list(
+        return self._get_paged_list(
             'backend_services', list_request, list_next_request)
 
     def get_forwarding_rules(self, project_id, region=None):
@@ -116,7 +116,7 @@ class ComputeClient(_base_client.BaseClient):
                 project=project_id)
             list_next_request = forwarding_rules_api.aggregatedList_next
 
-        yield self._get_paged_list(
+        return self._get_paged_list(
             'forwarding_rules', list_request, list_next_request)
 
     def get_firewall_rules(self, project_id):
@@ -156,7 +156,7 @@ class ComputeClient(_base_client.BaseClient):
         list_request = instances_api.aggregatedList(
             project=project_id)
         list_next_request = instances_api.aggregatedList_next
-        yield self._get_paged_list(
+        return self._get_paged_list(
             'instances', list_request, list_next_request)
 
     def get_instance_group_managers(self, project_id):
@@ -175,5 +175,5 @@ class ComputeClient(_base_client.BaseClient):
         list_request = instance_group_managers_api.aggregatedList(
             project=project_id)
         list_next_request = instance_group_managers_api.aggregatedList_next
-        yield self._get_paged_list(
+        return self._get_paged_list(
             'instance_group_managers', list_request, list_next_request)
