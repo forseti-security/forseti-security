@@ -59,7 +59,8 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
                            backend_service.get('cdnPolicy', {})),
                        'connection_draining': parser.json_stringify(
                            backend_service.get('connectionDraining', {})),
-                       'enable_cdn': backend_service.get('enableCDN'),
+                       'enable_cdn': (
+                           1 if backend_service.get('enableCDN') else 0),
                        'health_checks': parser.json_stringify(
                            backend_service.get('healthChecks', [])),
                        'iap': parser.json_stringify(

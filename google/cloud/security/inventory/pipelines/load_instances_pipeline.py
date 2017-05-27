@@ -51,7 +51,8 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
                            self.MYSQL_DATETIME_FORMAT),
                        'name': instance.get('name'),
                        'description': instance.get('description'),
-                       'can_ip_forward': instance.get('canIpForward'),
+                       'can_ip_forward': (
+                           1 if instance.get('canIpForward') else 0),
                        'cpu_platform': instance.get('cpuPlatform'),
                        'disks': parser.json_stringify(
                            instance.get('disks', [])),
