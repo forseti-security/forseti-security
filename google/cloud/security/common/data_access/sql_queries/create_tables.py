@@ -331,6 +331,26 @@ CREATE_INSTANCES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_INSTANCE_GROUP_MANAGERS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `base_instance_name` varchar(255) DEFAULT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `current_actions` json DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `instance_group` varchar(255) DEFAULT NULL,
+        `instance_template` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `named_ports` json DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `target_pools` json DEFAULT NULL,
+        `target_size` int DEFAULT NULL,
+        `zone` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_ORG_IAM_POLICIES_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

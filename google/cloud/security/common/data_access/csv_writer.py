@@ -270,6 +270,23 @@ INSTANCES_FIELDNAMES = [
     'zone',
 ]
 
+INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
+    'id',
+    'project_id',
+    'base_instance_name',
+    'creation_timestamp',
+    'current_actions',
+    'description',
+    'instance_group',
+    'instance_template',
+    'name',
+    'named_ports',
+    'region',
+    'target_pools',
+    'target_size',
+    'zone',
+]
+
 ORG_IAM_POLICIES_FIELDNAMES = [
     'org_id',
     'role',
@@ -350,6 +367,7 @@ CSV_FIELDNAME_MAP = {
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
     'instances': INSTANCES_FIELDNAMES,
+    'instance_group_managers': INSTANCE_GROUP_MANAGERS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,

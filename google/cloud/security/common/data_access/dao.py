@@ -73,6 +73,10 @@ CREATE_TABLE_MAP = {
     # instances
     'instances': create_tables.CREATE_INSTANCES_TABLE,
 
+    # instance group managers
+    'instance_group_managers': (
+        create_tables.CREATE_INSTANCE_GROUP_MANAGERS_TABLE),
+
     # organizations
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
     'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,

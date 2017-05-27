@@ -189,6 +189,14 @@ INSTANCES = """
     FROM instances_{0}
 """
 
+INSTANCE_GROUP_MANAGERS = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    base_instance_name, current_actions, instance_group,
+    instance_template, named_ports, region, target_pools, target_size,
+    zone
+    FROM instances_{0}
+"""
+
 BUCKET_ACLS = """
     SELECT bucket, entity, email, domain, role, project_number
     FROM buckets_{0}, buckets_acl_{0}

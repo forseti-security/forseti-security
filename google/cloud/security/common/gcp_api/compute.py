@@ -47,6 +47,30 @@ class ComputeClient(_base_client.BaseClient):
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
 
+    def _get_paged_list(self, resource_name, list_request, list_next_request):
+        """Get a paged resource.
+
+        Args:
+            resource_name: Name of the resource.
+            list_request: The list method from the service API.
+            list_next_request: The list_next method from the service API.
+
+        Yield:
+            An iterator of resources for this project.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        try:
+            while list_request is not None:
+                response = self._execute(list_request)
+                yield response
+                list_request = list_next_request(
+                    previous_request=list_request,
+                    previous_response=response)
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_name, e)
+
     def get_backend_services(self, project_id):
         """Get the backend services for a project.
 
@@ -63,16 +87,8 @@ class ComputeClient(_base_client.BaseClient):
         list_request = backend_services_api.aggregatedList(
             project=project_id)
         list_next_request = backend_services_api.aggregatedList_next
-
-        try:
-            while list_request is not None:
-                response = self._execute(list_request)
-                yield response
-                list_request = list_next_request(
-                    previous_request=list_request,
-                    previous_response=response)
-        except (HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError('backend_services', e)
+        yield self._get_paged_list(
+            'backend_services', list_request, list_next_request)
 
     def get_forwarding_rules(self, project_id, region=None):
         """Get the forwarding rules for a project.
@@ -100,15 +116,8 @@ class ComputeClient(_base_client.BaseClient):
                 project=project_id)
             list_next_request = forwarding_rules_api.aggregatedList_next
 
-        try:
-            while list_request is not None:
-                response = self._execute(list_request)
-                yield response
-                list_request = list_next_request(
-                    previous_request=list_request,
-                    previous_response=response)
-        except (HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError('forwarding_rules', e)
+        yield self._get_paged_list(
+            'forwarding_rules', list_request, list_next_request)
 
     def get_firewall_rules(self, project_id):
         """Get the firewall rules for a given project id.
@@ -147,13 +156,24 @@ class ComputeClient(_base_client.BaseClient):
         list_request = instances_api.aggregatedList(
             project=project_id)
         list_next_request = instances_api.aggregatedList_next
+        yield self._get_paged_list(
+            'instances', list_request, list_next_request)
 
-        try:
-            while list_request is not None:
-                response = self._execute(list_request)
-                yield response
-                list_request = list_next_request(
-                    previous_request=list_request,
-                    previous_response=response)
-        except (HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError('instances', e)
+    def get_instance_group_managers(self, project_id):
+        """Get the instance group managers for a project.
+
+        Args:
+            project_id: The project id.
+
+        Yield:
+            An iterator of instance group managers for this project.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        instance_group_managers_api = self.service.instanceGroupManagers()
+        list_request = instance_group_managers_api.aggregatedList(
+            project=project_id)
+        list_next_request = instance_group_managers_api.aggregatedList_next
+        yield self._get_paged_list(
+            'instance_group_managers', list_request, list_next_request)
