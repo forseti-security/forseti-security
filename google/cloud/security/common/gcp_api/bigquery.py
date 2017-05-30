@@ -55,6 +55,9 @@ class BigQueryClient(_base_client.BaseClient):
             ['project-id',
              'project-id',
              '...']
+             
+            If there are no project_ids enabled for bigquery an empty list will
+            be returned.
         """
         bigquery_projects_api = self.service.projects()
         request = bigquery_projects_api.list()
@@ -63,7 +66,7 @@ class BigQueryClient(_base_client.BaseClient):
                                            self.rate_limiter)
         project_ids = []
         for result in results:
-            for project in result.get('projects'):
+            for project in result.get('projects', []):
                 project_ids.append(project.get('id'))
 
         return project_ids
