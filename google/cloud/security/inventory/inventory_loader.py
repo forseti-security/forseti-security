@@ -318,17 +318,13 @@ def main(_):
 
     cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
 
-    try:
-        pipeline_builder = builder.PipelineBuilder(
-            cycle_timestamp,
-            inventory_flags.get('config_path'),
-            flags,
-            api_map,
-            dao_map)
-        pipelines = pipeline_builder.build()
-    except inventory_errors.LoadDataPipelineError as e:
-        LOGGER.error('Unable to build pipelines.\n%s', e)
-        sys.exit()
+    pipeline_builder = builder.PipelineBuilder(
+        cycle_timestamp,
+        inventory_flags.get('config_path'),
+        flags,
+        api_map,
+        dao_map)
+    pipelines = pipeline_builder.build()
 
     run_statuses = _run_pipelines(pipelines)
 
