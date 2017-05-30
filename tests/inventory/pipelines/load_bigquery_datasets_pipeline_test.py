@@ -143,6 +143,11 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
         self.assertListEqual(fbq.EXPECTED_TRANSFORM, return_values)
 
     def test_retrieve_with_no_bigquery_project_ids(self):
+        self.pipeline.api_client = mock.MagicMock()
+        self.pipeline.api_client.get_dataset_access = mock.MagicMock()
+        self.pipeline.api_client.get_datasets_for_projectid = mock.MagicMock()
+        self.pipeline._retrieve_dataset_project_map = mock.MagicMock()
+
         self.pipeline.api_client.get_bigquery_projectids.return_value = []
 
         return_value = self.pipeline._retrieve()
