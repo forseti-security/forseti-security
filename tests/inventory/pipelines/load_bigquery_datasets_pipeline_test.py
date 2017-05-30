@@ -147,7 +147,7 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
 
         return_value = self.pipeline._retrieve()
 
-        self.assertListEqual(None, return_value)
+        self.assertEqual(None, return_value)
         self.pipeline.api_client.get_dataset_access.assert_not_called()
         self.pipeline.api_client.get_datasets_for_projectid.assert_not_called()
         self.pipeline._retrieve_dataset_project_map.assert_not_called()
