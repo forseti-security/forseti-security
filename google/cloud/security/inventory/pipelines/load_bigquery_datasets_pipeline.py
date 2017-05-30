@@ -170,7 +170,7 @@ class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
         """Runs the actual data fetching pipeline."""
         dataset_project_access_map = self._retrieve()
 
-        if dataset_project_access_map:
+        if dataset_project_access_map is not None:
             loadable_datasets = self._transform(dataset_project_access_map)
             self._load(self.RESOURCE_NAME, loadable_datasets)
             self._get_loaded_count()
