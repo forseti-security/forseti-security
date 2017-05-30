@@ -19,7 +19,7 @@ import itertools
 import mock
 import yaml
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import base_rules_engine as bre
@@ -29,7 +29,7 @@ from tests.unittest_utils import get_datafile_path
 
 
 # TODO: Define more tests
-class BucketsRulesEngineTest(basetest.TestCase):
+class BucketsRulesEngineTest(ForsetiTestCase):
     """Tests for the BucketsRulesEngine."""
 
     def setUp(self):

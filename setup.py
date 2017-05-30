@@ -25,13 +25,12 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-
 FORSETI_VERSION = google.cloud.security.__version__
 
 NAMESPACE_PACKAGES = [
     'google',
     'google.cloud',
-    'google.cloud.security'
+    'google.cloud.security',
 ]
 
 INSTALL_REQUIRES = [
@@ -40,20 +39,26 @@ INSTALL_REQUIRES = [
     'google-api-python-client==1.6.1',
     'Jinja2==2.9.5',
     'MySQL-python==1.2.5',
-    'protobuf==3.2.0',
     'PyYAML==3.12',
+    'protobuf>=3.2.0',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
     'sendgrid==3.6.3',
+    'SQLAlchemy==1.1.9',
+    'pygraph>=0.2.1',
 ]
 
 SETUP_REQUIRES = [
     'google-apputils==0.4.2',
+    'protobuf>=3.2.0',
     'python-gflags==3.1.1',
+    'grpcio>=1.2.1',
+    'grpcio-tools>=1.2.1',
 ]
 
 TEST_REQUIRES = [
     'mock==2.0.0',
+    'SQLAlchemy==1.1.9',
 ]
 
 if sys.version_info < (2, 7):
@@ -64,15 +69,14 @@ if sys.version_info.major > 2:
 
 def build_protos():
     """Build protos."""
-    subprocess.check_call(['python', 'makefile.py', '--clean'])
+    subprocess.check_call(['python', 'build_protos.py', '--clean'])
 
 class PostInstallCommand(install):
     """Post installation command."""
 
     def run(self):
-        build_protos()
+        #build_protos()
         install.do_egg_install(self)
-
 
 setup(
     name='forseti-security',
@@ -87,11 +91,12 @@ setup(
         'License :: OSI Approved :: Apache Software License'
     ],
     cmdclass={
-        'install': PostInstallCommand
+        'install': PostInstallCommand,
     },
     install_requires=SETUP_REQUIRES + INSTALL_REQUIRES,
     setup_requires=SETUP_REQUIRES,
     tests_require=INSTALL_REQUIRES + SETUP_REQUIRES + TEST_REQUIRES,
+    dependency_links=SETUP_REQUIRES,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
@@ -108,6 +113,7 @@ setup(
             'forseti_scanner = google.cloud.security.stubs:RunForsetiScanner',
             'forseti_enforcer = google.cloud.security.stubs:RunForsetiEnforcer',
             'forseti_notifier = google.cloud.security.stubs:RunForsetiNotifier',
+            'forseti_api = google.cloud.security.stubs:RunForsetiApi',
         ]
     },
     zip_safe=False,   # Set to False: apputils doesn't like zip_safe eggs

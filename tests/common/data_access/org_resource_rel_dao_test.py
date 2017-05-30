@@ -14,7 +14,7 @@
 
 """Tests the OrgResourceRelDao."""
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 from google.cloud.security.common.data_access import _db_connector
@@ -27,7 +27,7 @@ from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
 
 
-class OrgResourceRelDaoTest(basetest.TestCase):
+class OrgResourceRelDaoTest(ForsetiTestCase):
     """Test OrgResourceRelDaoTest."""
 
     @mock.patch.object(project_dao.ProjectDao, '__init__', autospec=True)
@@ -118,4 +118,4 @@ class OrgResourceRelDaoTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

@@ -16,13 +16,13 @@
 
 import mock
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import compute
 from tests.common.gcp_api.test_data import fake_firewall_rules
 
 
-class ComputeTest(basetest.TestCase):
+class ComputeTest(ForsetiTestCase):
     """Test the Compute client."""
 
     @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
@@ -48,4 +48,4 @@ class ComputeTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

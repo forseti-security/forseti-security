@@ -21,7 +21,7 @@ import httplib2
 import mock
 
 import testing_constants as constants
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.protobuf import text_format
 
 from google.cloud.security.enforcer import enforcer_log_pb2
@@ -32,7 +32,7 @@ from google.cloud.security.enforcer import batch_enforcer
 MOCK_TIMESTAMP = 1234567890
 
 
-class BatchFirewallEnforcerTest(basetest.TestCase):
+class BatchFirewallEnforcerTest(ForsetiTestCase):
     """Extended unit tests for BatchFirewallEnforcer class."""
 
     def setUp(self):
@@ -195,4 +195,4 @@ class BatchFirewallEnforcerTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()
