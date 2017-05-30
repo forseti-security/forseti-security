@@ -55,7 +55,7 @@ class BigQueryClient(_base_client.BaseClient):
             ['project-id',
              'project-id',
              '...']
-             
+
             If there are no project_ids enabled for bigquery an empty list will
             be returned.
         """
