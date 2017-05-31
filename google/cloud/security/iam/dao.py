@@ -516,10 +516,10 @@ def define_model(model_name, dbengine, model_seed):
                 role_permissions_map[role.name].add(permission.name)
 
             for binding, member in (
-                session.query(Binding, Member)
-                .join(binding_members)
-                .filter(binding_members.c.bindings_id == Binding.id)
-                .filter(binding_members.c.members_name == Member.name)
+                    session.query(Binding, Member)
+                    .join(binding_members)
+                    .filter(binding_members.c.bindings_id == Binding.id)
+                    .filter(binding_members.c.members_name == Member.name)
                     .yield_per(per_yield)):
 
                 resource_type_name = full_to_type_name(binding.resource_name)
@@ -1044,7 +1044,7 @@ def define_model(model_name, dbengine, model_seed):
             while resources_new:
                 resources_new = set()
                 for parent, child in (
-                    session.query(res_anc, res_childs)
+                        session.query(res_anc, res_childs)
                         .filter(res_childs.full_name.in_(resources_set))
                         .filter(res_childs.parent_name == res_anc.full_name)
                         .all()):
