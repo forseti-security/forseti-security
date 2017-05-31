@@ -16,14 +16,15 @@
 
 import mock
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
+from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
 
 
-class FolderTest(basetest.TestCase):
+class FolderTest(ForsetiTestCase):
     """Test Folder resource."""
 
     def setUp(self):
@@ -49,11 +50,12 @@ class FolderTest(basetest.TestCase):
 
     @mock.patch.object(
         crm.CloudResourceManagerClient, 'get_folder', autospec=True)
-    def test_folder_exists(self, mock_crm):
+    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
+    def test_folder_exists(self, mock_base, mock_crm):
         """Tests that the folder exists."""
         mock_crm.return_value = True
         self.assertTrue(self.folder1.exists())
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

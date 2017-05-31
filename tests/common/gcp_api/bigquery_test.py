@@ -19,13 +19,13 @@ import httplib2
 
 from googleapiclient.errors import HttpError
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import _base_client as _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from tests.common.gcp_api.test_data import fake_bigquery as fbq
 
-class BigqueryTestCase(basetest.TestCase):
+class BigqueryTestCase(ForsetiTestCase):
     """Test the Bigquery API Client."""
 
     MAX_BIGQUERY_API_CALLS_PER_100_SECONDS = 88888
@@ -151,4 +151,4 @@ class BigqueryTestCase(basetest.TestCase):
         self.assertListEqual(return_value, fbq.DATASETS_GET_EXPECTED)
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()
