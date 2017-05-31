@@ -23,15 +23,16 @@ from google.cloud.security.iam.playground import playground_pb2_grpc
 from google.cloud.security.iam.playground import playgrounder
 
 
-# pylint: disable=C0103
-# pylint: disable=R0201
-# pylint: disable=E1101
+# pylint: disable=invalid-name
+# pylint: disable=no-self-use
+# pylint: disable=no-member
 class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     """Playground gRPC handler."""
-    HANDLE_KEY = "handle"
 
+    HANDLE_KEY = "handle"
     def _get_handle(self, context):
         """Extract the model handle from the gRPC context."""
+
         metadata = context.invocation_metadata()
         metadata_dict = {}
         for key, value in metadata:
@@ -44,10 +45,12 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def Ping(self, request, _):
         """Ping implemented to check service availability."""
+
         return playground_pb2.PingReply(data=request.data)
 
     def SetIamPolicy(self, request, context):
         """Sets the policy for a resource."""
+
         handle = self._get_handle(context)
         policy = {'etag': request.policy.etag, 'bindings': {}}
         for binding in request.policy.bindings:
@@ -61,6 +64,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def GetIamPolicy(self, request, context):
         """Gets the policy for a resource."""
+
         handle = self._get_handle(context)
         policy = self.playgrounder.GetIamPolicy(handle,
                                                 request.resource)
@@ -82,6 +86,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def CheckIamPolicy(self, request, context):
         """Checks access according to policy to a specified resource."""
+
         handle = self._get_handle(context)
         authorized = self.playgrounder.CheckIamPolicy(handle,
                                                       request.resource,
@@ -93,6 +98,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def AddGroupMember(self, request, context):
         """Adds a member to the model."""
+
         handle = self._get_handle(context)
         self.playgrounder.AddGroupMember(handle,
                                          request.member_type_name,
@@ -101,6 +107,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def DelGroupMember(self, request, context):
         """Deletes a member from the model."""
+
         handle = self._get_handle(context)
         self.playgrounder.DelGroupMember(handle,
                                          request.member_name,
@@ -110,6 +117,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def ListGroupMembers(self, request, context):
         """Lists members in the model."""
+
         handle = self._get_handle(context)
         member_names = self.playgrounder.ListGroupMembers(handle,
                                                           request.prefix)
@@ -119,6 +127,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def DelResource(self, request, context):
         """Deletes a resource from the model."""
+
         handle = self._get_handle(context)
         self.playgrounder.DelResource(handle,
                                       request.full_resource_name)
@@ -126,6 +135,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def AddResource(self, request, context):
         """Adds a resource to the model."""
+
         handle = self._get_handle(context)
         self.playgrounder.AddResource(handle,
                                       request.full_resource_name,
@@ -136,6 +146,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def ListResources(self, request, context):
         """Lists resources in the model."""
+
         handle = self._get_handle(context)
         full_resource_names = self.playgrounder.ListResources(handle,
                                                               request.prefix)
@@ -145,6 +156,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def DelRole(self, request, context):
         """Deletes a role within the model."""
+
         handle = self._get_handle(context)
         self.playgrounder.DelRole(handle,
                                   request.role_name)
@@ -152,6 +164,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def AddRole(self, request, context):
         """Adds a role to the model."""
+
         handle = self._get_handle(context)
         self.playgrounder.AddRole(handle,
                                   request.role_name,
@@ -160,6 +173,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def ListRoles(self, request, context):
         """List roles from the model."""
+
         handle = self._get_handle(context)
         role_names = self.playgrounder.ListRoles(handle,
                                                  request.prefix)
@@ -170,11 +184,13 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
 class GrpcPlaygrounderFactory(object):
     """Factory class for Playground service gRPC interface"""
+
     def __init__(self, config):
         self.config = config
 
     def create_and_register_service(self, server):
         """Creates a playground service and registers it in the server"""
+
         service = GrpcPlaygrounder(
             playgrounder_api=playgrounder.Playgrounder(
                 self.config))
@@ -184,6 +200,7 @@ class GrpcPlaygrounderFactory(object):
 
 def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
     """Test function to serve playground service as standalone."""
+
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     GrpcPlaygrounderFactory(config).create_and_register_service(server)
     server.add_insecure_port(endpoint)
@@ -200,8 +217,10 @@ def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
 if __name__ == "__main__":
     class DummyConfig(object):
         """Dummy configuration for testing."""
+
         def run_in_background(self, function):
             """Dummy method, does not run in background."""
+
             function()
 
     import sys

@@ -15,17 +15,19 @@
 """ Playground API. """
 
 
-# pylint: disable=C0103
-# pylint: disable=R0201
-# pylint: disable=E1101
-# pylint: disable=W0613
+# pylint: disable=invalid-name
+# pylint: disable=no-self-use
+# pylint: disable=no-member
+# pylint: disable=unused-argument
 class Playgrounder(object):
     """Playground API implementation."""
+
     def __init__(self, config):
         self.config = config
 
     def SetIamPolicy(self, model_name, resource, policy):
         """Sets the IAM policy for the resource."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -33,6 +35,7 @@ class Playgrounder(object):
 
     def GetIamPolicy(self, model_name, resource):
         """Gets the IAM policy for the resource."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -40,6 +43,7 @@ class Playgrounder(object):
 
     def CheckIamPolicy(self, model_name, resource, permission, identity):
         """Checks access according to IAM policy for the resource."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -48,6 +52,7 @@ class Playgrounder(object):
 
     def AddGroupMember(self, model_name, member_type_name, parent_type_names):
         """Adds a member to the model."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -57,6 +62,7 @@ class Playgrounder(object):
     def DelGroupMember(self, model_name, member_name, parent_name,
                        only_delete_relationship):
         """Deletes a member from the model."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -65,6 +71,7 @@ class Playgrounder(object):
 
     def ListGroupMembers(self, model_name, member_name_prefix):
         """Lists a member from the model."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -72,6 +79,7 @@ class Playgrounder(object):
 
     def DelResource(self, model_name, full_resource_name):
         """Deletes a member from the model."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -81,6 +89,7 @@ class Playgrounder(object):
     def AddResource(self, model_name, full_resource_name, resource_type,
                     parent_full_resource_name, no_require_parent):
         """Adds a resource to the model."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -92,6 +101,7 @@ class Playgrounder(object):
 
     def ListResources(self, model_name, full_resource_name_prefix):
         """Lists resources by resource name prefix."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -100,6 +110,7 @@ class Playgrounder(object):
 
     def DelRole(self, model_name, role_name):
         """Deletes role from the model."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -108,6 +119,7 @@ class Playgrounder(object):
 
     def AddRole(self, model_name, role_name, permission_names):
         """Adds a role to the model."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -116,6 +128,7 @@ class Playgrounder(object):
 
     def ListRoles(self, model_name, role_name_prefix):
         """Lists the role in the model matching the prefix."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -125,8 +138,10 @@ class Playgrounder(object):
 if __name__ == "__main__":
     class DummyConfig(object):
         """Dummy configuration for testing."""
+
         def run_in_background(self, function):
             """Dummy implementation."""
+
             function()
 
     e = Playgrounder(config=DummyConfig())

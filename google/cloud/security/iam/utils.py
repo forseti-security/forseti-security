@@ -19,6 +19,7 @@ import logging
 
 def logcall(f, level=logging.CRITICAL):
     """Call logging decorator."""
+
     def wrapper(*args, **kwargs):
         """Implements the log wrapper including parameters and result."""
         logging.log(level, 'enter %s(%s)', f.__name__, args)
@@ -30,6 +31,7 @@ def logcall(f, level=logging.CRITICAL):
 
 def mutual_exclusive(lock):
     """ Mutex decorator. """
+
     def wrap(f):
         """Decorator generator."""
         def function(*args, **kw):
@@ -45,14 +47,17 @@ def mutual_exclusive(lock):
 
 def oneof(*args):
     """Returns true iff one of the parameters is true."""
+
     return len([x for x in args if x]) == 1
 
 
 def full_to_type_name(full_resource_name):
     """Creates a type/name format from full resource name."""
+
     return '/'.join(full_resource_name.split('/')[-2:])
 
 
 def resource_to_type_name(resource):
     """Creates a type/name format from a resource dbo."""
+
     return '{}/{}'.format(resource.type, resource.name)

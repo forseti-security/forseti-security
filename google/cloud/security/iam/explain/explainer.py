@@ -18,16 +18,18 @@ from google.cloud.security.iam import dao
 from google.cloud.security.iam.explain.importer import importer
 
 
-# pylint: disable=C0103
-# pylint: disable=R0201
-# pylint: disable=E1101
+# pylint: disable=invalid-name
+# pylint: disable=no-self-use
+# pylint: disable=no-member
 class Explainer(object):
     """Implements the IAM Explain API."""
+
     def __init__(self, config):
         self.config = config
 
     def ExplainDenied(self, model_name, member, resources, permissions, roles):
         """Provides information on granting a member access to a resource."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -40,6 +42,7 @@ class Explainer(object):
 
     def ExplainGranted(self, model_name, member, resource, role, permission):
         """Provides information on why a member has access to a resource."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -53,6 +56,7 @@ class Explainer(object):
     def GetAccessByResources(self, model_name, resource_name, permission_names,
                              expand_groups):
         """Returns members who have access to the given resource."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -64,6 +68,7 @@ class Explainer(object):
 
     def CreateModel(self, source):
         """Creates a model from the import source."""
+
         model_manager = self.config.model_manager
         model_name = model_manager.create()
         scoped_session, data_access = model_manager.get(model_name)
@@ -85,6 +90,7 @@ class Explainer(object):
     def GetAccessByMembers(self, model_name, member_name, permission_names,
                            expand_resources):
         """Returns access to resources for the provided member."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -94,6 +100,7 @@ class Explainer(object):
 
     def GetPermissionsByRoles(self, model_name, role_names, role_prefixes):
         """Returns the permissions associated with the specified roles."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -103,16 +110,19 @@ class Explainer(object):
 
     def ListModel(self):
         """Lists all models."""
+
         model_manager = self.config.model_manager
         return model_manager.models()
 
     def DeleteModel(self, model_name):
         """Deletes a model."""
+
         model_manager = self.config.model_manager
         model_manager.delete(model_name)
 
     def Denormalize(self, model_name):
         """Denormalizes a model."""
+
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -124,12 +134,14 @@ class Explainer(object):
 if __name__ == "__main__":
     class DummyConfig(object):
         """Dummy configuration."""
+
         def __init__(self):
             engine = dao.create_engine('sqlite:////tmp/test.db')
             self.model_manager = dao.ModelManager(engine)
 
         def run_in_background(self, function):
             """Dummy implementation."""
+
             function()
 
     e = Explainer(config=DummyConfig())

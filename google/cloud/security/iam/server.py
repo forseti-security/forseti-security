@@ -34,6 +34,7 @@ class ServiceConfig(object):
     ServiceConfig is a helper class to implement dependency injection
     to IAM Explain services.
     """
+
     def __init__(self, explain_connect_string, forseti_connect_string):
         self.thread_pool = ThreadPool()
 

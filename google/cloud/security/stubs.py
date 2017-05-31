@@ -47,7 +47,7 @@ def RunForsetiNotifier():
 
 # TODO: Investigate improving so the pylint disable isn't needed.
 # pylint: disable=invalid-name
-# pylint: disable=E0401
+# pylint: disable=import-error
 def RunForsetiApi():
     """Run Forseti API server."""
     import google.cloud.security.iam.server as forseti_api

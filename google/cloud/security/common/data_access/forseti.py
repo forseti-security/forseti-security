@@ -15,19 +15,24 @@
 """ Forseti Database Objects. """
 
 from sqlalchemy import create_engine
-from sqlalchemy import Column, String
-from sqlalchemy import Text, BigInteger, Date
+from sqlalchemy import Column
+from sqlalchemy import String
+from sqlalchemy import Text
+from sqlalchemy import BigInteger
+from sqlalchemy import Date
+
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 BASE = declarative_base()
+TABLE_CACHE = {}
 
-
-# pylint: disable=R0914
-# pylint: disable=R0903
-# pyling: disable=R0904
+# pylint: disable=too-many-locals
+# pylint: disable=too-few-public-methods
+# pyling: disable=too-many-public-methods
 class SnapshotState(object):
     """Possible states for Forseti snapshots."""
+
     SUCCESS = "SUCCESS"
     RUNNING = "RUNNING"
     FAILURE = "FAILURE"
@@ -37,6 +42,7 @@ class SnapshotState(object):
 
 class Snapshot(BASE):
     """Represents a Forseti snapshot row."""
+
     __tablename__ = 'snapshot_cycles'
 
     id = Column(BigInteger(), primary_key=True)
@@ -50,10 +56,6 @@ class Snapshot(BASE):
         return """<Snapshot(id='{}', version='{}', timestamp='{}')>""".format(
             self.id, self.schema_version, self.cycle_timestamp)
 
-
-TABLE_CACHE = {}
-
-
 def create_table_names(timestamp):
     """Forseti tables are namespaced via snapshot timestamp.
        This function generates the appropriate classes to
@@ -64,6 +66,7 @@ def create_table_names(timestamp):
 
     class Project(BASE):
         """Represtents a GCP project row under the organization."""
+
         __tablename__ = 'projects_%s' % timestamp
 
         id = Column(BigInteger(), primary_key=True)
@@ -78,11 +81,13 @@ def create_table_names(timestamp):
 
         def __repr__(self):
             """String representation."""
+
             return """<Project(id='{}', project_name='{}')>""".format(
                 self.id, self.project_name)
 
     class ProjectPolicy(BASE):
         """Represents a GCP project policy row under the organization."""
+
         __tablename__ = 'raw_project_iam_policies_%s' % timestamp
 
         id = Column(BigInteger(), primary_key=True)
@@ -91,19 +96,23 @@ def create_table_names(timestamp):
 
         def __repr__(self):
             """String representation."""
+
             return """<Policy(id='{}', type='{}', name='{}'>""".format(
                 self.id, 'project', self.project_number)
 
         def get_resource_reference(self):
             """Return a reference to the resource in the form (type, id)."""
+
             return 'project', self.project_number
 
         def get_policy(self):
             """Return the corresponding IAM policy."""
+
             return self.iam_policy
 
     class OrganizationPolicy(BASE):
         """Represents a GCP organization policy row."""
+
         __tablename__ = 'raw_org_iam_policies_%s' % timestamp
 
         id = Column(BigInteger(), primary_key=True)
@@ -112,19 +121,23 @@ def create_table_names(timestamp):
 
         def __repr__(self):
             """String representation."""
+
             return """<Policy(id='{}', type='{}', name='{}'>""".format(
                 self.id, "organization", self.org_id)
 
         def get_resource_reference(self):
             """Return a reference to the resource in the form (type, id)"""
+
             return 'organization', self.org_id
 
         def get_policy(self):
             """Return the corresponding IAM policy."""
+
             return self.iam_policy
 
     class Bucket(BASE):
         """Represents a GCS bucket item."""
+
         __tablename__ = 'buckets_%s' % timestamp
 
         id = Column(BigInteger(), primary_key=True)
@@ -142,11 +155,13 @@ def create_table_names(timestamp):
 
         def __repr__(self):
             """String representation."""
+
             return """<Bucket(id='{}', name='{}', location='{}')>""".format(
                 self.bucket_id, self.bucket_name, self.bucket_location)
 
     class Organization(BASE):
         """Represents a GCP organization."""
+
         __tablename__ = 'organizations_%s' % timestamp
 
         org_id = Column(BigInteger(), primary_key=True)
@@ -158,8 +173,12 @@ def create_table_names(timestamp):
 
         def __repr__(self):
             """String representation."""
-            return "<Organization(id='{}', name='{}', display_name='{}')>".\
-                format(self.org_id, self.name, self.display_name)
+
+            fmt_s = "<Organization(id='{}', name='{}', display_name='{}')>"
+            return fmt_s.format(
+                self.org_id,
+                self.name,
+                self.display_name)
 
     result = (Organization,
               [('projects', Project), ('buckets', Bucket)],
@@ -170,6 +189,7 @@ def create_table_names(timestamp):
 
 class Importer(object):
     """Forseti data importer to iterate the inventory and policies."""
+
     DEFAULT_CONNECT_STRING = 'mysql://root@127.0.0.1:3306/forseti_security'
 
     def __init__(self, db_connect_string=DEFAULT_CONNECT_STRING):
@@ -181,12 +201,14 @@ class Importer(object):
 
     def _get_latest_snapshot(self):
         """Find the latest snapshot from the database."""
+
         self.snapshot = self.session.query(Snapshot).\
             filter(Snapshot.status == SnapshotState.SUCCESS).\
             order_by(Snapshot.start_time.desc()).first()
 
     def __iter__(self):
         """Main interface to get the data, returns assets and then policies."""
+
         organization, tables, policies = \
             create_table_names(self.snapshot.cycle_timestamp)
         yield "organizations", self.session.query(organization).one()
