@@ -27,11 +27,6 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 class PipelineRequirementsMapTest(basetest.TestCase):
     """Tests for the pipeline requirements map test."""
 
-    def setUp(self):
-        """Set up."""
-
-
-
     def _get_all_pipeline_module_names(self):
         """Get all the name of the modules that are pipelines.
         
@@ -67,7 +62,7 @@ class PipelineRequirementsMapTest(basetest.TestCase):
 
         return mapped_module_names
 
-    def testInventoryPipelineAndRequirementsMapAreInSync(self):
+    def testInventoryPipelinesAndRequirementsMapAreInSync(self):
         mapped_module_names = self._get_all_mapped_module_names()
         pipeline_module_names = self._get_all_pipeline_module_names()
         
