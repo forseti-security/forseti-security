@@ -53,6 +53,9 @@ class BigqueryTestCase(ForsetiTestCase):
             self.bq_api_client.rate_limiter.period)
 
     def test_get_bigquery_projectids_raises(self):
+        """Test that get_bigquery_projectids raises when there is an HTTP
+           exception.
+        """
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.projects.return_value = mock_bq_stub
@@ -64,7 +67,23 @@ class BigqueryTestCase(ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.bq_api_client.get_bigquery_projectids()
 
+    def test_get_bigquery_projectids_with_no_projects(self):
+        """Test that get_bigquery_projectids returns an emptly list with no
+           enabled bigquery projects.
+        """
+        mock_bq_stub = mock.MagicMock()
+        self.bq_api_client.service = mock.MagicMock()
+        self.bq_api_client.service.projects.return_value = mock_bq_stub
+        self.bq_api_client._build_paged_result = mock.MagicMock(
+                return_value=fbq.PROJECTS_LIST_REQUEST_RESPONSE_EMPTY
+        )
+
+        return_value = self.bq_api_client.get_bigquery_projectids()
+
+        self.assertListEqual(return_value, [])
+
     def test_get_bigquery_projectids(self):
+        """Test get_bigquery_projectids returns a valid list of project ids."""
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.projects.return_value = mock_bq_stub
@@ -77,6 +96,9 @@ class BigqueryTestCase(ForsetiTestCase):
         self.assertListEqual(return_value, fbq.PROJECTS_LIST_EXPECTED)
 
     def test_get_datasets_for_projectid_raises(self):
+        """Test get_datasets_for_projectid raises when there is an HTTP
+            exception.
+        """
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
@@ -88,7 +110,8 @@ class BigqueryTestCase(ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
              self.bq_api_client.get_datasets_for_projectid(fbq.PROJECT_IDS[0])
 
-    def test_getdatasets_for_projectid(self):
+    def test_get_datasets_for_projectid(self):
+        """Test get_datasets_for_projectid returns datasets properly."""
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
@@ -101,6 +124,7 @@ class BigqueryTestCase(ForsetiTestCase):
         self.assertListEqual(return_value, fbq.DATASETS_LIST_EXPECTED)
 
     def test_get_dataset_access_raises(self):
+        """Test get_dataset_access raises when there is an HTTP exception."""
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
@@ -114,6 +138,7 @@ class BigqueryTestCase(ForsetiTestCase):
                                                   fbq.DATASET_ID)
 
     def test_get_dataset_access(self):
+        """Test get_dataset_access returns dataset ACLs properly."""
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub

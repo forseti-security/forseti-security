@@ -49,6 +49,7 @@ import gflags as flags
 from google.apputils import app
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import backend_service_dao as bs_dao
 from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import folder_dao as folder_resource_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
@@ -68,6 +69,7 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
+from google.cloud.security.inventory.pipelines import load_backend_services_pipeline
 from google.cloud.security.inventory.pipelines import load_firewall_rules_pipeline
 from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipeline
 from google.cloud.security.inventory.pipelines import load_folders_pipeline
@@ -261,6 +263,12 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             compute.ComputeClient(version='beta'),
             kwargs.get(project_dao_name)
         ),
+        load_backend_services_pipeline.LoadBackendServicesPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('backend_service_dao')
+        ),
     ]
 
     if configs.get('inventory_groups'):
@@ -385,6 +393,7 @@ def main(_):
         dao = Dao()
         project_dao = proj_dao.ProjectDao()
         organization_dao = org_dao.OrganizationDao()
+        backend_service_dao = bs_dao.BackendServiceDao()
         bucket_dao = buck_dao.BucketDao()
         cloudsql_dao = sql_dao.CloudsqlDao()
         fwd_rules_dao = fr_dao.ForwardingRulesDao()
@@ -406,6 +415,7 @@ def main(_):
             dao=dao,
             project_dao=project_dao,
             organization_dao=organization_dao,
+            backend_service_dao=backend_service_dao,
             bucket_dao=bucket_dao,
             fwd_rules_dao=fwd_rules_dao,
             folder_dao=folder_dao,

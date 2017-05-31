@@ -21,6 +21,27 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+BACKEND_SERVICES_FIELDNAMES = [
+    'id',
+    'project_id',
+    'affinity_cookie_ttl_sec',
+    'backends',
+    'cdn_policy',
+    'connection_draining',
+    'creation_timestamp',
+    'description',
+    'enable_cdn',
+    'health_checks',
+    'iap',
+    'load_balancing_scheme',
+    'name',
+    'port_name',
+    'port',
+    'protocol',
+    'region',
+    'session_affinity',
+    'timeout_sec',
+]
 
 BIGQUERY_DATASET_FIELDNAMES = [
     'project_id',
@@ -293,6 +314,7 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
 ]
 
 CSV_FIELDNAME_MAP = {
+    'backend_services': BACKEND_SERVICES_FIELDNAMES,
     'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
