@@ -206,6 +206,12 @@ cd $USER_HOME
 
 # Download Forseti src; see DOWNLOAD_FORSETI
 {}
+
+# Don't build protos in setup.py.
+# Yes, this adds extra steps. However, this removes the step of having to download protoc.
+# Otherise, the pip package and the setuptools clobber each other's path
+python build_protos.py -- clean
+pip uninstall protobuf
 python setup.py install
 
 # Create the startup run script
