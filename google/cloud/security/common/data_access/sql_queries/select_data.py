@@ -158,6 +158,14 @@ SELECT_BUCKETS_ACL_VIOLATIONS = """
     SELECT * FROM buckets_acl_violations_{0};
 """
 
+BACKEND_SERVICES = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    affinity_cookie_ttl_sec, backends, cdn_policy, connection_draining,
+    enable_cdn, health_checks, load_balancing_scheme, port, port_name,
+    protocol, region, session_affinity, timeout_sec, iap
+    FROM backend_services_{0}
+"""
+
 FORWARDING_RULES = """
     SELECT id, project_id, creation_timestamp, name, description, region,
     ip_address, ip_protocol, port_range, ports, target, load_balancing_scheme,
