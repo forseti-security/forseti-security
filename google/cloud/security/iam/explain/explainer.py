@@ -73,7 +73,10 @@ class Explainer(object):
                 """Import runnable."""
                 importer_cls = importer.by_source(source)
                 import_runner = importer_cls(
-                    session, model_manager.model(model_name), data_access)
+                    session,
+                    model_manager.model(model_name),
+                    data_access,
+                    self.config)
                 import_runner.run()
 
             self.config.run_in_background(doImport)

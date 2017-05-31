@@ -14,7 +14,6 @@
 
 """Wrapper for Compute API client."""
 
-import sys
 import gflags as flags
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
@@ -25,7 +24,6 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 
 FLAGS = flags.FLAGS
-FLAGS(sys.argv)
 
 flags.DEFINE_integer('max_compute_api_calls_per_second', 20,
                      'Compute API calls per seconds.')

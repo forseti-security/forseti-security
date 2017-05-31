@@ -33,14 +33,9 @@ def GenerateConfig(context):
             context.properties['release-version'],
             context.properties['release-version'])
 
-    CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
-        context.env['project'],
-        '$(ref.cloudsql-instance.region)',
-        '$(ref.cloudsql-instance.name)')
-
-    SCANNER_BUCKET = context.properties['scanner-bucket']
-    DATABASE_NAME = context.properties['database-name']
-    SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
+    SQL_INSTANCE = context.properties['sql-instance']
+    EXPLAIN_DATABASE_NAME = context.properties['database-name-forseti']
+    FORSETI_DATABASE_NAME = context.properties['database-name-explain']
 
     resources = []
 
@@ -53,7 +48,7 @@ def GenerateConfig(context):
                 'https://www.googleapis.com/compute/v1/projects/{}'
                 '/zones/{}/machineTypes/{}'.format(
                 context.env['project'], context.properties['zone'],
-                context.properties['instance-type'])),
+                'n1-standard-2')),
             'disks': [{
                 'deviceName': 'boot',
                 'type': 'PERSISTENT',
@@ -63,8 +58,8 @@ def GenerateConfig(context):
                     'sourceImage': (
                         'https://www.googleapis.com/compute/v1'
                         '/projects/{}/global/images/family/{}'.format(
-                            context.properties['image-project'],
-                            context.properties['image-family']
+                            'ubuntu-os-cloud',
+                            'ubuntu-1604-lts',
                         )
                     )
                 }
@@ -81,9 +76,10 @@ def GenerateConfig(context):
             }],
             'serviceAccounts': [{
                 'email': context.properties['service-account'],
-                'scopes': SERVICE_ACCOUNT_SCOPES,
+                'scopes': ['https://www.googleapis.com/auth/cloud-platform'],
             }],
             'metadata': {
+                'dependsOn': ['db-instances'],
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
@@ -93,7 +89,6 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y libmysqlclient-dev python-pip python-dev
 
 USER_HOME=/home/ubuntu
-FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/data/protoc_url.txt
 
 # Install fluentd if necessary
 FLUENTD=$(ls /usr/sbin/google-fluentd)
@@ -107,51 +102,9 @@ fi
 CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
 if [ -z "$CLOUD_SQL_PROXY" ]; then
         cd $USER_HOME
-        wget https://dl.google.com/cloudsql/cloud_sql_proxy.{}
-        mv cloud_sql_proxy.{} cloud_sql_proxy
+        wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64
+        mv cloud_sql_proxy.linux.amd64 cloud_sql_proxy
         chmod +x cloud_sql_proxy
-fi
-
-$USER_HOME/cloud_sql_proxy -instances={}=tcp:{} &
-
-# Check if rules.yaml exists
-RULES_FILE=$(gsutil ls gs://{}/rules/rules.yaml)
-if [ $? -eq 1 ]; then
-        cd $USER_HOME
-        read -d '' RULES_YAML << EOF
-rules:
-  - name: sample whitelist
-    mode: whitelist
-    resource:
-      - type: organization
-        applies_to: self_and_children
-        resource_ids:
-          - {}
-    inherit_from_parents: true
-    bindings:
-      - role: roles/*
-        members:
-          - serviceAccount:*@*.gserviceaccount.com
-EOF
-        echo "$RULES_YAML" > $USER_HOME/rules.yaml
-        gsutil cp $USER_HOME/rules.yaml gs://{}/rules/rules.yaml
-fi
-
-# Check whether protoc is installed
-PROTOC_PATH=$(which protoc)
-if [ -z "$PROTOC_PATH" ]; then
-
-        cd $USER_HOME
-        PROTOC_DOWNLOAD_URL=$(curl -s $FORSETI_PROTOC_URL)
-
-        if [ -z "$PROTOC_DOWNLOAD_URL" ]; then
-            echo "No PROTOC_DOWNLOAD_URL set: $PROTOC_DOWNLOAD_URL"
-            exit 1
-        else
-            wget $PROTOC_DOWNLOAD_URL
-            unzip -o $(basename $PROTOC_DOWNLOAD_URL)
-            sudo cp bin/protoc /usr/local/bin
-        fi
 fi
 
 # Install Forseti Security
@@ -171,31 +124,43 @@ python setup.py install
 # Create upstart script for API server
 read -d '' API_SERVER << EOF
 [Unit]
-Description=Forseti API Server
+Description=Explain API Server
 [Service]
 Restart=always
 RestartSec=3
-ExecStart=/usr/local/bin/forseti_api '[::]:50051' playground explain
+ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' playground explain
 [Install]
 WantedBy=multi-user.target
+Wants=cloudsqlproxy.service
 EOF
 echo "$API_SERVER" > /lib/systemd/system/forseti.service
 
-systemctl start forseti
-""".format(
-    # cloud_sql_proxy
-    context.properties['cloudsqlproxy-os-arch'],
-    context.properties['cloudsqlproxy-os-arch'],
-    CLOUDSQL_CONN_STRING,
-    context.properties['db-port'],
+read -d '' SQL_PROXY << EOF
+[Unit]
+Description=Explain Cloud SQL Proxy
+[Service]
+Restart=always
+RestartSec=3
+ExecStart=/home/ubuntu/cloud_sql_proxy -instances={}=tcp:3306
+[Install]
+WantedBy=forseti.service
+EOF
+echo "$SQL_PROXY" > /lib/systemd/system/cloudsqlproxy.service
 
-    # rules.yaml
-    SCANNER_BUCKET,
-    context.properties['organization-id'],
-    SCANNER_BUCKET,
+systemctl start cloudsqlproxy
+sleep 1
+systemctl start forseti
+
+
+""".format(
 
     # install forseti
     DOWNLOAD_FORSETI,
+    EXPLAIN_DATABASE_NAME.split(':')[-1],
+    FORSETI_DATABASE_NAME.split(':')[-1],
+
+    # cloud_sql_proxy
+    SQL_INSTANCE,
 )
                 }]
             }

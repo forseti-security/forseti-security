@@ -18,6 +18,7 @@ import json
 
 from google.cloud.security.common.data_access import forseti
 
+# pylint: disable=unused-argument
 
 class ResourceCache(dict):
     """Resource cache."""
@@ -74,7 +75,7 @@ class Policy(dict):
 
 class EmptyImporter(object):
     """Imports an empty model."""
-    def __init__(self, session, model, dao):
+    def __init__(self, session, model, dao, service_config):
         self.session = session
         self.model = model
         self.dao = dao
@@ -86,7 +87,7 @@ class EmptyImporter(object):
 
 class TestImporter(object):
     """Importer for testing purposes. Imports a test scenario."""
-    def __init__(self, session, model, dao):
+    def __init__(self, session, model, dao, service_config):
         self.session = session
         self.model = model
         self.dao = dao
@@ -120,10 +121,11 @@ class TestImporter(object):
 
 class ForsetiImporter(object):
     """Imports data from Forseti."""
-    def __init__(self, session, model, dao):
+    def __init__(self, session, model, dao, service_config):
         self.session = session
         self.model = model
-        self.forseti_importer = forseti.Importer()
+        self.forseti_importer = forseti.Importer(
+            service_config.forseti_connect_string)
         self.resource_cache = ResourceCache()
         self.dao = dao
 

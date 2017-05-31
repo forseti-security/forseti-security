@@ -219,6 +219,7 @@ read -d '' RUN_FORSETI << EOF
 EOF
 echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
 chmod +x $USER_HOME/run_forseti.sh
+/bin/sh $USER_HOME/run_forseti.sh
 
 (echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
 """.format(

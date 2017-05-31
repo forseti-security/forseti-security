@@ -52,8 +52,8 @@ class Model(MODEL_BASE):
     """IAM Explain model object in database."""
     __tablename__ = 'model'
 
-    handle = Column(String, primary_key=True)
-    state = Column(String)
+    handle = Column(String(32), primary_key=True)
+    state = Column(String(32))
     watchdog_timer = Column(DateTime)
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
@@ -133,9 +133,9 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
-        full_name = Column(String, primary_key=True)
-        name = Column(String)
-        type = Column(String)
+        full_name = Column(String(1024), primary_key=True)
+        name = Column(String(128))
+        type = Column(String(64))
         policy_update_counter = Column(Integer, default=0)
 
         parent_name = Column(
@@ -166,9 +166,9 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a policy member."""
         __tablename__ = members_tablename
 
-        name = Column(String, primary_key=True)
-        type = Column(String)
-        member_name = Column(String)
+        name = Column(String(256), primary_key=True)
+        type = Column(String(64))
+        member_name = Column(String(128))
 
         parents = relationship(
             'Member',
@@ -219,7 +219,7 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for an IAM role."""
         __tablename__ = roles_tablename
 
-        name = Column(String, primary_key=True)
+        name = Column(String(128), primary_key=True)
         permissions = relationship('Permission',
                                    secondary=role_permissions,
                                    back_populates='roles')
@@ -231,7 +231,7 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for an IAM permission."""
         __tablename__ = permissions_tablename
 
-        name = Column(String, primary_key=True)
+        name = Column(String(128), primary_key=True)
         roles = relationship('Role',
                              secondary=role_permissions,
                              back_populates='permissions')
