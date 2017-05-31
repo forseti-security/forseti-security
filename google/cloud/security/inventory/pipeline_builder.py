@@ -21,6 +21,7 @@ import anytree
 
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
+from google.cloud.security.inventory import pipeline_requirements_map
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -28,77 +29,6 @@ LOGGER = log_util.get_logger(__name__)
 
 class PipelineBuilder(object):
     """Inventory Pipeline Builder."""
-
-    # TODO: Add a flag --list_resources in inventory_loader.py that
-    # will print all the keys() in REQUIREMENTS_MAP.
-
-    REQUIREMENTS_MAP = {
-        'bigquery_datasets':
-            {'module_name': 'load_bigquery_datasets_pipeline',
-             'depends_on': 'projects',
-             'api_name': 'bigquery_api',
-             'dao_name': 'dao'},
-        'buckets':
-            {'module_name': 'load_projects_buckets_pipeline',
-             'depends_on': 'projects',
-             'api_name': 'gcs_api',
-             'dao_name': 'project_dao'},
-        'buckets_acls':
-            {'module_name': 'load_projects_buckets_acls_pipeline',
-             'depends_on': 'buckets',
-             'api_name': 'gcs_api',
-             'dao_name': 'bucket_dao'},
-        'cloudsql':
-            {'module_name': 'load_projects_cloudsql_pipeline',
-             'depends_on': 'projects',
-             'api_name': 'cloudsql_api',
-             'dao_name': 'cloudsql_dao'},
-        'firewall_rules':
-            {'module_name': 'load_firewall_rules_pipeline',
-             'depends_on': 'projects',
-             'api_name': 'compute_beta_api',
-             'dao_name': 'project_dao'},
-        'folders':
-            {'module_name': 'load_folders_pipeline',
-             'depends_on': 'organizations',
-             'api_name': 'crm_v2beta1_api',
-             'dao_name': 'dao'},
-        'forwarding_rules':
-            {'module_name': 'load_forwarding_rules_pipeline',
-             'depends_on': 'projects',
-             'api_name': 'compute_api',
-             'dao_name': 'forwarding_rules_dao'},
-        'group_members':
-            {'module_name': 'load_group_members_pipeline',
-             'depends_on': 'groups',
-             'api_name': 'admin_api',
-             'dao_name': 'dao'},
-        'groups':
-            {'module_name': 'load_groups_pipeline',
-             'depends_on': 'organizations',
-             'api_name': 'admin_api',
-             'dao_name': 'dao'},
-        'org_iam_policies':
-            {'module_name': 'load_org_iam_policies_pipeline',
-             'depends_on': 'organizations',
-             'api_name': 'crm_api',
-             'dao_name': 'organization_dao'},
-        'organizations':
-            {'module_name': 'load_orgs_pipeline',
-             'depends_on': None,
-             'api_name': 'crm_api',
-             'dao_name': 'organization_dao'},
-        'projects':
-            {'module_name': 'load_projects_pipeline',
-             'depends_on': 'organizations',
-             'api_name': 'crm_api',
-             'dao_name': 'project_dao'},
-        'projects_iam_policies':
-            {'module_name': 'load_projects_iam_policies_pipeline',
-             'depends_on': 'projects',
-             'api_name': 'crm_api',
-             'dao_name': 'project_dao'},
-    }
 
     def __init__(self, cycle_timestamp, config_path, flags,
                  api_map, dao_map):
@@ -166,7 +96,7 @@ class PipelineBuilder(object):
             if node.enabled:
                 module_path = 'google.cloud.security.inventory.pipelines.{}'
                 module_name = module_path.format(
-                    self.REQUIREMENTS_MAP
+                    pipeline_requirements_map.REQUIREMENTS_MAP
                     .get(node.resource_name)
                     .get('module_name'))
                 try:
@@ -179,7 +109,7 @@ class PipelineBuilder(object):
                 # Module naming is "this_is_foo"
                 # Class naming is "ThisIsFoo"
                 class_name = (
-                    self.REQUIREMENTS_MAP
+                    pipeline_requirements_map.REQUIREMENTS_MAP
                     .get(node.resource_name)
                     .get('module_name')
                     .title()
@@ -192,7 +122,7 @@ class PipelineBuilder(object):
                     continue
 
                 api = self.api_map.get(
-                    self.REQUIREMENTS_MAP
+                    pipeline_requirements_map.REQUIREMENTS_MAP
                     .get(node.resource_name)
                     .get('api_name'))
                 if api is None:
@@ -201,7 +131,7 @@ class PipelineBuilder(object):
                     continue
 
                 dao = self.dao_map.get(
-                    self.REQUIREMENTS_MAP
+                    pipeline_requirements_map.REQUIREMENTS_MAP
                     .get(node.resource_name)
                     .get('dao_name'))
                 if dao is None:
@@ -240,7 +170,7 @@ class PipelineBuilder(object):
         # correctly on all the nodes.
         for config in self.config:
             parent_name = (
-                self.REQUIREMENTS_MAP.get(
+                pipeline_requirements_map.REQUIREMENTS_MAP.get(
                     config.get('resource')).get('depends_on'))
             if parent_name is not None:
                 parent_node = map_of_all_pipeline_nodes[parent_name]
