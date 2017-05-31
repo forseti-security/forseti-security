@@ -15,7 +15,7 @@
 """Tests the load_projects_iam_policies_pipeline."""
 
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 import ratelimiter
 
@@ -32,7 +32,7 @@ from tests.inventory.pipelines.test_data import fake_iam_policies
 # pylint: enable=line-too-long
 
 
-class LoadProjectsIamPoliciesPipelineTest(basetest.TestCase):
+class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
     """Tests for the load_org_iam_policies_pipeline."""
 
     FAKE_PROJECT_NUMBERS = ['11111', '22222']

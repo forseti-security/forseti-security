@@ -14,7 +14,7 @@
 
 """Tests the load_firewall_rules_pipeline."""
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 # pylint: disable=line-too-long
@@ -26,7 +26,7 @@ from tests.inventory.pipelines.test_data import fake_firewall_rules
 # pylint: enable=line-too-long
 
 
-class LoadFirewallRulesTest(basetest.TestCase):
+class LoadFirewallRulesTest(ForsetiTestCase):
     """Tests for the load firewall rules pipeline."""
 
     def setUp(self):

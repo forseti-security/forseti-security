@@ -19,7 +19,7 @@ import itertools
 import mock
 import yaml
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
@@ -34,7 +34,7 @@ from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import test_rules
 
 
-class IamRulesEngineTest(basetest.TestCase):
+class IamRulesEngineTest(ForsetiTestCase):
     """Tests for the IamRulesEngine."""
 
     def setUp(self):
@@ -1124,4 +1124,4 @@ class IamRulesEngineTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

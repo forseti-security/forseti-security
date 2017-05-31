@@ -15,10 +15,10 @@
 """Tests the Logging utility."""
 import logging
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import log_util
 
-class LogUtilTest(basetest.TestCase):
+class LogUtilTest(ForsetiTestCase):
     """Test the Logging utility."""
 
     def test_set_logger_level_changes_existing_loggers(self):
@@ -43,4 +43,4 @@ class LogUtilTest(basetest.TestCase):
         self.assertEqual(previous_logger.level, logging.INFO, 'Level should have changed back to INFO')
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()
