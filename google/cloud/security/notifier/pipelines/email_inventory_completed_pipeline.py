@@ -39,7 +39,8 @@ class EmailInventoryCompletedPipeline(bnp.BaseNotificationPipeline):
 
         Args:
             snapshot_time: Datetime object of the cycle, in UTC.
-            snapshot_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            snapshot_timestamp: String of timestamp,
+                formatted as YYYYMMDDTHHMMSSZ.
             status: String of the overall status of current snapshot cycle.
             inventory_pipelines: List of inventory pipelines.
     
@@ -83,8 +84,8 @@ class EmailInventoryCompletedPipeline(bnp.BaseNotificationPipeline):
             LOGGER.error('Unable to send email that inventory snapshot '
                          'completed.')
 
-    def run(self, snapshot_time, snapshot_timestamp, status, inventory_pipelines,
-            email_sender, email_recipient):
+    def run(self, snapshot_time, snapshot_timestamp, status,
+            inventory_pipelines, email_sender, email_recipient):
         """Run the email pipeline
     
         Args:
