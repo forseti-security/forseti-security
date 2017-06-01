@@ -27,8 +27,8 @@ from google.cloud.security.notifier.pipelines import base_notification_pipeline 
 LOGGER = log_util.get_logger(__name__)
 
 
-class EmailInventoryCompletedPipeline(bnp.BaseNotificationPipeline):
-    """Email pipeline to perform notifications"""
+class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
+    """Email pipeline for inventory snapshot summary"""
 
     def __init__(self, sendgrid_key):
         self.email_util = EmailUtil(sendgrid_key)

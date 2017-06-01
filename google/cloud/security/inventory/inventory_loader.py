@@ -84,7 +84,7 @@ from google.cloud.security.inventory.pipelines import load_projects_iam_policies
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
 from google.cloud.security.inventory import util
-from google.cloud.security.notifier.pipelines import email_inventory_completed_pipeline
+from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -400,7 +400,8 @@ def main(_):
 
     if configs.get('email_recipient') is not None:
         email_pipeline = (
-            email_inventory_completed_pipeline.EmailInventoryCompletedPipeline(
+            email_inventory_snapshot_summary_pipeline
+            .EmailInventorySnapshopSummaryPipeline(
                 configs.get('sendgrid_api_key')))
         email_pipeline.run(
             cycle_time,
