@@ -69,6 +69,7 @@ CREATE_TABLE_MAP = {
     # groups
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+    'groups_violations': create_tables.CREATE_GROUPS_VIOLATIONS_TABLE,
 
     # organizations
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,

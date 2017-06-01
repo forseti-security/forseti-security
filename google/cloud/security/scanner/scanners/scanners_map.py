@@ -23,7 +23,7 @@ from google.cloud.security.scanner.scanners.cloudsql_rules_scanner import CloudS
 
 
 SCANNER_MAP = {
-    'GroupsEngine': GroupsScanner,
+    'GroupsRulesEngine': GroupsScanner,
     'IamRulesEngine': IamPolicyScanner,
     'BucketsRulesEngine': BucketsAclScanner,
     'CloudSqlRulesEngine': CloudSqlAclScanner,
@@ -33,10 +33,12 @@ FLATTENING_MAP = {
     'IamRulesEngine': 'policy_violations',
     'BucketsRulesEngine': 'buckets_acl_violations',
     'CloudSqlRulesEngine': 'cloudsql_acl_violations',
+    'GroupsRulesEngine': 'groups_violations',
 }
 
 RESOURCE_MAP = {
     'policy_violations': 'violations',
     'buckets_acl_violations': 'buckets_acl_violations',
     'cloudsql_acl_violations': 'cloudsql_acl_violations',
+    'groups_violations': 'groups_violations',
 }
