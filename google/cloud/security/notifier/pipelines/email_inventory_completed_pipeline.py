@@ -52,12 +52,11 @@ class EmailInventoryCompletedPipeline(bnp.BaseNotificationPipeline):
             snapshot_timestamp, status)
     
         email_content = EmailUtil.render_from_template(
-            'inventory_snapshot_summary.jinja', {
-                'snapshot_time': snapshot_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
-                'snapshot_timestamp': snapshot_timestamp,
-                'status_summary': status,
-                'pipelines': inventory_pipelines,
-            })
+            'inventory_snapshot_summary.jinja',
+            {'snapshot_time': snapshot_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
+             'snapshot_timestamp': snapshot_timestamp,
+             'status_summary': status,
+             'pipelines': inventory_pipelines})
 
         return email_subject, email_content
 
