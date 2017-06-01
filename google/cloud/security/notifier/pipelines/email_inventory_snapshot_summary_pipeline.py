@@ -28,7 +28,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
-    """Email pipeline for inventory snapshot summary"""
+    """Email pipeline for inventory snapshot summary."""
 
     def __init__(self, sendgrid_key):
         self.email_util = EmailUtil(sendgrid_key)
