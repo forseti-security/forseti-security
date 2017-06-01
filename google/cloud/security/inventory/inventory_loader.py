@@ -84,6 +84,7 @@ from google.cloud.security.inventory.pipelines import load_projects_iam_policies
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
 from google.cloud.security.inventory import util
+from google.cloud.security.notifier.pipelines import email_inventory_completed_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -215,54 +216,54 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             crm_v1_api_client,
             kwargs.get(project_dao_name)
         ),
-        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-            cycle_timestamp,
-            configs,
-            gcs_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
-            cycle_timestamp,
-            configs,
-            gcs_api_client,
-            kwargs.get('bucket_dao')
-        ),
-        load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline(
-            cycle_timestamp,
-            configs,
-            cloudsql.CloudsqlClient(),
-            kwargs.get('cloudsql_dao')
-        ),
-        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
-            cycle_timestamp,
-            configs,
-            compute.ComputeClient(),
-            kwargs.get('fwd_rules_dao')
-        ),
-        load_folders_pipeline.LoadFoldersPipeline(
-            cycle_timestamp,
-            configs,
-            crm.CloudResourceManagerClient(version='v2beta1'),
-            dao
-        ),
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
-            cycle_timestamp,
-            configs,
-            bq.BigQueryClient(),
-            dao
-        ),
-        load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
-            cycle_timestamp,
-            configs,
-            compute.ComputeClient(version='beta'),
-            kwargs.get(project_dao_name)
-        ),
+#        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
+#            cycle_timestamp,
+#            configs,
+#            crm_v1_api_client,
+#            kwargs.get(project_dao_name)
+#        ),
+#        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
+#            cycle_timestamp,
+#            configs,
+#            gcs_api_client,
+#            kwargs.get(project_dao_name)
+#        ),
+#        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
+#            cycle_timestamp,
+#            configs,
+#            gcs_api_client,
+#            kwargs.get('bucket_dao')
+#        ),
+#        load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline(
+#            cycle_timestamp,
+#            configs,
+#            cloudsql.CloudsqlClient(),
+#            kwargs.get('cloudsql_dao')
+#        ),
+#        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
+#            cycle_timestamp,
+#            configs,
+#            compute.ComputeClient(),
+#            kwargs.get('fwd_rules_dao')
+#        ),
+#        load_folders_pipeline.LoadFoldersPipeline(
+#            cycle_timestamp,
+#            configs,
+#            crm.CloudResourceManagerClient(version='v2beta1'),
+#            dao
+#        ),
+#        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
+#            cycle_timestamp,
+#            configs,
+#            bq.BigQueryClient(),
+#            dao
+#        ),
+#        load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
+#            cycle_timestamp,
+#            configs,
+#            compute.ComputeClient(version='beta'),
+#            kwargs.get(project_dao_name)
+#        ),
         load_backend_services_pipeline.LoadBackendServicesPipeline(
             cycle_timestamp,
             configs,
@@ -342,45 +343,6 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(cycle_time, cycle_timestamp, status, pipelines,
-                sendgrid_api_key, email_sender, email_recipient,
-                email_content=None):
-    """Send an email.
-
-    Args:
-        cycle_time: Datetime object of the cycle, in UTC.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        status: String of the overall status of current snapshot cycle.
-        pipelines: List of pipelines and their statuses.
-        sendgrid_api_key: String of the sendgrid api key to auth email service.
-        email_sender: String of the sender of the email.
-        email_recipient: String of the recipient of the email.
-        email_content: String of the email content (aka, body).
-
-    Returns:
-         None
-    """
-
-    email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
-        cycle_timestamp, status)
-
-    email_content = EmailUtil.render_from_template(
-        'inventory_snapshot_summary.jinja', {
-            'cycle_time': cycle_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
-            'cycle_timestamp': cycle_timestamp,
-            'status_summary': status,
-            'pipelines': pipelines,
-        })
-
-    try:
-        email_util = EmailUtil(sendgrid_api_key)
-        email_util.send(email_sender, email_recipient,
-                        email_subject, email_content,
-                        content_type='text/html')
-    except util_errors.EmailSendError:
-        LOGGER.error('Unable to send email that inventory snapshot completed.')
-
-
 def _configure_logging(configs):
     """Configures the loglevel for all loggers."""
     desc = configs.get('loglevel')
@@ -437,13 +399,16 @@ def main(_):
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
 
     if configs.get('email_recipient') is not None:
-        _send_email(cycle_time,
-                    cycle_timestamp,
-                    snapshot_cycle_status,
-                    pipelines,
-                    configs.get('sendgrid_api_key'),
-                    configs.get('email_sender'),
-                    configs.get('email_recipient'))
+        email_pipeline = (
+            email_inventory_completed_pipeline.EmailInventoryCompletedPipeline(
+                configs.get('sendgrid_api_key')))
+        email_pipeline.run(
+            cycle_time,
+            cycle_timestamp,
+            snapshot_cycle_status,
+            pipelines,
+            configs.get('email_sender'),
+            configs.get('email_recipient'))
 
 
 if __name__ == '__main__':
