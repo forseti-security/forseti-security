@@ -16,6 +16,7 @@
 
 import json
 from datetime import datetime
+import requests
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
@@ -87,6 +88,7 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
 
         return ownership
 
+
     def __init__(self, resource, cycle_timestamp,
                  violations, notifier_config, pipeline_config):
         super(SpotifyPipeline, self).__init__(resource,
@@ -109,26 +111,31 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
                                                      output_timestamp)
         return output_filename
 
-    def _write_temp_attachment(self):
+    def _write_temp_attachment(self, **kwargs):
         """Write the attachment to a temp file.
 
         Returns:
             The output filename for the violations json just written.
         """
+
+        violations_to_send = kwargs.get('violations')
+        if violations_to_send is None:
+            violations_to_send = self.clean_violations
+
         # Make attachment
         output_file_name = self._get_output_filename()
         output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
         with open(output_file_path, 'w+') as f:
-            f.write(parser.json_stringify(self.clean_violations))
+            f.write(parser.json_stringify(violations_to_send))
         return output_file_name
 
-    def _make_attachment(self):
+    def _make_attachment(self, **kwargs):
         """Create the attachment object.
 
         Returns:
             The attachment object.
         """
-        output_file_name = self._write_temp_attachment()
+        output_file_name = self._write_temp_attachment(**kwargs)
         attachment = self.mail_util.create_attachment(
             file_location='{}/{}'.format(TEMP_DIR, output_file_name),
             content_type='text/json',
@@ -139,12 +146,17 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
 
         return attachment
 
-    def _make_content(self):
+    def _make_content(self, **kwargs):
         """Create the email content.
 
         Returns:
             A tuple containing the email subject and the content
         """
+
+        violations_to_send = kwargs.get('violations')
+        if violations_to_send is None:
+            violations_to_send = self.clean_violations
+
         timestamp = datetime.strptime(
             self.cycle_timestamp, '%Y%m%dT%H%M%SZ')
         pretty_timestamp = timestamp.strftime("%d %B %Y - %H:%M:%S")
@@ -152,7 +164,7 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
             'notification_summary.jinja', {
                 'scan_date':  pretty_timestamp,
                 'resource': self.resource,
-                'violation_errors': self.clean_violations,
+                'violation_errors': violations_to_send,
             })
 
         email_subject = 'Forseti Violations {} - {}'.format(
@@ -167,11 +179,16 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
         """
         email_map = {}
 
-        attachment = self._make_attachment()
-        subject, content = self._make_content()
+        attachment = self._make_attachment(**kwargs)
+        subject, content = self._make_content(**kwargs)
+        to_address = kwargs.get('to')
+        if to_address is None:
+            to_address = self.pipeline_config['recipient']
+
         email_map['subject'] = subject
         email_map['content'] = content
         email_map['attachment'] = attachment
+        email_map['recipient'] = to_address
         return email_map
 
     def _send(self, **kwargs):
@@ -188,12 +205,27 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
         attachment = notification_map['attachment']
 
         self.mail_util.send(email_sender=self.pipeline_config['sender'],
-                            email_recipient=self.pipeline_config['recipient'],
+                            email_recipient=notification_map['recipient'],
                             email_subject=subject,
                             email_content=content,
                             content_type='text/html',
                             attachment=attachment)
 
+
+    def group_violations_by_owner(self):
+        owners_map = {}
+        for violation in self.clean_violations:
+            violation_owner = violation['ownership']['owner']
+            project_id = violation['ownership']['project_id']
+            if owners_map.get(violation_owner) is None:
+                owners_map[violation_owner] = {}
+
+            if owners_map[violation_owner].get(project_id) is None:
+                owners_map[violation_owner][project_id] = []
+
+            owners_map[violation_owner][project_id].append(violation)
+
+        return owners_map
 
     def run(self):
         """Run the email pipeline"""
@@ -201,5 +233,10 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
 
         for v in self.violations:
             self.clean_violations.append(self._get_clean_violation(v))
-        email_notification = self._compose()
-        self._send(notification=email_notification)
+
+        mapped_violations = self.group_violations_by_owner()
+
+        for owner in mapped_violations:
+            owner_email = 'gianluca@spotify.com'
+            email_notification = self._compose(to=owner_email, violations=mapped_violations[owner])
+            self._send(notification=email_notification)
