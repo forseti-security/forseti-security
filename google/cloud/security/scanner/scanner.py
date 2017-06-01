@@ -108,9 +108,11 @@ def main(_):
     # Load scanner from map
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
 
+    # The Groups Scanner uses a different approach to apply and
+    # evaluate the rules.  Consolidate on next scanner design.
     if rules_engine_name == 'GroupsRulesEngine':
         all_violations = scanner.run(FLAGS.rules)
-        resource_counts = 0
+        resource_counts = None
     else:
         # Instantiate rules engine with supplied rules file
         rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
@@ -254,8 +256,6 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
     # TODO: figure out what to do with the errors. For now, just log it.
     LOGGER.debug('Inserted %s rows with %s errors',
                  inserted_row_count, len(violation_errors))
-
-    # It is intentional not to create CSV output or email for the Groups Scanner.
 
     # Write the CSV for all the violations.
     if FLAGS.output_path:
