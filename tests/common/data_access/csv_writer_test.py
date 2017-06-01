@@ -14,13 +14,13 @@
 
 """Tests the CSV Writer."""
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 from google.cloud.security.common.data_access import csv_writer
 
 
-class CsvWriterTest(basetest.TestCase):
+class CsvWriterTest(ForsetiTestCase):
     """Tests for the CSV Writer."""
 
     @mock.patch.object(csv_writer, 'os')
@@ -47,4 +47,4 @@ class CsvWriterTest(basetest.TestCase):
         
         
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

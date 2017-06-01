@@ -16,13 +16,13 @@
 
 import mock
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import storage
 from tests.common.gcp_type.test_data import fake_buckets
 
-class StorageTest(basetest.TestCase):
+class StorageTest(ForsetiTestCase):
     """Test the StorageClient."""
 
     @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
@@ -30,7 +30,8 @@ class StorageTest(basetest.TestCase):
         """Set up."""
         self.gcs_api_client = storage.StorageClient()
 
-    def test_get_bucket_and_path_from(self):
+    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
+    def test_get_bucket_and_path_from(self, mock_base):
         """Given a valid bucket object path, return the bucket and path."""
         expected_bucket = 'my-bucket'
         expected_obj_path = 'path/to/object'
@@ -82,4 +83,4 @@ class StorageTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

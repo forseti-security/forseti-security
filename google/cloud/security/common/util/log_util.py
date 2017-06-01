@@ -64,7 +64,7 @@ def set_logger_level(level):
         level: The log level to set the loggers to.
     """
 
-    # pylint: disable=W0603
+    # pylint: disable=global-statement
     global LOGLEVEL
     LOGLEVEL = level
     _map_logger(lambda logger: logger.setLevel(level))

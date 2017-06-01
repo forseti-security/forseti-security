@@ -17,7 +17,7 @@
 import json
 import math
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 # pylint: disable=line-too-long
@@ -34,7 +34,7 @@ from tests.inventory.pipelines.test_data import fake_group_members
 # pylint: enable=line-too-long
 
 
-class LoadGroupMembersPipelineTest(basetest.TestCase):
+class LoadGroupMembersPipelineTest(ForsetiTestCase):
     """Tests for the load_group_members pipeline."""
 
     def setUp(self):
