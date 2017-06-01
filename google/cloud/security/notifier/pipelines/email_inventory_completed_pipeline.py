@@ -53,7 +53,8 @@ class EmailInventoryCompletedPipeline(bnp.BaseNotificationPipeline):
     
         email_content = EmailUtil.render_from_template(
             'inventory_snapshot_summary.jinja',
-            {'snapshot_time': snapshot_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
+            {'snapshot_time':
+                 snapshot_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
              'snapshot_timestamp': snapshot_timestamp,
              'status_summary': status,
              'pipelines': inventory_pipelines})
@@ -71,12 +72,16 @@ class EmailInventoryCompletedPipeline(bnp.BaseNotificationPipeline):
             email_content: String of template content rendered with
                 the provided variables.
         """
-        self.email_util.send(email_sender=email_sender,
-                             email_recipient=email_recipient,
-                             email_subject=email_subject,
-                             email_content=email_content,
-                             content_type='text/html',
-                             attachment=attachment)
+        try:
+            self.email_util.send(email_sender=email_sender,
+                                 email_recipient=email_recipient,
+                                 email_subject=email_subject,
+                                 email_content=email_content,
+                                 content_type='text/html',
+                                 attachment=attachment)
+        except util_errors.EmailSendError:
+            LOGGER.error('Unable to send email that inventory snapshot '
+                         'completed.')
 
     def run(self, snapshot_time, snapshot_timestamp, status, inventory_pipelines,
             email_sender, email_recipient):
@@ -98,9 +103,4 @@ class EmailInventoryCompletedPipeline(bnp.BaseNotificationPipeline):
         email_subject, email_content = self._compose(
             snapshot_time, snapshot_timestamp, status, inventory_pipelines)
 
-        try:
-            self._send(email_sender, email_recipient,
-                       email_subject, email_content)
-        except util_errors.EmailSendError:
-            LOGGER.error('Unable to send email that inventory snapshot '
-                         'completed.')
+        self._send(email_sender, email_recipient, email_subject, email_content)
