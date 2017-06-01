@@ -1,4 +1,4 @@
-"""Tests the Email Inventory Completed Pipeline"""
+"""Tests the email inventory snapshot pipeline."""
 
 from datetime import datetime
 
