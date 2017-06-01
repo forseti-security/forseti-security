@@ -40,3 +40,9 @@ INSERT_CLOUDSQL_ACL_VIOLATION = """
      violation_type, instance_name, authorized_networks, ssl_enabled)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
 """
+
+INSERT_GROUPS_VIOLATION = """
+    INSERT INTO {0}
+    (member_email, group_email, rule_name)
+    VALUES (%s, %s, %s)
+"""

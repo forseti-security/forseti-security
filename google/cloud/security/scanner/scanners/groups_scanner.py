@@ -208,7 +208,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             if node.member_email == '':
                 continue
 
-            node.violations = []
+            node.violated_rule_names = []
             whitelist_rule_statuses = []
             for rule in node.rules:
                 condition_statuses = []
@@ -226,6 +226,7 @@ class GroupsScanner(base_scanner.BaseScanner):
                         whitelist_rule_statuses.append(True)
                     else:
                         whitelist_rule_statuses.append(False)
+                        node.violated_rule_names.append(rule.get('name'))
 
                 elif rule.get('mode') == 'blacklist':
                     pass  # TODO
