@@ -28,11 +28,13 @@ LOGGER = log_util.get_logger(__name__)
 class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
     """Email pipeline for inventory snapshot summary."""
 
-    def __init__(self, sendgrid_key):
+    # TODO: See if the base pipline init() can be reused.
+    def __init__(self, sendgrid_key):  # pylint: disable=super-init-not-called
         self.email_util = EmailUtil(sendgrid_key)
 
-    def _compose(self, snapshot_time, snapshot_timestamp, status,
-                 inventory_pipelines):
+    def _compose(  # pylint: disable=arguments-differ
+            self, snapshot_time, snapshot_timestamp, status,
+            inventory_pipelines):
         """Compose the email content.
 
         Args:
@@ -41,7 +43,7 @@ class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
                 formatted as YYYYMMDDTHHMMSSZ.
             status: String of the overall status of current snapshot cycle.
             inventory_pipelines: List of inventory pipelines.
-    
+
         Returns:
             email_subject: String of the email subject.
             email_content: String of template content rendered with
@@ -49,7 +51,7 @@ class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
         """
         email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
             snapshot_timestamp, status)
-    
+
         email_content = EmailUtil.render_from_template(
             'inventory_snapshot_summary.jinja',
             {'snapshot_time':
@@ -60,8 +62,9 @@ class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
 
         return email_subject, email_content
 
-    def _send(self, email_sender, email_recipient,
-              email_subject, email_content, attachment=None):
+    def _send(  # pylint: disable=arguments-differ
+            self, email_sender, email_recipient,
+            email_subject, email_content, attachment=None):
         """Send a summary email of the scan.
 
         Args:
@@ -82,10 +85,11 @@ class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
             LOGGER.error('Unable to send email that inventory snapshot '
                          'completed.')
 
-    def run(self, snapshot_time, snapshot_timestamp, status,
+    def run(  # pylint: disable=arguments-differ
+            self, snapshot_time, snapshot_timestamp, status,
             inventory_pipelines, email_sender, email_recipient):
         """Run the email pipeline
-    
+
         Args:
             snapshot_time: Datetime object of the cycle, in UTC.
             snapshot_timestamp: String of timestamp, formatted
@@ -94,11 +98,10 @@ class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
             inventory_pipelines: List of inventory pipelines.
             email_sender: String of the sender of the email.
             email_recipient: String of the recipient of the email.
-    
+
         Returns:
              None
         """
-        
         email_subject, email_content = self._compose(
             snapshot_time, snapshot_timestamp, status, inventory_pipelines)
 
