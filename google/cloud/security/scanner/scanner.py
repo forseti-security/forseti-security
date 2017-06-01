@@ -118,9 +118,9 @@ def main(_):
         rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
             rules_file_path=FLAGS.rules, snapshot_timestamp=snapshot_timestamp)
         rules_engine.build_rule_book()
-    
+
         iter_objects, resource_counts = scanner.run()
-    
+
         # Load violations processing function
         all_violations = scanner.find_violations(
             itertools.chain(
@@ -267,7 +267,7 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
             write_header=True) as csv_file:
             output_csv_name = csv_file.name
             LOGGER.info('CSV filename: %s', output_csv_name)
-    
+
             # Scanner timestamp for output file and email.
             now_utc = datetime.utcnow()
 

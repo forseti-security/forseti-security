@@ -182,11 +182,11 @@ def format_groups_violation(violation):
     member_email = violation.member_email
     if member_email:
         member_email = member_email[:255]
-    
+
     group_email = violation.parent.member_email
     if group_email:
         group_email = group_email[:255]
-        
+
     violated_rule_names = json.dumps(violation.violated_rule_names)
 
     yield (member_email,
