@@ -66,8 +66,6 @@ from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
-from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_backend_services_pipeline
 from google.cloud.security.inventory.pipelines import load_firewall_rules_pipeline
