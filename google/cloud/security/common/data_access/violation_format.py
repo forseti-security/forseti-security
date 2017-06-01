@@ -14,6 +14,8 @@
 
 """Provides formatting functions for violations"""
 
+import json
+
 def format_policy_violation(violation):
     """Format the policy violation data into a tuple.
 
@@ -166,3 +168,27 @@ def format_cloudsql_acl_violation(violation):
            instance_name,
            authorized_networks,
            ssl_enabled)
+
+def format_groups_violation(violation):
+    """Format the groups violation data into a tuple.
+
+    Args:
+        violation: The groups violation.
+
+    Yields:
+        A tuple of the violation properties.
+    """
+
+    member_email = violation.member_email
+    if member_email:
+        member_email = member_email[:255]
+
+    group_email = violation.parent.member_email
+    if group_email:
+        group_email = group_email[:255]
+
+    violated_rule_names = json.dumps(violation.violated_rule_names)
+
+    yield (member_email,
+           group_email,
+           violated_rule_names)
