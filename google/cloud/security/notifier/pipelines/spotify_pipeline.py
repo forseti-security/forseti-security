@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# -*- coding: utf-8 -*-
+
 """Internal pipeline to perform notifications"""
 
+import jinja2
 import json
 from datetime import datetime
 import requests
@@ -32,6 +35,93 @@ TEMP_DIR = '/tmp'
 VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
+TEMPLATE = """
+<!doctype html>
+<html>
+<head>
+<style>
+* {
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 16px;
+}
+
+a, a:visited {
+  color: #1082d9;
+}
+
+.resource-violations tr > td {
+  border: 1px solid #ddd;
+  border: 1px solid #ddd;
+  border-top: 0;
+  border-bottom: 0;
+  font-size: 14px;
+  padding: 4px;
+}
+
+th {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 4px;
+  text-align: left;
+}
+
+td {
+  padding: 4px;
+}
+
+</style>
+</head>
+<body style="background-color: #eee;">
+<div style="background-color: #fff; margin-top: 40px; padding: 20px; margin-left: 20%; margin-right: 20%;">
+  <div style="margin: 10px 10px 15px 10px; font-size: 14px;">
+    <p>
+    Hello!<br />This is the Security team.<br />
+    </p>
+
+    <p>
+    We are continously auditing GCP to detect security misconfigurations and you are receiving this email because
+    we found one or more violations on a resource inside a GCP project you own.<br />
+    </p>
+
+    <p>
+    Please take the time to review and resolve our findings and don't hesitate to get in touch if you need support.<br />
+    You can reach us on the <strong>#security</strong> channel, or by email to security@spotify.com<br />
+    </p>
+    </hr>
+    <p>
+    The violations are categorized as "<em><strong>{{ resource }}</strong></em>" and were found during the scan on {{ scan_date }}.
+    </p>
+  </div>
+  <div style="margin: 10px 10px;">
+    <div style="font-style: italic; font-size: 14px; margin-bottom: 5px;">
+      Owner:
+      <ul>
+       <li>{{ owner }}
+      </ul>
+
+      Affected projects:
+      <ul>
+        {% for v in violation_errors %}
+        <li>{{ v }}</li>
+        {% endfor %}
+      </ul>
+      <br />
+      <p>See attached JSON for details.</p>
+    </div>
+    <div style="margin: 10px 10px 15px 10px; font-size: 14px;">
+
+      <p>NOTE: we are experimenting on how to deliver notifications like this one, if you have some feedback please share!</p>
+
+    </div>
+  </div>
+
+  <br/>
+
+</div>
+
+</body>
+</html>
+"""
 
 class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
     """Spotify pipeline to perform notifications"""
@@ -88,7 +178,6 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
 
         return ownership
 
-
     def __init__(self, resource, cycle_timestamp,
                  violations, notifier_config, pipeline_config):
         super(SpotifyPipeline, self).__init__(resource,
@@ -126,7 +215,7 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
         output_file_name = self._get_output_filename()
         output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
         with open(output_file_path, 'w+') as f:
-            f.write(parser.json_stringify(violations_to_send))
+            f.write(json.dumps(violations_to_send, indent=4, sort_keys=True))
         return output_file_name
 
     def _make_attachment(self, **kwargs):
@@ -146,6 +235,11 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
 
         return attachment
 
+    def _make_body(self, template_vars):
+        template_env = jinja2.Environment()
+        template = template_env.from_string(TEMPLATE)
+        return template.render(template_vars)
+
     def _make_content(self, **kwargs):
         """Create the email content.
 
@@ -160,15 +254,15 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
         timestamp = datetime.strptime(
             self.cycle_timestamp, '%Y%m%dT%H%M%SZ')
         pretty_timestamp = timestamp.strftime("%d %B %Y - %H:%M:%S")
-        email_content = self.mail_util.render_from_template(
-            'notification_summary.jinja', {
+        email_content = self._make_body({
                 'scan_date':  pretty_timestamp,
                 'resource': self.resource,
                 'violation_errors': violations_to_send,
+                'owner': kwargs.get('owner')
             })
 
-        email_subject = 'Forseti Violations {} - {}'.format(
-            pretty_timestamp, self.resource)
+        email_subject = '[ALERT] GCP Violations on projects you ({}) own - {}'.format(
+            kwargs.get('owner'), pretty_timestamp)
         return email_subject, email_content
 
     def _compose(self, **kwargs):
@@ -237,6 +331,10 @@ class SpotifyPipeline(base_notification_pipeline.BaseNotificationPipeline):
         mapped_violations = self.group_violations_by_owner()
 
         for owner in mapped_violations:
-            owner_email = 'gianluca@spotify.com'
-            email_notification = self._compose(to=owner_email, violations=mapped_violations[owner])
+            print '%s@spotify.com' % owner
+            if owner is None:
+                owner_email = self.pipeline_config['recipient']
+            else:
+                owner_email = 'gianluca@spotify.com'
+            email_notification = self._compose(owner=owner, to=owner_email, violations=mapped_violations[owner])
             self._send(notification=email_notification)
