@@ -34,4 +34,5 @@ VIOLATION_INSERT_MAP = {
 VIOLATION_SELECT_MAP = {
     'violations': select_data.SELECT_VIOLATIONS.format,
     'buckets_acl_violations': select_data.SELECT_BUCKETS_ACL_VIOLATIONS.format,
+    'cloudsql_acl_violations': select_data.SELECT_CLOUDSQL_ACL_VIOLATIONS.format
 }

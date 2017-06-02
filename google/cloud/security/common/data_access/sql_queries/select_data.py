@@ -158,6 +158,10 @@ SELECT_BUCKETS_ACL_VIOLATIONS = """
     SELECT * FROM buckets_acl_violations_{0};
 """
 
+SELECT_CLOUDSQL_ACL_VIOLATIONS = """
+    SELECT * FROM cloudsql_acl_violations_{0};
+"""
+
 BACKEND_SERVICES = """
     SELECT id, project_id, creation_timestamp, name, description,
     affinity_cookie_ttl_sec, backends, cdn_policy, connection_draining,
@@ -188,7 +192,7 @@ BUCKET_ACLS = """
 """
 
 CLOUDSQL_INSTANCES = """
-    SELECT project_number, 
+    SELECT project_number,
            name,
            settings_ip_configuration_require_ssl
     FROM cloudsql_instances_{0}
