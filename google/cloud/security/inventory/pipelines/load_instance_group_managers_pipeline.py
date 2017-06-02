@@ -78,8 +78,8 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
         igms = {}
         for project in projects:
             try:
-                project_igms = list(
-                    self.api_client.get_instance_group_managers(project.id))
+                project_igms = self.api_client.get_instance_group_managers(
+                    project.id)
                 if project_igms:
                     igms[project.id] = project_igms
             except api_errors.ApiExecutionError as e:

@@ -73,8 +73,7 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
         igs = {}
         for project in projects:
             try:
-                project_igs = list(
-                    self.api_client.get_instance_groups(project.id))
+                project_igs = self.api_client.get_instance_groups(project.id)
                 if project_igs:
                     igs[project.id] = project_igs
             except api_errors.ApiExecutionError as e:

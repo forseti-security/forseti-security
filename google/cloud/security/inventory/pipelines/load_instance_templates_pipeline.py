@@ -67,15 +67,13 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
         instance_templates = {}
         for project in projects:
-            project_instance_templates = []
             try:
-                response = self.api_client.get_instance_templates(project.id)
-                for page in response:
-                    project_instance_templates.extend(page.get('items', []))
+                project_instance_templates = (
+                    self.api_client.get_instance_templates(project.id))
+                if project_instance_templates:
+                    instance_templates[project.id] = project_instance_templates
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            if project_instance_templates:
-                instance_templates[project.id] = project_instance_templates
         return instance_templates
 
     def run(self):

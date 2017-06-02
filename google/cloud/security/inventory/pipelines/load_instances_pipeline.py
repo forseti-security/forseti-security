@@ -84,8 +84,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         instances = {}
         for project in projects:
             try:
-                project_instances = list(
-                    self.api_client.get_instances(project.id))
+                project_instances = self.api_client.get_instances(project.id)
                 if project_instances:
                     instances[project.id] = project_instances
             except api_errors.ApiExecutionError as e:

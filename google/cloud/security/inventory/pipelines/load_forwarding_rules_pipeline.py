@@ -79,8 +79,8 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
         for project in projects:
             project_fwd_rules = []
             try:
-                project_fwd_rules = list(
-                    self.api_client.get_forwarding_rules(project.id))
+                project_fwd_rules = self.api_client.get_forwarding_rules(
+                    project.id)
                 if project_fwd_rules:
                     forwarding_rules[project.id] = project_fwd_rules
             except api_errors.ApiExecutionError as e:
