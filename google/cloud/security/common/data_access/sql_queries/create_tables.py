@@ -316,6 +316,7 @@ CREATE_GROUPS_VIOLATIONS_TABLE = """
         `rule_name` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
 
 CREATE_INSTANCES_TABLE = """
     CREATE TABLE `{0}` (
