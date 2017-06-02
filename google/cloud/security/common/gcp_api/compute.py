@@ -180,6 +180,7 @@ class ComputeClient(_base_client.BaseClient):
             api_errors.ApiExecutionError if API raises an error.
         """
         forwarding_rules_api = self.service.forwardingRules()
+        # pylint: disable=no-else-return
         if region:
             return self._flatten_list(
                 self._get_paged_list(

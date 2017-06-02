@@ -68,6 +68,28 @@ class BasePipeline(object):
         """Transform api resource data into loadable format."""
         pass
 
+    @classmethod
+    def _to_bool(cls, value):
+        """Transforms a value into a database boolean (or None)."""
+        # pylint: disable=no-else-return
+        if value is None:
+            return None
+        elif value:
+            return 1
+        else:
+            return 0
+
+    @classmethod
+    def _to_int(cls, value):
+        """Transforms a value into a database integer (or None)."""
+        # pylint: disable=no-else-return
+        if value is None:
+            return None
+        elif value == '':
+            return 0
+        else:
+            return int(value)
+
     def _load(self, resource_name, data):
         """ Loads data into Forseti storage.
 

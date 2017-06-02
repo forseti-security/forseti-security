@@ -55,7 +55,7 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
                            instance_group.get('namedPorts', [])),
                        'network': instance_group.get('network'),
                        'region': instance_group.get('region'),
-                       'size': instance_group.get('size'),
+                       'size': self._to_int(instance_group.get('size')),
                        'subnetwork': instance_group.get('subnetwork'),
                        'zone': instance_group.get('zone')}
 

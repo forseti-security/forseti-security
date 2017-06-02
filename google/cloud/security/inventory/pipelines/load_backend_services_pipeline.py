@@ -51,23 +51,23 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
                            self.MYSQL_DATETIME_FORMAT),
                        'name': backend_service.get('name'),
                        'description': backend_service.get('description'),
-                       'affinity_cookie_ttl_sec': backend_service.get(
-                           'affinityCookieTtlSec'),
+                       'affinity_cookie_ttl_sec': self._to_int(
+                           backend_service.get('affinityCookieTtlSec')),
                        'backends': parser.json_stringify(
                            backend_service.get('backends', [])),
                        'cdn_policy': parser.json_stringify(
                            backend_service.get('cdnPolicy', {})),
                        'connection_draining': parser.json_stringify(
                            backend_service.get('connectionDraining', {})),
-                       'enable_cdn': (
-                           1 if backend_service.get('enableCDN') else 0),
+                       'enable_cdn': self._to_bool(
+                           backend_service.get('enableCDN')),
                        'health_checks': parser.json_stringify(
                            backend_service.get('healthChecks', [])),
                        'iap': parser.json_stringify(
                            backend_service.get('iap', {})),
                        'load_balancing_scheme': backend_service.get(
                            'loadBalancingScheme'),
-                       'port': backend_service.get('port'),
+                       'port': self._to_int(backend_service.get('port')),
                        'port_name': backend_service.get('portName'),
                        'protocol': backend_service.get('protocol'),
                        'region': backend_service.get('region'),
