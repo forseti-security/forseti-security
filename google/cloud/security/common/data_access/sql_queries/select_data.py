@@ -158,6 +158,10 @@ SELECT_BUCKETS_ACL_VIOLATIONS = """
     SELECT * FROM buckets_acl_violations_{0};
 """
 
+SELECT_GROUPS_VIOLATIONS = """
+    SELECT * FROM groups_violations_{0};
+"""
+
 BACKEND_SERVICES = """
     SELECT id, project_id, creation_timestamp, name, description,
     affinity_cookie_ttl_sec, backends, cdn_policy, connection_draining,

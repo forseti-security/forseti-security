@@ -14,9 +14,8 @@
 
 """Tests the load_bigquery_datasets_pipeline."""
 
-from MySQLdb import MySQLError
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 # pylint: disable=line-too-long
@@ -30,7 +29,7 @@ from tests.inventory.pipelines.test_data import fake_configs
 # pylint: enable=line-too-long
 
 
-class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
+class LoadBigQueryDatasetsPipelineTest(ForsetiTestCase):
     """Tests for the load_bigquery_datasets_pipeline."""
 
     def setUp(self):
@@ -71,7 +70,7 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
             api_errors.ApiExecutionError('', mock.MagicMock()))
 
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve_dataset_project_map(['1','2'])
+            self.pipeline._retrieve_dataset_project_map(['1', '2'])
 
     def test_retrieve_dataset_project_map(self):
         self.pipeline.api_client.get_datasets_for_projectid.side_effect = [
@@ -124,7 +123,7 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
 
     @mock.patch.object(
         load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
-        '_retrieve_dataset_access' )
+        '_retrieve_dataset_access')
     def test_get_dataset_access_map(self, mock_dataset_access):
         mock_dataset_access.return_value = (
             fbq.RETRIEVE_DATASET_ACCESS_RETURN)
@@ -142,6 +141,21 @@ class LoadBigQueryDatasetsPipelineTest(basetest.TestCase):
             return_values.append(v)
 
         self.assertListEqual(fbq.EXPECTED_TRANSFORM, return_values)
+
+    def test_retrieve_with_no_bigquery_project_ids(self):
+        self.pipeline.api_client = mock.MagicMock()
+        self.pipeline.api_client.get_dataset_access = mock.MagicMock()
+        self.pipeline.api_client.get_datasets_for_projectid = mock.MagicMock()
+        self.pipeline._retrieve_dataset_project_map = mock.MagicMock()
+
+        self.pipeline.api_client.get_bigquery_projectids.return_value = []
+
+        return_value = self.pipeline._retrieve()
+
+        self.assertEqual(None, return_value)
+        self.pipeline.api_client.get_dataset_access.assert_not_called()
+        self.pipeline.api_client.get_datasets_for_projectid.assert_not_called()
+        self.pipeline._retrieve_dataset_project_map.assert_not_called()
 
     def test_retrieve(self):
         self.pipeline.api_client.get_bigquery_projectids.return_value = (
