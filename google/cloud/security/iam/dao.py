@@ -156,7 +156,8 @@ def define_model(model_name, dbengine, model_seed):
         policy_update_counter = Column(Integer, default=0)
 
         parent_name = Column(
-            String, ForeignKey('{}.full_name'.format(resources_tablename)))
+            String(1024),
+            ForeignKey('{}.full_name'.format(resources_tablename)))
         parent = relationship("Resource", remote_side=[full_name])
         bindings = relationship('Binding', back_populates="resource")
 
@@ -268,6 +269,7 @@ def define_model(model_name, dbengine, model_seed):
         TBL_PERMISSION = Permission
         TBL_ROLE = Role
         TBL_RESOURCE = Resource
+        TBL_MEMBERSHIP = group_members
 
         @classmethod
         def delete_all(cls, engine):

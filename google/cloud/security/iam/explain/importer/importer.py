@@ -204,6 +204,31 @@ class ForsetiImporter(object):
                         name=member.get_name(),
                         type=member.get_type()))
 
+    def _convert_membership(self, forseti_membership):
+        """Creates a db membership from a Forseti membership."""
+        member, groups = forseti_membership
+
+        groups = [self.session.merge(
+            self.dao.TBL_MEMBER(name='group/{}'.format(group.group_email),
+                                type='group',
+                                member_name=group.group_email))
+                  for group in groups]
+
+        member_type = member.member_type.lower()
+        member_name = member.member_email
+        return self.session.merge(self.dao.TBL_MEMBER(
+            name='{}/{}'.format(member_type, member_name),
+            type=member_type,
+            member_name=member_name,
+            parents=groups))
+
+    def _convert_group(self, forseti_group):
+        """Creates a db group from a Forseti group."""
+        return self.session.merge(
+            self.dao.TBL_MEMBER(name='group/{}'.format(forseti_group),
+                                type='group',
+                                member_name=forseti_group))
+
     def run(self):
         """Runs the import.
 
@@ -215,6 +240,7 @@ class ForsetiImporter(object):
         self.model.kick_watchdog(self.session)
 
         for res_type, obj in self.forseti_importer:
+            print 'type: {}, obj: {}'.format(res_type, obj)
             if res_type == "organizations":
                 self.session.add(self._convert_organization(obj))
             elif res_type == "projects":
@@ -223,6 +249,12 @@ class ForsetiImporter(object):
                 self.session.add(self._convert_bucket(obj))
             elif res_type == 'policy':
                 self._convert_policy(obj)
+            elif res_type == 'group':
+                self.session.add(self._convert_group(obj))
+            elif res_type == 'membership':
+                self.session.add(self._convert_membership(obj))
+            elif res_type == 'customer':
+                pass
             else:
                 raise NotImplementedError(res_type)
             self.model.kick_watchdog(self.session)
@@ -235,7 +267,58 @@ def by_source(source):
     """Helper to resolve client provided import sources."""
 
     return {
-        "TEST": TestImporter,
-        "FORSETI": ForsetiImporter,
-        "EMPTY": EmptyImporter,
+        'TEST': TestImporter,
+        'FORSETI': ForsetiImporter,
+        'EMPTY': EmptyImporter,
     }[source]
+
+
+from google.cloud.security.iam.dao import create_engine, ModelManager
+
+class ServiceConfig(object):
+    """
+    ServiceConfig is a helper class to implement dependency injection
+    to IAM Explain services.
+    """
+
+    def __init__(self, explain_connect_string, forseti_connect_string):
+        engine = create_engine(explain_connect_string)
+        self.model_manager = ModelManager(engine)
+        self.forseti_connect_string = forseti_connect_string
+
+    def run_in_background(self, function):
+        """Runs a function in a thread pool in the background."""
+        return function()
+
+def test_run():
+    """Test run."""
+
+    explain_conn_s = 'sqlite:///:memory:'
+    #explain_conn_s = 'mysql://felix@127.0.0.1:3306/explain_forseti'
+    forseti_conn_s = 'mysql://felix@127.0.0.1:3306/forseti_security'
+
+    svc_config = ServiceConfig(explain_conn_s, forseti_conn_s)
+    source = 'FORSETI'
+    model_manager = svc_config.model_manager
+    model_name = model_manager.create()
+    print 'model name: {}'.format(model_name)
+
+    scoped_session, data_access = model_manager.get(model_name)
+    with scoped_session as session:
+
+        def doImport():
+            """Import runnable."""
+            importer_cls = by_source(source)
+            import_runner = importer_cls(
+                session,
+                model_manager.model(model_name),
+                data_access,
+                svc_config)
+            import_runner.run()
+
+        svc_config.run_in_background(doImport)
+        return model_name
+
+
+if __name__ == "__main__":
+    test_run()

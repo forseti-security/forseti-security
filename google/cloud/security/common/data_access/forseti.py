@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from sqlalchemy.sql.elements import literal_column
 
 """ Forseti Database Objects. """
 
@@ -20,7 +21,9 @@ from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import BigInteger
 from sqlalchemy import Date
+from sqlalchemy import desc
 
+from sqlalchemy.orm import load_only
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -184,9 +187,56 @@ def create_table_names(timestamp):
                 self.name,
                 self.display_name)
 
+    class GroupMembers(BASE):
+        """Represents dasher group membership."""
+
+        __tablename__ = 'group_members_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        group_id = Column(String(32))
+        member_role = Column(String(128))
+        member_type = Column(String(128))
+        member_status = Column(String(128))
+        member_id = Column(String(128))
+        member_email = Column(String(128))
+        raw_member = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<GroupMember(gid='{}', role='{}', email='{}')>"
+            return fmt_s.format(
+                self.group_id,
+                self.member_role,
+                self.member_email,
+                self.member_status)
+
+    class Groups(BASE):
+        """Represents a dasher group."""
+
+        __tablename__ = 'groups_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        group_id = Column(String(128))
+        group_email = Column(String(128))
+        group_kind = Column(String(128))
+        direct_member_count = Column(BigInteger())
+        raw_group = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Group(gid='{}', email='{}', kind='{}', members='{}')>"
+            return fmt_s.format(
+                self.group_id,
+                self.group_email,
+                self.group_kind,
+                self.direct_member_count)
+
     result = (Organization,
               [('projects', Project), ('buckets', Bucket)],
-              [OrganizationPolicy, ProjectPolicy])
+              [OrganizationPolicy, ProjectPolicy],
+              [GroupMembers, Groups])
     TABLE_CACHE[timestamp] = result
     return result
 
@@ -194,7 +244,7 @@ def create_table_names(timestamp):
 class Importer(object):
     """Forseti data importer to iterate the inventory and policies."""
 
-    DEFAULT_CONNECT_STRING = 'mysql://root@127.0.0.1:3306/forseti_security'
+    DEFAULT_CONNECT_STRING = 'mysql://felix@127.0.0.1:3306/forseti_security'
 
     def __init__(self, db_connect_string=DEFAULT_CONNECT_STRING):
         engine = create_engine(db_connect_string, pool_recycle=3600)
@@ -213,13 +263,52 @@ class Importer(object):
     def __iter__(self):
         """Main interface to get the data, returns assets and then policies."""
 
-        organization, tables, policies = \
+        organization, tables, policies, group_membership = \
             create_table_names(self.snapshot.cycle_timestamp)
         yield "organizations", self.session.query(organization).one()
+
+        membership, groups = group_membership
+
+        query_groups = (
+            self.session.query(groups)
+            .with_entities(literal_column("'GROUP'"), groups.group_email))
+        principals = query_groups.distinct()
+        for kind, email in principals.yield_per(1024):
+            yield kind.lower(), email
+
+        query = (
+            self.session.query(membership, groups)
+            .filter(membership.group_id == groups.group_id)
+            .order_by(desc(membership.member_email))
+            .distinct())
+
+        cur_member = None
+        member_groups = []
+        for member, group in query.yield_per(1024):
+            if cur_member and cur_member.member_email != member.member_email:
+                if cur_member:
+                    yield 'membership', (cur_member, member_groups)
+                    cur_member = None
+                    member_groups = []
+
+            cur_member = member
+            member_groups.append(group)
+
         for res_type, table in tables:
             for item in self.session.query(table).all():
                 yield res_type, item
 
-        for policy_table in policies:
-            for policy in self.session.query(policy_table).all():
-                yield 'policy', policy
+        #for policy_table in policies:
+        #    for policy in self.session.query(policy_table).all():
+        #        yield 'policy', policy
+
+
+def test_run():
+    """Test run."""
+    importer = Importer()
+    for res in importer:
+        print 'Item: {}'.format(res)
+
+
+if __name__ == "__main__":
+    test_run()
