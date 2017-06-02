@@ -88,19 +88,13 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
         backend_services = {}
         for project in projects:
-            project_backend_services = []
             try:
-                response = self.api_client.get_backend_services(project.id)
-                for page in response:
-                    items = page.get('items', {})
-                    for region_backend_services in items.values():
-                        rbs = region_backend_services.get(
-                            'backendServices', [])
-                        project_backend_services.extend(rbs)
+                project_backend_services = list(
+                    self.api_client.get_backend_services(project.id))
+                if project_backend_services:
+                    backend_services[project.id] = project_backend_services
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            if project_backend_services:
-                backend_services[project.id] = project_backend_services
         return backend_services
 
     def run(self):

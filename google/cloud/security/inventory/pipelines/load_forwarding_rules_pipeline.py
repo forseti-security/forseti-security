@@ -79,16 +79,12 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
         for project in projects:
             project_fwd_rules = []
             try:
-                response = self.api_client.get_forwarding_rules(project.id)
-                for page in response:
-                    items = page.get('items', {})
-                    for region_fwd_rules in items.values():
-                        fwd_rules = region_fwd_rules.get('forwardingRules', [])
-                        project_fwd_rules.extend(fwd_rules)
+                project_fwd_rules = list(
+                    self.api_client.get_forwarding_rules(project.id))
+                if project_fwd_rules:
+                    forwarding_rules[project.id] = project_fwd_rules
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            if project_fwd_rules:
-                forwarding_rules[project.id] = project_fwd_rules
         return forwarding_rules
 
     def run(self):

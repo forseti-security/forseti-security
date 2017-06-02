@@ -72,19 +72,13 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
         igs = {}
         for project in projects:
-            project_igs = []
             try:
-                response = self.api_client.get_instance_groups(project.id)
-                for page in response:
-                    items = page.get('items', {})
-                    for zone_igs in items.values():
-                        zig_items = zone_igs.get(
-                            'instanceGroups', [])
-                        project_igs.extend(zig_items)
+                project_igs = list(
+                    self.api_client.get_instance_groups(project.id))
+                if project_igs:
+                    igs[project.id] = project_igs
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            if project_igs:
-                igs[project.id] = project_igs
         return igs
 
     def run(self):

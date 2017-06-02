@@ -83,19 +83,13 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
         instances = {}
         for project in projects:
-            project_instances = []
             try:
-                response = self.api_client.get_instances(project.id)
-                for page in response:
-                    items = page.get('items', {})
-                    for zone_instances in items.values():
-                        zi_items = zone_instances.get(
-                            'instances', [])
-                        project_instances.extend(zi_items)
+                project_instances = list(
+                    self.api_client.get_instances(project.id))
+                if project_instances:
+                    instances[project.id] = project_instances
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            if project_instances:
-                instances[project.id] = project_instances
         return instances
 
     def run(self):

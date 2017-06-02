@@ -77,20 +77,13 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
         igms = {}
         for project in projects:
-            project_igms = []
             try:
-                response = self.api_client.get_instance_group_managers(
-                    project.id)
-                for page in response:
-                    items = page.get('items', {})
-                    for group_igms in items.values():
-                        igm_instances = group_igms.get(
-                            'instanceGroupManagers', [])
-                        project_igms.extend(igm_instances)
+                project_igms = list(
+                    self.api_client.get_instance_group_managers(project.id))
+                if project_igms:
+                    igms[project.id] = project_igms
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            if project_igms:
-                igms[project.id] = project_igms
         return igms
 
     def run(self):
