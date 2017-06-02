@@ -113,7 +113,6 @@ def main(_):
             # is not present and an error is thrown
             LOGGER.error('get_all_violations error: %s' % e.message)
 
-
     for retrieved_v in violations:
         LOGGER.info('retrieved %d violations for resource \'%s\'',
                     len(violations[retrieved_v]), retrieved_v)
