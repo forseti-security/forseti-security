@@ -31,6 +31,7 @@ Usage:
       --email_recipient <email address of the email recipient>
 """
 
+
 import collections
 import itertools
 import os
@@ -108,28 +109,27 @@ def main(_):
     # Load scanner from map
     scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
 
-    # TODO: Make the groups scanner run consistently with other scanners
-    # instead of its own execution path.
-    if rules_engine_name == 'GroupsEngine':
+    # The Groups Scanner uses a different approach to apply and
+    # evaluate the rules.  Consolidate on next scanner design.
+    if rules_engine_name == 'GroupsRulesEngine':
         all_violations = scanner.run(FLAGS.rules)
-        LOGGER.info('Found %s violation(s) in Groups.', len(all_violations))
-        sys.exit(0)
+        resource_counts = None
+    else:
+        # Instantiate rules engine with supplied rules file
+        rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
+            rules_file_path=FLAGS.rules, snapshot_timestamp=snapshot_timestamp)
+        rules_engine.build_rule_book()
 
-    # Instantiate rules engine with supplied rules file
-    rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
-        rules_file_path=FLAGS.rules, snapshot_timestamp=snapshot_timestamp)
-    rules_engine.build_rule_book()
+        iter_objects, resource_counts = scanner.run()
 
-    iter_objects, resource_counts = scanner.run()
-
-    flattening_scheme = sm.FLATTENING_MAP[rules_engine_name]
-    # Load violations processing function
-    all_violations = scanner.find_violations(
-        itertools.chain(
-            *iter_objects),
-        rules_engine)
+        # Load violations processing function
+        all_violations = scanner.find_violations(
+            itertools.chain(
+                *iter_objects),
+            rules_engine)
 
     # If there are violations, send results.
+    flattening_scheme = sm.FLATTENING_MAP[rules_engine_name]
     if all_violations:
         _output_results(all_violations,
                         snapshot_timestamp,
@@ -258,22 +258,20 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
     LOGGER.debug('Inserted %s rows with %s errors',
                  inserted_row_count, len(violation_errors))
 
-    output_csv_name = None
-
     # Write the CSV for all the violations.
-    with csv_writer.write_csv(
-        resource_name=flattening_scheme,
-        data=_flatten_violations(all_violations,
-                                 flattening_scheme),
-        write_header=True) as csv_file:
-        output_csv_name = csv_file.name
-        LOGGER.info('CSV filename: %s', output_csv_name)
+    if FLAGS.output_path:
+        output_csv_name = None
+        with csv_writer.write_csv(
+            resource_name=flattening_scheme,
+            data=_flatten_violations(all_violations,
+                                     flattening_scheme),
+            write_header=True) as csv_file:
+            output_csv_name = csv_file.name
+            LOGGER.info('CSV filename: %s', output_csv_name)
 
-        # Scanner timestamp for output file and email.
-        now_utc = datetime.utcnow()
+            # Scanner timestamp for output file and email.
+            now_utc = datetime.utcnow()
 
-        # If output_path specified, upload to GCS.
-        if FLAGS.output_path:
             output_path = FLAGS.output_path
             if not output_path.startswith('gs://'):
                 if not os.path.exists(FLAGS.output_path):

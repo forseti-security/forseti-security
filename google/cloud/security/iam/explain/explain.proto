@@ -1,0 +1,173 @@
+// Copyright 2017 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package explain;
+
+service Explain {
+  rpc Ping(PingRequest) returns (PingReply) {}
+
+  rpc GetAccessByResources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
+
+  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
+
+  rpc GetPermissionsByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
+
+  rpc CreateModel(CreateModelRequest) returns (CreateModelReply) {}
+
+  rpc DeleteModel(DeleteModelRequest) returns (DeleteModelReply) {}
+
+  rpc ListModel(ListModelRequest) returns (ListModelReply) {}
+
+  rpc Denormalize(DenormalizeRequest) returns (stream AuthorizationTuple) {}
+
+  rpc ExplainGranted(ExplainGrantedRequest) returns (ExplainGrantedReply) {}
+
+  rpc ExplainDenied(ExplainDeniedRequest) returns (ExplainDeniedReply) {}
+
+}
+
+message ExplainGrantedRequest {
+	string member = 1;
+	string resource = 2;
+	oneof access {
+		string permission = 3;
+		string role = 4;
+	}
+}
+
+message Binding {
+	string member = 1;
+	string resource = 2;
+	string role = 3;
+}
+
+message Membership {
+	string member = 1;
+	repeated string parents = 2;
+}
+
+message ExplainGrantedReply {
+	repeated Binding bindings = 1;
+	repeated Membership memberships = 2;
+	repeated string resource_ancestors = 3;
+}
+
+message BindingStrategy {
+	repeated Binding bindings = 1;
+	int32 overgranting = 2;
+}
+
+message ExplainDeniedReply {
+	repeated BindingStrategy strategies = 1;
+}
+
+message ExplainDeniedRequest {
+	string member = 1;
+	repeated string permissions = 2;
+	repeated string roles = 3;
+	repeated string resources = 4;
+}
+
+message DenormalizeRequest {
+}
+
+message DenormalizeReply {
+	repeated AuthorizationTuple authorizations = 1;
+}
+
+message AuthorizationTuple {
+	string member = 1;
+	string resource = 2;
+	string permission = 3;
+}
+
+message CreateModelRequest {
+	string type = 1;
+}
+
+message CreateModelReply {
+	string handle = 1;
+}
+
+message DeleteModelRequest {
+	string handle = 1;
+}
+
+message DeleteModelReply {
+	enum Status {
+		SUCCESS = 0;
+	}
+	Status statis = 1;
+}
+
+message ListModelRequest {
+}
+
+message ListModelReply {
+	repeated string handles = 1;
+}
+
+message GetPermissionsByRolesRequest {
+  repeated string role_names = 1;
+  repeated string role_prefixes = 2;
+}
+
+message GetPermissionsByRolesReply {
+  message PermissionsByRole {
+    string role = 1;
+    repeated string permissions = 2;
+  }
+  repeated PermissionsByRole permissionsbyroles = 1;
+}
+
+message GetAccessByResourcesRequest {
+  string resource_name = 1;
+  repeated string permission_names = 2;
+  bool expand_groups = 3;
+}
+
+message GetAccessByResourcesReply {
+  message Access {
+    repeated string members = 1;
+    string resource = 2;
+    string role = 3;
+  }
+  repeated Access accesses = 1;
+}
+
+message GetAccessByMembersRequest {
+  string member_name = 1;
+  repeated string permission_names = 2;
+  bool expand_resources = 3;
+}
+
+message GetAccessByMembersReply {
+  message Access {
+    string member = 1;
+    repeated string resources = 2;
+    string role = 3;
+  }
+  repeated Access accesses = 1;
+}
+
+message PingRequest {
+  string data = 1;
+}
+
+message PingReply {
+  string data = 1;
+}
+
