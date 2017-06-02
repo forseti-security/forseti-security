@@ -19,13 +19,13 @@ import httplib2
 
 from googleapiclient.errors import HttpError
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import _base_client as _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from tests.common.gcp_api.test_data import fake_bigquery as fbq
 
-class BigqueryTestCase(basetest.TestCase):
+class BigqueryTestCase(ForsetiTestCase):
     """Test the Bigquery API Client."""
 
     MAX_BIGQUERY_API_CALLS_PER_100_SECONDS = 88888
@@ -53,6 +53,9 @@ class BigqueryTestCase(basetest.TestCase):
             self.bq_api_client.rate_limiter.period)
 
     def test_get_bigquery_projectids_raises(self):
+        """Test that get_bigquery_projectids raises when there is an HTTP
+           exception.
+        """
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.projects.return_value = mock_bq_stub
@@ -64,7 +67,23 @@ class BigqueryTestCase(basetest.TestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.bq_api_client.get_bigquery_projectids()
 
+    def test_get_bigquery_projectids_with_no_projects(self):
+        """Test that get_bigquery_projectids returns an emptly list with no
+           enabled bigquery projects.
+        """
+        mock_bq_stub = mock.MagicMock()
+        self.bq_api_client.service = mock.MagicMock()
+        self.bq_api_client.service.projects.return_value = mock_bq_stub
+        self.bq_api_client._build_paged_result = mock.MagicMock(
+                return_value=fbq.PROJECTS_LIST_REQUEST_RESPONSE_EMPTY
+        )
+
+        return_value = self.bq_api_client.get_bigquery_projectids()
+
+        self.assertListEqual(return_value, [])
+
     def test_get_bigquery_projectids(self):
+        """Test get_bigquery_projectids returns a valid list of project ids."""
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.projects.return_value = mock_bq_stub
@@ -77,6 +96,9 @@ class BigqueryTestCase(basetest.TestCase):
         self.assertListEqual(return_value, fbq.PROJECTS_LIST_EXPECTED)
 
     def test_get_datasets_for_projectid_raises(self):
+        """Test get_datasets_for_projectid raises when there is an HTTP
+            exception.
+        """
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
@@ -88,7 +110,8 @@ class BigqueryTestCase(basetest.TestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
              self.bq_api_client.get_datasets_for_projectid(fbq.PROJECT_IDS[0])
 
-    def test_getdatasets_for_projectid(self):
+    def test_get_datasets_for_projectid(self):
+        """Test get_datasets_for_projectid returns datasets properly."""
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
@@ -101,6 +124,7 @@ class BigqueryTestCase(basetest.TestCase):
         self.assertListEqual(return_value, fbq.DATASETS_LIST_EXPECTED)
 
     def test_get_dataset_access_raises(self):
+        """Test get_dataset_access raises when there is an HTTP exception."""
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
@@ -114,6 +138,7 @@ class BigqueryTestCase(basetest.TestCase):
                                                   fbq.DATASET_ID)
 
     def test_get_dataset_access(self):
+        """Test get_dataset_access returns dataset ACLs properly."""
         mock_bq_stub = mock.MagicMock()
         self.bq_api_client.service = mock.MagicMock()
         self.bq_api_client.service.datasets.return_value = mock_bq_stub
@@ -126,4 +151,4 @@ class BigqueryTestCase(basetest.TestCase):
         self.assertListEqual(return_value, fbq.DATASETS_GET_EXPECTED)
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()
