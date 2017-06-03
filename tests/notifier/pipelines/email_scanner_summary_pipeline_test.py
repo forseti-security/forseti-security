@@ -11,11 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests the email inventory snapshot pipeline."""
-
-from datetime import datetime
-
-import mock
+"""Tests the email scanner summary pipeline."""
 
 from google.cloud.security.common.gcp_type import iam_policy
 from google.cloud.security.common.gcp_type import resource
@@ -24,8 +20,8 @@ from google.cloud.security.scanner.audit import rules as audit_rules
 from tests.unittest_utils import ForsetiTestCase
 
 
-class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
-    """Tests for the email_inventory_snapshot_summary_pipeline."""
+class EmailScannerSummaryPipelineTest(ForsetiTestCase):
+    """Tests for the email_scanner_summary_pipeline."""
     
     def test_can_compose_scanner_summary(self):
         """Test that the scan summary is built correctly."""
