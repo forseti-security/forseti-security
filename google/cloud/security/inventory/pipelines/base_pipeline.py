@@ -68,8 +68,8 @@ class BasePipeline(object):
         """Transform api resource data into loadable format."""
         pass
 
-    @classmethod
-    def _to_bool(cls, value):
+    @staticmethod
+    def _to_bool(value):
         """Transforms a value into a database boolean (or None)."""
         # pylint: disable=no-else-return
         if value is None:
@@ -79,8 +79,8 @@ class BasePipeline(object):
         else:
             return 0
 
-    @classmethod
-    def _to_int(cls, value):
+    @staticmethod
+    def _to_int(value):
         """Transforms a value into a database integer (or None)."""
         # pylint: disable=no-else-return
         if value is None:

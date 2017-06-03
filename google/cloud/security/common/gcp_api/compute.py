@@ -47,8 +47,8 @@ class ComputeClient(_base_client.BaseClient):
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
 
-    @classmethod
-    def _flatten_aggregated_list(cls, aggregated_iterator, item_key):
+    @staticmethod
+    def _flatten_aggregated_list(aggregated_iterator, item_key):
         """Flatten a split-up list as returned by GCE "aggregatedList" API.
 
         The compute API's aggregatedList methods return a structure in
@@ -97,8 +97,8 @@ class ComputeClient(_base_client.BaseClient):
                     items.append(item)
         return items
 
-    @classmethod
-    def _flatten_list(cls, item_pages_iterator):
+    @staticmethod
+    def _flatten_list(item_pages_iterator):
         """Returns the 'items' entries from GCE API results.
 
         GCE 'list' APIs return results in the form:
