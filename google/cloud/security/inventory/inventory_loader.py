@@ -53,6 +53,10 @@ from google.cloud.security.common.data_access import backend_service_dao as bs_d
 from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import folder_dao as folder_resource_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
+from google.cloud.security.common.data_access import instance_dao as inst_dao
+from google.cloud.security.common.data_access import instance_group_dao as ig_dao
+from google.cloud.security.common.data_access import instance_group_manager_dao as igm_dao
+from google.cloud.security.common.data_access import instance_template_dao as it_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.data_access import cloudsql_dao as sql_dao
@@ -73,6 +77,10 @@ from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipe
 from google.cloud.security.inventory.pipelines import load_folders_pipeline
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
+from google.cloud.security.inventory.pipelines import load_instances_pipeline
+from google.cloud.security.inventory.pipelines import load_instance_group_managers_pipeline
+from google.cloud.security.inventory.pipelines import load_instance_groups_pipeline
+from google.cloud.security.inventory.pipelines import load_instance_templates_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_orgs_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
@@ -268,6 +276,30 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             compute.ComputeClient(),
             kwargs.get('backend_service_dao')
         ),
+        load_instances_pipeline.LoadInstancesPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('instance_dao')
+        ),
+        load_instance_group_managers_pipeline.LoadInstanceGroupManagersPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('instance_group_manager_dao')
+        ),
+        load_instance_groups_pipeline.LoadInstanceGroupsPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('instance_group_dao')
+        ),
+        load_instance_templates_pipeline.LoadInstanceTemplatesPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('instance_template_dao')
+        ),
     ]
 
     if configs.get('inventory_groups'):
@@ -349,6 +381,7 @@ def _configure_logging(configs):
 
 def main(_):
     """Runs the Inventory Loader."""
+    # pylint: disable=too-many-locals
     try:
         dao = Dao()
         project_dao = proj_dao.ProjectDao()
@@ -358,6 +391,10 @@ def main(_):
         cloudsql_dao = sql_dao.CloudsqlDao()
         fwd_rules_dao = fr_dao.ForwardingRulesDao()
         folder_dao = folder_resource_dao.FolderDao()
+        instance_dao = inst_dao.InstanceDao()
+        instance_group_dao = ig_dao.InstanceGroupDao()
+        instance_group_manager_dao = igm_dao.InstanceGroupManagerDao()
+        instance_template_dao = it_dao.InstanceTemplateDao()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
@@ -377,9 +414,14 @@ def main(_):
             organization_dao=organization_dao,
             backend_service_dao=backend_service_dao,
             bucket_dao=bucket_dao,
+            cloudsql_dao=cloudsql_dao,
             fwd_rules_dao=fwd_rules_dao,
             folder_dao=folder_dao,
-            cloudsql_dao=cloudsql_dao)
+            instance_dao=instance_dao,
+            instance_group_dao=instance_group_dao,
+            instance_group_manager_dao=instance_group_manager_dao,
+            instance_template_dao=instance_template_dao,
+            )
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)

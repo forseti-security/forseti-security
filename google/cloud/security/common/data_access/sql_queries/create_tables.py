@@ -318,6 +318,78 @@ CREATE_GROUPS_VIOLATIONS_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_INSTANCES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `can_ip_forward` bool DEFAULT NULL,
+        `cpu_platform` varchar(255) DEFAULT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `disks` json DEFAULT NULL,
+        `machine_type` varchar(255) DEFAULT NULL,
+        `metadata` json DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `network_interfaces` json DEFAULT NULL,
+        `scheduling` json DEFAULT NULL,
+        `service_accounts` json DEFAULT NULL,
+        `status` varchar(255) DEFAULT NULL,
+        `status_message` varchar(255) DEFAULT NULL,
+        `tags` json DEFAULT NULL,
+        `zone` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_INSTANCE_GROUPS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `named_ports` json DEFAULT NULL,
+        `network` varchar(255) DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `size` int DEFAULT NULL,
+        `subnetwork` varchar(255) DEFAULT NULL,
+        `zone` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_INSTANCE_TEMPLATES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `properties` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_INSTANCE_GROUP_MANAGERS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `base_instance_name` varchar(255) DEFAULT NULL,
+        `creation_timestamp` datetime DEFAULT NULL,
+        `current_actions` json DEFAULT NULL,
+        `description` varchar(255) DEFAULT NULL,
+        `instance_group` varchar(255) DEFAULT NULL,
+        `instance_template` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `named_ports` json DEFAULT NULL,
+        `region` varchar(255) DEFAULT NULL,
+        `target_pools` json DEFAULT NULL,
+        `target_size` int DEFAULT NULL,
+        `zone` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_ORG_IAM_POLICIES_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

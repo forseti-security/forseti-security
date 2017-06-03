@@ -250,6 +250,66 @@ GROUPS_FIELDNAMES = [
     'raw_group'
 ]
 
+INSTANCES_FIELDNAMES = [
+    'id',
+    'project_id',
+    'can_ip_forward',
+    'cpu_platform',
+    'creation_timestamp',
+    'description',
+    'disks',
+    'machine_type',
+    'metadata',
+    'name',
+    'network_interfaces',
+    'scheduling',
+    'service_accounts',
+    'status',
+    'status_message',
+    'tags',
+    'zone',
+]
+
+INSTANCE_GROUPS_FIELDNAMES = [
+    'id',
+    'project_id',
+    'creation_timestamp',
+    'description',
+    'name',
+    'named_ports',
+    'network',
+    'region',
+    'size',
+    'subnetwork',
+    'zone',
+]
+
+INSTANCE_TEMPLATES_FIELDNAMES = [
+    'id',
+    'project_id',
+    'creation_timestamp',
+    'description',
+    'name',
+    'properties',
+]
+
+INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
+    'id',
+    'project_id',
+    'base_instance_name',
+    'creation_timestamp',
+    'current_actions',
+    'description',
+    'instance_group',
+    'instance_template',
+    'name',
+    'named_ports',
+    'region',
+    'target_pools',
+    'target_size',
+    'zone',
+]
+
 ORG_IAM_POLICIES_FIELDNAMES = [
     'org_id',
     'role',
@@ -329,6 +389,10 @@ CSV_FIELDNAME_MAP = {
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
+    'instances': INSTANCES_FIELDNAMES,
+    'instance_groups': INSTANCE_GROUPS_FIELDNAMES,
+    'instance_templates': INSTANCE_TEMPLATES_FIELDNAMES,
+    'instance_group_managers': INSTANCE_GROUP_MANAGERS_FIELDNAMES,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,
