@@ -86,7 +86,7 @@ class ComputeClient(_base_client.BaseClient):
           item_key: The name of the key within the inner "items" lists
                     containing the objects of interest.
 
-        Returns:
+        Return:
           A list of items.
         """
         items = []
@@ -110,7 +110,7 @@ class ComputeClient(_base_client.BaseClient):
             item_pages_iterator: An iterator returning a page of GCE list API
                                  results.
 
-        Returns:
+        Return:
             A list of GCE resources.
         """
         results = []
@@ -148,8 +148,8 @@ class ComputeClient(_base_client.BaseClient):
         Args:
             project_id: The project id.
 
-        Yield:
-            An iterator of backend services for this project.
+        Return:
+            A list of backend services for this project.
 
         Raise:
             api_errors.ApiExecutionError if API raises an error.
@@ -173,8 +173,8 @@ class ComputeClient(_base_client.BaseClient):
             project_id: The project id.
             region: The region name.
 
-        Yield:
-            An iterator of forwarding rules for this project.
+        Return:
+            A list of forwarding rules for this project.
 
         Raise:
             api_errors.ApiExecutionError if API raises an error.
@@ -219,8 +219,8 @@ class ComputeClient(_base_client.BaseClient):
         Args:
             project_id: The project id.
 
-        Yield:
-            An iterator of instances for this project.
+        Return:
+            A list of instances for this project.
 
         Raise:
             api_errors.ApiExecutionError if API raises an error.
@@ -240,8 +240,8 @@ class ComputeClient(_base_client.BaseClient):
         Args:
             project_id: The project id.
 
-        Yield:
-            An iterator of instance groups for this project.
+        Return:
+            A list of instance groups for this project.
 
         Raise:
             api_errors.ApiExecutionError if API raises an error.
@@ -261,8 +261,8 @@ class ComputeClient(_base_client.BaseClient):
         Args:
             project_id: The project id.
 
-        Yield:
-            An iterator of instance templates for this project.
+        Return:
+            A list of instance templates for this project.
 
         Raise:
             api_errors.ApiExecutionError if API raises an error.
@@ -281,8 +281,8 @@ class ComputeClient(_base_client.BaseClient):
         Args:
             project_id: The project id.
 
-        Yield:
-            An iterator of instance group managers for this project.
+        Return:
+            A list of instance group managers for this project.
 
         Raise:
             api_errors.ApiExecutionError if API raises an error.
