@@ -15,68 +15,29 @@
 
 '''Test instance group managers data.'''
 
-FAKE_API_RESPONSE1 = [{
-    "kind": "compute#instanceGroupAggregatedList",
-    "id": "projects/project1/aggregated/instanceGroups",
-    "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/aggregated/instanceGroups",
-    "items": {
-        "regions/us-central1": {
-            "warning": {
-                "code": "NO_RESULTS_ON_PAGE",
-                "message": "There are no results for scope 'regions/us-central1' on this page.",
-                "data": [
-                    {
-                        "key": "scope",
-                        "value": "regions/us-central1"
-                    }
-                ]
+FAKE_API_RESPONSE1 = [
+    {
+        "kind": "compute#instanceGroup",
+        "id": "1532459550555580553",
+        "creationTimestamp": "2017-05-26T13:56:06.149-07:00",
+        "name": "iap-ig",
+        "description": "This instance group is controlled by Instance Group Manager 'iap-ig'. To modify instances in this group, use the Instance Group Manager API: https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers",
+        "namedPorts": [
+            {
+                "name": "http",
+                "port": 80
             }
-        },
-        "zones/us-central1-c": {
-            "instanceGroups": [
-                {
-                    "kind": "compute#instanceGroup",
-                    "id": "1532459550555580553",
-                    "creationTimestamp": "2017-05-26T13:56:06.149-07:00",
-                    "name": "iap-ig",
-                    "description": "This instance group is controlled by Instance Group Manager 'iap-ig'. To modify instances in this group, use the Instance Group Manager API: https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers",
-                    "namedPorts": [
-                        {
-                            "name": "http",
-                            "port": 80
-                        }
-                    ],
-                    "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
-                    "fingerprint": "l9ccw0jwP90=",
-                    "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c",
-                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instanceGroups/iap-ig",
-                    "size": 1,
-                    "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default"
-                }
-            ]
-        },
-     }
-}]
+        ],
+        "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
+        "fingerprint": "l9ccw0jwP90=",
+        "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c",
+        "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instanceGroups/iap-ig",
+        "size": 1,
+        "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default"
+    }
+]
 
-FAKE_API_RESPONSE2 = [{
-    'kind': 'compute#instanceGroupAggregatedList',
-    'id': 'projects/project2/aggregated/instanceGroups',
-    'items': {
-        'zones/us-central1-a': {
-            'warning': {
-                'code': 'NO_RESULTS_ON_PAGE',
-                'message': 'There are no results for scope \'zones/us-central1-a\' on this page.',
-                'data': [
-                    {
-                        'key': 'scope',
-                        'value': 'zones/us-central1-a'
-                    }
-                ]
-            }
-        },
-    },
-    'selfLink': 'https://www.googleapis.com/compute/v1/projects/project1/aggregated/instanceGroups'
-}]
+FAKE_API_RESPONSE2 = []
 
 FAKE_PROJECT_INSTANCE_GROUPS_MAP = {
     'project1': [{

@@ -15,86 +15,77 @@
 
 '''Test instance group templates data.'''
 
-FAKE_API_RESPONSE1 = [{
-    "kind": "compute#instanceTemplateList",
-    "id": "projects/project1/global/instanceTemplates",
-    "items": [
-        {
-            "kind": "compute#instanceTemplate",
-            "id": "599361064932783991",
-            "creationTimestamp": "2017-05-26T22:07:36.275-07:00",
-            "name": "iap-it-1",
-            "description": "",
-            "properties": {
-                "tags": {
-                    "items": [
-                        "iap-tag"
-                    ]
-                },
-                "machineType": "f1-micro",
-                "canIpForward": False,
-                "networkInterfaces": [
-                    {
-                        "kind": "compute#networkInterface",
-                        "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
-                        "accessConfigs": [
-                            {
-                                "kind": "compute#accessConfig",
-                                "type": "ONE_TO_ONE_NAT",
-                                "name": "External NAT"
-                            }
-                        ]
-                    }
-                ],
-                "disks": [
-                    {
-                        "kind": "compute#attachedDisk",
-                        "type": "PERSISTENT",
-                        "mode": "READ_WRITE",
-                        "deviceName": "iap-it-1",
-                        "boot": True,
-                        "initializeParams": {
-                            "sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
-                            "diskSizeGb": "10",
-                            "diskType": "pd-standard"
-                        },
-                        "autoDelete": True
-                    }
-                ],
-                "metadata": {
-                    "kind": "compute#metadata",
-                    "fingerprint": "Ab2_F_dLE3A="
-                },
-                "serviceAccounts": [
-                    {
-                        "email": "600687511243-compute@developer.gserviceaccount.com",
-                        "scopes": [
-                            "https://www.googleapis.com/auth/devstorage.read_only",
-                            "https://www.googleapis.com/auth/logging.write",
-                            "https://www.googleapis.com/auth/monitoring.write",
-                            "https://www.googleapis.com/auth/servicecontrol",
-                            "https://www.googleapis.com/auth/service.management.readonly",
-                            "https://www.googleapis.com/auth/trace.append"
-                        ]
-                    }
-                ],
-                "scheduling": {
-                    "onHostMaintenance": "MIGRATE",
-                    "automaticRestart": True,
-                    "preemptible": False
-                }
+FAKE_API_RESPONSE1 = [
+    {
+        "kind": "compute#instanceTemplate",
+        "id": "599361064932783991",
+        "creationTimestamp": "2017-05-26T22:07:36.275-07:00",
+        "name": "iap-it-1",
+        "description": "",
+        "properties": {
+            "tags": {
+                "items": [
+                    "iap-tag"
+                ]
             },
-            "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/iap-it-1"
-        }
-    ],
-    "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates"
-}]
+            "machineType": "f1-micro",
+            "canIpForward": False,
+            "networkInterfaces": [
+                {
+                    "kind": "compute#networkInterface",
+                    "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
+                    "accessConfigs": [
+                        {
+                            "kind": "compute#accessConfig",
+                            "type": "ONE_TO_ONE_NAT",
+                            "name": "External NAT"
+                        }
+                    ]
+                }
+            ],
+            "disks": [
+                {
+                    "kind": "compute#attachedDisk",
+                    "type": "PERSISTENT",
+                    "mode": "READ_WRITE",
+                    "deviceName": "iap-it-1",
+                    "boot": True,
+                    "initializeParams": {
+                        "sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
+                        "diskSizeGb": "10",
+                        "diskType": "pd-standard"
+                    },
+                    "autoDelete": True
+                }
+            ],
+            "metadata": {
+                "kind": "compute#metadata",
+                "fingerprint": "Ab2_F_dLE3A="
+            },
+            "serviceAccounts": [
+                {
+                    "email": "600687511243-compute@developer.gserviceaccount.com",
+                    "scopes": [
+                        "https://www.googleapis.com/auth/devstorage.read_only",
+                        "https://www.googleapis.com/auth/logging.write",
+                        "https://www.googleapis.com/auth/monitoring.write",
+                        "https://www.googleapis.com/auth/servicecontrol",
+                        "https://www.googleapis.com/auth/service.management.readonly",
+                        "https://www.googleapis.com/auth/trace.append"
+                    ]
+                }
+            ],
+            "scheduling": {
+                "onHostMaintenance": "MIGRATE",
+                "automaticRestart": True,
+                "preemptible": False
+            }
+        },
+        "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/iap-it-1"
+    }
+]
 
-FAKE_API_RESPONSE2 = [{
-    "kind": "compute#instanceTemplateList",
-    "id": "projects/project2/global/instanceTemplates",
-    "selfLink": "https://www.googleapis.com/compute/v1/projects/project2/global/instanceTemplates"
-}]
+FAKE_API_RESPONSE2 = []
 
 FAKE_PROJECT_INSTANCE_TEMPLATES_MAP = {
     'project1': [{

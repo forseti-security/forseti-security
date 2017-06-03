@@ -15,132 +15,93 @@
 
 '''Test instances data.'''
 
-FAKE_API_RESPONSE1 = [{
-    'kind': 'compute#instanceAggregatedList',
-    'id': 'projects/project1/aggregated/instances',
-    'selfLink': 'https://www.googleapis.com/compute/v1/projects/project1/aggregated/instances',
-    'items': {
-        'zones/us-central1-a': {
-            'warning': {
-                'code': 'NO_RESULTS_ON_PAGE',
-                'message': 'There are no results for scope \'zones/us-central1-a\' on this page.',
-                'data': [
+FAKE_API_RESPONSE1 = [
+    {
+        'kind': 'compute#instance',
+        'id': '6440513679799924564',
+        'creationTimestamp': '2017-05-26T22:08:11.094-07:00',
+        'name': 'iap-ig-79bj',
+        'tags': {
+            'items': [
+                'iap-tag'
+            ],
+            'fingerprint': 'gilEhx3hEXk='
+        },
+        'machineType': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/machineTypes/f1-micro',
+        'status': 'RUNNING',
+        'zone': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c',
+        'canIpForward': False,
+        'networkInterfaces': [
+            {
+                'kind': 'compute#networkInterface',
+                'network': 'https://www.googleapis.com/compute/v1/projects/project1/global/networks/default',
+                'subnetwork': 'https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default',
+                'networkIP': '10.128.0.2',
+                'name': 'nic0',
+                'accessConfigs': [
                     {
-                        'key': 'scope',
-                        'value': 'zones/us-central1-a'
+                        'kind': 'compute#accessConfig',
+                        'type': 'ONE_TO_ONE_NAT',
+                        'name': 'External NAT',
+                        'natIP': '104.198.131.130'
                     }
                 ]
             }
-        },
-        'zones/us-central1-c': {
-            'instances': [
+        ],
+        'disks': [
+            {
+                'kind': 'compute#attachedDisk',
+                'type': 'PERSISTENT',
+                'mode': 'READ_WRITE',
+                'source': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/disks/iap-ig-79bj',
+                'deviceName': 'iap-it-1',
+                'index': 0,
+                'boot': True,
+                'autoDelete': True,
+                'licenses': [
+                    'https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-8-jessie'
+                ],
+                'interface': 'SCSI'
+            }
+        ],
+        'metadata': {
+            'kind': 'compute#metadata',
+            'fingerprint': '3MpZMMvDTyo=',
+            'items': [
                 {
-                    'kind': 'compute#instance',
-                    'id': '6440513679799924564',
-                    'creationTimestamp': '2017-05-26T22:08:11.094-07:00',
-                    'name': 'iap-ig-79bj',
-                    'tags': {
-                        'items': [
-                            'iap-tag'
-                        ],
-                        'fingerprint': 'gilEhx3hEXk='
-                    },
-                    'machineType': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/machineTypes/f1-micro',
-                    'status': 'RUNNING',
-                    'zone': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c',
-                    'canIpForward': False,
-                    'networkInterfaces': [
-                        {
-                            'kind': 'compute#networkInterface',
-                            'network': 'https://www.googleapis.com/compute/v1/projects/project1/global/networks/default',
-                            'subnetwork': 'https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default',
-                            'networkIP': '10.128.0.2',
-                            'name': 'nic0',
-                            'accessConfigs': [
-                                {
-                                    'kind': 'compute#accessConfig',
-                                    'type': 'ONE_TO_ONE_NAT',
-                                    'name': 'External NAT',
-                                    'natIP': '104.198.131.130'
-                                }
-                            ]
-                        }
-                    ],
-                    'disks': [
-                        {
-                            'kind': 'compute#attachedDisk',
-                            'type': 'PERSISTENT',
-                            'mode': 'READ_WRITE',
-                            'source': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/disks/iap-ig-79bj',
-                            'deviceName': 'iap-it-1',
-                            'index': 0,
-                            'boot': True,
-                            'autoDelete': True,
-                            'licenses': [
-                                'https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-8-jessie'
-                            ],
-                            'interface': 'SCSI'
-                        }
-                    ],
-                    'metadata': {
-                        'kind': 'compute#metadata',
-                        'fingerprint': '3MpZMMvDTyo=',
-                        'items': [
-                            {
-                                'key': 'instance-template',
-                                'value': 'projects/600687511243/global/instanceTemplates/iap-it-1'
-                            },
-                            {
-                                'key': 'created-by',
-                                'value': 'projects/600687511243/zones/us-central1-c/instanceGroupManagers/iap-ig'
-                            }
-                        ]
-                    },
-                    'serviceAccounts': [
-                        {
-                            'email': '600687511243-compute@developer.gserviceaccount.com',
-                            'scopes': [
-                                'https://www.googleapis.com/auth/devstorage.read_only',
-                                'https://www.googleapis.com/auth/logging.write',
-                                'https://www.googleapis.com/auth/monitoring.write',
-                                'https://www.googleapis.com/auth/servicecontrol',
-                                'https://www.googleapis.com/auth/service.management.readonly',
-                                'https://www.googleapis.com/auth/trace.append'
-                            ]
-                        }
-                    ],
-                    'selfLink': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instances/iap-ig-79bj',
-                    'scheduling': {
-                        'onHostMaintenance': 'MIGRATE',
-                        'automaticRestart': True,
-                        'preemptible': False
-                    },
-                    'cpuPlatform': 'Intel Haswell'
+                    'key': 'instance-template',
+                    'value': 'projects/600687511243/global/instanceTemplates/iap-it-1'
+                },
+                {
+                    'key': 'created-by',
+                    'value': 'projects/600687511243/zones/us-central1-c/instanceGroupManagers/iap-ig'
                 }
             ]
         },
-    },
-}]
-
-FAKE_API_RESPONSE2 = [{
-    'kind': 'compute#instanceAggregatedList',
-    'id': 'projects/project2/aggregated/instances',
-    'items': {
-        'zones/us-central1-a': {
-            'warning': {
-                'code': 'NO_RESULTS_ON_PAGE',
-                'message': 'There are no results for scope \'zones/us-central1-a\' on this page.',
-                'data': [
-                    {
-                        'key': 'scope',
-                        'value': 'zones/us-central1-a'
-                    }
+        'serviceAccounts': [
+            {
+                'email': '600687511243-compute@developer.gserviceaccount.com',
+                'scopes': [
+                    'https://www.googleapis.com/auth/devstorage.read_only',
+                    'https://www.googleapis.com/auth/logging.write',
+                    'https://www.googleapis.com/auth/monitoring.write',
+                    'https://www.googleapis.com/auth/servicecontrol',
+                    'https://www.googleapis.com/auth/service.management.readonly',
+                    'https://www.googleapis.com/auth/trace.append'
                 ]
             }
+        ],
+        'selfLink': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instances/iap-ig-79bj',
+        'scheduling': {
+            'onHostMaintenance': 'MIGRATE',
+            'automaticRestart': True,
+            'preemptible': False
         },
-    },
-    'selfLink': 'https://www.googleapis.com/compute/v1/projects/project1/aggregated/instances'
-}]
+        'cpuPlatform': 'Intel Haswell'
+    }
+]
+
+FAKE_API_RESPONSE2 = []
 
 FAKE_PROJECT_INSTANCES_MAP = {
     'project1': [

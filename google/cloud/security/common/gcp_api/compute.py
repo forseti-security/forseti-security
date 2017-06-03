@@ -48,7 +48,7 @@ class ComputeClient(_base_client.BaseClient):
     # ComputeFirewallAPI class.
 
     @staticmethod
-    def _flatten_aggregated_list(aggregated_iterator, item_key):
+    def _flatten_aggregated_list(aggregated_iterable, item_key):
         """Flatten a split-up list as returned by GCE "aggregatedList" API.
 
         The compute API's aggregatedList methods return a structure in
@@ -81,8 +81,8 @@ class ComputeClient(_base_client.BaseClient):
         all $items across all of the groups.
 
         Args:
-          aggregated_results: An iterator returning a result from an
-                              aggregatedList call.
+          aggregated_iterable: An iterable returning a result from an
+                               aggregatedList call.
           item_key: The name of the key within the inner "items" lists
                     containing the objects of interest.
 
@@ -90,7 +90,7 @@ class ComputeClient(_base_client.BaseClient):
           A list of items.
         """
         items = []
-        for aggregated_results in aggregated_iterator:
+        for aggregated_results in aggregated_iterable:
             aggregated_items = aggregated_results.get('items', {})
             for items_for_grouping in aggregated_items.values():
                 for item in items_for_grouping.get(item_key, []):
