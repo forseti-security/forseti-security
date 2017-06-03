@@ -47,7 +47,6 @@ class LoadForwardingRulesPipelineTest(ForsetiTestCase):
         self.resource_name = 'forwarding_rules'
         self.mock_compute_client = mock.create_autospec(compute.ComputeClient)
         self.mock_dao = mock.create_autospec(frdao.ForwardingRulesDao)
-        self.maxDiff = None
         self.pipeline = (
             load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
                 self.cycle_timestamp,
