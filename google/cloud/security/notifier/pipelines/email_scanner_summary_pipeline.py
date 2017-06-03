@@ -73,7 +73,7 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
 
         resource_summaries = {}
         total_violations = 0
-    
+
         for violation in sorted(all_violations, key=lambda v: v.resource_id):
             resource_type = violation.resource_type
             if resource_type not in resource_summaries:
@@ -83,22 +83,23 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
                     'total': total_resources[resource_type],
                     'violations': collections.OrderedDict()
                 }
-    
+
             # Keep track of # of violations per resource id.
             if (violation.resource_id not in
                     resource_summaries[resource_type]['violations']):
                 resource_summaries[resource_type][
                     'violations'][violation.resource_id] = 0
-    
+
             resource_summaries[resource_type][
                 'violations'][violation.resource_id] += len(violation.members)
             total_violations += len(violation.members)
-    
+
         return total_violations, resource_summaries
 
     def _send(  # pylint: disable=arguments-differ
-            self, csv_name, output_filename, now_utc, violation_errors, total_violations,
-            resource_summaries, email_sender, email_recipient):
+            self, csv_name, output_filename, now_utc, violation_errors,
+            total_violations, resource_summaries, email_sender,
+            email_recipient):
         """Send a summary email of the scan.
 
         Args:
@@ -121,7 +122,7 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
             email_sender: String of the sender of the email.
             email_recipient: String of the recipient of the email.
         """
-    
+
         # Render the email template with values.
         scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
         email_content = EmailUtil.render_from_template(
@@ -130,8 +131,9 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
                 'resource_summaries': resource_summaries,
                 'violation_errors': violation_errors,
             })
-    
-        # Create an attachment out of the csv file and base64 encode the content.
+
+        # Create an attachment out of the csv file and base64 encode the
+        # content.
         attachment = EmailUtil.create_attachment(
             file_location=csv_name,
             content_type='text/csv',
@@ -170,5 +172,6 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
         total_violations, resource_summaries = self._compose(
             all_violations, total_resources)
 
-        self._send(csv_name, output_filename, now_utc, violation_errors, total_violations,
-                   resource_summaries, email_sender, email_recipient)
+        self._send(csv_name, output_filename, now_utc, violation_errors,
+                   total_violations, resource_summaries, email_sender,
+                   email_recipient)

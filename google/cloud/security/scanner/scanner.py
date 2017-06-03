@@ -38,9 +38,9 @@ import shutil
 import sys
 
 from datetime import datetime
-
 import gflags as flags
 
+# pylint: disable=line-too-long
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
@@ -50,6 +50,7 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import engine_map as em
 from google.cloud.security.scanner.scanners import scanners_map as sm
 from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline
+# pylint: enable=line-too-long
 
 
 # Setup flags
@@ -291,7 +292,6 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
                     violation_errors,
                     FLAGS.email_sender,
                     FLAGS.email_recipient)
-            
 
 def _upload_csv(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
