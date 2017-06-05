@@ -123,7 +123,7 @@ class LoadBigqueryDatasetsPipelineTest(ForsetiTestCase):
 
     @mock.patch.object(
         load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
-        '_retrieve_dataset_access' )
+        '_retrieve_dataset_access')
     def test_get_dataset_access_map(self, mock_dataset_access):
         mock_dataset_access.return_value = (
             fbq.RETRIEVE_DATASET_ACCESS_RETURN)
