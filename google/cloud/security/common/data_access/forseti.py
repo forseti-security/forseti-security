@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from sqlalchemy.sql.elements import literal_column
+from sqlalchemy.sql.sqltypes import BigInteger
 
 """ Forseti Database Objects. """
 
@@ -23,9 +23,9 @@ from sqlalchemy import BigInteger
 from sqlalchemy import Date
 from sqlalchemy import desc
 
-from sqlalchemy.orm import load_only
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.elements import literal_column
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -217,9 +217,9 @@ def create_table_names(timestamp):
         __tablename__ = 'groups_%s' % timestamp
 
         id = Column(BigInteger(), primary_key=True)
-        group_id = Column(String(128))
-        group_email = Column(String(128))
-        group_kind = Column(String(128))
+        group_id = Column(String(127))
+        group_email = Column(String(127))
+        group_kind = Column(String(127))
         direct_member_count = Column(BigInteger())
         raw_group = Column(Text())
 
@@ -233,8 +233,49 @@ def create_table_names(timestamp):
                 self.group_kind,
                 self.direct_member_count)
 
+    class Folders(BASE):
+        """Represents a folder."""
+
+        __tablename__ = 'folders_%s' % timestamp
+
+        folder_id = Column(BigInteger(), primary_key=True)
+        name = Column(String(255))
+        display_name = Column(String(255))
+        lifecycle_state = Column(String(255))
+        parent_type = Column(String(255))
+        parent_id = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Folder(fid='{}', name='{}', display_name='{}')>"
+            return fmt_s.format(
+                self.folder_id,
+                self.name,
+                self.display_name)
+
+    class CloudSqlInstances(BASE):
+        """Represents a Cloud SQL instance."""
+
+        __tablename__ = 'cloudsql_instances_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_number = Column(BigInteger())
+        name = Column(String(255))
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<CloudSQL(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.name)
+
     result = (Organization,
-              [('projects', Project), ('buckets', Bucket)],
+              Folders,
+              [('projects', Project),
+               ('buckets', Bucket),
+               ('cloudsqlinstances', CloudSqlInstances)],
               [OrganizationPolicy, ProjectPolicy],
               [GroupMembers, Groups])
     TABLE_CACHE[timestamp] = result
@@ -263,12 +304,35 @@ class Importer(object):
     def __iter__(self):
         """Main interface to get the data, returns assets and then policies."""
 
-        organization, tables, policies, group_membership = \
+        organization, folders, tables, policies, group_membership = \
             create_table_names(self.snapshot.cycle_timestamp)
-        yield "organizations", self.session.query(organization).one()
+
+        forseti_org = self.session.query(organization).one()
+        yield "organizations", forseti_org
+
+        # Folders
+        folder_set = (
+            self.session.query(folders)
+            .filter(folders.parent_type == 'organization')
+            .all())
+
+        while folder_set:
+            for folder in folder_set:
+                yield 'folders', folder
+
+            folder_set = (
+                self.session.query(folders)
+                .filter(folders.parent_type == 'folder')
+                .filter(folders.parent_id.in_(
+                    [f.folder_id for f in folder_set]))
+                .all()
+                )
+
+        for res_type, table in tables:
+            for item in self.session.query(table).yield_per(1024):
+                yield res_type, item
 
         membership, groups = group_membership
-
         query_groups = (
             self.session.query(groups)
             .with_entities(literal_column("'GROUP'"), groups.group_email))
@@ -294,13 +358,9 @@ class Importer(object):
             cur_member = member
             member_groups.append(group)
 
-        for res_type, table in tables:
-            for item in self.session.query(table).all():
-                yield res_type, item
-
-        #for policy_table in policies:
-        #    for policy in self.session.query(policy_table).all():
-        #        yield 'policy', policy
+        for policy_table in policies:
+            for policy in self.session.query(policy_table).all():
+                yield 'policy', policy
 
 
 def test_run():

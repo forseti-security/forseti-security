@@ -17,6 +17,9 @@
 import json
 
 from google.cloud.security.common.data_access import forseti
+from google.cloud.security.iam.dao import create_engine
+from google.cloud.security.iam.dao import ModelManager
+
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -26,6 +29,7 @@ from google.cloud.security.common.data_access import forseti
 
 
 # pylint: disable=unused-argument
+# pylint: disable=no-self-use
 
 class ResourceCache(dict):
     """Resource cache."""
@@ -159,20 +163,51 @@ class ForsetiImporter(object):
             type='organization',
             parent=None)
         self.resource_cache['organization'] = (org, org_name)
+        self.resource_cache[org_name] = (org, org_name)
         return org
+
+    def _convert_folder(self, forseti_folder):
+        """Creates a db object from a Forseti folder."""
+
+        parent_type_name = '{}/{}'.format(
+            forseti_folder.parent_type,
+            forseti_folder.parent_id)
+
+        obj, full_res_name = self.resource_cache[parent_type_name]
+
+        full_folder_name = '{}/folder/{}'.format(
+            full_res_name, forseti_folder.folder_id)
+        folder_type_name = 'folder/{}'.format(
+            forseti_folder.folder_id)
+        folder = self.dao.TBL_RESOURCE(
+            full_name=full_folder_name,
+            name=folder_type_name,
+            type='folder',
+            parent=obj,
+            display_name=forseti_folder.display_name,
+            )
+
+        self.resource_cache[folder.name] = folder, full_folder_name
+        return self.session.merge(folder)
 
     def _convert_project(self, forseti_project):
         """Creates a db object from a Forseti project."""
 
-        org, org_name = self.resource_cache['organization']
+        parent_type_name = '{}/{}'.format(
+            forseti_project.parent_type,
+            forseti_project.parent_id)
+
+        obj, full_res_name = self.resource_cache[parent_type_name]
         project_name = 'project/{}'.format(forseti_project.project_number)
         full_project_name = '{}/project/{}'.format(
-            org_name, forseti_project.project_number)
-        project = self.dao.TBL_RESOURCE(
-            full_name=full_project_name,
-            name=project_name,
-            type='project',
-            parent=org)
+            full_res_name, forseti_project.project_number)
+        project = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_project_name,
+                name=project_name,
+                type='project',
+                display_name=forseti_project.project_name,
+                parent=obj))
         self.resource_cache[project_name] = (project, full_project_name)
         return project
 
@@ -183,13 +218,30 @@ class ForsetiImporter(object):
         project_name = 'project/{}'.format(forseti_bucket.project_number)
         parent, full_parent_name = self.resource_cache[project_name]
         full_bucket_name = '{}/{}'.format(full_parent_name, bucket_name)
-        bucket = self.dao.TBL_RESOURCE(
-            full_name=full_bucket_name,
-            name=bucket_name,
-            type='bucket',
-            parent=parent)
-        self.resource_cache[bucket_name] = (bucket, full_bucket_name)
+        bucket = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_bucket_name,
+                name=bucket_name,
+                type='bucket',
+                parent=parent))
         return bucket
+
+    def _convert_cloudsqlinstance(self, forseti_cloudsqlinstance):
+        """Creates a db sql instance from a Forseti sql instance."""
+
+        sqlinst_name = 'cloudsqlinstance/{}'.format(
+            forseti_cloudsqlinstance.name)
+        project_name = 'project/{}'.format(
+            forseti_cloudsqlinstance.project_number)
+        parent, full_parent_name = self.resource_cache[project_name]
+        full_sqlinst_name = '{}/{}'.format(full_parent_name, sqlinst_name)
+        sqlinst = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_sqlinst_name,
+                name=sqlinst_name,
+                type='cloudsqlinstance',
+                parent=parent))
+        return sqlinst
 
     def _convert_policy(self, forseti_policy):
         """Creates a db object from a Forseti policy."""
@@ -241,12 +293,16 @@ class ForsetiImporter(object):
 
         for res_type, obj in self.forseti_importer:
             print 'type: {}, obj: {}'.format(res_type, obj)
-            if res_type == "organizations":
+            if res_type == 'organizations':
                 self.session.add(self._convert_organization(obj))
-            elif res_type == "projects":
+            elif res_type == 'folders':
+                self.session.add(self._convert_folder(obj))
+            elif res_type == 'projects':
                 self.session.add(self._convert_project(obj))
-            elif res_type == "buckets":
+            elif res_type == 'buckets':
                 self.session.add(self._convert_bucket(obj))
+            elif res_type == 'cloudsqlinstances':
+                self.session.add(self._convert_cloudsqlinstance(obj))
             elif res_type == 'policy':
                 self._convert_policy(obj)
             elif res_type == 'group':
@@ -257,7 +313,7 @@ class ForsetiImporter(object):
                 pass
             else:
                 raise NotImplementedError(res_type)
-            self.model.kick_watchdog(self.session)
+            #self.model.kick_watchdog(self.session)
 
         self.model.set_done(self.session)
         self.session.commit()
@@ -272,8 +328,6 @@ def by_source(source):
         'EMPTY': EmptyImporter,
     }[source]
 
-
-from google.cloud.security.iam.dao import create_engine, ModelManager
 
 class ServiceConfig(object):
     """
@@ -306,7 +360,7 @@ def test_run():
     scoped_session, data_access = model_manager.get(model_name)
     with scoped_session as session:
 
-        def doImport():
+        def do_import():
             """Import runnable."""
             importer_cls = by_source(source)
             import_runner = importer_cls(
@@ -316,7 +370,7 @@ def test_run():
                 svc_config)
             import_runner.run()
 
-        svc_config.run_in_background(doImport)
+        svc_config.run_in_background(do_import)
         return model_name
 
 

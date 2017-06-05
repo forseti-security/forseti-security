@@ -154,6 +154,7 @@ def define_model(model_name, dbengine, model_seed):
         name = Column(String(128))
         type = Column(String(64))
         policy_update_counter = Column(Integer, default=0)
+        display_name = Column(String(256))
 
         parent_name = Column(
             String(1024),
