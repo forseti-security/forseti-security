@@ -14,6 +14,9 @@
 
 """Common utilities to assist in inventory pipelines."""
 
+# pylint: disable=line-too-long
+from google.cloud.security.inventory.pipeline_requirements_map import REQUIREMENTS_MAP
+# pylint: enable=line-too-long
 
 def can_inventory_groups(configs):
     """A simple function that validates required inputs to inventory groups.
@@ -29,3 +32,8 @@ def can_inventory_groups(configs):
         configs.get('groups_service_account_key_file')]
 
     return all(required_execution_config_flags)
+
+def list_resource_pipelines():
+    """Prints resources (keys) in the pipeline REQUIREMENTS_MAP (dict)."""
+    resources = ', '.join(REQUIREMENTS_MAP.keys())
+    print 'Availabile resources: %s' % resources

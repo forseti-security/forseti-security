@@ -12,60 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The resource name can be gotten from the REQUIREMENTS_MAP
-# in /google/cloud/security/inventory/pipeline_builder.py module.
+# Resource names can be found by running 'forseti_inventory --list_resources'.
 
-- resource: backend_services
-  enabled: true
-
-- resource: bigquery_datasets
-  enabled: true
-
-- resource: buckets
-  enabled: true
-
-- resource: buckets_acls
-  depends_on: buckets
-  enabled: true
-
-- resource: cloudsql
-  enabled: true
-
-- resource: firewall_rules
-  enabled: true
-
-- resource: folders
-  enabled: true
-
-- resource: forwarding_rules
-  enabled: true
-
-- resource: group_members
-  enabled: true
-
-- resource: groups
-  enabled: true
-
-- resource: instance_group_managers
-  enabled: true
-
-- resource: instance_groups
-  enabled: true
-
-- resource: instance_templates
-  enabled: true
-
-- resource: instances
-  enabled: true
-
-- resource: org_iam_policies
-  enabled: true
-
-- resource: organizations
-  enabled: true
-
-- resource: projects
-  enabled: true
-
-- resource: projects_iam_policies
-  enabled: true
+pipelines:
+  - resource: backend_services
+    enabled: true
+  - resource: bigquery_datasets
+    enabled: true
+  - resource: buckets
+    enabled: true
+  - resource: buckets_acls
+    depends_on: buckets
+    enabled: true
+  - resource: cloudsql
+    enabled: true
+  - resource: firewall_rules
+    enabled: true
+  - resource: folders
+    enabled: true
+  - resource: forwarding_rules
+    enabled: true
+  - resource: group_members
+    enabled: true
+  - resource: groups
+    enabled: true
+  - resource: instance_group_managers
+    enabled: true
+  - resource: instance_groups
+    enabled: true
+  - resource: instance_templates
+    enabled: true
+  - resource: instances
+    enabled: true
+  - resource: org_iam_policies
+    enabled: true
+  - resource: organizations
+    enabled: true
+  - resource: projects
+    enabled: true
+  - resource: projects_iam_policies
+    enabled: true
