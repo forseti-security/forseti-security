@@ -23,7 +23,7 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 LOGGER = log_util.get_logger(__name__)
 
 
-class LoadBigQueryDatasetsPipeline(base_pipeline.BasePipeline):
+class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
     """Pipeline to load bigquery datasets data into Inventory."""
 
     RESOURCE_NAME = 'bigquery_datasets'
