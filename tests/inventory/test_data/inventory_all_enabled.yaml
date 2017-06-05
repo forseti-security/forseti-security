@@ -1,0 +1,56 @@
+# Copyright 2017 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The resource name can be gotten from the REQUIREMENTS_MAP
+# in /google/cloud/security/inventory/pipeline_builder.py module.
+
+- resource: bigquery_datasets
+  enabled: true
+
+- resource: buckets
+  enabled: true
+
+- resource: buckets_acls
+  depends_on: buckets
+  enabled: true
+
+- resource: cloudsql
+  enabled: true
+
+- resource: firewall_rules
+  enabled: true
+
+- resource: folders
+  enabled: true
+
+- resource: forwarding_rules
+  enabled: true
+
+- resource: group_members
+  enabled: true
+
+- resource: groups
+  enabled: true
+
+- resource: org_iam_policies
+  enabled: true
+
+- resource: organizations
+  enabled: true
+
+- resource: projects
+  enabled: true
+
+- resource: projects_iam_policies
+  enabled: true
