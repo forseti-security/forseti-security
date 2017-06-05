@@ -26,15 +26,6 @@ Where
   domain-wide-delegation key created for the groups-only service account
   ([details]({{ site.baseurl }}{% link common/service_accounts.md %}).
 
-You can also use the convenience [dev\_inventory.sh script](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/inventory/dev_inventory.sh.sample)
-to run `forseti_inventory`. Make a copy of `dev_inventory.sh.sample` as
-`dev_inventory.sh`, edit the script for the appropriate commandline flags, and
-invoke the script from the repo root to run inventory.
-
-```sh
-$ ./dev_inventory.sh
-```
-
 ## Collecting and storing new data with inventory
 
 This is the generic workflow for adding new GCP resource types to Forseti Inventory.
