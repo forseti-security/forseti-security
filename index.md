@@ -19,6 +19,9 @@ requests and bug reports under Issues.
 {% include modules_core.md %}
 {% include modules_optional.md %}
 
+## Roadmap
+{% include roadmap.md %}
+
 # Contact us
 Reach out to us with questions by contacting
 [forseti-security@google.com](mailto:forseti-security@google.com).
