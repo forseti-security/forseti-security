@@ -150,16 +150,16 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
-        full_name = Column(String(1024), primary_key=True)
-        name = Column(String(128))
+        full_name = Column(String(1024))
+        name = Column(String(128), primary_key=True)
         type = Column(String(64))
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256))
 
         parent_name = Column(
-            String(1024),
-            ForeignKey('{}.full_name'.format(resources_tablename)))
-        parent = relationship("Resource", remote_side=[full_name])
+            String(128),
+            ForeignKey('{}.name'.format(resources_tablename)))
+        parent = relationship("Resource", remote_side=[name])
         bindings = relationship('Binding', back_populates="resource")
 
         def increment_update_counter(self):
@@ -217,9 +217,9 @@ def define_model(model_name, dbengine, model_seed):
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
 
-        resource_name = Column(Integer, ForeignKey(
+        resource_name = Column(String(128), ForeignKey(
             '{}.name'.format(resources_tablename)))
-        role_name = Column(Integer, ForeignKey(
+        role_name = Column(String(128), ForeignKey(
             '{}.name'.format(roles_tablename)))
 
         resource = relationship('Resource', remote_side=[resource_name])
@@ -1049,7 +1049,7 @@ def define_model(model_name, dbengine, model_seed):
                 for parent, child in (
                         session.query(res_anc, res_childs)
                         .filter(res_childs.full_name.in_(resources_set))
-                        .filter(res_childs.parent_name == res_anc.full_name)
+                        .filter(res_childs.parent_name == res_anc.name)
                         .all()):
 
                     if parent.full_name not in resources_set:

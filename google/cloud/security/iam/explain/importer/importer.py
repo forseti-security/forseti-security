@@ -336,7 +336,7 @@ class ServiceConfig(object):
     """
 
     def __init__(self, explain_connect_string, forseti_connect_string):
-        engine = create_engine(explain_connect_string)
+        engine = create_engine(explain_connect_string, echo=True)
         self.model_manager = ModelManager(engine)
         self.forseti_connect_string = forseti_connect_string
 
@@ -347,8 +347,8 @@ class ServiceConfig(object):
 def test_run():
     """Test run."""
 
-    explain_conn_s = 'sqlite:///:memory:'
-    #explain_conn_s = 'mysql://felix@127.0.0.1:3306/explain_forseti'
+    #explain_conn_s = 'sqlite:///:memory:'
+    explain_conn_s = 'mysql://felix@127.0.0.1:3306/explain_forseti'
     forseti_conn_s = 'mysql://felix@127.0.0.1:3306/forseti_security'
 
     svc_config = ServiceConfig(explain_conn_s, forseti_conn_s)
