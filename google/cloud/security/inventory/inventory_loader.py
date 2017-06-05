@@ -223,7 +223,6 @@ def _create_api_map():
     Returns:
         Dictionary of GCP APIs.
     """
-
     try:
         return {
             'admin_api': admin_directory.AdminDirectoryClient(),
@@ -241,7 +240,7 @@ def _create_api_map():
     # TODO: Replace this generic except by handling specific exceptions from
     # lower levels and then handle here.
     except:  # pylint: disable=bare-except
-        LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
+        LOGGER.error('Error creating the API map.\n%s', sys.exc_info()[0])
         sys.exit()
 
 def _create_dao_map():
@@ -253,7 +252,6 @@ def _create_dao_map():
     Returns:
         Dictionary of DAOs.
     """
-
     try:
         return {
             'backend_service_dao': backend_service_dao.BackendServiceDao(),
@@ -272,7 +270,7 @@ def _create_dao_map():
             'project_dao': project_dao.ProjectDao(),
         }
     except data_access_errors.MySQLError as e:
-        LOGGER.error('Encountered error to create dao map.\n%s', e)
+        LOGGER.error('Error to creating DAO map.\n%s', e)
         sys.exit()
 
 def main(_):
