@@ -285,9 +285,9 @@ def main(_):
 
     _configure_logging(inventory_flags.get('loglevel'))
 
-    inventory_conf = inventory_flags.get('config_path')
+    config_path = inventory_flags.get('config_path')
 
-    if inventory_conf is None:
+    if config_path is None:
         LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
@@ -298,7 +298,7 @@ def main(_):
 
     pipeline_builder = builder.PipelineBuilder(
         cycle_timestamp,
-        inventory_conf,
+        config_path,
         flags,
         api_map,
         dao_map)
