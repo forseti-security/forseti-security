@@ -36,4 +36,4 @@ def can_inventory_groups(configs):
 def list_resource_pipelines():
     """Prints resources (keys) in the pipeline REQUIREMENTS_MAP (dict)."""
     resources = ', '.join(REQUIREMENTS_MAP.keys())
-    print 'Availabile resources: %s' % resources
+    print 'Available resources: %s' % resources

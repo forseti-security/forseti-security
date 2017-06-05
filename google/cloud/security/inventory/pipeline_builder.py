@@ -162,7 +162,9 @@ class PipelineBuilder(object):
         # First pass: map all the pipelines to their own nodes,
         # regardless if they should run or not.
         map_of_all_pipeline_nodes = {}
+
         config = file_loader.read_and_parse_file(self.config_path)
+
         for entry in config.get('resources', []):
             map_of_all_pipeline_nodes[entry.get('resource')] = PipelineNode(
                 entry.get('resource'), entry.get('enabled'))
