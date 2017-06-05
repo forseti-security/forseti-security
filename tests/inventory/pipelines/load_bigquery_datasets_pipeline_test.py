@@ -72,18 +72,6 @@ class LoadBigQueryDatasetsPipelineTest(ForsetiTestCase):
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve_dataset_project_map(['1', '2'])
 
-    def test_retrieve_dataset_project_map(self):
-        self.pipeline.api_client.get_datasets_for_projectid.side_effect = [
-            fbq.GET_DATASETS_FOR_PROJECTIDS_RETURN,
-            fbq.GET_DATASETS_FOR_PROJECTIDS_RETURN
-        ]
-
-        return_value = self.pipeline._retrieve_dataset_project_map(['1', '2'])
-
-        self.assertListEqual(
-            fbq.RETRIEVE_DATASET_PROJECT_MAP_EXPECTED,
-            return_value)
-
     def test_retrieve_dataset_access_raises(self):
         self.pipeline.api_client.get_dataset_access.side_effect = (
             api_errors.ApiExecutionError('', mock.MagicMock())
@@ -100,14 +88,6 @@ class LoadBigQueryDatasetsPipelineTest(ForsetiTestCase):
         return_value = self.pipeline._retrieve_dataset_access('1', '2')
 
         self.assertListEqual(fbq.RETRIEVE_DATASET_ACCESS_RETURN, return_value)
-
-    def test_retrieve_dataset_project_map_raises(self):
-        self.pipeline.api_client.get_datasets_for_projectid.side_effect = (
-            api_errors.ApiExecutionError('', mock.MagicMock())
-        )
-
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve_dataset_project_map([''])
 
     def test_retrieve_dataset_project_map(self):
         self.pipeline.api_client.get_datasets_for_projectid.side_effect = (
