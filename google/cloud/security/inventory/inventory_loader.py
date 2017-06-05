@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: Move all these flags to the config file.
+
 """Loads requested data into inventory.
 
 Usage examples: docs/inventory/README.md
 
 Usage:
   $ forseti_inventory \\
-      --inventory_groups <true|false> (optional) \\
+      --config_path (required) \\
       --groups_service_account_key_file <path to file> (optional)\\
       --domain_super_admin_email <user@domain.com> (optional) \\
       --db_host <Cloud SQL database hostname/IP> (required) \\
@@ -36,59 +38,43 @@ To see all the dependent flags:
   $ forseti_inventory --helpfull
 
 """
-
-
 from datetime import datetime
-import sys
 import logging
+import sys
 
 import gflags as flags
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.apputils import app
+from google.cloud.security.common.data_access import backend_service_dao
+from google.cloud.security.common.data_access import bucket_dao
+from google.cloud.security.common.data_access import cloudsql_dao
+from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import backend_service_dao as bs_dao
-from google.cloud.security.common.data_access import bucket_dao as buck_dao
-from google.cloud.security.common.data_access import folder_dao as folder_resource_dao
-from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
-from google.cloud.security.common.data_access import organization_dao as org_dao
-from google.cloud.security.common.data_access import project_dao as proj_dao
-from google.cloud.security.common.data_access import cloudsql_dao as sql_dao
-from google.cloud.security.common.data_access.dao import Dao
+from google.cloud.security.common.data_access import folder_dao
+from google.cloud.security.common.data_access import forwarding_rules_dao
+from google.cloud.security.common.data_access import instance_dao
+from google.cloud.security.common.data_access import instance_group_dao
+from google.cloud.security.common.data_access import instance_group_manager_dao
+from google.cloud.security.common.data_access import instance_template_dao
+from google.cloud.security.common.data_access import organization_dao
+from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
-from google.cloud.security.common.gcp_api import admin_directory as ad
-from google.cloud.security.common.gcp_api import bigquery as bq
+from google.cloud.security.common.gcp_api import admin_directory
+from google.cloud.security.common.gcp_api import bigquery
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import storage as gcs
-from google.cloud.security.common.gcp_api import cloudsql
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import load_backend_services_pipeline
-from google.cloud.security.inventory.pipelines import load_firewall_rules_pipeline
-from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipeline
-from google.cloud.security.inventory.pipelines import load_folders_pipeline
-from google.cloud.security.inventory.pipelines import load_groups_pipeline
-from google.cloud.security.inventory.pipelines import load_group_members_pipeline
-from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
-from google.cloud.security.inventory.pipelines import load_orgs_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_buckets_acls_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_cloudsql_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_pipeline
-from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
-from google.cloud.security.inventory import util
+from google.cloud.security.inventory import pipeline_builder as builder
 from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
-
-flags.DEFINE_bool('inventory_groups', False,
-                  'Whether to inventory GSuite Groups.')
 
 LOGLEVELS = {
     'debug': logging.DEBUG,
@@ -98,25 +84,29 @@ LOGLEVELS = {
 }
 flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 
+flags.DEFINE_string('config_path', None,
+                    'Path to the inventory config file.')
+
+
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
 
 LOGGER = log_util.get_logger(__name__)
 
 
-def _exists_snapshot_cycles_table(dao):
+def _exists_snapshot_cycles_table(inventory_dao):
     """Whether the snapshot_cycles table exists.
 
     Args:
-        dao: Data access object.
+        inventory_dao: Data access object.
 
     Returns:
         True if the snapshot cycle table exists. False otherwise.
     """
     try:
         sql = snapshot_cycles_sql.SELECT_SNAPSHOT_CYCLES_TABLE
-        result = dao.execute_sql_with_fetch(snapshot_cycles_sql.RESOURCE_NAME,
-                                            sql, values=None)
+        result = inventory_dao.execute_sql_with_fetch(
+            snapshot_cycles_sql.RESOURCE_NAME, sql, values=None)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error in attempt to find snapshot_cycles table: %s', e)
         sys.exit()
@@ -126,25 +116,25 @@ def _exists_snapshot_cycles_table(dao):
 
     return False
 
-def _create_snapshot_cycles_table(dao):
+def _create_snapshot_cycles_table(inventory_dao):
     """Create snapshot cycle table.
 
     Args:
-        dao: Data access object.
+        inventory_dao: Data access object.
     """
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
-        dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                    sql, values=None)
+        inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+                                              sql, values=None)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to create snapshot cycles table: %s', e)
         sys.exit()
 
-def _start_snapshot_cycle(dao):
+def _start_snapshot_cycle(inventory_dao):
     """Start snapshot cycle.
 
     Args:
-        dao: Data access object.
+        inventory_dao: Data access object.
 
     Returns:
         cycle_time: Datetime object of the cycle, in UTC.
@@ -153,144 +143,21 @@ def _start_snapshot_cycle(dao):
     cycle_time = datetime.utcnow()
     cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
 
-    if not _exists_snapshot_cycles_table(dao):
+    if not _exists_snapshot_cycles_table(inventory_dao):
         LOGGER.info('snapshot_cycles is not created yet.')
-        _create_snapshot_cycles_table(dao)
+        _create_snapshot_cycles_table(inventory_dao)
 
     try:
         sql = snapshot_cycles_sql.INSERT_CYCLE
         values = (cycle_timestamp, cycle_time, 'RUNNING', db_schema_version)
-        dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                    sql, values)
+        inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+                                              sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to insert new snapshot cycle: %s', e)
         sys.exit()
 
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
-
-def _build_pipelines(cycle_timestamp, configs, **kwargs):
-    """Build the pipelines to load data.
-
-    Args:
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        configs: Dictionary of configurations.
-        kwargs: Extra configs.
-
-    Returns:
-        List of pipelines that will be run.
-
-    Raises: inventory_errors.LoadDataPipelineError.
-    """
-
-    pipelines = []
-
-    # Commonly used clients for shared ratelimiter re-use.
-    crm_v1_api_client = crm.CloudResourceManagerClient()
-    dao = kwargs.get('dao')
-    gcs_api_client = gcs.StorageClient()
-
-    organization_dao_name = 'organization_dao'
-    project_dao_name = 'project_dao'
-
-    # The order here matters, e.g. groups_pipeline must come before
-    # group_members_pipeline.
-    pipelines = [
-        load_orgs_pipeline.LoadOrgsPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(organization_dao_name)
-        ),
-        load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(organization_dao_name)
-        ),
-        load_projects_pipeline.LoadProjectsPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline(
-            cycle_timestamp,
-            configs,
-            crm_v1_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_buckets_pipeline.LoadProjectsBucketsPipeline(
-            cycle_timestamp,
-            configs,
-            gcs_api_client,
-            kwargs.get(project_dao_name)
-        ),
-        load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline(
-            cycle_timestamp,
-            configs,
-            gcs_api_client,
-            kwargs.get('bucket_dao')
-        ),
-        load_projects_cloudsql_pipeline.LoadProjectsCloudsqlPipeline(
-            cycle_timestamp,
-            configs,
-            cloudsql.CloudsqlClient(),
-            kwargs.get('cloudsql_dao')
-        ),
-        load_forwarding_rules_pipeline.LoadForwardingRulesPipeline(
-            cycle_timestamp,
-            configs,
-            compute.ComputeClient(),
-            kwargs.get('fwd_rules_dao')
-        ),
-        load_folders_pipeline.LoadFoldersPipeline(
-            cycle_timestamp,
-            configs,
-            crm.CloudResourceManagerClient(version='v2beta1'),
-            dao
-        ),
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
-            cycle_timestamp,
-            configs,
-            bq.BigQueryClient(),
-            dao
-        ),
-        load_firewall_rules_pipeline.LoadFirewallRulesPipeline(
-            cycle_timestamp,
-            configs,
-            compute.ComputeClient(version='beta'),
-            kwargs.get(project_dao_name)
-        ),
-        load_backend_services_pipeline.LoadBackendServicesPipeline(
-            cycle_timestamp,
-            configs,
-            compute.ComputeClient(),
-            kwargs.get('backend_service_dao')
-        ),
-    ]
-
-    if configs.get('inventory_groups'):
-        if util.can_inventory_groups(configs):
-            admin_api_client = ad.AdminDirectoryClient()
-            pipelines.extend([
-                load_groups_pipeline.LoadGroupsPipeline(
-                    cycle_timestamp,
-                    configs,
-                    admin_api_client,
-                    dao),
-                load_group_members_pipeline.LoadGroupMembersPipeline(
-                    cycle_timestamp,
-                    configs,
-                    admin_api_client,
-                    dao)
-            ])
-        else:
-            raise inventory_errors.LoadDataPipelineError(
-                'Unable to inventory groups with specified arguments:\n%s',
-                configs)
-
-    return pipelines
 
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
@@ -316,11 +183,11 @@ def _run_pipelines(pipelines):
         run_statuses.append(pipeline.status == 'SUCCESS')
     return run_statuses
 
-def _complete_snapshot_cycle(dao, cycle_timestamp, status):
+def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     """Complete the snapshot cycle.
 
     Args:
-        dao: Data access object.
+        inventory_dao: Data access object.
         cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status: String of the current cycle's status.
 
@@ -332,8 +199,8 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     try:
         values = (status, complete_time, cycle_timestamp)
         sql = snapshot_cycles_sql.UPDATE_CYCLE
-        dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
-                                    sql, values)
+        inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
+                                              sql, values)
     except data_access_errors.MySQLError as e:
         LOGGER.error('Unable to complete update snapshot cycle: %s', e)
         sys.exit()
@@ -341,49 +208,95 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _configure_logging(configs):
+def _configure_logging(loglevel):
     """Configures the loglevel for all loggers."""
-    desc = configs.get('loglevel')
-    level = LOGLEVELS.setdefault(desc, 'info')
+    level = LOGLEVELS.setdefault(loglevel, 'info')
     log_util.set_logger_level(level)
+
+def _create_api_map():
+    """Create a map of GCP APIs.
+
+    These will be re-usable so that the rate-limiter can apply across
+    different pipelines.
+
+    Returns:
+        Dictionary of GCP APIs.
+    """
+
+    try:
+        return {
+            'admin_api': admin_directory.AdminDirectoryClient(),
+            'bigquery_api': bigquery.BigQueryClient(),
+            'cloudsql_api': cloudsql.CloudsqlClient(),
+            'compute_api': compute.ComputeClient(),
+            'compute_beta_api': compute.ComputeClient(version='beta'),
+            'crm_api': crm.CloudResourceManagerClient(),
+            'crm_v2beta1_api': crm.CloudResourceManagerClient(
+                version='v2beta1'),
+            'gcs_api': gcs.StorageClient(),
+        }
+    # A lot of potential errors can be thrown by different APIs.
+    # So, handle generically.
+    # TODO: Replace this generic except by handling specific exceptions from
+    # lower levels and then handle here.
+    except:  # pylint: disable=bare-except
+        LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
+        sys.exit()
+
+def _create_dao_map():
+    """Create a map of DAOs.
+
+    These will be re-usable so that the db connection can apply across
+    different pipelines.
+
+    Returns:
+        Dictionary of DAOs.
+    """
+
+    try:
+        return {
+            'backend_service_dao': backend_service_dao.BackendServiceDao(),
+            'bucket_dao': bucket_dao.BucketDao(),
+            'cloudsql_dao': cloudsql_dao.CloudsqlDao(),
+            'dao': dao.Dao(),
+            'folder_dao': folder_dao.FolderDao(),
+            'forwarding_rules_dao': forwarding_rules_dao.ForwardingRulesDao(),
+            'instance_dao': instance_dao.InstanceDao(),
+            'instance_group_dao': instance_group_dao.InstanceGroupDao(),
+            'instance_group_manager_dao':
+                instance_group_manager_dao.InstanceGroupManagerDao(),
+            'instance_template_dao':
+                instance_template_dao.InstanceTemplateDao(),
+            'organization_dao': organization_dao.OrganizationDao(),
+            'project_dao': project_dao.ProjectDao(),
+        }
+    except data_access_errors.MySQLError as e:
+        LOGGER.error('Encountered error to create dao map.\n%s', e)
+        sys.exit()
+
 
 def main(_):
     """Runs the Inventory Loader."""
-    try:
-        dao = Dao()
-        project_dao = proj_dao.ProjectDao()
-        organization_dao = org_dao.OrganizationDao()
-        backend_service_dao = bs_dao.BackendServiceDao()
-        bucket_dao = buck_dao.BucketDao()
-        cloudsql_dao = sql_dao.CloudsqlDao()
-        fwd_rules_dao = fr_dao.ForwardingRulesDao()
-        folder_dao = folder_resource_dao.FolderDao()
-    except data_access_errors.MySQLError as e:
-        LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
+
+    inventory_flags = FLAGS.FlagValuesDict()
+    _configure_logging(inventory_flags.get('loglevel'))
+
+    if inventory_flags.get('config_path') is None:
+        LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
-    cycle_time, cycle_timestamp = _start_snapshot_cycle(dao)
+    api_map = _create_api_map()
+    dao_map = _create_dao_map()
 
-    configs = FLAGS.FlagValuesDict()
+    cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
 
-    _configure_logging(configs)
-
-    try:
-        pipelines = _build_pipelines(
-            cycle_timestamp,
-            configs,
-            dao=dao,
-            project_dao=project_dao,
-            organization_dao=organization_dao,
-            backend_service_dao=backend_service_dao,
-            bucket_dao=bucket_dao,
-            fwd_rules_dao=fwd_rules_dao,
-            folder_dao=folder_dao,
-            cloudsql_dao=cloudsql_dao)
-    except (api_errors.ApiExecutionError,
-            inventory_errors.LoadDataPipelineError) as e:
-        LOGGER.error('Unable to build pipelines.\n%s', e)
-        sys.exit()
+    pipeline_builder = builder.PipelineBuilder(
+        cycle_timestamp,
+        inventory_flags.get('config_path'),
+        flags,
+        api_map,
+        dao_map)
+    pipelines = pipeline_builder.build()
 
     run_statuses = _run_pipelines(pipelines)
 
@@ -394,20 +307,21 @@ def main(_):
     else:
         snapshot_cycle_status = 'FAILURE'
 
-    _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
+    _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
+                             snapshot_cycle_status)
 
-    if configs.get('email_recipient') is not None:
+    if inventory_flags.get('email_recipient') is not None:
         email_pipeline = (
             email_inventory_snapshot_summary_pipeline
             .EmailInventorySnapshopSummaryPipeline(
-                configs.get('sendgrid_api_key')))
+                inventory_flags.get('sendgrid_api_key')))
         email_pipeline.run(
             cycle_time,
             cycle_timestamp,
             snapshot_cycle_status,
             pipelines,
-            configs.get('email_sender'),
-            configs.get('email_recipient'))
+            inventory_flags.get('email_sender'),
+            inventory_flags.get('email_recipient'))
 
 
 if __name__ == '__main__':
