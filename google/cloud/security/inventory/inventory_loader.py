@@ -53,6 +53,10 @@ from google.cloud.security.common.data_access import backend_service_dao as bs_d
 from google.cloud.security.common.data_access import bucket_dao as buck_dao
 from google.cloud.security.common.data_access import folder_dao as folder_resource_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao as fr_dao
+from google.cloud.security.common.data_access import instance_dao as inst_dao
+from google.cloud.security.common.data_access import instance_group_dao as ig_dao
+from google.cloud.security.common.data_access import instance_group_manager_dao as igm_dao
+from google.cloud.security.common.data_access import instance_template_dao as it_dao
 from google.cloud.security.common.data_access import organization_dao as org_dao
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.data_access import cloudsql_dao as sql_dao
@@ -66,8 +70,6 @@ from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
-from google.cloud.security.common.util.email_util import EmailUtil
-from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_backend_services_pipeline
 from google.cloud.security.inventory.pipelines import load_firewall_rules_pipeline
@@ -75,6 +77,10 @@ from google.cloud.security.inventory.pipelines import load_forwarding_rules_pipe
 from google.cloud.security.inventory.pipelines import load_folders_pipeline
 from google.cloud.security.inventory.pipelines import load_groups_pipeline
 from google.cloud.security.inventory.pipelines import load_group_members_pipeline
+from google.cloud.security.inventory.pipelines import load_instances_pipeline
+from google.cloud.security.inventory.pipelines import load_instance_group_managers_pipeline
+from google.cloud.security.inventory.pipelines import load_instance_groups_pipeline
+from google.cloud.security.inventory.pipelines import load_instance_templates_pipeline
 from google.cloud.security.inventory.pipelines import load_org_iam_policies_pipeline
 from google.cloud.security.inventory.pipelines import load_orgs_pipeline
 from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
@@ -84,6 +90,7 @@ from google.cloud.security.inventory.pipelines import load_projects_iam_policies
 from google.cloud.security.inventory.pipelines import load_projects_pipeline
 from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
 from google.cloud.security.inventory import util
+from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -269,6 +276,30 @@ def _build_pipelines(cycle_timestamp, configs, **kwargs):
             compute.ComputeClient(),
             kwargs.get('backend_service_dao')
         ),
+        load_instances_pipeline.LoadInstancesPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('instance_dao')
+        ),
+        load_instance_group_managers_pipeline.LoadInstanceGroupManagersPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('instance_group_manager_dao')
+        ),
+        load_instance_groups_pipeline.LoadInstanceGroupsPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('instance_group_dao')
+        ),
+        load_instance_templates_pipeline.LoadInstanceTemplatesPipeline(
+            cycle_timestamp,
+            configs,
+            compute.ComputeClient(),
+            kwargs.get('instance_template_dao')
+        ),
     ]
 
     if configs.get('inventory_groups'):
@@ -342,45 +373,6 @@ def _complete_snapshot_cycle(dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(cycle_time, cycle_timestamp, status, pipelines,
-                sendgrid_api_key, email_sender, email_recipient,
-                email_content=None):
-    """Send an email.
-
-    Args:
-        cycle_time: Datetime object of the cycle, in UTC.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        status: String of the overall status of current snapshot cycle.
-        pipelines: List of pipelines and their statuses.
-        sendgrid_api_key: String of the sendgrid api key to auth email service.
-        email_sender: String of the sender of the email.
-        email_recipient: String of the recipient of the email.
-        email_content: String of the email content (aka, body).
-
-    Returns:
-         None
-    """
-
-    email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
-        cycle_timestamp, status)
-
-    email_content = EmailUtil.render_from_template(
-        'inventory_snapshot_summary.jinja', {
-            'cycle_time': cycle_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
-            'cycle_timestamp': cycle_timestamp,
-            'status_summary': status,
-            'pipelines': pipelines,
-        })
-
-    try:
-        email_util = EmailUtil(sendgrid_api_key)
-        email_util.send(email_sender, email_recipient,
-                        email_subject, email_content,
-                        content_type='text/html')
-    except util_errors.EmailSendError:
-        LOGGER.error('Unable to send email that inventory snapshot completed.')
-
-
 def _configure_logging(configs):
     """Configures the loglevel for all loggers."""
     desc = configs.get('loglevel')
@@ -389,6 +381,7 @@ def _configure_logging(configs):
 
 def main(_):
     """Runs the Inventory Loader."""
+    # pylint: disable=too-many-locals
     try:
         dao = Dao()
         project_dao = proj_dao.ProjectDao()
@@ -398,6 +391,10 @@ def main(_):
         cloudsql_dao = sql_dao.CloudsqlDao()
         fwd_rules_dao = fr_dao.ForwardingRulesDao()
         folder_dao = folder_resource_dao.FolderDao()
+        instance_dao = inst_dao.InstanceDao()
+        instance_group_dao = ig_dao.InstanceGroupDao()
+        instance_group_manager_dao = igm_dao.InstanceGroupManagerDao()
+        instance_template_dao = it_dao.InstanceTemplateDao()
     except data_access_errors.MySQLError as e:
         LOGGER.error('Encountered error with Cloud SQL. Abort.\n%s', e)
         sys.exit()
@@ -417,9 +414,14 @@ def main(_):
             organization_dao=organization_dao,
             backend_service_dao=backend_service_dao,
             bucket_dao=bucket_dao,
+            cloudsql_dao=cloudsql_dao,
             fwd_rules_dao=fwd_rules_dao,
             folder_dao=folder_dao,
-            cloudsql_dao=cloudsql_dao)
+            instance_dao=instance_dao,
+            instance_group_dao=instance_group_dao,
+            instance_group_manager_dao=instance_group_manager_dao,
+            instance_template_dao=instance_template_dao,
+            )
     except (api_errors.ApiExecutionError,
             inventory_errors.LoadDataPipelineError) as e:
         LOGGER.error('Unable to build pipelines.\n%s', e)
@@ -437,13 +439,17 @@ def main(_):
     _complete_snapshot_cycle(dao, cycle_timestamp, snapshot_cycle_status)
 
     if configs.get('email_recipient') is not None:
-        _send_email(cycle_time,
-                    cycle_timestamp,
-                    snapshot_cycle_status,
-                    pipelines,
-                    configs.get('sendgrid_api_key'),
-                    configs.get('email_sender'),
-                    configs.get('email_recipient'))
+        email_pipeline = (
+            email_inventory_snapshot_summary_pipeline
+            .EmailInventorySnapshopSummaryPipeline(
+                configs.get('sendgrid_api_key')))
+        email_pipeline.run(
+            cycle_time,
+            cycle_timestamp,
+            snapshot_cycle_status,
+            pipelines,
+            configs.get('email_sender'),
+            configs.get('email_recipient'))
 
 
 if __name__ == '__main__':
