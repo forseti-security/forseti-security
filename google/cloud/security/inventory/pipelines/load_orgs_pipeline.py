@@ -28,18 +28,20 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
 
     RESOURCE_NAME = 'organizations'
 
-    def _transform(self, orgs):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable organizations.
 
         Args:
-            orgs: An iterable of resource manager org search response.
-                  https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
-                  https://cloud.google.com/resource-manager/reference/rest/v1/organizations#Organization
+            resource_from_api: An iterable of resource manager org search
+                response.
+                https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
+                https://cloud.google.com/resource-manager/reference/rest/v1/organizations#Organization
 
         Yields:
             An iterable of loadable orgs, each org as a dict.
         """
-        for org in (o for d in orgs for o in d.get('organizations', [])):
+        for org in (o for d in resource_from_api for o in d.get(
+                'organizations', [])):
             # org_name is the unique identifier for the org, formatted as
             # "organizations/<organization_id>".
             org_name = org.get('name')

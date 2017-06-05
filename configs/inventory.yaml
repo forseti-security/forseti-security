@@ -15,6 +15,9 @@
 # The resource name can be gotten from the REQUIREMENTS_MAP
 # in /google/cloud/security/inventory/pipeline_builder.py module.
 
+- resource: backend_services
+  enabled: true
+
 - resource: bigquery_datasets
   enabled: true
 
@@ -41,6 +44,18 @@
   enabled: true
 
 - resource: groups
+  enabled: true
+
+- resource: instance_group_managers
+  enabled: true
+
+- resource: instance_groups
+  enabled: true
+
+- resource: instance_templates
+  enabled: true
+
+- resource: instances
   enabled: true
 
 - resource: org_iam_policies

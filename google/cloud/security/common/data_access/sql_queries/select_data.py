@@ -23,7 +23,30 @@ LATEST_SNAPSHOT_TIMESTAMP = """
 """
 
 PROJECT_NUMBERS = """
-    SELECT project_number from projects_{0};
+    SELECT project_number FROM projects_{0};
+"""
+
+
+PROJECT_RAW_ALL = """
+    SELECT raw_project FROM projects_{0};
+"""
+
+PROJECT_RAW = """
+    SELECT raw_project FROM projects_{0} WHERE project_id = %s;
+"""
+
+PROJECT_RAW_BY_NUMBER = """
+    SELECT raw_project FROM projects_{0} WHERE project_number = %s;
+"""
+
+PROJECT_IAM_POLICIES = """
+    SELECT p.project_number, p.project_id, p.project_name,
+    p.lifecycle_state as proj_lifecycle, p.parent_type, p.parent_id,
+    pol.role, pol.member_type, pol.member_name, pol.member_domain
+    FROM projects_{0} p INNER JOIN project_iam_policies_{1} pol
+    ON p.project_number = pol.project_number
+    ORDER BY p.project_number, pol.role, pol.member_type,
+    pol.member_domain, pol.member_name
 """
 
 PROJECTS = """
@@ -37,6 +60,13 @@ PROJECT_BY_ID = """
     lifecycle_state, parent_type, parent_id
     FROM projects_{0}
     WHERE project_id = %s
+"""
+
+PROJECT_BY_NUMBER = """
+    SELECT project_number, project_id, project_name,
+    lifecycle_state, parent_type, parent_id
+    FROM projects_{0}
+    WHERE project_number = %s
 """
 
 PROJECT_IAM_POLICIES_RAW = """
@@ -87,11 +117,11 @@ FOLDER_IAM_POLICIES = """
 """
 
 GROUPS = """
-    SELECT * from groups_{0};
+    SELECT * FROM groups_{0};
 """
 
 GROUP_IDS = """
-    SELECT group_id from groups_{0};
+    SELECT group_id FROM groups_{0};
 """
 
 GROUP_ID = """
@@ -119,6 +149,27 @@ BUCKETS_BY_PROJECT_ID = """
     WHERE project_number = {1};
 """
 
+
+SELECT_VIOLATIONS = """
+    SELECT * FROM violations_{0};
+"""
+
+SELECT_BUCKETS_ACL_VIOLATIONS = """
+    SELECT * FROM buckets_acl_violations_{0};
+"""
+
+SELECT_GROUPS_VIOLATIONS = """
+    SELECT * FROM groups_violations_{0};
+"""
+
+BACKEND_SERVICES = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    affinity_cookie_ttl_sec, backends, cdn_policy, connection_draining,
+    enable_cdn, health_checks, load_balancing_scheme, port, port_name,
+    protocol, region, session_affinity, timeout_sec, iap
+    FROM backend_services_{0}
+"""
+
 FORWARDING_RULES = """
     SELECT id, project_id, creation_timestamp, name, description, region,
     ip_address, ip_protocol, port_range, ports, target, load_balancing_scheme,
@@ -132,6 +183,34 @@ FORWARDING_RULES_BY_PROJECT_ID = """
     subnetwork, network, backend_service
     FROM forwarding_rules_{0}
     WHERE project_id = %s
+"""
+
+INSTANCES = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    can_ip_forward, cpu_platform, disks, machine_type, metadata,
+    network_interfaces, scheduling, service_accounts, status,
+    status_message, tags, zone
+    FROM instances_{0}
+"""
+
+INSTANCE_GROUPS = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    named_ports, network, region, size, subnetwork, zone
+    FROM instance_groups_{0}
+"""
+
+INSTANCE_TEMPLATES = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    properties
+    FROM instance_templates_{0}
+"""
+
+INSTANCE_GROUP_MANAGERS = """
+    SELECT id, project_id, creation_timestamp, name, description,
+    base_instance_name, current_actions, instance_group,
+    instance_template, named_ports, region, target_pools, target_size,
+    zone
+    FROM instance_group_managers_{0}
 """
 
 BUCKET_ACLS = """

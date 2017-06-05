@@ -117,7 +117,7 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
 
         return dataset_project_access_map
 
-    def _transform(self, project_dataset_access_map):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable groups.
 
         Args:
@@ -127,7 +127,7 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of project_id, dataset_id, and access detail.
         """
-        for (project_id, dataset_id, access) in project_dataset_access_map:
+        for (project_id, dataset_id, access) in resource_from_api:
             for acl in access:
                 yield {
                     'project_id': project_id,
@@ -153,9 +153,14 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
             A list of project ids.
 
         Returns:
-            A bigquery dataset access map. See _retrieve_dataset_access_map().
+            A bigquery dataset access map. See _retrieve_dataset_access_map() or
+            None if there are no bigquery projects.
         """
         project_ids = self._retrieve_bigquery_projectids()
+
+        if not project_ids:
+            LOGGER.info('No bigquery project ids found.')
+            return None
 
         dataset_project_map = self._retrieve_dataset_project_map(project_ids)
 
@@ -165,8 +170,7 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
         """Runs the actual data fetching pipeline."""
         dataset_project_access_map = self._retrieve()
 
-        loadable_datasets = self._transform(dataset_project_access_map)
-
-        self._load(self.RESOURCE_NAME, loadable_datasets)
-
-        self._get_loaded_count()
+        if dataset_project_access_map is not None:
+            loadable_datasets = self._transform(dataset_project_access_map)
+            self._load(self.RESOURCE_NAME, loadable_datasets)
+            self._get_loaded_count()

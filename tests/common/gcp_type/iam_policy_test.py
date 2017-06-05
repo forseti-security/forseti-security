@@ -14,7 +14,7 @@
 
 """Test the IamPolicy."""
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyBindingError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyMemberError
@@ -29,7 +29,7 @@ def _get_member_list(members):
             for member in members]
 
 
-class IamPolicyTest(basetest.TestCase):
+class IamPolicyTest(ForsetiTestCase):
     """Test IAM Policy class."""
 
     def setUp(self):
@@ -172,4 +172,4 @@ class IamPolicyTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

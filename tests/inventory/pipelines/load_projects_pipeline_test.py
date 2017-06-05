@@ -14,7 +14,7 @@
 
 """Tests the load_projects_pipeline."""
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 
@@ -31,7 +31,7 @@ from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
 
 
-class LoadProjectsPipelineTest(basetest.TestCase):
+class LoadProjectsPipelineTest(ForsetiTestCase):
     """Tests for the load_projects_pipeline."""
 
     def setUp(self):

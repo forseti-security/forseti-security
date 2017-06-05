@@ -47,6 +47,7 @@ import gflags as flags
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.apputils import app
+from google.cloud.security.common.data_access import backend_service_dao
 from google.cloud.security.common.data_access import bucket_dao
 from google.cloud.security.common.data_access import cloudsql_dao
 from google.cloud.security.common.data_access import dao
@@ -54,6 +55,10 @@ from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import folder_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao
+from google.cloud.security.common.data_access import instance_dao
+from google.cloud.security.common.data_access import instance_group_dao
+from google.cloud.security.common.data_access import instance_group_manager_dao
+from google.cloud.security.common.data_access import instance_template_dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
@@ -64,10 +69,9 @@ from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.util import log_util
-from google.cloud.security.common.util import errors as util_errors
-from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import pipeline_builder as builder
+from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
 # pylint: enable=line-too-long
 
 FLAGS = flags.FLAGS
@@ -107,7 +111,7 @@ def _exists_snapshot_cycles_table(inventory_dao):
         LOGGER.error('Error in attempt to find snapshot_cycles table: %s', e)
         sys.exit()
 
-    if len(result) > 0 and result[0]['TABLE_NAME'] == 'snapshot_cycles':
+    if result and result[0]['TABLE_NAME'] == 'snapshot_cycles':
         return True
 
     return False
@@ -154,7 +158,6 @@ def _start_snapshot_cycle(inventory_dao):
 
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
-
 
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
@@ -205,44 +208,6 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _send_email(cycle_time, cycle_timestamp, status, pipelines,
-                sendgrid_api_key, email_sender, email_recipient,
-                email_content=None):
-    """Send an email.
-
-    Args:
-        cycle_time: Datetime object of the cycle, in UTC.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        status: String of the overall status of current snapshot cycle.
-        pipelines: List of pipelines and their statuses.
-        sendgrid_api_key: String of the sendgrid api key to auth email service.
-        email_sender: String of the sender of the email.
-        email_recipient: String of the recipient of the email.
-        email_content: String of the email content (aka, body).
-
-    Returns:
-         None
-    """
-
-    email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
-        cycle_timestamp, status)
-
-    email_content = EmailUtil.render_from_template(
-        'inventory_snapshot_summary.jinja', {
-            'cycle_time': cycle_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
-            'cycle_timestamp': cycle_timestamp,
-            'status_summary': status,
-            'pipelines': pipelines,
-        })
-
-    try:
-        email_util = EmailUtil(sendgrid_api_key)
-        email_util.send(email_sender, email_recipient,
-                        email_subject, email_content,
-                        content_type='text/html')
-    except util_errors.EmailSendError:
-        LOGGER.error('Unable to send email that inventory snapshot completed.')
-
 def _configure_logging(loglevel):
     """Configures the loglevel for all loggers."""
     level = LOGLEVELS.setdefault(loglevel, 'info')
@@ -290,11 +255,18 @@ def _create_dao_map():
 
     try:
         return {
+            'backend_service_dao': backend_service_dao.BackendServiceDao(),
             'bucket_dao': bucket_dao.BucketDao(),
             'cloudsql_dao': cloudsql_dao.CloudsqlDao(),
             'dao': dao.Dao(),
             'folder_dao': folder_dao.FolderDao(),
             'forwarding_rules_dao': forwarding_rules_dao.ForwardingRulesDao(),
+            'instance_dao': instance_dao.InstanceDao(),
+            'instance_group_dao': instance_group_dao.InstanceGroupDao(),
+            'instance_group_manager_dao':
+               instance_group_manager_dao.InstanceGroupManagerDao(),
+            'instance_template_dao':
+               instance_template_dao.InstanceTemplateDao(),
             'organization_dao': organization_dao.OrganizationDao(),
             'project_dao': project_dao.ProjectDao(),
         }
@@ -339,13 +311,18 @@ def main(_):
                              snapshot_cycle_status)
 
     if inventory_flags.get('email_recipient') is not None:
-        _send_email(cycle_time,
-                    cycle_timestamp,
-                    snapshot_cycle_status,
-                    pipelines,
-                    inventory_flags.get('sendgrid_api_key'),
-                    inventory_flags.get('email_sender'),
-                    inventory_flags.get('email_recipient'))
+        email_pipeline = (
+            email_inventory_snapshot_summary_pipeline
+            .EmailInventorySnapshopSummaryPipeline(
+                inventory_flags.get('sendgrid_api_key')))
+        email_pipeline.run(
+            cycle_time,
+            cycle_timestamp,
+            snapshot_cycle_status,
+            pipelines,
+            inventory_flags.get('email_sender'),
+            inventory_flags.get('email_recipient'))
+
 
 if __name__ == '__main__':
     app.run()

@@ -43,6 +43,18 @@ DATASETS_GET_EXPECTED = [
     {'role': 'READER', 'specialGroup': 'projectReaders'}
 ]
 
+PROJECTS_LIST_REQUEST_RESPONSE_EMPTY = [
+    {'etag': '"T"',
+     'kind': 'bigquery#projectList',
+     'nextPageToken': '50',
+     'projects': [],
+     'totalItems': 2},
+    {'etag': '"T2"',
+     'kind': 'bigquery#projectList',
+     'projects': [],
+     'totalItems': 2}
+]
+
 PROJECTS_LIST_REQUEST_RESPONSE = [
     {'etag': '"T"',
      'kind': 'bigquery#projectList',

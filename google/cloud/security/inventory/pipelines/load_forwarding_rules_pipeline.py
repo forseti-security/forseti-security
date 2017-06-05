@@ -32,19 +32,19 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
 
     RESOURCE_NAME = 'forwarding_rules'
 
-    def _transform(self, project_fwd_rules):
+    def _transform(self, resource_from_api):
         """Create an iterator of forwarding rules to load into database.
 
         TODO: truncate the region and target.
 
         Args:
-            project_fwd_rules: A dict of forwarding rules, keyed by
+            resource_from_api: A dict of forwarding rules, keyed by
                 project id, from GCP API.
 
         Yields:
             Iterator of forwarding rule properties in a dict.
         """
-        for (project_id, forwarding_rules) in project_fwd_rules.iteritems():
+        for (project_id, forwarding_rules) in resource_from_api.iteritems():
             for rule in forwarding_rules:
                 yield {'project_id': project_id,
                        'id': rule.get('id'),
@@ -79,16 +79,12 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
         for project in projects:
             project_fwd_rules = []
             try:
-                response = self.api_client.get_forwarding_rules(project.id)
-                for page in response:
-                    items = page.get('items', {})
-                    for region_fwd_rules in items.values():
-                        fwd_rules = region_fwd_rules.get('forwardingRules', [])
-                        project_fwd_rules.extend(fwd_rules)
+                project_fwd_rules = self.api_client.get_forwarding_rules(
+                    project.id)
+                if project_fwd_rules:
+                    forwarding_rules[project.id] = project_fwd_rules
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            if project_fwd_rules:
-                forwarding_rules[project.id] = project_fwd_rules
         return forwarding_rules
 
     def run(self):

@@ -25,13 +25,26 @@ from google.cloud.security.common.gcp_type import errors
 class ResourceType(object):
     """Resource types."""
 
+    # Org resources
     ORGANIZATION = 'organization'
     FOLDER = 'folder'
     PROJECT = 'project'
+
+    # Groups
     GROUP = 'group'
+
+    # Compute engine
+    BACKEND_SERVICE = 'backend_service'
     FORWARDING_RULE = 'forwarding_rule'
+    INSTANCE = 'instance'
+    INSTANCE_GROUP = 'instance_group'
+    INSTANCE_GROUP_MANAGER = 'instance_group_manager'
+    INSTANCE_TEMPLATE = 'instance_template'
+
+    # Data storage
     BUCKETS_ACL = 'buckets_acl'
     CLOUDSQL_ACL = 'cloudsql_instances'
+
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,

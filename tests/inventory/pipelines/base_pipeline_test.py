@@ -15,7 +15,7 @@
 """Tests the base pipeline."""
 
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 import mock
 
 # pylint: disable=line-too-long
@@ -33,7 +33,7 @@ from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
 
 
-class BasePipelineTest(basetest.TestCase):
+class BasePipelineTest(ForsetiTestCase):
     """Tests for the base pipeline.
     
     Because base pipeline is an abstract class, there is no way to instantiate

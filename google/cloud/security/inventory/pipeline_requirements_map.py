@@ -18,11 +18,11 @@
 # will print all the keys() in REQUIREMENTS_MAP.
 
 REQUIREMENTS_MAP = {
-    'bigquery_datasets':
-        {'module_name': 'load_bigquery_datasets_pipeline',
+    'backend_services':
+        {'module_name': 'load_backend_services_pipeline',
          'depends_on': 'projects',
-         'api_name': 'bigquery_api',
-         'dao_name': 'dao'},
+         'api_name': 'compute_api',
+         'dao_name': 'backend_service_dao'},
     'bigquery_datasets':
         {'module_name': 'load_bigquery_datasets_pipeline',
          'depends_on': 'projects',
@@ -68,6 +68,26 @@ REQUIREMENTS_MAP = {
          'depends_on': 'organizations',
          'api_name': 'admin_api',
          'dao_name': 'dao'},
+    'instance_group_managers':
+        {'module_name': 'load_instance_group_managers_pipeline',
+         'depends_on': 'projects',
+         'api_name': 'compute_api',
+         'dao_name': 'instance_group_manager_dao'},
+    'instance_groups':
+        {'module_name': 'load_instance_groups_pipeline',
+         'depends_on': 'projects',
+         'api_name': 'compute_api',
+         'dao_name': 'instance_group_dao'},
+    'instance_templates':
+        {'module_name': 'load_instance_templates_pipeline',
+         'depends_on': 'projects',
+         'api_name': 'compute_api',
+         'dao_name': 'instance_template_dao'},
+    'instances':
+        {'module_name': 'load_instances_pipeline',
+         'depends_on': 'projects',
+         'api_name': 'compute_api',
+         'dao_name': 'instance_dao'},
     'org_iam_policies':
         {'module_name': 'load_org_iam_policies_pipeline',
          'depends_on': 'organizations',
