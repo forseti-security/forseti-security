@@ -264,9 +264,9 @@ def _create_dao_map():
             'instance_dao': instance_dao.InstanceDao(),
             'instance_group_dao': instance_group_dao.InstanceGroupDao(),
             'instance_group_manager_dao':
-             instance_group_manager_dao.InstanceGroupManagerDao(),
+                instance_group_manager_dao.InstanceGroupManagerDao(),
             'instance_template_dao':
-             instance_template_dao.InstanceTemplateDao(),
+                instance_template_dao.InstanceTemplateDao(),
             'organization_dao': organization_dao.OrganizationDao(),
             'project_dao': project_dao.ProjectDao(),
         }
