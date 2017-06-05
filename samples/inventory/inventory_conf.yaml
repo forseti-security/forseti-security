@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Resource names can be found by running 'forseti_inventory --list_resources'.
+
 pipelines:
+  - resource: backend_services
+    enabled: true
   - resource: bigquery_datasets
     enabled: true
   - resource: buckets
@@ -31,6 +35,14 @@ pipelines:
   - resource: group_members
     enabled: true
   - resource: groups
+    enabled: true
+  - resource: instance_group_managers
+    enabled: true
+  - resource: instance_groups
+    enabled: true
+  - resource: instance_templates
+    enabled: true
+  - resource: instances
     enabled: true
   - resource: org_iam_policies
     enabled: true
