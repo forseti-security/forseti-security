@@ -20,7 +20,7 @@ requests and bug reports under Issues.
 {% include modules_optional.md %}
 
 ## Roadmap
-{% include roadmap.md %}
+{% include resource_coverage.md %}
 
 # Contact us
 Reach out to us with questions by contacting
