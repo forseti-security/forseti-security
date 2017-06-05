@@ -45,7 +45,7 @@ class PipelineBuilder(object):
             None
         """
         self.cycle_timestamp = cycle_timestamp
-        self.config = file_loader.read_and_parse_file(config_path)
+        self.config_path = config_path
         self.flags = flags
         self.api_map = api_map
         self.dao_map = dao_map
@@ -162,19 +162,23 @@ class PipelineBuilder(object):
         # First pass: map all the pipelines to their own nodes,
         # regardless if they should run or not.
         map_of_all_pipeline_nodes = {}
-        for config in self.config:
-            map_of_all_pipeline_nodes[config.get('resource')] = PipelineNode(
-                config.get('resource'), config.get('enabled'))
+
+        config = file_loader.read_and_parse_file(self.config_path)
+        configured_pipelines = config.get('pipelines', [])
+
+        for entry in configured_pipelines:
+            map_of_all_pipeline_nodes[entry.get('resource')] = PipelineNode(
+                entry.get('resource'), entry.get('enabled'))
 
         # Another pass: build the dependency tree by setting the parents
         # correctly on all the nodes.
-        for config in self.config:
+        for entry in configured_pipelines:
             parent_name = (
                 pipeline_requirements_map.REQUIREMENTS_MAP.get(
-                    config.get('resource')).get('depends_on'))
+                    entry.get('resource')).get('depends_on'))
             if parent_name is not None:
                 parent_node = map_of_all_pipeline_nodes[parent_name]
-                map_of_all_pipeline_nodes[config.get('resource')].parent = (
+                map_of_all_pipeline_nodes[entry.get('resource')].parent = (
                     parent_node)
 
         # Assume root is organizations.

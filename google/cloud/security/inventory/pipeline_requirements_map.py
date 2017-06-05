@@ -14,9 +14,6 @@
 
 """Map of the requirements needed by the inventory pipelines."""
 
-# TODO: Add a flag --list_resources in inventory_loader.py that
-# will print all the keys() in REQUIREMENTS_MAP.
-
 REQUIREMENTS_MAP = {
     'backend_services':
         {'module_name': 'load_backend_services_pipeline',
