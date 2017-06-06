@@ -36,6 +36,10 @@ class ResourceType(object):
     # Compute engine
     BACKEND_SERVICE = 'backend_service'
     FORWARDING_RULE = 'forwarding_rule'
+    INSTANCE = 'instance'
+    INSTANCE_GROUP = 'instance_group'
+    INSTANCE_GROUP_MANAGER = 'instance_group_manager'
+    INSTANCE_TEMPLATE = 'instance_template'
 
     # Data storage
     BUCKETS_ACL = 'buckets_acl'
