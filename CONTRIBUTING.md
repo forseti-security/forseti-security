@@ -42,8 +42,7 @@ $ PYTHONPATH=./ pylint --rcfile=./pylintrc
 
 1. Consult [GitHub Help] for more information on using pull requests.
 
-2. Fork the project, clone your fork to your machine, and configure
-the upstream remote.
+2. Fork the project, clone your fork to your machine, and configure the upstream remote.
 
     ```
     # Fork the project via GitHub UI.
@@ -90,18 +89,11 @@ the upstream remote.
     This way, it is easier for troubleshooting and rollbacks.  In other words,
     please do not incorporate multiple changes in one PR.
 
-    Instructions to execute the tools: [Inventory], [Scanner], [Enforcer]
-
 6. Create your test.
 
     We strive to have high and useful coverage by unit tests.  If your change
     involves substantial logic, we will request that you write applicable unit
     tests.
-
-    Our unit tests are written with google-apputils basetest framework.
-    See a [basic example] of how to use it, in the "Google-Style Tests" section.
-
-    [Instructions to run the tests.]
 
 7. Commit your changes and push them to your development branch.
 
@@ -131,9 +123,4 @@ the upstream remote.
 
 [GitHub Help]: https://help.github.com/articles/about-pull-requests/
 [Google Python Style Guide]: https://google.github.io/styleguide/pyguide.html
-[Inventory]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/inventory#executing-inventory
-[Scanner]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/scanner
-[Enforcer]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/enforcer
-[basic example]: https://pypi.python.org/pypi/google-apputils
-[Instructions to run the tests.]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/tests
 [forseti-security@google.com]: mailto:forseti-security@google.com
