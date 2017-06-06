@@ -16,8 +16,6 @@
 
 """Loads requested data into inventory.
 
-Usage examples: docs/inventory/README.md
-
 Usage:
   $ forseti_inventory \\
       --config_path (required) \\
@@ -71,6 +69,7 @@ from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import pipeline_builder as builder
+from google.cloud.security.inventory import util as inventory_util
 from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
 # pylint: enable=line-too-long
 
@@ -84,9 +83,11 @@ LOGLEVELS = {
 }
 flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 
+flags.DEFINE_boolean('list_resources', False,
+                     'List valid resources for --config_path.')
+
 flags.DEFINE_string('config_path', None,
                     'Path to the inventory config file.')
-
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -222,7 +223,6 @@ def _create_api_map():
     Returns:
         Dictionary of GCP APIs.
     """
-
     try:
         return {
             'admin_api': admin_directory.AdminDirectoryClient(),
@@ -240,7 +240,7 @@ def _create_api_map():
     # TODO: Replace this generic except by handling specific exceptions from
     # lower levels and then handle here.
     except:  # pylint: disable=bare-except
-        LOGGER.error('Error to create the api map.\n%s', sys.exc_info()[0])
+        LOGGER.error('Error creating the API map.\n%s', sys.exc_info()[0])
         sys.exit()
 
 def _create_dao_map():
@@ -252,7 +252,6 @@ def _create_dao_map():
     Returns:
         Dictionary of DAOs.
     """
-
     try:
         return {
             'backend_service_dao': backend_service_dao.BackendServiceDao(),
@@ -271,17 +270,22 @@ def _create_dao_map():
             'project_dao': project_dao.ProjectDao(),
         }
     except data_access_errors.MySQLError as e:
-        LOGGER.error('Encountered error to create dao map.\n%s', e)
+        LOGGER.error('Error to creating DAO map.\n%s', e)
         sys.exit()
-
 
 def main(_):
     """Runs the Inventory Loader."""
-
     inventory_flags = FLAGS.FlagValuesDict()
+
+    if inventory_flags.get('list_resources'):
+        inventory_util.list_resource_pipelines()
+        sys.exit()
+
     _configure_logging(inventory_flags.get('loglevel'))
 
-    if inventory_flags.get('config_path') is None:
+    config_path = inventory_flags.get('config_path')
+
+    if config_path is None:
         LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
@@ -292,7 +296,7 @@ def main(_):
 
     pipeline_builder = builder.PipelineBuilder(
         cycle_timestamp,
-        inventory_flags.get('config_path'),
+        config_path,
         flags,
         api_map,
         dao_map)

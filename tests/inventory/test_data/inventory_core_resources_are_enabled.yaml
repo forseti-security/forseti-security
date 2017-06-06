@@ -12,45 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The resource name can be gotten from the REQUIREMENTS_MAP
-# in /google/cloud/security/inventory/pipeline_builder.py module.
-
-- resource: bigquery_datasets
-  enabled: false
-
-- resource: buckets
-  enabled: true
-
-- resource: buckets_acls
-  depends_on: buckets
-  enabled: true
-
-- resource: cloudsql
-  enabled: false
-
-- resource: firewall_rules
-  enabled: true
-
-- resource: folders
-  enabled: true
-
-- resource: forwarding_rules
-  enabled: true
-
-- resource: group_members
-  enabled: true
-
-- resource: groups
-  enabled: true
-
-- resource: org_iam_policies
-  enabled: true
-
-- resource: organizations
-  enabled: true
-
-- resource: projects
-  enabled: true
-
-- resource: projects_iam_policies
-  enabled: true
+pipelines:
+  - resource: bigquery_datasets
+    enabled: false
+  - resource: buckets
+    enabled: true
+  - resource: buckets_acls
+    depends_on: buckets
+    enabled: true
+  - resource: cloudsql
+    enabled: false
+  - resource: firewall_rules
+    enabled: true
+  - resource: folders
+    enabled: true
+  - resource: forwarding_rules
+    enabled: true
+  - resource: group_members
+    enabled: true
+  - resource: groups
+    enabled: true
+  - resource: org_iam_policies
+    enabled: true
+  - resource: organizations
+    enabled: true
+  - resource: projects
+    enabled: true
+  - resource: projects_iam_policies
+    enabled: true
