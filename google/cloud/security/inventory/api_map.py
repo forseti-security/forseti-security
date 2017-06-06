@@ -17,50 +17,50 @@
 API_MAP = {
     'admin_api':
         {
-         'module_name': 'admin_directory',
-         'class_name': 'AdminDirectoryClient',
-         'version': None
+            'module_name': 'admin_directory',
+            'class_name': 'AdminDirectoryClient',
+            'version': None
         },
     'bigquery_api':
         {
-         'module_name': 'bigquery',
-         'class_name': 'BigQueryClient',
-         'version': None
+            'module_name': 'bigquery',
+            'class_name': 'BigQueryClient',
+            'version': None
         },
     'cloudsql_api':
         {
-         'module_name': 'cloudsql',
-         'class_name': 'CloudsqlClient',
-         'version': None
+            'module_name': 'cloudsql',
+            'class_name': 'CloudsqlClient',
+            'version': None
         },
-    'compute_api': 
+    'compute_api':
         {
-         'module_name': 'compute',
-         'class_name': 'ComputeClient',
-         'version': None
+            'module_name': 'compute',
+            'class_name': 'ComputeClient',
+            'version': None
         },
-    'compute_beta_api': 
+    'compute_beta_api':
         {
-         'module_name': 'compute',
-         'class_name': 'ComputeClient',
-         'version': 'beta'
+            'module_name': 'compute',
+            'class_name': 'ComputeClient',
+            'version': 'beta'
         },
-    'crm_api': 
+    'crm_api':
         {
-         'module_name': 'cloud_resource_manager',
-         'class_name': 'CloudResourceManagerClient',
-         'version': None
+            'module_name': 'cloud_resource_manager',
+            'class_name': 'CloudResourceManagerClient',
+            'version': None
         },
-    'crm_v2beta1_api': 
+    'crm_v2beta1_api':
         {
-         'module_name': 'cloud_resource_manager',
-         'class_name': 'CloudResourceManagerClient',
-         'version': 'v2beta1'
+            'module_name': 'cloud_resource_manager',
+            'class_name': 'CloudResourceManagerClient',
+            'version': 'v2beta1'
         },
-    'gcs_api': 
+    'gcs_api':
         {
-         'module_name': 'storage',
-         'class_name': 'StorageClient',
-         'version': None
+            'module_name': 'storage',
+            'class_name': 'StorageClient',
+            'version': None
         },
 }

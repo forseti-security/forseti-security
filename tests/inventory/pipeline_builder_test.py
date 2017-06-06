@@ -23,7 +23,7 @@ from tests.inventory.test_data import fake_runnable_pipelines
 from google.cloud.security.inventory import pipeline_builder
 
 
-BASE_PATH = 'test_data/'
+BASE_PATH = 'tests/inventory/test_data/'
 FAKE_TIMESTAMP = '20001225T121212Z'
 
 class PipelineBuilderTest(basetest.TestCase):

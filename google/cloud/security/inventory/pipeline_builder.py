@@ -54,13 +54,13 @@ class PipelineBuilder(object):
 
     def _get_api(self, api_name):
         """Get the api instance for the pipeline.
-        
+
         The purpose is that we only want to initialize the APIs for the
         pipelines that are enabled, in order to minimize setup.
-        
+
         Args:
             api_name: String of the API name to get.
-        
+
         Returns:
             Instance of the API.
         """
@@ -84,13 +84,13 @@ class PipelineBuilder(object):
                 LOGGER.error('Unable to instantiate %s\n%s',
                              api_class_name, sys.exc_info()[0])
                 raise api_errors.ApiInitializationError(e)
-            
+
             api_version = self.api_map.get(api_name).get('version')
             if api_version is None:
                 api = api_class()
             else:
                 api = api_class(version=api_version)
-             
+
             self.initialized_api_map[api_name] = api
 
         return api
@@ -167,8 +167,8 @@ class PipelineBuilder(object):
                     continue
 
                 api_name = (pipeline_requirements_map.REQUIREMENTS_MAP
-                    .get(node.resource_name)
-                    .get('api_name'))
+                            .get(node.resource_name)
+                            .get('api_name'))
                 try:
                     api = self._get_api(api_name)
                 except api_errors.ApiInitializationError:
