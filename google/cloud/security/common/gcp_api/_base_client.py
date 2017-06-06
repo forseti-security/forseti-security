@@ -14,6 +14,8 @@
 
 """Base GCP client which uses the discovery API."""
 
+import json
+
 from apiclient import discovery
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
@@ -99,9 +101,39 @@ class BaseClient(object):
             exception is not wrapped by the retry library, and will be handled
             upstream.
         """
-        return request.execute()
+        try:
+            return request.execute()
+        except HttpError as e:
+            if (e.resp.status == 403 and
+                    e.resp.get('content-type', '').startswith(
+                        'application/json')):
 
-    def _build_paged_result(self, request, api_stub, rate_limiter):
+                # If a project doesn't have the necessary API enabled, Google
+                # will return an error domain=usageLimits and
+                # reason=accessNotConfigured. Clients may wish to handle this
+                # error in some particular way. For instance, when listing
+                # resources, it might be treated as "no resources of that type
+                # are present", if the API would need to be enabled in order
+                # to create the resources in question!
+                #
+                # So, if we find that specific error, raise a different
+                # exception to indicate it to callers. Otherwise, propagate
+                # the initial exception.
+                error_details = json.loads(e.content)
+                errors = error_details.get('error', {}).get('errors', [])
+                api_disabled_errors = [
+                    error for error in errors
+                    if (error.get('domain') == 'usageLimits'
+                        and error.get('reason') == 'accessNotConfigured')]
+                if (api_disabled_errors and
+                        len(api_disabled_errors) == len(errors)):
+                    raise api_errors.ApiNotEnabledError(
+                        api_disabled_errors[0].get('extendedHelp', ''),
+                        e)
+            raise
+
+    def _build_paged_result(self, request, api_stub, rate_limiter,
+                            next_stub=None):
         """Execute results and page through the results.
 
         Use of this method requires the API having a .list_next() method.
@@ -110,6 +142,7 @@ class BaseClient(object):
             request: GCP API client request object.
             api_stub: The API stub used to build the request.
             rate_limiter: An instance of RateLimiter to use.
+            next_stub: The API stub used to get the next page of results.
 
         Returns:
             A list of API response objects (dict).
@@ -118,9 +151,11 @@ class BaseClient(object):
             api_errors.ApiExecutionError when there is no list_next() method
             on the api_stub.
         """
-        if not hasattr(api_stub, 'list_next'):
-            raise api_errors.ApiExecutionError(
-                api_stub, 'No list_next() method.')
+        if next_stub is None:
+            if not hasattr(api_stub, 'list_next'):
+                raise api_errors.ApiExecutionError(
+                    api_stub, 'No list_next() method.')
+            next_stub = api_stub.list_next
 
         results = []
 
@@ -129,7 +164,12 @@ class BaseClient(object):
                 with rate_limiter:
                     response = self._execute(request)
                     results.append(response)
-                    request = api_stub.list_next(request, response)
+                    request = next_stub(request, response)
+            except api_errors.ApiNotEnabledError:
+                # If the API isn't enabled on the resource, there must
+                # not be any resources. So, just swallow the error:
+                # we're done!
+                break
             except (HttpError, HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)
 

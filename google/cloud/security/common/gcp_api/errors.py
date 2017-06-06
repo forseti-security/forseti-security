@@ -30,6 +30,17 @@ class ApiExecutionError(Error):
             self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
 
 
+class ApiNotEnabledError(Error):
+    """The requested API is not enabled on this project."""
+
+    CUSTOM_ERROR_MESSAGE = ('GCP API Error; API not enabled, turn it on at '
+                            '{0}:\n{1}')
+
+    def __init__(self, error_url, e):
+        super(ApiNotEnabledError, self).__init__(
+            self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
+
+
 class InvalidBucketPathError(Error):
     """Invalid GCS bucket path."""
     pass
