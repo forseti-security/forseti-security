@@ -131,9 +131,9 @@ the upstream remote.
 
 [GitHub Help]: https://help.github.com/articles/about-pull-requests/
 [Google Python Style Guide]: https://google.github.io/styleguide/pyguide.html
-[Inventory]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/inventory#executing-inventory
-[Scanner]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/scanner
-[Enforcer]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/enforcer
+[Inventory]: https://googlecloudplatform.github.io/forseti-security/modules/core/inventory/
+[Scanner]: https://googlecloudplatform.github.io/forseti-security/modules/core/scanner/
+[Enforcer]: https://googlecloudplatform.github.io/forseti-security/modules/core/enforcer/
 [basic example]: https://pypi.python.org/pypi/google-apputils
-[Instructions to run the tests.]: https://github.com/GoogleCloudPlatform/forseti-security/tree/master/docs/tests
+[Instructions to run the tests.]: https://googlecloudplatform.github.io/forseti-security/testing/
 [forseti-security@google.com]: mailto:forseti-security@google.com
