@@ -15,6 +15,8 @@
 """ Importer implementations. """
 
 import json
+from collections import defaultdict
+from time import time
 
 from google.cloud.security.common.data_access import forseti
 from google.cloud.security.iam.dao import create_engine
@@ -40,6 +42,11 @@ class MemberCache(dict):
     """Member cache."""
     pass
 
+class RoleCache(defaultdict):
+    """Role cache."""
+
+    def __init__(self):
+        super(RoleCache, self).__init__(set)
 
 class Member(object):
     """Member object."""
@@ -151,6 +158,7 @@ class ForsetiImporter(object):
         self.forseti_importer = forseti.Importer(
             service_config.forseti_connect_string)
         self.resource_cache = ResourceCache()
+        self.role_cache = RoleCache()
         self.dao = dao
 
     def _convert_organization(self, forseti_org):
@@ -246,15 +254,49 @@ class ForsetiImporter(object):
     def _convert_policy(self, forseti_policy):
         """Creates a db object from a Forseti policy."""
 
-        # res_type, res_id = forseti_policy.getResourceReference()
+        res_type, res_id = forseti_policy.get_resource_reference()
         policy = Policy(forseti_policy)
         for binding in policy.iter_bindings():
-            self.session.merge(self.dao.TBL_ROLE(name=binding.get_role()))
+            members = []
             for member in binding.iter_members():
-                self.session.merge(
+                members.append(self.session.merge(
                     self.dao.TBL_MEMBER(
-                        name=member.get_name(),
-                        type=member.get_type()))
+                        name='{}/{}'.format(member.get_type(),
+                                            member.get_name()),
+                        member_name=member.get_name(),
+                        type=member.get_type())))
+
+            def dummy_generate_permissions():
+                """Dummy generate permissions."""
+                import random
+                perms = [
+                    'a.b.c',
+                    'd.e.f',
+                    'g.h.i',
+                    'j.k.l',
+                    'm.n.o',
+                    'foo.bar.baz',
+                    ]
+                return (list(set([random.choice(perms)
+                                  for _ in range(int(random.random()*10))])))
+
+            try:
+                role = self.session.query(self.dao.TBL_ROLE).filter(
+                    self.dao.TBL_ROLE.name == binding.get_role()).one()
+            except:
+                permissions = ([self.session.merge(self.dao.TBL_PERMISSION(name=p))
+                                for p in dummy_generate_permissions()])
+                role = self.dao.TBL_ROLE(name=binding.get_role(),
+                                         permissions=permissions)
+                for p in permissions:
+                    self.session.add(p)
+                self.session.add(role)
+
+            resource = self.session.query(self.dao.TBL_RESOURCE).filter(
+                self.dao.TBL_RESOURCE.name == '{}/{}'.format(res_type, res_id)).one()
+            self.session.add(self.dao.TBL_BINDING(resource=resource,
+                                 role=role,
+                                 members=members))
 
     def _convert_membership(self, forseti_membership):
         """Creates a db membership from a Forseti membership."""
@@ -282,15 +324,12 @@ class ForsetiImporter(object):
                                 member_name=forseti_group))
 
     def run(self):
-        """Runs the import.
-
-            Raises:
-                NotImplementedError: If the resource type isn't found.
-        """
-
+        """Runs the import."""
+        self.session.add(self.session.merge(self.model))
         self.model.set_inprogress(self.session)
         self.model.kick_watchdog(self.session)
 
+        last_watchdog_kick = time()
         for res_type, obj in self.forseti_importer:
             print 'type: {}, obj: {}'.format(res_type, obj)
             if res_type == 'organizations':
@@ -310,10 +349,16 @@ class ForsetiImporter(object):
             elif res_type == 'membership':
                 self.session.add(self._convert_membership(obj))
             elif res_type == 'customer':
+                # TODO: investigate how we
+                # don't see this in the first place
                 pass
             else:
                 raise NotImplementedError(res_type)
-            #self.model.kick_watchdog(self.session)
+
+            # kick watchdog about every ten seconds
+            if time() - last_watchdog_kick > 10.0:
+                self.model.kick_watchdog(self.session)
+                last_watchdog_kick = time()
 
         self.model.set_done(self.session)
         self.session.commit()
