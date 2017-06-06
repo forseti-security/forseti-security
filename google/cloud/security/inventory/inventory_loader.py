@@ -60,13 +60,8 @@ from google.cloud.security.common.data_access import instance_template_dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
-from google.cloud.security.common.gcp_api import admin_directory
-from google.cloud.security.common.gcp_api import bigquery
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.gcp_api import cloudsql
-from google.cloud.security.common.gcp_api import compute
-from google.cloud.security.common.gcp_api import storage as gcs
 from google.cloud.security.common.util import log_util
+from google.cloud.security.inventory import api_map
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import pipeline_builder as builder
 from google.cloud.security.inventory import util as inventory_util
@@ -88,6 +83,19 @@ flags.DEFINE_boolean('list_resources', False,
 
 flags.DEFINE_string('config_path', None,
                     'Path to the inventory config file.')
+
+flags.DEFINE_string('domain_super_admin_email', None,
+                    'An email address of a super-admin in the GSuite domain. '
+                    'REQUIRED: if inventory_groups is enabled.')
+flags.DEFINE_string('groups_service_account_key_file', None,
+                    'The key file with credentials for the service account. '
+                    'REQUIRED: If inventory_groups is enabled and '
+                    'runnning locally.')
+flags.DEFINE_integer('max_admin_api_calls_per_day', 150000,
+                     'Admin SDK queries per day.')
+flags.DEFINE_string('max_results_admin_api', 500,
+                    'maxResult param for the Admin SDK list() method')
+
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
 CYCLE_TIMESTAMP_FORMAT = '%Y%m%dT%H%M%SZ'
@@ -214,35 +222,6 @@ def _configure_logging(loglevel):
     level = LOGLEVELS.setdefault(loglevel, 'info')
     log_util.set_logger_level(level)
 
-def _create_api_map():
-    """Create a map of GCP APIs.
-
-    These will be re-usable so that the rate-limiter can apply across
-    different pipelines.
-
-    Returns:
-        Dictionary of GCP APIs.
-    """
-    try:
-        return {
-            'admin_api': admin_directory.AdminDirectoryClient(),
-            'bigquery_api': bigquery.BigQueryClient(),
-            'cloudsql_api': cloudsql.CloudsqlClient(),
-            'compute_api': compute.ComputeClient(),
-            'compute_beta_api': compute.ComputeClient(version='beta'),
-            'crm_api': crm.CloudResourceManagerClient(),
-            'crm_v2beta1_api': crm.CloudResourceManagerClient(
-                version='v2beta1'),
-            'gcs_api': gcs.StorageClient(),
-        }
-    # A lot of potential errors can be thrown by different APIs.
-    # So, handle generically.
-    # TODO: Replace this generic except by handling specific exceptions from
-    # lower levels and then handle here.
-    except:  # pylint: disable=bare-except
-        LOGGER.error('Error creating the API map.\n%s', sys.exc_info()[0])
-        sys.exit()
-
 def _create_dao_map():
     """Create a map of DAOs.
 
@@ -289,7 +268,6 @@ def main(_):
         LOGGER.error('Path to pipeline config needs to be specified.')
         sys.exit()
 
-    api_map = _create_api_map()
     dao_map = _create_dao_map()
 
     cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
@@ -298,7 +276,7 @@ def main(_):
         cycle_timestamp,
         config_path,
         flags,
-        api_map,
+        api_map.API_MAP,
         dao_map)
     pipelines = pipeline_builder.build()
 

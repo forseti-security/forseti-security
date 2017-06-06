@@ -19,6 +19,7 @@ import sys
 
 import anytree
 
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import pipeline_requirements_map
@@ -38,7 +39,7 @@ class PipelineBuilder(object):
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
             config_path: String of the path to the inventory config file.
             flags: Dictionary of flag values.
-            api_map: Dictionary of GCP API instances, mapped to each resource.
+            api_map: Dictionary of GCP API info, mapped to each resource.
             dao_map: Dictionary of DAO instances, mapped to each resource.
 
         Returns:
@@ -49,9 +50,53 @@ class PipelineBuilder(object):
         self.flags = flags
         self.api_map = api_map
         self.dao_map = dao_map
+        self.initialized_api_map = {}
+
+    def _get_api(self, api_name):
+        """Get the api instance for the pipeline.
+        
+        The purpose is that we only want to initialize the APIs for the
+        pipelines that are enabled, in order to minimize setup.
+        
+        Args:
+            api_name: String of the API name to get.
+        
+        Returns:
+            Instance of the API.
+        """
+        api = self.initialized_api_map.get(api_name)
+        if api is None:
+            api_module_path = 'google.cloud.security.common.gcp_api.{}'
+            api_module_name = api_module_path.format(
+                self.api_map.get(api_name).get('module_name'))
+
+            try:
+                api_module = importlib.import_module(api_module_name)
+            except (ImportError, TypeError, ValueError) as e:
+                LOGGER.error('Unable to import %s\n%s', api_module_name, e)
+                raise api_errors.ApiInitializationError(e)
+
+            api_class_name = (
+                self.api_map.get(api_name).get('class_name'))
+            try:
+                api_class = getattr(api_module, api_class_name)
+            except AttributeError as e:
+                LOGGER.error('Unable to instantiate %s\n%s',
+                             api_class_name, sys.exc_info()[0])
+                raise api_errors.ApiInitializationError(e)
+            
+            api_version = self.api_map.get(api_name).get('version')
+            if api_version is None:
+                api = api_class()
+            else:
+                api = api_class(version=api_version)
+             
+            self.initialized_api_map[api_name] = api
+
+        return api
 
     def _find_runnable_pipelines(self, root):
-        """Initialize the pipeline builder.
+        """Find the enabled pipelines to run.
 
         Args:
             root: PipelineNode representing the top-level starting point
@@ -121,13 +166,12 @@ class PipelineBuilder(object):
                                  class_name, sys.exc_info()[0])
                     continue
 
-                api = self.api_map.get(
-                    pipeline_requirements_map.REQUIREMENTS_MAP
+                api_name = (pipeline_requirements_map.REQUIREMENTS_MAP
                     .get(node.resource_name)
                     .get('api_name'))
-                if api is None:
-                    LOGGER.error('Unable to find api for %s',
-                                 node.resource_name)
+                try:
+                    api = self._get_api(api_name)
+                except api_errors.ApiInitializationError:
                     continue
 
                 dao = self.dao_map.get(
