@@ -200,11 +200,18 @@ cd $USER_HOME
 rm -rf forseti-*
 pip install --upgrade pip
 pip install --upgrade setuptools
+pip install google-apputils grpcio grpcio-tools protobuf
 
 cd $USER_HOME
 
 # Download Forseti src; see DOWNLOAD_FORSETI
 {}
+
+# Don't build protos in setup.py.
+# Yes, this adds extra steps. However, this removes the step of having to download protoc.
+# Otherise, the pip package and the setuptools clobber each other's path
+python build_protos.py -- clean
+pip uninstall protobuf
 python setup.py install
 
 # Create the startup run script
@@ -218,6 +225,7 @@ read -d '' RUN_FORSETI << EOF
 EOF
 echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
 chmod +x $USER_HOME/run_forseti.sh
+/bin/sh $USER_HOME/run_forseti.sh
 
 (echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
 """.format(

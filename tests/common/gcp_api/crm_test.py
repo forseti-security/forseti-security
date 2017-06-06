@@ -19,7 +19,7 @@ from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 import mock
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
@@ -31,7 +31,7 @@ from tests.common.gcp_type.test_data import fake_orgs
 from tests.common.gcp_type.test_data import fake_projects
 
 
-class CloudResourceManagerTest(basetest.TestCase):
+class CloudResourceManagerTest(ForsetiTestCase):
     """Test the Cloud Resource Manager API Client."""
 
     MAX_CRM_API_CALLS_PER_100_SECONDS = 88888
@@ -91,7 +91,7 @@ class CloudResourceManagerTest(basetest.TestCase):
             .projects.return_value.list_next.return_value = None
 
         self.crm_api_client._execute = mock.MagicMock(
-            return_value=self.fake_projects_api_response1)
+            return_value=fake_projects.FAKE_ACTIVE_PROJECTS_API_RESPONSE)
 
         result = list(self.crm_api_client.get_projects(
             'projects', lifecycleState=LifecycleState.ACTIVE))
@@ -275,4 +275,4 @@ class CloudResourceManagerTest(basetest.TestCase):
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

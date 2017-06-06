@@ -34,26 +34,11 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
     RESOURCE_NAME = 'buckets_acl'
 
-    def __init__(self, cycle_timestamp, configs, gcs_client, dao):
-        """Constructor for the data pipeline.
-
-        Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
-            gcs_client: GCS API client.
-            dao: Data access object.
-
-        Returns:
-            None
-        """
-        super(LoadProjectsBucketsAclsPipeline, self).__init__(
-            cycle_timestamp, configs, gcs_client, dao)
-
-    def _transform(self, buckets_acls_maps):
+    def _transform(self, resource_from_api):
         """Yield an iterator of loadable bucket acls.
 
         Args:
-            buckets_acls_maps: An iterable of bucket acls as per-bucket
+            resource_from_api: An iterable of bucket acls as per-bucket
                 dictionary.
                 Example: {'bucket_name': 'example_bucket_name.appspot.com',
                           'acl': bucket_acls_json}
@@ -61,7 +46,7 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
         Yields:
             An iterable of bucket acls, as a per-bucket dictionary.
         """
-        for buckets_acls_map in buckets_acls_maps:
+        for buckets_acls_map in resource_from_api:
             acls = buckets_acls_map['acl']
             acls_items = acls.get('items', [])
 

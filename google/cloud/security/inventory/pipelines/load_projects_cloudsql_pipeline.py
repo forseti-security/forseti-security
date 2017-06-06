@@ -34,27 +34,13 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     """Pipeline to load project CloudSql data into Inventory."""
 
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
+    RESOURCE_NAME = 'cloudsql'
     RESOURCE_NAME_INSTANCES = 'cloudsql_instances'
     RESOURCE_NAME_IPADDRESSES = 'cloudsql_ipaddresses'
     RESOURCE_NAME_AUTHORIZEDNETWORKS = (  # pylint: disable=invalid-name
         'cloudsql_ipconfiguration_authorizednetworks')
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
-
-    def __init__(self, cycle_timestamp, configs, sqladmin_client, dao):
-        """Constructor for the data pipeline.
-
-        Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
-            gcs_client: GCS API client.
-            dao: Data access object.
-
-        Returns:
-            None
-        """
-        super(LoadProjectsCloudsqlPipeline, self).__init__(
-            cycle_timestamp, configs, sqladmin_client, dao)
 
     @staticmethod
     def _transform_data(cloudsql_instances_map):

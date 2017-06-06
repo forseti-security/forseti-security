@@ -55,15 +55,18 @@ class BigQueryClient(_base_client.BaseClient):
             ['project-id',
              'project-id',
              '...']
-        """
-        bigquery_stub = self.service.projects()
-        request = bigquery_stub.list()
 
-        results = self._build_paged_result(request, bigquery_stub,
+            If there are no project_ids enabled for bigquery an empty list will
+            be returned.
+        """
+        bigquery_projects_api = self.service.projects()
+        request = bigquery_projects_api.list()
+
+        results = self._build_paged_result(request, bigquery_projects_api,
                                            self.rate_limiter)
         project_ids = []
         for result in results:
-            for project in result.get('projects'):
+            for project in result.get('projects', []):
                 project_ids.append(project.get('id'))
 
         return project_ids
@@ -80,10 +83,10 @@ class BigQueryClient(_base_client.BaseClient):
               'projectId': 'project-id'},
              {...}]
         """
-        bigquery_stub = self.service.datasets()
-        request = bigquery_stub.list(projectId=project_id, all=True)
+        bigquery_datasets_api = self.service.datasets()
+        request = bigquery_datasets_api.list(projectId=project_id, all=True)
 
-        results = self._build_paged_result(request, bigquery_stub,
+        results = self._build_paged_result(request, bigquery_datasets_api,
                                            self.rate_limiter)
         datasets = []
         for result in results:
@@ -106,10 +109,11 @@ class BigQueryClient(_base_client.BaseClient):
             {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
             {'role': 'READER', 'specialGroup': 'projectReaders'}]
         """
-        bigquery_stub = self.service.datasets()
-        request = bigquery_stub.get(projectId=project_id, datasetId=dataset_id)
+        bigquery_datasets_api = self.service.datasets()
+        request = bigquery_datasets_api.get(projectId=project_id,
+                                            datasetId=dataset_id)
 
-        results = self._build_paged_result(request, bigquery_stub,
+        results = self._build_paged_result(request, bigquery_datasets_api,
                                            self.rate_limiter)
         access_list = []
         for result in results:

@@ -35,6 +35,9 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
+    # backend services
+    'backend_services': create_tables.CREATE_BACKEND_SERVICES_TABLE,
+
     # bigquery
     'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE,
 
@@ -66,6 +69,20 @@ CREATE_TABLE_MAP = {
     # groups
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+    'groups_violations': create_tables.CREATE_GROUPS_VIOLATIONS_TABLE,
+
+    # instances
+    'instances': create_tables.CREATE_INSTANCES_TABLE,
+
+    # instance groups
+    'instance_groups': create_tables.CREATE_INSTANCE_GROUPS_TABLE,
+
+    # instance templates
+    'instance_templates': create_tables.CREATE_INSTANCE_TEMPLATES_TABLE,
+
+    # instance group managers
+    'instance_group_managers': (
+        create_tables.CREATE_INSTANCE_GROUP_MANAGERS_TABLE),
 
     # organizations
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,

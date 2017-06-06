@@ -17,7 +17,7 @@
 
 echo "Running $(which pylint).\n"
 
-echo "Pylint version: $(pylint --version).\n"
+echo "Pylint version: $(pip show pylint).\n"
 
 # The disables specified allow us to have 'I' level messages, just
 # not the ones specified.

@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# A script to perform the download and installation of protobuf.
+"""A Compute InstanceTemplate.
 
-set -e
+See:
+ https://cloud.google.com/compute/docs/reference/latest/instanceTemplates
+"""
 
-PROTOC_DOWNLOAD_PATH="/tmp/protoc"
-FORSETI_PROTOC_URL="https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/scripts/data/protoc_url.txt"
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-instance-attributes
 
-echo "Downloading protoc.\n"
-mkdir -p $PROTOC_DOWNLOAD_PATH
-cd $PROTOC_DOWNLOAD_PATH
-PROTOC_DOWNLOAD_URL=$(curl -s $FORSETI_PROTOC_URL)
-wget -P $PROTOC_DOWNLOAD_PATH $PROTOC_DOWNLOAD_URL
-unzip -d $PROTOC_DOWNLOAD_PATH $(basename $PROTOC_DOWNLOAD_URL)
+
+class InstanceTemplate(object):
+    """Represents InstanceTemplate resource."""
+
+    def __init__(self, **kwargs):
+        """InstanceTemplate resource."""
+        self.creation_timestamp = kwargs.get('creation_timestamp')
+        self.description = kwargs.get('description')
+        self.name = kwargs.get('name')
+        self.properties = kwargs.get('properties')

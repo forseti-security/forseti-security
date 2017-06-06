@@ -6,13 +6,13 @@
     - member_email: '@gmail.com'
 
 - name: Allow mypartner users to be in a group.
-  group_email: <FOO_GROUP>@henrychang.mygbiz.com
+  group_email: <FOO_GROUP>@<MY_COMPANY DOMAIN>
   mode: whitelist
   conditions:
     - member_email: '@<MY_PARTNER_DOMAIN>'
 
 - name: Allow mypartner users to be in another group.
-  group_email: ufo@henrychang.mygbiz.com
+  group_email: <BAR_GROUP>@<MY_COMPANY DOMAIN>
   mode: whitelist
   conditions:
     - member_email: '@<MY_PARTNER_DOMAIN>'
