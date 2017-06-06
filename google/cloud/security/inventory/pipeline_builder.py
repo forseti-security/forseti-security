@@ -67,13 +67,13 @@ class PipelineBuilder(object):
         api = self.initialized_api_map.get(api_name)
         if api is None:
             api_module_path = 'google.cloud.security.common.gcp_api.{}'
-            api_module_name = api_module_path.format(
-                self.api_map.get(api_name).get('module_name'))
 
             try:
+                api_module_name = api_module_path.format(
+                    self.api_map.get(api_name).get('module_name'))
                 api_module = importlib.import_module(api_module_name)
-            except (ImportError, TypeError, ValueError) as e:
-                LOGGER.error('Unable to import %s\n%s', api_module_name, e)
+            except (AttributeError, ImportError, TypeError, ValueError) as e:
+                LOGGER.error('Unable to get module %s\n%s', api_name, e)
                 raise api_errors.ApiInitializationError(e)
 
             api_class_name = (
