@@ -29,7 +29,7 @@ from tests.inventory.pipelines.test_data import fake_configs
 # pylint: enable=line-too-long
 
 
-class LoadBigQueryDatasetsPipelineTest(ForsetiTestCase):
+class LoadBigqueryDatasetsPipelineTest(ForsetiTestCase):
     """Tests for the load_bigquery_datasets_pipeline."""
 
     def setUp(self):
@@ -41,7 +41,7 @@ class LoadBigQueryDatasetsPipelineTest(ForsetiTestCase):
         self.mock_bigquery_client = mock.create_autospec(bq.BigQueryClient)
         self.mock_dao = mock.create_autospec(project_dao.ProjectDao)
         self.pipeline = (
-            load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline(
+            load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline(
                 self.cycle_timestamp,
                 self.configs,
                 self.mock_bigquery_client,
@@ -122,7 +122,7 @@ class LoadBigQueryDatasetsPipelineTest(ForsetiTestCase):
             return_value)
 
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_retrieve_dataset_access')
     def test_get_dataset_access_map(self, mock_dataset_access):
         mock_dataset_access.return_value = (
@@ -178,16 +178,16 @@ class LoadBigQueryDatasetsPipelineTest(ForsetiTestCase):
 
 
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_get_loaded_count')
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_load')
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_transform')
     @mock.patch.object(
-        load_bigquery_datasets_pipeline.LoadBigQueryDatasetsPipeline,
+        load_bigquery_datasets_pipeline.LoadBigqueryDatasetsPipeline,
         '_retrieve')
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
             mock_load, mock_get_loaded_count):

@@ -22,16 +22,13 @@ import MySQLdb
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import csv_writer
-from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao as vdao
-from google.cloud.security.common.gcp_type import iam_policy
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
-from google.cloud.security.common.gcp_type import resource
+from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline
 from google.cloud.security.scanner import scanner
 from google.cloud.security.scanner.audit import iam_rules_engine as ire
-from google.cloud.security.scanner.audit import rules as audit_rules
 from google.cloud.security.scanner.scanners import iam_rules_scanner as irs
 from tests.inventory.pipelines.test_data import fake_iam_policies
 
@@ -236,14 +233,14 @@ class ScannerRunnerTest(ForsetiTestCase):
     @mock.patch.object(csv_writer, 'write_csv', autospec=True)
     @mock.patch.object(os, 'path', autospec=True)
     @mock.patch.object(scanner, '_upload_csv')
-    @mock.patch.object(scanner, '_send_email')
+    @mock.patch.object(email_scanner_summary_pipeline, 'EmailScannerSummaryPipeline')
     @mock.patch('google.cloud.security.scanner.scanner.datetime')
     @mock.patch.object(vdao.ViolationDao, 'insert_violations')
     def test_output_results_local_no_email(
             self,
             mock_violation_dao,
             mock_datetime,
-            mock_send_email,
+            mock_email_pipeline,
             mock_upload,
             mock_path,
             mock_write_csv,
@@ -285,20 +282,21 @@ class ScannerRunnerTest(ForsetiTestCase):
 
         mock_upload.assert_called_once_with(
             fake_full_path, self.fake_utcnow, fake_csv_name)
-        self.assertEquals(0, mock_send_email.call_count)
+        self.assertEquals(0, mock_email_pipeline.call_count)
+
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch.object(csv_writer, 'write_csv', autospec=True)
     @mock.patch.object(os, 'path', autospec=True)
     @mock.patch.object(scanner, '_upload_csv')
-    @mock.patch.object(scanner, '_send_email')
+    @mock.patch.object(email_scanner_summary_pipeline, 'EmailScannerSummaryPipeline')
     @mock.patch('google.cloud.security.scanner.scanner.datetime')
     @mock.patch.object(vdao.ViolationDao, 'insert_violations')
     def test_output_results_gcs_email(
             self,
             mock_violation_dao,
             mock_datetime,
-            mock_send_email,
+            mock_email_pipeline,
             mock_upload,
             mock_path,
             mock_write_csv,
@@ -347,63 +345,8 @@ class ScannerRunnerTest(ForsetiTestCase):
 
         mock_upload.assert_called_once_with(
             fake_full_path, self.fake_utcnow, fake_csv_name)
-        mock_send_email.assert_called_once_with(
-            fake_csv_name, self.fake_utcnow, fake_violations, fake_counts, [])
+        mock_email_pipeline.assert_called_once()
 
-    def test_build_scan_summary(self):
-        """Test that the scan summary is built correctly."""
-        members = [iam_policy.IamPolicyMember.create_from(u)
-            for u in ['user:a@b.c', 'group:g@h.i', 'serviceAccount:x@y.z']
-        ]
-        all_violations = [
-            audit_rules.RuleViolation(
-                resource_type='organization',
-                resource_id='abc111',
-                rule_name='Abc 111',
-                rule_index=0,
-                violation_type=audit_rules.VIOLATION_TYPE['whitelist'],
-                role='role1',
-                members=tuple(members)),
-            audit_rules.RuleViolation(
-                resource_type='project',
-                resource_id='def222',
-                rule_name='Def 123',
-                rule_index=1,
-                violation_type=audit_rules.VIOLATION_TYPE['blacklist'],
-                role='role2',
-                members=tuple(members)),
-        ]
-        total_resources = {
-            resource.ResourceType.ORGANIZATION: 1,
-            resource.ResourceType.PROJECT: 1,
-        }
-
-        actual = self.scanner._build_scan_summary(
-            all_violations, total_resources)
-
-        expected_summaries = {
-            resource.ResourceType.ORGANIZATION: {
-                'pluralized_resource_type': 'Organizations',
-                'total': 1,
-                'violations': {
-                    'abc111': len(members)
-                }
-            },
-            resource.ResourceType.PROJECT: {
-                'pluralized_resource_type': 'Projects',
-                'total': 1,
-                'violations': {
-                    'def222': len(members)
-                }
-            },
-        }
-        expected_totals = sum(
-            [v for t in expected_summaries.values()
-            for v in t['violations'].values()])
-        expected = (expected_totals, expected_summaries)
-
-        self.assertEqual(expected, actual)
-            
 
 if __name__ == '__main__':
     unittest.main()

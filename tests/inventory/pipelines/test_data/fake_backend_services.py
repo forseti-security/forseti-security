@@ -15,118 +15,76 @@
 
 """Test backend services data."""
 
-FAKE_API_RESPONSE1 = [{
-    "items": {
-        "regions/europe-west1": {
-            "warning": {
-                "code": "NO_RESULTS_ON_PAGE",
-                "message": "There are no results for scope 'regions/europe-west1' on this page.",
-                "data": [
-                    {
-                        "key": "scope",
-                        "value": "regions/europe-west1"
-                    }
-                ]
+FAKE_API_RESPONSE1 = [
+    {
+        "kind": "compute#backendService",
+        "id": "3072061062494750400",
+        "creationTimestamp": "2017-04-03T14:01:35.687-07:00",
+        "name": "bs-1",
+        "description": "bs-1-desc",
+        "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/backendServices/bs-1",
+        "backends": [
+            {
+                "group": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/instanceGroups/bs-1-ig-1",
+                "balancingMode": "UTILIZATION",
+                "capacityScaler": 1.0
             }
-        },
-        "global": {
-            "backendServices": [
-                {
-                    "kind": "compute#backendService",
-                    "id": "3072061062494750400",
-                    "creationTimestamp": "2017-04-03T14:01:35.687-07:00",
-                    "name": "bs-1",
-                    "description": "bs-1-desc",
-                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/backendServices/bs-1",
-                    "backends": [
-                        {
-                            "group": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/instanceGroups/bs-1-ig-1",
-                            "balancingMode": "UTILIZATION",
-                            "capacityScaler": 1.0
-                        }
-                    ],
-                    "healthChecks": [
-                        "https://www.googleapis.com/compute/v1/projects/project1/global/httpsHealthChecks/hc-1"
-                    ],
-                    "timeoutSec": 3610,
-                    "port": 8443,
-                    "protocol": "HTTPS",
-                    "portName": "https",
-                    "enableCDN": False,
-                    "sessionAffinity": "NONE",
-                    "affinityCookieTtlSec": 0,
-                    "loadBalancingScheme": "EXTERNAL",
-                    "connectionDraining": {
-                        "drainingTimeoutSec": 0
-                    }
-                },
-            ],
-        },
+        ],
+        "healthChecks": [
+            "https://www.googleapis.com/compute/v1/projects/project1/global/httpsHealthChecks/hc-1"
+        ],
+        "timeoutSec": 3610,
+        "port": 8443,
+        "protocol": "HTTPS",
+        "portName": "https",
+        "enableCDN": False,
+        "sessionAffinity": "NONE",
+        "affinityCookieTtlSec": 0,
+        "loadBalancingScheme": "EXTERNAL",
+        "connectionDraining": {
+            "drainingTimeoutSec": 0
+        }
     },
-    "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/aggregated/backendServices",
-    "kind": "compute#backendServiceAggregatedList",
-    "id": "projects/project1/aggregated/backendServices",
-}]
+]
 
-FAKE_API_RESPONSE2 = [{
-    "items": {
-        "regions/europe-west1": {
-            "warning": {
-                "code": "NO_RESULTS_ON_PAGE",
-                "message": "There are no results for scope 'regions/europe-west1' on this page.",
-                "data": [
-                    {
-                        "key": "scope",
-                        "value": "regions/europe-west1"
-                    }
-                ]
+FAKE_API_RESPONSE2 = [
+    {
+        "kind": "compute#backendService",
+        "id": "6071052922189792661",
+        "creationTimestamp": "2017-05-12T11:14:18.559-07:00",
+        "name": "iap-bs",
+        "description": "",
+        "selfLink": "https://www.googleapis.com/compute/v1/projects/project2/global/backendServices/iap-bs",
+        "backends": [
+            {
+                "description": "",
+                "group": "https://www.googleapis.com/compute/v1/projects/project2/zones/us-east1-c/instanceGroups/instance-group-1",
+                "balancingMode": "UTILIZATION",
+                "maxUtilization": 0.8,
+                "capacityScaler": 1.0
             }
+        ],
+        "healthChecks": [
+            "https://www.googleapis.com/compute/v1/projects/project2/global/healthChecks/iap-hc"
+        ],
+        "timeoutSec": 30,
+        "port": 80,
+        "protocol": "HTTP",
+        "portName": "http",
+        "enableCDN": False,
+        "sessionAffinity": "NONE",
+        "affinityCookieTtlSec": 0,
+        "loadBalancingScheme": "EXTERNAL",
+        "connectionDraining": {
+            "drainingTimeoutSec": 300
         },
-        "global": {
-            "backendServices": [
-                {
-                    "kind": "compute#backendService",
-                    "id": "6071052922189792661",
-                    "creationTimestamp": "2017-05-12T11:14:18.559-07:00",
-                    "name": "iap-bs",
-                    "description": "",
-                    "selfLink": "https://www.googleapis.com/compute/v1/projects/project2/global/backendServices/iap-bs",
-                    "backends": [
-                        {
-                            "description": "",
-                            "group": "https://www.googleapis.com/compute/v1/projects/project2/zones/us-east1-c/instanceGroups/instance-group-1",
-                            "balancingMode": "UTILIZATION",
-                            "maxUtilization": 0.8,
-                            "capacityScaler": 1.0
-                        }
-                    ],
-                    "healthChecks": [
-                        "https://www.googleapis.com/compute/v1/projects/project2/global/healthChecks/iap-hc"
-                    ],
-                    "timeoutSec": 30,
-                    "port": 80,
-                    "protocol": "HTTP",
-                    "portName": "http",
-                    "enableCDN": False,
-                    "sessionAffinity": "NONE",
-                    "affinityCookieTtlSec": 0,
-                    "loadBalancingScheme": "EXTERNAL",
-                    "connectionDraining": {
-                        "drainingTimeoutSec": 300
-                    },
-                    "iap": {
-                        "enabled": True,
-                        "oauth2ClientId": "foo",
-                        "oauth2ClientSecretSha256": "bar"
-                    }
-                },
-            ],
-        },
+        "iap": {
+            "enabled": True,
+            "oauth2ClientId": "foo",
+            "oauth2ClientSecretSha256": "bar"
+        }
     },
-    "selfLink": "https://www.googleapis.com/compute/v1/projects/project2/aggregated/backendServices",
-    "kind": "compute#backendServiceAggregatedList",
-    "id": "projects/project2/aggregated/backendServices",
-}]
+]
 
 FAKE_PROJECT_BACKEND_SERVICES_MAP = {
     'project1': [

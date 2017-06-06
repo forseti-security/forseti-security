@@ -69,6 +69,20 @@ CREATE_TABLE_MAP = {
     # groups
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
+    'groups_violations': create_tables.CREATE_GROUPS_VIOLATIONS_TABLE,
+
+    # instances
+    'instances': create_tables.CREATE_INSTANCES_TABLE,
+
+    # instance groups
+    'instance_groups': create_tables.CREATE_INSTANCE_GROUPS_TABLE,
+
+    # instance templates
+    'instance_templates': create_tables.CREATE_INSTANCE_TEMPLATES_TABLE,
+
+    # instance group managers
+    'instance_group_managers': (
+        create_tables.CREATE_INSTANCE_GROUP_MANAGERS_TABLE),
 
     # organizations
     'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
