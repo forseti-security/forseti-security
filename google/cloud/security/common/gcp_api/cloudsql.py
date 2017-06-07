@@ -28,7 +28,7 @@ from googleapiclient.errors import HttpError
 FLAGS = flags.FLAGS
 
 # This API is also limited to 100K queries per day.
-# But operationally, will use the per-100 seconds rate limit. 
+# But operationally, will use the per-100 seconds rate limit.
 flags.DEFINE_integer('max_sqladmin_api_calls_per_100_seconds', 100,
                      'Cloud SQL Admin queries per 100 seconds.')
 
