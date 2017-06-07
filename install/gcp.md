@@ -96,11 +96,9 @@ Once completed you can update the following variables in your version of the
 `deploy-forseti.yaml`
 
 * **inventory-groups**: Set this to `true` to enable collection.
-* EMAIL\_ADDRESS\_OF\_A\_GSUITE\_SUPER\_ADMIN: Use of the Admin API requires
+* **EMAIL\_ADDRESS\_OF\_A\_GSUITE\_SUPER\_ADMIN**: Use of the Admin API requires
   delegation (impersonation). Enter an email address of a super-admin in the
   GSuite account.
-* EMAIL\_ADDRESS\_OF\_YOUR\_GROUPS\_SERVICE\_ACCOUNT: This is the email address
-  of the service account you created just for inventorying GSuite Google Groups.
 * **groups-service-account-key-file**: This file tells the `inventory` tool
   where to look for the key file. This shouldn't be changed unless you have also
   changed the flag in `deployment-templates/py/forseti-instance.py`.
@@ -180,7 +178,7 @@ your deployment:
 ## Troubleshooting
 * **Getting errors about invalid resources?**
   Check that your bucket or Cloud SQL instance names are unique.
-* **Getting errors about `MANIFEST\_EXPANSION\_USER_ERROR`?**
+* **Getting errors about MANIFEST\_EXPANSION\_USER_ERROR**?
   The syntax in your template might be invalid. Refer to the error message
   for the line number and erroneous template.
 * **Need to delete your deployment and try again?**
