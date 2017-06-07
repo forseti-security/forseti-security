@@ -133,7 +133,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
         handle = self._get_handle(context)
         self.playgrounder.DelResource(handle,
-                                      request.full_resource_name)
+                                      request.resource_type_name)
         return playground_pb2.DelResourceReply()
 
     def AddResource(self, request, context):
@@ -150,10 +150,10 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         """Lists resources in the model."""
 
         handle = self._get_handle(context)
-        full_resource_names = self.playgrounder.ListResources(handle,
+        resources = self.playgrounder.ListResources(handle,
                                                               request.prefix)
         reply = playground_pb2.ListResourcesReply()
-        reply.full_resource_names.extend(full_resource_names)
+        reply.full_resource_names.extend([r.type_name for r in resources])
         return reply
 
     def DelRole(self, request, context):

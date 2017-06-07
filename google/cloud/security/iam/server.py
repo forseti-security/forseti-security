@@ -46,8 +46,7 @@ class ServiceConfig(object):
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""
-        #self.thread_pool.apply_async(function)
-        function()
+        self.thread_pool.apply_async(function)
 
 
 def serve(endpoint, services, explain_connect_string, forseti_connect_string,
