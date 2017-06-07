@@ -32,6 +32,8 @@ from google.cloud.security.iam.dao import ModelManager
 
 # pylint: disable=unused-argument
 # pylint: disable=no-self-use
+# pylint: disable=bare-except
+
 
 class ResourceCache(dict):
     """Resource cache."""
@@ -167,7 +169,8 @@ class ForsetiImporter(object):
         org_name = 'organization/{}'.format(forseti_org.org_id)
         org = self.dao.TBL_RESOURCE(
             full_name=org_name,
-            name=org_name,
+            type_name=org_name,
+            name=forseti_org.org_id,
             type='organization',
             parent=None)
         self.resource_cache['organization'] = (org, org_name)
@@ -185,17 +188,20 @@ class ForsetiImporter(object):
 
         full_folder_name = '{}/folder/{}'.format(
             full_res_name, forseti_folder.folder_id)
+
         folder_type_name = 'folder/{}'.format(
             forseti_folder.folder_id)
+
         folder = self.dao.TBL_RESOURCE(
             full_name=full_folder_name,
-            name=folder_type_name,
+            type_name=folder_type_name,
+            name=forseti_folder.folder_id,
             type='folder',
             parent=obj,
             display_name=forseti_folder.display_name,
             )
 
-        self.resource_cache[folder.name] = folder, full_folder_name
+        self.resource_cache[folder.type_name] = folder, full_folder_name
         return self.session.merge(folder)
 
     def _convert_project(self, forseti_project):
@@ -212,11 +218,12 @@ class ForsetiImporter(object):
         project = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_project_name,
-                name=project_name,
+                type_name=project_name,
+                name=forseti_project.project_number,
                 type='project',
                 display_name=forseti_project.project_name,
                 parent=obj))
-        self.resource_cache[project_name] = (project, full_project_name)
+        self.resource_cache[project.type_name] = (project, full_project_name)
         return project
 
     def _convert_bucket(self, forseti_bucket):
@@ -229,7 +236,8 @@ class ForsetiImporter(object):
         bucket = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_bucket_name,
-                name=bucket_name,
+                type_name=bucket_name,
+                name=forseti_bucket.bucket_id,
                 type='bucket',
                 parent=parent))
         return bucket
@@ -246,7 +254,8 @@ class ForsetiImporter(object):
         sqlinst = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_sqlinst_name,
-                name=sqlinst_name,
+                type_name=sqlinst_name,
+                name=forseti_cloudsqlinstance.name,
                 type='cloudsqlinstance',
                 parent=parent))
         return sqlinst
@@ -284,19 +293,24 @@ class ForsetiImporter(object):
                 role = self.session.query(self.dao.TBL_ROLE).filter(
                     self.dao.TBL_ROLE.name == binding.get_role()).one()
             except:
-                permissions = ([self.session.merge(self.dao.TBL_PERMISSION(name=p))
-                                for p in dummy_generate_permissions()])
+                permissions = (
+                    [self.session.merge(self.dao.TBL_PERMISSION(name=p))
+                     for p in dummy_generate_permissions()])
                 role = self.dao.TBL_ROLE(name=binding.get_role(),
                                          permissions=permissions)
-                for p in permissions:
-                    self.session.add(p)
+                for permission in permissions:
+                    self.session.add(permission)
                 self.session.add(role)
 
-            resource = self.session.query(self.dao.TBL_RESOURCE).filter(
-                self.dao.TBL_RESOURCE.name == '{}/{}'.format(res_type, res_id)).one()
-            self.session.add(self.dao.TBL_BINDING(resource=resource,
-                                 role=role,
-                                 members=members))
+            res_type_name = '{}/{}'.format(res_type, res_id)
+            resource = (
+                self.session.query(self.dao.TBL_RESOURCE)
+                .filter(self.dao.TBL_RESOURCE.type_name == res_type_name)
+                .one())
+            self.session.add(
+                self.dao.TBL_BINDING(resource=resource,
+                                     role=role,
+                                     members=members))
 
     def _convert_membership(self, forseti_membership):
         """Creates a db membership from a Forseti membership."""

@@ -141,9 +141,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
         handle = self._get_handle(context)
         self.playgrounder.AddResource(handle,
-                                      request.full_resource_name,
-                                      request.resource_type,
-                                      request.parent_full_resource_name,
+                                      request.resource_type_name,
+                                      request.parent_type_name,
                                       request.no_require_parent)
         return playground_pb2.AddResourceReply()
 

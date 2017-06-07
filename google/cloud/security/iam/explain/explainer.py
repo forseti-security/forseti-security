@@ -132,7 +132,7 @@ class Explainer(object):
         with scoped_session as session:
             for tpl in data_access.denormalize(session):
                 permission, resource, member = tpl
-                yield permission.name, resource.full_name, member.name
+                yield permission, resource, member
 
 
 if __name__ == "__main__":
