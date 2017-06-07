@@ -43,20 +43,19 @@ The provided DM templates are samples for you to use. Make a copy of
     "Compute Engine" sections in the template.
 * **GCP\_SERVICE\_ACCOUNT**
   * This is the service account you created for reading GCP resource data.
-* ORGANIZATION\_ID\_NUMBER (the organization id number; get it from the Organization
+* **ORGANIZATION\_ID\_NUMBER** (the organization id number; get it from the Organization
   IAM settings or ask your Organization Administrator)
 * **SENDGRID\_API\_KEY** (the API key for SendGrid email service)
 * **NOTIFICATION\_SENDER\_EMAIL** (email address of notifications sender)
 * **NOTIFICATION\_RECIPIENT\_EMAIL** (email address of notifications recipient)
-* **src-path** and **release-version**: The default is to retrieve the
+* **src-path**, **branch-name**, and **release-version**: The default is to retrieve the
   latest stable release (currently hardcoded) from the GoogleCloudPlatform
   Forseti repo.
-  * `src-path`: This must be the git repo, without the ".git" extension.
+  * src-path: This must be the git repo, without the ".git" extension.
     You probably only need to change this if you are pulling from a different
     fork than GoogleCloudPlatform.
-  * `release-version`: Either "master" or the tag name, without the "v",
-    e.g. for the release with tag name "v1.0", the `release-version` will be
-    "1.0". (The quotes are required in the yaml.)
+  * branch-name: Use this if you want to get a specific branch of the src-path.
+  * release-version: Use this if you want to get a specific release.
 
   Example:
 
