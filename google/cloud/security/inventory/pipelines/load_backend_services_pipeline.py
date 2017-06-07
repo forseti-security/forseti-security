@@ -51,22 +51,23 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
                            self.MYSQL_DATETIME_FORMAT),
                        'name': backend_service.get('name'),
                        'description': backend_service.get('description'),
-                       'affinity_cookie_ttl_sec': backend_service.get(
-                           'affinityCookieTtlSec'),
+                       'affinity_cookie_ttl_sec': self._to_int(
+                           backend_service.get('affinityCookieTtlSec')),
                        'backends': parser.json_stringify(
                            backend_service.get('backends', [])),
                        'cdn_policy': parser.json_stringify(
                            backend_service.get('cdnPolicy', {})),
                        'connection_draining': parser.json_stringify(
                            backend_service.get('connectionDraining', {})),
-                       'enable_cdn': backend_service.get('enableCDN'),
+                       'enable_cdn': self._to_bool(
+                           backend_service.get('enableCDN')),
                        'health_checks': parser.json_stringify(
                            backend_service.get('healthChecks', [])),
                        'iap': parser.json_stringify(
                            backend_service.get('iap', {})),
                        'load_balancing_scheme': backend_service.get(
                            'loadBalancingScheme'),
-                       'port': backend_service.get('port'),
+                       'port': self._to_int(backend_service.get('port')),
                        'port_name': backend_service.get('portName'),
                        'protocol': backend_service.get('protocol'),
                        'region': backend_service.get('region'),
@@ -87,19 +88,13 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
         backend_services = {}
         for project in projects:
-            project_backend_services = []
             try:
-                response = self.api_client.get_backend_services(project.id)
-                for page in response:
-                    items = page.get('items', {})
-                    for region_backend_services in items.values():
-                        rbs = region_backend_services.get(
-                            'backendServices', [])
-                        project_backend_services.extend(rbs)
+                project_backend_services = self.api_client.get_backend_services(
+                    project.id)
+                if project_backend_services:
+                    backend_services[project.id] = project_backend_services
             except api_errors.ApiExecutionError as e:
                 LOGGER.error(inventory_errors.LoadDataPipelineError(e))
-            if project_backend_services:
-                backend_services[project.id] = project_backend_services
         return backend_services
 
     def run(self):

@@ -45,29 +45,49 @@ resources:
 - name: forseti-instance
   type: forseti-instance.py
   properties:
+    # GCE instance properties
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1404-lts
-    instance-type: f1-micro
+    instance-type: g1-small
     zone: $(ref.cloudsql-instance.region)-c
-    service-account: YOUR_SERVICE_ACCOUNT
+
+    service-account: GCP_SERVICE_ACCOUNT
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
-    organization-id: YOUR_ORG_ID
-    # Use the "branch-name" property to deploy a specify a branch of Forseti
-    # on GCP.
-    # Use either branch-name or release-version.
+    organization-id: ORGANIZATION_ID_NUMBER
+
+    # --- Forseti version
+    # Use either branch-name or release-version, but NOT both.
+    #
+    # "release-version": A Forseti release.
+    # See https://github.com/GoogleCloudPlatform/forseti-security/releases
+    #
+    # "branch-name": A git branch of Forseti.
+    #
+    # e.g. "I want to deploy Forseti Security's master branch"
+    #    branch-name: "master"
+    #    # release-version: ... <-- COMMENT OUT
+    #
+    # e.g. "I want to deploy release 1.0"
+    #    # branch-name: "master" <-- COMMENT OUT
+    #    release-version: "1.0"
     #branch-name: ""
     release-version: "1.0.2"
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
+    # --- end Forseti version
+
+    # Cloud SQL
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
+
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-    sendgrid-api-key: YOUR_SENDGRID_API_KEY
-    email-sender: EMAIL_ADDRESS_OF_YOUR_SENDER
-    email-recipient: EMAIL_ADDRESS_OF_YOUR_RECIPIENT
+    sendgrid-api-key: SENDGRID_API_KEY
+    email-sender: NOTIFICATION_SENDER_EMAIL
+    email-recipient: NOTIFICATION_RECIPIENT_EMAIL
+
     # Flags for Inventory to collect GSuite Google Groups information.
     inventory-groups: true
     groups-domain-super-admin-email: EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN
