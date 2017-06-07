@@ -329,6 +329,7 @@ class PlaygroundClient(IAMClient):
                 identity=member_name),
             metadata=self.metadata())
 
+
 class ClientComposition(object):
     """Client composition class.
 
@@ -337,6 +338,7 @@ class ClientComposition(object):
     """
 
     DEFAULT_ENDPOINT = 'localhost:50058'
+
     def __init__(self, endpoint=DEFAULT_ENDPOINT):
         self.channel = grpc.insecure_channel(endpoint)
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})

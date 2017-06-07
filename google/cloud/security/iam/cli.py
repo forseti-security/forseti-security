@@ -198,7 +198,8 @@ def define_explainer_parser(parent):
         'member',
         help='Member to query')
     explain_denied_parser.add_argument(
-        'resource',
+        'resources',
+        nargs='+',
         help='Resource to query')
     explain_denied_parser.add_argument(
         '--roles',
@@ -319,7 +320,7 @@ def run_explainer(client, config):
     def do_why_not_granted():
         """Explain why a permission or a role is NOT granted."""
         print client.explain_denied(config.member,
-                                    config.resource,
+                                    config.resources,
                                     config.roles,
                                     config.permissions)
 

@@ -407,6 +407,7 @@ def define_model(model_name, dbengine, model_seed):
                             (binding.role_name,
                              member.name,
                              binding.resource_type_name)]))
+
             return strategies
 
         @classmethod
