@@ -41,7 +41,7 @@ class ApiNotEnabledError(Error):
             self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
 
 class ApiInitializationError(Error):
-    """Error to initialize the API."""
+    """Error initializing the API."""
     pass
 
 class InvalidBucketPathError(Error):

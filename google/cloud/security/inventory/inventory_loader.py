@@ -81,6 +81,7 @@ flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for --config_path.')
 
+# These flags are for the admin.py module.
 flags.DEFINE_string('config_path', None,
                     'Path to the inventory config file.')
 
