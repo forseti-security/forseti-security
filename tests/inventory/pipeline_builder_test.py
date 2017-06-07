@@ -17,9 +17,8 @@
 from google.apputils import basetest
 import mock
 
-from google.cloud.security.common.util import file_loader
+from google.cloud.security.inventory import api_map
 from tests.inventory.test_data import fake_runnable_pipelines
-
 
 from google.cloud.security.inventory import pipeline_builder
 
@@ -56,11 +55,17 @@ class PipelineBuilderTest(basetest.TestCase):
                               actual_pipeline.RESOURCE_NAME)
             counter += 1
 
-    def testAllEnabled(self):
-        config_path = BASE_PATH + 'inventory_all_enabled.yaml'
+    def _setup_pipeline_builder(self, config_filename):
+        config_path = BASE_PATH + config_filename
         my_pipeline_builder = pipeline_builder.PipelineBuilder(
             FAKE_TIMESTAMP, config_path, mock.MagicMock(),
             mock.MagicMock(), mock.MagicMock())
+        my_pipeline_builder._get_api = mock.MagicMock()
+        return my_pipeline_builder
+
+    def testAllEnabled(self):
+        my_pipeline_builder = self._setup_pipeline_builder(
+            'inventory_all_enabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
         
@@ -70,12 +75,10 @@ class PipelineBuilderTest(basetest.TestCase):
         self._verify_resource_names_in_pipelines(
             fake_runnable_pipelines.ALL_ENABLED,
             actual_runnable_pipelines)
-        
+
     def testAllDisabled(self):
-        config_path = BASE_PATH + 'inventory_all_disabled.yaml'
-        my_pipeline_builder = pipeline_builder.PipelineBuilder(
-            FAKE_TIMESTAMP, config_path, mock.MagicMock(),
-            mock.MagicMock(), mock.MagicMock())
+        my_pipeline_builder = self._setup_pipeline_builder(
+            'inventory_all_disabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
         
@@ -88,10 +91,8 @@ class PipelineBuilderTest(basetest.TestCase):
 
     def testOneResourceIsEnabled(self):
         # Enabled: Firewall Rules
-        config_path = BASE_PATH + 'inventory_one_resource_is_enabled.yaml'
-        my_pipeline_builder = pipeline_builder.PipelineBuilder(
-            FAKE_TIMESTAMP, config_path, mock.MagicMock(),
-            mock.MagicMock(), mock.MagicMock())
+        my_pipeline_builder = self._setup_pipeline_builder(
+            'inventory_one_resource_is_enabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
         
@@ -104,10 +105,8 @@ class PipelineBuilderTest(basetest.TestCase):
 
     def testTwoAdjoiningResourcesAreEnabled(self):
         # Enabled: CloudSQL, Firewall Rules
-        config_path = BASE_PATH + 'inventory_two_resources_are_enabled.yaml'
-        my_pipeline_builder = pipeline_builder.PipelineBuilder(
-            FAKE_TIMESTAMP, config_path, mock.MagicMock(),
-            mock.MagicMock(), mock.MagicMock())
+        my_pipeline_builder = self._setup_pipeline_builder(
+            'inventory_two_resources_are_enabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
         
@@ -120,11 +119,8 @@ class PipelineBuilderTest(basetest.TestCase):
 
     def testThreeResourcesAreEnabledGroupMembers(self):
         # Enabled: CloudSQL, Firewall Rules, Group Members
-        config_path = (BASE_PATH +
+        my_pipeline_builder = self._setup_pipeline_builder(
             'inventory_three_resources_are_enabled_group_members.yaml')
-        my_pipeline_builder = pipeline_builder.PipelineBuilder(
-            FAKE_TIMESTAMP, config_path, mock.MagicMock(),
-            mock.MagicMock(), mock.MagicMock())
 
         actual_runnable_pipelines = my_pipeline_builder.build()
         
@@ -138,11 +134,8 @@ class PipelineBuilderTest(basetest.TestCase):
 
     def testThreeResourcesAreEnabledGroups(self):
         # Enabled: CloudSQL, Firewall Rules, Groups
-        config_path = (BASE_PATH +
+        my_pipeline_builder = self._setup_pipeline_builder(
             'inventory_three_resources_are_enabled_groups.yaml')
-        my_pipeline_builder = pipeline_builder.PipelineBuilder(
-            FAKE_TIMESTAMP, config_path, mock.MagicMock(),
-            mock.MagicMock(), mock.MagicMock())
 
         actual_runnable_pipelines = my_pipeline_builder.build()
         
@@ -154,11 +147,8 @@ class PipelineBuilderTest(basetest.TestCase):
             actual_runnable_pipelines)
 
     def testCoreResourcesAreEnabled(self):
-        config_path = (BASE_PATH +
+        my_pipeline_builder = self._setup_pipeline_builder(
             'inventory_core_resources_are_enabled.yaml')
-        my_pipeline_builder = pipeline_builder.PipelineBuilder(
-            FAKE_TIMESTAMP, config_path, mock.MagicMock(),
-            mock.MagicMock(), mock.MagicMock())
 
         actual_runnable_pipelines = my_pipeline_builder.build()
         
@@ -168,3 +158,40 @@ class PipelineBuilderTest(basetest.TestCase):
         self._verify_resource_names_in_pipelines(
             fake_runnable_pipelines.CORE_RESOURCES_ARE_ENABLED,
             actual_runnable_pipelines)
+
+    def testCanGetApiThatIsAlreadyInitialized(self):
+        my_pipeline_builder = pipeline_builder.PipelineBuilder(
+            FAKE_TIMESTAMP, 'foo_path', mock.MagicMock(),
+            api_map.API_MAP, mock.MagicMock())
+        my_pipeline_builder.initialized_api_map = {'foo': 'bar'}
+        
+        self.assertEquals('bar', my_pipeline_builder._get_api('foo'))
+
+    @mock.patch('google.cloud.security.common.gcp_api.admin_directory.AdminDirectoryClient')
+    def testInitializeApiWithEmptyInitializedApiMap(self, mock_admin):
+        my_pipeline_builder = pipeline_builder.PipelineBuilder(
+            FAKE_TIMESTAMP, 'foo_path', mock.MagicMock(),
+            api_map.API_MAP, mock.MagicMock())
+
+        admin_api = my_pipeline_builder._get_api('admin_api')
+        
+        self.assertEquals(
+            1, len(my_pipeline_builder.initialized_api_map.keys()))
+        self.assertTrue('admin_api' in my_pipeline_builder.initialized_api_map)
+        self.assertTrue('AdminDirectoryClient()'in str(admin_api))
+
+    @mock.patch('google.cloud.security.common.gcp_api.admin_directory.AdminDirectoryClient')
+    def testInitializeApiWithNonEmptyInitializedApiMap(self, mock_admin):
+        my_pipeline_builder = pipeline_builder.PipelineBuilder(
+            FAKE_TIMESTAMP, 'foo_path', mock.MagicMock(),
+            api_map.API_MAP, mock.MagicMock())
+        my_pipeline_builder.initialized_api_map = {'foo': 'bar'}
+
+        admin_api = my_pipeline_builder._get_api('admin_api')
+        
+        self.assertEquals(
+            2, len(my_pipeline_builder.initialized_api_map.keys()))
+        self.assertTrue('foo' in my_pipeline_builder.initialized_api_map)
+        self.assertEquals('bar', my_pipeline_builder.initialized_api_map['foo'])
+        self.assertTrue('admin_api' in my_pipeline_builder.initialized_api_map)
+        self.assertTrue('AdminDirectoryClient()'in str(admin_api))
