@@ -25,18 +25,6 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('domain_super_admin_email', None,
-                    'An email address of a super-admin in the GSuite domain. '
-                    'REQUIRED: if inventory_groups is enabled.')
-flags.DEFINE_string('groups_service_account_key_file', None,
-                    'The key file with credentials for the service account. '
-                    'REQUIRED: If inventory_groups is enabled and '
-                    'runnning locally.')
-flags.DEFINE_integer('max_admin_api_calls_per_day', 150000,
-                     'Admin SDK queries per day.')
-flags.DEFINE_string('max_results_admin_api', 500,
-                    'maxResult param for the Admin SDK list() method')
-
 
 class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""

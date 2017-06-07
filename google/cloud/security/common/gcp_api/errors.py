@@ -40,6 +40,9 @@ class ApiNotEnabledError(Error):
         super(ApiNotEnabledError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
 
+class ApiInitializationError(Error):
+    """Error initializing the API."""
+    pass
 
 class InvalidBucketPathError(Error):
     """Invalid GCS bucket path."""
