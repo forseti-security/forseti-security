@@ -345,7 +345,6 @@ class ForsetiImporter(object):
 
         last_watchdog_kick = time()
         for res_type, obj in self.forseti_importer:
-            print 'type: {}, obj: {}'.format(res_type, obj)
             if res_type == 'organizations':
                 self.session.add(self._convert_organization(obj))
             elif res_type == 'folders':
@@ -385,7 +384,7 @@ def by_source(source):
         'TEST': TestImporter,
         'FORSETI': ForsetiImporter,
         'EMPTY': EmptyImporter,
-    }[source]
+    }[source.upper()]
 
 
 class ServiceConfig(object):

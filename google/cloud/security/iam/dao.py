@@ -41,9 +41,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
-from google.cloud.security.iam.utils import full_to_type_name
-from google.cloud.security.iam.utils import resource_to_type_name
-
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -279,14 +276,17 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def delete_all(cls, engine):
             """Delete all data from the model."""
-            Binding.__table__.drop(engine)
-            Member.__table__.drop(engine)
-            Permission.__table__.drop(engine)
-            Role.__table__.drop(engine)
-            Resource.__table__.drop(engine)
             role_permissions.drop(engine)
             binding_members.drop(engine)
             group_members.drop(engine)
+
+            Binding.__table__.drop(engine)
+            Permission.__table__.drop(engine)
+
+            Role.__table__.drop(engine)
+            Member.__table__.drop(engine)
+            Resource.__table__.drop(engine)
+
 
         @classmethod
         def explain_granted(cls, session, member_name, resource_type_name,
@@ -448,7 +448,7 @@ def define_model(model_name, dbengine, model_seed):
                        for k, values in expansion.iteritems()}
 
             return [(binding.role_name,
-                    res_exp[binding.resource_type_name])
+                     res_exp[binding.resource_type_name])
                     for binding in bindings]
 
         @classmethod
@@ -1096,10 +1096,11 @@ def define_model(model_name, dbengine, model_seed):
             while resources_new:
                 resources_new = set()
                 for parent, child in (
-                     session.query(res_anc, res_childs)
-                     .filter(res_childs.type_name.in_(resources_set))
-                     .filter(res_childs.parent_type_name == res_anc.type_name)
-                     .all()):
+                        session.query(res_anc, res_childs)
+                        .filter(res_childs.type_name.in_(resources_set))
+                        .filter(res_childs.parent_type_name ==
+                                res_anc.type_name)
+                        .all()):
 
                     if parent.type_name not in resources_set:
                         resources_new.add(parent.type_name)
@@ -1276,8 +1277,9 @@ class ModelManager(object):
     def delete(self, model_name):
         """Delete a model entry in the database by name."""
 
-        _, data_access = self.sessionmakers[model_name]
-        del self.sessionmakers[model_name]
+        _, data_access = self._get(model_name)
+        if model_name in self.sessionmakers:
+            del self.sessionmakers[model_name]
         with self.modelmaker() as session:
             session.query(Model).filter(Model.handle == model_name).delete()
         data_access.delete_all(self.engine)
