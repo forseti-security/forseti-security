@@ -25,9 +25,9 @@ module.
 
 ## Customize Deployment Templates
 The provided DM templates are samples for you to use. Make a copy of
-`deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update the following variables:
+`deploy-forseti.yaml.sample` (found in samples/deployment-manager) as `deploy-forseti.yaml` and update the following variables:
 
-* CLOUDSQL\_INSTANCE\_NAME
+* **CLOUDSQL\_INSTANCE\_NAME**
   * Instance name must start with a letter and consist of lowercase letters,
     numbers, and hyphens (e.g. "valid-instancename-1",
     NOT "1\_invalid\_instanceName.com"). See [naming guidelines](https://cloud.google.com/sql/docs/mysql/instance-settings#settings-2ndgen)
@@ -36,25 +36,24 @@ The provided DM templates are samples for you to use. Make a copy of
     (either by deleting your deployment or manually through
     gcloud or the Cloud Console), you cannot reuse that instance name
     for up to 7 days.
-* SCANNER\_BUCKET
+* **SCANNER\_BUCKET**
   * This is just the bucket name; do not include "gs://".
   * The bucket name is subject to the [bucket naming guidelines](https://cloud.google.com/storage/docs/naming).
-  * **Note**: use the same SCANNER\_BUCKET name for both the "Cloud Storage" and
+  * _Note_: use the same SCANNER\_BUCKET name for both the "Cloud Storage" and
     "Compute Engine" sections in the template.
-* YOUR\_SERVICE\_ACCOUNT
+* **GCP\_SERVICE\_ACCOUNT**
   * This is the service account you created for reading GCP resource data.
-* YOUR\_ORG\_ID (the organization id number; get it from the Organization
+* ORGANIZATION\_ID\_NUMBER (the organization id number; get it from the Organization
   IAM settings or ask your Organization Administrator)
-* YOUR\_SENDGRID\_API\_KEY (the API key for SendGrid email service)
-* EMAIL\_ADDRESS\_OF_YOUR\_SENDER (sender email address for notifications)
-* EMAIL\_ADDRESS\_OF\_YOUR\_RECIPIENT (email address of notification recipient)
-* `src-path` and `release-version`: The default is to retrieve the
-  latest stable branch (currently hardcoded). If you want to get a different
-  release archive, e.g. master, change the following:
-  * `src-path`: This will be something like `https://github.com/GoogleCloudPlatform/forseti-security/archive/{TAG_NAME}.tar.gz`.
-    You can find the tag names from [this page](https://github.com/GoogleCloudPlatform/forseti-security/tags);
-    the tag name starts with "v". If you want to use master branch,
-    then set "TAG_NAME" to "master".
+* **SENDGRID\_API\_KEY** (the API key for SendGrid email service)
+* **NOTIFICATION\_SENDER\_EMAIL** (email address of notifications sender)
+* **NOTIFICATION\_RECIPIENT\_EMAIL** (email address of notifications recipient)
+* **src-path** and **release-version**: The default is to retrieve the
+  latest stable release (currently hardcoded) from the GoogleCloudPlatform
+  Forseti repo.
+  * `src-path`: This must be the git repo, without the ".git" extension.
+    You probably only need to change this if you are pulling from a different
+    fork than GoogleCloudPlatform.
   * `release-version`: Either "master" or the tag name, without the "v",
     e.g. for the release with tag name "v1.0", the `release-version` will be
     "1.0". (The quotes are required in the yaml.)
@@ -62,24 +61,26 @@ The provided DM templates are samples for you to use. Make a copy of
   Example:
 
   ```yaml
-      # master release:
-      release-version: "master"
-      src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/master.tar.gz
+      # master branch:
+      branch-name: "master"
+      # release-version: "1.0"
+      src-path: https://github.com/GoogleCloudPlatform/forseti-security
 
       # v1.0 release:
+      # branch-name: "master"
       release-version: "1.0"
-      src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.tar.gz
+      src-path: https://github.com/GoogleCloudPlatform/forseti-security
   ```
 
 There are other templates that you can modify:
 
-* `py/inventory/cloudsql-instance.py`:  The template for the
+* `inventory/cloudsql-instance.py`:  The template for the
   Google Cloud SQL instance.
-* `py/inventory/cloudsql-database.py`: The template for the
+* `inventory/cloudsql-database.py`: The template for the
   Google Cloud SQL database.
-* `py/storage/bucket.py`: The template for the
+* `storage/bucket.py`: The template for the
   Google Cloud Storage buckets.
-* `py/forseti-instance.py`: The template for the
+* `forseti-instance.py`: The template for the
   Compute Engine instance where Forseti Security will run.
    * You can customize the startup script (more about
      [startup scripts in GCP docs](https://cloud.google.com/deployment-manager/docs/step-by-step-guide/setting-metadata-and-startup-scripts)).
@@ -180,7 +181,7 @@ your deployment:
 ## Troubleshooting
 * **Getting errors about invalid resources?**
   Check that your bucket or Cloud SQL instance names are unique.
-* **Getting errors about `MANIFEST_EXPANSION_USER_ERROR`?**
+* **Getting errors about `MANIFEST\_EXPANSION\_USER_ERROR`?**
   The syntax in your template might be invalid. Refer to the error message
   for the line number and erroneous template.
 * **Need to delete your deployment and try again?**
