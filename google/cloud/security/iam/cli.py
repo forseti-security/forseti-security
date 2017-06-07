@@ -319,7 +319,7 @@ def run_explainer(client, config):
     def do_why_not_granted():
         """Explain why a permission or a role is NOT granted."""
         print client.explain_denied(config.member,
-                                    config.resources,
+                                    config.resource,
                                     config.roles,
                                     config.permissions)
 

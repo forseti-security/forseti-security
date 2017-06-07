@@ -151,7 +151,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
         handle = self._get_handle(context)
         resources = self.playgrounder.ListResources(handle,
-                                                              request.prefix)
+                                                    request.prefix)
         reply = playground_pb2.ListResourcesReply()
         reply.full_resource_names.extend([r.type_name for r in resources])
         return reply
