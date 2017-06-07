@@ -53,6 +53,7 @@ class StorageClient(_base_client.BaseClient):
     def __init__(self, credentials=None):
         super(StorageClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
+        # Storage API has no rate limits.
 
     def put_text_file(self, local_file_path, full_bucket_path):
         """Put a text object into a bucket.
