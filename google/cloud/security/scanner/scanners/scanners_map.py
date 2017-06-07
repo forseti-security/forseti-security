@@ -29,8 +29,8 @@ SCANNER_MAP = {
     'BucketsRulesEngine': BucketsAclScanner,
     'CloudSqlRulesEngine': CloudSqlAclScanner,
     'GroupsRulesEngine': GroupsScanner,
-    'IamRulesEngine': IamPolicyScanner
-    'InstanceNetworkInterfaceRulesEngine': InstanceNetworkInterfaceScanner
+    'IamRulesEngine': IamPolicyScanner,
+    'InstanceNetworkInterfaceRulesEngine': InstanceNetworkInterfaceScanner,
 }
 
 FLATTENING_MAP = {

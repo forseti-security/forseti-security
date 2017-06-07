@@ -31,6 +31,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         Args:
             snapshot_timestamp: The snapshot timestamp
         """
+<<<<<<< HEAD
         super(InstanceNetworkInterfaceScanner, self).__init__(
             global_configs,
             snapshot_timestamp)
@@ -115,7 +116,6 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
-
 
 FAKE_global_configs = {
     'db_host': '127.0.0.1',

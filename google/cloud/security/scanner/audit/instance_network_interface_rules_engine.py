@@ -229,7 +229,6 @@ class Rule(object):
                     project=project,
                     network=network,
                     ips='project_not_covered')
-
         elif network not in self.rules['whitelist'].get(project) and is_external_network:
             yield self.RuleViolation(
                 resource_type='instance',
