@@ -188,10 +188,10 @@ class ComputeClient(_base_client.BaseClient):
         list_request = instance_templates_api.list(
             project=project_id)
 
-        paged_resuls = self._build_paged_result(
+        paged_results = self._build_paged_result(
             list_request, instance_templates_api, self.rate_limiter)
 
-        return self._flatten_list_results(paged_resuls, 'items')
+        return self._flatten_list_results(paged_results, 'items')
 
     def get_instance_group_managers(self, project_id):
         """Get the instance group managers for a project.
