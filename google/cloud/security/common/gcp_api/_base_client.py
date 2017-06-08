@@ -152,7 +152,7 @@ class BaseClient(object):
 
         Returns:
             A list of paged API response objects.
-            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
+            [[page 1 results], [page 2 results], [page 3 results], ...]
 
         Raises:
             api_errors.ApiExecutionError when there is no list_next() method
