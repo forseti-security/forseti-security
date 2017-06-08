@@ -67,7 +67,7 @@ class BigQueryClient(_base_client.BaseClient):
             request, bigquery_projects_api, self.rate_limiter)
 
         flattened_result = self._flatten_list_results(paged_results, key)
-                
+
         project_ids = []
         for result in flattened_result:
             project_ids.append(result.get('id'))
