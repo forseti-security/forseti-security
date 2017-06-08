@@ -87,11 +87,13 @@ class BaseClient(object):
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
-    def _execute(request):
+    def _execute(request, rate_limiter=None):
         """Executes requests in a rate-limited way.
 
         Args:
             request: GCP API client request object.
+            rate_limiter: An instance of RateLimiter to use.  Will be None
+                for api without any rate limits.
 
         Returns:
             API response object.
@@ -102,6 +104,9 @@ class BaseClient(object):
             upstream.
         """
         try:
+            if rate_limiter is not None:
+                with rate_limiter:
+                    return request.execute()
             return request.execute()
         except HttpError as e:
             if (e.resp.status == 403 and
@@ -141,7 +146,8 @@ class BaseClient(object):
         Args:
             request: GCP API client request object.
             api_stub: The API stub used to build the request.
-            rate_limiter: An instance of RateLimiter to use.
+            rate_limiter: An instance of RateLimiter to use.  Will be None
+                for api without any rate limits.
             next_stub: The API stub used to get the next page of results.
 
         Returns:
@@ -161,10 +167,9 @@ class BaseClient(object):
 
         while request is not None:
             try:
-                with rate_limiter:
-                    response = self._execute(request)
-                    results.append(response)
-                    request = next_stub(request, response)
+                response = self._execute(request, rate_limiter)
+                results.append(response)
+                request = next_stub(request, response)
             except api_errors.ApiNotEnabledError:
                 # If the API isn't enabled on the resource, there must
                 # not be any resources. So, just swallow the error:
