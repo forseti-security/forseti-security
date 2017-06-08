@@ -182,7 +182,7 @@ class BaseClient(object):
         return results
 
     @staticmethod
-    def _flatten_aggregated_list_results(aggregated_iterable, item_key):
+    def _flatten_aggregated_list_results(paged_results, item_key):
         """Flatten a split-up list as returned by GCE "aggregatedList" API.
 
         The compute API's aggregatedList methods return a structure in
@@ -215,17 +215,17 @@ class BaseClient(object):
         all $items across all of the groups.
 
         Args:
-          aggregated_iterable: An iterable returning a result from an
-                               aggregatedList call.
-          item_key: The name of the key within the inner "items" lists
-                    containing the objects of interest.
+        page_results : A list of paged API response objects.
+            [[page 1 results], [page 2 results], [page 3 results], ...]
+        item_key: The name of the key within the inner "items" lists
+            containing the objects of interest.
 
         Return:
           A list of items.
         """
         items = []
-        for aggregated_results in aggregated_iterable:
-            aggregated_items = aggregated_results.get('items', {})
+        for page in paged_results:
+            aggregated_items = page.get('items', {})
             for items_for_grouping in aggregated_items.values():
                 for item in items_for_grouping.get(item_key, []):
                     items.append(item)
