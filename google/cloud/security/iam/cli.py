@@ -14,8 +14,11 @@
 
 """ IAM Explain CLI. """
 
+#pylint: disable=too-many-locals
+
 import argparse
 import os
+from google.protobuf.json_format import MessageToJson
 
 from google.cloud.security.iam import client as iam_client
 
@@ -61,7 +64,14 @@ def define_playground_parser(parent):
         help='Resource type/name to define')
     add_resource_parser.add_argument(
         'parent_type_name',
+        default=None,
+        nargs='?',
         help='Parent type/name')
+    add_resource_parser.add_argument(
+        '--no-parent',
+        default=False,
+        type=bool,
+        help='Set this flag if the resource is a root')
 
     del_resource_parser = action_subparser.add_parser(
         'delete_resource',
@@ -276,6 +286,10 @@ def define_parent_parser():
         '--use_model',
         default=read_env('IAM_MODEL', ''),
         help='Model to operate on')
+    parent_parser.add_argument(
+        '--out-format',
+        default='text',
+        choices=['text', 'json'])
     return parent_parser
 
 
@@ -290,56 +304,95 @@ def create_parser():
     return main_parser
 
 
-def run_explainer(client, config):
+class Output(object):
+    """Output base interface."""
+    def write(self, obj):
+        """Writes an object to the output channel."""
+        raise NotImplementedError()
+
+
+class TextOutput(Output):
+    """Text output for result objects."""
+
+    def __init__(self):
+        super(TextOutput, self).__init__()
+
+    def write(self, obj):
+        """Writes text representation."""
+        print obj
+
+
+class JsonOutput(Output):
+    """Raw output for result objects."""
+
+    def __init__(self):
+        super(JsonOutput, self).__init__()
+
+    def write(self, obj):
+        """Writes json representation."""
+        print MessageToJson(obj)
+
+
+def run_explainer(client, config, output):
     """Run explain commands."""
+
+    client = client.explain
 
     def do_list_models():
         """List models."""
-        print client.list_models()
+        result = client.list_models()
+        output.write(result)
 
     def do_delete_model():
         """Delete a model."""
-        print client.delete_model(config.model)
+        result = client.delete_model(config.model)
+        output.write(result)
 
     def do_create_model():
         """Create a model."""
-        print client.new_model(config.source)
+        result = client.new_model(config.source)
+        output.write(result)
 
     def do_denormalize():
         """Denormalize a model."""
         for access in client.denormalize():
-            print access
+            output.write(access)
 
     def do_why_granted():
         """Explain why a permission or role is granted."""
-        print client.explain_granted(config.member,
-                                     config.resource,
-                                     config.role,
-                                     config.permission)
+        result = client.explain_granted(config.member,
+                                        config.resource,
+                                        config.role,
+                                        config.permission)
+        output.write(result)
 
     def do_why_not_granted():
         """Explain why a permission or a role is NOT granted."""
-        print client.explain_denied(config.member,
-                                    config.resources,
-                                    config.roles,
-                                    config.permissions)
+        result = client.explain_denied(config.member,
+                                       config.resources,
+                                       config.roles,
+                                       config.permissions)
+        output.write(result)
 
     def do_list_permissions():
         """List permissions by roles or role prefixes."""
-        print client.query_permissions_by_roles(config.roles,
-                                                config.role_prefixes)
+        result = client.query_permissions_by_roles(config.roles,
+                                                   config.role_prefixes)
+        output.write(result)
 
     def do_query_access_by_member():
         """Query access by member and permissions"""
-        print client.query_access_by_members(config.member,
-                                             config.permissions,
-                                             config.expand_resources)
+        result = client.query_access_by_members(config.member,
+                                                config.permissions,
+                                                config.expand_resources)
+        output.write(result)
 
     def do_query_access_by_resource():
         """Query access by resource and permissions"""
-        print client.query_access_by_resources(config.resource,
-                                               config.permissions,
-                                               config.expand_groups)
+        result = client.query_access_by_resources(config.resource,
+                                                  config.permissions,
+                                                  config.expand_groups)
+        output.write(result)
 
     actions = {
         'list_models': do_list_models,
@@ -355,64 +408,79 @@ def run_explainer(client, config):
     actions[config.action]()
 
 
-def run_playground(client, config):
+def run_playground(client, config, output):
     """Run playground commands."""
+
+    client = client.playground
 
     def do_define_role():
         """Define a new role"""
-        print client.add_role(config.role,
-                              config.permissions)
+        result = client.add_role(config.role,
+                                 config.permissions)
+        output.write(result)
 
     def do_delete_role():
         """Delete a role"""
-        print client.del_role(config.role)
+        result = client.del_role(config.role)
+        output.write(result)
 
     def do_list_roles():
         """List roles by prefix"""
-        print client.list_roles(config.prefix)
+        result = client.list_roles(config.prefix)
+        output.write(result)
 
     def do_define_resource():
         """Define a new resource"""
-        print client.add_resource(config.resource_type_name,
-                                  config.parent_type_name)
+        result = client.add_resource(config.resource_type_name,
+                                     config.parent_type_name,
+                                     config.no_parent)
+        output.write(result)
 
     def do_delete_resource():
         """Delete a resource"""
-        print client.del_resource(config.resource_type_name)
+        result = client.del_resource(config.resource_type_name)
+        output.write(result)
 
     def do_list_resources():
         """List resources by prefix"""
-        print client.list_resources(config.prefix)
+        result = client.list_resources(config.prefix)
+        output.write(result)
 
     def do_define_member():
         """Define a new member"""
-        print client.add_member(config.member,
-                                config.parents)
+        result = client.add_member(config.member,
+                                   config.parents)
+        output.write(result)
 
     def do_delete_member():
         """Delete a resource"""
-        print client.del_member(config.member,
-                                config.parent,
-                                config.delete_relation_only)
+        result = client.del_member(config.member,
+                                   config.parent,
+                                   config.delete_relation_only)
+        output.write(result)
 
     def do_list_members():
         """List resources by prefix"""
-        print client.list_members(config.prefix)
+        result = client.list_members(config.prefix)
+        output.write(result)
 
     def do_check_policy():
         """Check access"""
-        print client.check_iam_policy(config.resource,
-                                      config.permission,
-                                      config.member)
+        result = client.check_iam_policy(config.resource,
+                                         config.permission,
+                                         config.member)
+        output.write(result)
 
     def do_get_policy():
         """Get access"""
-        print client.get_iam_policy(config.resource)
+        result = client.get_iam_policy(config.resource)
+        output.write(result)
 
     def do_set_policy():
         """Set access"""
-        print client.set_iam_policy(config.resource,
-                                    config.policy)
+        result = client.set_iam_policy(config.resource,
+                                       config.policy)
+        output.write(result)
 
     actions = {
         'define_role': do_define_role,
@@ -431,19 +499,26 @@ def run_playground(client, config):
     actions[config.action]()
 
 
+OUTPUTS = {
+        'text': TextOutput,
+        'json': JsonOutput,
+    }
+
+SERVICES = {
+        'explainer': run_explainer,
+        'playground': run_playground,
+    }
+
+
 def main():
     """Main function."""
     parser = create_parser()
     config = parser.parse_args()
-    print config
     client = iam_client.ClientComposition(config.endpoint)
     client.switch_model(config.use_model)
-    if config.service == 'explainer':
-        run_explainer(client.explain, config)
-    elif config.service == 'playground':
-        run_playground(client.playground, config)
-    else:
-        raise NotImplementedError('Unknown service: {}'.format(config.service))
+
+    output = OUTPUTS[config.out_format]()
+    SERVICES[config.service](client, config, output)
 
 
 if __name__ == '__main__':
