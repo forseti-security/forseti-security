@@ -62,11 +62,11 @@ class BigQueryClient(_base_client.BaseClient):
         bigquery_projects_api = self.service.projects()
         request = bigquery_projects_api.list()
 
-        results = self._build_paged_result(request, bigquery_projects_api,
-                                           self.rate_limiter)
+        paged_results = self._build_paged_result(
+            request, bigquery_projects_api, self.rate_limiter)
         project_ids = []
-        for result in results:
-            for project in result.get('projects', []):
+        for page in paged_results:
+            for project in page.get('projects', []):
                 project_ids.append(project.get('id'))
 
         return project_ids
@@ -86,10 +86,11 @@ class BigQueryClient(_base_client.BaseClient):
         bigquery_datasets_api = self.service.datasets()
         request = bigquery_datasets_api.list(projectId=project_id, all=True)
 
-        results = self._build_paged_result(request, bigquery_datasets_api,
-                                           self.rate_limiter)
+        paged_results = self._build_paged_result(
+            request, bigquery_datasets_api, self.rate_limiter)
+
         datasets = []
-        for result in results:
+        for result in paged_results:
             if key in result:
                 for item in result.get(key):
                     datasets.append(item.get('datasetReference'))
@@ -113,12 +114,7 @@ class BigQueryClient(_base_client.BaseClient):
         request = bigquery_datasets_api.get(projectId=project_id,
                                             datasetId=dataset_id)
 
-        results = self._build_paged_result(request, bigquery_datasets_api,
-                                           self.rate_limiter)
-        access_list = []
-        for result in results:
-            if key in result:
-                for item in result.get(key):
-                    access_list.append(item)
+        paged_results = self._build_paged_result(
+            request, bigquery_datasets_api, self.rate_limiter)
 
-        return access_list
+        return self._flatten_list_results(paged_results, key)
