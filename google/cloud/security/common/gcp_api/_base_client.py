@@ -152,7 +152,7 @@ class BaseClient(object):
 
         Returns:
             A list of paged API response objects.
-            [[page 1 results], [page 2 results], [page 3 results], ...]
+            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
 
         Raises:
             api_errors.ApiExecutionError when there is no list_next() method
@@ -216,7 +216,7 @@ class BaseClient(object):
 
         Args:
         page_results : A list of paged API response objects.
-            [[page 1 results], [page 2 results], [page 3 results], ...]
+            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
         item_key: The name of the key within the inner "items" lists
             containing the objects of interest.
 
@@ -244,7 +244,7 @@ class BaseClient(object):
 
         Args:
             page_results : A list of paged API response objects.
-                [[page 1 results], [page 2 results], [page 3 results], ...]
+                [{page 1 results}, {page 2 results}, {page 3 results}, ...]
             item_key: The name of the key within the inner "items" lists
                 containing the objects of interest.
 
