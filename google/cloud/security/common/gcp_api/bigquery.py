@@ -59,7 +59,7 @@ class BigQueryClient(_base_client.BaseClient):
             If there are no project_ids enabled for bigquery an empty list will
             be returned.
         """
-        key='projects'
+        key = 'projects'
         bigquery_projects_api = self.service.projects()
         request = bigquery_projects_api.list()
 
@@ -86,7 +86,7 @@ class BigQueryClient(_base_client.BaseClient):
               'projectId': 'project-id'},
              {...}]
         """
-        key='datasets'
+        key = 'datasets'
         bigquery_datasets_api = self.service.datasets()
         request = bigquery_datasets_api.list(projectId=project_id, all=True)
 
@@ -114,7 +114,7 @@ class BigQueryClient(_base_client.BaseClient):
             {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
             {'role': 'READER', 'specialGroup': 'projectReaders'}]
         """
-        key='access'
+        key = 'access'
         bigquery_datasets_api = self.service.datasets()
         request = bigquery_datasets_api.get(projectId=project_id,
                                             datasetId=dataset_id)
