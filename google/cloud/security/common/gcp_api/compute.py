@@ -93,7 +93,7 @@ class ComputeClient(_base_client.BaseClient):
                     region=region),
                 forwarding_rules_api,
                 self.rate_limiter)
- 
+
             return self._flatten_list_results(paged_results, 'items')
 
         else:

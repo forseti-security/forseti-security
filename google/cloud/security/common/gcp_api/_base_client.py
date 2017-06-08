@@ -152,7 +152,7 @@ class BaseClient(object):
 
         Returns:
             A list of paged API response objects.
-            [{page 1 results}, {page 2 results}, {page 3 results}, ...] 
+            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
 
         Raises:
             api_errors.ApiExecutionError when there is no list_next() method
@@ -181,8 +181,8 @@ class BaseClient(object):
 
         return results
 
-    def _flatten_aggregated_list_results(self, aggregated_iterable,
-                                               item_key):
+    @staticmethod
+    def _flatten_aggregated_list_results(aggregated_iterable, item_key):
         """Flatten a split-up list as returned by GCE "aggregatedList" API.
 
         The compute API's aggregatedList methods return a structure in
@@ -231,7 +231,10 @@ class BaseClient(object):
                     items.append(item)
         return items
 
-    def _flatten_list_results(self, paged_results, item_key):
+    @staticmethod
+    # pylint: disable=invalid-name
+    def _flatten_list_results(paged_results, item_key):
+    # pylint: enable=invalid-name
         """Flatten a split-up list as returned by list_next() API.
 
         GCE 'list' APIs return results in the form:
@@ -241,7 +244,7 @@ class BaseClient(object):
 
         Args:
             page_results : A list of paged API response objects.
-                [{page 1 results}, {page 2 results}, {page 3 results}, ...] 
+                [{page 1 results}, {page 2 results}, {page 3 results}, ...]
             item_key: The name of the key within the inner "items" lists
                 containing the objects of interest.
 
