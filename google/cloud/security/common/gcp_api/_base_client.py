@@ -232,10 +232,10 @@ class BaseClient(object):
         return items
 
     def _flatten_list_results(self, paged_results, item_key):
-        """Returns the 'items' entries from GCE API results.
+        """Flatten a split-up list as returned by list_next() API.
 
         GCE 'list' APIs return results in the form:
-          {'items': [...]}
+          {item_key: [...]}
         with one dictionary for each "page" of results. This method flattens
         that to a simple list of items.
 
