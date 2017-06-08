@@ -111,7 +111,7 @@ def main(_):
             # even if an error is raised we still want to continue execution
             # this is because if we don't have violations the Mysql table
             # is not present and an error is thrown
-            LOGGER.error('get_all_violations error: %s' % e.message)
+            LOGGER.error('get_all_violations error: %s', e.message)
 
     for retrieved_v in violations:
         LOGGER.info('retrieved %d violations for resource \'%s\'',
