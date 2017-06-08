@@ -117,4 +117,4 @@ class BigQueryClient(_base_client.BaseClient):
         paged_results = self._build_paged_result(
             request, bigquery_datasets_api, self.rate_limiter)
 
-        return self._flatten_paged_list_results(paged_results, key)
+        return self._flatten_list_results(paged_results, key)

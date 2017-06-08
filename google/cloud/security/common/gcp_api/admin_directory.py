@@ -88,7 +88,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         paged_results = self._build_paged_result(
             request, members_api, self.rate_limiter)
 
-        return self._flatten_paged_list_results(paged_results, 'members')
+        return self._flatten_list_results(paged_results, 'members')
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
@@ -113,4 +113,4 @@ class AdminDirectoryClient(_base_client.BaseClient):
         paged_results = self._build_paged_result(
             request, groups_api, self.rate_limiter)
 
-        return self._flatten_paged_list_results(paged_results, 'groups')
+        return self._flatten_list_results(paged_results, 'groups')

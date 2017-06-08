@@ -65,7 +65,7 @@ class ComputeClient(_base_client.BaseClient):
             list_request, backend_services_api, self.rate_limiter,
             next_stub=list_next_request)
 
-        return self._flatten_paged_aggregated_list_results(
+        return self._flatten_aggregated_list_results(
             paged_results, 'backendServices')
 
     def get_forwarding_rules(self, project_id, region=None):
@@ -94,7 +94,7 @@ class ComputeClient(_base_client.BaseClient):
                 forwarding_rules_api,
                 self.rate_limiter)
  
-            return self._flatten_paged_list_results(paged_results, 'items')
+            return self._flatten_list_results(paged_results, 'items')
 
         else:
             paged_results = self._build_paged_result(
@@ -103,7 +103,7 @@ class ComputeClient(_base_client.BaseClient):
                 self.rate_limiter,
                 next_stub=forwarding_rules_api.aggregatedList_next)
 
-            return self._flatten_paged_aggregated_list_results(
+            return self._flatten_aggregated_list_results(
                 paged_results, 'forwardingRules')
 
     def get_firewall_rules(self, project_id):
@@ -122,7 +122,7 @@ class ComputeClient(_base_client.BaseClient):
         paged_result = self._build_paged_result(
             request, firewall_rules_api, self.rate_limiter)
 
-        return self._flatten_paged_list_results(paged_result, 'items')
+        return self._flatten_list_results(paged_result, 'items')
 
     def get_instances(self, project_id):
         """Get the instances for a project.
@@ -145,7 +145,7 @@ class ComputeClient(_base_client.BaseClient):
             list_request, instances_api, self.rate_limiter,
             next_stub=list_next_request)
 
-        return self._flatten_paged_aggregated_list_results(
+        return self._flatten_aggregated_list_results(
             paged_results, 'instances')
 
     def get_instance_groups(self, project_id):
@@ -169,7 +169,7 @@ class ComputeClient(_base_client.BaseClient):
             list_request, instance_groups_api, self.rate_limiter,
             next_stub=list_next_request)
 
-        return self._flatten_paged_aggregated_list_results(
+        return self._flatten_aggregated_list_results(
             paged_results, 'instanceGroups')
 
     def get_instance_templates(self, project_id):
@@ -191,7 +191,7 @@ class ComputeClient(_base_client.BaseClient):
         paged_resuls = self._build_paged_result(
             list_request, instance_templates_api, self.rate_limiter)
 
-        return self._flatten_paged_list_results(paged_resuls, 'items')
+        return self._flatten_list_results(paged_resuls, 'items')
 
     def get_instance_group_managers(self, project_id):
         """Get the instance group managers for a project.
@@ -214,5 +214,5 @@ class ComputeClient(_base_client.BaseClient):
             list_request, instance_group_managers_api, self.rate_limiter,
             next_stub=list_next_request)
 
-        return self._flatten_paged_aggregated_list_results(
+        return self._flatten_aggregated_list_results(
             paged_results, 'instanceGroupManagers')

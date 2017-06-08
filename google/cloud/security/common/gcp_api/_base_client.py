@@ -181,7 +181,7 @@ class BaseClient(object):
 
         return results
 
-    def _flatten_paged_aggregated_list_results(self, aggregated_iterable,
+    def _flatten_aggregated_list_results(self, aggregated_iterable,
                                                item_key):
         """Flatten a split-up list as returned by GCE "aggregatedList" API.
 
@@ -231,7 +231,7 @@ class BaseClient(object):
                     items.append(item)
         return items
 
-    def _flatten_paged_list_results(self, paged_results, item_key):
+    def _flatten_list_results(self, paged_results, item_key):
         """Returns the 'items' entries from GCE API results.
 
         GCE 'list' APIs return results in the form:
