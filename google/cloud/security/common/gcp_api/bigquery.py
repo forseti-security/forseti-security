@@ -47,7 +47,7 @@ class BigQueryClient(_base_client.BaseClient):
         return RateLimiter(FLAGS.max_bigquery_api_calls_per_100_seconds,
                            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def get_bigquery_projectids(self):
+    def get_bigquery_projectids(self, key='projects'):
         """Request and page through bigquery projectids.
 
         Returns: A list of project_ids enabled for bigquery.
@@ -64,10 +64,12 @@ class BigQueryClient(_base_client.BaseClient):
 
         paged_results = self._build_paged_result(
             request, bigquery_projects_api, self.rate_limiter)
+
+        flattened_result = self._flatten_list_results(paged_results, key)
+                
         project_ids = []
-        for page in paged_results:
-            for project in page.get('projects', []):
-                project_ids.append(project.get('id'))
+        for result in flattened_result:
+            project_ids.append(result.get('id'))
 
         return project_ids
 
@@ -89,11 +91,11 @@ class BigQueryClient(_base_client.BaseClient):
         paged_results = self._build_paged_result(
             request, bigquery_datasets_api, self.rate_limiter)
 
+        flattened_result = self._flatten_list_results(paged_results, key)
+
         datasets = []
-        for result in paged_results:
-            if key in result:
-                for item in result.get(key):
-                    datasets.append(item.get('datasetReference'))
+        for result in flattened_result:
+            datasets.append(result.get('datasetReference'))
 
         return datasets
 
