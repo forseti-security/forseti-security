@@ -182,7 +182,9 @@ class BaseClient(object):
         return results
 
     @staticmethod
+    # pylint: disable=invalid-name
     def _flatten_aggregated_list_results(paged_results, item_key):
+    # pylint: enable=invalid-name
         """Flatten a split-up list as returned by GCE "aggregatedList" API.
 
         The compute API's aggregatedList methods return a structure in
