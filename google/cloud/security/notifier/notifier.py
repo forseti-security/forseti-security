@@ -35,6 +35,7 @@ from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
+from google.cloud.security.scanner.scanners.scanners_map import RESOURCE_MAP
 # pylint: enable=line-too-long,no-name-in-module
 
 
@@ -101,12 +102,17 @@ def main(_):
 
     # get violations
     v_dao = violation_dao.ViolationDao()
-    violations = {
-        'violations': v_dao.get_all_violations(
-            timestamp, 'violations'),
-        'bucket_acl_violations': v_dao.get_all_violations(
-            timestamp, 'buckets_acl_violations')
-    }
+    violations = {}
+    for resource in RESOURCE_MAP:
+        try:
+            violations[resource] = v_dao.get_all_violations(
+                timestamp, RESOURCE_MAP[resource])
+        except Exception as e:
+            # even if an error is raised we still want to continue execution
+            # this is because if we don't have violations the Mysql table
+            # is not present and an error is thrown
+            LOGGER.error('get_all_violations error: %s', e.message)
+
     for retrieved_v in violations:
         LOGGER.info('retrieved %d violations for resource \'%s\'',
                     len(violations[retrieved_v]), retrieved_v)
