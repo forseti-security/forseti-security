@@ -47,7 +47,7 @@ class BigQueryClient(_base_client.BaseClient):
         return RateLimiter(FLAGS.max_bigquery_api_calls_per_100_seconds,
                            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def get_bigquery_projectids(self, key='projects'):
+    def get_bigquery_projectids(self):
         """Request and page through bigquery projectids.
 
         Returns: A list of project_ids enabled for bigquery.
@@ -59,6 +59,7 @@ class BigQueryClient(_base_client.BaseClient):
             If there are no project_ids enabled for bigquery an empty list will
             be returned.
         """
+        key='projects'
         bigquery_projects_api = self.service.projects()
         request = bigquery_projects_api.list()
 
@@ -73,7 +74,7 @@ class BigQueryClient(_base_client.BaseClient):
 
         return project_ids
 
-    def get_datasets_for_projectid(self, project_id, key='datasets'):
+    def get_datasets_for_projectid(self, project_id):
         """Return BigQuery datasets stored in the requested project_id.
 
         Args:
@@ -85,6 +86,7 @@ class BigQueryClient(_base_client.BaseClient):
               'projectId': 'project-id'},
              {...}]
         """
+        key='datasets'
         bigquery_datasets_api = self.service.datasets()
         request = bigquery_datasets_api.list(projectId=project_id, all=True)
 
@@ -99,7 +101,7 @@ class BigQueryClient(_base_client.BaseClient):
 
         return datasets
 
-    def get_dataset_access(self, project_id, dataset_id, key='access'):
+    def get_dataset_access(self, project_id, dataset_id):
         """Return the access portion of the dataset resource object.
 
         Args:
@@ -112,6 +114,7 @@ class BigQueryClient(_base_client.BaseClient):
             {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
             {'role': 'READER', 'specialGroup': 'projectReaders'}]
         """
+        key='access'
         bigquery_datasets_api = self.service.datasets()
         request = bigquery_datasets_api.get(projectId=project_id,
                                             datasetId=dataset_id)
