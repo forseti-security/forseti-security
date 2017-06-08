@@ -306,6 +306,7 @@ def create_parser():
 
 class Output(object):
     """Output base interface."""
+
     def write(self, obj):
         """Writes an object to the output channel."""
         raise NotImplementedError()
@@ -314,9 +315,6 @@ class Output(object):
 class TextOutput(Output):
     """Text output for result objects."""
 
-    def __init__(self):
-        super(TextOutput, self).__init__()
-
     def write(self, obj):
         """Writes text representation."""
         print obj
@@ -324,9 +322,6 @@ class TextOutput(Output):
 
 class JsonOutput(Output):
     """Raw output for result objects."""
-
-    def __init__(self):
-        super(JsonOutput, self).__init__()
 
     def write(self, obj):
         """Writes json representation."""
@@ -500,13 +495,13 @@ def run_playground(client, config, output):
 
 
 OUTPUTS = {
-        'text': TextOutput,
-        'json': JsonOutput,
+    'text': TextOutput,
+    'json': JsonOutput,
     }
 
 SERVICES = {
-        'explainer': run_explainer,
-        'playground': run_playground,
+    'explainer': run_explainer,
+    'playground': run_playground,
     }
 
 
