@@ -107,7 +107,7 @@ def main(_):
         try:
             violations[resource] = v_dao.get_all_violations(
                 timestamp, RESOURCE_MAP[resource])
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             # even if an error is raised we still want to continue execution
             # this is because if we don't have violations the Mysql table
             # is not present and an error is thrown
