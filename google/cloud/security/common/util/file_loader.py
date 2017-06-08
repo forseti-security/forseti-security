@@ -48,8 +48,8 @@ def _get_filetype_parser(file_path, parser_type):
             'file': _parse_json_file
         },
         'yaml': {
-            'string': _parse_yaml_string,
-            'file': _parse_yaml_file
+            'string': _parse_yaml,
+            'file': _parse_yaml
         }
     }
 
@@ -107,19 +107,10 @@ def _parse_json_file(data):
         raise json_error
 
 
-def _parse_yaml_string(data):
-    """Parse the data from a string of yaml."""
+def _parse_yaml(data):
+    """Parse yaml data."""
     try:
         return yaml.safe_load(data)
-    except yaml.YAMLError as yaml_error:
-        LOGGER.error(yaml_error)
-        raise yaml_error
-
-
-def _parse_yaml_file(data):
-    """Parse the data from a yaml file."""
-    try:
-        return yaml.load(data)
     except yaml.YAMLError as yaml_error:
         LOGGER.error(yaml_error)
         raise yaml_error
