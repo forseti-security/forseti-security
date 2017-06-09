@@ -15,69 +15,47 @@
 
 """Test forwarding rules data."""
 
-FAKE_API_RESPONSE1 = [
-    {
-        "kind": "compute#forwardingRule",
-        "description": "",
-        "IPAddress": "10.10.10.1",
-        "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1",
-        "loadBalancingScheme": "EXTERNAL",
-        "target": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/targetPools/project1-pool",
-        "portRange": "80-80",
-        "IPProtocol": "TCP",
-        "creationTimestamp": "2017-05-05T12:00:01.000-07:00",
-        "id": "111111111111",
-        "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/forwardingRules/project1-rule",
-        "name": "project1-rule"
-    },
-]
+from google.cloud.security.common.util import parser
 
-FAKE_API_RESPONSE2 = [
-    {
-        "kind": "compute#forwardingRule",
-        "description": "",
-        "IPAddress": "10.10.10.2",
-        "region": "https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1",
-        "loadBalancingScheme": "EXTERNAL",
-        "target": "https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1/targetPools/project2-pool",
-        "portRange": "80-80",
-        "IPProtocol": "TCP",
-        "creationTimestamp": "2017-05-05T12:00:01.000-07:00",
-        "id": "222222222222",
-        "selfLink": "https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1/forwardingRules/project2-rule",
-        "name": "project2-rule"
-    },
-]
+
+FAKE_FORWARDING_RULE1 = {
+    "kind": "compute#forwardingRule",
+    "description": "",
+    "IPAddress": "10.10.10.1",
+    "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1",
+    "loadBalancingScheme": "EXTERNAL",
+    "target": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/targetPools/project1-pool",
+    "portRange": "80-80",
+    "IPProtocol": "TCP",
+    "creationTimestamp": "2017-05-05T12:00:01.000-07:00",
+    "id": "111111111111",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/forwardingRules/project1-rule",
+    "name": "project1-rule"
+}
+
+FAKE_FORWARDING_RULE2 = {
+    "kind": "compute#forwardingRule",
+    "description": "",
+    "IPAddress": "10.10.10.2",
+    "region": "https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1",
+    "loadBalancingScheme": "EXTERNAL",
+    "target": "https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1/targetPools/project2-pool",
+    "portRange": "80-80",
+    "IPProtocol": "TCP",
+    "creationTimestamp": "2017-05-05T12:00:01.000-07:00",
+    "id": "222222222222",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1/forwardingRules/project2-rule",
+    "name": "project2-rule"
+}
+
+
+FAKE_API_RESPONSE1 = [FAKE_FORWARDING_RULE1]
+
+FAKE_API_RESPONSE2 = [FAKE_FORWARDING_RULE2]
 
 FAKE_PROJECT_FWD_RULES_MAP = {
-    'project1': [
-        {'description': '',
-         'kind': 'compute#forwardingRule',
-         'IPAddress': '10.10.10.1',
-         'region': 'https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1',
-         'loadBalancingScheme': 'EXTERNAL',
-         'target': 'https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/targetPools/project1-pool',
-         'portRange': '80-80',
-         'IPProtocol': 'TCP',
-         'creationTimestamp': '2017-05-05T12:00:01.000-07:00',
-         'id': '111111111111',
-         'selfLink': 'https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/forwardingRules/project1-rule',
-         'name': 'project1-rule'}
-    ],
-    'project2': [
-        {'description': '',
-         'kind': 'compute#forwardingRule',
-         'IPAddress': '10.10.10.2',
-         'region': 'https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1',
-         'loadBalancingScheme': 'EXTERNAL',
-         'target': 'https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1/targetPools/project2-pool',
-         'portRange': '80-80',
-         'IPProtocol': 'TCP',
-         'creationTimestamp': '2017-05-05T12:00:01.000-07:00',
-         'id': '222222222222',
-         'selfLink': 'https://www.googleapis.com/compute/v1/projects/project2/regions/us-central1/forwardingRules/project2-rule',
-         'name': 'project2-rule'}
-    ],
+    'project1': [FAKE_FORWARDING_RULE1],
+    'project2': [FAKE_FORWARDING_RULE2],
 }
 
 EXPECTED_LOADABLE_FWD_RULES = [
@@ -96,6 +74,7 @@ EXPECTED_LOADABLE_FWD_RULES = [
      'name': 'project1-rule',
      'network': None,
      'subnetwork': None,
+     'raw_forwarding_rule': parser.json_stringify(FAKE_FORWARDING_RULE1),
     },
     {'project_id': 'project2',
      'description': '',
@@ -112,5 +91,6 @@ EXPECTED_LOADABLE_FWD_RULES = [
      'name': 'project2-rule',
      'network': None,
      'subnetwork': None,
+     'raw_forwarding_rule': parser.json_stringify(FAKE_FORWARDING_RULE2),
     },
 ]
