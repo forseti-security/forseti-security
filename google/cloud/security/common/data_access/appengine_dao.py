@@ -14,9 +14,9 @@
 
 """Provides the data access object (DAO) for AppEngine."""
 
-from google.cloud.security.common.data_access import project_dao
+from google.cloud.security.common.data_access import dao
 
 # TODO: implement this
-class AppEngineDao(project_dao.ProjectDao):
+class AppEngineDao(dao.Dao):
 	""""Data access object (DAO) for AppEngine."""
 	pass
