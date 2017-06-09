@@ -147,6 +147,40 @@ $ <your_instance>: sudo mv /tmp/service-account-key.json <the_path_you_specified
 instance should match what you specified in your deployment YAML for
 `groups-service-account-key-file:`.
 
+## Deploy IAM Explain (Optional)
+IAM Explain requires its own database. The IAM Explain deployment configuration will directly
+point to the instances. Therefore it is the user's choice to create a separate Cloud SQL instance
+for IAM Explain data or create another database on the existing Cloud SQL instance created with
+the Forseti deployment.
+
+### Create a separate service account (Optional)
+For security reasons it is recommended to create a separate service account and grant the `Cloud SQL Client`
+role. Since IAM Explain works entirely on top of the database created and filled by Forseti, sharing the
+same service account for both deployments is possible.
+
+### Customize the deployment template
+Under `<repo>/samples/deployment-manager/deploy-explain.yaml.sample`, you will find a deployment
+sample which is recommended for your IAM Explain deployment. Again, the deployment template does not create
+a separate SQL instance. Either point the configuration to the Forseti Cloud SQL instance or create one
+explicitly for the IAM Explain deployment.
+
+* **EXPLAIN_DATABASE_INSTANCE_NAME**
+  * Cloud SQL instance hosting the IAM Explain database, in the form {project}:{region}:{instance-name}
+* **FORSETI_DATABASE_INSTANCE_NAME**
+  * Cloud SQL instance hosting the Forseti database, in the form {project}:{region}:{instance-name}
+* **YOUR_SERVICE_ACCOUNT** 
+  * This is the service account you created for IAM Explain, or the shared Forseti service account
+* **src-path, release-version**
+  * It is highly recommended to use an IAM Explain release version equal or larger to the Forseti release being used in conjunction.
+  * IAM Explain supports the same version identifiers as Forseti, starting with '1.0.3'.
+
+After you configure the deployment template variables, create a new deployment:
+```sh
+$ gcloud deployment-manager deployments create iam-explain \
+    --config path/to/deploy-explain.yaml
+```
+
+
 ## Making changes to your deployment
 If you need to make changes to your deployment, refer to the
 [documentation](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments)
