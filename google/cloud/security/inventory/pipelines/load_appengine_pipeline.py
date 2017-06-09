@@ -28,19 +28,57 @@ LOGGER = log_util.get_logger(__name__)
 class LoadAppenginePipeline(base_pipeline.BasePipeline):
     """Load all AppEngine applications for all projects."""
 
+    RESOURCE_NAME = 'appengine'
+
     def _retrieve(self):
+        """Retrieve AppEngine applications from GCP.
+
+        Get all the projects in the current snapshot and retrieve the
+        AppEngine applications for each.
+
+        Returns:
+            A dict mapping projects with their AppEngine applications:
+            {project_id: application}
+        """
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
-        apps = []
+        apps = {}
         for project in projects:
             app = self.api_client.get_app(project.id)
             if app:
-                apps.append(app)
+                apps[project.id] = app
         return apps
 
-    def _transform(self):
-        pass
+    def _transform(self, resource_from_api):
+        """Create an iterator of AppEngine applications to load into database.
+
+        Args:
+            resource_from_api: A dict of AppEngine applications, keyed by
+                project id, from GCP API.
+
+        Yields:
+            Iterator of AppEngine applications in a dict.
+        """
+        for project_id, app in resource_from_api.iteritems():
+            yield {'project_id': project_id,
+                   'name': app.get('name'),
+                   'app_id': app.get('id'),
+                   'dispatch_rules': parser.json_stringify(
+                        app.get('dispatchRules', [])),
+                   'auth_domain': app.get('authDomain'),
+                   'location_id': app.get('locationId'),
+                   'code_bucket': app.get('codeBucket'),
+                   'default_cookie_expiration':
+                        app.get('defaultCookieExpiration'),
+                   'serving_status': app.get('servingStatus'),
+                   'default_hostname': app.get('defaultHostname'),
+                   'default_bucket': app.get('defaultBucket'),
+                   'iap': parser.json_stringify(app.get('iap', {})),
+                   'gcr_domain': app.get('gcrDomain')}
 
     def run(self):
         """Run the pipeline."""
         apps = self._retrieve()
+        loadable_apps = self._transform(apps)
+        self._load(self.RESOURCE_NAME, loadable_apps)
+        self._get_loaded_count()
 

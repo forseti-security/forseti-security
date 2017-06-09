@@ -15,8 +15,31 @@
 """Provides the data access object (DAO) for AppEngine."""
 
 from google.cloud.security.common.data_access import dao
+from google.cloud.security.common.data_access.sql_queries import select_data
+from google.cloud.security.common.gcp_type import appengine
+from google.cloud.security.common.gcp_type import resource
+from google.cloud.security.common.util import log_util
 
-# TODO: implement this
+LOGGER = log_util.get_logger(__name__)
+
+
 class AppEngineDao(dao.Dao):
-	""""Data access object (DAO) for AppEngine."""
-	pass
+    """"Data access object (DAO) for AppEngine."""
+    
+    def get_applications(self, timestamp):
+        """Get applications from a particular snapshot.
+
+        Args:
+            timestamp: The snapshot timestamp.
+
+        Returns:
+            A list of AppEngine applications.
+
+        Raises:
+            MySQLError if a MySQL error occurs.
+        """
+        query = select_data.APPENGINES.format(timestamp)
+        rows = self.execute_sql_with_fetch(resource.ResourceType.APPENGINE,
+                                           query, ())
+        return [self.map_row_to_object(appengine.Application, row)
+                for row in rows]

@@ -45,6 +45,9 @@ class ResourceType(object):
     BUCKETS_ACL = 'buckets_acl'
     CLOUDSQL_ACL = 'cloudsql_instances'
 
+    # AppEngine
+    APPENGINE = 'appengine'
+
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,

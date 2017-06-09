@@ -14,6 +14,26 @@
 
 """SQL queries to create Cloud SQL tables."""
 
+CREATE_APPENGINE_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `app_id` varchar(255) DEFAULT NULL,
+        `dispatch_rules` json DEFAULT NULL,
+        `auth_domain` varchar(255) DEFAULT NULL,
+        `location_id` varchar(255) DEFAULT NULL,
+        `code_bucket` varchar(255) DEFAULT NULL,
+        `default_cookie_expiration` varchar(255) DEFAULT NULL,
+        `serving_status` varchar(255) DEFAULT NULL,
+        `default_hostname` varchar(255) DEFAULT NULL,
+        `default_bucket` varchar(255) DEFAULT NULL,
+        `iap` json DEFAULT NULL,
+        `gcr_domain` varchar(255) DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_BACKEND_SERVICES_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
