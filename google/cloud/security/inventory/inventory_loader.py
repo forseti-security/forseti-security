@@ -45,6 +45,7 @@ import gflags as flags
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.apputils import app
+from google.cloud.security.common.data_access import appengine_dao
 from google.cloud.security.common.data_access import backend_service_dao
 from google.cloud.security.common.data_access import bucket_dao
 from google.cloud.security.common.data_access import cloudsql_dao
@@ -234,6 +235,7 @@ def _create_dao_map():
     """
     try:
         return {
+            'appengine_dao': appengine_dao.AppEngineDao(),
             'backend_service_dao': backend_service_dao.BackendServiceDao(),
             'bucket_dao': bucket_dao.BucketDao(),
             'cloudsql_dao': cloudsql_dao.CloudsqlDao(),

@@ -25,67 +25,22 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 LOGGER = log_util.get_logger(__name__)
 
 
-class LoadAppEngineApplicationsPipeline(base_pipeline.BasePipeline):
+class LoadAppenginePipeline(base_pipeline.BasePipeline):
     """Load all AppEngine applications for all projects."""
 
     def _retrieve(self):
-        pass
+        projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
+        apps = []
+        for project in projects:
+            app = self.api_client.get_app(project.id)
+            if app:
+                apps.append(app)
+        return apps
 
     def _transform(self):
         pass
 
     def run(self):
         """Run the pipeline."""
-        pass
+        apps = self._retrieve()
 
-
-# Liang's temp class
-from google.cloud.security.common.gcp_api import _base_client
-from oauth2client.client import GoogleCredentials
-from googleapiclient.errors import HttpError
-
-class AppEngine(_base_client.BaseClient):
-    """AppEngine Client.
-
-    https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps
-    """
-
-    API_NAME = 'appengine'
-    
-    def __init__(self, credentials=None, version=None):
-        super(AppEngine, self).__init__(
-            credentials=credentials, api_name=self.API_NAME, version=version)
-
-    def get_app(self, project_id):
-        """Gets information about an application.
-        """
-        apps = self.service.apps()
-        app = None
-        request = apps.get(appsId=project_id)
-        try:
-            app = request.execute()
-        except HttpError as e:
-            resp = e.resp
-            # TODO: use resp.status code to determine error state
-            if resp.status == '404':
-                # application not found
-                pass
-            if resp.status == '403':
-                # Operation not allowed
-                pass
-        return app
-
-def try_retrieve_apps(cycle_timestamp):
-    projects = proj_dao.ProjectDao().get_projects(cycle_timestamp)
-    apps = []
-    appengine = AppEngine()
-    for project in projects:
-        app = appengine.get_app(project.id)
-        if app:
-            apps.append(app)
-    import pprint
-    pprint.pprint(apps)
-
-if __name__ == '__main__':
-    import sys
-    try_retrieve_apps(sys.argv[1])
