@@ -87,11 +87,13 @@ class BaseClient(object):
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
-    def _execute(request):
+    def _execute(request, rate_limiter=None):
         """Executes requests in a rate-limited way.
 
         Args:
             request: GCP API client request object.
+            rate_limiter: An instance of RateLimiter to use.  Will be None
+                for api without any rate limits.
 
         Returns:
             API response object.
@@ -102,6 +104,9 @@ class BaseClient(object):
             upstream.
         """
         try:
+            if rate_limiter is not None:
+                with rate_limiter:
+                    return request.execute()
             return request.execute()
         except HttpError as e:
             if (e.resp.status == 403 and
@@ -141,11 +146,13 @@ class BaseClient(object):
         Args:
             request: GCP API client request object.
             api_stub: The API stub used to build the request.
-            rate_limiter: An instance of RateLimiter to use.
+            rate_limiter: An instance of RateLimiter to use.  Will be None
+                for api without any rate limits.
             next_stub: The API stub used to get the next page of results.
 
         Returns:
-            A list of API response objects (dict).
+            A list of paged API response objects.
+            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
 
         Raises:
             api_errors.ApiExecutionError when there is no list_next() method
@@ -161,10 +168,9 @@ class BaseClient(object):
 
         while request is not None:
             try:
-                with rate_limiter:
-                    response = self._execute(request)
-                    results.append(response)
-                    request = next_stub(request, response)
+                response = self._execute(request, rate_limiter)
+                results.append(response)
+                request = next_stub(request, response)
             except api_errors.ApiNotEnabledError:
                 # If the API isn't enabled on the resource, there must
                 # not be any resources. So, just swallow the error:
@@ -173,4 +179,81 @@ class BaseClient(object):
             except (HttpError, HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)
 
+        return results
+
+    @staticmethod
+    # pylint: disable=invalid-name
+    def _flatten_aggregated_list_results(paged_results, item_key):
+    # pylint: enable=invalid-name
+        """Flatten a split-up list as returned by GCE "aggregatedList" API.
+
+        The compute API's aggregatedList methods return a structure in
+        the form:
+          {
+            items: {
+              $group_value_1: {
+                $item_key: [$items]
+              },
+              $group_value_2: {
+                $item_key: [$items]
+              },
+              $group_value_3: {
+                "warning": {
+                  message: "There are no results for ..."
+                }
+              },
+              ...,
+              $group_value_n, {
+                $item_key: [$items]
+              },
+            }
+          }
+        where each "$group_value_n" is a particular element in the
+        aggregation, e.g. a particular zone or group or whatever, and
+        "$item_key" is some type-specific resource name, e.g.
+        "backendServices" for an aggregated list of backend services.
+
+        This method takes such a structure and yields a simple list of
+        all $items across all of the groups.
+
+        Args:
+        page_results : A list of paged API response objects.
+            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
+        item_key: The name of the key within the inner "items" lists
+            containing the objects of interest.
+
+        Return:
+          A list of items.
+        """
+        items = []
+        for page in paged_results:
+            aggregated_items = page.get('items', {})
+            for items_for_grouping in aggregated_items.values():
+                for item in items_for_grouping.get(item_key, []):
+                    items.append(item)
+        return items
+
+    @staticmethod
+    # pylint: disable=invalid-name
+    def _flatten_list_results(paged_results, item_key):
+    # pylint: enable=invalid-name
+        """Flatten a split-up list as returned by list_next() API.
+
+        GCE 'list' APIs return results in the form:
+          {item_key: [...]}
+        with one dictionary for each "page" of results. This method flattens
+        that to a simple list of items.
+
+        Args:
+            page_results : A list of paged API response objects.
+                [{page 1 results}, {page 2 results}, {page 3 results}, ...]
+            item_key: The name of the key within the inner "items" lists
+                containing the objects of interest.
+
+        Return:
+            A list of GCE resources.
+        """
+        results = []
+        for page in paged_results:
+            results.extend(page.get(item_key, []))
         return results
