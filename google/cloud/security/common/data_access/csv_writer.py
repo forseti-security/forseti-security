@@ -164,7 +164,7 @@ CLOUDSQL_INSTANCES_FIELDNAMES = [
     'settings_tier',
     'state',
     'suspension_reason',
-    'raw_cloudsql_instance',    
+    'raw_cloudsql_instance',
 ]
 
 CLOUDSQL_IPADDRESSES_FIELDNAMES = [
