@@ -62,7 +62,9 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
                        'target_pools': parser.json_stringify(
                            igm.get('targetPools', [])),
                        'target_size': igm.get('targetSize'),
-                       'zone': igm.get('zone')}
+                       'zone': igm.get('zone'),
+                       'raw_instance_group_manager':
+                           parser.json_stringify(igm)}
 
     def _retrieve(self):
         """Retrieve instance group managers from GCP.
