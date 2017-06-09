@@ -83,6 +83,10 @@ def GenerateConfig(context):
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
+
+exec > /tmp/deployment.log
+exec 2>&1
+
 # Forseti setup
 sudo apt-get install -y git unzip
 # Forseti dependencies
