@@ -51,7 +51,7 @@ def escape_and_globify(pattern_string):
 class CloudSqlRulesEngine(bre.BaseRulesEngine):
     """Rules engine for CloudSQL acls"""
 
-    def __init__(self, rules_file_path):
+    def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
 
         Args:
