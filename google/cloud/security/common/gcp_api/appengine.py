@@ -15,10 +15,8 @@
 """Wrapper for AppEngine API client."""
 
 import gflags as flags
-from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
-from google.cloud.security.common.util import log_util
 from googleapiclient.errors import HttpError
 
 FLAGS = flags.FLAGS
@@ -33,7 +31,7 @@ class AppEngineClient(_base_client.BaseClient):
     """
 
     API_NAME = 'appengine'
-    
+
     def __init__(self, credentials=None, version=None):
         super(AppEngineClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME, version=version)
@@ -56,6 +54,3 @@ class AppEngineClient(_base_client.BaseClient):
                 # Operation not allowed
                 pass
         return app
-
-
-

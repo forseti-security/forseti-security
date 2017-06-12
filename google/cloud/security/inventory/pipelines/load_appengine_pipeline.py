@@ -15,11 +15,9 @@
 """Pipeline to load appengine applications into Inventory.
 """
 
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
-from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 LOGGER = log_util.get_logger(__name__)
@@ -63,12 +61,12 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
                    'name': app.get('name'),
                    'app_id': app.get('id'),
                    'dispatch_rules': parser.json_stringify(
-                        app.get('dispatchRules', [])),
+                       app.get('dispatchRules', [])),
                    'auth_domain': app.get('authDomain'),
                    'location_id': app.get('locationId'),
                    'code_bucket': app.get('codeBucket'),
-                   'default_cookie_expiration':
-                        app.get('defaultCookieExpiration'),
+                   'default_cookie_expiration': app.get(
+                       'defaultCookieExpiration'),
                    'serving_status': app.get('servingStatus'),
                    'default_hostname': app.get('defaultHostname'),
                    'default_bucket': app.get('defaultBucket'),
@@ -81,4 +79,3 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
         loadable_apps = self._transform(apps)
         self._load(self.RESOURCE_NAME, loadable_apps)
         self._get_loaded_count()
-

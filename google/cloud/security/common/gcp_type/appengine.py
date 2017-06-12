@@ -17,6 +17,9 @@
 See: https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps
 """
 
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-instance-attributes
+
 class Application(object):
     """Represents Instance resource."""
 
