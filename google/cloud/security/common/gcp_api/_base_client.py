@@ -91,7 +91,6 @@ class BaseClient(object):
     def __repr__(self):
         return 'API: name=%s, version=%s' % (self.name, self.version)
 
-
     @staticmethod
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
