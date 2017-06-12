@@ -25,7 +25,7 @@ LOGGER = log_util.get_logger(__name__)
 
 class AppEngineDao(dao.Dao):
     """"Data access object (DAO) for AppEngine."""
-    
+
     def get_applications(self, timestamp):
         """Get applications from a particular snapshot.
 
