@@ -52,7 +52,9 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
                        'name': instance_template.get('name'),
                        'description': instance_template.get('description'),
                        'properties': parser.json_stringify(
-                           instance_template.get('properties', {}))}
+                           instance_template.get('properties', {})),
+                       'raw_instance_template':
+                           parser.json_stringify(instance_template)}
 
     def _retrieve(self):
         """Retrieve instance templates from GCP.

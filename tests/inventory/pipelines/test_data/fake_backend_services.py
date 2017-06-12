@@ -175,7 +175,8 @@ EXPECTED_LOADABLE_BACKEND_SERVICES = [
      'protocol': 'HTTPS',
      'region': None,
      'session_affinity': 'NONE',
-     'timeout_sec': 3610},
+     'timeout_sec': 3610,
+     'raw_backend_service': '{"connectionDraining": {"drainingTimeoutSec": 0}, "kind": "compute#backendService", "protocol": "HTTPS", "name": "bs-1", "timeoutSec": 3610, "enableCDN": false, "loadBalancingScheme": "EXTERNAL", "affinityCookieTtlSec": 0, "port": 8443, "backends": [{"capacityScaler": 1.0, "group": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/instanceGroups/bs-1-ig-1", "balancingMode": "UTILIZATION"}], "portName": "https", "healthChecks": ["https://www.googleapis.com/compute/v1/projects/project1/global/httpsHealthChecks/hc-1"], "sessionAffinity": "NONE", "creationTimestamp": "2017-04-03T14:01:35.687-07:00", "id": "3072061062494750400", "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/backendServices/bs-1", "description": "bs-1-desc"}'},
     {'affinity_cookie_ttl_sec': 0,
      'backends': '[{"maxUtilization": 0.8, "capacityScaler": 1.0, "group": "https://www.googleapis.com/compute/v1/projects/project2/zones/us-east1-c/instanceGroups/instance-group-1", "description": "", "balancingMode": "UTILIZATION"}]',
      'cdn_policy': '{}',
@@ -194,5 +195,6 @@ EXPECTED_LOADABLE_BACKEND_SERVICES = [
      'protocol': 'HTTP',
      'region': None,
      'session_affinity': 'NONE',
-     'timeout_sec': 30},
+     'timeout_sec': 30,
+     'raw_backend_service': '{"connectionDraining": {"drainingTimeoutSec": 300}, "kind": "compute#backendService", "protocol": "HTTP", "name": "iap-bs", "timeoutSec": 30, "enableCDN": false, "loadBalancingScheme": "EXTERNAL", "affinityCookieTtlSec": 0, "port": 80, "backends": [{"maxUtilization": 0.8, "capacityScaler": 1.0, "group": "https://www.googleapis.com/compute/v1/projects/project2/zones/us-east1-c/instanceGroups/instance-group-1", "description": "", "balancingMode": "UTILIZATION"}], "iap": {"oauth2ClientId": "foo", "enabled": true, "oauth2ClientSecretSha256": "bar"}, "portName": "http", "healthChecks": ["https://www.googleapis.com/compute/v1/projects/project2/global/healthChecks/iap-hc"], "sessionAffinity": "NONE", "creationTimestamp": "2017-05-12T11:14:18.559-07:00", "id": "6071052922189792661", "selfLink": "https://www.googleapis.com/compute/v1/projects/project2/global/backendServices/iap-bs", "description": ""}',},
 ]
