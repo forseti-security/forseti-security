@@ -59,19 +59,22 @@ class BigQueryClient(_base_client.BaseClient):
             If there are no project_ids enabled for bigquery an empty list will
             be returned.
         """
+        key = 'projects'
         bigquery_projects_api = self.service.projects()
         request = bigquery_projects_api.list()
 
-        results = self._build_paged_result(request, bigquery_projects_api,
-                                           self.rate_limiter)
+        paged_results = self._build_paged_result(
+            request, bigquery_projects_api, self.rate_limiter)
+
+        flattened_result = self._flatten_list_results(paged_results, key)
+
         project_ids = []
-        for result in results:
-            for project in result.get('projects', []):
-                project_ids.append(project.get('id'))
+        for result in flattened_result:
+            project_ids.append(result.get('id'))
 
         return project_ids
 
-    def get_datasets_for_projectid(self, project_id, key='datasets'):
+    def get_datasets_for_projectid(self, project_id):
         """Return BigQuery datasets stored in the requested project_id.
 
         Args:
@@ -83,20 +86,22 @@ class BigQueryClient(_base_client.BaseClient):
               'projectId': 'project-id'},
              {...}]
         """
+        key = 'datasets'
         bigquery_datasets_api = self.service.datasets()
         request = bigquery_datasets_api.list(projectId=project_id, all=True)
 
-        results = self._build_paged_result(request, bigquery_datasets_api,
-                                           self.rate_limiter)
+        paged_results = self._build_paged_result(
+            request, bigquery_datasets_api, self.rate_limiter)
+
+        flattened_result = self._flatten_list_results(paged_results, key)
+
         datasets = []
-        for result in results:
-            if key in result:
-                for item in result.get(key):
-                    datasets.append(item.get('datasetReference'))
+        for result in flattened_result:
+            datasets.append(result.get('datasetReference'))
 
         return datasets
 
-    def get_dataset_access(self, project_id, dataset_id, key='access'):
+    def get_dataset_access(self, project_id, dataset_id):
         """Return the access portion of the dataset resource object.
 
         Args:
@@ -109,16 +114,12 @@ class BigQueryClient(_base_client.BaseClient):
             {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
             {'role': 'READER', 'specialGroup': 'projectReaders'}]
         """
+        key = 'access'
         bigquery_datasets_api = self.service.datasets()
         request = bigquery_datasets_api.get(projectId=project_id,
                                             datasetId=dataset_id)
 
-        results = self._build_paged_result(request, bigquery_datasets_api,
-                                           self.rate_limiter)
-        access_list = []
-        for result in results:
-            if key in result:
-                for item in result.get(key):
-                    access_list.append(item)
+        paged_results = self._build_paged_result(
+            request, bigquery_datasets_api, self.rate_limiter)
 
-        return access_list
+        return self._flatten_list_results(paged_results, key)

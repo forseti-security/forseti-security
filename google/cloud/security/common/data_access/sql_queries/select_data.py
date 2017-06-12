@@ -158,6 +158,10 @@ SELECT_BUCKETS_ACL_VIOLATIONS = """
     SELECT * FROM buckets_acl_violations_{0};
 """
 
+SELECT_CLOUDSQL_ACL_VIOLATION = """
+    SELECT * FROM cloudsql_acl_violations_{0};
+"""
+
 SELECT_GROUPS_VIOLATIONS = """
     SELECT * FROM groups_violations_{0};
 """
@@ -220,7 +224,7 @@ BUCKET_ACLS = """
 """
 
 CLOUDSQL_INSTANCES = """
-    SELECT project_number, 
+    SELECT project_number,
            name,
            settings_ip_configuration_require_ssl
     FROM cloudsql_instances_{0}

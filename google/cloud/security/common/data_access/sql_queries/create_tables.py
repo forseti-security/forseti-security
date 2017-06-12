@@ -55,6 +55,7 @@ CREATE_BACKEND_SERVICES_TABLE = """
         `region` varchar(255) DEFAULT NULL,
         `session_affinity` varchar(255) DEFAULT NULL,
         `timeout_sec` varchar(255) DEFAULT NULL,
+        `raw_backend_service` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -199,6 +200,7 @@ CREATE_CLOUDSQL_INSTANCES_TABLE = """
         `settings_tier` varchar(255) DEFAULT NULL,
         `state` varchar(255) DEFAULT NULL,
         `suspension_reason` json DEFAULT NULL,
+        `raw_cloudsql_instance` json DEFAULT NULL,
         PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -296,6 +298,7 @@ CREATE_FORWARDING_RULES_TABLE = """
         `subnetwork` varchar(255) DEFAULT NULL,
         `network` varchar(255) DEFAULT NULL,
         `backend_service` varchar(255) DEFAULT NULL,
+        `raw_forwarding_rule` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -357,6 +360,7 @@ CREATE_INSTANCES_TABLE = """
         `status_message` varchar(255) DEFAULT NULL,
         `tags` json DEFAULT NULL,
         `zone` varchar(255) DEFAULT NULL,
+        `raw_instance` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -374,6 +378,7 @@ CREATE_INSTANCE_GROUPS_TABLE = """
         `size` int DEFAULT NULL,
         `subnetwork` varchar(255) DEFAULT NULL,
         `zone` varchar(255) DEFAULT NULL,
+        `raw_instance_group` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -386,6 +391,7 @@ CREATE_INSTANCE_TEMPLATES_TABLE = """
         `description` varchar(255) DEFAULT NULL,
         `name` varchar(255) DEFAULT NULL,
         `properties` json DEFAULT NULL,
+        `raw_instance_template` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -406,6 +412,7 @@ CREATE_INSTANCE_GROUP_MANAGERS_TABLE = """
         `target_pools` json DEFAULT NULL,
         `target_size` int DEFAULT NULL,
         `zone` varchar(255) DEFAULT NULL,
+        `raw_instance_group_manager` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """

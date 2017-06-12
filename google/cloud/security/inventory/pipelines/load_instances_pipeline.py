@@ -68,7 +68,8 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
                        'status': instance.get('status'),
                        'status_message': instance.get('statusMessage'),
                        'tags': parser.json_stringify(instance.get('tags')),
-                       'zone': instance.get('zone')}
+                       'zone': instance.get('zone'),
+                       'raw_instance': parser.json_stringify(instance)}
 
     def _retrieve(self):
         """Retrieve instances from GCP.

@@ -57,6 +57,7 @@ BACKEND_SERVICES_FIELDNAMES = [
     'region',
     'session_affinity',
     'timeout_sec',
+    'raw_backend_service'
 ]
 
 BIGQUERY_DATASET_FIELDNAMES = [
@@ -179,6 +180,7 @@ CLOUDSQL_INSTANCES_FIELDNAMES = [
     'settings_tier',
     'state',
     'suspension_reason',
+    'raw_cloudsql_instance',
 ]
 
 CLOUDSQL_IPADDRESSES_FIELDNAMES = [
@@ -245,6 +247,7 @@ FORWARDING_RULES_FIELDNAMES = [
     'subnetwork',
     'network',
     'backend_service',
+    'raw_forwarding_rule',
 ]
 
 GROUP_MEMBERS_FIELDNAMES = [
@@ -284,6 +287,7 @@ INSTANCES_FIELDNAMES = [
     'status_message',
     'tags',
     'zone',
+    'raw_instance',
 ]
 
 INSTANCE_GROUPS_FIELDNAMES = [
@@ -298,6 +302,7 @@ INSTANCE_GROUPS_FIELDNAMES = [
     'size',
     'subnetwork',
     'zone',
+    'raw_instance_group',
 ]
 
 INSTANCE_TEMPLATES_FIELDNAMES = [
@@ -307,6 +312,7 @@ INSTANCE_TEMPLATES_FIELDNAMES = [
     'description',
     'name',
     'properties',
+    'raw_instance_template',
 ]
 
 INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
@@ -324,6 +330,7 @@ INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
     'target_pools',
     'target_size',
     'zone',
+    'raw_instance_group_manager',
 ]
 
 ORG_IAM_POLICIES_FIELDNAMES = [
