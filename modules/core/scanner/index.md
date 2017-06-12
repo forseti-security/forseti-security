@@ -30,15 +30,15 @@ Note: This is different from the Cloud Security Scanner, which does AppEngine vu
   ```
 
   To run the scanner with a rules file stored in GCS, e.g.
-  `gs://my-project-id/rules/rules.yaml`:
+  `gs://my-bucket-name/rules/rules.yaml`:
 
   ```sh
-  $ forseti_scanner --rules "rules/rules.yaml" --input_bucket my-project-id
+  $ forseti_scanner --rules "gs://my-bucket-name/rules/rules.yaml"
   ```
 
 * By default, the scanner will save the csv output to a temporary
-location. Specify an output path (it can also be a GCS bucket) in order to
-save the csv there.
+location. Specify an output path (it can also be a GCS bucket with 
+the `gs://<bucket-name>` syntax) in order to save the csv there.
 
   To specify the output location for the violations:
 
