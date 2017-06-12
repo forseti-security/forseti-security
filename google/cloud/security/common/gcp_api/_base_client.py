@@ -15,13 +15,15 @@
 """Base GCP client which uses the discovery API."""
 
 import json
+import httplib2
 
 from apiclient import discovery
+from apiclient import http as api_http
 from googleapiclient.errors import HttpError
-from httplib2 import HttpLib2Error
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
+from google.cloud import security as forseti_security
 from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
@@ -71,15 +73,31 @@ class BaseClient(object):
                         'in Forseti, proceed at your own risk.',
                         api_name, version)
 
+        request_builder = kwargs.get('request_builder')
+
+        if not request_builder:
+            request_builder = self._build_request()
+
         should_cache_discovery = kwargs.get('cache_discovery')
 
         self.service = discovery.build(self.name,
                                        self.version,
                                        credentials=self._credentials,
-                                       cache_discovery=should_cache_discovery)
+                                       cache_discovery=should_cache_discovery,
+                                       requestBuilder=request_builder)
 
     def __repr__(self):
         return 'API: name=%s, version=%s' % (self.name, self.version)
+
+    def _get_user_agent_header(self):
+        user_agent = ' %s-%s ' % (forseti_security.__package_name__,
+                                  forseti_security.__version__)
+        return {'user-agent': user_agent}
+
+    def _build_request(self):
+        new_http = httplib2.Http()
+        return api_http.HttpRequest(new_http, None, None,
+                                    headers=self._get_user_agent_header())
 
     @staticmethod
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
@@ -108,7 +126,7 @@ class BaseClient(object):
                 with rate_limiter:
                     return request.execute()
             return request.execute()
-        except HttpError as e:
+        except httplib2.HttpLib2Error as e:
             if (e.resp.status == 403 and
                     e.resp.get('content-type', '').startswith(
                         'application/json')):
@@ -176,7 +194,7 @@ class BaseClient(object):
                 # not be any resources. So, just swallow the error:
                 # we're done!
                 break
-            except (HttpError, HttpLib2Error) as e:
+            except (HttpError, httplib2.HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)
 
         return results
