@@ -44,7 +44,7 @@ def _attach_user_agent(request):
 class BaseClient(object):
     """Base client for a specified GCP API and credentials."""
 
-    def __init__(self, credentials=None, api_name=None, *args, **kwargs):
+    def __init__(self, credentials=None, api_name=None, **kwargs):
         """Thin client wrapper over the Google Discovery API.
 
         The intent for this class is to define the Google APIs expected by
@@ -80,8 +80,6 @@ class BaseClient(object):
             LOGGER.warn('API "%s" version %s is not formally supported '
                         'in Forseti, proceed at your own risk.',
                         api_name, version)
-
-        request_builder = kwargs.get('request_builder')
 
         should_cache_discovery = kwargs.get('cache_discovery')
 
