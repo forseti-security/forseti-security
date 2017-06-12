@@ -32,11 +32,19 @@ from google.cloud.security.common.util import retryable_exceptions
 LOGGER = log_util.get_logger(__name__)
 
 
+def _attach_user_agent(request):
+    ua = request.headers['user-agent']
+    request.headers['user-agent'] = ua + ', %s/%s ' % (
+        forseti_security.__package_name__,
+        forseti_security.__version__)
+    return request
+
+
 # pylint: disable=too-few-public-methods
 class BaseClient(object):
     """Base client for a specified GCP API and credentials."""
 
-    def __init__(self, credentials=None, api_name=None, **kwargs):
+    def __init__(self, credentials=None, api_name=None, *args, **kwargs):
         """Thin client wrapper over the Google Discovery API.
 
         The intent for this class is to define the Google APIs expected by
@@ -75,29 +83,16 @@ class BaseClient(object):
 
         request_builder = kwargs.get('request_builder')
 
-        if not request_builder:
-            request_builder = self._build_request()
-
         should_cache_discovery = kwargs.get('cache_discovery')
 
         self.service = discovery.build(self.name,
                                        self.version,
                                        credentials=self._credentials,
-                                       cache_discovery=should_cache_discovery,
-                                       requestBuilder=request_builder)
+                                       cache_discovery=should_cache_discovery)
 
     def __repr__(self):
         return 'API: name=%s, version=%s' % (self.name, self.version)
 
-    def _get_user_agent_header(self):
-        user_agent = ' %s-%s ' % (forseti_security.__package_name__,
-                                  forseti_security.__version__)
-        return {'user-agent': user_agent}
-
-    def _build_request(self):
-        new_http = httplib2.Http()
-        return api_http.HttpRequest(new_http, None, None,
-                                    headers=self._get_user_agent_header())
 
     @staticmethod
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
@@ -121,6 +116,7 @@ class BaseClient(object):
             exception is not wrapped by the retry library, and will be handled
             upstream.
         """
+        request = _attach_user_agent(request)
         try:
             if rate_limiter is not None:
                 with rate_limiter:
