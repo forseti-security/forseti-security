@@ -168,7 +168,7 @@ class IamPolicyTest(ForsetiTestCase):
         """Test that an empty policy has no bindings."""
         empty_policy = IamPolicy()
         self.assertTrue(empty_policy.is_empty())
-        self.assertEqual(0, len(empty_policy.bindings))
+        self.assertEqual(False, bool(empty_policy.bindings))
 
 
 if __name__ == '__main__':
