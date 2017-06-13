@@ -16,6 +16,9 @@
 
 [MASTER]
 
+# The number of jobs to spawn for linting.
+jobs=8
+
 # Specify a configuration file.
 #rcfile=
 
@@ -29,13 +32,14 @@ profile=no
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
 #ignore=CVS
+ignore-patterns=.*_test.*?py,.*test_.*?py,.*test.*?py,.*pb2.*
 
 # Pickle collected data for later comparisons.
 persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero
+load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,pylint.extensions.bad_builtin,pylint.extensions.docstyle
 
 [MESSAGES CONTROL]
 
