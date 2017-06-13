@@ -14,7 +14,6 @@
 
 """ Database abstraction objects for IAM Explain. """
 
-# Disable too-many-lines check
 # pylint: disable=too-many-lines
 
 import datetime
@@ -666,7 +665,8 @@ def define_model(model_name, dbengine, model_seed):
                     pass
 
             new_permissions = [Permission(name=n) for n in permission_names]
-            map(session.add, new_permissions)
+            for perm in new_permissions:
+                session.add(perm)
             cls.add_role(session, role_name,
                          existing_permissions + new_permissions)
             session.commit()
