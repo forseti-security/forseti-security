@@ -18,7 +18,6 @@ import json
 import httplib2
 
 from apiclient import discovery
-from apiclient import http as api_http
 from googleapiclient.errors import HttpError
 from oauth2client.client import GoogleCredentials
 from retrying import retry
