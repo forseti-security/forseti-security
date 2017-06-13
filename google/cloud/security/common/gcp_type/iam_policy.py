@@ -99,7 +99,7 @@ class IamPolicy(object):
         Returns:
             True if bindings are empty; False otherwise.
         """
-        return bool(self.bindings)
+        return not bool(self.bindings)
 
 
 class IamPolicyBinding(object):
