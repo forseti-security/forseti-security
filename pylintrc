@@ -37,9 +37,6 @@ persistent=yes
 # usually to register additional checkers.
 load-plugins=pylint.extensions.check_elif
 
-ignore-patterns=
-
-
 [MESSAGES CONTROL]
 
 # Enable the message, report, category or checker with the given id(s). You can
