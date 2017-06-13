@@ -263,7 +263,7 @@ class BaseClient(object):
         that to a simple list of items.
 
         Args:
-            page_results : A list of paged API response objects.
+            paged_results : A list of paged API response objects.
                 [{page 1 results}, {page 2 results}, {page 3 results}, ...]
             item_key: The name of the key within the inner "items" lists
                 containing the objects of interest.
