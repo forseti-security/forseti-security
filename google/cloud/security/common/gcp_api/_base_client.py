@@ -15,19 +15,37 @@
 """Base GCP client which uses the discovery API."""
 
 import json
+import httplib2
 
 from apiclient import discovery
 from googleapiclient.errors import HttpError
-from httplib2 import HttpLib2Error
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
+from google.cloud import security as forseti_security
 from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
 LOGGER = log_util.get_logger(__name__)
+
+
+def _attach_user_agent(request):
+    """Append our UA to the headers of an googelapiclient request object.
+
+        Args:
+            request: A googlapiclient request object
+
+        Returns:
+            A modified googleapiclient request object.
+    """
+    user_agent = request.headers['user-agent']
+    request.headers['user-agent'] = user_agent + ', %s/%s ' % (
+        forseti_security.__package_name__,
+        forseti_security.__version__)
+
+    return request
 
 
 # pylint: disable=too-few-public-methods
@@ -103,6 +121,7 @@ class BaseClient(object):
             exception is not wrapped by the retry library, and will be handled
             upstream.
         """
+        request = _attach_user_agent(request)
         try:
             if rate_limiter is not None:
                 with rate_limiter:
@@ -176,7 +195,7 @@ class BaseClient(object):
                 # not be any resources. So, just swallow the error:
                 # we're done!
                 break
-            except (HttpError, HttpLib2Error) as e:
+            except (HttpError, httplib2.HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)
 
         return results
