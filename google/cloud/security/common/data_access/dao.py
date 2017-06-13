@@ -35,6 +35,9 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
+    # appengine
+    'appengine': create_tables.CREATE_APPENGINE_TABLE,
+
     # backend services
     'backend_services': create_tables.CREATE_BACKEND_SERVICES_TABLE,
 
