@@ -17,7 +17,7 @@
 [MASTER]
 
 # The number of jobs to spawn for linting.
-jobs=4
+jobs=8
 
 # Specify a configuration file.
 #rcfile=
