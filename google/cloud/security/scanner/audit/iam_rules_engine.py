@@ -415,7 +415,7 @@ class IamRuleBook(bre.BaseRuleBook):
             # "inherit" property once per rule. So even though a rule
             # may apply to multiple resources, it will only have one
             # value for "inherit_from_parents".
-            if inherit_from_parents is False:
+            if not inherit_from_parents:
                 break
 
         return violations
