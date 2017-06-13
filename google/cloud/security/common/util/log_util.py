@@ -54,7 +54,8 @@ def _map_logger(func):
     Args:
         func: Function to call on every logger.
     """
-    [func(logger) for logger in LOGGERS.itervalues()]
+    for logger in LOGGERS.itervalues():
+        func(logger)
 
 def set_logger_level(level):
     """Modify log level of existing loggers as well as the default
