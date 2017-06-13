@@ -35,9 +35,9 @@ persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=
+load-plugins=pylint.extensions.check_elif
 
-ignore-patterns=.*enforcer_log_pb2
+ignore-patterns=
 
 
 [MESSAGES CONTROL]
