@@ -71,10 +71,7 @@ class Model(MODEL_BASE):
     etag_seed = Column(String(32), nullable=False)
 
     def kick_watchdog(self, session):
-        """
-        Kick watchdog during import in order
-        to notify the import is still progressing.
-        """
+        """Used during import to notify the import is still progressing."""
 
         self.watchdog_timer = datetime.datetime.utcnow()
         session.commit()
@@ -97,13 +94,14 @@ class Model(MODEL_BASE):
 # pylint: disable=too-many-public-methods
 # pylint: disable=no-member
 def define_model(model_name, dbengine, model_seed):
-    """
-    Models are name spaced via a random model seed such that multiple
-    models can exist within the same database. In order to implement
-    the name spacing in an abstract way, this function defines table
-    classes which point to the corresponding model.
-    This means, for each model being accessed this function needs to
-    be called in order to generate a full set of table definitions.
+    """Defines table classes which point to the corresponding model.
+
+        This means, for each model being accessed this function needs to
+        be called in order to generate a full set of table definitions.
+
+        Models are name spaced via a random model seed such that multiple
+        models can exist within the same database. In order to implement
+        the name spacing in an abstract way.
     """
 
     base = declarative_base()
@@ -337,13 +335,13 @@ def define_model(model_name, dbengine, model_seed):
                 session, resource_names)
 
             def find_binding_candidates(resource_hierarchy):
-                """
-                Find the root node in the ancestors.
-                From there, walk down the resource tree and add
-                every node until a node has more than one child.
-                This is the set of nodes which grants access to
-                at least all of the resources requested.
-                There is always a chain with a single node root.
+                """Find the root node in the ancestors.
+
+                    From there, walk down the resource tree and add
+                    every node until a node has more than one child.
+                    This is the set of nodes which grants access to
+                    at least all of the resources requested.
+                    There is always a chain with a single node root.
                 """
 
                 root = None
@@ -816,10 +814,9 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def expand_resources_by_type_names(cls, session, res_type_names):
-            """
-            Expand resources by type/name format.
+            """Expand resources by type/name format.
 
-            Returns: {res_type_name: Expansion(res_type_name), ... }
+                Returns: {res_type_name: Expansion(res_type_name), ... }
             """
 
             res_key = aliased(Resource, name='res_key')
@@ -1168,10 +1165,10 @@ LOCK = Lock()
 
 
 class ModelManager(object):
-    """
-    ModelManager is the central class to create,list,get and delete models.
-    ModelManager is mostly used to do the lookup from model name to the session
-    cache which is given in each client's request.
+    """The Central class to create,list,get and delete models.
+
+        ModelManager is mostly used to do the lookup from model name to the
+        session cache which is given in each client's request.
     """
 
     def __init__(self, dbengine):
