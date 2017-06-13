@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load appengine applications into Inventory.
-"""
+"""Pipeline to load appengine applications into Inventory."""
 
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.util import log_util
@@ -71,7 +70,8 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
                    'default_hostname': app.get('defaultHostname'),
                    'default_bucket': app.get('defaultBucket'),
                    'iap': parser.json_stringify(app.get('iap', {})),
-                   'gcr_domain': app.get('gcrDomain')}
+                   'gcr_domain': app.get('gcrDomain'),
+                   'raw_application': parser.json_stringify(app)}
 
     def run(self):
         """Run the pipeline."""

@@ -235,9 +235,9 @@ CLOUDSQL_ACLS = """
     FROM cloudsql_ipconfiguration_authorizednetworks_{0}
 """
 
-APPENGINES = """
-    SELECT id, project_id, name, app_id, dispatch_rules, auth_domain, location_id,
-    code_bucket, default_cookie_expiration, serving_status, default_hostname,
-    default_bucket, iap, gcr_domain
+APPENGINE_APPS = """
+    SELECT id, project_id, name, app_id, dispatch_rules, auth_domain,
+    location_id, code_bucket, default_cookie_expiration, serving_status,
+    default_hostname, default_bucket, iap, gcr_domain, raw_application
     FROM appengine_{0}
 """

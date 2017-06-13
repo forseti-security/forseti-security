@@ -35,6 +35,7 @@ APPENGINE_SERVICES_FIELDNAMES = [
     'default_bucket',
     'iap',
     'gcr_domain',
+    'raw_application'
 ]
 
 BACKEND_SERVICES_FIELDNAMES = [

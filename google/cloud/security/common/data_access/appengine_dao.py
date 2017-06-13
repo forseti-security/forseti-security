@@ -38,7 +38,7 @@ class AppEngineDao(dao.Dao):
         Raises:
             MySQLError if a MySQL error occurs.
         """
-        query = select_data.APPENGINES.format(timestamp)
+        query = select_data.APPENGINE_APPS.format(timestamp)
         rows = self.execute_sql_with_fetch(resource.ResourceType.APPENGINE,
                                            query, ())
         return [self.map_row_to_object(appengine.Application, row)

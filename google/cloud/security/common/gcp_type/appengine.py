@@ -38,3 +38,4 @@ class Application(object):
         self.default_bucket = kwargs.get('default_bucket')
         self.iap = kwargs.get('iap')
         self.gcr_domain = kwargs.get('gcr_domain')
+        self.raw_application = kwargs.get('raw_application')

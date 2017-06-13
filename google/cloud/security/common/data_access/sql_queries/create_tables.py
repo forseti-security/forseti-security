@@ -30,6 +30,7 @@ CREATE_APPENGINE_TABLE = """
         `default_bucket` varchar(255) DEFAULT NULL,
         `iap` json DEFAULT NULL,
         `gcr_domain` varchar(255) DEFAULT NULL,
+        `raw_application` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -157,7 +158,7 @@ CREATE_CLOUDSQL_INSTANCES_TABLE = """
         `connection_name` varchar(255) DEFAULT NULL,
         `current_disk_size` bigint DEFAULT NULL,
         `database_version` varchar(255) DEFAULT NULL,
-        `failover_replica_available` varchar(255) DEFAULT NULL, 
+        `failover_replica_available` varchar(255) DEFAULT NULL,
         `failover_replica_name` varchar(255) DEFAULT NULL,
         `instance_type` varchar(255) DEFAULT NULL,
         `ipv6_address` varchar(255) DEFAULT NULL,
@@ -208,7 +209,7 @@ CREATE_CLOUDSQL_INSTANCES_TABLE = """
 CREATE_CLOUDSQL_IPADDRESSES_TABLE = """
     CREATE TABLE {0} (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `project_number` bigint(20) NOT NULL,    
+        `project_number` bigint(20) NOT NULL,
         `instance_name` varchar(255) DEFAULT NULL,
         `type` varchar(255) DEFAULT NULL,
         `ip_address` varchar(255) DEFAULT NULL,
@@ -219,8 +220,8 @@ CREATE_CLOUDSQL_IPADDRESSES_TABLE = """
 
 CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS = """
     CREATE TABLE {0} (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,    
-        `project_number` bigint(20) NOT NULL,    
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,
         `instance_name` varchar(255) DEFAULT NULL,
         `kind` varchar(255) DEFAULT NULL,
         `name` varchar(255) DEFAULT NULL,

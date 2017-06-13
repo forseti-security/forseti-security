@@ -15,6 +15,7 @@
 """Wrapper for AppEngine API client."""
 
 import gflags as flags
+from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from googleapiclient.errors import HttpError
@@ -35,15 +36,20 @@ class AppEngineClient(_base_client.BaseClient):
     def __init__(self, credentials=None, version=None):
         super(AppEngineClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME, version=version)
+        self.rate_limiter = RateLimiter(
+            FLAGS.max_appengine_api_calls_per_second, 1)
 
     def get_app(self, project_id):
         """Gets information about an application.
+
+        Args:
+            project_id: The id of the project.
         """
         apps = self.service.apps()
         app = None
         request = apps.get(appsId=project_id)
         try:
-            app = request.execute()
+            app = self._execute(request, self.rate_limiter)
         except HttpError as e:
             resp = e.resp
             # TODO: use resp.status code to determine error state
