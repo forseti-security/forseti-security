@@ -52,11 +52,12 @@ class AppEngineClient(_base_client.BaseClient):
             app = self._execute(request, self.rate_limiter)
         except HttpError as e:
             resp = e.resp
-            # TODO: use resp.status code to determine error state
             if resp.status == '404':
+                # TODO: handle error more gracefully
                 # application not found
                 pass
             if resp.status == '403':
                 # Operation not allowed
+                # This has been handled by the BaseClient._execute
                 pass
         return app
