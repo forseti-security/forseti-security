@@ -50,7 +50,7 @@ def escape_and_globify(pattern_string):
 
 
 class EnforcedNetworksRulesEngine(bre.BaseRulesEngine):
-    """Rules engine for CloudSQL acls"""
+    """Rules engine for EnforcedNetworksRules"""
 
     def __init__(self, rules_file_path):
         """Initialize.
@@ -67,7 +67,7 @@ class EnforcedNetworksRulesEngine(bre.BaseRulesEngine):
         self.rule_book = EnforcedNetworksRuleBook(self._load_rule_definitions())
 
     # pylint: disable=arguments-differ
-    def find_policy_violations(self, enforced_networks,
+    def find_policy_violations(self, gce_instance,
                                force_rebuild=False):
         #TODO: change the comment ot be more clear
         """Determine whether the networks violates rules."""
@@ -79,7 +79,7 @@ class EnforcedNetworksRulesEngine(bre.BaseRulesEngine):
         for rule in resource_rules:
             violations = itertools.chain(violations,
                                          rule.\
-                                         find_policy_violations(enforced_networks))
+                                         find_policy_violations(gce_instance))
         return violations
 
     def add_rules(self, rules):
@@ -118,11 +118,13 @@ class EnforcedNetworksRuleBook(bre.BaseRuleBook):
             rule_index: The index of the rule from the rule definitions.
             Assigned automatically when the rule book is built.
         """
-
+        print(rule_def)
+        print(type(rule_def))
+        print("the rules_def")
         project = rule_def.get('project')
         network = rule_def.get('network')
         enforced_networks = rules_def.get('enforced_networks')
-         
+
         if (project is None) or (network is None) or (enforced_networks is None):
             raise audit_errors.InvalidRulesSchemaError('Faulty rule {}'.format(rule_def.get('name')))
 
@@ -157,6 +159,8 @@ class EnforcedNetworksRuleBook(bre.BaseRuleBook):
         return resource_rules
 
 
+
+
 class Rule(object):
     """Rule properties from the rule definition file.
     Also finds violations.
@@ -168,19 +172,19 @@ class Rule(object):
         Args:
             rule_name: Name of the loaded rule
             rule_index: The index of the rule from the rule definitions
-            rules: The rules from the file
+            rules: the gce instance 
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.rules = rules
 #TODO rename enforced_networks_rules?
-    def find_policy_violations(self, enforced_networks_rules):
+    def find_policy_violations(self, gce_instance):
         """
         enforced_networks string of the name of a network 
 
         """
-        for rule in self.rules:
-            if rule not in enforced_networks_rules:
+        for network_interface in gce_instance.networkInterfaces:
+            if network_interface not in self.rules:
                 yield self.RuleViolation(
                     rule_name=self.rule_name,
                     rule_index=self.rule_index,

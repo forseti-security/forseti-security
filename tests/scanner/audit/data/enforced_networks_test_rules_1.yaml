@@ -1,0 +1,8 @@
+rules:
+  project: '*'
+  network: '*'
+  enforced_networks: 
+     xpn-master: 
+         - xpn-network
+         - security-network
+
