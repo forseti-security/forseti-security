@@ -30,7 +30,7 @@ def require_model(f):
 
     def wrapper(*args, **kwargs):
         """Function wrapper to perform model handle existence check."""
-        if args[0].config.handle() != "":
+        if args[0].config.handle():
             return f(*args, **kwargs)
         raise Exception("API requires model to be set")
     return wrapper

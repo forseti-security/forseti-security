@@ -85,7 +85,7 @@ class BasePipeline(object):
         # pylint: disable=no-else-return
         if value is None:
             return None
-        elif value == '':
+        elif not value:
             return 0
         else:
             return int(value)
