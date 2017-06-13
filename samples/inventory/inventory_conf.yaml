@@ -16,39 +16,39 @@
 
 pipelines:
   - resource: backend_services
-    enabled: true
+    enabled: false
   - resource: bigquery_datasets
-    enabled: true
+    enabled: false
   - resource: buckets
-    enabled: true
+    enabled: false
   - resource: buckets_acls
     depends_on: buckets
-    enabled: true
+    enabled: false
   - resource: cloudsql
-    enabled: true
+    enabled: false
   - resource: firewall_rules
-    enabled: true
+    enabled: false
   - resource: folders
-    enabled: true
+    enabled: false
   - resource: forwarding_rules
-    enabled: true
+    enabled: false
   - resource: group_members
-    enabled: true
+    enabled: false
   - resource: groups
-    enabled: true
+    enabled: false
   - resource: instance_group_managers
-    enabled: true
+    enabled: false
   - resource: instance_groups
-    enabled: true
+    enabled: false
   - resource: instance_templates
-    enabled: true
+    enabled: false
   - resource: instances
     enabled: true
   - resource: org_iam_policies
-    enabled: true
+    enabled: false
   - resource: organizations
-    enabled: true
+    enabled: false
   - resource: projects
-    enabled: true
+    enabled: false
   - resource: projects_iam_policies
-    enabled: true
+    enabled: false

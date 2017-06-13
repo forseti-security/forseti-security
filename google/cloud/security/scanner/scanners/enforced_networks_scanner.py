@@ -90,6 +90,7 @@ class EnforcedNetworksScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
+        #TODO: should enforced_network_data be a gce_instance 
             enforced_networks_data: enforced networks data to find violations in
             rules_engine: The rules engine to run.
 
