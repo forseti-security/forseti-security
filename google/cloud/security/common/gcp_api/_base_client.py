@@ -32,10 +32,19 @@ LOGGER = log_util.get_logger(__name__)
 
 
 def _attach_user_agent(request):
-    ua = request.headers['user-agent']
-    request.headers['user-agent'] = ua + ', %s/%s ' % (
+    """Append our UA to the headers of an googelapiclient request object.
+
+        Args:
+            request: A googlapiclient request object
+
+        Returns:
+            A modified googleapiclient request object.
+    """
+    user_agent = request.headers['user-agent']
+    request.headers['user-agent'] = user_agent + ', %s/%s ' % (
         forseti_security.__package_name__,
         forseti_security.__version__)
+
     return request
 
 
@@ -118,7 +127,7 @@ class BaseClient(object):
                 with rate_limiter:
                     return request.execute()
             return request.execute()
-        except httplib2.HttpLib2Error as e:
+        except HttpError as e:
             if (e.resp.status == 403 and
                     e.resp.get('content-type', '').startswith(
                         'application/json')):
