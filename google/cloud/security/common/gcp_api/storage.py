@@ -97,7 +97,7 @@ class StorageClient(_base_client.BaseClient):
         try:
             downloader = http.MediaIoBaseDownload(out_stream, media_request)
             done = False
-            while done is False:
+            while not done:
                 _, done = downloader.next_chunk()
             file_content = out_stream.getvalue()
             out_stream.close()
