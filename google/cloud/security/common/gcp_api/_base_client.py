@@ -51,6 +51,7 @@ def _attach_user_agent(request):
 # pylint: disable=too-few-public-methods
 class BaseClient(object):
     """Base client for a specified GCP API and credentials."""
+
     def __init__(self, credentials=None, api_name=None, **kwargs):
         """Thin client wrapper over the Google Discovery API.
 
