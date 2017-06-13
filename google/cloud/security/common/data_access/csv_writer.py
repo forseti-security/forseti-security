@@ -21,6 +21,23 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+APPENGINE_SERVICES_FIELDNAMES = [
+    'project_id',
+    'name',
+    'app_id',
+    'dispatch_rules',
+    'auth_domain',
+    'location_id',
+    'code_bucket',
+    'default_cookie_expiration',
+    'serving_status',
+    'default_hostname',
+    'default_bucket',
+    'iap',
+    'gcr_domain',
+    'raw_application'
+]
+
 BACKEND_SERVICES_FIELDNAMES = [
     'id',
     'project_id',
@@ -381,6 +398,7 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
 ]
 
 CSV_FIELDNAME_MAP = {
+    'appengine': APPENGINE_SERVICES_FIELDNAMES,
     'backend_services': BACKEND_SERVICES_FIELDNAMES,
     'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
