@@ -39,7 +39,7 @@ persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,pylint.extensions.bad_builtin
+load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,pylint.extensions.bad_builtin,pylint.extensions.docstyle
 
 [MESSAGES CONTROL]
 
