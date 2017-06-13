@@ -824,11 +824,10 @@ class FirewallEnforcer(object):
                     'Current and expected rules match for project %s on '
                     'network(s) "%s".', self.project, ','.join(networks))
                 return 0
-        else:
-            if self.current_rules == self.expected_rules:
-                LOGGER.info('Current and expected rules match for project %s.',
-                            self.project)
-                return 0
+        elif self.current_rules == self.expected_rules:
+            LOGGER.info('Current and expected rules match for project %s.',
+                        self.project)
+            return 0
 
         self._build_change_set(networks)
         self._validate_change_set(networks)

@@ -124,7 +124,7 @@ def main(_):
             LOGGER.error('The resource name \'%s\' is invalid, skipping',
                          resource['resource'])
             continue
-        if resource['should_notify'] is False:
+        if not resource['should_notify']:
             continue
         for pipeline in resource['pipelines']:
             LOGGER.info('Running \'%s\' pipeline for resource \'%s\'',
