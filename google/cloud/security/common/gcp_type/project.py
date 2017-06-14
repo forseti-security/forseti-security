@@ -25,7 +25,6 @@ from google.cloud.security.common.gcp_type import resource
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 
 
-# pylint: disable=too-few-public-methods
 class ProjectLifecycleState(resource.LifecycleState):
     """Project lifecycle state."""
 

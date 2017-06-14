@@ -22,7 +22,6 @@ from google.cloud.security.common.gcp_api import _base_client
 # pylint: disable=missing-param-doc
 
 
-# pylint: disable=too-few-public-methods
 class CloudBillingClient(_base_client.BaseClient):
     """Billing Client."""
 

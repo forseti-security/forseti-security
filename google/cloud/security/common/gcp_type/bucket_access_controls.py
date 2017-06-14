@@ -18,7 +18,6 @@
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 
 
-# pylint: disable=too-few-public-methods
 class BucketAccessControls(object):
     """Bucket ACL Resource.
     """

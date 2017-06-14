@@ -80,7 +80,6 @@ class ResourceType(object):
         return resource_type
 
 
-# pylint: disable=too-few-public-methods
 class LifecycleState(object):
     """Resource lifecycle state."""
 

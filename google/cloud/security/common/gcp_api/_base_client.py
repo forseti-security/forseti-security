@@ -54,7 +54,6 @@ def _attach_user_agent(request):
     return request
 
 
-# pylint: disable=too-few-public-methods
 class BaseClient(object):
     """Base client for a specified GCP API and credentials."""
 

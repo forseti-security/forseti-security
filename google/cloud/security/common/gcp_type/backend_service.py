@@ -21,10 +21,7 @@ See: https://cloud.google.com/compute/docs/reference/latest/backendServices
 # pylint: disable=missing-param-doc
 
 
-# pylint: disable=too-few-public-methods
 # pylint: disable=too-many-instance-attributes
-
-
 class BackendService(object):
     """Represents BackendService resource."""
 

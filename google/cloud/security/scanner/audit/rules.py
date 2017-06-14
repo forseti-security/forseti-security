@@ -24,7 +24,6 @@ from google.cloud.security.scanner.audit import errors as audit_errors
 # pylint: disable=missing-param-doc
 
 
-# pylint: disable=too-few-public-methods
 class Rule(object):
     """Encapsulate Rule properties from the rule definition file.
 

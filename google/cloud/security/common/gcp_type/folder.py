@@ -22,7 +22,6 @@ from google.cloud.security.common.gcp_type import resource
 # pylint: disable=missing-type-doc,missing-return-type-doc
 
 
-# pylint: disable=too-few-public-methods
 class FolderLifecycleState(resource.LifecycleState):
     """Represents the Folder's LifecycleState."""
     pass

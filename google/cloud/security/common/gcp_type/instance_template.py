@@ -23,7 +23,6 @@ See:
 # pylint: disable=missing-param-doc
 
 
-# pylint: disable=too-few-public-methods
 class InstanceTemplate(object):
     """Represents InstanceTemplate resource."""
 

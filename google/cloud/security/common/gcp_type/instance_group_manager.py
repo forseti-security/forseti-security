@@ -22,10 +22,7 @@ See:
 # pylint: disable=missing-param-doc
 
 
-# pylint: disable=too-few-public-methods
 # pylint: disable=too-many-instance-attributes
-
-
 class InstanceGroupManager(object):
     """Represents InstanceGroupManager resource."""
 
