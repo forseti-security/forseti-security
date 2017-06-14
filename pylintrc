@@ -48,7 +48,6 @@ accept-no-param-doc=no
 accept-no-raise-doc=no
 accept-no-return-doc=no
 accept-no-yields-doc=no
-load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,pylint.extensions.bad_builtin,pylint.extensions.docstyle,pylint.extensions.emptystring,pylint.extensions.overlapping_exceptions,pylint.extensions.redefined_variable_type
 
 [MESSAGES CONTROL]
 
