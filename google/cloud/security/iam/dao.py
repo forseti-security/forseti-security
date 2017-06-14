@@ -89,10 +89,7 @@ class Model(MODEL_BASE):
         session.commit()
 
 
-# pylint: disable=too-many-locals
-# pylint: disable=too-few-public-methods
-# pylint: disable=too-many-public-methods
-# pylint: disable=no-member
+# pylint: disable=too-many-locals,too-few-public-methods,no-member
 def define_model(model_name, dbengine, model_seed):
     """Defines table classes which point to the corresponding model.
 
