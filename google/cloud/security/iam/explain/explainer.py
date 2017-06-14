@@ -18,9 +18,7 @@ from google.cloud.security.iam import dao
 from google.cloud.security.iam.explain.importer import importer
 
 
-# pylint: disable=invalid-name
-# pylint: disable=no-self-use
-# pylint: disable=no-member
+# pylint: disable=invalid-name,no-self-use
 class Explainer(object):
     """Implements the IAM Explain API."""
 

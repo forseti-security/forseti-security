@@ -83,9 +83,10 @@ class BasePipeline(object):
     def _to_int(value):
         """Transforms a value into a database integer (or None)."""
         # pylint: disable=no-else-return
+        # TODO: Investigate adding a try around this and simplifying.
         if value is None:
             return None
-        elif value == '':
+        elif not value:
             return 0
         else:
             return int(value)

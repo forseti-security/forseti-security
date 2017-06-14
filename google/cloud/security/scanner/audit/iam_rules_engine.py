@@ -416,10 +416,10 @@ class IamRuleBook(bre.BaseRuleBook):
             # may apply to multiple resources, it will only have one
             # value for "inherit_from_parents".
             # TODO: Revisit to remove pylint disable
-            # pylint: disable-msg=compare-to-zero
+            # pylint: disable=compare-to-zero
             if inherit_from_parents is False:
                 break
-            # pylint: enable-msg=compare-to-zero
+            # pylint: enable=compare-to-zero
 
         return violations
 

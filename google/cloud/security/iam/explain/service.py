@@ -44,9 +44,7 @@ def autoclose_stream(f):
     return wrapper
 
 
-# pylint: disable=invalid-name
 # pylint: disable=no-self-use
-# pylint: disable=no-member
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     """IAM Explain gRPC implementation."""
 

@@ -15,10 +15,7 @@
 """ Playground API. """
 
 
-# pylint: disable=invalid-name
-# pylint: disable=no-self-use
-# pylint: disable=no-member
-# pylint: disable=unused-argument
+# pylint: disable=invalid-name,no-self-use,unused-argument
 class Playgrounder(object):
     """Playground API implementation."""
 
