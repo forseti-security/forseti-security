@@ -18,10 +18,8 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceTemplates
 """
 
+
 # pylint: disable=too-few-public-methods
-# pylint: disable=too-many-instance-attributes
-
-
 class InstanceTemplate(object):
     """Represents InstanceTemplate resource."""
 

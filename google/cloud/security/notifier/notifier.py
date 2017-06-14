@@ -27,7 +27,7 @@ import importlib
 import inspect
 import gflags as flags
 
-# pylint: disable=line-too-long,no-name-in-module
+# pylint: disable=line-too-long
 from google.apputils import app
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
@@ -36,7 +36,7 @@ from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.security.scanner.scanners.scanners_map import RESOURCE_MAP
-# pylint: enable=line-too-long,no-name-in-module
+# pylint: enable=line-too-long
 
 
 # Setup flags
