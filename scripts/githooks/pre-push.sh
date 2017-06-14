@@ -22,4 +22,5 @@ for FILE in `git diff --name-only --cached`; do
         exit 1
     fi
 done
+
 exit
