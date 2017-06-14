@@ -1,0 +1,17 @@
+.docs-left-nav {
+    list-style-type: none;
+    padding: 0;
+
+    li {
+        & > a {
+            color: #404040;
+            font-size: 14px;
+            line-height: 24px;
+        }
+
+        &.active > a {
+            color: #1976d2;
+            text-decoration: underline;
+        }
+    }
+}
