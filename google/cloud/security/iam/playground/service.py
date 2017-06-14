@@ -23,9 +23,7 @@ from google.cloud.security.iam.playground import playground_pb2_grpc
 from google.cloud.security.iam.playground import playgrounder
 
 
-# pylint: disable=invalid-name
 # pylint: disable=no-self-use
-# pylint: disable=no-member
 class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     """Playground gRPC handler."""
 

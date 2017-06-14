@@ -253,9 +253,7 @@ class BaseClient(object):
         return items
 
     @staticmethod
-    # pylint: disable=invalid-name
     def _flatten_list_results(paged_results, item_key):
-    # pylint: enable=invalid-name
         """Flatten a split-up list as returned by list_next() API.
 
         GCE 'list' APIs return results in the form:
