@@ -51,7 +51,7 @@ def escape_and_globify(pattern_string):
 class CloudSqlRulesEngine(bre.BaseRulesEngine):
     """Rules engine for CloudSQL acls"""
 
-    def __init__(self, rules_file_path):
+    def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
 
         Args:
@@ -202,8 +202,10 @@ class Rule(object):
         if self.rules.authorized_networks != '^.+$':
             authorized_networks_regex = re.compile(self.rules.\
                                                    authorized_networks)
-            filter_list = filter(authorized_networks_regex.match,
-                                 cloudsql_acl.authorized_networks)
+            filter_list = [
+                net for net in cloudsql_acl.authorized_networks if\
+                authorized_networks_regex.match(net)
+            ]
 
             authorized_networks_bool = bool(filter_list)
         else:

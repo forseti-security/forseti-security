@@ -32,26 +32,25 @@ Usage:
 """
 
 
-import collections
 import itertools
 import os
 import shutil
 import sys
 
 from datetime import datetime
-
 import gflags as flags
 
+# pylint: disable=line-too-long
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
-from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
-from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.scanner.audit import engine_map as em
 from google.cloud.security.scanner.scanners import scanners_map as sm
+from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline
+# pylint: enable=line-too-long
 
 
 # Setup flags
@@ -279,12 +278,20 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
                 output_path = os.path.abspath(output_path)
             _upload_csv(output_path, now_utc, output_csv_name)
 
-        # Send summary email.
-        if FLAGS.email_recipient is not None:
-            resource_counts = kwargs.get('resource_counts', {})
-            _send_email(output_csv_name, now_utc,
-                        all_violations, resource_counts,
-                        violation_errors)
+            # Send summary email.
+            if FLAGS.email_recipient is not None:
+                email_pipeline = (
+                    email_scanner_summary_pipeline.EmailScannerSummaryPipeline(
+                        FLAGS.sendgrid_api_key))
+                email_pipeline.run(
+                    output_csv_name,
+                    _get_output_filename(now_utc),
+                    now_utc,
+                    all_violations,
+                    kwargs.get('resource_counts', {}),
+                    violation_errors,
+                    FLAGS.email_sender,
+                    FLAGS.email_recipient)
 
 def _upload_csv(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
@@ -313,100 +320,6 @@ def _upload_csv(output_path, now_utc, csv_name):
     else:
         # Otherwise, just copy it to the output path.
         shutil.copy(csv_name, full_output_path)
-
-def _send_email(csv_name, now_utc, all_violations,
-                total_resources, violation_errors):
-    """Send a summary email of the scan.
-
-    Args:
-        csv_name: The full path of the csv.
-        now_utc: The UTC datetime right now.
-        all_violations: The list of violations.
-        total_resources: A dict of the resources and their count.
-        violation_errors: Iterable of violation errors.
-    """
-
-    mail_util = EmailUtil(FLAGS.sendgrid_api_key)
-    total_violations, resource_summaries = _build_scan_summary(
-        all_violations, total_resources)
-
-    # Render the email template with values.
-    scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
-    email_content = EmailUtil.render_from_template(
-        'scanner_summary.jinja', {
-            'scan_date':  scan_date,
-            'resource_summaries': resource_summaries,
-            'violation_errors': violation_errors,
-        })
-
-    # Create an attachment out of the csv file and base64 encode the content.
-    attachment = EmailUtil.create_attachment(
-        file_location=csv_name,
-        content_type='text/csv',
-        filename=_get_output_filename(now_utc),
-        disposition='attachment',
-        content_id='Scanner Violations'
-    )
-    scanner_subject = 'Policy Scan Complete - {} violation(s) found'.format(
-        total_violations)
-    mail_util.send(email_sender=FLAGS.email_sender,
-                   email_recipient=FLAGS.email_recipient,
-                   email_subject=scanner_subject,
-                   email_content=email_content,
-                   content_type='text/html',
-                   attachment=attachment)
-
-def _build_scan_summary(all_violations, total_resources):
-    """Build the scan summary.
-
-    Build a summary of the violations and counts for the email.
-
-    resource summary:
-        {
-            RESOURCE_TYPE: {
-                'pluralized_resource_type': '{RESOURCE_TYPE}s'
-                'total': TOTAL,
-                'violations': {
-                    RESOURCE_ID: NUM_VIOLATIONS,
-                    RESOURCE_ID: NUM_VIOLATIONS,
-                    ...
-                }
-            },
-            ...
-        }
-
-    Args:
-        all_violations: List of violations.
-        total_resources: A dict of the resources and their count.
-
-    Returns:
-        Total counts and summaries.
-    """
-
-    resource_summaries = {}
-    total_violations = 0
-
-    for violation in sorted(all_violations, key=lambda v: v.resource_id):
-        resource_type = violation.resource_type
-        if resource_type not in resource_summaries:
-            resource_summaries[resource_type] = {
-                'pluralized_resource_type': resource_util.pluralize(
-                    resource_type),
-                'total': total_resources[resource_type],
-                'violations': collections.OrderedDict()
-            }
-
-        # Keep track of # of violations per resource id.
-        if (violation.resource_id not in
-                resource_summaries[resource_type]['violations']):
-            resource_summaries[resource_type][
-                'violations'][violation.resource_id] = 0
-
-        resource_summaries[resource_type][
-            'violations'][violation.resource_id] += len(violation.members)
-        total_violations += len(violation.members)
-
-    return total_violations, resource_summaries
 
 
 if __name__ == '__main__':

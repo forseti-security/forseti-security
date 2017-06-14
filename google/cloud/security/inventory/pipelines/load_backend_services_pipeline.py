@@ -73,7 +73,9 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
                        'region': backend_service.get('region'),
                        'session_affinity': backend_service.get(
                            'sessionAffinity'),
-                       'timeout_sec': backend_service.get('timeoutSec')}
+                       'timeout_sec': backend_service.get('timeoutSec'),
+                       'raw_backend_service':
+                           parser.json_stringify(backend_service)}
 
     def _retrieve(self):
         """Retrieve backend services from GCP.

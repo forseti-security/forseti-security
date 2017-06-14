@@ -53,6 +53,7 @@ class StorageClient(_base_client.BaseClient):
     def __init__(self, credentials=None):
         super(StorageClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
+        # Storage API has unlimited rate.
 
     def put_text_file(self, local_file_path, full_bucket_path):
         """Put a text object into a bucket.
@@ -96,7 +97,7 @@ class StorageClient(_base_client.BaseClient):
         try:
             downloader = http.MediaIoBaseDownload(out_stream, media_request)
             done = False
-            while done is False:
+            while not done:
                 _, done = downloader.next_chunk()
             file_content = out_stream.getvalue()
             out_stream.close()

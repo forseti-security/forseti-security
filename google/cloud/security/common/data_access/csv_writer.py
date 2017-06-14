@@ -21,6 +21,23 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+APPENGINE_SERVICES_FIELDNAMES = [
+    'project_id',
+    'name',
+    'app_id',
+    'dispatch_rules',
+    'auth_domain',
+    'location_id',
+    'code_bucket',
+    'default_cookie_expiration',
+    'serving_status',
+    'default_hostname',
+    'default_bucket',
+    'iap',
+    'gcr_domain',
+    'raw_application'
+]
+
 BACKEND_SERVICES_FIELDNAMES = [
     'id',
     'project_id',
@@ -41,6 +58,7 @@ BACKEND_SERVICES_FIELDNAMES = [
     'region',
     'session_affinity',
     'timeout_sec',
+    'raw_backend_service'
 ]
 
 BIGQUERY_DATASET_FIELDNAMES = [
@@ -163,6 +181,7 @@ CLOUDSQL_INSTANCES_FIELDNAMES = [
     'settings_tier',
     'state',
     'suspension_reason',
+    'raw_cloudsql_instance',
 ]
 
 CLOUDSQL_IPADDRESSES_FIELDNAMES = [
@@ -229,6 +248,7 @@ FORWARDING_RULES_FIELDNAMES = [
     'subnetwork',
     'network',
     'backend_service',
+    'raw_forwarding_rule',
 ]
 
 GROUP_MEMBERS_FIELDNAMES = [
@@ -268,6 +288,7 @@ INSTANCES_FIELDNAMES = [
     'status_message',
     'tags',
     'zone',
+    'raw_instance',
 ]
 
 INSTANCE_GROUPS_FIELDNAMES = [
@@ -282,6 +303,7 @@ INSTANCE_GROUPS_FIELDNAMES = [
     'size',
     'subnetwork',
     'zone',
+    'raw_instance_group',
 ]
 
 INSTANCE_TEMPLATES_FIELDNAMES = [
@@ -291,6 +313,7 @@ INSTANCE_TEMPLATES_FIELDNAMES = [
     'description',
     'name',
     'properties',
+    'raw_instance_template',
 ]
 
 INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
@@ -308,6 +331,7 @@ INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
     'target_pools',
     'target_size',
     'zone',
+    'raw_instance_group_manager',
 ]
 
 ORG_IAM_POLICIES_FIELDNAMES = [
@@ -374,6 +398,7 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
 ]
 
 CSV_FIELDNAME_MAP = {
+    'appengine': APPENGINE_SERVICES_FIELDNAMES,
     'backend_services': BACKEND_SERVICES_FIELDNAMES,
     'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,

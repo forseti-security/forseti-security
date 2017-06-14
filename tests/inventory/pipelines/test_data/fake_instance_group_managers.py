@@ -95,5 +95,10 @@ EXPECTED_LOADABLE_INSTANCE_GROUP_MANAGERS = [
      'target_pools': '[]',
      'target_size': 1,
      'zone': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c',
+     'raw_instance_group_manager': '{"instanceGroup": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instanceGroups/iap-ig", "kind": "compute#instanceGroupManager", "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/iap-it-1", "fingerprint": "OYowLtDCpv8=", "creationTimestamp": "2017-05-26T13:56:06.149-07:00", "id": "1532459550555580553", "currentActions": {"none": 1, "restarting": 0, "recreating": 0, "creating": 0, "abandoning": 0, "deleting": 0, "creatingWithoutRetries": 0, "refreshing": 0}, "name": "iap-ig", "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c", "targetSize": 1, "baseInstanceName": "iap-ig", "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instanceGroupManagers/iap-ig", "namedPorts": [{"name": "http", "port": 80}]}',
      }
 ]
+
+
+
+

@@ -205,7 +205,7 @@ class GroupsScanner(base_scanner.BaseScanner):
                 continue
             # This represents the auto-generated group, containing all the users
             # in the org.
-            if node.member_email == '':
+            if not node.member_email:
                 continue
 
             node.violated_rule_names = []

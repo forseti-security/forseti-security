@@ -71,5 +71,6 @@ EXPECTED_LOADABLE_INSTANCE_GROUPS = [
      'size': 1,
      'subnetwork': 'https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default',
      'zone': 'https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c',
+     'raw_instance_group': '{"description": "This instance group is controlled by Instance Group Manager \'iap-ig\'. To modify instances in this group, use the Instance Group Manager API: https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers", "fingerprint": "l9ccw0jwP90=", "creationTimestamp": "2017-05-26T13:56:06.149-07:00", "id": "1532459550555580553", "size": 1, "kind": "compute#instanceGroup", "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default", "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c", "name": "iap-ig", "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default", "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instanceGroups/iap-ig", "namedPorts": [{"name": "http", "port": 80}]}',
     }
 ]

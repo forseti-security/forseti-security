@@ -22,6 +22,7 @@ from dateutil import parser as dateutil_parser
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
@@ -34,6 +35,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     """Pipeline to load project CloudSql data into Inventory."""
 
     PROJECTS_RESOURCE_NAME = 'project_iam_policies'
+    RESOURCE_NAME = 'cloudsql'
     RESOURCE_NAME_INSTANCES = 'cloudsql_instances'
     RESOURCE_NAME_IPADDRESSES = 'cloudsql_ipaddresses'
     RESOURCE_NAME_AUTHORIZEDNETWORKS = (  # pylint: disable=invalid-name
@@ -158,6 +160,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                     'state': item.get('state'),
                     'suspension_reason': \
                         json.dumps(item.get('suspensionReason')),
+                    'raw_cloudsql_instance': parser.json_stringify(item)
                 }
 
     def _transform_authorizednetworks(self, cloudsql_instances_map):

@@ -17,17 +17,20 @@
 def GenerateConfig(context):
     """Generate configuration."""
 
-    if context.properties.get('branch-name'):
+    USE_BRANCH = context.properties.get('branch-name')
+    ORGANIZATION_ID = context.properties['organization-id']
+
+    if USE_BRANCH:
         DOWNLOAD_FORSETI = """
-            git clone {}.git --branch {} --single-branch forseti-security
-            cd forseti-security
+git clone {}.git --branch {} --single-branch forseti-security
+cd forseti-security
         """.format(
             context.properties['src-path'],
             context.properties['branch-name'])
     else:
         DOWNLOAD_FORSETI = """
-            wget -qO- {}/archive/v{}.tar.gz | tar xvz
-            cd forseti-security-{}
+wget -qO- {}/archive/v{}.tar.gz | tar xvz
+cd forseti-security-{}
         """.format(
             context.properties['src-path'],
             context.properties['release-version'],
@@ -41,21 +44,60 @@ def GenerateConfig(context):
     SCANNER_BUCKET = context.properties['scanner-bucket']
     DATABASE_NAME = context.properties['database-name']
     SHOULD_INVENTORY_GROUPS = bool(context.properties['inventory-groups'])
-
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
 
-    inventory_command = '/usr/local/bin/forseti_inventory --db_name {} '.format(
+    inventory_command = (
+        '/usr/local/bin/forseti_inventory --db_name {} '
+            .format(
+                DATABASE_NAME,
+            )
+        )
+
+    scanner_command = '/usr/local/bin/forseti_scanner --rules {} --output_path {} --db_name {} '.format(
+        'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
+        'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
         DATABASE_NAME,
     )
 
-    scanner_command = '/usr/local/bin/forseti_scanner --rules {} --output_path {} --engine_name {} --db_name {} '.format(
-        'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
-        'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
+    if USE_BRANCH:
+        inventory_command = (inventory_command + ' --config_path {} '
+                .format('$USER_HOME/config/inventory_conf.yaml')
+            )
+
         # TODO: temporary hack; remove --engine_name flag when we run scanner
         # totally in batch with the other rule engines
-        'IamRulesEngine',
-        DATABASE_NAME,
-    )
+        scanner_command = (scanner_command + ' --engine_name {} '
+                .format('IamRulesEngine')
+            )
+
+        # TODO: remove this little hack when we update the release...
+        NEW_FORSETI_CONFIG = """
+# Copy the default inventory config to a more permanent directory
+mkdir -p $USER_HOME/config
+cp samples/inventory/inventory_conf.yaml $USER_HOME/config/inventory_conf.yaml
+
+# Build protos separately.
+python build_protos.py -- clean
+"""
+        OLD_BUILD_PROTOS = ''
+    else:
+        inventory_command = (
+            inventory_command + ' --organization_id {} '
+                .format(ORGANIZATION_ID)
+            )
+
+        scanner_command = (
+            scanner_command + ' --organization_id {} '
+                .format(ORGANIZATION_ID)
+            )
+
+        NEW_FORSETI_CONFIG = ''
+        OLD_BUILD_PROTOS = """
+# Install protoc
+wget https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip
+unzip protoc-3.3.0-linux-x86_64.zip
+cp bin/protoc /usr/local/bin/protoc
+"""
 
     # Extend the commands, based on whether email is required.
     SENDGRID_API_KEY = context.properties.get('sendgrid-api-key')
@@ -77,10 +119,22 @@ def GenerateConfig(context):
         GROUPS_SERVICE_ACCOUNT_KEY_FILE = context.properties[
             'groups-service-account-key-file']
 
-        inventory_groups_flags = ' --inventory_groups --domain_super_admin_email {} --groups_service_account_key_file {}'.format(
-            GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
-            GROUPS_SERVICE_ACCOUNT_KEY_FILE,
-        )
+        # TODO: remove this in a future version
+        OLD_SHOULD_INV_GROUPS_FLAG = '--inventory_groups'
+
+        if USE_BRANCH:
+            OLD_SHOULD_INV_GROUPS_FLAG = ''
+
+        inventory_groups_flags = (
+            ' {} '
+            '--domain_super_admin_email {} '
+            '--groups_service_account_key_file {} '
+                .format(
+                    OLD_SHOULD_INV_GROUPS_FLAG,
+                    GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
+                    GROUPS_SERVICE_ACCOUNT_KEY_FILE,
+                )
+            )
         inventory_command = inventory_command + inventory_groups_flags
 
     resources = []
@@ -134,7 +188,6 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y libmysqlclient-dev python-pip python-dev
 
 USER_HOME=/home/ubuntu
-FORSETI_PROTOC_URL=https://raw.githubusercontent.com/GoogleCloudPlatform/forseti-security/master/scripts/data/protoc_url.txt
 
 # Install fluentd if necessary
 FLUENTD=$(ls /usr/sbin/google-fluentd)
@@ -178,23 +231,6 @@ EOF
         gsutil cp $USER_HOME/rules.yaml gs://{}/rules/rules.yaml
 fi
 
-# Check whether protoc is installed
-PROTOC_PATH=$(which protoc)
-if [ -z "$PROTOC_PATH" ]; then
-
-        cd $USER_HOME
-        PROTOC_DOWNLOAD_URL=$(curl -s $FORSETI_PROTOC_URL)
-
-        if [ -z "$PROTOC_DOWNLOAD_URL" ]; then
-            echo "No PROTOC_DOWNLOAD_URL set: $PROTOC_DOWNLOAD_URL"
-            exit 1
-        else
-            wget $PROTOC_DOWNLOAD_URL
-            unzip -o $(basename $PROTOC_DOWNLOAD_URL)
-            sudo cp bin/protoc /usr/local/bin
-        fi
-fi
-
 # Install Forseti Security
 cd $USER_HOME
 rm -rf forseti-*
@@ -204,14 +240,16 @@ pip install google-apputils grpcio grpcio-tools protobuf
 
 cd $USER_HOME
 
-# Download Forseti src; see DOWNLOAD_FORSETI
 {}
 
-# Don't build protos in setup.py.
-# Yes, this adds extra steps. However, this removes the step of having to download protoc.
-# Otherise, the pip package and the setuptools clobber each other's path
-python build_protos.py -- clean
-pip uninstall protobuf
+# Download Forseti src; see DOWNLOAD_FORSETI
+{}
+# Prevent namespace clash
+pip uninstall --yes google-apputils
+pip uninstall --yes protobuf
+
+{}
+
 python setup.py install
 
 # Create the startup run script
@@ -237,11 +275,17 @@ chmod +x $USER_HOME/run_forseti.sh
 
     # rules.yaml
     SCANNER_BUCKET,
-    context.properties['organization-id'],
+    ORGANIZATION_ID,
     SCANNER_BUCKET,
+
+    # old style build protobufs
+    OLD_BUILD_PROTOS,
 
     # install forseti
     DOWNLOAD_FORSETI,
+
+    # copy Forseti config file
+    NEW_FORSETI_CONFIG,
 
     # run_forseti.sh
     # - forseti_inventory
