@@ -90,10 +90,15 @@ class PipelineBuilder(object):
                 raise api_errors.ApiInitializationError(e)
 
             api_version = self.api_map.get(api_name).get('version')
-            if api_version is None:
-                api = api_class()
-            else:
-                api = api_class(version=api_version)
+            try:
+                if api_version is None:
+                    api = api_class()
+                else:
+                    api = api_class(version=api_version)
+            except api_errors.ApiExecutionError as e:
+                LOGGER.error('Failed to execute API %s, v=%s',
+                             api_class_name, api_version)
+                raise api_errors.ApiInitializationError(e)
 
             self.initialized_api_map[api_name] = api
 
