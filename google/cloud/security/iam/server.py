@@ -29,6 +29,10 @@ STATIC_SERVICE_MAPPING = {
 }
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
+
+
 class ServiceConfig(object):
     """Helper class to implement dependency injection to IAM Explain services.
     """

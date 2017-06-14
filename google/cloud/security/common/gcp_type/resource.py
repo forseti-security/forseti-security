@@ -22,6 +22,11 @@ import abc
 from google.cloud.security.common.gcp_type import errors
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
+
+
 class ResourceType(object):
     """Resource types."""
 

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Wrapper for Billing API client."""
+# Notify the user of TODOs when git push is invoked.
 
-from google.cloud.security.common.gcp_api import _base_client
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-param-doc
-
-
-# pylint: disable=too-few-public-methods
-class CloudBillingClient(_base_client.BaseClient):
-    """Billing Client."""
-
-    API_NAME = 'cloudbilling'
-
-    def __init__(self, credentials=None):
-        super(CloudBillingClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+for FILE in `git diff --name-only --cached`; do
+    grep 'TODO' $FILE 2>&1 >/dev/null
+    if [ $? -eq 0 ]; then
+        echo $FILE ' contains TODO'
+        exit 1
+    fi
+done
+exit

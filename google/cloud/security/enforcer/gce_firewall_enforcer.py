@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Core classes for firewall policy enforcement and calls to the compute API.
 
 Simplifies the interface with the compute API for managing firewall policies.
 """
-
 
 import hashlib
 import httplib
@@ -31,6 +29,10 @@ import httplib2
 from retrying import retry
 from google.apputils import datelib
 from google.cloud.security.common.util import log_util
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
 
 # The name of the GCE API.
 API_NAME = 'compute'

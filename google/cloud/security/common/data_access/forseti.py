@@ -24,6 +24,12 @@ from sqlalchemy import Date
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-yield-doc,missing-yield-type-doc
+
+
 BASE = declarative_base()
 TABLE_CACHE = {}
 

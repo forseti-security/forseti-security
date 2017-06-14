@@ -24,6 +24,11 @@ from google.cloud.security.iam.playground import playground_pb2
 from google.cloud.security.iam.utils import oneof
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
+
+
 def require_model(f):
     """Decorator to perform check that the model handle exists in the service.
     """

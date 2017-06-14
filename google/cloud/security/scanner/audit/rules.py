@@ -19,6 +19,11 @@ from collections import namedtuple
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc
+
+
 # pylint: disable=too-few-public-methods
 class Rule(object):
     """Encapsulate Rule properties from the rule definition file.
