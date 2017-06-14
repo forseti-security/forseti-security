@@ -47,7 +47,7 @@ resources:
   properties:
     # GCE instance properties
     image-project: ubuntu-os-cloud
-    image-family: ubuntu-1404-lts
+    image-family: ubuntu-1604-lts
     instance-type: g1-small
     zone: $(ref.cloudsql-instance.region)-c
 
@@ -73,8 +73,8 @@ resources:
     # e.g. "I want to deploy release 1.0"
     #    # branch-name: "master" <-- COMMENT OUT
     #    release-version: "1.0"
-    #branch-name: ""
-    release-version: "1.0.2"
+    branch-name: "master"
+    #release-version: RELEASE_VERSION
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 
