@@ -45,6 +45,12 @@ from google.cloud.security.iam.utils import full_to_type_name
 from google.cloud.security.iam.utils import resource_to_type_name
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
+# pylint: disable=missing-yield-type-doc
+
+
 def generate_model_handle():
     """Generate random model handle."""
 
@@ -89,7 +95,7 @@ class Model(MODEL_BASE):
         session.commit()
 
 
-# pylint: disable=too-many-locals,too-few-public-methods,no-member
+# pylint: disable=too-many-locals,no-member
 def define_model(model_name, dbengine, model_seed):
     """Defines table classes which point to the corresponding model.
 

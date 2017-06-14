@@ -21,6 +21,11 @@ import re
 from google.cloud.security.common.gcp_type import errors
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc
+
+
 def _escape_and_globify(pattern_string):
     """Given a pattern string with a glob, create actual regex pattern.
 

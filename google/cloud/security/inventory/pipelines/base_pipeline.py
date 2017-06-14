@@ -23,6 +23,12 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 # pylint: enable=line-too-long
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,redundant-returns-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 

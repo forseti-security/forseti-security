@@ -34,6 +34,10 @@ STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
 LOGGER = log_util.get_logger(__name__)
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+
+
 class BatchFirewallEnforcer(object):
     """Manage the parallel enforcement of firewall policies across projects."""
 

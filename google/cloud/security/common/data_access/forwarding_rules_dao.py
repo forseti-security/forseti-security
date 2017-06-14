@@ -30,10 +30,10 @@ class ForwardingRulesDao(dao.Dao):
         """Get forwarding rules from a particular snapshot.
 
         Args:
-            timestamp: The snapshot timestamp.
+            timestamp (str): The snapshot timestamp.
 
         Returns:
-            A list of ForwardingRules.
+            list: A list of ForwardingRules.
 
         Raises:
             MySQLError if a MySQL error occurs.

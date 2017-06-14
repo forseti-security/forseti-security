@@ -32,6 +32,13 @@ from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import rules as scanner_rules
 from google.cloud.security.scanner.audit import errors as audit_errors
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc
+# pylint: disable=missing-yield-type-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -487,7 +494,7 @@ class ResourceRules(object):
             binding_to_match: The IamPolicyBinding binding to compare to
                 this rule's bindings.
 
-        Returns:
+        Yields:
             A generator of RuleViolations.
         """
         policy_binding = iam_policy.IamPolicyBinding.create_from(

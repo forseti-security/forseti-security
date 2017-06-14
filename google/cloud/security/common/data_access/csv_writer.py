@@ -21,6 +21,12 @@ import tempfile
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,redundant-returns-doc
+# pylint: disable=missing-raises-doc,missing-yield-doc,missing-yield-type-doc
+
+
 APPENGINE_SERVICES_FIELDNAMES = [
     'project_id',
     'name',

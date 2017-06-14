@@ -22,6 +22,11 @@ from google.cloud.security.notifier.pipelines import base_notification_pipeline 
 # pylint: enable=line-too-long
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc
+# pylint: disable=missing-param-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -98,9 +103,6 @@ class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
             inventory_pipelines: List of inventory pipelines.
             email_sender: String of the sender of the email.
             email_recipient: String of the recipient of the email.
-
-        Returns:
-             None
         """
         email_subject, email_content = self._compose(
             snapshot_time, snapshot_timestamp, status, inventory_pipelines)

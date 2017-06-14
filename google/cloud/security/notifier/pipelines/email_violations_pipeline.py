@@ -25,6 +25,12 @@ from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.notifier.pipelines import base_notification_pipeline as bnp
 # pylint: enable=line-too-long
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-param-doc,differing-param-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 TEMP_DIR = '/tmp'
