@@ -182,6 +182,13 @@ cp bin/protoc /usr/local/bin/protoc
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
+exec > /tmp/deployment.log
+exec 2>&1
+
+# Ubuntu update
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
 # Forseti setup
 sudo apt-get install -y git unzip
 # Forseti dependencies
