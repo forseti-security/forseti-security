@@ -12,18 +12,21 @@
       color: #737373;
       margin-right: 5px;
 
-      &:hover, &:focus {
-        color: #737373;
+      &:hover,
+      &:focus {
         border-bottom: 2px solid #737373;
+        color: #737373;
       }  
     }
 
     &.active {
-      a, a:hover, a:focus {
-        color: #1976d2;
+      a,
+      a:hover,
+      a:focus {
         background-color: transparent;
         border: none;
         border-bottom: 2px solid #1976d2;
+        color: #1976d2;
       }
     }
   }
