@@ -1,0 +1,16 @@
+.navbar {
+  .icon-search {
+    float: left;
+    font-size: 20px;
+    margin: 4px -24px 0 0;
+  }
+
+  .search {
+    padding-left: 24px !important;
+
+    &::placeholder {
+      font-size: 14px !important;
+      font-weight: 300 !important;
+    }
+  }
+}
