@@ -25,10 +25,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import pipeline_requirements_map
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,redundant-returns-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -40,14 +36,13 @@ class PipelineBuilder(object):
         """Initialize the pipeline builder.
 
         Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            config_path: String of the path to the inventory config file.
-            flags: Dictionary of flag values.
-            api_map: Dictionary of GCP API info, mapped to each resource.
-            dao_map: Dictionary of DAO instances, mapped to each resource.
+            cycle_timestamp (str): Timestamp formatted as YYYYMMDDTHHMMSSZ.
+            config_path (str): Path to the inventory config file.
+            flags (dict): Flag values.
+            api_map (dict): GCP API info, mapped to each resource.
+            dao_map (dict): DAO instances, mapped to each resource.
 
         Returns:
-            None
         """
         self.cycle_timestamp = cycle_timestamp
         self.config_path = config_path
@@ -63,10 +58,10 @@ class PipelineBuilder(object):
         pipelines that are enabled, in order to minimize setup.
 
         Args:
-            api_name: String of the API name to get.
+            api_name (str): API name to get from the API map..
 
         Returns:
-            Instance of the API.
+            object: Instance of the API.
         """
         api = self.initialized_api_map.get(api_name)
         if api is None:
@@ -90,10 +85,15 @@ class PipelineBuilder(object):
                 raise api_errors.ApiInitializationError(e)
 
             api_version = self.api_map.get(api_name).get('version')
-            if api_version is None:
-                api = api_class()
-            else:
-                api = api_class(version=api_version)
+            try:
+                if api_version is None:
+                    api = api_class()
+                else:
+                    api = api_class(version=api_version)
+            except api_errors.ApiExecutionError as e:
+                LOGGER.error('Failed to execute API %s, v=%s',
+                             api_class_name, api_version)
+                raise api_errors.ApiInitializationError(e)
 
             self.initialized_api_map[api_name] = api
 
@@ -103,7 +103,7 @@ class PipelineBuilder(object):
         """Find the enabled pipelines to run.
 
         Args:
-            root: PipelineNode representing the top-level starting point
+            root (PipelineNode): Represents the top-level starting point
                 of the pipeline dependency tree. The entire pipeline
                 dependency tree are tuple of children PipelineNodes
                 of this root.
@@ -115,7 +115,7 @@ class PipelineBuilder(object):
                 root.children = (pipeline_node1, pipeline_node2, ...)
 
         Returns:
-            runnable_pipelines: List of the pipelines that will be run. The
+            list: List of the pipelines that will be run. The
                 order in the list represents the order they need to be run.
                 i.e. going top-down in the dependency tree.
         """
@@ -197,7 +197,7 @@ class PipelineBuilder(object):
         """Build the dependency tree with all the pipeline nodes.
 
         Returns:
-            PipelineNode representing the top-level starting point
+            PipelineNode: Represents the top-level starting point
                 of the pipeline dependency tree. The entire pipeline
                 dependency tree are children of this root.
 
@@ -236,7 +236,7 @@ class PipelineBuilder(object):
         """Build the pipelines to load data.
 
         Returns:
-            List of pipelines instances that will be run.
+            list: List of pipelines instances that will be run.
         """
         root = self._build_dependency_tree()
 
@@ -254,12 +254,11 @@ class PipelineNode(anytree.node.NodeMixin):
         """Initialize the pipeline node.
 
         Args:
-            resource_name: String of name of the resource.
-            enabled: Boolean whether the pipeline should run.
-            parent: PipelineNode of this node's parent.
+            resource_name (str): Name of the resource.
+            enabled (bool): Whether the pipeline should run.
+            parent (PipelineNode): This node's parent.
 
         Returns:
-            None
         """
         self.resource_name = resource_name
         self.enabled = enabled
