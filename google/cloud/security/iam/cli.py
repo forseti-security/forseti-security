@@ -15,6 +15,7 @@
 """ IAM Explain CLI. """
 
 #pylint: disable=too-many-locals,missing-type-doc,missing-param-doc
+#pylint: disable=missing-return-doc,missing-return-type-doc,missing-raises-doc
 
 import argparse
 import os

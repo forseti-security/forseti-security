@@ -29,10 +29,9 @@ from google.cloud.security.iam.dao import ModelManager
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc,missing-raises-doc
 
-
 # pylint: disable=unused-argument
 # pylint: disable=no-self-use
-# pylint: disable=bare-except
+# pylint: disable=bare-except,docstring-first-line-empty
 
 
 class ResourceCache(dict):
