@@ -11,7 +11,7 @@ $dark-gray: darken($gray, 20%);
   padding: 0;
 
   @media (min-width: 768px) {
-      display: block !important;
+    display: block !important;
   }
 
   ul {
@@ -22,12 +22,12 @@ $dark-gray: darken($gray, 20%);
     line-height: 22px;
 
     ul {
-        font-weight: 400;
-        font-size: 11px;
+      font-weight: 400;
+      font-size: 11px;
     }
 
     a {
-        color: $dark-gray;
+      color: $dark-gray;
     }
   }
 }
