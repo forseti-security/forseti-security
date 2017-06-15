@@ -35,7 +35,7 @@ from sqlalchemy.sql.elements import literal_column
 BASE = declarative_base()
 TABLE_CACHE = {}
 
-# pyling: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods,too-many-locals
 class SnapshotState(object):
     """Possible states for Forseti snapshots."""
 
