@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for Bucket acls"""
+"""Rules engine for Big Query data sets"""
 from collections import namedtuple
 import itertools
 import re
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.gcp_type import bucket_access_controls as bkt_acls
+from google.cloud.security.common.gcp_type import bigquery_access_controls as bq_acls
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
@@ -47,8 +47,8 @@ def escape_and_globify(pattern_string):
     return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
 
 
-class BucketsRulesEngine(bre.BaseRulesEngine):
-    """Rules engine for bucket acls"""
+class BigqueryRulesEngine(bre.BaseRulesEngine):
+    """Rules engine for Big Query data sets"""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -56,18 +56,18 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         Args:
             rules_file_path: file location of rules
         """
-        super(BucketsRulesEngine,
+        super(BigqueryRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self):
-        """Build BucketsRuleBook from the rules definition file."""
-        self.rule_book = BucketsRuleBook(self._load_rule_definitions())
+        """Build BigqueryRuleBook from the rules definition file."""
+        self.rule_book = BigqueryRuleBook(self._load_rule_definitions())
 
     # pylint: disable=arguments-differ
-    def find_policy_violations(self, buckets_acls,
+    def find_policy_violations(self, bq_datasets,
                                force_rebuild=False):
-        """Determine whether bucket acls violates rules."""
+        """Determine whether Big Query datasets violate rules."""
         violations = itertools.chain()
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
@@ -76,7 +76,7 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         for rule in resource_rules:
             violations = itertools.chain(violations,
                                          rule.\
-                                         find_policy_violations(buckets_acls))
+                                         find_policy_violations(bq_datasets))
         return violations
 
     def add_rules(self, rules):
@@ -85,8 +85,8 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
             self.rule_book.add_rules(rules)
 
 
-class BucketsRuleBook(bre.BaseRuleBook):
-    """The RuleBook for bucket acls resources."""
+class BigqueryRuleBook(bre.BaseRuleBook):
+    """The RuleBook for Big Query dataset resources."""
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -94,7 +94,7 @@ class BucketsRuleBook(bre.BaseRuleBook):
         Args:
             rule_defs: rule definitons
         """
-        super(BucketsRuleBook, self).__init__()
+        super(BigqueryRuleBook, self).__init__()
         self.resource_rules_map = {}
         if not rule_defs:
             self.rule_defs = {}
@@ -128,22 +128,25 @@ class BucketsRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-            bucket = rule_def.get('bucket')
-            entity = rule_def.get('entity')
-            email = rule_def.get('email')
+            dataset_id = rule_def.get('dataset_id')
+            special_group = rule_def.get('special_group')
+            user_email = rule_def.get('user_email')
             domain = rule_def.get('domain')
+            group_email = rule_def.get('group_email')
             role = rule_def.get('role')
 
-            if (bucket is None) or (entity is None) or (email is None) or\
-               (domain is None) or (role is None):
+            if (dataset_id is None) or (special_group is None) or\
+               (user_email is None) or (domain is None) or\
+               (group_email is None) or (role is None):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_def.get('name')))
 
-            rule_def_resource = bkt_acls.BucketAccessControls(
-                escape_and_globify(bucket),
-                escape_and_globify(entity),
-                escape_and_globify(email),
+            rule_def_resource = bq_acls.BigqueryAccessControls(
+                escape_and_globify(dataset_id),
+                escape_and_globify(special_group),
+                escape_and_globify(user_email),
                 escape_and_globify(domain),
+                escape_and_globify(group_email),
                 escape_and_globify(role.upper()))
 
             rule = Rule(rule_name=rule_def.get('name'),
@@ -189,68 +192,80 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
-    def find_policy_violations(self, bucket_acl):
-        """Find bucket policy acl violations in the rule book.
+    def find_policy_violations(self, bigquery_acl):
+        """Find BigQuery acl violations in the rule book.
 
         Args:
-            bucket_acl: Bucket ACL resource
+            bigquery_acl: BigQuery ACL resource
 
         Returns:
             Returns RuleViolation named tuple
         """
-        if self.rules.bucket != '^.+$':
-            bucket_bool = re.match(self.rules.bucket, bucket_acl.bucket)
+        if self.rules.dataset_id != '^.+$':
+            dataset_id_bool = re.match(self.rules.dataset_id,
+                                       bigquery_acl.dataset_id)
         else:
-            bucket_bool = True
-        if self.rules.entity != '^.+$':
-            entity_bool = re.match(self.rules.entity, bucket_acl.entity)
+            dataset_id_bool = True
+        if self.rules.special_group != '^.+$':
+            special_group_bool = re.match(self.rules.special_group,
+                                          bigquery_acl.special_group)
         else:
-            entity_bool = True
-        if self.rules.email != '^.+$':
-            email_bool = re.match(self.rules.email, bucket_acl.email)
+            special_group_bool = True
+        if self.rules.user_email != '^.+$':
+            user_email_bool = re.match(self.rules.user_email,
+                                       bigquery_acl.user_email)
         else:
-            email_bool = True
+            user_email_bool = True
         if self.rules.domain != '^.+$':
-            domain_bool = re.match(self.rules.domain, bucket_acl.domain)
+            domain_bool = re.match(self.rules.domain, bigquery_acl.domain)
         else:
             domain_bool = True
+        if self.rules.group_email != '^.+$':
+            group_email_bool = re.match(self.rules.group_email,
+                                        bigquery_acl.group_email)
+        else:
+            group_email_bool = True
         if self.rules.role != '^.+$':
-            role_bool = re.match(self.rules.role, bucket_acl.role)
+            role_bool = re.match(self.rules.role, bigquery_acl.role)
         else:
             role_bool = True
 
         should_raise_violation = (
-            (bucket_bool is not None and bucket_bool) and
-            (entity_bool is not None and entity_bool) and
-            (email_bool is not None and email_bool) and
+            (dataset_id_bool is not None and dataset_id_bool) and
+            (special_group_bool is not None and special_group_bool) and
+            (user_email_bool is not None and user_email_bool) and
             (domain_bool is not None and domain_bool) and
+            (group_email_bool is not None and group_email_bool) and
             (role_bool is not None and role_bool))
 
         if should_raise_violation:
             yield self.RuleViolation(
                 resource_type='project',
-                resource_id=bucket_acl.project_number,
+                resource_id=bigquery_acl.project_id,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
-                violation_type='BUCKET_VIOLATION',
-                role=bucket_acl.role,
-                entity=bucket_acl.entity,
-                email=bucket_acl.email,
-                domain=bucket_acl.domain,
-                bucket=bucket_acl.bucket)
+                violation_type='BIGQUERY_VIOLATION',
+                dataset_id=bigquery_acl.dataset_id,
+                role=bigquery_acl.role,
+                special_group=bigquery_acl.special_group,
+                user_email=bigquery_acl.user_email,
+                domain=bigquery_acl.domain,
+                group_email=bigquery_acl.group_email)
 
     # Rule violation.
     # resource_type: string
     # resource_id: string
     # rule_name: string
     # rule_index: int
-    # violation_type: BUCKET_VIOLATION
+    # violation_type: BIGQUERY_VIOLATION
+    # dataset_id: string
     # role: string
-    # entity: string
-    # email: string
+    # special_group: string
+    # user_email: string
     # domain: string
-    # bucket: string
+    # group_email: string
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type', 'role',
-                                'entity', 'email', 'domain', 'bucket'])
+                                'rule_index', 'violation_type', 'dataset_id',
+                                'role', 'special_group', 'user_email', 
+                                'domain', 'group_email'])

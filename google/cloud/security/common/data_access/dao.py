@@ -51,8 +51,6 @@ CREATE_TABLE_MAP = {
     'cloudsql_ipaddresses': create_tables.CREATE_CLOUDSQL_IPADDRESSES_TABLE,
     'cloudsql_ipconfiguration_authorizednetworks':\
         create_tables.CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS,
-    'cloudsql_acl_violations':\
-        create_tables.CREATE_CLOUDSQL_ACL_VIOLATIONS_TABLE,
 
     # folders
     'folders': create_tables.CREATE_FOLDERS_TABLE,
@@ -96,8 +94,6 @@ CREATE_TABLE_MAP = {
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
 
     # rule violations
-    'buckets_acl_violations':
-        create_tables.CREATE_BUCKETS_ACL_VIOLATIONS_TABLE,
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
 }
 

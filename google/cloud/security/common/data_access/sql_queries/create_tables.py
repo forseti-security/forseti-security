@@ -75,24 +75,6 @@ CREATE_BUCKETS_ACL_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
-
-CREATE_BUCKETS_ACL_VIOLATIONS_TABLE = """
-    CREATE TABLE `{0}` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `resource_type` varchar(255) NOT NULL,
-        `resource_id` varchar(255) NOT NULL,
-        `rule_name` varchar(255) DEFAULT NULL,
-        `rule_index` int DEFAULT NULL,
-        `violation_type` enum('BUCKET_VIOLATION') NOT NULL,
-        `role` varchar(255) DEFAULT NULL,
-        `entity` varchar(255) DEFAULT NULL,
-        `email` varchar(255) DEFAULT NULL,
-        `domain` varchar(255) DEFAULT NULL,
-        `bucket` varchar(255) DEFAULT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
 CREATE_BUCKETS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -107,21 +89,6 @@ CREATE_BUCKETS_TABLE = """
         `bucket_selflink` varchar(255) DEFAULT NULL,
         `bucket_lifecycle_raw` json DEFAULT NULL,
         `raw_bucket` json DEFAULT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
-CREATE_CLOUDSQL_ACL_VIOLATIONS_TABLE = """
-    CREATE TABLE `{0}` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `resource_type` varchar(255) NOT NULL,
-        `resource_id` varchar(255) NOT NULL,
-        `rule_name` varchar(255) DEFAULT NULL,
-        `rule_index` int DEFAULT NULL,
-        `violation_type` enum('CLOUD_SQL_VIOLATION') NOT NULL,
-        `instance_name` varchar(255) DEFAULT NULL,
-        `authorized_networks` varchar(255) DEFAULT NULL,
-        `ssl_enabled` varchar(255) DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -488,9 +455,10 @@ CREATE_VIOLATIONS_TABLE = """
         `resource_id` varchar(255) NOT NULL,
         `rule_name` varchar(255) DEFAULT NULL,
         `rule_index` int DEFAULT NULL,
-        `violation_type` enum('UNSPECIFIED','ADDED','REMOVED') NOT NULL,
-        `role` varchar(255) DEFAULT NULL,
-        `member` varchar(255) DEFAULT NULL,
+        `violation_type` enum('UNSPECIFIED','ADDED','REMOVED',
+                              'BIGQUERY_VIOLATION', 'BUCKET_VIOLATION',
+                              'CLOUD_SQL_VIOLATION') NOT NULL,
+        `violation_data` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """

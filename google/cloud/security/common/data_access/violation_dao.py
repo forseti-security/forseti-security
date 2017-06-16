@@ -14,6 +14,7 @@
 
 """Provides the data access object (DAO) for Organizations."""
 
+from collections import namedtuple
 import MySQLdb
 
 from google.cloud.security.common.data_access import dao
@@ -60,6 +61,12 @@ class ViolationDao(dao.Dao):
         inserted_rows = 0
         violation_errors = []
         for violation in violations:
+            violation = Violation(resource_type=violation['resource_type'],
+                                  resource_id=violation['resource_id'],
+                                  rule_name=violation['rule_name'],
+                                  rule_index=violation['rule_index'],
+                                  violation_type=violation['violation_type'],
+                                  violation_data=violation['violation_data'])
             for formatted_violation in _format_violation(violation,
                                                          resource_name):
                 try:
@@ -101,5 +108,10 @@ def _format_violation(violation, resource_name):
     Returns:
         Formatted violations
     """
+
     formatted_output = vm.VIOLATION_MAP[resource_name](violation)
     return formatted_output
+
+Violation = namedtuple('Violation',
+                        ['resource_type', 'resource_id', 'rule_name',
+                         'rule_index', 'violation_type', 'violation_data'])
