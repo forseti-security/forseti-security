@@ -18,9 +18,13 @@ from google.cloud.security.iam import dao
 from google.cloud.security.iam.explain.importer import importer
 
 
-# pylint: disable=invalid-name
-# pylint: disable=no-self-use
-# pylint: disable=no-member
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-yield-doc
+# pylint: disable=missing-yield-type-doc
+
+
+# pylint: disable=invalid-name,no-self-use
 class Explainer(object):
     """Implements the IAM Explain API."""
 

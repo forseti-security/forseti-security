@@ -18,6 +18,13 @@ import json
 
 from google.cloud.security.common.data_access import forseti
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-yield-doc
+# pylint: disable=missing-yield-type-doc
+
+
 # pylint: disable=unused-argument
 
 class ResourceCache(dict):
@@ -198,7 +205,11 @@ class ForsetiImporter(object):
                         type=member.get_type()))
 
     def run(self):
-        """Runs the import."""
+        """Runs the import.
+
+            Raises:
+                NotImplementedError: If the resource type isn't found.
+        """
 
         self.model.set_inprogress(self.session)
         self.model.kick_watchdog(self.session)

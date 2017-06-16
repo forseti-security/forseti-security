@@ -25,6 +25,11 @@ from google.cloud.security.common.util import log_util
 from googleapiclient.errors import HttpError
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-param-doc
+
+
 FLAGS = flags.FLAGS
 
 # This API is also limited to 100K queries per day.

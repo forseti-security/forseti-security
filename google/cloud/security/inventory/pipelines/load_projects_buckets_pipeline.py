@@ -43,13 +43,13 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable buckets.
 
         Args:
-            resource_from_api: An iterable of buckets as per-project
+            resource_from_api (list): An iterable of buckets as per-project
                 dictionary.
                 Example: {'project_number': 11111,
                           'buckets': buckets_json}
 
         Yields:
-            An iterable of buckets, as a per-org dictionary.
+            dict: An iterable of buckets, as a per-org dictionary.
         """
         for buckets_map in resource_from_api:
             buckets = buckets_map['buckets']

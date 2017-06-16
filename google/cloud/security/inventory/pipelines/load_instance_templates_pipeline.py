@@ -24,6 +24,12 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-yield-type-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -52,7 +58,9 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
                        'name': instance_template.get('name'),
                        'description': instance_template.get('description'),
                        'properties': parser.json_stringify(
-                           instance_template.get('properties', {}))}
+                           instance_template.get('properties', {})),
+                       'raw_instance_template':
+                           parser.json_stringify(instance_template)}
 
     def _retrieve(self):
         """Retrieve instance templates from GCP.

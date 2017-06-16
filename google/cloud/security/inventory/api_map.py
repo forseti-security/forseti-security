@@ -21,6 +21,12 @@ API_MAP = {
             'class_name': 'AdminDirectoryClient',
             'version': None
         },
+    'appengine_api':
+        {
+            'module_name': 'appengine',
+            'class_name': 'AppEngineClient',
+            'version': None
+        },
     'bigquery_api':
         {
             'module_name': 'bigquery',

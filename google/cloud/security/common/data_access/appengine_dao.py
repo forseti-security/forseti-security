@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data access object for BackendService."""
+"""Provides the data access object (DAO) for AppEngine."""
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import backend_service as bs
+from google.cloud.security.common.gcp_type import appengine
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
@@ -28,22 +28,23 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class BackendServiceDao(dao.Dao):
-    """BackendService DAO."""
+class AppEngineDao(dao.Dao):
+    """"Data access object (DAO) for AppEngine."""
 
-    def get_backend_services(self, timestamp):
-        """Get backend services from a particular snapshot.
+    def get_applications(self, timestamp):
+        """Get applications from a particular snapshot.
 
         Args:
             timestamp: The snapshot timestamp.
 
         Returns:
-            A list of BackendService.
+            A list of AppEngine applications.
 
         Raises:
             MySQLError if a MySQL error occurs.
         """
-        query = select_data.BACKEND_SERVICES.format(timestamp)
-        rows = self.execute_sql_with_fetch(
-            resource.ResourceType.BACKEND_SERVICE, query, ())
-        return [self.map_row_to_object(bs.BackendService, row) for row in rows]
+        query = select_data.APPENGINE_APPS.format(timestamp)
+        rows = self.execute_sql_with_fetch(resource.ResourceType.APPENGINE,
+                                           query, ())
+        return [self.map_row_to_object(appengine.Application, row)
+                for row in rows]
