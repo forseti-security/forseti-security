@@ -12,10 +12,15 @@ RUN apt-get update && apt-get install -qq -y \
   && rm -rf /var/lib/apt/lists/*
 
 RUN pip install -q --upgrade pip
-RUN pip install -q --upgrade coveralls coverage pylint grpcio grpcio-tools protobuf mock google-apputils
+RUN pip install -q --upgrade \
+    coverage \
+    coveralls \
+    google-apputils \
+    grpcio \
+    grpcio-tools \
+    mock \
+    pylint
 
 ADD . /forseti-security/
 WORKDIR /forseti-security/
-RUN PYTHONPATH=. python setup.py install
-RUN yes | pip uninstall -q forseti-security
-
+RUN python setup.py install
