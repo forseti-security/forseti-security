@@ -34,6 +34,7 @@ from sqlalchemy.sql.elements import literal_column
 
 BASE = declarative_base()
 TABLE_CACHE = {}
+PER_YIELD = 1024
 
 # pylint: disable=too-many-public-methods,too-many-locals
 class SnapshotState(object):
@@ -284,7 +285,7 @@ def create_table_names(timestamp):
 class Importer(object):
     """Forseti data importer to iterate the inventory and policies."""
 
-    DEFAULT_CONNECT_STRING = 'mysql://felix@127.0.0.1:3306/forseti_security'
+    DEFAULT_CONNECT_STRING = 'mysql://root@127.0.0.1:3306/forseti_security'
 
     def __init__(self, db_connect_string=DEFAULT_CONNECT_STRING):
         engine = create_engine(db_connect_string, pool_recycle=3600)
@@ -328,7 +329,7 @@ class Importer(object):
                 )
 
         for res_type, table in tables:
-            for item in self.session.query(table).yield_per(1024):
+            for item in self.session.query(table).yield_per(PER_YIELD):
                 yield res_type, item
 
         membership, groups = group_membership
@@ -336,7 +337,7 @@ class Importer(object):
             self.session.query(groups)
             .with_entities(literal_column("'GROUP'"), groups.group_email))
         principals = query_groups.distinct()
-        for kind, email in principals.yield_per(1024):
+        for kind, email in principals.yield_per(PER_YIELD):
             yield kind.lower(), email
 
         query = (
@@ -347,7 +348,7 @@ class Importer(object):
 
         cur_member = None
         member_groups = []
-        for member, group in query.yield_per(1024):
+        for member, group in query.yield_per(PER_YIELD):
             if cur_member and cur_member.member_email != member.member_email:
                 if cur_member:
                     yield 'membership', (cur_member, member_groups)

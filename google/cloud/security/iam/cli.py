@@ -14,8 +14,7 @@
 
 """ IAM Explain CLI. """
 
-#pylint: disable=too-many-locals,missing-type-doc,missing-param-doc
-#pylint: disable=missing-return-doc,missing-return-type-doc,missing-raises-doc
+#pylint: disable=too-many-locals
 
 import argparse
 import os
@@ -25,7 +24,11 @@ from google.cloud.security.iam import client as iam_client
 
 
 def define_playground_parser(parent):
-    """Define the playground service parser."""
+    """Define the playground service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
     service_parser = parent.add_parser("playground", help="playground service")
     action_subparser = service_parser.add_subparsers(
         title="action",
@@ -153,7 +156,11 @@ def define_playground_parser(parent):
 
 
 def define_explainer_parser(parent):
-    """Define the explainer service parser."""
+    """Define the explainer service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
     service_parser = parent.add_parser('explainer', help='explain service')
     action_subparser = service_parser.add_subparsers(
         title='action',
@@ -272,12 +279,25 @@ def define_explainer_parser(parent):
 
 
 def read_env(var_key, default):
-    """Read an environment variable with a default value."""
+    """Read an environment variable with a default value.
+
+    Args:
+        var_key (str): Environment key get.
+        default (str): Default value if variable is not set.
+
+    Returns:
+        string: return environment value or default
+    """
     return os.environ[var_key] if var_key in os.environ else default
 
 
 def define_parent_parser():
-    """Define the parent parser."""
+    """Define the parent parser.
+
+    Returns:
+        argparser: The parent parser which has been defined.
+    """
+
     parent_parser = argparse.ArgumentParser()
     parent_parser.add_argument(
         '--endpoint',
@@ -295,7 +315,11 @@ def define_parent_parser():
 
 
 def create_parser():
-    """Create argument parser hierarchy."""
+    """Create argument parser hierarchy.
+
+    Returns:
+        argparser: The argument parser hierarchy which is created.
+    """
     main_parser = define_parent_parser()
     service_subparsers = main_parser.add_subparsers(
         title="service",
@@ -309,7 +333,12 @@ class Output(object):
     """Output base interface."""
 
     def write(self, obj):
-        """Writes an object to the output channel."""
+        """Writes an object to the output channel.
+            Args:
+                obj (object): Object to write
+            Raises:
+                NotImplementedError: Always
+        """
         raise NotImplementedError()
 
 
@@ -317,7 +346,10 @@ class TextOutput(Output):
     """Text output for result objects."""
 
     def write(self, obj):
-        """Writes text representation."""
+        """Writes text representation.
+            Args:
+                obj (object): Object to write as string
+        """
         print obj
 
 
@@ -325,12 +357,20 @@ class JsonOutput(Output):
     """Raw output for result objects."""
 
     def write(self, obj):
-        """Writes json representation."""
+        """Writes json representation.
+            Args:
+                obj (object): Object to write as json
+        """
         print MessageToJson(obj)
 
 
 def run_explainer(client, config, output):
-    """Run explain commands."""
+    """Run explain commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+    """
 
     client = client.explain
 
@@ -405,7 +445,12 @@ def run_explainer(client, config, output):
 
 
 def run_playground(client, config, output):
-    """Run playground commands."""
+    """Run playground commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+    """
 
     client = client.playground
 
