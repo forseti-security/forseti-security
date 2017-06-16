@@ -227,7 +227,8 @@ def _flatten_violations(violations, flattening_scheme):
         if flattening_scheme == 'cloudsql_acl_violations':
             violation_data = {}
             violation_data['instance_name'] = violation.instance_name
-            violation_data['authorized_networks'] = violation.authorized_networks
+            violation_data['authorized_networks'] =\
+                                                  violation.authorized_networks
             violation_data['ssl_enabled'] = violation.ssl_enabled
             yield {
                 'resource_id': violation.resource_id,

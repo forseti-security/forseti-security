@@ -113,5 +113,5 @@ def _format_violation(violation, resource_name):
     return formatted_output
 
 Violation = namedtuple('Violation',
-                        ['resource_type', 'resource_id', 'rule_name',
-                         'rule_index', 'violation_type', 'violation_data'])
+                       ['resource_type', 'resource_id', 'rule_name',
+                        'rule_index', 'violation_type', 'violation_data'])

@@ -267,5 +267,5 @@ class Rule(object):
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'rule_name',
                                 'rule_index', 'violation_type', 'dataset_id',
-                                'role', 'special_group', 'user_email', 
+                                'role', 'special_group', 'user_email',
                                 'domain', 'group_email'])

@@ -41,6 +41,6 @@ class BigqueryAccessControls(object):
 
     def __hash__(self):
         """Return hash of properties."""
-        return hash((self.dataset_id, self.special_group, self.user_email, 
+        return hash((self.dataset_id, self.special_group, self.user_email,
                      self.domain, self.group_email, self.role,
                      self.project_id))
