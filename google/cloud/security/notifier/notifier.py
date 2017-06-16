@@ -27,7 +27,7 @@ import importlib
 import inspect
 import gflags as flags
 
-# pylint: disable=line-too-long,no-name-in-module
+# pylint: disable=line-too-long
 from google.apputils import app
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
@@ -35,7 +35,13 @@ from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
-# pylint: enable=line-too-long,no-name-in-module
+from google.cloud.security.scanner.scanners.scanners_map import RESOURCE_MAP
+# pylint: enable=line-too-long
+
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-param-doc
 
 
 # Setup flags
@@ -101,12 +107,17 @@ def main(_):
 
     # get violations
     v_dao = violation_dao.ViolationDao()
-    violations = {
-        'violations': v_dao.get_all_violations(
-            timestamp, 'violations'),
-        'bucket_acl_violations': v_dao.get_all_violations(
-            timestamp, 'buckets_acl_violations')
-    }
+    violations = {}
+    for resource in RESOURCE_MAP:
+        try:
+            violations[resource] = v_dao.get_all_violations(
+                timestamp, RESOURCE_MAP[resource])
+        except db_errors.MySQLError, e:
+            # even if an error is raised we still want to continue execution
+            # this is because if we don't have violations the Mysql table
+            # is not present and an error is thrown
+            LOGGER.error('get_all_violations error: %s', e.message)
+
     for retrieved_v in violations:
         LOGGER.info('retrieved %d violations for resource \'%s\'',
                     len(violations[retrieved_v]), retrieved_v)
@@ -118,7 +129,7 @@ def main(_):
             LOGGER.error('The resource name \'%s\' is invalid, skipping',
                          resource['resource'])
             continue
-        if resource['should_notify'] is False:
+        if not resource['should_notify']:
             continue
         for pipeline in resource['pipelines']:
             LOGGER.info('Running \'%s\' pipeline for resource \'%s\'',

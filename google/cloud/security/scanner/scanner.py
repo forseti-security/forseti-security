@@ -53,6 +53,12 @@ from google.cloud.security.notifier.pipelines import email_scanner_summary_pipel
 # pylint: enable=line-too-long
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-param-doc,redundant-returns-doc
+# pylint: disable=differing-param-doc,missing-yield-type-doc
+
+
 # Setup flags
 FLAGS = flags.FLAGS
 

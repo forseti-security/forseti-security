@@ -24,6 +24,12 @@ from google.cloud.security.common.data_access import group_dao
 from google.cloud.security.scanner.scanners import base_scanner
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-param-doc,differing-param-doc
+# pylint: disable=redundant-returns-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 MY_CUSTOMER = 'my_customer'
 
@@ -205,7 +211,7 @@ class GroupsScanner(base_scanner.BaseScanner):
                 continue
             # This represents the auto-generated group, containing all the users
             # in the org.
-            if node.member_email == '':
+            if not node.member_email:
                 continue
 
             node.violated_rule_names = []

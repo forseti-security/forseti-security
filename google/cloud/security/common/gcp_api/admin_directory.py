@@ -23,6 +23,10 @@ from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+
+
 FLAGS = flags.FLAGS
 
 
@@ -88,11 +92,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         paged_results = self._build_paged_result(
             request, members_api, self.rate_limiter)
 
-        group_members = []
-        for page in paged_results:
-            group_members.extend(page.get('members', []))
-        return group_members
-
+        return self._flatten_list_results(paged_results, 'members')
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
@@ -117,9 +117,4 @@ class AdminDirectoryClient(_base_client.BaseClient):
         paged_results = self._build_paged_result(
             request, groups_api, self.rate_limiter)
 
-        # TODO: Refactor this to a helper function, where a key string can
-        # be passed in, to extract the right values to merge.
-        groups = []
-        for page in paged_results:
-            groups.extend(page.get('groups', []))
-        return groups
+        return self._flatten_list_results(paged_results, 'groups')

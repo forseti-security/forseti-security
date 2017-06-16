@@ -158,6 +158,10 @@ SELECT_BUCKETS_ACL_VIOLATIONS = """
     SELECT * FROM buckets_acl_violations_{0};
 """
 
+SELECT_CLOUDSQL_ACL_VIOLATION = """
+    SELECT * FROM cloudsql_acl_violations_{0};
+"""
+
 SELECT_GROUPS_VIOLATIONS = """
     SELECT * FROM groups_violations_{0};
 """
@@ -220,7 +224,7 @@ BUCKET_ACLS = """
 """
 
 CLOUDSQL_INSTANCES = """
-    SELECT project_number, 
+    SELECT project_number,
            name,
            settings_ip_configuration_require_ssl
     FROM cloudsql_instances_{0}
@@ -229,4 +233,11 @@ CLOUDSQL_INSTANCES = """
 CLOUDSQL_ACLS = """
     SELECT project_number, instance_name, value
     FROM cloudsql_ipconfiguration_authorizednetworks_{0}
+"""
+
+APPENGINE_APPS = """
+    SELECT id, project_id, name, app_id, dispatch_rules, auth_domain,
+    location_id, code_bucket, default_cookie_expiration, serving_status,
+    default_hostname, default_bucket, iap, gcr_domain, raw_application
+    FROM appengine_{0}
 """

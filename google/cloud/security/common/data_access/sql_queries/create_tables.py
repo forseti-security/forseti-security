@@ -14,6 +14,27 @@
 
 """SQL queries to create Cloud SQL tables."""
 
+CREATE_APPENGINE_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `app_id` varchar(255) DEFAULT NULL,
+        `dispatch_rules` json DEFAULT NULL,
+        `auth_domain` varchar(255) DEFAULT NULL,
+        `location_id` varchar(255) DEFAULT NULL,
+        `code_bucket` varchar(255) DEFAULT NULL,
+        `default_cookie_expiration` varchar(255) DEFAULT NULL,
+        `serving_status` varchar(255) DEFAULT NULL,
+        `default_hostname` varchar(255) DEFAULT NULL,
+        `default_bucket` varchar(255) DEFAULT NULL,
+        `iap` json DEFAULT NULL,
+        `gcr_domain` varchar(255) DEFAULT NULL,
+        `raw_application` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_BACKEND_SERVICES_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -35,6 +56,7 @@ CREATE_BACKEND_SERVICES_TABLE = """
         `region` varchar(255) DEFAULT NULL,
         `session_affinity` varchar(255) DEFAULT NULL,
         `timeout_sec` varchar(255) DEFAULT NULL,
+        `raw_backend_service` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -136,7 +158,7 @@ CREATE_CLOUDSQL_INSTANCES_TABLE = """
         `connection_name` varchar(255) DEFAULT NULL,
         `current_disk_size` bigint DEFAULT NULL,
         `database_version` varchar(255) DEFAULT NULL,
-        `failover_replica_available` varchar(255) DEFAULT NULL, 
+        `failover_replica_available` varchar(255) DEFAULT NULL,
         `failover_replica_name` varchar(255) DEFAULT NULL,
         `instance_type` varchar(255) DEFAULT NULL,
         `ipv6_address` varchar(255) DEFAULT NULL,
@@ -179,6 +201,7 @@ CREATE_CLOUDSQL_INSTANCES_TABLE = """
         `settings_tier` varchar(255) DEFAULT NULL,
         `state` varchar(255) DEFAULT NULL,
         `suspension_reason` json DEFAULT NULL,
+        `raw_cloudsql_instance` json DEFAULT NULL,
         PRIMARY KEY (id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -186,7 +209,7 @@ CREATE_CLOUDSQL_INSTANCES_TABLE = """
 CREATE_CLOUDSQL_IPADDRESSES_TABLE = """
     CREATE TABLE {0} (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `project_number` bigint(20) NOT NULL,    
+        `project_number` bigint(20) NOT NULL,
         `instance_name` varchar(255) DEFAULT NULL,
         `type` varchar(255) DEFAULT NULL,
         `ip_address` varchar(255) DEFAULT NULL,
@@ -197,8 +220,8 @@ CREATE_CLOUDSQL_IPADDRESSES_TABLE = """
 
 CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS = """
     CREATE TABLE {0} (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,    
-        `project_number` bigint(20) NOT NULL,    
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,
         `instance_name` varchar(255) DEFAULT NULL,
         `kind` varchar(255) DEFAULT NULL,
         `name` varchar(255) DEFAULT NULL,
@@ -276,6 +299,7 @@ CREATE_FORWARDING_RULES_TABLE = """
         `subnetwork` varchar(255) DEFAULT NULL,
         `network` varchar(255) DEFAULT NULL,
         `backend_service` varchar(255) DEFAULT NULL,
+        `raw_forwarding_rule` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -337,6 +361,7 @@ CREATE_INSTANCES_TABLE = """
         `status_message` varchar(255) DEFAULT NULL,
         `tags` json DEFAULT NULL,
         `zone` varchar(255) DEFAULT NULL,
+        `raw_instance` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -354,6 +379,7 @@ CREATE_INSTANCE_GROUPS_TABLE = """
         `size` int DEFAULT NULL,
         `subnetwork` varchar(255) DEFAULT NULL,
         `zone` varchar(255) DEFAULT NULL,
+        `raw_instance_group` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -366,6 +392,7 @@ CREATE_INSTANCE_TEMPLATES_TABLE = """
         `description` varchar(255) DEFAULT NULL,
         `name` varchar(255) DEFAULT NULL,
         `properties` json DEFAULT NULL,
+        `raw_instance_template` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -386,6 +413,7 @@ CREATE_INSTANCE_GROUP_MANAGERS_TABLE = """
         `target_pools` json DEFAULT NULL,
         `target_size` int DEFAULT NULL,
         `zone` varchar(255) DEFAULT NULL,
+        `raw_instance_group_manager` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """

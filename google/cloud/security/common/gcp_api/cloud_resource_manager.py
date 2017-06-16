@@ -23,6 +23,12 @@ from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,redundant-returns-doc
+# pylint: disable=missing-param-doc,missing-yield-doc,missing-yield-type-doc
+
+
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
@@ -65,10 +71,9 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         projects_api = self.service.projects()
 
         try:
-            with self.rate_limiter:
-                request = projects_api.get(projectId=project_id)
-                response = self._execute(request)
-                return response
+            request = projects_api.get(projectId=project_id)
+            response = self._execute(request, self.rate_limiter)
+            return response
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -96,14 +101,13 @@ class CloudResourceManagerClient(_base_client.BaseClient):
 
         # TODO: Convert this over to _base_client._build_paged_result().
         try:
-            with self.rate_limiter:
-                while request is not None:
-                    response = self._execute(request)
-                    yield response
+            while request is not None:
+                response = self._execute(request, self.rate_limiter)
+                yield response
 
-                    request = projects_api.list_next(
-                        previous_request=request,
-                        previous_response=response)
+                request = projects_api.list_next(
+                    previous_request=request,
+                    previous_response=response)
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -121,10 +125,9 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         projects_api = self.service.projects()
 
         try:
-            with self.rate_limiter:
-                request = projects_api.getIamPolicy(
-                    resource=project_identifier, body={})
-                return self._execute(request)
+            request = projects_api.getIamPolicy(
+                resource=project_identifier, body={})
+            return self._execute(request, self.rate_limiter)
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -140,10 +143,9 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         organizations_api = self.service.organizations()
 
         try:
-            with self.rate_limiter:
-                request = organizations_api.get(name=org_name)
-                response = self._execute(request)
-                return response
+            request = organizations_api.get(name=org_name)
+            response = self._execute(request, self.rate_limiter)
+            return response
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(org_name, e)
 
@@ -161,17 +163,16 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         next_page_token = None
 
         try:
-            with self.rate_limiter:
-                while True:
-                    req_body = {}
-                    if next_page_token:
-                        req_body['pageToken'] = next_page_token
-                    request = organizations_api.search(body=req_body)
-                    response = self._execute(request)
-                    yield response
-                    next_page_token = response.get('nextPageToken')
-                    if not next_page_token:
-                        break
+            while True:
+                req_body = {}
+                if next_page_token:
+                    req_body['pageToken'] = next_page_token
+                request = organizations_api.search(body=req_body)
+                response = self._execute(request, self.rate_limiter)
+                yield response
+                next_page_token = response.get('nextPageToken')
+                if not next_page_token:
+                    break
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -192,11 +193,10 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         organizations_api = self.service.organizations()
         resource_id = 'organizations/%s' % org_id
         try:
-            with self.rate_limiter:
-                request = organizations_api.getIamPolicy(
-                    resource=resource_id, body={})
-                return {'org_id': org_id,
-                        'iam_policy': self._execute(request)}
+            request = organizations_api.getIamPolicy(
+                resource=resource_id, body={})
+            return {'org_id': org_id,
+                    'iam_policy': self._execute(request, self.rate_limiter)}
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -215,10 +215,9 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         folders_api = self.service.folders()
 
         try:
-            with self.rate_limiter:
-                request = folders_api.get(name=folder_name)
-                response = self._execute(request)
-                return response
+            request = folders_api.get(name=folder_name)
+            response = self._execute(request, self.rate_limiter)
+            return response
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(folder_name, e)
 
@@ -241,18 +240,17 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         lifecycle_state_filter = kwargs.get('lifecycle_state')
 
         try:
-            with self.rate_limiter:
-                while True:
-                    req_body = {}
-                    if next_page_token:
-                        req_body['pageToken'] = next_page_token
-                    if lifecycle_state_filter:
-                        req_body['lifecycleState'] = lifecycle_state_filter
-                    request = folders_api.search(body=req_body)
-                    response = self._execute(request)
-                    yield response
-                    next_page_token = response.get('nextPageToken')
-                    if not next_page_token:
-                        break
+            while True:
+                req_body = {}
+                if next_page_token:
+                    req_body['pageToken'] = next_page_token
+                if lifecycle_state_filter:
+                    req_body['lifecycleState'] = lifecycle_state_filter
+                request = folders_api.search(body=req_body)
+                response = self._execute(request, self.rate_limiter)
+                yield response
+                next_page_token = response.get('nextPageToken')
+                if not next_page_token:
+                    break
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)

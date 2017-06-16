@@ -24,6 +24,12 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-yield-type-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -62,7 +68,8 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
                        'load_balancing_scheme': rule.get('loadBalancingScheme'),
                        'subnetwork': rule.get('subnetwork'),
                        'network': rule.get('network'),
-                       'backend_service': rule.get('backendService')}
+                       'backend_service': rule.get('backendService'),
+                       'raw_forwarding_rule': parser.json_stringify(rule)}
 
     def _retrieve(self):
         """Retrieve forwarding rules from GCP.

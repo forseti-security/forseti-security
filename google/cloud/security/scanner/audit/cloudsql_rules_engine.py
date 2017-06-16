@@ -25,6 +25,13 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-yield-doc
+# pylint: disable=missing-yield-type-doc,redundant-returns-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -51,7 +58,7 @@ def escape_and_globify(pattern_string):
 class CloudSqlRulesEngine(bre.BaseRulesEngine):
     """Rules engine for CloudSQL acls"""
 
-    def __init__(self, rules_file_path):
+    def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
 
         Args:
@@ -152,9 +159,6 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
     def get_resource_rules(self):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
 
-        Args:
-            resource: The resource to find in the ResourceRules map.
-
         Returns:
             A list of ResourceRules.
         """
@@ -190,7 +194,7 @@ class Rule(object):
             cloudsql_acl: CloudSQL ACL resource
 
         Returns:
-            Returns RuleViolation named tuple
+            tuple: A RuleViolation named tuple
         """
         filter_list = []
         if self.rules.instance_name != '^.+$':
@@ -202,8 +206,10 @@ class Rule(object):
         if self.rules.authorized_networks != '^.+$':
             authorized_networks_regex = re.compile(self.rules.\
                                                    authorized_networks)
-            filter_list = filter(authorized_networks_regex.match,
-                                 cloudsql_acl.authorized_networks)
+            filter_list = [
+                net for net in cloudsql_acl.authorized_networks if\
+                authorized_networks_regex.match(net)
+            ]
 
             authorized_networks_bool = bool(filter_list)
         else:

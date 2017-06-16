@@ -24,6 +24,11 @@ from google.cloud.security.notifier.pipelines import base_notification_pipeline 
 # pylint: enable=line-too-long
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,redundant-returns-doc
+# pylint: disable=missing-param-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
