@@ -1,0 +1,61 @@
+.site-footer {
+  background-color: #4e4f4f;
+  /* box-shadow extends footer all the way to the bottom of the page, even if
+     there's not enough content to fill the entire vertical space; otherwise
+     it's clipped */
+  box-shadow: 0 500px 0 500px #4e4f4f;
+  color: #fff;
+  margin-top: 40px;
+  padding: 35px 0 35px;
+
+  .left-panel {
+    .logo {
+      margin-bottom: 20px;
+      width: 40px;
+    }
+
+    .description {
+      color: #ccc;
+      font-size: 12px;
+    }
+  }
+
+  .right-panel {
+    h2 {
+      font-size: 1em;
+      font-weight: bold;
+    }
+
+    .links {
+      padding: 0;
+      line-height: 2.2em;
+      list-style-type: none;
+
+      a {
+        color: #ccc;
+      }
+
+      .icon::before {
+        content: '';
+        display: inline-block;
+        height: 35px;
+        margin: 0 6px 0 0;
+        vertical-align: middle;
+        width: 35px;
+      }
+
+      .github::before {
+        background: url($baseurl + '/images/icon_github.svg') no-repeat center/cover;
+      }
+      .twitter::before {
+        background: url($baseurl + '/images/icon_twitter.svg') no-repeat center/cover;
+      }
+      .stack-overflow::before {
+        background: url($baseurl + '/images/icon_stack_overflow.svg') no-repeat center/cover;
+      }
+      .youtube::before {
+        background: url($baseurl + '/images/icon_youtube.svg') no-repeat center/cover;
+      }
+    }
+  }
+}
