@@ -56,44 +56,27 @@ class ModelTestRunner(ApiTestRunner):
 
     def _install_model(self, model, client):
         """Installs the declarative model in the database."""
-        resource_full_name_map = self._install_resources(
-            model['resources'], client.playground)
+        self._install_resources(model['resources'], client.playground)
         self._install_memberships(model['memberships'], client.playground)
         self._install_roles(model['roles'], client.playground)
-        self._install_bindings(model['bindings'],
-                               client.playground,
-                               resource_full_name_map)
+        self._install_bindings(model['bindings'], client.playground)
 
-    def _recursive_install_resources(self, node, model, client,
-                                     parent, resource_full_name_map):
+    def _recursive_install_resources(self, node, model, client, parent):
         """Install resources."""
-        def full_resource_name(res_name, res_type, parent):
-            """Returns full resource name."""
-            if parent == '':
-                return '{}/{}'.format(res_type, res_name)
-            return '{}/{}/{}'.format(parent, res_type, res_name)
 
-        res_type, res_name = node.split('/', 1)
-        full_res_name = full_resource_name(res_name, res_type, parent)
-        client.add_resource(full_res_name, res_type, parent, parent == '')
-        resource_full_name_map[node] = full_res_name
-
+        client.add_resource(node, parent, parent == '')
         for root, tree in model.iteritems():
-            self._recursive_install_resources(
-                root, tree, client, full_res_name, resource_full_name_map)
+            self._recursive_install_resources(root, tree, client, node)
 
     def _install_resources(self, model_view, client):
         """Install resources."""
-        resource_full_name_map = {}
         for root, tree in model_view.iteritems():
-            self._recursive_install_resources(
-                root, tree, client, '', resource_full_name_map)
-        return resource_full_name_map
+            self._recursive_install_resources(root, tree, client, '')
 
     def _recursive_invert_membership(self, node, model, parentship):
         """Invert declarative membership model mapping."""
-	if node not in parentship:
-        	parentship[node] = set()
+        if node not in parentship:
+            parentship[node] = set()
         for child in model.iterkeys():
             parentship[child].add(node)
         for root, tree in model.iteritems():
@@ -142,15 +125,14 @@ class ModelTestRunner(ApiTestRunner):
         for role, permissions in model_view.iteritems():
             client.add_role(role, permissions)
 
-    def _install_bindings(self, model_view, client, resource_full_name_map):
+    def _install_bindings(self, model_view, client):
         """Install bindings."""
         for resource_name, bindings in model_view.iteritems():
-            full_resource_name = resource_full_name_map[resource_name]
-            reply = client.get_iam_policy(full_resource_name)
+            reply = client.get_iam_policy(resource_name)
             if reply.policy.bindings:
                 raise Exception('policy should have been empty')
             client.set_iam_policy(
-                full_resource_name,
+                resource_name,
                 {'bindings': bindings, 'etag': reply.policy.etag})
 
     def run(self, test_callback):

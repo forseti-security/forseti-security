@@ -83,15 +83,15 @@ class ModelTest(ForsetiTestCase):
         def test(client):
             """Test implementation with API client."""
             self.assertTrue(client.playground.check_iam_policy(
-                'organization/org1/project/project2/vm/instance-1',
+                'vm/instance-1',
                 'c',
                 'user/d').result)
             self.assertTrue(client.playground.check_iam_policy(
-                'organization/org1/project/project2/vm/instance-1',
+                'vm/instance-1',
                 'e',
                 'user/d').result)
             self.assertTrue(client.playground.check_iam_policy(
-                'organization/org1/project/project2/vm/instance-1',
+                'vm/instance-1',
                 'e',
                 'user/a').result)
             self.assertFalse(client.playground.check_iam_policy(
@@ -99,11 +99,11 @@ class ModelTest(ForsetiTestCase):
                 'e',
                 'user/a').result)
             self.assertFalse(client.playground.check_iam_policy(
-                'organization/org1/project/project2',
+                'project/project2',
                 'e',
                 'user/c').result)
             self.assertFalse(client.playground.check_iam_policy(
-                'organization/org1/project/project2/vm/instance-1',
+                'vm/instance-1',
                 'e',
                 'user/c').result)
 
@@ -132,7 +132,7 @@ class ModelTest(ForsetiTestCase):
         def test(client):
             """Test implementation with API client."""
             response = client.explain.query_access_by_resources(
-                resource_name='organization/org1/project/project2',
+                resource_name='project/project2',
                 permission_names=['a', 'c'],
                 expand_groups=True)
             self.assertTrue(len(response.accesses) == 2)
@@ -179,7 +179,7 @@ class ModelTest(ForsetiTestCase):
             """Test implementation with API client."""
             response = client.explain.explain_granted(
                 member_name='user/d',
-                resource_name='organization/org1/project/project2/bucket/bucket2',
+                resource_name='bucket/bucket2',
                 role='b')
             self.assertTrue(response, 'Expected to get a grant explanation')
         self.setup.run(test)
@@ -191,14 +191,14 @@ class ModelTest(ForsetiTestCase):
             response = client.explain.explain_denied(
                 member_name='user/d',
                 resource_names=[
-                    'organization/org1/project/project2/bucket/bucket2'],
+                    'bucket/bucket2'],
                 permission_names=['f', 'i'])
             self.assertTrue(response, 'Expected to get a deny explanation')
 
             response = client.explain.explain_denied(
                 member_name='user/e',
                 resource_names=[
-                    'organization/org1/project/project2/bucket/bucket2'],
+                    'bucket/bucket2'],
                 permission_names=['a'])
             self.assertTrue(response, 'Expected to get a deny explanation')
         self.setup.run(test)

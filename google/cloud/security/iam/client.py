@@ -227,25 +227,26 @@ class PlaygroundClient(IAMClient):
             metadata=self.metadata())
 
     @require_model
-    def add_resource(self, full_resource_name, resource_type,
-                     parent_full_resource_name, no_parent=False):
+    def add_resource(self,
+                     resource_type_name,
+                     parent_type_name,
+                     no_parent=False):
         """Add a resource to the hierarchy."""
 
         return self.stub.AddResource(
             playground_pb2.AddResourceRequest(
-                full_resource_name=full_resource_name,
-                resource_type=resource_type,
-                parent_full_resource_name=parent_full_resource_name,
+                resource_type_name=resource_type_name,
+                parent_type_name=parent_type_name,
                 no_require_parent=no_parent),
             metadata=self.metadata())
 
     @require_model
-    def del_resource(self, full_resource_name):
+    def del_resource(self, resource_type_name):
         """Delete a resource from the hierarchy and the subtree."""
 
         return self.stub.DelResource(
             playground_pb2.DelResourceRequest(
-                full_resource_name=full_resource_name),
+                resource_type_name=resource_type_name),
             metadata=self.metadata())
 
     @require_model
@@ -328,6 +329,7 @@ class PlaygroundClient(IAMClient):
                 identity=member_name),
             metadata=self.metadata())
 
+
 class ClientComposition(object):
     """Client composition class.
 
@@ -336,6 +338,7 @@ class ClientComposition(object):
     """
 
     DEFAULT_ENDPOINT = 'localhost:50058'
+
     def __init__(self, endpoint=DEFAULT_ENDPOINT):
         self.channel = grpc.insecure_channel(endpoint)
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})

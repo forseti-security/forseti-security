@@ -92,17 +92,16 @@ message DelGroupMemberReply {
 }
 
 message AddResourceRequest {
-  string full_resource_name = 1;
-  string resource_type = 2;
-  string parent_full_resource_name = 3;
-  bool no_require_parent = 4;
+  string resource_type_name = 1;
+  string parent_type_name = 2;
+  bool no_require_parent = 3;
 }
 
 message AddResourceReply {
 }
 
 message DelResourceRequest {
-  string full_resource_name = 1;
+  string resource_type_name = 1;
 }
 
 message DelResourceReply {
