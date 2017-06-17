@@ -3,3 +3,7 @@ exclude: [vendor, third_party/]
 title: "Forseti Security"
 description: "Tools to secure Google Cloud Platform"
 google_analytics: UA-98416450-1
+
+collections:
+  faq:
+    output: false
