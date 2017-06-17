@@ -1,13 +1,20 @@
 ---
 title: Docs
 ---
-<ul class="nav nav-tabs" style="margin-bottom: 20px;">
-  <!-- <li><a href="#">Overview</a></li> -->
-  <li class="active"><a href="#">Quick Starts</a></li>
-  <li><a href="#">Development</a></li>
-  <li><a href="#">How Tos</a></li>
-  <li><a href="#">Resources</a></li>
-</ul>
+<div class="row" style="margin-bottom: 20px;">
+  <div class="col-md-9">
+    <ul class="nav nav-tabs">
+      <!-- <li><a href="#">Overview</a></li> -->
+      <li class="active"><a href="#">Quick Starts</a></li>
+      <li><a href="#">Development</a></li>
+      <li><a href="#">How Tos</a></li>
+      <li><a href="#">Resources</a></li>
+    </ul>
+  </div>
+  <div class="col-md-3 text-right edit-on-github">
+    <a class="icon github" href="#">Edit <span class="file-name">docs.md</span></a>
+  </div>
+</div>
 
 <div class="row">
 <div class="col-md-3">
