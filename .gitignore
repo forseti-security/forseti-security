@@ -15,6 +15,7 @@
 
 # Possible credentials
 /*.json
+scripts/gcp_setup/*.json
 
 # Dev scripts
 scripts/dev*.sh
