@@ -188,7 +188,7 @@ def create_table_names(timestamp):
                 self.display_name)
 
     class GroupMembers(BASE):
-        """Represents dasher group membership."""
+        """Represents Gsuite group membership."""
 
         __tablename__ = 'group_members_%s' % timestamp
 
@@ -212,7 +212,7 @@ def create_table_names(timestamp):
                 self.member_status)
 
     class Groups(BASE):
-        """Represents a dasher group."""
+        """Represents a Gsuite group."""
 
         __tablename__ = 'groups_%s' % timestamp
 
