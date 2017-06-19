@@ -16,7 +16,7 @@ refer to the [official documentation](https://cloud.google.com/compute/docs/acce
 
 1. Create a custom service account in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
 
-**Local installation only:**
+##### Local installation only:
 1. Create and download the json key to your local environment.
 1. Set an environment variable to configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials) to reference this key.
 
