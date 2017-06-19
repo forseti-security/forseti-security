@@ -23,7 +23,7 @@ $ git clone https://github.com/GoogleCloudPlatform/forseti-security.git
 ## Install build dependencies
 
 ```sh
-$ pip install grpcio grpcio-tools
+$ pip install grpcio grpcio-tools google-apputils
 ```
 
 ## Build the proto files and run the python setup

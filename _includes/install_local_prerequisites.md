@@ -44,5 +44,5 @@ $ brew install mysql
 ### Install virtualenv
 ```sh
 $ sudo apt-get install python-pip
-$ sudo pip install --upgrade virtualenvwrapper grpcio grpcio-tools
+$ sudo pip install --upgrade virtualenvwrapper
 ```

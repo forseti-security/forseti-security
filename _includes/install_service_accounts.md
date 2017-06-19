@@ -15,6 +15,8 @@ refer to the [official documentation](https://cloud.google.com/compute/docs/acce
 #### Create the service account for Forseti inventory, scanner, and enforcer.
 
 1. Create a custom service account in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
+
+**Local installation only:**
 1. Create and download the json key to your local environment.
 1. Set an environment variable to configure the [Application Default Credentials](https://developers.google.com/identity/protocols/application-default-credentials) to reference this key.
 
@@ -23,7 +25,7 @@ $ export GOOGLE_APPLICATION_CREDENTIALS="<path/to/service account key>"
 ```
 
 ##### Grant the required GCP IAM roles for the service account
-Grant the required roles to the service account.
+You must grant these roles on the organization level IAM policy in order for Forseti to read data from other projects.
 
 * Project browser
 * Security Reviewer
@@ -57,12 +59,12 @@ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 1. Create a custom service account in the [GCP console](https://console.cloud.google.com/iam-admin/serviceaccounts).
  1. Enable `domain-wide delegation`.
 1. Create and download the json key to your local environment.
-1. Note the `domain-wide client-id` (a large number, e.g. 1111111111111111111).
+1. Click the "View Client ID" link and note the `Client ID` (a large number, e.g. 1111111111111111111).
 
 ##### Enable the service account in the GSuite admin control panel
 You must have the **super admin** role in admin.google.com to do these steps.
 
 1. Go to the [advanced settings](https://admin.google.com/ManageOauthClients)
 section of the admin.google.com control panel.
- 1. Specify the `domain-wide client-id` (from above)
+ 1. Specify the `Client ID` (from above)
  1. Specify the scope `https://www.googleapis.com/auth/admin.directory.group.readonly`
