@@ -36,22 +36,22 @@ You must grant these roles on the organization level IAM policy in order for For
 
 ```sh
 gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --member=serviceAccount:GCP_SERVICE_ACCOUNT \
   --role=roles/browser
 gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --member=serviceAccount:GCP_SERVICE_ACCOUNT \
   --role=roles/compute.networkAdmin
 gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --member=serviceAccount:GCP_SERVICE_ACCOUNT \
   --role=roles/editor
 gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --member=serviceAccount:GCP_SERVICE_ACCOUNT \
   --role=roles/iam.securityReviewer
 gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --member=serviceAccount:GCP_SERVICE_ACCOUNT \
   --role=roles/resourcemanager.folderAdmin
 gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --member=serviceAccount:GCP_SERVICE_ACCOUNT \
   --role=roles/storage.admin
 ```
 
