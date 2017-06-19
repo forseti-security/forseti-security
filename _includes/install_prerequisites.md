@@ -76,7 +76,7 @@ Use `gcloud` to enable required APIs.
     {% include install_gcp_prerequisites.md %}
 {% endif %}
 
-### Create a service account
+### Create service accounts
 {% include install_service_accounts.md %}
 
 ### Obtain a SendGrid API Key (optional)
