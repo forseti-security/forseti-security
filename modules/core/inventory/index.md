@@ -7,23 +7,27 @@ Inventory collects GCP resource data and stores it in a database so Forseti can 
 ## Executing the inventory loader
 After you install Forseti, you can access the Inventory tool with the command below. If you installed Forseti in a virtualenv, remember to activate the virtualenv first.
 
+To see flag options:
+
 ```sh
-$ forseti_inventory
+$ forseti_inventory --helpshort
 ```
+
+### Configuring Inventory pipelines to run
+In order to run the Inventory tool, you must provide it a configuration file. A sample can be found [here](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/inventory/inventory_conf.yaml).
 
 ### Executing inventory to collect GSuite Google Groups
 
 The `--inventory_groups` is an optional flag. If you provide it as an argument, it will instruct `forseti_inventory` to read your GSuite Google Groups information.
 
 ```sh
-$ forset_inventory --inventory_groups \
-  --domain_super_admin_email EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN \
-  --groups_service_account_key_file PATH_THE_DOWNLOADED_KEY_OF_THE_GROUPS_SERVICE_ACCOUNT
+$ forset_inventory --config_path <path/to/inventory_config> \
+  --domain_super_admin_email GSUITE_SUPER_ADMIN_EMAIL \
+  --groups_service_account_key_file SERVICE_ACCOUNT_KEY
 ```
 
 Where
-* --groups_service_account_key_file: The path to the
-  domain-wide-delegation key created for the groups-only service account
+`--groups_service_account_key_file`: The path to the domain-wide-delegation key created for the groups-only service account
   ([details]({{ site.baseurl }}{% link common/service_accounts.md %}).
 
 ## Collecting and storing new data with inventory
