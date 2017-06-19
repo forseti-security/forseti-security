@@ -19,14 +19,16 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import instance
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
+import json
 import re
+
 LOGGER = log_util.get_logger(__name__)
 
 
 class NetworksDao(dao.Dao):
     """Instance DAO."""
 
-    def get_network(self, timestamp):
+    def get_networks(self, timestamp):
         """Get network info from a particular snapshot.
 
         Args:
@@ -39,13 +41,28 @@ class NetworksDao(dao.Dao):
             MySQLError if a MySQL error occurs.
         """
         idao = instance_dao.InstanceDao()
-        network_project_names = set([self.parse_network_name(instance) for instance in idao.get_instances(timestamp)])
-        return [network_and_project.split(",") for network_and_project in network_project_names]
+        network_project_names = set([self.parse_network_instance(instance) for instance in idao.get_instances(timestamp)])
+        split_into_str = [network_and_project.split(",") for network_and_project in network_project_names]
+        return [[network_instance[0], network_instance[1], network_instance[2] == 'True'] for network_instance in split_into_str]
 
     # This is to parse the network info we have 
-    def parse_network_name(self, instance_object):
-        #make this grab stuff from the 'network' work in url instead of first url
-        network_url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', instance_object.network_interfaces)[0]
-        project = network_url.partition('projects/')[-1].partition('/')[0]
-        network = network_url.partition('networks/')[-1]
-        return ','.join([project, network])
+    def parse_network_instance(self, instance_object):
+        # 
+        network_dictionary = json.loads(instance_object.network_interfaces)
+        if len(network_dictionary) > 1:
+            LOGGER.error('Should only be one interface ties to an virtual instance.')
+        
+        network_url = network_dictionary[0]['network']
+        network_and_project = re.search('compute\/v1\/projects\/([^\/]*).*networks\/([^\/]*)', network_url)
+        project = network_and_project.group(1)
+        network = network_and_project.group(2)
+        is_external_network = "accessConfigs" in network_dictionary[0]
+        return ','.join([project, network, str(is_external_network)])
+
+
+def main():
+    dn = NetworksDao()
+    print(dn.get_networks('20170615T173104Z'))
+
+if __name__ == '__main__':
+    main()
