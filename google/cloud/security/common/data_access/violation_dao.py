@@ -24,6 +24,10 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-param-doc
+
+
 class ViolationDao(dao.Dao):
     """Data access object (DAO) for rule violations."""
 

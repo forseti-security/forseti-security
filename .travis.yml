@@ -31,7 +31,7 @@ script:
   # Run code coverage
   - docker exec -it build /bin/sh -c "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
   # Check code compliance
-  - docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc --ignore-patterns='.*_test.*,.*test_.*,.*test.py,.*pb2.*' --output-format=text google"
+  - docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc google"
 
 after_success:
   # Execute coveralls inside the docker container, need to export env for coveralls.io upload

@@ -21,6 +21,9 @@ Usage for enforcing a single project's firewall:
 
 """
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-raises-doc
+# pylint: disable=missing-param-doc
 
 import threading
 

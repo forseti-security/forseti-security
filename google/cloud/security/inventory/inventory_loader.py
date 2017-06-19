@@ -45,6 +45,7 @@ import gflags as flags
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.apputils import app
+from google.cloud.security.common.data_access import appengine_dao
 from google.cloud.security.common.data_access import backend_service_dao
 from google.cloud.security.common.data_access import bucket_dao
 from google.cloud.security.common.data_access import cloudsql_dao
@@ -60,6 +61,7 @@ from google.cloud.security.common.data_access import instance_template_dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import api_map
 from google.cloud.security.inventory import errors as inventory_errors
@@ -67,6 +69,7 @@ from google.cloud.security.inventory import pipeline_builder as builder
 from google.cloud.security.inventory import util as inventory_util
 from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
 # pylint: enable=line-too-long
+
 
 FLAGS = flags.FLAGS
 
@@ -108,10 +111,10 @@ def _exists_snapshot_cycles_table(inventory_dao):
     """Whether the snapshot_cycles table exists.
 
     Args:
-        inventory_dao: Data access object.
+        inventory_dao (data_access.Dao): Data access object.
 
     Returns:
-        True if the snapshot cycle table exists. False otherwise.
+        bool: True if the snapshot cycle table exists. False otherwise.
     """
     try:
         sql = snapshot_cycles_sql.SELECT_SNAPSHOT_CYCLES_TABLE
@@ -130,7 +133,9 @@ def _create_snapshot_cycles_table(inventory_dao):
     """Create snapshot cycle table.
 
     Args:
-        inventory_dao: Data access object.
+        inventory_dao (data_access.Dao): Data access object.
+
+    Returns:
     """
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
@@ -144,11 +149,11 @@ def _start_snapshot_cycle(inventory_dao):
     """Start snapshot cycle.
 
     Args:
-        inventory_dao: Data access object.
+        inventory_dao (dao.Dao): Data access object.
 
     Returns:
-        cycle_time: Datetime object of the cycle, in UTC.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+        datetime: Datetime object for the cycle_time, in UTC.
+        str: String of cycle_timestamp, formatted as YYYYMMDDTHHMMSSZ.
     """
     cycle_time = datetime.utcnow()
     cycle_timestamp = cycle_time.strftime(CYCLE_TIMESTAMP_FORMAT)
@@ -173,10 +178,10 @@ def _run_pipelines(pipelines):
     """Run the pipelines to load data.
 
     Args:
-        pipelines: List of pipelines to be run.
+        pipelines (list): List of pipelines to be run.
 
     Returns:
-        run_statuses: List of boolean whether each pipeline was run
+        list: a list of booleans whether each pipeline completed
             successfully or not.
     """
     # TODO: Define these status codes programmatically.
@@ -186,7 +191,8 @@ def _run_pipelines(pipelines):
             LOGGER.debug('Running pipeline %s', pipeline.__class__.__name__)
             pipeline.run()
             pipeline.status = 'SUCCESS'
-        except inventory_errors.LoadDataPipelineError as e:
+        except (api_errors.ApiInitializationError,
+                inventory_errors.LoadDataPipelineError) as e:
             LOGGER.error('Encountered error loading data.\n%s', e)
             pipeline.status = 'FAILURE'
             LOGGER.info('Continuing on.')
@@ -197,12 +203,11 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     """Complete the snapshot cycle.
 
     Args:
-        inventory_dao: Data access object.
-        cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        status: String of the current cycle's status.
+        inventory_dao (dao.Dao): Data access object.
+        cycle_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+        status (str): The current cycle's status.
 
     Returns:
-         None
     """
     complete_time = datetime.utcnow()
 
@@ -219,7 +224,13 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
                 status, cycle_timestamp)
 
 def _configure_logging(loglevel):
-    """Configures the loglevel for all loggers."""
+    """Configures the loglevel for all loggers.
+
+    Args:
+        loglevel (str): The loglevel to set.
+
+    Returns:
+    """
     level = LOGLEVELS.setdefault(loglevel, 'info')
     log_util.set_logger_level(level)
 
@@ -230,10 +241,11 @@ def _create_dao_map():
     different pipelines.
 
     Returns:
-        Dictionary of DAOs.
+        dict: Dictionary of DAOs.
     """
     try:
         return {
+            'appengine_dao': appengine_dao.AppEngineDao(),
             'backend_service_dao': backend_service_dao.BackendServiceDao(),
             'bucket_dao': bucket_dao.BucketDao(),
             'cloudsql_dao': cloudsql_dao.CloudsqlDao(),
@@ -254,7 +266,14 @@ def _create_dao_map():
         sys.exit()
 
 def main(_):
-    """Runs the Inventory Loader."""
+    """Runs the Inventory Loader.
+
+    Args:
+        _ (list): args that aren't used
+
+    Returns:
+    """
+    del _
     inventory_flags = FLAGS.FlagValuesDict()
 
     if inventory_flags.get('list_resources'):

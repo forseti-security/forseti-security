@@ -15,22 +15,45 @@
 """Base GCP client which uses the discovery API."""
 
 import json
+import httplib2
 
 from apiclient import discovery
 from googleapiclient.errors import HttpError
-from httplib2 import HttpLib2Error
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
+from google.cloud import security as forseti_security
 from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=too-few-public-methods
+def _attach_user_agent(request):
+    """Append our UA to the headers of an googelapiclient request object.
+
+        Args:
+            request: A googlapiclient request object
+
+        Returns:
+            A modified googleapiclient request object.
+    """
+    user_agent = request.headers['user-agent']
+    request.headers['user-agent'] = user_agent + ', %s/%s ' % (
+        forseti_security.__package_name__,
+        forseti_security.__version__)
+
+    return request
+
+
 class BaseClient(object):
     """Base client for a specified GCP API and credentials."""
 
@@ -103,6 +126,7 @@ class BaseClient(object):
             exception is not wrapped by the retry library, and will be handled
             upstream.
         """
+        request = _attach_user_agent(request)
         try:
             if rate_limiter is not None:
                 with rate_limiter:
@@ -176,7 +200,7 @@ class BaseClient(object):
                 # not be any resources. So, just swallow the error:
                 # we're done!
                 break
-            except (HttpError, HttpLib2Error) as e:
+            except (HttpError, httplib2.HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)
 
         return results
@@ -234,9 +258,7 @@ class BaseClient(object):
         return items
 
     @staticmethod
-    # pylint: disable=invalid-name
     def _flatten_list_results(paged_results, item_key):
-    # pylint: enable=invalid-name
         """Flatten a split-up list as returned by list_next() API.
 
         GCE 'list' APIs return results in the form:
@@ -245,7 +267,7 @@ class BaseClient(object):
         that to a simple list of items.
 
         Args:
-            page_results : A list of paged API response objects.
+            paged_results : A list of paged API response objects.
                 [{page 1 results}, {page 2 results}, {page 3 results}, ...]
             item_key: The name of the key within the inner "items" lists
                 containing the objects of interest.

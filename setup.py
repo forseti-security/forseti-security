@@ -39,7 +39,7 @@ INSTALL_REQUIRES = [
     'google-api-python-client==1.6.1',
     'Jinja2==2.9.5',
     'MySQL-python==1.2.5',
-    'protobuf==3.2.0',
+    'protobuf>=3.2.0',
     'PyYAML==3.12',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
@@ -53,7 +53,7 @@ SETUP_REQUIRES = [
     'python-gflags==3.1.1',
     'grpcio>=1.2.1',
     'grpcio-tools>=1.2.1',
-    'protobuf==3.2.0',
+    'protobuf>=3.2.0',
 ]
 
 TEST_REQUIRES = [
@@ -113,6 +113,7 @@ setup(
             'forseti_enforcer = google.cloud.security.stubs:RunForsetiEnforcer',
             'forseti_notifier = google.cloud.security.stubs:RunForsetiNotifier',
             'forseti_api = google.cloud.security.stubs:RunForsetiApi',
+            'forseti_iam = google.cloud.security.stubs:RunExplainCli',
         ]
     },
     zip_safe=False,   # Set to False: apputils doesn't like zip_safe eggs
