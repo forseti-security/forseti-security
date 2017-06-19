@@ -25,8 +25,8 @@ from google.cloud.security.common.util import log_util
 FLAGS = flags.FLAGS
 flags.DEFINE_string('db_host', '127.0.0.1',
                     'Cloud SQL instance hostname/IP address')
-flags.DEFINE_string('db_name', 'forseti_security', 'Cloud SQL database name')
-flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
+flags.DEFINE_string('db_name', 'forseti_carlys', 'Cloud SQL database name')
+flags.DEFINE_string('db_user', 'carlys', 'Cloud SQL user')
 
 
 LOGGER = log_util.get_logger(__name__)
