@@ -36,7 +36,7 @@ BASE = declarative_base()
 TABLE_CACHE = {}
 PER_YIELD = 1024
 
-# pylint: disable=too-many-public-methods,too-many-locals
+# pylint: disable=too-many-locals
 class SnapshotState(object):
     """Possible states for Forseti snapshots."""
 
