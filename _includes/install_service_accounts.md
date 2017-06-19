@@ -33,13 +33,23 @@ Grant the required roles to the service account.
 * Compute Network Admin
 
 ```sh
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
   --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-  --role=roles/browser \
-  --role=roles/compute.networkAdmin \
-  --role=roles/editor \
-  --role=roles/iam.securityReviewer \
-  --role=roles/resourcemanager.folderAdmin \
+  --role=roles/browser
+gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --role=roles/compute.networkAdmin
+gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --role=roles/editor
+gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --role=roles/iam.securityReviewer
+gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+  --role=roles/resourcemanager.folderAdmin
+gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+  --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
   --role=roles/storage.admin
 ```
 
