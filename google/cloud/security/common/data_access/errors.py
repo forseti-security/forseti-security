@@ -14,6 +14,12 @@
 
 """Errors related to data access."""
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc
+# pylint: disable=missing-param-doc
+
+
 class Error(Exception):
     """Base class for errors."""
     pass

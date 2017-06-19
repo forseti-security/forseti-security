@@ -21,6 +21,10 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 MY_CUSTOMER = 'my_customer'
 

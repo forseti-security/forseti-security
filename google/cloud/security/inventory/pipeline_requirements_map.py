@@ -15,6 +15,11 @@
 """Map of the requirements needed by the inventory pipelines."""
 
 REQUIREMENTS_MAP = {
+    'appengine':
+        {'module_name': 'load_appengine_pipeline',
+         'depends_on': 'projects',
+         'api_name': 'appengine_api',
+         'dao_name': 'appengine_dao'},
     'backend_services':
         {'module_name': 'load_backend_services_pipeline',
          'depends_on': 'projects',

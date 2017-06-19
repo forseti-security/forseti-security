@@ -20,6 +20,10 @@ from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type import resource
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+
+
 class OrgResourceRelDao(object):
     """DAO for organization resource entity relationships."""
 

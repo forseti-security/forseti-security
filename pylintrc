@@ -16,6 +16,9 @@
 
 [MASTER]
 
+# The number of jobs to spawn for linting.
+jobs=8
+
 # Specify a configuration file.
 #rcfile=
 
@@ -29,23 +32,29 @@ profile=no
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
 #ignore=CVS
+ignore-patterns=.*_test.*?py,.*test_.*?py,.*test.*?py,.*pb2.*
 
 # Pickle collected data for later comparisons.
 persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=
+load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,pylint.extensions.bad_builtin,pylint.extensions.docstyle,pylint.extensions.emptystring,pylint.extensions.overlapping_exceptions,pylint.extensions.redefined_variable_type,pylint.extensions.docparams
 
-ignore-patterns=.*enforcer_log_pb2
-
+# Plug-in options
+#
+# plugin: pylint.extensions.docparams
+accept-no-param-doc=no
+accept-no-raise-doc=no
+accept-no-return-doc=no
+accept-no-yields-doc=no
 
 [MESSAGES CONTROL]
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time. See also the "--disable" option for examples.
-#enable=
+enable=all
 
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifiers separated by comma (,) or put this
@@ -56,7 +65,7 @@ ignore-patterns=.*enforcer_log_pb2
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=locally-disabled,locally-enable,no-name-in-module,relative-import
+disable=no-name-in-module,relative-import,suppressed-message,locally-disabled,locally-enabled,too-few-public-methods
 
 [REPORTS]
 

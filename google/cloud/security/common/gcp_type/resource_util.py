@@ -19,6 +19,10 @@ from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+
+
 _RESOURCE_TYPE_MAP = {
     resource.ResourceType.ORGANIZATION: {
         'class': org.Organization,

@@ -18,6 +18,12 @@
 from google.cloud.security.inventory.pipeline_requirements_map import REQUIREMENTS_MAP
 # pylint: enable=line-too-long
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-param-doc
+
+
 def can_inventory_groups(configs):
     """A simple function that validates required inputs to inventory groups.
 

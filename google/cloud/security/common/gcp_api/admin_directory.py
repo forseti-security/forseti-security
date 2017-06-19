@@ -36,6 +36,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
     ])
 
     def __init__(self):
+        """Initialize.
+
+        Returns:
+        """
         super(AdminDirectoryClient, self).__init__(
             credentials=self._build_credentials(),
             api_name=self.API_NAME)
@@ -48,7 +52,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """Build credentials required for accessing the directory API.
 
         Returns:
-            Credentials as built by oauth2client.
+            object: Credentials as built by oauth2client.
 
         Raises:
             api_errors.ApiExecutionError
@@ -57,7 +61,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 FLAGS.groups_service_account_key_file,
                 scopes=self.REQUIRED_SCOPES)
-        except (ValueError, KeyError, TypeError) as e:
+        except (ValueError, KeyError, TypeError, IOError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential: %s', e)
 
@@ -65,7 +69,11 @@ class AdminDirectoryClient(_base_client.BaseClient):
             FLAGS.domain_super_admin_email)
 
     def get_rate_limiter(self):
-        """Return an appriopriate rate limiter."""
+        """Return an appriopriate rate limiter.
+
+        Returns:
+            object: The rate limiter.
+        """
         return RateLimiter(FLAGS.max_admin_api_calls_per_day,
                            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
@@ -73,10 +81,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """Get all the members for specified groups.
 
         Args:
-            group_key: Its unique id assigned by the Admin API.
+            group_key (str): The group's unique id assigned by the Admin API.
 
         Returns:
-            A list of member objects from the API.
+            list: A list of member objects from the API.
 
         Raises:
             api_errors.ApiExecutionError
@@ -99,10 +107,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
         https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
 
         Args:
-            customer_id: The customer id to scope the request to
+            customer_id (str): The customer id to scope the request to.
 
         Returns:
-            A list of group objects returned from the API.
+            list: A list of group objects returned from the API.
 
         Raises:
             api_errors.ApiExecutionError

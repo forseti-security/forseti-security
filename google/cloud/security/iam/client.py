@@ -24,14 +24,18 @@ from google.cloud.security.iam.playground import playground_pb2
 from google.cloud.security.iam.utils import oneof
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
+
+
 def require_model(f):
-    """
-    Decorator to perform check that the model handle exists in the service.
+    """Decorator to perform check that the model handle exists in the service.
     """
 
     def wrapper(*args, **kwargs):
         """Function wrapper to perform model handle existence check."""
-        if args[0].config.handle() != "":
+        if args[0].config.handle():
             return f(*args, **kwargs)
         raise Exception("API requires model to be set")
     return wrapper
@@ -57,8 +61,8 @@ class IAMClient(object):
 
 
 class ExplainClient(IAMClient):
-    """
-    Explain service allows the client to reason about a model.
+    """Explain service allows the client to reason about a model.
+
     Explain provides the following functionality:
        - List access by resource/member
        - Provide information on why a member has access
@@ -170,16 +174,16 @@ class ExplainClient(IAMClient):
 
 
 class PlaygroundClient(IAMClient):
-    """
-    Playground service provides an interface to add entities into
-    the IAM model. It allows the modification of:
-       - Roles & Permissions
-       - Membership relations
-       - Resource hierarchy
-       - Get/Set policies
-       - Perform access checks
-    This allows a client to perform simulations based on imported
-    or empty models.
+    """Provides an interface to add entities into the IAM model.
+
+        It allows the modification of:
+           - Roles & Permissions
+           - Membership relations
+           - Resource hierarchy
+           - Get/Set policies
+           - Perform access checks
+        This allows a client to perform simulations based on imported
+        or empty models.
     """
 
     def __init__(self, config):
@@ -223,25 +227,26 @@ class PlaygroundClient(IAMClient):
             metadata=self.metadata())
 
     @require_model
-    def add_resource(self, full_resource_name, resource_type,
-                     parent_full_resource_name, no_parent=False):
+    def add_resource(self,
+                     resource_type_name,
+                     parent_type_name,
+                     no_parent=False):
         """Add a resource to the hierarchy."""
 
         return self.stub.AddResource(
             playground_pb2.AddResourceRequest(
-                full_resource_name=full_resource_name,
-                resource_type=resource_type,
-                parent_full_resource_name=parent_full_resource_name,
+                resource_type_name=resource_type_name,
+                parent_type_name=parent_type_name,
                 no_require_parent=no_parent),
             metadata=self.metadata())
 
     @require_model
-    def del_resource(self, full_resource_name):
+    def del_resource(self, resource_type_name):
         """Delete a resource from the hierarchy and the subtree."""
 
         return self.stub.DelResource(
             playground_pb2.DelResourceRequest(
-                full_resource_name=full_resource_name),
+                resource_type_name=resource_type_name),
             metadata=self.metadata())
 
     @require_model
@@ -324,13 +329,16 @@ class PlaygroundClient(IAMClient):
                 identity=member_name),
             metadata=self.metadata())
 
+
 class ClientComposition(object):
-    """
-    Client composition class. Most convenient to use since it comprises
-    the common use cases among the different services.
+    """Client composition class.
+
+        Most convenient to use since it comprises the common use cases among
+        the different services.
     """
 
     DEFAULT_ENDPOINT = 'localhost:50058'
+
     def __init__(self, endpoint=DEFAULT_ENDPOINT):
         self.channel = grpc.insecure_channel(endpoint)
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
