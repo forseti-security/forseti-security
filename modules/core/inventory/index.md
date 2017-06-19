@@ -16,6 +16,12 @@ $ forseti_inventory --helpshort
 ### Configuring Inventory pipelines to run
 In order to run the Inventory tool, you must provide it a configuration file. A sample can be found [here](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/inventory/inventory_conf.yaml).
 
+You'll then provide this configuration file to `forseti_inventory`:
+
+```sh
+$ forseti_inventory --config_path <path/to/inventory_config>
+```
+
 ### Executing inventory to collect GSuite Google Groups
 
 The `--inventory_groups` is an optional flag. If you provide it as an argument, it will instruct `forseti_inventory` to read your GSuite Google Groups information.
