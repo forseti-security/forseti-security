@@ -19,7 +19,7 @@
 # pylint: disable=missing-param-doc
 
 
-# pylint: disable=invalid-name,no-self-use,unused-argument
+# pylint: disable=invalid-name,no-self-use
 class Playgrounder(object):
     """Playground API implementation."""
 
