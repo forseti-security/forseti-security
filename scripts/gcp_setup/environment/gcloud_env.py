@@ -586,6 +586,7 @@ class ForsetiGcpSetup(object):
         Returns:
         """
         print('Creating bucket...')
+        # TODO: ask what region to create the bucket in
         proc = subprocess.Popen(
             ['gsutil', 'mb', self.rules_bucket_name],
             stdout=subprocess.PIPE,
@@ -628,6 +629,8 @@ class ForsetiGcpSetup(object):
         """
         if self.cloudsql_instance:
             print('Creating Cloud SQL instance... This will take awhile...')
+
+            # TODO: ask which region to create Cloud SQL instance in
 
             proc = subprocess.Popen(
                 ['gcloud', 'sql', 'instances', 'create', self.cloudsql_instance,
