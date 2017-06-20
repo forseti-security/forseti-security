@@ -41,8 +41,8 @@ def escape_and_globify(pattern_string):
         pattern_string (str): The pattern string of which to make a regex.
 
     Returns:
-    str: The pattern string, escaped except for the "*", which is
-        transformed into ".+" (match on one or more characters).
+        str: The pattern string, escaped except for the "*", which is
+            transformed into ".+" (match on one or more characters).
     """
 
     return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
@@ -56,6 +56,9 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
 
         Args:
             rules_file_path (str): file location of rules
+            snapshot_timestamp (str): snapshot timestamp. Defaults to None.
+                If set, this will be the snapshot timestamp
+                used in the engine.
         """
         super(BucketsRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
@@ -71,7 +74,7 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         """Determine whether bucket acls violates rules.
 
         Args:
-            bucket_acls (:obj:`BucketAccessControls`): Object containing ACL
+            buckets_acls (BucketAccessControls): Object containing ACL
                 data
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
@@ -207,9 +210,9 @@ class Rule(object):
         """Find bucket policy acl violations in the rule book.
 
         Args:
-            bucket_acl (:obj:`BucketAccessControls`): Bucket ACL resource
+            bucket_acl (BucketAccessControls): Bucket ACL resource
 
-        Returns:
+        Yields:
             namedtuple: Returns RuleViolation named tuple
         """
         if self.rules.bucket != '^.+$':

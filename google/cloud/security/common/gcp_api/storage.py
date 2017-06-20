@@ -25,11 +25,6 @@ from googleapiclient import http
 from googleapiclient.errors import HttpError
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -97,6 +92,10 @@ class StorageClient(_base_client.BaseClient):
 
         Returns:
             str: The object's content as a string.
+
+        Raises:
+            HttpError: HttpError is raised if the call to the
+                GCP storage API fails
         """
         file_content = ''
         storage_service = self.service
@@ -126,7 +125,7 @@ class StorageClient(_base_client.BaseClient):
 
         Returns:
             dict: If successful, this function returns a dictionary for the
-                instances in the project. 
+                instances in the project.
 
             {
               "kind": "storage#buckets",
@@ -156,7 +155,7 @@ class StorageClient(_base_client.BaseClient):
         Args:
             bucket_name (str): The name of the bucket.
 
-        Returns: 
+        Returns:
             dict: ACL json for bucket
 
         Raises:

@@ -20,11 +20,6 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,differing-param-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -69,8 +64,8 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies (list): organization policies from inventory.
             project_policies (list): project policies from inventory.
+            buckets_acls (list): buclet acls from inventory.
         Returns:
             dict: Resource count map
         """
@@ -106,7 +101,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
 
         Args:
             bucket_data (list): Buckets to find violations in
-            rules_engine (:obj:`BucketRulesEngine`): The rules engine to run.
+            rules_engine (BucketRulesEngine): The rules engine to run.
 
         Returns:
             list: A list of bucket violations

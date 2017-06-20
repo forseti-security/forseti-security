@@ -57,8 +57,8 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
 
         Args:
             rules_file_path (str): file location of rules
-            snapshot (:obj:`str`, optional): snapshot timestamp.
-                Defaults to None. If set, this will be the snapshot timestamp
+            snapshot_timestamp (str): snapshot timestamp. Defaults to None.
+                If set, this will be the snapshot timestamp
                 used in the engine.
         """
         super(CloudSqlRulesEngine,
@@ -75,7 +75,7 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         """Determine whether CloudSQL acls violates rules.
 
         Args:
-            cloudsql_acls (:obj:`CloudsqlAccessControls`): Object containing
+            cloudsql_acls (CloudsqlAccessControls): Object containing
                 ACL data
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
@@ -207,9 +207,9 @@ class Rule(object):
         """Find CloudSQL policy acl violations in the rule book.
 
         Args:
-            cloudsql_acl (:obj:`CloudsqlAccessControls`): CloudSQL ACL resource
+            cloudsql_acl (CloudsqlAccessControls): CloudSQL ACL resource
 
-        Returns:
+        Yields:
             namedtuple: Returns RuleViolation named tuple
         """
         filter_list = []

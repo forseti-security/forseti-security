@@ -15,7 +15,6 @@
 """Scanner for the Big Query rules engine."""
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import bigquery_dao
-from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
 
@@ -51,8 +50,8 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies (list): organization policies from inventory.
             project_policies (list): project policies from inventory.
+            bigquery_acls (list): BigQuery acls from inventory.
         Returns:
             dict: Resource count map
         """
@@ -88,7 +87,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
 
         Args:
             bigquery_data (list): Big Query data to find violations in
-            rules_engine (:obj:`BigqueryRulesEngine`): The rules engine to run.
+            rules_engine (BigqueryRulesEngine): The rules engine to run.
 
         Returns:
             list: A list of BigQuery violations

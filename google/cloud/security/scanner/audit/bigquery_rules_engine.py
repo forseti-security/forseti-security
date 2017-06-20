@@ -55,8 +55,8 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
 
         Args:
             rules_file_path (str): file location of rules
-            snapshot (:obj:`str`, optional): snapshot timestamp.
-                Defaults to None. If set, this will be the snapshot timestamp
+            snapshot_timestamp (str): snapshot timestamp. Defaults to None.
+                If set, this will be the snapshot timestamp
                 used in the engine.
         """
         super(BigqueryRulesEngine,
@@ -73,7 +73,7 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         """Determine whether Big Query datasets violate rules.
 
         Args:
-            bq_datasets (:obj:`BigqueryAccessControls`): Object containing ACL
+            bq_datasets (list): Object containing ACL
                 data
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
@@ -121,7 +121,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
-        
+
         Args:
             rule_defs (dict): rule definitions dictionary
         """
@@ -154,9 +154,11 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             group_email = rule_def.get('group_email')
             role = rule_def.get('role')
 
-            if (dataset_id is None) or (special_group is None) or\
-               (user_email is None) or (domain is None) or\
-               (group_email is None) or (role is None):
+            is_any_none = (dataset_id is None) or (special_group is None) or\
+                          (user_email is None) or (domain is None) or\
+                          (group_email is None) or (role is None)
+
+            if is_any_none:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_def.get('name')))
 
@@ -172,9 +174,9 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                         rule_index=rule_index,
                         rules=rule_def_resource)
 
-            resource_rules = self.resource_rules_map.get(rule_index)
+            #resource_rules = self.resource_rules_map.get(rule_index)
 
-            if not resource_rules:
+            if not self.resource_rules_map.get(rule_index):
                 self.resource_rules_map[rule_index] = rule
 
     def get_resource_rules(self):
@@ -212,9 +214,9 @@ class Rule(object):
         """Find BigQuery acl violations in the rule book.
 
         Args:
-            bigquery_acl (:obj:`BigqueryAccessControls`): BigQuery ACL resource
+            bigquery_acl (BigqueryAccessControls): BigQuery ACL resource
 
-        Returns:
+        Yields:
             namedtuple: Returns RuleViolation named tuple
         """
         if self.rules.dataset_id != '^.+$':

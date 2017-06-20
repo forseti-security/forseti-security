@@ -20,11 +20,6 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,differing-param-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -71,8 +66,8 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies (list): organization policies from inventory.
-            project_policies (list): project policies from inventory.
+            project_policies (list): project_policies policies from inventory.
+            cloudsql_acls (list): CloudSql ACLs from inventory.
         Returns:
             dict: Resource count map
         """
@@ -108,7 +103,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
 
         Args:
             cloudsql_data (list): CloudSQL data to find violations in
-            rules_engine (:obj:`CloudsqlRulesEngine`): The rules engine to run.
+            rules_engine (CloudsqlRulesEngine): The rules engine to run.
 
         Returns:
             list: A list of CloudSQL violations

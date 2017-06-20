@@ -25,11 +25,6 @@ from google.cloud.security.common.util import log_util
 from googleapiclient.errors import HttpError
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc
-
-
 FLAGS = flags.FLAGS
 
 # This API is also limited to 100K queries per day.
@@ -65,9 +60,9 @@ class CloudsqlClient(_base_client.BaseClient):
         Args:
             project_id (int): The project id for a GCP project.
 
-        Returns: 
+        Returns:
             dict: If successful, this function returns a dictionary for the
-                instances in the project. 
+                instances in the project.
             {
               "kind": "sql#instancesList",
               "nextPageToken": string,
