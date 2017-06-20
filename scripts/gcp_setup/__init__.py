@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Classes that represent the gcloud/gsutil environment."""
+"""A setup_forseti wizard for assistance in installation."""
