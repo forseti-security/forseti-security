@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module contains a setup_forseti wizard for assistance in installation.
-"""
+"""A setup_forseti wizard for assistance in installation."""

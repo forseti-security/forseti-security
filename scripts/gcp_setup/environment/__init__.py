@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module contains classes that represent the gcloud/gsutil environment.
-"""
+"""Classes that represent the gcloud/gsutil environment."""
