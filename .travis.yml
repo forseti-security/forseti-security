@@ -24,7 +24,7 @@ services:
 
 before_install:
   # Build the Forseti image containing the dependencies and code.
-  - docker build -t forseti/build docker/.
+  - docker build -t forseti/build -f docker-files/Dockerfile .
   # Required for codecov.io to export coverage within a Docker container.
   - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
   # Start the container for testing and code verification.

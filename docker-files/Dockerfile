@@ -18,6 +18,17 @@
 
 FROM ubuntu:16.04
 
+# Install Forseti dependencies
+RUN apt-get update && apt-get install -qq -y \
+    curl \
+    git \
+    libmysqlclient-dev \
+    python-pip \
+    python-dev \
+    unzip \
+    wget \
+  && rm -rf /var/lib/apt/lists/*
+
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 RUN python setup.py install
