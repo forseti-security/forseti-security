@@ -1,3 +1,4 @@
 # Requirements come from setup.py
 # This is left here for tools that look for a requirements.txt
+--index-url https://pypi.python.org/simple/
 -e .
