@@ -24,3 +24,4 @@ RUN pip install -q --upgrade \
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 RUN python setup.py install
+RUN yes | which forseti_inventory
