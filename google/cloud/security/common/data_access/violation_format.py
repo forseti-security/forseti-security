@@ -17,7 +17,7 @@
 import json
 
 
-def format_policy_violation(violation):
+def format_violation(violation):
 
     """Format the policy violation data into a tuple.
 
