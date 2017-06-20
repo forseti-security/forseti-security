@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,4 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A setup_forseti wizard for assistance in installation."""
+# Dockerfile (experimental) for getting Forseti up and running.
+# You still need to do all the other prereq GCP setup (e.g.
+# setting up service accounts, GCP infrastructure).
+
+FROM ubuntu:16.04
+
+ADD . /forseti-security/
+WORKDIR /forseti-security/
+RUN python setup.py install
+RUN yes | which forseti_inventory

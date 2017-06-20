@@ -1,0 +1,3 @@
+# Requirements come from setup.py
+# This is left here for tools that look for a requirements.txt
+-e .
