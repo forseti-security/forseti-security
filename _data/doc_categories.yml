@@ -2,8 +2,8 @@
 # order in the UI (left-to-right)
 - title: Overview
   href: docs
-- title: Quick Start
-  href: docs/quickstart
+- title: Quick Starts
+  href: docs/quickstarts
 - title: Development
   href: docs/development
 - title: How To

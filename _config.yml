@@ -29,9 +29,9 @@ defaults:
     values:
       category: How To
   - scope:
-      path: _docs/quickstart
+      path: _docs/quickstarts
     values:
-      category: Quick Start
+      category: Quick Starts
   - scope:
       path: _docs/resource
     values:
