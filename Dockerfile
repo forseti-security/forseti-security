@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -qq -y \
 RUN pip install -q --upgrade pip
 RUN pip install -q --upgrade \
     coverage \
+    codecov \
     coveralls \
     google-apputils \
     grpcio \
