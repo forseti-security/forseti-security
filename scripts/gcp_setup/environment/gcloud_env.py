@@ -27,7 +27,7 @@ import re
 import subprocess
 import time
 
-from distutils.spawn import find_executable
+from distutils import spawn
 
 
 def org_id_from_org_name(org_name):
@@ -38,25 +38,26 @@ def org_id_from_org_name(org_name):
             "organizations/${ORGANIZATION_ID}".
 
     Returns:
+        org_name(str): just the organization_id.
     """
     return org_name[len('organizations/'):]
 
-
+# pylint: disable=too-many-instance-attributes
 class ForsetiGcpSetup(object):
     """Setup the Forseti Security GCP components."""
 
     PROJECT_ID_REGEX = re.compile(r'^[a-z][a-z0-9-]{6,30}$')
     REQUIRED_APIS = [
-            {'name': 'Cloud SQL',
-             'service': 'sql-component.googleapis.com'},
-            {'name': 'Cloud SQL Admin',
-             'service': 'sqladmin.googleapis.com'},
-            {'name': 'Cloud Resource Manager',
-             'service': 'cloudresourcemanager.googleapis.com'},
-            {'name': 'Admin SDK',
-             'service': 'admin.googleapis.com'},
-            {'name': 'Deployment Manager',
-             'service': 'deploymentmanager.googleapis.com'}]
+        {'name': 'Cloud SQL',
+         'service': 'sql-component.googleapis.com'},
+        {'name': 'Cloud SQL Admin',
+         'service': 'sqladmin.googleapis.com'},
+        {'name': 'Cloud Resource Manager',
+         'service': 'cloudresourcemanager.googleapis.com'},
+        {'name': 'Admin SDK',
+         'service': 'admin.googleapis.com'},
+        {'name': 'Deployment Manager',
+         'service': 'deploymentmanager.googleapis.com'}]
 
     ORG_IAM_ROLES = [
         'roles/browser',
@@ -131,8 +132,6 @@ class ForsetiGcpSetup(object):
 
         Args:
             text (str): Text to put in the banner.
-
-        Returns:
         """
         print('')
         print('+-------------------------------------------------------')
@@ -143,10 +142,11 @@ class ForsetiGcpSetup(object):
     def ensure_gcloud_installed(self):
         """Check whether gcloud tool is installed.
 
-        Returns:
+            Raises:
+                EnvironmentError: When `gcloud` can't be found.
         """
         self._print_banner('Checking if gcloud is installed')
-        gcloud_cmd = find_executable('gcloud')
+        gcloud_cmd = spawn.find_executable('gcloud')
         if gcloud_cmd:
             print('gcloud already installed, continue...')
         else:
@@ -156,10 +156,7 @@ class ForsetiGcpSetup(object):
                 'You can get it here: https://cloud.google.com/sdk/')
 
     def auth_login(self):
-        """Authenticate with GCP account.
-
-        Returns:
-        """
+        """Authenticate with GCP account."""
         self._print_banner('Auth GCP account')
         subprocess.call(['gcloud', 'auth', 'login', '--force'])
         proc = subprocess.Popen(
@@ -168,17 +165,14 @@ class ForsetiGcpSetup(object):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         out, err = proc.communicate()
-        if proc.returncode != 0:
+        if not proc.returncode:
             print(err)
 
         if out:
             self.auth_account = out.strip()
 
     def list_organizations(self):
-        """List the available organizations.
-
-        Returns:
-        """
+        """List the available organizations."""
         proc = subprocess.Popen(
             ['gcloud', 'organizations', 'list', '--format=json'],
             stdout=subprocess.PIPE,
@@ -195,34 +189,37 @@ class ForsetiGcpSetup(object):
     def _choose_organization(self, orgs):
         """Choose from a list of organizations.
 
-        Returns:
+            Args:
+                orgs(dict): A dictionary of orgs from gcloud.
         """
+        if not orgs:
+            self._print_banner('No organizations found. Exiting.')
+
         self._print_banner('Choose the organization where to deploy Forseti')
         choice = -1
         while True:
             print('Organizations:')
             for i, org in enumerate(orgs):
                 print('[%s] %s (%s)' %
-                    (i+1,
-                     org['displayName'],
-                     org_id_from_org_name(org['name'])))
+                      (i+1,
+                       org['displayName'],
+                       org_id_from_org_name(org['name'])))
+
             choice = raw_input('Enter your choice: ').strip()
+
             try:
                 numeric_choice = int(choice)
                 if numeric_choice > len(orgs) or numeric_choice < 1:
                     raise ValueError
                 else:
-                    self.organization_id = org_id_from_org_name(org['name'])
+                    self.organization_id = org_id_from_org_name(
+                        orgs[numeric_choice-1]['name'])
                     break
             except ValueError:
                 print('Invalid choice, try again.')
-                pass
 
     def create_or_use_project(self):
-        """Create a project or enter the id of a project to use.
-
-        Returns:
-        """
+        """Create a project or enter the id of a project to use."""
         project_id = None
         self._print_banner('Setup Forseti project')
 
@@ -263,10 +260,11 @@ class ForsetiGcpSetup(object):
                     proj_create_cmd.append(
                         '--organization=%s' % self.organization_id)
                 exit_status = subprocess.call(proj_create_cmd)
-                if exit_status == 0:
+                if not exit_status:
                     return project_id
         return None
 
+    # pylint: disable=no-self-use
     def _use_project(self):
         """Verify whether use has access to a project by describing it.
 
@@ -285,14 +283,16 @@ class ForsetiGcpSetup(object):
                  ('--format=table[box,title="Project"]'
                   '(name,projectId,projectNumber)'),
                  project_id])
-            if exit_status == 0:
+            if not exit_status:
                 return project_id
         return None
+    # pylint: enable=no-self-use
 
     def _set_project(self, project_id):
         """Save the gcloud configuration for future use.
 
-        Returns:
+            Args:
+                project_id(str): A string representation of the GCP projectid.
         """
         print('\nTrying to activate configuration {}...'.format(project_id))
         return_val = subprocess.call(
@@ -308,17 +308,15 @@ class ForsetiGcpSetup(object):
             ['gcloud', 'config', 'set', 'project', project_id],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-        out, err = proc.communicate()
-        if proc.returncode != 0:
+        _, err = proc.communicate()
+        if not proc.returncode:
             print(err)
         self.project_id = project_id
 
     def check_billing(self):
         """Check whether billing is enabled.
 
-        Poll GCP until billing is enabled.
-
-        Returns:
+            Poll GCP until billing is enabled.
         """
         print_instructions = True
         self._print_banner('Checking whether billing has been enabled')
@@ -349,10 +347,7 @@ class ForsetiGcpSetup(object):
                 time.sleep(1)
 
     def _print_billing_instructions(self):
-        """Print billing instructions.
-
-        Returns:
-        """
+        """Print billing instructions."""
         print(('Before enabling the GCP APIs necessary to run '
                'Forseti Security, you must enable Billing for '
                'this project. Go to the following link:\n\n'
@@ -360,49 +355,43 @@ class ForsetiGcpSetup(object):
                'https://console.cloud.google.com/'
                'billing?project={}\n\n'
                'After you enable billing, setup will continue.\n'
-                   .format(self.project_id)))
-        return False
+               .format(self.project_id)))
 
     def enable_apis(self):
         """Enable necessary APIs for Forseti Security
 
-        1. Cloud SQL
-        2. Cloud SQL Admin
-        3. Cloud Resource Manager
-        4. Admin SDK
-        5. Deployment Manager
-
-        Returns:
+            1. Cloud SQL
+            2. Cloud SQL Admin
+            3. Cloud Resource Manager
+            4. Admin SDK
+            5. Deployment Manager
         """
         self._print_banner('Enabling required APIs')
         for api in self.REQUIRED_APIS:
             print('Enabling the {} API...'.format(api['name']))
             proc = subprocess.Popen(
-                ['gcloud', 'alpha', 'service-management', 'enable',
-                  api['service']],
+                ['gcloud', 'alpha', 'service-management',
+                 'enable', api['service']],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if proc.returncode != 0:
+            if not proc.returncode:
                 print(err)
             else:
                 print('Done.')
 
     def create_service_accounts(self):
-        """Creates the service accounts that will be used by Forseti.
-
-        Returns:
-        """
+        """Creates the service accounts that will be used by Forseti."""
         self._print_banner('Setup service accounts')
 
         svc_acct_actions = [
-          {'usage': 'accessing GCP',
-           'acct': 'gcp_service_account',
-           'default_name': 'forseti-gcp'},
-          {'usage': 'getting GSuite groups',
-           'acct': 'gsuite_service_account',
-           'default_name': 'forseti-gsuite',
-           'skippable': True},
+            {'usage': 'accessing GCP',
+             'acct': 'gcp_service_account',
+             'default_name': 'forseti-gcp'},
+            {'usage': 'getting GSuite groups',
+             'acct': 'gsuite_service_account',
+             'default_name': 'forseti-gsuite',
+             'skippable': True},
         ]
         for action in svc_acct_actions:
             skippable = action.get('skippable', False)
@@ -410,11 +399,11 @@ class ForsetiGcpSetup(object):
             if skippable:
                 skip_text = '[3] Skip for now\n'
             action_text = (
-                    'Forseti requires a service account for %s.\n'
-                    '[1] Use existing service account\n'
-                    '[2] Create new service account\n'
-                    '%s'
-                    'Enter your choice: ' % (action['usage'], skip_text))
+                'Forseti requires a service account for %s.\n'
+                '[1] Use existing service account\n'
+                '[2] Create new service account\n'
+                '%s'
+                'Enter your choice: ' % (action['usage'], skip_text))
             while True:
                 svc_acct_choice = raw_input(action_text).strip()
                 # Only break the loop when input is valid
@@ -436,10 +425,12 @@ class ForsetiGcpSetup(object):
                action['acct'] == 'gsuite_service_account':
                 self._download_gsuite_svc_acct_key()
 
+    # pylint: disable=no-self-use
     def _use_svc_acct(self):
         """Use an existing service account.
 
-        Returns:
+            Returns:
+                existing_svc_acct(str): The user specified service account.
         """
         existing_svc_acct = None
         while not existing_svc_acct:
@@ -452,13 +443,14 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if proc.returncode != 0:
+            if not proc.returncode:
                 print(err)
             else:
                 break
 
         print('\nOk, using existing service account: %s\n' % existing_svc_acct)
         return existing_svc_acct
+    # pylint: enable=no-self-use
 
     def _create_svc_acct(self, default_name):
         """Create a service account.
@@ -481,7 +473,7 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if proc.returncode != 0:
+            if not proc.returncode:
                 print(err)
             else:
                 break
@@ -492,10 +484,7 @@ class ForsetiGcpSetup(object):
         return full_svc_acct
 
     def _download_gsuite_svc_acct_key(self):
-        """Download the service account key.
-
-        Returns:
-        """
+        """Download the service account key."""
         print('Downloading Gsuite service account key for %s'
               % self.gsuite_service_account)
         proc = subprocess.Popen(
@@ -505,7 +494,7 @@ class ForsetiGcpSetup(object):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         _, err = proc.communicate()
-        if proc.returncode != 0:
+        if not proc.returncode:
             print(err)
 
         self.gsuite_svc_acct_key_location = os.path.abspath(
@@ -519,22 +508,18 @@ class ForsetiGcpSetup(object):
         Args:
             which_svc_acct (str): Which service account (GCP/Gsuite) to set.
             svc_acct (str): The service account full name.
-
-        Returns:
         """
         setattr(self, which_svc_acct, svc_acct)
 
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
-        Project Browser
-        Security Reviewer
-        Project Editor
-        Resource Manager Folder Admin
-        Storage Object Admin
-        Compute Network Admin
-
-        Returns:
+            Project Browser
+            Security Reviewer
+            Project Editor
+            Resource Manager Folder Admin
+            Storage Object Admin
+            Compute Network Admin
         """
         self._print_banner('Assigning roles to the GCP service account')
         if not self.organization_id:
@@ -554,16 +539,13 @@ class ForsetiGcpSetup(object):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if proc.returncode != 0:
+            if not proc.returncode:
                 print(err)
             else:
                 print('Done')
 
     def setup_bucket_name(self):
-        """Ask user to come up with a bucket name for the rules.
-
-        Returns:
-        """
+        """Ask user to come up with a bucket name for the rules."""
         self._print_banner('Setup bucket name')
         default_bucket = self.DEFAULT_BUCKET_FORMAT.format(self.project_id)
 
@@ -581,38 +563,29 @@ class ForsetiGcpSetup(object):
                 break
 
     def create_bucket(self):
-        """Create the bucket.
-
-        Returns:
-        """
+        """Create the bucket."""
         print('Creating bucket...')
         proc = subprocess.Popen(
             ['gsutil', 'mb', self.rules_bucket_name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         _, err = proc.communicate()
-        if proc.returncode != 0:
+        if not proc.returncode:
             print(err)
 
     def setup_cloudsql_name(self):
-        """Ask user to name their Cloud SQL instance.
-
-        Returns:
-        """
+        """Ask user to name their Cloud SQL instance."""
         self._print_banner('Setup Cloud SQL name')
         instance_name = raw_input(
-              'Enter a name for the Forseti Cloud SQL instance '
-              '(default: {}) '.format(self.DEFAULT_CLOUDSQL_INSTANCE_NAME)
-              ).strip().lower()
+            'Enter a name for the Forseti Cloud SQL instance '
+            '(default: {}) '.format(self.DEFAULT_CLOUDSQL_INSTANCE_NAME))\
+            .strip().lower()
         if not instance_name:
             instance_name = self.DEFAULT_CLOUDSQL_INSTANCE_NAME
         self.cloudsql_instance = instance_name
 
     def setup_cloudsql_user(self):
-        """Ask user to input Cloud SQL user name.
-
-        Returns:
-        """
+        """Ask user to input Cloud SQL user name."""
         sql_user = raw_input(
             'Enter the sql user name of your choice '
             '(default: {}) '
@@ -622,10 +595,7 @@ class ForsetiGcpSetup(object):
         self.cloudsql_user = sql_user
 
     def create_cloudsql_instance(self):
-        """Create Cloud SQL instance.
-
-        Returns:
-        """
+        """Create Cloud SQL instance."""
         if self.cloudsql_instance:
             print('Creating Cloud SQL instance... This will take awhile...')
 
@@ -638,7 +608,7 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if proc.returncode != 0:
+            if not proc.returncode:
                 print(err)
 
         if self.cloudsql_instance:
@@ -649,23 +619,17 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if proc.returncode != 0:
+            if not proc.returncode:
                 print(err)
 
     def generate_deployment_templates(self):
-        """Generate deployment templates.
-
-        Returns:
-        """
+        """Generate deployment templates."""
         # TODO: generate deployment templates
         # TODO: ask if we should create the deployment
         pass
 
     def create_data_storage(self):
-        """Create Cloud SQL instance and Cloud Storage bucket. (optional)
-
-        Returns:
-        """
+        """Create Cloud SQL instance and Cloud Storage bucket. (optional)"""
         self._print_banner('Create data storage (optional)')
         should_create_bucket = raw_input(
             'Create Cloud Storage bucket now? (y/N) ').strip().lower()
@@ -680,11 +644,9 @@ class ForsetiGcpSetup(object):
     def post_install_instructions(self):
         """Show post-install instructions.
 
-        Print link to go to GSuite service account and enable DWD, if GSuite
-        service account was created.
-        Print link for deployment manager dashboard.
-
-        Returns:
+            Print link to go to GSuite service account and enable DWD, if GSuite
+            service account was created.
+            Print link for deployment manager dashboard.
         """
         self._print_banner('Post-setup instructions')
 
