@@ -229,18 +229,18 @@ class DaoTest(ForsetiTestCase):
         client = ModelCreatorClient(session, data_access)
         _ = ModelCreator(RESOURCE_EXPANSION_1, client)
 
-        check_resources = {u'r/res{}'.format(i) for i in range(1,9)}
-        full_resource_names = data_access.list_resources_by_prefix(session, '')
-        resource_names = ['/'.join(r.split('/')[-2:]) for r in full_resource_names]
-        self.assertEqual(check_resources, set(resource_names))
+        check_resources = {u'r/res{}'.format(i) for i in range(1, 9)}
+        resources = data_access.list_resources_by_prefix(session, name_prefix='')
+        resource_type_names = [r.type_name for r in resources]
+        self.assertEqual(check_resources, set(resource_type_names))
 
-        full_resource_names = data_access.list_resources_by_prefix(session, 'res8')
-        resource_names = ['/'.join(r.split('/')[-2:]) for r in full_resource_names]
-        self.assertEqual(set([u'r/res8']), set(resource_names))
+        resources = data_access.list_resources_by_prefix(session, name_prefix='res8')
+        resource_type_names = [r.type_name for r in resources]
+        self.assertEqual(set([u'r/res8']), set(resource_type_names))
 
-        full_resource_names = data_access.list_resources_by_prefix(session, 'res89')
-        resource_names = ['/'.join(r.split('/')[-2:]) for r in full_resource_names]
-        self.assertEqual(set(), set(resource_names))
+        resources = data_access.list_resources_by_prefix(session, name_prefix='res89')
+        resource_type_names = [r.type_name for r in resources]
+        self.assertEqual(set(), set(resource_type_names))
 
     def test_del_resource_by_name(self):
         """Test del_resource_by_name."""
@@ -250,13 +250,13 @@ class DaoTest(ForsetiTestCase):
         _ = ModelCreator(RESOURCE_EXPANSION_1, client)
 
         self.assertTrue(8 == len(data_access.list_resources_by_prefix(session, '')))
-        data_access.del_resource_by_type_name(session, 'r/res8')
+        data_access.del_resource_by_name(session, 'r/res8')
         self.assertTrue(7 == len(data_access.list_resources_by_prefix(session, '')))
-        data_access.del_resource_by_type_name(session, 'r/res6')
+        data_access.del_resource_by_name(session, 'r/res6')
         self.assertTrue(5 == len(data_access.list_resources_by_prefix(session, '')))
-        data_access.del_resource_by_type_name(session, 'r/res2')
+        data_access.del_resource_by_name(session, 'r/res2')
         self.assertTrue(4 == len(data_access.list_resources_by_prefix(session, '')))
-        data_access.del_resource_by_type_name(session, 'r/res1')
+        data_access.del_resource_by_name(session, 'r/res1')
         self.assertTrue(0 == len(data_access.list_resources_by_prefix(session, '')))
 
     def test_add_resource_by_name(self):
@@ -266,13 +266,13 @@ class DaoTest(ForsetiTestCase):
         client = ModelCreatorClient(session, data_access)
         _ = ModelCreator(RESOURCE_EXPANSION_1, client)
 
-        data_access.add_resource_by_name(session, 'r/res1/r/res9', False)
-        data_access.add_resource_by_name(session, 'r/res1/r/res9/r/res10', False)
-        data_access.add_resource_by_name(session, 'r/res1/r/res3/r/res11', False)
+        data_access.add_resource_by_name(session, 'r/res9', 'r/res1', False)
+        data_access.add_resource_by_name(session, 'r/res10', 'r/res9', False)
+        data_access.add_resource_by_name(session, 'r/res11', 'r/res3', False)
 
         self.assertRaises(NoResultFound,
                           lambda : data_access.add_resource_by_name(
-                              session, 'r/res13/r/res14', False))
+                              session, 'r/res14', 'r/res13', False))
         self.assertTrue(11 == len(data_access.list_resources_by_prefix(
                                     session, '')))
 
@@ -305,6 +305,12 @@ class DaoTest(ForsetiTestCase):
             u'group/g3g2',
             u'group/g3g2g1',
             u'group/g2',
+            u'group/g1']), members)
+
+        members = data_access.reverse_expand_members(session,
+                                                     ['group/g1'])
+        members = set([m.name for m in members])
+        self.assertEqual(set([
             u'group/g1']), members)
 
     def test_expand_members(self):
@@ -364,11 +370,11 @@ class DaoTest(ForsetiTestCase):
  
 
         check_1 = {
-            'parameters' : ('user/u3', 'r/res1/r/res3/r/res4', None, 'read'),
+            'parameters' : ('user/u3', 'r/res4', None, 'read'),
             'bindings' : [
                 ('r/res1', 'viewer', 'group/g1'),
-                ('r/res1/r/res3', 'viewer', 'group/g1'),
-                ('r/res1/r/res3', 'writer', 'group/g3'),
+                ('r/res3', 'viewer', 'group/g1'),
+                ('r/res3', 'writer', 'group/g3'),
             ],
 
             'member_graph' : {
@@ -377,28 +383,28 @@ class DaoTest(ForsetiTestCase):
             },
 
             'ancestors' : [
-                'r/res1/r/res3/r/res4',
-                'r/res1/r/res3',
+                'r/res4',
+                'r/res3',
                 'r/res1'
             ]
         }
 
         check_2 = {
-            'parameters' : ('user/u4', 'r/res1/r/res3/r/res4', None, 'write'),
+            'parameters' : ('user/u4', 'r/res4', None, 'write'),
             'bindings' : [
-                    ('r/res1/r/res3', 'writer', 'group/g3'),
+                    ('r/res3', 'writer', 'group/g3'),
                 ],
             'member_graph' : {
                 'user/u4' : set(['group/g3g1']),
                 'group/g3g1' : set(['group/g3']),
                 },
             'ancestors' : [
-                'r/res1/r/res3/r/res4',
-                'r/res1/r/res3',
-                'r/res1'         
+                'r/res4',
+                'r/res3',
+                'r/res1'
                 ]
             }
-        
+
         check_3 = {
             'parameters' : ('user/u1', 'r/res1', 'admin', None),
             'bindings' : [
@@ -452,8 +458,8 @@ class DaoTest(ForsetiTestCase):
                                               role_names)
 
         explanation = explain_denied('user/u4',
-                                     ['r/res1/r/res2',
-                                      'r/res1/r/res3'],
+                                     ['r/res2',
+                                      'r/res3'],
                                      ['delete'],
                                      None)
         expectation = [
@@ -462,23 +468,23 @@ class DaoTest(ForsetiTestCase):
         self.assertEqual(expectation, explanation)
 
         explanation = explain_denied('user/u2',
-                                     ['r/res1/r/res3/r/res4'],
+                                     ['r/res4'],
                                      ['read'],
                                      None)
         expectation = [
-                (2, [(u'admin', 'user/u2', u'r/res1')]),
-                (2, [(u'viewer', 'user/u2', u'r/res1')]),
-                (2, [(u'writer', 'user/u2', u'r/res1')]),
-                (1, [(u'admin', 'user/u2', u'r/res1/r/res3')]),
-                (1, [(u'viewer', 'user/u2', u'r/res1/r/res3')]),
-                (1, [(u'writer', 'user/u2', u'r/res1/r/res3')]),
-                (0, [(u'admin', 'user/u2', u'r/res1/r/res3/r/res4')]),
-                (0, [(u'viewer', 'user/u2', u'r/res1/r/res3/r/res4')]),
-                (0, [(u'writer', 'user/u2', u'r/res1/r/res3/r/res4')]),
-                (0, [(u'admin', u'group/g2', u'r/res1/r/res3/r/res4')]),
+                (2, [(u'admin',  u'user/u2',  u'r/res1')]),
+                (2, [(u'viewer', u'user/u2',  u'r/res1')]),
+                (2, [(u'writer', u'user/u2',  u'r/res1')]),
+                (1, [(u'admin',  u'user/u2',  u'r/res3')]),
+                (1, [(u'viewer', u'user/u2',  u'r/res3')]),
+                (1, [(u'writer', u'user/u2',  u'r/res3')]),
+                (0, [(u'admin',  u'user/u2',  u'r/res4')]),
+                (0, [(u'viewer', u'user/u2',  u'r/res4')]),
+                (0, [(u'writer', u'user/u2',  u'r/res4')]),
+                (0, [(u'admin',  u'group/g2', u'r/res4')]),
                 (2, [(u'viewer', u'group/g1', u'r/res1')]),
-                (1, [(u'viewer', u'group/g1', u'r/res1/r/res3')]),
-                (1, [(u'writer', u'group/g3', u'r/res1/r/res3')])
+                (1, [(u'viewer', u'group/g1', u'r/res3')]),
+                (1, [(u'writer', u'group/g3', u'r/res3')])
             ]
 
         self.assertEqual(len(expectation), len(explanation))
@@ -497,17 +503,19 @@ class DaoTest(ForsetiTestCase):
                 ('user/u2', [u'a'], False, {u'r/res2'}),
                 ('user/g2g1u1', [u'a'], False, {u'r/res3'}),
                 ('user/g2u1', [u'a'], False, {u'r/res3'}),
-                ('user/u1', [u'a'], True, {u'r/res1',u'r/res2',u'r/res3'}),
+                ('user/u1', [u'a'], True, {u'r/res1', u'r/res2', u'r/res3'}),
                 ('user/u1', [u'b'], True, {u'r/res2', u'r/res3'}),
             ]
 
         for user, permissions, expansion, expected_result in checks:
-            res = data_access.query_access_by_member(
-                session, user, permissions, expansion)
+            result = data_access.query_access_by_member(session,
+                                                        user,
+                                                        permissions,
+                                                        expansion)
             mapping = defaultdict(set)
-            for role, resources in res:
+            for role, resources in result:
                 for resource in resources:
-                    mapping[role].add(full_to_type_name(resource))
+                    mapping[role].add(resource)
             self.assertEqual(expected_result, mapping[permissions[0]])
 
     def test_query_access_by_resource(self):
@@ -520,20 +528,23 @@ class DaoTest(ForsetiTestCase):
         checks = [
                 ('r/res1', ['a'], False, [u'group/g1',
                                           u'user/u1']),
-                ('r/res1/r/res2', ['a'], False, [u'group/g1',
-                                                 u'user/u1',
-                                                 u'user/u2']),
-                ('r/res1/r/res2/r/res3', ['a'], False, [u'group/g1',
-                                                        u'user/u1',
-                                                        u'user/u2',
-                                                        u'group/g2']),
-                ('r/res1/r/res2/r/res3', ['a'], True, [u'group/g1',
-                                                        u'user/u1',
-                                                        u'user/u2',
-                                                        u'group/g2',
-                                                        u'user/g2u1',
-                                                        u'group/g2g1',
-                                                        u'user/g2g1u1'])
+
+                ('r/res2', ['a'], False, [u'group/g1',
+                                          u'user/u1',
+                                          u'user/u2']),
+
+                ('r/res3', ['a'], False, [u'group/g1',
+                                          u'user/u1',
+                                          u'user/u2',
+                                          u'group/g2']),
+
+                ('r/res3', ['a'], True, [u'group/g1',
+                                         u'user/u1',
+                                         u'user/u2',
+                                         u'group/g2',
+                                         u'user/g2u1',
+                                         u'group/g2g1',
+                                         u'user/g2g1u1'])
             ]
 
         for resource, permissions, expansion, members in checks:
@@ -613,7 +624,7 @@ class DaoTest(ForsetiTestCase):
         self.assertEqual(set([u'user/u1',u'group/g2']),
                          set(policy['bindings']['viewer']))
 
-        resource = 'r/res1/r/res3/r/res4'
+        resource = 'r/res4'
         policy = get_policy(session, resource)
         self.assertEqual(set([u'group/g2']),
                          set(policy['bindings']['admin']))
@@ -636,14 +647,14 @@ class DaoTest(ForsetiTestCase):
                         u'viewer' : [u'group/g1'],
                         u'admin'  : [u'user/u1'],
                     }),
-                ('r/res1/r/res2', {
+                ('r/res2', {
                         u'viewer' : [u'group/g1'],
                     }),
-                ('r/res1/r/res3', {
+                ('r/res3', {
                         u'viewer' : [u'group/g1'],
                         u'writer' : [u'group/g3'],
                     }),
-                ('r/res1/r/res3/r/res4', {
+                ('r/res4', {
                         u'admin'  : [u'group/g2'],
                     })
             )
@@ -673,20 +684,20 @@ class DaoTest(ForsetiTestCase):
                 ('r/res1', 'write', 'user/u3', False),
                 ('r/res1', 'delete', 'user/u3', False),
 
-                ('r/res1/r/res3/r/res4', 'read', 'user/u3', True),
-                ('r/res1/r/res3/r/res4', 'list', 'user/u3', True),
-                ('r/res1/r/res3/r/res4', 'write', 'user/u3', True),
-                ('r/res1/r/res3/r/res4', 'delete', 'user/u3', True),
+                ('r/res4', 'read', 'user/u3', True),
+                ('r/res4', 'list', 'user/u3', True),
+                ('r/res4', 'write', 'user/u3', True),
+                ('r/res4', 'delete', 'user/u3', True),
 
-                ('r/res1/r/res3', 'read', 'user/u4', True),
-                ('r/res1/r/res3', 'list', 'user/u4', True),
-                ('r/res1/r/res3', 'write', 'user/u4', True),
-                ('r/res1/r/res3', 'delete', 'user/u4', False),
+                ('r/res3', 'read', 'user/u4', True),
+                ('r/res3', 'list', 'user/u4', True),
+                ('r/res3', 'write', 'user/u4', True),
+                ('r/res3', 'delete', 'user/u4', False),
 
-                ('r/res1/r/res2', 'read', 'user/u4', False),
-                ('r/res1/r/res2', 'list', 'user/u4', False),
-                ('r/res1/r/res2', 'write', 'user/u4', False),
-                ('r/res1/r/res2', 'delete', 'user/u4', False),
+                ('r/res2', 'read', 'user/u4', False),
+                ('r/res2', 'list', 'user/u4', False),
+                ('r/res2', 'write', 'user/u4', False),
+                ('r/res2', 'delete', 'user/u4', False),
             ]
 
         f = data_access.check_iam_policy
@@ -795,26 +806,38 @@ class DaoTest(ForsetiTestCase):
         self.assertTrue(0 == len(data_access.get_member(session, 'group/g5')))
         self.assertTrue(0 == len(data_access.get_member(session, 'user/u7')))
 
-    def test_resolve_resource_ancestors(self):
+    def test_resource_ancestors(self):
         session_maker, data_access = session_creator('test')
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
         _ = ModelCreator(RESOURCE_PATH_TESTING_1, client)
 
         tests = [
-                    [u'r/r1',u'r/r1r3',u'r/r1r3r1',u'r/r1r3r1r1'],
+                    [u'r/r1',
+                     u'r/r1r3',
+                     u'r/r1r3r1',
+                     u'r/r1r3r1r1'],
+
                     [u'r/r1'],
-                    [u'r/r1',u'r/r1r3',u'r/r1r3r1'],
-                    [u'r/r1', u'r/r1r5', u'r/r1r6r1', u'r/r1r6r1r1', u'r/r1r6r1r1r1'],
+
+                    [u'r/r1',
+                     u'r/r1r3',
+                     u'r/r1r3r1'],
+
+                    [u'r/r1',
+                     u'r/r1r5',
+                     u'r/r1r6r1',
+                     u'r/r1r6r1r1',
+                     u'r/r1r6r1r1r1'],
             ]
 
         # parent, set(child) relation
         test_resources = [chain[-1] for chain in tests]
-        graph = data_access.resource_ancestors_by_name(session, test_resources)
+        graph = data_access.resource_ancestors(session, test_resources)
         for chain in tests:
             for i in range(0, len(chain)-1):
-                parent = unicode('/'.join(chain[:i+1]))
-                child  = unicode('/'.join(chain[:i+2]))
+                parent = chain[i]
+                child = chain[i+1]
                 self.assertTrue(child in graph[parent])
 
     def test_find_resource_path(self):
@@ -836,7 +859,7 @@ class DaoTest(ForsetiTestCase):
             }
 
         for test_val, comparison in tests.iteritems():
-            result = ['/'.join([r.type, r.name]) for r in data_access.find_resource_path_by_name(session, test_val)]
+            result = [r.type_name for r in data_access.find_resource_path(session, test_val)]
             self.assertEqual(comparison, set(result))
 
     def test_get_member(self):
