@@ -22,7 +22,7 @@ an issue or contribute!
 | BigQuery                        | Done          | In Progress   | Open          |
 | Dasher Users                    | Open          | Open          | Open          |
 | GrantableRoles                  | In Progress   | Open          | Open          |
-| GAE                             | Done          | Open          | Open          |
+| GAE                             | In Progress   | Open          | Open          |
 | GCE Instances                   | Done          | In Progress   | Open          |
 | GCE Instance Groups             | Done          | In Progress   | Open          |
 | GCE Instance Group Managers     | Done          | In Progress   | Open          |
