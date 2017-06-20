@@ -1,3 +1,21 @@
+# Copyright 2017 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Dockerfile (experimental) for getting Forseti up and running.
+# You still need to do all the other prereq GCP setup (e.g.
+# setting up service accounts, GCP infrastructure).
+
 FROM ubuntu:16.04
 
 # Install Forseti dependencies
@@ -12,9 +30,16 @@ RUN apt-get update && apt-get install -qq -y \
   && rm -rf /var/lib/apt/lists/*
 
 RUN pip install -q --upgrade pip
-RUN pip install -q --upgrade coveralls codecov coverage pylint grpcio grpcio-tools protobuf mock google-apputils
+RUN pip install -q --upgrade \
+    coverage \
+    coveralls \
+    google-apputils \
+    grpcio \
+    grpcio-tools \
+    mock \
+    pylint
 
 ADD . /forseti-security/
 WORKDIR /forseti-security/
-RUN PYTHONPATH=. python setup.py install
-RUN yes | pip uninstall -q forseti-security
+RUN python setup.py install
+RUN yes | which forseti_inventory
