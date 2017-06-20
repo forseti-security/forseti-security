@@ -1,5 +1,6 @@
 ---
-category: Resource
-order: 1
+title: Overview
+order: 001
 ---
-# Resource Overview
+# Useful Resources
+  * [Resource Coverage]({% link _docs/resources/resource_coverage.md %})
