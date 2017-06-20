@@ -10,25 +10,29 @@
           <div class="col-md-4">
             <h2>Documentation</h2>
             <ul class="links">
-              <li><a href="#">Quick Starts</a></li>
-              <li><a href="#">Development</a></li>
-              <li><a href="#">How Tos</a></li>
+              {% for tab in site.data.doc_categories %}
+                <li><a href="{{ site.baseurl }}/{{ tab.href }}">{{ tab.title }}</a></li>
+              {% endfor %}
             </ul>
           </div>
           <div class="col-md-4">
             <h2>Resources</h2>
             <ul class="links">
-              <li><a href="#">About</a></li>
-              <li><a href="#">FAQ</a></li>
+              <li><a href="{% link about/index.md %}">About</a></li>
+              <li><a href="{% link faq/index.md %}">FAQ</a></li>
             </ul>
           </div>
           <div class="col-md-4">
             <h2>Community</h2>
             <ul class="links">
-              <li class="icon github"><a href="#">Github</a></li>
+              <li class="icon github"><a href="{{ site.github.url }}">Github</a></li>
+              <!--
+
               <li class="icon twitter"><a href="#">Twitter</a></li>
               <li class="icon stack-overflow"><a href="#">Stack Overflow</a></li>
               <li class="icon youtube"><a href="#">YouTube</a></li>
+
+              -->
             </ul>
           </div>
         </div>
