@@ -1,0 +1,18 @@
+<div class="row" style="margin-bottom: 20px;">
+  <div class="col-md-9">
+    <ul class="nav nav-tabs">
+      {% for tab in site.data.doc_categories %}
+        <li {% if page.category == tab.title %}class="active"{% endif %}>
+          <a href="{{ site.baseurl }}/{{ tab.href }}">
+            {{ tab.title }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="col-md-3 text-right edit-on-github">
+    <a class="icon github" href="#">
+      Edit <span class="file-name">docs.md</span>
+    </a>
+  </div>
+</div>

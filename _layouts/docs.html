@@ -1,0 +1,16 @@
+---
+layout: default
+---
+{% include docs_top_nav.html %}
+
+<div class="row">
+  <div class="col-md-3">
+    {% include docs_left_nav.html %}
+  </div>
+  <div id="documentation" class="col-md-7">
+    {{ content }}
+  </div>
+  <div id="toc" class="col-md-2 toc">
+    {% include docs_toc.html %}
+  </div>
+</div>

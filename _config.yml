@@ -5,5 +5,30 @@ description: "Tools to secure Google Cloud Platform"
 google_analytics: UA-98416450-1
 
 collections:
+  docs:
+    output: true
   faq:
     output: false
+
+defaults:
+  - scope:
+      path: _docs
+    values:
+      category: Overview
+      layout: docs
+  - scope:
+      path: _docs/development
+    values:
+      category: Development
+  - scope:
+      path: _docs/howto
+    values:
+      category: How To
+  - scope:
+      path: _docs/quickstart
+    values:
+      category: Quick Start
+  - scope:
+      path: _docs/resource
+    values:
+      category: Resource
