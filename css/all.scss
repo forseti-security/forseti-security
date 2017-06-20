@@ -3,27 +3,10 @@
 $baseurl: '{{ site.baseurl }}';
 
 @import "base/override";
+@import "base/icons";
 @import "components/toc";
-@import "components/docs_left_nav";
+@import "components/docs_category_nav";
 @import "components/navbar";
 @import "components/footer";
-
-.icon::before {
-  content: '';
-  display: inline-block;
-  height: 35px;
-  margin: -4px 0 0 0;
-  vertical-align: middle;
-  width: 35px;
-}
-
-.github::before {
-  background: url($baseurl + '/images/icon_github.svg') no-repeat center/cover;
-}
-
-.edit-on-github a {
-  color: #737373 !important;
-  .file-name {
-    font-weight: bold;
-  }
-}
+@import "layouts/homepage";
+@import "layouts/docs";

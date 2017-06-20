@@ -1,4 +1,4 @@
-<div style="background-color: #f8f8f8; padding: 10px 15px">
+<div class="left-sidebar">
   <h4>{{ page.category }}</h4>
 
   {% comment %}
@@ -21,7 +21,7 @@
  
   {% assign ordered_docs = category_docs | sort:"order" %}
 
-  <ul class="docs-left-nav">
+  <ul class="docs-category-nav">
     {% assign last_level = 3 %}
     {% for doc in ordered_docs %}
       {% assign path_parts = doc.path | split:"/" %}

@@ -1,4 +1,10 @@
 .navbar {
+  .navbar-brand img {
+    float: left;
+    height: 36px;
+    margin: -3px 12px 0 0;
+  }
+
   .icon-search {
     float: left;
     font-size: 20px;

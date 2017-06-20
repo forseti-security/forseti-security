@@ -1,0 +1,12 @@
+.icon::before {
+  content: '';
+  display: inline-block;
+  height: 35px;
+  margin: -4px 0 0 0;
+  vertical-align: middle;
+  width: 35px;
+}
+
+.github::before {
+  background: url($baseurl + '/images/icon_github.svg') no-repeat center/cover;
+}
