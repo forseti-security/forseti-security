@@ -21,7 +21,6 @@ python:
 
 env:
   # Needed for codecov being run inside the docker container.
-  - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
 
 services:
   - docker
@@ -29,6 +28,7 @@ services:
 before_install:
   # Build the Forseti image containing the dependencies and code.
   - docker build -t forseti/build .
+  - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
   # Start the container for testing and code verification.
   - docker run $CI_ENV -it -d --name build forseti/build /bin/bash
 
@@ -43,4 +43,3 @@ after_success:
   - docker exec -it build /bin/sh -c "TRAVIS=${TRAVIS} TRAVIS_JOB_ID=${TRAVIS_JOB_ID} coveralls"
   # Execute coveralls inside the docker container, need to export env for codecov.io upload.
   - docker exec -it build /bin/sh -c "codecov"
-
