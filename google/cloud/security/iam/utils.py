@@ -65,4 +65,4 @@ def full_to_type_name(full_resource_name):
 def resource_to_type_name(resource):
     """Creates a type/name format from a resource dbo."""
 
-    return '{}/{}'.format(resource.type, resource.name)
+    return resource.type_name
