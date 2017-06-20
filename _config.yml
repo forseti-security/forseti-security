@@ -3,6 +3,9 @@ exclude: [vendor, third_party/]
 title: "Forseti Security"
 description: "Tools to secure Google Cloud Platform"
 google_analytics: UA-98416450-1
+github:
+  url: https://github.com/GoogleCloudPlatform/forseti-security
+  branch: gh-pages
 
 collections:
   docs:
