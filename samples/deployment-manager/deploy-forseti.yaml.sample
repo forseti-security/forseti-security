@@ -48,7 +48,7 @@ resources:
     # GCE instance properties
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1604-lts
-    instance-type: n1-standard-1
+    instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
     service-account: GCP_SERVICE_ACCOUNT
