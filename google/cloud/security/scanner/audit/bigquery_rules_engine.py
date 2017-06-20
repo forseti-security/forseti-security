@@ -219,34 +219,29 @@ class Rule(object):
         Yields:
             namedtuple: Returns RuleViolation named tuple
         """
+        dataset_id_bool = True
+        special_group_bool = True
+        user_email_bool = True
+        domain_bool = True
+        group_email_bool = True
+        role_bool = True
+
         if self.rules.dataset_id != '^.+$':
             dataset_id_bool = re.match(self.rules.dataset_id,
                                        bigquery_acl.dataset_id)
-        else:
-            dataset_id_bool = True
         if self.rules.special_group != '^.+$':
             special_group_bool = re.match(self.rules.special_group,
                                           bigquery_acl.special_group)
-        else:
-            special_group_bool = True
         if self.rules.user_email != '^.+$':
             user_email_bool = re.match(self.rules.user_email,
                                        bigquery_acl.user_email)
-        else:
-            user_email_bool = True
         if self.rules.domain != '^.+$':
             domain_bool = re.match(self.rules.domain, bigquery_acl.domain)
-        else:
-            domain_bool = True
         if self.rules.group_email != '^.+$':
             group_email_bool = re.match(self.rules.group_email,
                                         bigquery_acl.group_email)
-        else:
-            group_email_bool = True
         if self.rules.role != '^.+$':
             role_bool = re.match(self.rules.role, bigquery_acl.role)
-        else:
-            role_bool = True
 
         should_raise_violation = (
             (dataset_id_bool is not None and dataset_id_bool) and
