@@ -13,5 +13,5 @@
 # limitations under the License.
 
 """
-This module contains classes that represent the gcloud/gsutil environment.
+This module contains a setup_forseti wizard for assistance in installation.
 """
