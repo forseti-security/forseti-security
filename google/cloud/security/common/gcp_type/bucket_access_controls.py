@@ -23,12 +23,12 @@ class BucketAccessControls(object):
         """Initialize
 
         Args:
-            bucket: GCS bucket
-            entity: GCS entity
-            email: email
-            domain: domain
-            role: GCS role
-            project_number: the project number
+            bucket (str): GCS bucket
+            entity (str): GCS entity
+            email (str): email
+            domain (str): domain
+            role (str): GCS role
+            project_number (int): the project number
         """
         self.bucket = bucket
         self.entity = entity
@@ -38,6 +38,10 @@ class BucketAccessControls(object):
         self.project_number = project_number
 
     def __hash__(self):
-        """Return hash of properties."""
+        """Return hash of properties.
+
+        Returns:
+            hash: returns the hash of the class properties.
+        """
         return hash((self.bucket, self.entity, self.email, self.domain,
                      self.role, self.project_number))

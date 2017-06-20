@@ -16,20 +16,19 @@
 
 # pylint: disable=too-few-public-methods
 class BigqueryAccessControls(object):
-    """BigQuery ACL Resource.
-    """
+    """BigQuery ACL Resource."""
     def __init__(self, dataset_id, special_group, user_email, domain,
                  group_email, role, project_id=None):
         """Initialize
 
         Args:
-            dataset_id: BigQuery dataset_id
-            special_group: BigQuery access_special_group
-            user_email: BigQuery access_by_user_email
-            domain: BigQuery access_domain
-            group_email: BigQuery access_group_by_email
-            role: GCP role
-            project_number: the project number
+            dataset_id (str): BigQuery dataset_id
+            special_group (str): BigQuery access_special_group
+            user_email (str): BigQuery access_by_user_email
+            domain (str): BigQuery access_domain
+            group_email (str): BigQuery access_group_by_email
+            role (str): GCP role
+            project_id (str): the project id
         """
         self.dataset_id = dataset_id
         self.special_group = special_group
@@ -40,7 +39,11 @@ class BigqueryAccessControls(object):
         self.project_id = project_id
 
     def __hash__(self):
-        """Return hash of properties."""
+        """Return hash of properties.
+
+        Returns:
+            hash: returns the hash of the class properties.
+        """
         return hash((self.dataset_id, self.special_group, self.user_email,
                      self.domain, self.group_email, self.role,
                      self.project_id))

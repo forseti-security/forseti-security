@@ -39,11 +39,12 @@ class CloudsqlDao(project_dao.ProjectDao):
         """Select the cloudsql acls for project from a snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
 
         Returns:
-            List of cloudsql acls.
+            list: List of cloudsql acls.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
@@ -84,11 +85,12 @@ class CloudsqlDao(project_dao.ProjectDao):
         """Create CloudSQL instance acl map.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
 
         Returns:
-            Map of instance acls.
+            dict: Map of instance acls.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
@@ -123,12 +125,12 @@ class CloudsqlDao(project_dao.ProjectDao):
         """Create a list of authorized networks for instance
 
         Args:
-            acl_map: acl map
-            project_number: project number
-            instance_name: name of the instance
+            acl_map (dict): acl map
+            project_number (int): project number
+            instance_name (str): name of the instance
 
         Returns:
-            List of authorizes networks
+            list: List of authorizes networks
         """
         authorized_networks = []
         hash_key = hash(str(project_number) + ',' + instance_name)

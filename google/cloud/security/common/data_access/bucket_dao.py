@@ -40,12 +40,13 @@ class BucketDao(project_dao.ProjectDao):
         """Select the buckets for project from a buckets snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            project_number: Project number
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+            project_number (int): Project number
 
         Returns:
-            List of project buckets.
+            list: List of project buckets.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
@@ -61,11 +62,12 @@ class BucketDao(project_dao.ProjectDao):
         """Select the bucket acls from a bucket acls snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
 
         Returns:
-            List of bucket acls.
+            list: List of bucket acls.
 
         Raises:
             MySQLError: An error with MySQL has occurred.

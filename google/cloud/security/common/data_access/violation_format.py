@@ -26,10 +26,12 @@ def format_violation(violation):
     declared column length, so truncate as necessary to prevent MySQL errors.
 
     Args:
-        violation: The Policy RuleViolation.
+        violation (namedtuple): The Policy RuleViolation. This is a named
+            tumple with the following attributes 'resource_type','resource_id',
+            'rule_name', 'violation_type' and 'violation_data'
 
     Yields:
-        A tuple of the rule violation properties.
+        tuple: A tuple of the rule violation properties.
     """
     resource_type = violation.resource_type
     if resource_type:
@@ -53,10 +55,12 @@ def format_groups_violation(violation):
     """Format the groups violation data into a tuple.
 
     Args:
-        violation: The groups violation.
+        violation (namedtuple): The groups violation. This is a named tuple
+            with the following attributes 'member_email','parent.member_email',
+            'violated_rule_names'
 
     Yields:
-        A tuple of the violation properties.
+        tuple: A tuple of the violation properties.
     """
 
     member_email = violation.member_email

@@ -39,11 +39,12 @@ class BigqueryDao(project_dao.ProjectDao):
         """Select the Big Query acls from a Big Query acls snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+            YYYYMMDDTHHMMSSZ.
 
         Returns:
-            List of Big Query acls.
+            list: List of Big Query acls.
 
         Raises:
             MySQLError: An error with MySQL has occurred.

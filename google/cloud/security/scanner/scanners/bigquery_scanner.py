@@ -28,24 +28,17 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Initialization.
 
         Args:
-            snapshot_timestamp: The snapshot timestamp
+            snapshot_timestamp (str): The snapshot timestamp
         """
         super(BigqueryScanner, self).__init__(
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 
-    def _get_project_policies(self):
-        """Get projects from data source.
-        """
-        project_policies = {}
-        project_policies = (
-            project_dao.ProjectDao().get_project_policies('projects',
-                                                          self.\
-                                                          snapshot_timestamp))
-        return project_policies
-
     def _get_bigquery_acls(self):
         """Get Big Query acls from data source.
+
+        Returns:
+            list: List of Big Query acls.
         """
         bq_acls = {}
         bq_acls = bigquery_dao.BigqueryDao().\
@@ -58,10 +51,10 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies: organization policies from inventory.
-            project_policies: project policies from inventory.
+            org_policies (list): organization policies from inventory.
+            project_policies (list): project policies from inventory.
         Returns:
-            Resource count map
+            dict: Resource count map
         """
         resource_counts = {
             ResourceType.PROJECT: len(project_policies),
@@ -71,7 +64,13 @@ class BigqueryScanner(base_scanner.BaseScanner):
         return resource_counts
 
     def run(self):
-        """Runs the data collection."""
+        """Runs the data collection.
+
+        Returns:
+            tuple: Returns a tuple of lists. The first one is a list of
+                BigQuery ACL data. The second one is a dictionary of resource
+                counts
+        """
         bigquery_acls_data = []
         project_policies = {}
         bigquery_acls = self._get_bigquery_acls()
@@ -88,11 +87,11 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            bigquery_data: Big Query data to find violations in
-            rules_engine: The rules engine to run.
+            bigquery_data (list): Big Query data to find violations in
+            rules_engine (:obj:`BigqueryRulesEngine`): The rules engine to run.
 
         Returns:
-            A list of violations
+            list: A list of BigQuery violations
         """
 
         all_violations = []

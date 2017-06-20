@@ -31,10 +31,10 @@ def get_bucket_and_path_from(full_path):
     """Get the bucket and object path.
 
     Args:
-        full_path: The full GCS path.
+        full_path (str): The full GCS path.
 
     Return:
-        The bucket name and object path.
+        tuple: The bucket name and object path.
     """
     if not full_path or not full_path.startswith('gs://'):
         raise api_errors.InvalidBucketPathError(
@@ -51,6 +51,12 @@ class StorageClient(_base_client.BaseClient):
     API_NAME = 'storage'
 
     def __init__(self, credentials=None):
+        """Initialize.
+
+        Args:
+            credentials (GoogleCredentials): Google credentials for auth-ing
+                to the API.
+        """
         super(StorageClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
         # Storage API has unlimited rate.
@@ -59,8 +65,8 @@ class StorageClient(_base_client.BaseClient):
         """Put a text object into a bucket.
 
         Args:
-            local_file_path: The local path of the file to upload.
-            full_bucket_path: The full GCS path for the output.
+            local_file_path (str): The local path of the file to upload.
+            full_bucket_path (str): The full GCS path for the output.
         """
         storage_service = self.service
         bucket, object_path = get_bucket_and_path_from(
@@ -81,10 +87,10 @@ class StorageClient(_base_client.BaseClient):
         """Gets a text file object as a string.
 
         Args:
-            full_bucket_path: The full path of the bucket object.
+            full_bucket_path (str): The full path of the bucket object.
 
         Returns:
-            The object's content as a string.
+            str: The object's content as a string.
         """
         file_content = ''
         storage_service = self.service
@@ -110,9 +116,12 @@ class StorageClient(_base_client.BaseClient):
         """Gets all GCS buckets for a project.
 
         Args:
-            project_id: The project id for a GCP project.
+            project_id (int): The project id for a GCP project.
 
         Returns:
+            dict: If successful, this function returns a dictionary for the
+                instances in the project. 
+
             {
               "kind": "storage#buckets",
               "nextPageToken": string,
@@ -120,6 +129,10 @@ class StorageClient(_base_client.BaseClient):
                 buckets Resource
               ]
             }
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP ClodSQL API fails
         """
         buckets_api = self.service.buckets()
         try:
@@ -135,9 +148,14 @@ class StorageClient(_base_client.BaseClient):
         """Gets acls for GCS bucket.
 
         Args:
-            bucket_name: The name of the bucket.
+            bucket_name (str): The name of the bucket.
 
-        Returns: ACL json for bucket
+        Returns: 
+            dict: ACL json for bucket
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP ClodSQL API fails
         """
         bucket_access_controls_api = self.service.bucketAccessControls()
         bucket_acl_request = bucket_access_controls_api.list(bucket=bucket_name)

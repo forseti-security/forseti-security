@@ -37,11 +37,11 @@ def escape_and_globify(pattern_string):
     usernames before the "@".)
 
     Args:
-        pattern_string: The pattern string of which to make a regex.
+        pattern_string (str): The pattern string of which to make a regex.
 
     Returns:
-    The pattern string, escaped except for the "*", which is
-    transformed into ".+" (match on one or more characters).
+        str: The pattern string, escaped except for the "*", which is
+        transformed into ".+" (match on one or more characters).
     """
 
     return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
@@ -54,7 +54,10 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         """Initialize.
 
         Args:
-            rules_file_path: file location of rules
+            rules_file_path (str): file location of rules
+            snapshot (:obj:`str`, optional): snapshot timestamp.
+                Defaults to None. If set, this will be the snapshot timestamp
+                used in the engine.
         """
         super(BigqueryRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
@@ -67,7 +70,17 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
     # pylint: disable=arguments-differ
     def find_policy_violations(self, bq_datasets,
                                force_rebuild=False):
-        """Determine whether Big Query datasets violate rules."""
+        """Determine whether Big Query datasets violate rules.
+
+        Args:
+            bq_datasets (:obj:`BigqueryAccessControls`): Object containing ACL
+                data
+            force_rebuild (bool): If True, rebuilds the rule book. This will
+                reload the rules definition file and add the rules to the book.
+
+        Returns:
+             generator: A generator of rule violations.
+        """
         violations = itertools.chain()
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
@@ -80,7 +93,11 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         return violations
 
     def add_rules(self, rules):
-        """Add rules to the rule book."""
+        """Add rules to the rule book.
+
+        Args:
+            rules (dict): rule definitions dictionary
+        """
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
@@ -92,7 +109,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         """Initialization.
 
         Args:
-            rule_defs: rule definitons
+            rule_defs (dict): rule definitons dictionary
         """
         super(BigqueryRuleBook, self).__init__()
         self.resource_rules_map = {}
@@ -103,7 +120,11 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
 
     def add_rules(self, rule_defs):
-        """Add rules to the rule book"""
+        """Add rules to the rule book.
+        
+        Args:
+            rule_defs (dict): rule definitions dictionary
+        """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
@@ -111,12 +132,10 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         """Add a rule to the rule book.
 
         Args:
-            rule_def: A dictionary containing rule definition properties.
-            rule_index: The index of the rule from the rule definitions.
-            Assigned automatically when the rule book is built.
-
-        Raises:
-
+            rule_def (dict): A dictionary containing rule definition
+                properties.
+            rule_index (int): The index of the rule from the rule definitions.
+                Assigned automatically when the rule book is built.
         """
 
         resources = rule_def.get('resource')
@@ -161,11 +180,8 @@ class BigqueryRuleBook(bre.BaseRuleBook):
     def get_resource_rules(self):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
 
-        Args:
-            resource: The resource to find in the ResourceRules map.
-
         Returns:
-            A list of ResourceRules.
+            list: A list of ResourceRules.
         """
         resource_rules = []
 
@@ -177,16 +193,16 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
 class Rule(object):
     """Rule properties from the rule definition file.
-    Also finds violations.
+       Also finds violations.
     """
 
     def __init__(self, rule_name, rule_index, rules):
         """Initialize.
 
         Args:
-            rule_name: Name of the loaded rule
-            rule_index: The index of the rule from the rule definitions
-            rules: The rules from the file
+            rule_name (str): Name of the loaded rule
+            rule_index (int): The index of the rule from the rule definitions
+            rules (dict): The rules from the file
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
@@ -196,10 +212,10 @@ class Rule(object):
         """Find BigQuery acl violations in the rule book.
 
         Args:
-            bigquery_acl: BigQuery ACL resource
+            bigquery_acl (:obj:`BigqueryAccessControls`): BigQuery ACL resource
 
         Returns:
-            Returns RuleViolation named tuple
+            namedtuple: Returns RuleViolation named tuple
         """
         if self.rules.dataset_id != '^.+$':
             dataset_id_bool = re.match(self.rules.dataset_id,
