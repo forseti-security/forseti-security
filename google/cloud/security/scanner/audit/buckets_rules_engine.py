@@ -24,6 +24,13 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-yield-doc,differing-param-doc
+# pylint: disable=missing-yield-type-doc,redundant-returns-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 

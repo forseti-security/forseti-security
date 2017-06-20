@@ -24,6 +24,12 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-yield-type-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -62,7 +68,9 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
                        'target_pools': parser.json_stringify(
                            igm.get('targetPools', [])),
                        'target_size': igm.get('targetSize'),
-                       'zone': igm.get('zone')}
+                       'zone': igm.get('zone'),
+                       'raw_instance_group_manager':
+                           parser.json_stringify(igm)}
 
     def _retrieve(self):
         """Retrieve instance group managers from GCP.

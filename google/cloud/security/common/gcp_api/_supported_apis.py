@@ -19,6 +19,9 @@ discovery.get()).
 """
 
 SUPPORTED_APIS = {
+    'appengine': {
+        'version': 'v1'
+    },
     'bigquery': {
         'version': 'v2'
     },

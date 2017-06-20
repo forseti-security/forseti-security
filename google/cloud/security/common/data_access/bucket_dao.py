@@ -29,6 +29,11 @@ from google.cloud.security.common.gcp_type import bucket_access_controls as bkt_
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 

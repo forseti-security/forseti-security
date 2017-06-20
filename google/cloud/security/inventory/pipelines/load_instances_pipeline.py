@@ -24,6 +24,12 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-yield-type-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -68,7 +74,8 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
                        'status': instance.get('status'),
                        'status_message': instance.get('statusMessage'),
                        'tags': parser.json_stringify(instance.get('tags')),
-                       'zone': instance.get('zone')}
+                       'zone': instance.get('zone'),
+                       'raw_instance': parser.json_stringify(instance)}
 
     def _retrieve(self):
         """Retrieve instances from GCP.

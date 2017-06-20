@@ -22,9 +22,16 @@ from dateutil import parser as dateutil_parser
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
+
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-param-doc,differing-param-doc
+# pylint: disable=missing-yield-type-doc
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -159,6 +166,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
                     'state': item.get('state'),
                     'suspension_reason': \
                         json.dumps(item.get('suspensionReason')),
+                    'raw_cloudsql_instance': parser.json_stringify(item)
                 }
 
     def _transform_authorizednetworks(self, cloudsql_instances_map):

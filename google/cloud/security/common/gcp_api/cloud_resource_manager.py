@@ -23,6 +23,12 @@ from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,redundant-returns-doc
+# pylint: disable=missing-param-doc,missing-yield-doc,missing-yield-type-doc
+
+
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,

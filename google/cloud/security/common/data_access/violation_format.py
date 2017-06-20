@@ -16,7 +16,13 @@
 
 import json
 
-def format_violation(violation):
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-yield-type-doc
+
+
+def format_policy_violation(violation):
+
     """Format the policy violation data into a tuple.
 
     Also flattens the RuleViolation, since it consists of the resource,
