@@ -21,8 +21,7 @@ an issue or contribute!
 | Cloud SQL Inventory             | Done          | Done          | Open          |
 | BigQuery                        | Done          | In Progress   | Open          |
 | Dasher Users                    | Open          | Open          | Open          |
-| GrantableRoles                  | In Progress   | Open          | Open          |
-| GAE                             | In Progress   | Open          | Open          |
+| GAE                             | Done          | Open          | Open          |
 | GCE Instances                   | Done          | In Progress   | Open          |
 | GCE Instance Groups             | Done          | In Progress   | Open          |
 | GCE Instance Group Managers     | Done          | In Progress   | Open          |
