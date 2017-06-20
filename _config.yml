@@ -10,6 +10,7 @@ collections:
   faq:
     output: false
 
+# The order of document categories is defined in _data/doc_categories.yml
 defaults:
   - scope:
       path: _docs
