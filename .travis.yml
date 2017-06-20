@@ -15,8 +15,13 @@
 sudo: required
 
 language: python
+
 python:
   - "2.7"
+
+env:
+  # Needed for codecov being run inside the docker container.
+  - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
 
 services:
   - docker
@@ -25,8 +30,7 @@ before_install:
   # Build the Forseti image containing the dependencies and code.
   - docker build -t forseti/build .
   # Start the container for testing and code verification.
-  ci_env=`bash <(curl -s https://codecov.io/env)`
-  - docker run $ci_env -it -d --name build forseti/build /bin/bash
+  - docker run $CI_ENV -it -d --name build forseti/build /bin/bash
 
 script:
   # Run code coverage.
