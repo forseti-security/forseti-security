@@ -18,18 +18,16 @@ env:
 
 jobs:
   include:
-    - stage:
-        - pylint
-      sudo:
-        - false
+    - stage: pylint
+      sudo: false
       python:
         - "2.7"
       script:
         - "pylint --rcfile=pylintrc google/ setup/"
-    - stage:
-        - unittests
-      sudo:
-        - false
+jobs:
+  include:
+    - stage: unittests
+      sudo: false
       python:
         - "2.7"
       script:
@@ -37,12 +35,11 @@ jobs:
       after_success:
         - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
         - "codecov"
-    - stage:
-        - build
-      sudo:
-        - required
-      services:
-        - docker
+jobs:
+  include:
+    - stage: build
+      sudo: required
+      services: docker
       script:
         - "docker build -t forseti/build -f docker-files/Dockerfile ."
         - "docker run virtaulenv forseti-security"
