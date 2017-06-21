@@ -31,11 +31,15 @@ jobs:
     - stage: pylint
       script:
         - "pylint --rcfile=pylintrc google/ setup/"
+jobs:
+  include:
     - stage: unittests
       script:
         - "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
       after_success:
         - "codecov"
+jobs:
+  include:
     - stage: build
       script:
         - "docker build -t forseti/build -f docker-files/Dockerfile ."
