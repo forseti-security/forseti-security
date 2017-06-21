@@ -25,11 +25,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -42,11 +37,11 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         """Create an iterator of instances to load into database.
 
         Args:
-            resource_from_api: A dict of instances, keyed by
+            resource_from_api (dict): A dict of instances, keyed by
                 project id, from GCP API.
 
         Yields:
-            Iterator of instance properties in a dict.
+            iterator (dict): Instance properties.
         """
         for (project_id, instances) in resource_from_api.iteritems():
             for instance in instances:
@@ -84,7 +79,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         compute instances for each.
 
         Returns:
-            A dict mapping projects with their instances (list):
+            dict: A map of projects with their instances (list):
             {project_id: [instances]}
         """
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
