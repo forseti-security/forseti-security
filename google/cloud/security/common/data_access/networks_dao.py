@@ -16,7 +16,7 @@
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import instance
+from google.cloud.security.common.gcp_type import gce_network
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 import json
@@ -41,13 +41,10 @@ class NetworksDao(dao.Dao):
             MySQLError if a MySQL error occurs.
         """
         idao = instance_dao.InstanceDao()
-        network_project_names = set([self.parse_network_instance(instance) for instance in idao.get_instances(timestamp)])
-        split_into_str = [network_and_project.split(",") for network_and_project in network_project_names]
-        return [[network_instance[0], network_instance[1], network_instance[2] == 'True'] for network_instance in split_into_str]
+        return list(set([self.parse_network_instance(instance) for instance in idao.get_instances(timestamp)]))
 
     # This is to parse the network info we have 
     def parse_network_instance(self, instance_object):
-        # 
         network_dictionary = json.loads(instance_object.network_interfaces)
         if len(network_dictionary) > 1:
             LOGGER.error('Should only be one interface ties to an virtual instance.')
@@ -57,7 +54,7 @@ class NetworksDao(dao.Dao):
         project = network_and_project.group(1)
         network = network_and_project.group(2)
         is_external_network = "accessConfigs" in network_dictionary[0]
-        return ','.join([project, network, str(is_external_network)])
+        return gce_network.GceNetwork(project, network, is_external_network)
 
 
 def main():
