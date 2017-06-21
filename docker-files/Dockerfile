@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -qq -y \
     python-pip \
     unzip \
     wget
-    && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/*
 
 ADD . /forseti-security/
 WORKDIR /forseti-security/
