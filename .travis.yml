@@ -22,20 +22,22 @@ python:
 services:
   - docker
 
-before_install:
-  # Build the Forseti image containing the dependencies and code.
-  - docker build -t forseti/build -f docker-files/Dockerfile .
-  # Required for codecov.io to export coverage within a Docker container.
-  - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
-  # Start the container for testing and code verification.
-  - docker run $CI_ENV -it -d forseti/build /bin/bash
-
-script:
-  # Run code coverage.
-  - docker exec -it build /bin/bash -c "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
-  # Check code compliance.
-  - docker exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ setup/"
-
-after_success:
-  # Execute coveralls inside the docker container, need to export env for codecov.io upload.
-  - docker exec -it build /bin/bash -c "codecov"
+jobs:
+  include:
+    - stage: pylint
+      - script:
+        - "pylint --rcfile=pylintrc google/ setup/"
+    - stage: unittests
+      - script:
+        - "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
+      - after_success:
+        - "codecov"
+    - stage: build
+      - script:
+        - "docker build -t forseti/build -f docker-files/Dockerfile ."
+        - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
+        - "docker run $CI_ENV -it -d forseti/build /bin/bash"
+        - "docker run virtaulenv forseti-security"
+        - "docker run /bin/bash -c 'source forseti-security/bin/activate;pip install --upgrade -r requirements.txt'"
+        - "docker run python setup.py install"
+        - "docker run yes | which forseti_inventory"
