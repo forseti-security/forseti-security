@@ -1,0 +1,6 @@
+{% assign docs_by_category = site.docs | group_by:"category" %}
+{% for category in docs_by_category %}
+  {% if category.name == include.category %}
+    {% assign category_docs = category.items %}
+  {% endif %}
+{% endfor %}

@@ -1,0 +1,27 @@
+.left-sidebar {
+  background-color: #f8f8f8;
+  padding: 10px 15px;
+}
+
+.docs-category-nav {
+  list-style-type: none;
+  padding: 0;
+
+  li {
+    & > a {
+      color: #404040;
+      font-size: 14px;
+      line-height: 24px;
+    }
+
+    &.active > a {
+      color: #1976d2;
+      text-decoration: underline;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 20px;
+    }
+  }
+}

@@ -1,0 +1,19 @@
+<div class="row docs-nav">
+  <div class="col-md-9">
+    <ul class="nav nav-tabs">
+      {% for tab in site.data.doc_categories %}
+        <li {% if page.category == tab.title %}class="active"{% endif %}>
+          <a href="{{ site.baseurl }}/{{ tab.href }}">
+            {{ tab.title }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="col-md-3 text-right edit-on-github">
+    {% assign filename = page.path | split:"/" | last | downcase %}
+    <a class="icon github" href="{{ site.github.url }}/edit/{{ site.github.branch }}/{{ page.path }}">
+      Edit <span class="file-name">{{ filename }}</span>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,53 @@
+<div class="left-sidebar">
+  <h4>{{ page.category }}</h4>
+
+  {% comment %}
+    Assume that nested subcategories are ordered continguously. with index files
+    sorted first.
+
+    When go down deeper into the category tree, say from 3 levels to 4, we know
+    that we are in a subcategory.
+
+    Two criteria must be met to open a nested navigation list:
+      (1) we must have gone deeper into the category tree
+      (2) the current file must not be an 'index' file
+
+    This allows the 'index' file to sit in the first level of navigation and its
+    children in the second level... even though that's not how the files exist
+    on disk.
+  {% endcomment %}
+
+  {% include get_docs_for_category.liquid category=page.category %}
+ 
+  {% assign ordered_docs = category_docs | sort:"order" %}
+
+  <ul class="docs-category-nav">
+    {% assign last_level = 3 %}
+    {% for doc in ordered_docs %}
+      {% assign path_parts = doc.path | split:"/" %}
+      {% assign current_level = path_parts | size %}
+      {% assign filename = path_parts | last | split:"." | first %}
+
+      {% if filename == "index" %}
+        {% assign current_level = current_level | minus:1 %}
+        {% if current_level < 3 %}
+          {% assign current_level = 3 %}
+        {% endif %}
+      {% endif %}
+
+      {% if current_level > last_level %}
+        {% assign last_level = current_level %}
+        <li>
+          <ul>
+      {% elsif current_level < last_level %}
+        {% assign last_level = current_level %}
+          </ul>
+        </li>
+      {% endif %}
+
+      <li {% if page.url == doc.url %}class="active"{% endif %}>
+        <a href="{{ doc.url | remove:"index.html" | remove:".html" }}">{{ doc.title }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

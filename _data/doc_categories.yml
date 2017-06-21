@@ -1,0 +1,12 @@
+# The order of the categories in this file (first-to-last) determines their
+# order in the UI (left-to-right)
+- title: Overview
+  href: docs
+- title: Quick Starts
+  href: docs/quickstarts
+- title: Development
+  href: docs/development
+- title: How To
+  href: docs/howto
+- title: Resources
+  href: docs/resources

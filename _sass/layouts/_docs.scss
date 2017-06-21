@@ -1,0 +1,11 @@
+.docs-nav {
+  /* Specify only margin-bottom to prevent overriding Bootstrap row margins */
+  margin-bottom: 20px;
+}
+
+.edit-on-github a {
+  color: #737373 !important;
+  .file-name {
+    font-weight: bold;
+  }
+}

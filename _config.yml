@@ -1,5 +1,38 @@
 markdown: kramdown
-exclude: [vendor, third_party/]
+exclude: [vendor]
 title: "Forseti Security"
 description: "Tools to secure Google Cloud Platform"
 google_analytics: UA-98416450-1
+github:
+  url: https://github.com/GoogleCloudPlatform/forseti-security
+  branch: gh-pages
+
+collections:
+  docs:
+    output: true
+  faq:
+    output: false
+
+# The order of document categories is defined in _data/doc_categories.yml
+defaults:
+  - scope:
+      path: _docs
+    values:
+      category: Overview
+      layout: docs
+  - scope:
+      path: _docs/development
+    values:
+      category: Development
+  - scope:
+      path: _docs/howto
+    values:
+      category: How To
+  - scope:
+      path: _docs/quickstarts
+    values:
+      category: Quick Starts
+  - scope:
+      path: _docs/resources
+    values:
+      category: Resources
