@@ -25,7 +25,7 @@ import re
 LOGGER = log_util.get_logger(__name__)
 
 
-class NetworksDao(dao.Dao):
+class GceNetworksDao(dao.Dao):
     """Instance DAO."""
 
     def get_networks(self, timestamp):
@@ -55,11 +55,3 @@ class NetworksDao(dao.Dao):
         network = network_and_project.group(2)
         is_external_network = "accessConfigs" in network_dictionary[0]
         return gce_network.GceNetwork(project, network, is_external_network)
-
-
-def main():
-    dn = NetworksDao()
-    print(dn.get_networks('20170615T173104Z'))
-
-if __name__ == '__main__':
-    main()

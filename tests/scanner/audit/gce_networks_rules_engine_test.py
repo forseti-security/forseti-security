@@ -23,29 +23,26 @@ from google.apputils import basetest
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import base_rules_engine as bre
-from google.cloud.security.scanner.audit import enforced_networks_rules_engine as enre
+from google.cloud.security.scanner.audit import gce_networks_rules_engine as gnre
 from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 
 
 # TODO: Define more tests
-class EnforcedNetworkRulesEngineTest(basetest.TestCase):
-    """Tests for the EnforcedNetworksRulesEngine."""
+class GceNetworkRulesEngineTest(basetest.TestCase):
+    """Tests for the GceNetworksRulesEngine."""
 
     def setUp(self):
         """Set up."""
         self.rule_index = 0
-        self.enre = enre
-        self.enre.LOGGER = mock.MagicMock()
+        self.gnre = gnre
+        self.gnre.LOGGER = mock.MagicMock()
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__,
-        	'enforced_networks_test_rules_1.yaml')
-        rules_engine = enre.EnforcedNetworksRulesEngine(rules_file_path=rules_local_path)
-        print(type(rules_engine))
-        print(rules_engine.rule_defs)
-        print("hi carly!")
+        	'gce_networks_test_rules_1.yaml')
+        rules_engine = gnre.GceNetworksRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
@@ -62,13 +59,13 @@ class EnforcedNetworkRulesEngineTest(basetest.TestCase):
             There are 4 resources that have rules, in the rule book.
         
         bucket_name = 'bucket-name'
-        rules_path = 'input/enforced_networks_test_rules_1.yaml'
+        rules_path = 'input/gce_networks_test_rules_1.yaml'
         full_rules_path = 'gs://{}/{}'.format(bucket_name, rules_path)
-        rules_engine = enre.EnforcedNetworksRulesEngine(rules_file_path=full_rules_path)
+        rules_engine = gnre.GceNetworksRulesEngine(rules_file_path=full_rules_path)
 
         # Read in the rules file
         file_content = None
-        with open(get_datafile_path(__file__, 'enforced_networks_test_rules_1.yaml'),
+        with open(get_datafile_path(__file__, 'gce_networks_test_rules_1.yaml'),
                   'r') as rules_local_file:
             try:
                 file_content = yaml.safe_load(rules_local_file)

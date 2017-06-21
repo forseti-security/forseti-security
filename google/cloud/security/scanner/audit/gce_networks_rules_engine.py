@@ -118,9 +118,7 @@ class EnforcedNetworksRuleBook(bre.BaseRuleBook):
             rule_index: The index of the rule from the rule definitions.
             Assigned automatically when the rule book is built.
         """
-        print(rule_def)
-        print(type(rule_def))
-        print("the rules_def")
+
         project = rule_def.get('project')
         network = rule_def.get('network')
         is_external_network = rules_def.get('is_external_network')
@@ -197,18 +195,18 @@ class Rule(object):
                                           network_interface.is_external_network)
       
         if len(self.rules.list) > 0:
-            list_bool = ':'.join(network_interface.project, network_interface.network)  in self.rules.list
+            list_bool = ':'.join(network_interface.project, network_interface.network) in self.rules.list
         
         should_raise_violation = project_name_bool and network_name_bool and is_external_network_bool and list_bool
 
         if should_raise_violation:
                 yield self.RuleViolation(
-                    rule_name=self.rule_name,
-                    rule_index=self.rule_index,
-                    violation_type='UNENFORCED_NETWORK_VIOLATION',
-                    project=enforced_networks_rules.project,
-                    network=enforced_networks_rules.network,
-                    enforced_networks=enforced_networks_rules.enforced_networks)
+                    rule_name = self.rule_name,
+                    rule_index = self.rule_index,
+                    violation_type = 'UNENFORCED_NETWORK_VIOLATION',
+                    project = enforced_networks_rules.project,
+                    network = enforced_networks_rules.network,
+                    enforced_networks = enforced_networks_rules.enforced_networks)
 
     # Rule violation.
     # rule_name: string

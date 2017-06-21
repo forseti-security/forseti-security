@@ -14,7 +14,7 @@
 
 """Scanner for the Networks Enforcer acls rules engine."""
 from google.cloud.security.common.util import log_util
-from google.cloud.security.common.data_access import networks_dao
+from google.cloud.security.common.data_access import gce_networks_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.audit import gce_networking_rules_engine
@@ -49,7 +49,7 @@ class GceFirewallNetworksScanner(base_scanner.BaseScanner):
         """Get GCE networks from data source.
         """
         gce_networks = {}
-        gce_networks = networks_dao.NetworksDao().\
+        gce_networks = gce_networks_dao.GceNetworksDao().\
                         get_networks(self.snapshot_timestamp)
 
         return gce_networks
@@ -107,15 +107,3 @@ class GceFirewallNetworksScanner(base_scanner.BaseScanner):
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
-
-def main():
-    print("hi")
-    g = GceFirewallNetworksScanner('20170615T173104Z')
-    enforced_networks_data, resource_counts = g.run()
-    rules_engine = gce_networking_rules_engine.GceNetworksRulesEngine('/Users/carly/Documents/forseti-security/temp.rules')
-    violations = g.find_violations(enforced_networks_data, rules_engine)
-    print(violations)
-
-
-
-main()
