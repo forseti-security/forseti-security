@@ -24,8 +24,6 @@ jobs:
         - "2.7"
       script:
         - "pylint --rcfile=pylintrc google/ setup/"
-jobs:
-  include:
     - stage: unittests
       sudo: false
       python:
@@ -35,8 +33,6 @@ jobs:
       after_success:
         - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
         - "codecov"
-jobs:
-  include:
     - stage: build
       sudo: required
       services: docker
