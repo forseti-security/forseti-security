@@ -38,3 +38,4 @@ resources:
     # branch-name: ""
     release-version: "1.0.2"
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
+    instance-type: n1-standard-2
