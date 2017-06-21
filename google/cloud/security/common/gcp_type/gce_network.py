@@ -15,11 +15,10 @@
 
 
 # pylint: disable=too-few-public-methods
-class gce_network(object):
+class GceNetwork(object):
     """Enfoced Networks Resource."""
 
-    def __init__(self, project, network, is_external_network,
-                 project_number=None):
+    def __init__(self, project, network, is_external_network):
         """Initialize
 
         Args:
@@ -30,6 +29,19 @@ class gce_network(object):
         self.network = network
         self.is_external_network = is_external_network
 
+    def __repr__(self):
+        return 'Project: %s Network: %s is_external: %s' % (self.project, self.network, self.is_external_network)
+
     def __hash__(self):
-        """Return hash of properties."""
-        return hash(self.project, self.network, is_external_network)
+        return hash(self.__repr__())
+
+    def __ne__(self, other):
+        return (not self.__eq__(other))
+
+    def __eq__(self, other):
+        if isinstance(self, GceNetwork):
+            return ((self.project == other.project) and 
+                    (self.network == other.network) and 
+                    (self.is_external_network == other.is_external_network))
+        else:
+            return False
