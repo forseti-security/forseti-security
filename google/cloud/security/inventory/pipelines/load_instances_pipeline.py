@@ -104,8 +104,8 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         Sometimes, can_forward_ip will be a None value, instead of strictly
         boolean.  This will cause MySQL to display the warning message:
         "Incorrect integer value: '' for column 'can_ip_forward at row N"
-        This can be safely ignored as the row will still be loaded
-        with the can_ip_forward as 0 value.
+        on loading the data.  This can be safely ignored as the row will
+        still be loaded with the can_ip_forward as 0 value.
 
         There is a fix for this here:
         https://stackoverflow.com/a/5968530/2830207
