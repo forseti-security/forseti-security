@@ -112,7 +112,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         But it will be hacky to implement, essentially a customized SQL
         statement and condition checking.  So, leaving the warning as is.
         
-        Alternatively, can change this column type to varchar, and cast it
+        Alternatively, can change this column type to varchar.  Then, cast it
         to boolean when retrieved on the forseti application side.
         """
         instances = self._retrieve()
