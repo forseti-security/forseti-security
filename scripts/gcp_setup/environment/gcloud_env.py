@@ -29,6 +29,8 @@ import time
 
 from distutils import spawn
 
+# pylint: disable=no-self-use
+
 
 def org_id_from_org_name(org_name):
     """Extract the organization id (number) from the organization name.
@@ -75,7 +77,7 @@ class ForsetiGcpSetup(object):
     BUCKET_REGIONS = [
         {'desc': 'Asia Pacific', 'region': 'Multi-Region', 'value': 'asia'},
         {'desc': 'Europe', 'region': 'Multi-Region', 'value': 'eu'},
-        {'desc': 'United States','region': 'Multi-Region',  'value': 'us'},
+        {'desc': 'United States', 'region': 'Multi-Region', 'value': 'us'},
 
         {'desc': 'Iowa', 'region': 'Americas', 'value': 'us-central1'},
         {'desc': 'South Carolina', 'region': 'Americas', 'value': 'us-east1'},
@@ -294,7 +296,6 @@ class ForsetiGcpSetup(object):
                     return project_id
         return None
 
-    # pylint: disable=no-self-use
     def _use_project(self):
         """Verify whether use has access to a project by describing it.
 
@@ -318,13 +319,12 @@ class ForsetiGcpSetup(object):
                  project_id],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
-            _, err = proc.communicate()
+            _, _ = proc.communicate()
             if proc.returncode:
                 print('Invalid project id, please try again.')
             else:
                 return project_id
         return None
-    # pylint: enable=no-self-use
 
     def _set_project(self, project_id):
         """Save the gcloud configuration for future use.
@@ -475,7 +475,7 @@ class ForsetiGcpSetup(object):
                 svc_acct_type (str): The service account type.
 
             Returns:
-                existing_svc_acct (str): The user specified service account.
+                str: The user specified service account.
         """
         existing_svc_acct = None
         while True:
@@ -624,7 +624,7 @@ class ForsetiGcpSetup(object):
             regions (list): List of regions.
 
         Returns:
-            (str): The region in which to create the data storage.
+            str: The region in which to create the data storage.
         """
         while True:
             prev_region = None
@@ -644,7 +644,7 @@ class ForsetiGcpSetup(object):
                     raise ValueError('Invalid input choice')
                 else:
                     return regions[choice-1]['value']
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 print('Invalid choice, try again')
 
     def create_bucket(self):
@@ -767,7 +767,7 @@ class ForsetiGcpSetup(object):
                 '  c) Click "Edit".\n'
                 '  d) Check the box to "Enable domain-wide-delegation".\n'
                 '  e) Click "Save".\n\n'
-                % 
+                %
                 (self.project_id,
                  self.organization_id,
                  self.gsuite_service_account,
@@ -794,7 +794,7 @@ class ForsetiGcpSetup(object):
                     '{}) Your GSuite service account key has been '
                     'downloaded to:\n\n    %s\n\n'
                     'You will need the key when you run Forseti Inventory.\n'
-                     % self.gsuite_svc_acct_key_location)
+                    % self.gsuite_svc_acct_key_location)
 
             for (i, instr_text) in enumerate(instructions):
                 print(instr_text.format(i+1))
