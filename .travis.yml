@@ -26,8 +26,6 @@ jobs:
         - "2.7"
       script:
         - "pylint --rcfile=pylintrc google/ setup/"
-jobs:
-  include:
     - stage:
         - unittests
       sudo:
@@ -37,9 +35,8 @@ jobs:
       script:
         - "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
       after_success:
+        - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
         - "codecov"
-jobs:
-  include:
     - stage:
         - build
       sudo:
@@ -48,9 +45,7 @@ jobs:
         - docker
       script:
         - "docker build -t forseti/build -f docker-files/Dockerfile ."
-        - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
-        - "docker run $CI_ENV -it -d forseti/build /bin/bash"
         - "docker run virtaulenv forseti-security"
         - "docker run /bin/bash -c 'source forseti-security/bin/activate;pip install --upgrade -r requirements.txt'"
-        - "docker run python setup.py install"
-        - "docker run yes | which forseti_inventory"
+        - "docker run /bin/bash -c 'source forseti-security/bin/activate;python setup.py install"
+        - "docker run /bin/bash -c 'source forseti-security/bin/activate;yes | which forseti_inventory"
