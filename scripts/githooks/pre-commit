@@ -28,7 +28,7 @@ echo " ok."
 # Check if pylintrc exists and user is in the top repository directory
 if [ -e "./pylintrc" ]; then
     echo -n "Executing pylint..."
-    pylint -s n --rcfile=pylintrc --output-format=text google || exit 1
+    pylint -s n --rcfile=pylintrc --output-format=text google/ setup/ || exit 1
     if [ $? -ne 0 ]; then
         echo " Oops, need to commit from top level repository dir."
         exit 1
