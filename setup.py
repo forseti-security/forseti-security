@@ -34,34 +34,33 @@ NAMESPACE_PACKAGES = [
 
 INSTALL_REQUIRES = [
     'anytree==2.1.4',
+    'coverage',
+    'codecov',
     'futures==3.0.5',
     'google-api-python-client==1.6.1',
     'Jinja2==2.9.5',
     'MySQL-python==1.2.5',
-    'protobuf>=3.2.0',
+    'pygraph>=0.2.1',
+    'pylint',
     'PyYAML==3.12',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
     'sendgrid==3.6.3',
     'SQLAlchemy==1.1.9',
-    'pygraph>=0.2.1',
+    'six>=1.9'
 ]
 
 SETUP_REQUIRES = [
     'google-apputils==0.4.2',
-    'python-gflags==3.1.1',
     'grpcio>=1.2.1',
     'grpcio-tools>=1.2.1',
-    'protobuf>=3.2.0',
+    'python-gflags==3.1.1',
+    'protobuf>=3.2.0'
 ]
 
 TEST_REQUIRES = [
     'mock==2.0.0',
     'SQLAlchemy==1.1.9',
-    'coverage',
-    'codecov',
-    'coveralls',
-    'pylint'
 ]
 
 if sys.version_info < (2, 7):
