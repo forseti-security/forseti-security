@@ -37,7 +37,7 @@ RUN pip install -v --upgrade pip virtualenv
 
 # Create a virtualenv to install pip packages.
 RUN virtualenv forseti-security
-RUN source forseti-security/bin/activate
+RUN /bin/bash -c "source forseti-security/bin/activate"
 
 RUN pip install -v --upgrade -r requirements.txt
 
