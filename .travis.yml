@@ -16,31 +16,36 @@ env:
   global:
     - MAKEFLAGS="-j 2"
 
-sudo: required
-
-language: python
-
-python:
-  - "2.7"
-
-services:
-  - docker
-
 jobs:
   include:
-    - stage: pylint
+    - stage:
+        - pylint
+      sudo:
+        - false
+      python:
+        - "2.7"
       script:
         - "pylint --rcfile=pylintrc google/ setup/"
 jobs:
   include:
-    - stage: unittests
+    - stage:
+        - unittests
+      sudo:
+        - false
+      python:
+        - "2.7"
       script:
         - "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
       after_success:
         - "codecov"
 jobs:
   include:
-    - stage: build
+    - stage:
+        - build
+      sudo:
+        - required
+      services:
+        - docker
       script:
         - "docker build -t forseti/build -f docker-files/Dockerfile ."
         - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
