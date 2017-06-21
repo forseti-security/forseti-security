@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+env:
+  global:
+    - MAKEFLAGS="-j 2"
 
 sudo: required
 
@@ -25,15 +29,15 @@ services:
 jobs:
   include:
     - stage: pylint
-      - script:
+      script:
         - "pylint --rcfile=pylintrc google/ setup/"
     - stage: unittests
-      - script:
+      script:
         - "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
-      - after_success:
+      after_success:
         - "codecov"
     - stage: build
-      - script:
+      script:
         - "docker build -t forseti/build -f docker-files/Dockerfile ."
         - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
         - "docker run $CI_ENV -it -d forseti/build /bin/bash"
