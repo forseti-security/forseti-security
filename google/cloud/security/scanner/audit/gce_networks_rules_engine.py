@@ -19,7 +19,7 @@ import itertools
 import re
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.gcp_type import enforced_networks as en
+from google.cloud.security.common.gcp_type import gce_network as gn
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
@@ -64,7 +64,7 @@ class GceNetworksRulesEngine(bre.BaseRulesEngine):
 
     def build_rule_book(self):
         """Build EnforcedNetworksRuleBook from the rules definition file."""
-        self.rule_book = EnforcedNetworksRuleBook(self._load_rule_definitions())
+        self.rule_book = GceNetworksRuleBook(self._load_rule_definitions())
 
     # pylint: disable=arguments-differ
     def find_policy_violations(self, gce_instance,
@@ -88,7 +88,7 @@ class GceNetworksRulesEngine(bre.BaseRulesEngine):
             self.rule_book.add_rules(rules)
 
 
-class EnforcedNetworksRuleBook(bre.BaseRuleBook):
+class GceNetworksRuleBook(bre.BaseRuleBook):
     """The RuleBook for enforced networks resources."""
 
     def __init__(self, rule_defs=None):
@@ -97,7 +97,7 @@ class EnforcedNetworksRuleBook(bre.BaseRuleBook):
         Args:
             rule_defs: rule definitons
         """
-        super(EnforcedNetworksRuleBook, self).__init__()
+        super(GceNetworksRuleBook, self).__init__()
         self.resource_rules_map = {}
         if not rule_defs:
             self.rule_defs = {}
@@ -107,8 +107,15 @@ class EnforcedNetworksRuleBook(bre.BaseRuleBook):
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book"""
-        for (i, rule) in enumerate(rule_defs.get('rules', [])):
-            self.add_rule(rule, i)
+        print(rule_defs)
+        print(type(rule_defs))
+        self.add_rule(rule_defs.get('rules'), 0)
+
+        
+        #for (i, rule) in enumerate(rule_defs.get('rules', [])):
+        #    print(i)
+        #   print(rule)
+        #  self.add_rule(rule, i)
 
     def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
@@ -118,21 +125,27 @@ class EnforcedNetworksRuleBook(bre.BaseRuleBook):
             rule_index: The index of the rule from the rule definitions.
             Assigned automatically when the rule book is built.
         """
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(rule_def)
+        print(type(rule_def))
+        print(rule_index)
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
         project = rule_def.get('project')
         network = rule_def.get('network')
-        is_external_network = rules_def.get('is_external_network')
-        enforced_networks = rules_def.get('enforced_networks')
+        is_external_network = rule_def.get('is_external_network')
+        enforced_networks = rule_def.get('whitelist')
 
         if (project is None) or (network is None) or (enforced_networks is None):
             raise audit_errors.InvalidRulesSchemaError('Faulty rule {}'.format(rule_def.get('name')))
 
 #TODO make ENforcedNetworks type in gcp_type
 #TODO maybe some json magic on globified stuff
-        rule_def_resource = en.EnforcedNetworks(
+        rule_def_resource = gn.GceNetwork(
             escape_and_globify(project),
             escape_and_globify(network),
-            escape_and_globify(enforced_networks))
+            is_external_network,
+            enforced_networks)
 
         rule = Rule(rule_name=rule_def.get('name'), rule_index=rule_index, rules=rule_def_resource)
 

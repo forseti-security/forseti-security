@@ -18,7 +18,7 @@
 class GceNetwork(object):
     """Enfoced Networks Resource."""
 
-    def __init__(self, project, network, is_external_network):
+    def __init__(self, project, network, is_external_network, whitelist):
         """Initialize
 
         Args:
@@ -28,9 +28,10 @@ class GceNetwork(object):
         self.project = project
         self.network = network
         self.is_external_network = is_external_network
+        self.whitelist = whitelist
 
     def __repr__(self):
-        return 'Project: %s Network: %s is_external: %s' % (self.project, self.network, self.is_external_network)
+        return 'Project: %s Network: %s is_external: %s Whitelist %s' % (self.project, self.network, self.is_external_network, self.whitelist)
 
     def __hash__(self):
         return hash(self.__repr__())
@@ -42,6 +43,7 @@ class GceNetwork(object):
         if isinstance(self, GceNetwork):
             return ((self.project == other.project) and 
                     (self.network == other.network) and 
-                    (self.is_external_network == other.is_external_network))
+                    (self.is_external_network == other.is_external_network) and
+                    (self.whitelist == other.whitelist))
         else:
             return False

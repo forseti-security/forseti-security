@@ -46,10 +46,10 @@ class GceNetworkRulesEngineTest(basetest.TestCase):
         rules_engine.build_rule_book()
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
-"""    @mock.patch.object(file_loader,
+    @mock.patch.object(file_loader,
                        '_read_file_from_gcs', autospec=True)
-   def test_build_rule_book_from_gcs_works(self, mock_load_rules_from_gcs):
-        Test that a RuleBook is built correctly with a mocked gcs file.
+    def test_build_rule_book_from_gcs_works(self, mock_load_rules_from_gcs):
+        """Test that a RuleBook is built correctly with a mocked gcs file.
 
         Setup:
             * Create a mocked GCS object from a test yaml file.
@@ -57,7 +57,7 @@ class GceNetworkRulesEngineTest(basetest.TestCase):
 
         Expected results:
             There are 4 resources that have rules, in the rule book.
-        
+        """
         bucket_name = 'bucket-name'
         rules_path = 'input/gce_networks_test_rules_1.yaml'
         full_rules_path = 'gs://{}/{}'.format(bucket_name, rules_path)
@@ -75,4 +75,4 @@ class GceNetworkRulesEngineTest(basetest.TestCase):
         mock_load_rules_from_gcs.return_value = file_content
 
         rules_engine.build_rule_book()
-        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map)) """
+        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
