@@ -48,7 +48,7 @@ def GenerateConfig(context):
                 'https://www.googleapis.com/compute/v1/projects/{}'
                 '/zones/{}/machineTypes/{}'.format(
                 context.env['project'], context.properties['zone'],
-                'n1-standard-2')),
+                context.properties['instance-type')),
             'disks': [{
                 'deviceName': 'boot',
                 'type': 'PERSISTENT',
