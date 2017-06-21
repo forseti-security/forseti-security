@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -qq -y \
     python-pip \
     unzip \
     wget
-#  && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 ADD . /forseti-security/
 WORKDIR /forseti-security/
@@ -37,11 +37,9 @@ RUN pip install -v --upgrade pip virtualenv
 
 # Create a virtualenv to install pip packages.
 RUN virtualenv forseti-security
-RUN /bin/bash -c "source forseti-security/bin/activate"
-
-RUN pip install -v --upgrade -r requirements.txt
-
-RUN python setup.py install
+# Use the virtualenv to install requirements.
+RUN /bin/bash -c "source forseti-security/bin/activate;pip install -v --upgrade -r requirements.txt"
 
 # Test for installation.
+RUN python setup.py install
 RUN yes | which forseti_inventory
