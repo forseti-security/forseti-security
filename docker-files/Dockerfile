@@ -29,13 +29,11 @@ RUN apt-get update && apt-get install -qq -y \
     wget \
   && rm -rf /var/lib/apt/lists/*
 
-
-
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 
 RUN pip install -q --upgrade pip
-RUN pip install -q --upgrade requirements.txt
+RUN pip install -q --upgrade -r requirements.txt
 
 RUN python setup.py install
 RUN yes | which forseti_inventory
