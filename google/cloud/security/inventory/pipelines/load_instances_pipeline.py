@@ -41,7 +41,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
                 project id, from GCP API.
 
         Yields:
-            iterator (dict): Instance properties.
+            dict: Instance properties.
         """
         for (project_id, instances) in resource_from_api.iteritems():
             for instance in instances:
