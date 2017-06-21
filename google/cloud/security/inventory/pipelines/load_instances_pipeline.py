@@ -111,6 +111,9 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         https://stackoverflow.com/a/5968530/2830207
         But it will be hacky to implement, essentially a customized SQL
         statement and condition checking.  So, leaving the warning as is.
+        
+        Alternatively, can change this column type to varchar, and cast it
+        to boolean when retrieved.
         """
         instances = self._retrieve()
         loadable_instances = self._transform(instances)
