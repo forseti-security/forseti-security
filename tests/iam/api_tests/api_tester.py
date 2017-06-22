@@ -12,8 +12,8 @@ def cleanup(test_callback):
     """Decorator based model deletion."""
     def wrapper(client):
         """Decorator implementation."""
-        for handle in client.list_models().handles:
-            client.delete_model(handle)
+        for model in client.list_models().models:
+            client.delete_model(model.handle)
         test_callback(client)
     return wrapper
 
@@ -135,10 +135,23 @@ class ModelTestRunner(ApiTestRunner):
                 resource_name,
                 {'bindings': bindings, 'etag': reply.policy.etag})
 
+    def _get_model_name_deterministic(self):
+        """Create deterministic sequence of names for models."""
+        try:
+            self.counter += 1
+        except AttributeError:
+            self.counter = 0
+        finally:
+            return str(self.counter)
+
     def run(self, test_callback):
         def callback_wrapper(client):
             """Wrapping the client callback interface."""
-            client.switch_model(client.new_model('EMPTY').handle)
+
+            reply = client.new_model(
+                source='EMPTY',
+                name=self._get_model_name_deterministic())
+            client.switch_model(reply.model.handle)
             self._install_model(self.model, client)
             test_callback(client)
         super(ModelTestRunner, self).run(callback_wrapper)

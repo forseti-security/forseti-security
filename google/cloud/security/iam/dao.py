@@ -30,6 +30,7 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Sequence
 from sqlalchemy import ForeignKey
+from sqlalchemy import Text
 from sqlalchemy import create_engine
 from sqlalchemy import Table
 from sqlalchemy import DateTime
@@ -47,6 +48,7 @@ from google.cloud.security.iam.utils import mutual_exclusive
 # pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc
 
+POOL_RECYCLE_SECONDS = 300
 
 def generate_model_handle():
     """Generate random model handle."""
@@ -67,11 +69,13 @@ class Model(MODEL_BASE):
     """IAM Explain model object in database."""
 
     __tablename__ = 'model'
-    handle = Column(String(32), primary_key=True)
+    name = Column(String(32), primary_key=True)
+    handle = Column(String(32))
     state = Column(String(32))
     watchdog_timer = Column(DateTime)
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
+    message = Column(Text())
 
     def kick_watchdog(self, session):
         """Used during import to notify the import is still progressing."""
@@ -87,10 +91,19 @@ class Model(MODEL_BASE):
         session.add(self)
         session.commit()
 
-    def set_done(self, session):
+    def set_done(self, session, message=""):
         """Indicate a finished import."""
 
         self.state = "DONE"
+        self.message = message
+        session.add(self)
+        session.commit()
+
+    def set_error(self, session, message):
+        """Indicate a broken import."""
+
+        self.state = "BROKEN"
+        self.message = message
         session.add(self)
         session.commit()
 
@@ -1236,13 +1249,14 @@ class ModelManager(object):
             auto_commit=True)
 
     @mutual_exclusive(LOCK)
-    def create(self):
+    def create(self, name):
         """Create a new model entry in the database."""
 
-        model_name = generate_model_handle()
+        handle = generate_model_handle()
         with self.modelmaker() as session:
             model = Model(
-                handle=model_name,
+                handle=handle,
+                name=name,
                 state="CREATED",
                 created_at=datetime.datetime.utcnow(),
                 watchdog_timer=datetime.datetime.utcnow(),
@@ -1250,7 +1264,7 @@ class ModelManager(object):
             session.add(model)
             self.sessionmakers[model.handle] = define_model(
                 model.handle, self.engine, model.etag_seed)
-            return model_name
+            return handle
 
     def get(self, model):
         """Get model data by name."""
@@ -1261,8 +1275,10 @@ class ModelManager(object):
     def _get(self, handle):
         """Get model data by name internal."""
 
-        if handle not in self.models():
-            raise KeyError(handle)
+        if handle not in [m.handle for m in self.models()]:
+            raise KeyError('handle={}, available={}'.format(
+                handle,
+                [m.handle for m in self.models()]))
         try:
             return self.sessionmakers[handle]
         except KeyError:
@@ -1285,27 +1301,39 @@ class ModelManager(object):
             session.query(Model).filter(Model.handle == model_name).delete()
         data_access.delete_all(self.engine)
 
-    def models(self):
+    def _models(self, expunge=False):
         """Return the list of models from the database."""
 
         with self.modelmaker() as session:
-            return [model.handle for model in session.query(Model).all()]
+            items = session.query(Model).all()
+            if expunge:
+                session.expunge_all()
+            return items
 
-    def model(self, model_name):
+    def models(self):
+        """Expunging wrapper for _models."""
+        return self._models(expunge=True)
+
+    def model(self, model_name, expunge=True):
         """Get model from database by name."""
 
         with self.modelmaker() as session:
-            return session.query(Model).filter(
+            item = session.query(Model).filter(
                 Model.handle == model_name).one()
+            if expunge:
+                session.expunge(item)
+            return item
 
 
 def session_creator(model_name, filename=None, seed=None, echo=False):
     """Create a session maker for the model and db file."""
 
     if filename:
-        engine = create_engine('sqlite:///{}'.format(filename))
+        engine = create_engine('sqlite:///{}'.format(filename),
+                               pool_recycle=POOL_RECYCLE_SECONDS)
     else:
-        engine = create_engine('sqlite:///:memory:', echo=echo)
+        engine = create_engine('sqlite:///:memory:',
+                               pool_recycle=POOL_RECYCLE_SECONDS, echo=echo)
     if seed is None:
         seed = generate_model_seed()
     session_maker, data_access = define_model(model_name, engine, seed)

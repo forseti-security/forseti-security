@@ -15,8 +15,10 @@
 """ Importer implementations. """
 
 import json
+import traceback
 from collections import defaultdict
 from time import time
+from StringIO import StringIO
 
 from google.cloud.security.common.data_access import forseti
 from google.cloud.security.iam.dao import create_engine
@@ -29,8 +31,8 @@ from google.cloud.security.iam.dao import ModelManager
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc,missing-raises-doc
 
-# pylint: disable=unused-argument
-# pylint: disable=no-self-use
+# pylint: disable=unused-argument,too-many-branches
+# pylint: disable=no-self-use, broad-except
 # pylint: disable=bare-except,docstring-first-line-empty
 
 
@@ -338,42 +340,52 @@ class ForsetiImporter(object):
 
     def run(self):
         """Runs the import."""
-        self.session.add(self.session.merge(self.model))
-        self.model.set_inprogress(self.session)
-        self.model.kick_watchdog(self.session)
+        try:
+            self.session.add(self.session.merge(self.model))
+            self.model.set_inprogress(self.session)
+            self.model.kick_watchdog(self.session)
 
-        last_watchdog_kick = time()
-        for res_type, obj in self.forseti_importer:
-            if res_type == 'organizations':
-                self.session.add(self._convert_organization(obj))
-            elif res_type == 'folders':
-                self.session.add(self._convert_folder(obj))
-            elif res_type == 'projects':
-                self.session.add(self._convert_project(obj))
-            elif res_type == 'buckets':
-                self.session.add(self._convert_bucket(obj))
-            elif res_type == 'cloudsqlinstances':
-                self.session.add(self._convert_cloudsqlinstance(obj))
-            elif res_type == 'policy':
-                self._convert_policy(obj)
-            elif res_type == 'group':
-                self.session.add(self._convert_group(obj))
-            elif res_type == 'membership':
-                self.session.add(self._convert_membership(obj))
-            elif res_type == 'customer':
-                # TODO: investigate how we
-                # don't see this in the first place
-                pass
-            else:
-                raise NotImplementedError(res_type)
+            item_counter = 0
+            last_watchdog_kick = time()
+            for res_type, obj in self.forseti_importer:
+                item_counter += 1
+                if res_type == 'organizations':
+                    self.session.add(self._convert_organization(obj))
+                elif res_type == 'folders':
+                    self.session.add(self._convert_folder(obj))
+                elif res_type == 'projects':
+                    self.session.add(self._convert_project(obj))
+                elif res_type == 'buckets':
+                    self.session.add(self._convert_bucket(obj))
+                elif res_type == 'cloudsqlinstances':
+                    self.session.add(self._convert_cloudsqlinstance(obj))
+                elif res_type == 'policy':
+                    self._convert_policy(obj)
+                elif res_type == 'group':
+                    self.session.add(self._convert_group(obj))
+                elif res_type == 'membership':
+                    self.session.add(self._convert_membership(obj))
+                elif res_type == 'customer':
+                    # TODO: investigate how we
+                    # don't see this in the first place
+                    pass
+                else:
+                    raise NotImplementedError(res_type)
 
-            # kick watchdog about every ten seconds
-            if time() - last_watchdog_kick > 10.0:
-                self.model.kick_watchdog(self.session)
-                last_watchdog_kick = time()
+                # kick watchdog about every ten seconds
+                if time() - last_watchdog_kick > 10.0:
+                    self.model.kick_watchdog(self.session)
+                    last_watchdog_kick = time()
 
-        self.model.set_done(self.session)
-        self.session.commit()
+        except Exception:
+            buf = StringIO()
+            traceback.print_exc(file=buf)
+            buf.seek(0)
+            message = buf.read()
+            self.model.set_error(self.session, message)
+        else:
+            self.model.set_done(self.session, item_counter)
+            self.session.commit()
 
 
 def by_source(source):
@@ -411,7 +423,7 @@ def test_run():
     svc_config = ServiceConfig(explain_conn_s, forseti_conn_s)
     source = 'FORSETI'
     model_manager = svc_config.model_manager
-    model_name = model_manager.create()
+    model_name = model_manager.create(name=source)
     print 'model name: {}'.format(model_name)
 
     scoped_session, data_access = model_manager.get(model_name)
