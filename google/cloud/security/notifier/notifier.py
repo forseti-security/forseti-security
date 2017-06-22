@@ -108,9 +108,9 @@ def process(message):
     payload = message.get('payload')
 
     if message.get('status') == 'inventory_done':
-        email_pipeline = inv_summary.EmailInventorySnapshopSummaryPipeline(
+        inv_email_pipeline = inv_summary.EmailInventorySnapshopSummaryPipeline(
             payload.get('sendgrid_api_key'))
-        email_pipeline.run(
+        inv_email_pipeline.run(
             payload.get('cycle_time'),
             payload.get('cycle_timestamp'),
             payload.get('snapshot_cycle_status'),
@@ -121,9 +121,9 @@ def process(message):
         return
 
     if message.get('status') == 'scanner_done':
-        email_pipeline = scanner_summary.EmailScannerSummaryPipeline(
+        scanner_email_pipeline = scanner_summary.EmailScannerSummaryPipeline(
             payload.get('sendgrid_api_key'))
-        email_pipeline.run(
+        scanner_email_pipeline.run(
             payload.get('output_csv_name'),
             payload.get('output_filename'),
             payload.get('now_utc'),
@@ -135,7 +135,11 @@ def process(message):
         return
 
 def main(_):
-    """main function"""
+    """Main function.
+    
+        Args:
+            _ (obj): Result of the last expression evaluated in the interpreter.
+    """
     if FLAGS.timestamp is not None:
         timestamp = FLAGS.timestamp
     else:
