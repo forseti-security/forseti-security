@@ -21,7 +21,12 @@ import subprocess
 
 
 def is_grpc_service_dir(files):
-    """Returns true iff the directory hosts a gRPC service."""
+    """Returns true iff the directory hosts a gRPC service.
+        Args:
+            files(list): A list of files from os.walk().
+        Returns:
+            Boolean: True if ".grpc_service" is in the list.
+    """
     return ".grpc_service" in files
 
 
@@ -46,7 +51,10 @@ def clean():
 
 
 def make_proto_service(root):
-    """Generate a proto service from the definition file."""
+    """Generate a proto service from the definition file.
+        Args:
+            root(str): The root of the current working directory.t
+    """
     script_basename = "mkproto.sh"
     script_path = os.path.join(root, script_basename)
     subprocess.check_call(
