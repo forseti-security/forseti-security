@@ -136,7 +136,7 @@ def process(message):
 
 def main(_):
     """Main function.
-    
+
         Args:
             _ (obj): Result of the last expression evaluated in the interpreter.
     """
