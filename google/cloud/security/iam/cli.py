@@ -183,7 +183,10 @@ def define_explainer_parser(parent):
     create_model_parser.add_argument(
         'source',
         choices=['forseti', 'empty'],
-        help='')
+        help='Source to import from')
+    create_model_parser.add_argument(
+        'name',
+        help='Human readable name for this model')
 
     _ = action_subparser.add_parser(
         'denormalize',
@@ -386,7 +389,7 @@ def run_explainer(client, config, output):
 
     def do_create_model():
         """Create a model."""
-        result = client.new_model(config.source)
+        result = client.new_model(config.source, config.name)
         output.write(result)
 
     def do_denormalize():
