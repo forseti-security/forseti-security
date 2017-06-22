@@ -30,7 +30,7 @@ from google.cloud.security.notifier.pipelines import base_notification_pipeline 
 LOGGER = log_util.get_logger(__name__)
 
 
-class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
+class EmailInventorySnapshotSummaryPipeline(bnp.BaseNotificationPipeline):
     """Email pipeline for inventory snapshot summary."""
 
     # TODO: See if the base pipline init() can be reused.

@@ -108,7 +108,7 @@ def process(message):
     payload = message.get('payload')
 
     if message.get('status') == 'inventory_done':
-        inv_email_pipeline = inv_summary.EmailInventorySnapshopSummaryPipeline(
+        inv_email_pipeline = inv_summary.EmailInventorySnapshotSummaryPipeline(
             payload.get('sendgrid_api_key'))
         inv_email_pipeline.run(
             payload.get('cycle_time'),
