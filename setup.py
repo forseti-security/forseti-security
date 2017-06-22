@@ -69,7 +69,7 @@ if sys.version_info.major > 2:
 
 def build_protos():
     """Build protos."""
-    subprocess.check_call(['python', 'build_protos.py', '--clean'])
+    subprocess.check_call(['python', 'setup/build_protos.py', '--clean'])
 
 class PostInstallCommand(install):
     """Post installation command."""
