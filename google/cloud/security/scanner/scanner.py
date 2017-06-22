@@ -284,8 +284,7 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
 
             # Send summary email.
             if FLAGS.email_recipient is not None:
-                LOGGER.info('111111111111111111')
-                message_data = {
+                payload = {
                     'email_sender': FLAGS.email_sender,
                     'email_recipient': FLAGS.email_recipient,
                     'sendgrid_api_key': FLAGS.sendgrid_api_key,
@@ -298,7 +297,7 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
                 }
                 message = {
                     'status': 'scanner_done',
-                    'data': message_data
+                    'payload': payload
                 }
                 notifier.process(message)
 

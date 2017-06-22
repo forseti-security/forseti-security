@@ -313,7 +313,7 @@ def main(_):
                              snapshot_cycle_status)
 
     if inventory_flags.get('email_recipient') is not None:
-        message_data = {
+        payload = {
             'email_sender': inventory_flags.get('email_sender'),
             'email_recipient': inventory_flags.get('email_recipient'),
             'sendgrid_api_key': inventory_flags.get('sendgrid_api_key'),
@@ -324,7 +324,7 @@ def main(_):
         }
         message = {
             'status': 'inventory_done',
-            'data': message_data
+            'payload': payload
         }
         notifier.process(message)
 

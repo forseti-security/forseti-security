@@ -92,41 +92,41 @@ def process(message):
     """Process messages about what notifications to send.
 
     Args:
-        message (dict): Message with with data payload in dict.
-            The data payload will be different depending on the sender
+        message (dict): Message with payload in dict.
+            The payload will be different depending on the sender
             of the message.
     
             Example:
                 {'status': 'foobar_done',
-                 'data': {}}                 
+                 'payload': {}}                 
     """
-    message_data = message.get('data')
+    payload = message.get('payload')
 
     if message.get('status') == 'inventory_done':
         email_pipeline = EmailInventorySnapshopSummaryPipeline(
-            message_data.get('sendgrid_api_key'))
+            payload.get('sendgrid_api_key'))
         email_pipeline.run(
-            message_data.get('cycle_time'),
-            message_data.get('cycle_timestamp'),
-            message_data.get('snapshot_cycle_status'),
-            message_data.get('pipelines'),
-            message_data.get('email_sender'),
-            message_data.get('email_recipient')
+            payload.get('cycle_time'),
+            payload.get('cycle_timestamp'),
+            payload.get('snapshot_cycle_status'),
+            payload.get('pipelines'),
+            payload.get('email_sender'),
+            payload.get('email_recipient')
         )
         return
 
     if message.get('status') == 'scanner_done':
         email_pipeline = EmailScannerSummaryPipeline(
-            message_data.get('sendgrid_api_key'))
+            payload.get('sendgrid_api_key'))
         email_pipeline.run(
-            message_data.get('output_csv_name'),
-            message_data.get('output_filename'),
-            message_data.get('now_utc'),
-            message_data.get('all_violations'),
-            message_data.get('resource_counts'),
-            message_data.get('violation_errors'),
-            message_data.get('email_sender'),
-            message_data.get('email_recipient'))        
+            payload.get('output_csv_name'),
+            payload.get('output_filename'),
+            payload.get('now_utc'),
+            payload.get('all_violations'),
+            payload.get('resource_counts'),
+            payload.get('violation_errors'),
+            payload.get('email_sender'),
+            payload.get('email_recipient'))        
         return
 
 def main(_):
