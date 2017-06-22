@@ -3,6 +3,6 @@ title: Docs
 order: 1
 ---
 {% capture include_content %}
-{% include module_inventory_content.md %}
+{% include docs_overview_include.md %}
 {% endcapture %}
 {{ include_content | markdownify }}

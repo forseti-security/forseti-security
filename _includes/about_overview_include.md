@@ -1,8 +1,7 @@
----
-title: Resource Coverage
-order: 002
----
-# Resource Coverage
+# Forseti Inventory
+
+## Resource Coverage
+
 These are the resources that have coverage in Forseti, or planned to have 
 coverage.  If you don't see something that you are interested in, please open
 an issue or contribute!

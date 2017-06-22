@@ -3,7 +3,16 @@ title: Community
 ---
 # Community
 
-### Contact Us
+## [Troubleshooting](troubleshooting)
+
+Troubleshooting help for Forseti Security and modules.
+
+## [Resource Coverage](resource-coverage)
+
+Resources that currently have coverage in Forseti or are planned to have
+coverage.
+
+## Contact Us
 
 Reach out to us with questions by contacting
 [forseti-security@google.com](mailto:forseti-security@google.com).
