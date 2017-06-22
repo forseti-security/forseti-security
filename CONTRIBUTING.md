@@ -1,139 +1,79 @@
-# How to Contribute
+# Contributing to Forseti
 
-We'd love to accept your patches and contributions to this project. There are
-just a few small guidelines you need to follow.
+We welcome your patches and contributions to this project. This page describes the few small guidelines we'll need you to follow.
 
-* [Contributor License Agreement](#contributor-license-agreement)
-* [Style Guideline and Conventions](#style-guideline-and-conventions)
-* [How to Submit A Pull Request](#how-to-submit-a-pull-request)
+## Submitting a Contributor License Agreement
 
-## Contributor License Agreement
+Contributions to Forseti must be accompanied by a Contributor License Agreement (CLA). The CLA gives us permission to use and redistribute your contributions as part of the project. You or your employer retain the copyright to your contribution. To see any CLA you currently have on file or sign a new one, access [Contributor License Agreements](https://cla.developers.google.com/clas).
 
-Contributions to this project must be accompanied by a Contributor License
-Agreement. You (or your employer) retain the copyright to your contribution,
-this simply gives us permission to use and redistribute your contributions as
-part of the project. Head over to <https://cla.developers.google.com/> to see
-your current agreements on file or to sign a new one.
+In most cases, you only need to submit a CLA once. If you've already submitted a CLA for any project, you probably won't need to submit a new CLA.
 
-You generally only need to submit a CLA once, so if you've already submitted one
-(even if it was for a different project), you probably don't need to do it
-again.
+## Following style guidelines and conventions
 
-## Style Guideline and Conventions
-
-In order to maintain consistency, style guidelines as suggested by the
-[Google Python Style Guide] should be followed, as well as conforming to
-the existing styles in the current codebase.
-
-Style will be checked using pylint. To confirm your PR will pass the
-Travis pylint test this must run without any output.
+To maintain consistency, we ask that you follow the style guidelines suggested in the [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html) and any existing styles in the current codebase. Style is checked using pylint. To confirm your pull request (PR) passes the Travis pylint test, the following test must run without any output:
 
 ```
-$ workon forseti-security # replace forseti-security with your virtalenv.
+workon YOUR_VIRTUALENV
 
 # Optional
-$ pip install pylint
+pip install pylint
 
 # From the root of forseti-security using pylint >= 1.6.5
-$ PYTHONPATH=./ pylint --rcfile=./pylintrc
+PYTHONPATH=./ pylint --rcfile=./pylintrc
 ```
 
-## How to Submit A Pull Request
+## Submitting a pull request
 
-1. Consult [GitHub Help] for more information on using pull requests.
+To submit a pull request for Forseti, follow the process below:
 
-2. Fork the project, clone your fork to your machine, and configure
-the upstream remote.
+  1. Fork the project, clone your fork to your machine, and configure the upstream remote:
 
-    ```
-    # Fork the project via GitHub UI.
+         # Fork the project via GitHub UI.
 
-    # Clone your forked repository into local directory.
-    $ git clone <url of forked repository>
+         # Clone your forked repository into local directory.
+         git clone FORKED_REPOSITORY_URL
 
-    # Navigate to your newly cloned directory.
-    $ cd <path to you local cloned repository>
+         # Navigate to your newly cloned directory.
+         cd <path to you local cloned repository>
 
-    # Assign the original repository to a remote called "upstream".
-    # Using HTTPS
-    $ git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
+         # Assign the original repository to a remote called "upstream".
+         # Using HTTPS
+         git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
 
-    # Using SSH
-    $ git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
+         # Using SSH
+         git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
 
-    # Verify new upstream remote is added correctly.
-    $ git remote -v
+         # Verify new upstream remote is added correctly.
+         git remote -v
 
-    origin  git@github.com:<my_fork> (fetch)
-    origin  git@github.com:<my_fork> (push)
-    upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
-    upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
-    ```
+         origin  git@github.com:YOUR_FORK (fetch)
+         origin  git@github.com:YOUR_FORK (push)
+         upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
+         upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
 
-3. Fetch the latest changes from upstream into your cloned repository.
+  1. Fetch the latest changes from upstream into your cloned repository:
 
-    ```
-    $ git fetch upstream
-    $ git checkout master
-    $ git merge upstream/master
-    ```
+         git fetch upstream
+         git checkout master
+         git merge upstream/master
 
-4. Create a new local development branch for your feature or bug fix.
+  1. Create a new local development branch for your feature or bug fix:
 
-    ```
-    $ git checkout -b <my_development_branch>
-    ```
+         git checkout -b YOUR_DEVELOPMENT_BRANCH
 
-5. Create your change.
+  1. Create your change.
+    - Don't incorporate multiple changes in one PR. A change should be a logical, self-contained unit of work, feature, or fix. This simplifies troubleshooting and rollbacks.
+    - Learn how to execute [Inventory](inventory-quickstart), [Scanner](scanner-quickstart), or [Enforcer](enforcer-quickstart).
+  1. Create your test.
+    - Unit tests should provide high and useful coverage. If your change involves substantial logic, we'll ask you to write applicable unit tests.
+    - Unit tests should be written with google-apputils basetest framework. For an example of how to use the framework, see [Google-Style Tests](https://pypi.python.org/pypi/google-apputils).
+    - Learn how to [run the tests](testing).
+  1. Commit your changes and push them to your development branch:
 
-    A change should be a logical, self-contained unit of work, feature, or fix.
-    This way, it is easier for troubleshooting and rollbacks.  In other words,
-    please do not incorporate multiple changes in one PR.
+         git push origin YOUR_DEVELOPMENT_BRANCH
 
-    Instructions to execute the tools: [Inventory], [Scanner], [Enforcer]
-
-6. Create your test.
-
-    We strive to have high and useful coverage by unit tests.  If your change
-    involves substantial logic, we will request that you write applicable unit
-    tests.
-
-    Our unit tests are written with google-apputils basetest framework.
-    See a [basic example] of how to use it, in the "Google-Style Tests" section.
-
-    [Instructions to run the tests.]
-
-7. Commit your changes and push them to your development branch.
-
-    ```
-    $ git push origin <my_development_branch>
-    ```
-
-8. Open a Pull Request to begin the process for code review.
-
-    All submissions, including submissions by project members, require a code review.
-    To begin the review process, create a new GitHub pull request. The GitHub UI
-    will show if there are any merge conflict(s) to be resolved.
-
-    The GitHub Pull Request UI will show you dropdowns to select the destination of
-    your pull request:
-    * the base fork is the upstream
-    * the head fork is your fork with your changes
-
-    All tests must pass before we will review your PR.
-    We also check the codebase with pylint. You can install the git hooks provided
-    under scripts/githooks/ to do the check locally.
-
-9. Merging your PR.
-
-    Once your PR is approved and all merge conflicts are resolved, we will merge your PR.
-
-
-[GitHub Help]: https://help.github.com/articles/about-pull-requests/
-[Google Python Style Guide]: https://google.github.io/styleguide/pyguide.html
-[Inventory]: https://googlecloudplatform.github.io/forseti-security/modules/core/inventory/
-[Scanner]: https://googlecloudplatform.github.io/forseti-security/modules/core/scanner/
-[Enforcer]: https://googlecloudplatform.github.io/forseti-security/modules/core/enforcer/
-[basic example]: https://pypi.python.org/pypi/google-apputils
-[Instructions to run the tests.]: https://googlecloudplatform.github.io/forseti-security/testing/
-[forseti-security@google.com]: mailto:forseti-security@google.com
+  1. Open a [pull request](https://help.github.com/articles/about-pull-requests/) to begin the code review.
+    - All submissions, including submissions by project members, require a code review.
+    - The GitHub UI will display any merge conflicts you need to resolve.
+    - All tests must pass before we review your PR. To test locally, you can install the git hooks under `scripts/githooks`.
+  1. After your PR is approved and all merge conflicts are resolved, we'll merge your PR.
