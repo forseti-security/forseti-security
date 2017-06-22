@@ -35,13 +35,10 @@ from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
+from google.cloud.security.notifier.pipelines.email_inventory_snapshot_summary_pipeline import EmailInventorySnapshopSummaryPipeline
+from google.cloud.security.notifier.pipelines.email_scanner_summary_pipeline import EmailScannerSummaryPipeline
 from google.cloud.security.scanner.scanners.scanners_map import RESOURCE_MAP
 # pylint: enable=line-too-long
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc
 
 
 # Setup flags
@@ -60,7 +57,7 @@ def find_pipelines(pipeline_name):
     """Get the first class in the given sub module
 
     Return:
-        The class in the sub module
+        class: The class in the sub module
     """
     try:
         module = importlib.import_module(
@@ -80,7 +77,7 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
     Returns:
-        The latest snapshot timestamp string.
+        string: The latest snapshot timestamp.
     """
 
     latest_timestamp = None
@@ -90,6 +87,47 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
     return latest_timestamp
+
+def process(message):
+    """Process messages about what notifications to send.
+
+    Args:
+        message (dict): Message with with data payload in dict.
+            The data payload will be different depending on the sender
+            of the message.
+    
+            Example:
+                {'status': 'foobar_done',
+                 'data': {}}                 
+    """
+    message_data = message.get('data')
+
+    if message.get('status') == 'inventory_done':
+        email_pipeline = EmailInventorySnapshopSummaryPipeline(
+            message_data.get('sendgrid_api_key'))
+        email_pipeline.run(
+            message_data.get('cycle_time'),
+            message_data.get('cycle_timestamp'),
+            message_data.get('snapshot_cycle_status'),
+            message_data.get('pipelines'),
+            message_data.get('email_sender'),
+            message_data.get('email_recipient')
+        )
+        return
+
+    if message.get('status') == 'scanner_done':
+        email_pipeline = EmailScannerSummaryPipeline(
+            message_data.get('sendgrid_api_key'))
+        email_pipeline.run(
+            message_data.get('output_csv_name'),
+            message_data.get('output_filename'),
+            message_data.get('now_utc'),
+            message_data.get('all_violations'),
+            message_data.get('resource_counts'),
+            message_data.get('violation_errors'),
+            message_data.get('email_sender'),
+            message_data.get('email_recipient'))        
+        return
 
 def main(_):
     """main function"""

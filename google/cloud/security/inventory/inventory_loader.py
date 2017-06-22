@@ -67,7 +67,7 @@ from google.cloud.security.inventory import api_map
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import pipeline_builder as builder
 from google.cloud.security.inventory import util as inventory_util
-from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
+from google.cloud.security.notifier import notifier
 # pylint: enable=line-too-long
 
 
@@ -313,17 +313,20 @@ def main(_):
                              snapshot_cycle_status)
 
     if inventory_flags.get('email_recipient') is not None:
-        email_pipeline = (
-            email_inventory_snapshot_summary_pipeline
-            .EmailInventorySnapshopSummaryPipeline(
-                inventory_flags.get('sendgrid_api_key')))
-        email_pipeline.run(
-            cycle_time,
-            cycle_timestamp,
-            snapshot_cycle_status,
-            pipelines,
-            inventory_flags.get('email_sender'),
-            inventory_flags.get('email_recipient'))
+        message_data = {
+            'email_sender': inventory_flags.get('email_sender'),
+            'email_recipient': inventory_flags.get('email_recipient'),
+            'sendgrid_api_key': inventory_flags.get('sendgrid_api_key'),
+            'cycle_time': cycle_time,
+            'cycle_timestamp': cycle_timestamp,
+            'snapshot_cycle_status': snapshot_cycle_status,
+            'pipelines': pipelines
+        }
+        message = {
+            'status': 'inventory_done',
+            'data': message_data
+        }
+        notifier.process(message)
 
 
 if __name__ == '__main__':
