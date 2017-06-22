@@ -285,9 +285,7 @@ def create_table_names(timestamp):
 class Importer(object):
     """Forseti data importer to iterate the inventory and policies."""
 
-    DEFAULT_CONNECT_STRING = 'mysql://root@127.0.0.1:3306/forseti_security'
-
-    def __init__(self, db_connect_string=DEFAULT_CONNECT_STRING):
+    def __init__(self, db_connect_string):
         engine = create_engine(db_connect_string, pool_recycle=3600)
         BASE.metadata.create_all(engine)
         session = sessionmaker(bind=engine)
@@ -361,14 +359,3 @@ class Importer(object):
         for policy_table in policies:
             for policy in self.session.query(policy_table).all():
                 yield 'policy', policy
-
-
-def test_run():
-    """Test run."""
-    importer = Importer()
-    for res in importer:
-        print 'Item: {}'.format(res)
-
-
-if __name__ == "__main__":
-    test_run()
