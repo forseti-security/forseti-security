@@ -11,33 +11,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+env:
+  global:
+    - MAKEFLAGS="-j 2"
 
-sudo: required
-
-language: python
-
-python:
-  - "2.7"
-
-services:
-  - docker
-
-before_install:
-  # Build the Forseti image containing the dependencies and code.
-  - docker build -t forseti/build .
-  # Required for codecov.io to export coverage within a Docker container.
-  - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
-  # Start the container for testing and code verification.
-  - docker run $CI_ENV -it -d --name build forseti/build /bin/bash
-
-script:
-  # Run code coverage.
-  - docker exec -it build /bin/sh -c "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
-  # Check code compliance.
-  - docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc google/ scripts/gcp_setup/"
-
-after_success:
-  # Execute coveralls inside the docker container, need to export env for coveralls.io upload.
-  - docker exec -it build /bin/sh -c "TRAVIS=${TRAVIS} TRAVIS_JOB_ID=${TRAVIS_JOB_ID} coveralls"
-  # Execute coveralls inside the docker container, need to export env for codecov.io upload.
-  - docker exec -it build /bin/sh -c "codecov"
+jobs:
+  include:
+    - stage: pylint
+      sudo: false
+      python:
+        - "2.7"
+      script:
+        - "pylint --rcfile=pylintrc google/ setup/"
+    - stage: unittests
+      sudo: false
+      python:
+        - "2.7"
+      script:
+        - "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
+      after_success:
+        - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
+        - "codecov"
+    - stage: build
+      sudo: required
+      services: docker
+      script:
+        - "docker build -t forseti/build -f docker-files/Dockerfile ."
+        - "docker run virtaulenv forseti-security"
+        - "docker run /bin/bash -c 'source forseti-security/bin/activate;pip install --upgrade -r requirements.txt'"
+        - "docker run /bin/bash -c 'source forseti-security/bin/activate;python setup.py install"
+        - "docker run /bin/bash -c 'source forseti-security/bin/activate;yes | which forseti_inventory"

@@ -16,31 +16,21 @@
 # You still need to do all the other prereq GCP setup (e.g.
 # setting up service accounts, GCP infrastructure).
 
-FROM ubuntu:16.04
+# This matches our current travis-ci build image OS.
+FROM ubuntu:14.04
 
-# Install Forseti dependencies
+# Install Forseti dependencies.
 RUN apt-get update && apt-get install -qq -y \
     curl \
     git \
     libmysqlclient-dev \
-    python-pip \
     python-dev \
+    python-pip \
     unzip \
-    wget \
-  && rm -rf /var/lib/apt/lists/*
-
-RUN pip install -q --upgrade pip
-RUN pip install -q --upgrade \
-    coverage \
-    codecov \
-    coveralls \
-    google-apputils \
-    grpcio \
-    grpcio-tools \
-    mock \
-    pylint
+    wget
+    && rm -rf /var/lib/apt/lists/*
 
 ADD . /forseti-security/
 WORKDIR /forseti-security/
-RUN python setup.py install
-RUN yes | which forseti_inventory
+
+RUN pip install -v --upgrade pip virtualenv
