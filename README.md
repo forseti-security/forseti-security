@@ -1,6 +1,6 @@
 # Forseti Security
 This branch (gh-pages) hosts the content used to build the
-[forseti security website](http://forsetisecurity.org)
+[forsetisecurity.org](http://forsetisecurity.org) website.
 
 ## License
 See [LICENSE](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/LICENSE)
