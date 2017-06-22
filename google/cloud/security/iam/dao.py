@@ -107,6 +107,12 @@ class Model(MODEL_BASE):
         session.add(self)
         session.commit()
 
+    def __repr__(self):
+        """String representation."""
+
+        return "<Model(name='{}', handle='{}' state='{}')>".format(
+            self.name, self.handle, self.state)
+
 
 # pylint: disable=too-many-locals,no-member
 def define_model(model_name, dbengine, model_seed):

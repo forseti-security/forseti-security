@@ -21,9 +21,6 @@ from time import time
 from StringIO import StringIO
 
 from google.cloud.security.common.data_access import forseti
-from google.cloud.security.iam.dao import create_engine
-from google.cloud.security.iam.dao import ModelManager
-
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -32,8 +29,8 @@ from google.cloud.security.iam.dao import ModelManager
 # pylint: disable=missing-yield-type-doc,missing-raises-doc
 
 # pylint: disable=unused-argument,too-many-branches
-# pylint: disable=no-self-use, broad-except
-# pylint: disable=bare-except,docstring-first-line-empty
+# pylint: disable=broad-except
+# pylint: disable=bare-except
 
 
 class ResourceCache(dict):
@@ -396,52 +393,3 @@ def by_source(source):
         'FORSETI': ForsetiImporter,
         'EMPTY': EmptyImporter,
     }[source.upper()]
-
-
-class ServiceConfig(object):
-    """
-    ServiceConfig is a helper class to implement dependency injection
-    to IAM Explain services.
-    """
-
-    def __init__(self, explain_connect_string, forseti_connect_string):
-        engine = create_engine(explain_connect_string, echo=True)
-        self.model_manager = ModelManager(engine)
-        self.forseti_connect_string = forseti_connect_string
-
-    def run_in_background(self, function):
-        """Runs a function in a thread pool in the background."""
-        return function()
-
-def test_run():
-    """Test run."""
-
-    #explain_conn_s = 'sqlite:///:memory:'
-    explain_conn_s = 'mysql://felix@127.0.0.1:3306/explain_forseti'
-    forseti_conn_s = 'mysql://felix@127.0.0.1:3306/forseti_security'
-
-    svc_config = ServiceConfig(explain_conn_s, forseti_conn_s)
-    source = 'FORSETI'
-    model_manager = svc_config.model_manager
-    model_name = model_manager.create(name=source)
-    print 'model name: {}'.format(model_name)
-
-    scoped_session, data_access = model_manager.get(model_name)
-    with scoped_session as session:
-
-        def do_import():
-            """Import runnable."""
-            importer_cls = by_source(source)
-            import_runner = importer_cls(
-                session,
-                model_manager.model(model_name),
-                data_access,
-                svc_config)
-            import_runner.run()
-
-        svc_config.run_in_background(do_import)
-        return model_name
-
-
-if __name__ == "__main__":
-    test_run()
