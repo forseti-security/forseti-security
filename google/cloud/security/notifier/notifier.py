@@ -13,7 +13,6 @@
 # limitations under the License.
 """Notifier.
 
-
 Usage:
 
   $ forseti_notifier --db_host <Cloud SQL database hostname/IP> \\
@@ -35,8 +34,8 @@ from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
-from google.cloud.security.notifier.pipelines.email_inventory_snapshot_summary_pipeline import EmailInventorySnapshopSummaryPipeline
-from google.cloud.security.notifier.pipelines.email_scanner_summary_pipeline import EmailScannerSummaryPipeline
+from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
+from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
 from google.cloud.security.scanner.scanners.scanners_map import RESOURCE_MAP
 # pylint: enable=line-too-long
 
@@ -55,6 +54,9 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 def find_pipelines(pipeline_name):
     """Get the first class in the given sub module
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
 
     Return:
         class: The class in the sub module
@@ -76,6 +78,9 @@ def find_pipelines(pipeline_name):
 def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
+    Args:
+        statuses (tuple): Snapshot statues.
+
     Returns:
         string: The latest snapshot timestamp.
     """
@@ -95,15 +100,15 @@ def process(message):
         message (dict): Message with payload in dict.
             The payload will be different depending on the sender
             of the message.
-    
+
             Example:
                 {'status': 'foobar_done',
-                 'payload': {}}                 
+                 'payload': {}}
     """
     payload = message.get('payload')
 
     if message.get('status') == 'inventory_done':
-        email_pipeline = EmailInventorySnapshopSummaryPipeline(
+        email_pipeline = inv_summary.EmailInventorySnapshopSummaryPipeline(
             payload.get('sendgrid_api_key'))
         email_pipeline.run(
             payload.get('cycle_time'),
@@ -116,7 +121,7 @@ def process(message):
         return
 
     if message.get('status') == 'scanner_done':
-        email_pipeline = EmailScannerSummaryPipeline(
+        email_pipeline = scanner_summary.EmailScannerSummaryPipeline(
             payload.get('sendgrid_api_key'))
         email_pipeline.run(
             payload.get('output_csv_name'),
@@ -126,7 +131,7 @@ def process(message):
             payload.get('resource_counts'),
             payload.get('violation_errors'),
             payload.get('email_sender'),
-            payload.get('email_recipient'))        
+            payload.get('email_recipient'))
         return
 
 def main(_):
