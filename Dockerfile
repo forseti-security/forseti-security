@@ -33,7 +33,6 @@ RUN pip install -q --upgrade pip
 RUN pip install -q --upgrade \
     coverage \
     codecov \
-    coveralls \
     google-apputils \
     grpcio \
     grpcio-tools \
