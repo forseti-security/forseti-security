@@ -15,13 +15,12 @@
 """ Importer implementations. """
 
 import json
+import traceback
 from collections import defaultdict
 from time import time
+from StringIO import StringIO
 
 from google.cloud.security.common.data_access import forseti
-from google.cloud.security.iam.dao import create_engine
-from google.cloud.security.iam.dao import ModelManager
-
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -29,9 +28,9 @@ from google.cloud.security.iam.dao import ModelManager
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc,missing-raises-doc
 
-# pylint: disable=unused-argument
-# pylint: disable=no-self-use
-# pylint: disable=bare-except,docstring-first-line-empty
+# pylint: disable=unused-argument,too-many-branches
+# pylint: disable=broad-except
+# pylint: disable=bare-except
 
 
 class ResourceCache(dict):
@@ -338,42 +337,52 @@ class ForsetiImporter(object):
 
     def run(self):
         """Runs the import."""
-        self.session.add(self.session.merge(self.model))
-        self.model.set_inprogress(self.session)
-        self.model.kick_watchdog(self.session)
+        try:
+            self.session.add(self.session.merge(self.model))
+            self.model.set_inprogress(self.session)
+            self.model.kick_watchdog(self.session)
 
-        last_watchdog_kick = time()
-        for res_type, obj in self.forseti_importer:
-            if res_type == 'organizations':
-                self.session.add(self._convert_organization(obj))
-            elif res_type == 'folders':
-                self.session.add(self._convert_folder(obj))
-            elif res_type == 'projects':
-                self.session.add(self._convert_project(obj))
-            elif res_type == 'buckets':
-                self.session.add(self._convert_bucket(obj))
-            elif res_type == 'cloudsqlinstances':
-                self.session.add(self._convert_cloudsqlinstance(obj))
-            elif res_type == 'policy':
-                self._convert_policy(obj)
-            elif res_type == 'group':
-                self.session.add(self._convert_group(obj))
-            elif res_type == 'membership':
-                self.session.add(self._convert_membership(obj))
-            elif res_type == 'customer':
-                # TODO: investigate how we
-                # don't see this in the first place
-                pass
-            else:
-                raise NotImplementedError(res_type)
+            item_counter = 0
+            last_watchdog_kick = time()
+            for res_type, obj in self.forseti_importer:
+                item_counter += 1
+                if res_type == 'organizations':
+                    self.session.add(self._convert_organization(obj))
+                elif res_type == 'folders':
+                    self.session.add(self._convert_folder(obj))
+                elif res_type == 'projects':
+                    self.session.add(self._convert_project(obj))
+                elif res_type == 'buckets':
+                    self.session.add(self._convert_bucket(obj))
+                elif res_type == 'cloudsqlinstances':
+                    self.session.add(self._convert_cloudsqlinstance(obj))
+                elif res_type == 'policy':
+                    self._convert_policy(obj)
+                elif res_type == 'group':
+                    self.session.add(self._convert_group(obj))
+                elif res_type == 'membership':
+                    self.session.add(self._convert_membership(obj))
+                elif res_type == 'customer':
+                    # TODO: investigate how we
+                    # don't see this in the first place
+                    pass
+                else:
+                    raise NotImplementedError(res_type)
 
-            # kick watchdog about every ten seconds
-            if time() - last_watchdog_kick > 10.0:
-                self.model.kick_watchdog(self.session)
-                last_watchdog_kick = time()
+                # kick watchdog about every ten seconds
+                if time() - last_watchdog_kick > 10.0:
+                    self.model.kick_watchdog(self.session)
+                    last_watchdog_kick = time()
 
-        self.model.set_done(self.session)
-        self.session.commit()
+        except Exception:
+            buf = StringIO()
+            traceback.print_exc(file=buf)
+            buf.seek(0)
+            message = buf.read()
+            self.model.set_error(self.session, message)
+        else:
+            self.model.set_done(self.session, item_counter)
+            self.session.commit()
 
 
 def by_source(source):
@@ -384,52 +393,3 @@ def by_source(source):
         'FORSETI': ForsetiImporter,
         'EMPTY': EmptyImporter,
     }[source.upper()]
-
-
-class ServiceConfig(object):
-    """
-    ServiceConfig is a helper class to implement dependency injection
-    to IAM Explain services.
-    """
-
-    def __init__(self, explain_connect_string, forseti_connect_string):
-        engine = create_engine(explain_connect_string, echo=True)
-        self.model_manager = ModelManager(engine)
-        self.forseti_connect_string = forseti_connect_string
-
-    def run_in_background(self, function):
-        """Runs a function in a thread pool in the background."""
-        return function()
-
-def test_run():
-    """Test run."""
-
-    #explain_conn_s = 'sqlite:///:memory:'
-    explain_conn_s = 'mysql://felix@127.0.0.1:3306/explain_forseti'
-    forseti_conn_s = 'mysql://felix@127.0.0.1:3306/forseti_security'
-
-    svc_config = ServiceConfig(explain_conn_s, forseti_conn_s)
-    source = 'FORSETI'
-    model_manager = svc_config.model_manager
-    model_name = model_manager.create()
-    print 'model name: {}'.format(model_name)
-
-    scoped_session, data_access = model_manager.get(model_name)
-    with scoped_session as session:
-
-        def do_import():
-            """Import runnable."""
-            importer_cls = by_source(source)
-            import_runner = importer_cls(
-                session,
-                model_manager.model(model_name),
-                data_access,
-                svc_config)
-            import_runner.run()
-
-        svc_config.run_in_background(do_import)
-        return model_name
-
-
-if __name__ == "__main__":
-    test_run()
