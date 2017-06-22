@@ -55,7 +55,6 @@ SETUP_REQUIRES = [
     'grpcio>=1.2.1',
     'grpcio-tools>=1.2.1',
     'python-gflags==3.1.1',
-    'protobuf>=3.2.0'
 ]
 
 TEST_REQUIRES = [
