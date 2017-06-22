@@ -13,7 +13,6 @@
 # limitations under the License.
 """Notifier.
 
-
 Usage:
 
   $ forseti_notifier --db_host <Cloud SQL database hostname/IP> \\
@@ -35,13 +34,10 @@ from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
+from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
+from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
 from google.cloud.security.scanner.scanners.scanners_map import RESOURCE_MAP
 # pylint: enable=line-too-long
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc
 
 
 # Setup flags
@@ -59,8 +55,11 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 def find_pipelines(pipeline_name):
     """Get the first class in the given sub module
 
+    Args:
+        pipeline_name (str): Name of the pipeline.
+
     Return:
-        The class in the sub module
+        class: The class in the sub module
     """
     try:
         module = importlib.import_module(
@@ -79,8 +78,11 @@ def find_pipelines(pipeline_name):
 def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
+    Args:
+        statuses (tuple): Snapshot statues.
+
     Returns:
-        The latest snapshot timestamp string.
+        string: The latest snapshot timestamp.
     """
 
     latest_timestamp = None
@@ -91,8 +93,53 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     return latest_timestamp
 
+def process(message):
+    """Process messages about what notifications to send.
+
+    Args:
+        message (dict): Message with payload in dict.
+            The payload will be different depending on the sender
+            of the message.
+
+            Example:
+                {'status': 'foobar_done',
+                 'payload': {}}
+    """
+    payload = message.get('payload')
+
+    if message.get('status') == 'inventory_done':
+        inv_email_pipeline = inv_summary.EmailInventorySnapshotSummaryPipeline(
+            payload.get('sendgrid_api_key'))
+        inv_email_pipeline.run(
+            payload.get('cycle_time'),
+            payload.get('cycle_timestamp'),
+            payload.get('snapshot_cycle_status'),
+            payload.get('pipelines'),
+            payload.get('email_sender'),
+            payload.get('email_recipient')
+        )
+        return
+
+    if message.get('status') == 'scanner_done':
+        scanner_email_pipeline = scanner_summary.EmailScannerSummaryPipeline(
+            payload.get('sendgrid_api_key'))
+        scanner_email_pipeline.run(
+            payload.get('output_csv_name'),
+            payload.get('output_filename'),
+            payload.get('now_utc'),
+            payload.get('all_violations'),
+            payload.get('resource_counts'),
+            payload.get('violation_errors'),
+            payload.get('email_sender'),
+            payload.get('email_recipient'))
+        return
+
 def main(_):
-    """main function"""
+    """Main function.
+
+        Args:
+            _ (obj): Result of the last expression evaluated in the interpreter.
+    """
     if FLAGS.timestamp is not None:
         timestamp = FLAGS.timestamp
     else:
