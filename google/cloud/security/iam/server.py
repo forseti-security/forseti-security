@@ -48,7 +48,6 @@ class ServiceConfig(object):
         """Runs a function in a thread pool in the background."""
         self.thread_pool.apply_async(function)
 
-
 def serve(endpoint, services, explain_connect_string, forseti_connect_string,
           max_workers=1, wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC."""

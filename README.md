@@ -1,11 +1,13 @@
-[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security) [![Coverage Status](https://coveralls.io/repos/github/GoogleCloudPlatform/forseti-security/badge.svg)](https://coveralls.io/github/GoogleCloudPlatform/forseti-security)
+[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security) [![Coverage Status](https://coveralls.io/repos/github/GoogleCloudPlatform/forseti-security/badge.svg)](https://coveralls.io/github/GoogleCloudPlatform/forseti-security) [![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)
 
 # Forseti Security
 Forseti Security is a tool that secures your organization's use of Google Cloud
 Platform.
 
-For documentation and installation guides checkout our GitHub Page at
-[googlecloudplatform.github.io/forseti-security/](https://googlecloudplatform.github.io/forseti-security/)
+Documentation and installation guides:
+* [Local installation](http://forseti-security.io/install/local/)
+* [GCP deployment](http://forseti-security.io/install/gcp/)
+* [Configuring scanners](http://forseti-security.io/modules/core/scanner/)
 
 
 ## Contributing

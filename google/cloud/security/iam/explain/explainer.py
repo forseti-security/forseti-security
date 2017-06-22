@@ -70,12 +70,12 @@ class Explainer(object):
                                                            expand_groups)
             return mapping
 
-    def CreateModel(self, source):
+    def CreateModel(self, source, name):
         """Creates a model from the import source."""
 
         model_manager = self.config.model_manager
-        model_name = model_manager.create()
-        scoped_session, data_access = model_manager.get(model_name)
+        model_handle = model_manager.create(name=name)
+        scoped_session, data_access = model_manager.get(model_handle)
         with scoped_session as session:
 
             def doImport():
@@ -83,13 +83,13 @@ class Explainer(object):
                 importer_cls = importer.by_source(source)
                 import_runner = importer_cls(
                     session,
-                    model_manager.model(model_name),
+                    model_manager.model(model_handle, expunge=False),
                     data_access,
                     self.config)
                 import_runner.run()
 
             self.config.run_in_background(doImport)
-            return model_name
+            return model_manager.model(model_handle, expunge=True)
 
     def GetAccessByMembers(self, model_name, member_name, permission_names,
                            expand_resources):
@@ -132,7 +132,7 @@ class Explainer(object):
         with scoped_session as session:
             for tpl in data_access.denormalize(session):
                 permission, resource, member = tpl
-                yield permission.name, resource.full_name, member.name
+                yield permission, resource, member
 
 
 if __name__ == "__main__":
@@ -149,4 +149,4 @@ if __name__ == "__main__":
             function()
 
     e = Explainer(config=DummyConfig())
-    e.CreateModel("TEST")
+    e.CreateModel("TEST", 'test')
