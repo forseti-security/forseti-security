@@ -35,7 +35,7 @@ $ workon forseti-security # replace forseti-security with your virtalenv.
 $ pip install pylint
 
 # From the root of forseti-security using pylint >= 1.6.5
-$ PYTHONPATH=./ pylint --rcfile=./pylintrc
+$ PYTHONPATH=./ pylint --rcfile=./pylintrc google/ setup/
 ```
 
 ## How to Submit A Pull Request

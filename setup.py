@@ -69,7 +69,7 @@ if sys.version_info.major > 2:
 
 def build_protos():
     """Build protos."""
-    subprocess.check_call(['python', 'build_protos.py', '--clean'])
+    subprocess.check_call(['python', 'setup/build_protos.py', '--clean'])
 
 class PostInstallCommand(install):
     """Post installation command."""
@@ -114,6 +114,7 @@ setup(
             'forseti_notifier = google.cloud.security.stubs:RunForsetiNotifier',
             'forseti_api = google.cloud.security.stubs:RunForsetiApi',
             'forseti_iam = google.cloud.security.stubs:RunExplainCli',
+            'forseti_setup = setup.stubs:RunForsetiSetup',
         ]
     },
     zip_safe=False,   # Set to False: apputils doesn't like zip_safe eggs
