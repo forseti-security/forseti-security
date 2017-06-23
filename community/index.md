@@ -3,11 +3,11 @@ title: Community
 ---
 # {{ page.title }}
 
-## [Troubleshooting]
+## Troubleshooting
 
 Coming soon.
 
-## [GCP Resource Coverage]({% link _docs/quickstarts/inventory/index.md %})
+## [GCP Resource Coverage]({% link _docs/quickstarts/inventory/index.md %}#gcp-resource-coverage)
 
 GCP Resources that currently have coverage in Forseti or are planned to have
 coverage.

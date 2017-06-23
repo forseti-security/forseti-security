@@ -31,7 +31,7 @@ Before you set up and deploy IAM Explain, you'll need the following:
 
   - A service account with the Cloud SQL Client role. For security purposes,
   it's best to create a separate service account for IAM Explain. However, you
-  can use your [Forseti Security service account]({% link _docs/howto/local-deployment.md %})
+  can use your [Forseti Security service account]({% link _docs/howto/local-deployment.md %}#creating-service-accounts)
   if you want.
   - An SQL instance. You can use the SQL instance you created when you
   set up Forseti Security, or create a new, separate SQL instance for IAM
