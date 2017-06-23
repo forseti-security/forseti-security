@@ -146,7 +146,6 @@ class ForsetiGcpSetup(object):
         self.sendgrid_api_key = '""'
         self.notification_sender_email = '""'
         self.notification_recipient_email = '""'
-        self.should_inventory_groups = True
         self.gsuite_super_admin_email = '""'
 
     def __repr__(self):
@@ -796,7 +795,7 @@ class ForsetiGcpSetup(object):
             'SENDGRID_API_KEY': self.sendgrid_api_key,
             'NOTIFICATION_SENDER_EMAIL': self.notification_sender_email,
             'NOTIFICATION_RECIPIENT_EMAIL': self.notification_recipient_email,
-            'SHOULD_INVENTORY_GROUPS': self.should_inventory_groups,
+            'SHOULD_INVENTORY_GROUPS': bool(self.gsuite_service_account),
             'GSUITE_SUPER_ADMIN_EMAIL': self.gsuite_super_admin_email,
         }
         with open(deploy_tpl_path, 'r') as in_tmpl:
