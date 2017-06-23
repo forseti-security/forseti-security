@@ -749,23 +749,25 @@ class ForsetiGcpSetup(object):
                 'deploy-forseti-{}.yaml'.format(os.getpid())))
 
         # Ask for SendGrid API Key
-        sendgrid_api_key = raw_input('What is your SendGrid API key? ').strip()
+        sendgrid_api_key = raw_input(
+            'What is your SendGrid API key? (press [enter] to '
+            'leave blank) ').strip()
         if sendgrid_api_key:
             self.sendgrid_api_key = sendgrid_api_key
 
         # Ask for notification sender email
-        notif_sender_email = raw_input(
+        notification_sender_email = raw_input(
             'What is the sender email address for your notifications? '
             '(press [enter] to leave blank) ').strip()
-        if notif_sender_email:
-            self.notification_sender_email = notif_sender_email
+        if notification_sender_email:
+            self.notification_sender_email = notification_sender_email
 
         # Ask for notification recipient email
-        notif_recip_email = raw_input(
+        notification_recipient_email = raw_input(
             'At what email address do you want to receive notifications? '
             '(press [enter] to leave blank) ').strip()
-        if notif_recip_email:
-            self.notification_recipient_email = notif_recip_email
+        if notification_recipient_email:
+            self.notification_recipient_email = notification_recipient_email
 
         # Ask for GSuite super admin email
         gsuite_super_admin_email = raw_input(
