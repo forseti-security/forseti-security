@@ -2,7 +2,7 @@
 title: Development Overview
 order: 001
 ---
-# Development Overview
+# {{ page.title }}
 
 ## Testing
 
@@ -10,8 +10,7 @@ This page describes how to run tests on your Forseti contributions.
 
 ### Executing tests
 
-You can find the unit tests in the top-level `tests/` directory. They are built
-on the [google-apputils basetest](https://github.com/google/google-apputils).
+You can find the unit tests in the top-level `tests/` directory.
 
 To execute tests, run the command below:
 

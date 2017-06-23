@@ -1,4 +1,8 @@
-# Changing a Deployment
+---
+title: Changing a Deployment
+order: 2 
+---
+#  {{ page.title }}
 
 This page describes how to change a Forseti Security deployment. Most changes
 to a deployment are usually to the deployment properties, such as the

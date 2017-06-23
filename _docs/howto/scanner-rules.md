@@ -1,4 +1,8 @@
-# Defining Rules for Forseti Scanner
+---
+title: Defining Rules for Forseti Scanner
+order: 8
+---
+#  {{ page.title }}
 
 This page describes how to define rules for Forseti Scanner.
 

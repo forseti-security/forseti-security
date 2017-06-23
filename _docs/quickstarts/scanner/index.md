@@ -2,7 +2,7 @@
 title: Forseti Scanner Quickstart
 order: 101
 ---
-# Forseti Scanner Quickstart
+# {{ page.title }}
 
 This quickstart describes how to get started with Forseti Scanner. Forseti
 Scanner uses a JSON or YAML rules definition file to audit your Google Cloud
@@ -11,7 +11,8 @@ audit, Forseti Scanner outputs rule violations to Cloud SQL and optionally
 writes it to a bucket in Google Cloud Storage.
 
 Forseti Scanner is different from the Cloud Security Scanner, which does App
-Engine vulnerability scanning. Learn more about [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
+Engine vulnerability scanning. Learn more about
+[Cloud Security Scanner](https://cloud.google.com/security-scanner/).
 
 ## Running Forseti Scanner
 
@@ -21,7 +22,8 @@ To run Forseti Scanner, follow the process below:
   if applicable.
   
   1. Edit the sample `rules.yaml` file in the `samples/` directory to fit your
-  environment. Learn more about [defining rules for Forseti Scanner](scanner-rules-howto)
+  environment. Learn more about
+  [defining rules for Forseti Scanner]({% link _docs/howto/scanner-rules.md %}).
   
   1. Run Scanner for your rules file location:
   
@@ -51,5 +53,5 @@ manually.
 
 ## What's next
 
-- Learn about [defining rules](scanner-rules-howto).
+- Learn about [defining rules]({% link _docs/howto/scanner-rules.md %}).
 

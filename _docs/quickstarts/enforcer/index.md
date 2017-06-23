@@ -1,8 +1,8 @@
 ---
-title: Forseti Enforcer Quickstart
+title: Enforcer Quickstart
 order: 201
 ---
-# Forseti Enforcer Quickstart
+# {{ page.title }}
 
 This quickstart describes how to get started with Forseti Enforcer. Forseti
 Enforcer compares policy files that define the desired state of a resource

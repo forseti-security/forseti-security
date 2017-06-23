@@ -1,4 +1,8 @@
-# Deploying Forseti on Google Cloud Platform
+---
+title: Deploying Forseti on Google Cloud Platform
+order: 4 
+---
+#  {{ page.title }}
 
 This page explains how to use the Google Cloud Deployment Manager (DM) to set
 up Forseti for your Google Cloud Platform (GCP) resources. The DM templates
@@ -20,7 +24,7 @@ To complete this quickstart, you will need:
 
 ## Setting up Forseti Security
 
-{% include _includes/howto/deployment_prerequisites.md %}
+{% include _howto/deployment_prerequisites.md %}
 
 ### Customizing deployment templates
 

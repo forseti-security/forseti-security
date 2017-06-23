@@ -27,7 +27,7 @@ defaults:
   - scope:
       path: _docs/howto
     values:
-      category: How To
+      category: How Tos
   - scope:
       path: _docs/quickstarts
     values:

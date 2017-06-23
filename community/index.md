@@ -1,15 +1,15 @@
 ---
 title: Community
 ---
-# Community
+# {{ page.title }}
 
-## [Troubleshooting](troubleshooting)
+## [Troubleshooting](#)
 
 Troubleshooting help for Forseti Security and modules.
 
-## [Resource Coverage](resource-coverage)
+## [GCP Resource Coverage]({% link _docs/quickstarts/inventory/index.md %})
 
-Resources that currently have coverage in Forseti or are planned to have
+GCP Resources that currently have coverage in Forseti or are planned to have
 coverage.
 
 ## Contact Us

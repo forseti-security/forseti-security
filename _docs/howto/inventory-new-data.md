@@ -1,4 +1,8 @@
-# Collecting and Storing New Data in Forseti Inventory
+---
+title: Collection and Storing New Data in Forseti Inventory
+order: 6
+---
+#  {{ page.title }}
 
 This page describes how to modify Forseti Inventory to collect and store new
 data types.

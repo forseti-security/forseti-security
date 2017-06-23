@@ -1,8 +1,8 @@
 ---
-title: Forseti Enforcer Quickstart
+title: IAM Explain Quickstart
 order: 202
 ---
-# IAM Explain Quickstart
+# {{ page.title }}
 
 This quickstart describes how to set up IAM Explain for Forseti Security.
 IAM Explain is a client-server based application that helps administrators,
@@ -31,7 +31,7 @@ Before you set up and deploy IAM Explain, you'll need the following:
 
   - A service account with the Cloud SQL Client role. For security purposes,
   it's best to create a separate service account for IAM Explain. However, you
-  can use your [Forseti Security service account](forseti-quickstart#creating_service_accounts)
+  can use your [Forseti Security service account]({% link _docs/howto/local-deployment.md %})
   if you want.
   - An SQL instance. You can use the SQL instance you created when you
   set up Forseti Security, or create a new, separate SQL instance for IAM
@@ -40,7 +40,7 @@ Before you set up and deploy IAM Explain, you'll need the following:
 
 ## Customizing the deployment template
 
-You can use the provided [sample IAM Explain deployment](/samples/deployment-manager/deploy-explain.yaml.sample)
+You can use the provided [sample IAM Explain deployment](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/deployment-manager/deploy-explain.yaml.sample)
 to customize your deployment. You'll need to point to the SQL instance you want
 to use for IAM Explain. To prepare your IAM Explain template, update the
 following values:

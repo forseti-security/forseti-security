@@ -1,4 +1,8 @@
-# Enabling Email Notifications
+---
+title: Enabling Email Notifications
+order: 3 
+---
+#  {{ page.title }}
 
 Forseti Security can send email notifications using the SendGrid API. SendGrid
 is currently the only supported email service provider.

@@ -2,7 +2,7 @@
 title: All Quickstarts 
 order: 001
 ---
-# All Quickstarts
+# {{ page.title }}
 
 ## [Forseti Security](% link _docs/quickstarts/forseti-security.md %})
 

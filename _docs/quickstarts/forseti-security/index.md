@@ -2,7 +2,7 @@
 title: Forseti Security Quickstart
 order: 002
 ---
-# Forseti Security Quickstart
+# {{ page.title }}
 
 This quickstart explains how to use the Forseti setup wizard to get started
 quickly with Forseti Security for Google Cloud Platform (GCP) projects.
@@ -74,10 +74,11 @@ to use for your resources.
 
 ## What's next
 
-  - Set up [Inventory](inventory-quickstart), [Scanner](scanner-quickstart),
-  and [Enforcer](enforcer-quickstart).
-  - Set up Forseti to send [email notifications](email-notification-howto).
-  - Enable [GSuite Google Groups collection](gsuite-group-collection-howto) for
-  processing by Forseti.
-  - Learn how to [change a deployment](change-deployment-howto).
+  - Set up [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
+  [Scanner]({% link _docs/quickstarts/scanner/index.md %}),
+  and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %}).
+  - Set up Forseti to send [email notifications]({% link _docs/howto/email-notification.md %}).
+  - Enable[GSuite Google Groups collection]({% link _docs/howto/gsuite-group-collection.md %})
+  for processing by Forseti.
+  - Learn how to [change a deployment]({% link _docs/howto/change-gcp-deployment.md %}).
 

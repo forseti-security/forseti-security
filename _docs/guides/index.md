@@ -2,10 +2,10 @@
 title: All Development Guides
 order: 001
 ---
-# All Development Guides
+#  {{ page.title }}
 
-## [Contributing to Forseti](contributing)
+## [Contributing to Forseti](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md)
 Learn about the process to contribute to Forseti.
 
-## [Testing](testing)
+## [Testing]({% link _docs/development/index.md %})
 Test your Forseti contributions.

@@ -1,4 +1,8 @@
-# Enabling GSuite Google Groups Collection
+---
+title: Enabling GSuite Google Groups Collection
+order: 5 
+---
+#  {{ page.title }}
 
 This page describes how to enable the collection of GSuite Google Groups
 collection for processing by Forseti Scanner and Enforcer.
@@ -47,7 +51,7 @@ $ forseti_inventory --config_path PATH_TO_inventory_config \
 ## Deploying with GSuite Google Groups collection
 
 After you
-[create a deployment]({% link _docs/quickstarts/forset-security/index.md %}),
+[create a deployment]({% link _docs/quickstarts/forseti-security/index.md %}),
 run the following commands to deploy with GSuite Google Groups collection:
 
 ````

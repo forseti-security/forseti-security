@@ -1,4 +1,8 @@
-# Deploying Forseti in a Local Environment
+---
+title: Deploying Forseti in a Local Environment
+order: 7
+---
+#  {{ page.title }}
 
 This page explains how to use the gcloud command-line tool to set up Forseti
 for your Google Cloud Platform (GCP) resources.
@@ -12,7 +16,7 @@ To complete this quickstart, you will need:
 
 ## Setting up Forseti Security
 
-{% include _includes/howto/deployment_prerequisites.md %}
+{% include _howto/deployment_prerequisites.md %}
 
 ### Setting up Cloud SQL
 
