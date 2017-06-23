@@ -115,6 +115,11 @@ class ForsetiGcpSetup(object):
         {'desc': 'London', 'region': 'Europe', 'value': 'europe-west2'},
     ]
 
+    BRANCH_RELEASE_FMT = '{}: "{}"'
+    DEPLOY_TPL_DIR_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
+            __file__)))), 'deployment-templates')
+
     def __init__(self, **kwargs):
         """Init.
 
@@ -735,19 +740,13 @@ class ForsetiGcpSetup(object):
         """Generate deployment templates."""
         self._print_banner('Generate Deployment Manager templates')
 
-        deploy_tpl_dir_path = os.path.join(
-            os.path.dirname(
-                os.path.dirname(
-                    os.path.dirname(
-                        os.path.dirname(__file__)))),
-            'deployment-templates')
         deploy_tpl_path = os.path.abspath(
             os.path.join(
-                deploy_tpl_dir_path,
+                self.DEPLOY_TPL_DIR_PATH,
                 'deploy-forseti.yaml.in'))
         out_tpl_path = os.path.abspath(
             os.path.join(
-                deploy_tpl_dir_path,
+                self.DEPLOY_TPL_DIR_PATH,
                 'deploy-forseti-{}.yaml'.format(os.getpid())))
 
         # Ask for SendGrid API Key
@@ -777,15 +776,14 @@ class ForsetiGcpSetup(object):
             self.gsuite_super_admin_email = gsuite_super_admin_email
 
         # Determine which branch or release of Forseti to deploy
-        branch_release_fmt = '{}: "{}"'
         if self.version:
-            branch_or_release = branch_release_fmt.format('release-version',
-                                                          self.version)
+            branch_or_release = self.BRANCH_RELEASE_FMT.format(
+                'release-version', self.version)
         else:
             if not self.branch:
                 self.branch = 'master'
-            branch_or_release = branch_release_fmt.format('branch-name',
-                                                          self.branch)
+            branch_or_release = self.BRANCH_RELEASE_FMT.format(
+                'branch-name', self.branch)
 
         deploy_values = {
             'CLOUDSQL_REGION': self.cloudsql_region,
@@ -813,7 +811,7 @@ class ForsetiGcpSetup(object):
                                   '(y/N) ').strip().lower()
         if deploy_choice == 'y':
             self.created_deployment = True
-            exit_status = subprocess.call(
+            _ = subprocess.call(
                 ['gcloud', 'deployment-manager', 'deployments', 'create',
                  'forseti-security-{}'.format(os.getpid()),
                  '--config={}'.format(out_tpl_path)])
