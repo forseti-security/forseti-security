@@ -30,11 +30,11 @@ To submit a pull request for Forseti, follow the process below:
 
          # Fork the project via GitHub UI.
 
-         # Clone your forked repository into local directory.
+         # Clone your forked repository into a local directory.
          git clone FORKED_REPOSITORY_URL
 
-         # Navigate to your newly cloned directory.
-         cd <path to you local cloned repository>
+         # Navigate to your the directory.
+         cd <path to your directory from above>
 
          # Assign the original repository to a remote called "upstream".
          # Using HTTPS
@@ -64,9 +64,8 @@ To submit a pull request for Forseti, follow the process below:
   1. Create your change.
     - Don't incorporate multiple changes in one PR. A change should be a logical, self-contained unit of work, feature, or fix. This simplifies troubleshooting and rollbacks.
     - Learn how to execute [Inventory](inventory-quickstart), [Scanner](scanner-quickstart), or [Enforcer](enforcer-quickstart).
-  1. Create your test.
-    - Unit tests should provide high and useful coverage. If your change involves substantial logic, we'll ask you to write applicable unit tests.
-    - Unit tests should be written with google-apputils basetest framework. For an example of how to use the framework, see [Google-Style Tests](https://pypi.python.org/pypi/google-apputils).
+  1. Create tests for your change.
+    - You should write applicable unit tests for your changes, especially for changes involving substantial logic.
     - Learn how to [run the tests](testing).
   1. Commit your changes and push them to your development branch:
 
@@ -74,6 +73,6 @@ To submit a pull request for Forseti, follow the process below:
 
   1. Open a [pull request](https://help.github.com/articles/about-pull-requests/) to begin the code review.
     - All submissions, including submissions by project members, require a code review.
-    - The GitHub UI will display any merge conflicts you need to resolve.
+    - The Github UI will display whether you have any merge conflicts that need to be resolved.
     - All tests must pass before we review your PR. To test locally, you can install the git hooks under `scripts/githooks`.
   1. After your PR is approved and all merge conflicts are resolved, we'll merge your PR.
