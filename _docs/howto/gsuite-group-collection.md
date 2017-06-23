@@ -40,7 +40,7 @@ You can also use the command-line to update the variables. To update variables
 using the command-line, run the following commands where
 `–groups_service_account_key_file` is the path to the domain-wide-delegation
 key created for the groups-only service account. Learn more about
-[creating service accounts](gcp-deployment-howto#creating_service_accounts).
+[creating service accounts]({% link _docs/howto/gcp-deployment.md %}).
 
 ````
 $ forseti_inventory --config_path PATH_TO_inventory_config \

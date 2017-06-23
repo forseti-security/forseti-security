@@ -3,9 +3,9 @@ title: Community
 ---
 # {{ page.title }}
 
-## [Troubleshooting](#)
+## [Troubleshooting]
 
-Troubleshooting help for Forseti Security and modules.
+Coming soon.
 
 ## [GCP Resource Coverage]({% link _docs/quickstarts/inventory/index.md %})
 

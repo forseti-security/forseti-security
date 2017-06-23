@@ -55,7 +55,8 @@ the following values:
   - `src-path`: the path to the release, such as
   `https://github.com/GoogleCloudPlatform/forseti-security/archive/TAG_NAME.tar.gz`.
     - Tag names start with a "v" and can be found on the
-    [forseti-security](https://github.com/GoogleCloudPlatform/forseti-security/tags page).
+    [forseti-security](https://github.com/GoogleCloudPlatform/forseti-security/tags)
+    page.
     - To use the master branch, set `TAG_NAME` to `master`.
   - `release-version `: the tag name, without the "v" prefix.
     - To use the master branch, set this value to "master".
