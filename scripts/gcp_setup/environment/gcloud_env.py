@@ -116,7 +116,11 @@ class ForsetiGcpSetup(object):
     ]
 
     def __init__(self, **kwargs):
-        """Init."""
+        """Init.
+
+        Args:
+            kwargs (dict): The kwargs.
+        """
         self.branch = kwargs.get('branch')
         self.version = kwargs.get('version')
 
@@ -132,12 +136,12 @@ class ForsetiGcpSetup(object):
         self.cloudsql_instance = None
         self.cloudsql_user = None
         self.cloudsql_region = None
-        self.should_inventory_groups = False
         self.created_deployment = False
 
         self.sendgrid_api_key = '""'
         self.notification_sender_email = '""'
         self.notification_recipient_email = '""'
+        self.should_inventory_groups = True
         self.gsuite_super_admin_email = '""'
 
     def __repr__(self):
@@ -729,30 +733,59 @@ class ForsetiGcpSetup(object):
 
     def generate_deployment_templates(self):
         """Generate deployment templates."""
-        deploy_tmpl = os.path.abspath(
-            os.path.join(
+        self._print_banner('Generate Deployment Manager templates')
+
+        deploy_tpl_dir_path = os.path.join(
+            os.path.dirname(
                 os.path.dirname(
                     os.path.dirname(
-                        os.path.dirname(
-                            os.path.dirname(__file__)))),
-            'deployment-templates',
-            'deploy-forseti.yaml.in'))
-        out_tmpl = os.path.abspath(
+                        os.path.dirname(__file__)))),
+            'deployment-templates')
+        deploy_tpl_path = os.path.abspath(
             os.path.join(
-                os.path.dirname(
-                    os.path.dirname(
-                        os.path.dirname(
-                            os.path.dirname(__file__)))),
-            'deployment-templates',
-            'deploy-forseti-{}.yaml'.format(os.getpid())))
+                deploy_tpl_dir_path,
+                'deploy-forseti.yaml.in'))
+        out_tpl_path = os.path.abspath(
+            os.path.join(
+                deploy_tpl_dir_path,
+                'deploy-forseti-{}.yaml'.format(os.getpid())))
+
+        # Ask for SendGrid API Key
+        sendgrid_api_key = raw_input('What is your SendGrid API key? ').strip()
+        if sendgrid_api_key:
+            self.sendgrid_api_key = sendgrid_api_key
+
+        # Ask for notification sender email
+        notif_sender_email = raw_input(
+            'What is the sender email address for your notifications? '
+            '(press [enter] to leave blank) ').strip()
+        if notif_sender_email:
+            self.notification_sender_email = notif_sender_email
+
+        # Ask for notification recipient email
+        notif_recip_email = raw_input(
+            'At what email address do you want to receive notifications? '
+            '(press [enter] to leave blank) ').strip()
+        if notif_recip_email:
+            self.notification_recipient_email = notif_recip_email
+
+        # Ask for GSuite super admin email
+        gsuite_super_admin_email = raw_input(
+            'What is your GSuite super admin\'s email? '
+            '(press [enter] to leave blank) ').strip()
+        if gsuite_super_admin_email:
+            self.gsuite_super_admin_email = gsuite_super_admin_email
+
+        # Determine which branch or release of Forseti to deploy
         branch_release_fmt = '{}: "{}"'
-        if self.branch:
-            branch_or_release = branch_release_fmt.format('branch', self.branch)
-        elif self.version:
+        if self.version:
             branch_or_release = branch_release_fmt.format('release-version',
                                                           self.version)
         else:
-            branch_or_release = branch_release_fmt.format('branch', 'master')
+            if not self.branch:
+                self.branch = 'master'
+            branch_or_release = branch_release_fmt.format('branch-name',
+                                                          self.branch)
 
         deploy_values = {
             'CLOUDSQL_REGION': self.cloudsql_region,
@@ -765,26 +798,31 @@ class ForsetiGcpSetup(object):
             'SENDGRID_API_KEY': self.sendgrid_api_key,
             'NOTIFICATION_SENDER_EMAIL': self.notification_sender_email,
             'NOTIFICATION_RECIPIENT_EMAIL': self.notification_recipient_email,
+            'SHOULD_INVENTORY_GROUPS': self.should_inventory_groups,
             'GSUITE_SUPER_ADMIN_EMAIL': self.gsuite_super_admin_email,
         }
-        with open(deploy_tmpl, 'r') as in_tmpl:
+        with open(deploy_tpl_path, 'r') as in_tmpl:
             tmpl_contents = in_tmpl.read()
             out_contents = tmpl_contents.format(**deploy_values)
-            with open(out_tmpl, 'w') as out_tmpl:
+            with open(out_tpl_path, 'w') as out_tmpl:
                 out_tmpl.write(out_contents)
 
-        print('\nCreated a deployment template:\n    %s\n' % out_tmpl)
+        print('\nCreated a deployment template:\n    %s\n' % out_tpl_path)
 
         deploy_choice = raw_input('Create a GCP deployment? '
                                   '(y/N) ').strip().lower()
         if deploy_choice == 'y':
-            # TODO: create the deployment
-            # if deployment succeeds, set a flag
-            pass
+            self.created_deployment = True
+            exit_status = subprocess.call(
+                ['gcloud', 'deployment-manager', 'deployments', 'create',
+                 'forseti-security-{}'.format(os.getpid()),
+                 '--config={}'.format(out_tpl_path)])
 
     def create_data_storage(self):
         """Create Cloud SQL instance and Cloud Storage bucket. (optional)"""
         self._print_banner('Create data storage (optional)')
+        print('Be advised! Only do these next 2 steps if you plan to deploy '
+              'locally or without Deployment Manager!\n')
         should_create_bucket = raw_input(
             'Create Cloud Storage bucket now? (y/N) ').strip().lower()
         if should_create_bucket == 'y':
@@ -856,4 +894,9 @@ class ForsetiGcpSetup(object):
             for (i, instr_text) in enumerate(instructions):
                 print(instr_text.format(i+1))
 
-        # TODO: print deployment manager dashboard
+        if self.created_deployment:
+            print('Since you chose to create a deployment via Deployment '
+                  'Manager, you can check out the details in the Cloud '
+                  'Console:\n\n'
+                  '    https://console.cloud.google.com/deployments?'
+                  'project={}\n'.format(self.project_id))

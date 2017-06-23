@@ -88,6 +88,6 @@ resources:
     email-recipient: {NOTIFICATION_RECIPIENT_EMAIL}
 
     # Flags for Inventory to collect GSuite Google Groups information.
-    inventory-groups: true
+    inventory-groups: {SHOULD_INVENTORY_GROUPS}
     groups-domain-super-admin-email: {GSUITE_SUPER_ADMIN_EMAIL}
     groups-service-account-key-file: "/home/ubuntu/service-account-key.json"

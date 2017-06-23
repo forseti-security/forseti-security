@@ -23,7 +23,7 @@ def GenerateConfig(context):
         'type': 'storage.v1.bucket',
         'properties': {
             'project': context.env['project'],
-            'region': context.env['region'],
+            'region': context.properties['region'],
         }
     })
 
