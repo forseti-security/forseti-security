@@ -20,9 +20,7 @@ To complete this quickstart, you will need:
 
 ## Setting up Forseti Security
 
-{% capture include_content %}
-{% include howto_prereqs_include.md %}
-{% endcapture %}
+{% include _includes/howto_prereqs_include.md %}
 
 ### Customizing deployment templates
 

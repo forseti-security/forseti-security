@@ -1,8 +1,8 @@
 ---
 title: Forseti Security Quickstart
-order: 001
+order: 002
 ---
-# Forseti Quickstart
+# Forseti Security Quickstart
 
 This quickstart explains how to use the Forseti setup wizard to get started
 quickly with Forseti Security for Google Cloud Platform (GCP) projects.

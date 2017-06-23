@@ -33,6 +33,6 @@ defaults:
     values:
       category: Quick Starts
   - scope:
-      path: _docs/resources
+      path: _docs/guides
     values:
-      category: Resources
+      category: Guides
