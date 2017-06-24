@@ -74,7 +74,7 @@ If you want to add or update a documentation category, then you must make sure t
 
 ### Customizing the Bootstrap Material Design Theme
 
-The material design theme for bootstrap is adapted from [FezVrasta/bootstrap-material-design](https://github.com/FezVrasta/bootstrap-material-design).
+The material design theme for bootstrap is adapted from [FezVrasta/bootstrap-material-design](https://github.com/FezVrasta/bootstrap-material-design) (see it's [LICENSE in third_party/](https://github.com/GoogleCloudPlatform/forseti-security/blob/gh-pages/third_party/bootstrap-material-design/LICENSE.md)).
 
 First, clone the repository. Next, follow the installation instructions in the [README](https://github.com/FezVrasta/bootstrap-material-design/blob/master/README.md). Now you can start customizing the LESS files under `less/`.
 
