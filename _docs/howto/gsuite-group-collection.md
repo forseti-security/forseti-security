@@ -1,11 +1,11 @@
 ---
 title: Enabling GSuite Google Groups Collection
-order: 5 
+order: 5
 ---
 #  {{ page.title }}
 
 This page describes how to enable the collection of GSuite Google Groups
-collection for processing by Forseti Scanner and Enforcer.
+for processing by Forseti Scanner and Enforcer.
 
 ## Creating a service account
 To enable collection of GSuite Google Groups, follow the steps below to create
@@ -33,36 +33,34 @@ version of `deploy-forseti.yaml`:
   - `groups-domain-super-admin-email`: Use of the Admin API requires delegation
   (impersonation). Enter an email address of a Super Admin in the GSuite account.
   - `groups-service-account-key-file`: Forseti Inventory uses this path to
-  locate the key file. Only change this path if you also changed the flag in
-  `deployment-templates/py/forseti-instance.py`.
+  locate the key file.
 
-You can also use the command-line to update the variables. To update variables
-using the command-line, run the following commands where
-`–groups_service_account_key_file` is the path to the domain-wide-delegation
-key created for the groups-only service account. Learn more about
-[creating service accounts]({% link _docs/howto/gcp-deployment.md %}#creating-service-accounts).
+If you plan to invoke Forseti Inventory by command-line, use the following
+command where `–groups_service_account_key_file` is the path to the
+domain-wide-delegation key created for the groups-only service account.
 
-````
-$ forseti_inventory --config_path PATH_TO_inventory_config \
---domain_super_admin_email GSUITE_SUPER_ADMIN_EMAIL \
---groups_service_account_key_file SERVICE_ACCOUNT_KEY
-````
+  ````
+    $ forseti_inventory --config_path PATH_TO_inventory_config \
+    --domain_super_admin_email GSUITE_SUPER_ADMIN_EMAIL \
+    --groups_service_account_key_file SERVICE_ACCOUNT_KEY
+  ````
 
 ## Deploying with GSuite Google Groups collection
 
 After you
 [create a deployment]({% link _docs/quickstarts/forseti-security/index.md %}),
-run the following commands to deploy with GSuite Google Groups collection:
+run the following commands to complete deployment of GSuite Google Groups
+collection
 
-````
-gcloud compute copy-files PATH_TO_DOWNLOAD_KEY \
-    YOUR_USER@YOUR_INSTANCE_NAME:/tmp/service-account-key.json
+  ````
+    gcloud compute copy-files PATH_TO_DOWNLOAD_KEY \
+        YOUR_USER@YOUR_INSTANCE_NAME:/tmp/service-account-key.json
 
-gcloud compute ssh YOUR_USER@YOUR_INSTANCE_NAME
+    gcloud compute ssh YOUR_USER@YOUR_INSTANCE_NAME
 
-YOUR_INSTANCE: sudo mv /tmp/service-account-key.json THE_PATH_YOU_SPECIFIED_IN_DEPLOY_FORSETI.yaml
-````
+    YOUR_INSTANCE: sudo mv /tmp/service-account-key.json THE_PATH_YOU_SPECIFIED_IN_DEPLOY_FORSETI.yaml
+  ````
 
-Note that the remote destination path of where you put the key on the vm
-instance should match what you specified in your
-deployment `groups-service-account-key-file.yaml`.
+Note the remote destination of where you put the key on the VM instance.
+It should match what you specified in your deploy-forseti.yaml for the
+`groups-service-account-key-file` property.

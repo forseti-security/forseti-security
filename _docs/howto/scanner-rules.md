@@ -11,7 +11,7 @@ This page describes how to define rules for Forseti Scanner.
 By default, the DM template includes a rules.yaml file that allows service
 accounts on the organization and its children Cloud IAM policies. To define
 custom rules, edit your `rules.yaml` and then upload to your `SCANNER_BUCKET`.
-The `py/forseti_instance.py` template defaults to `gs://SCANNER_BUCKET/rules`.
+The `forseti_instance.py` template defaults to `gs://SCANNER_BUCKET/rules`.
 If you've stored `rules.yaml` in a different location, make sure to update the
 template. You'll need to replace every instance of `rules/rules.yaml` with the
 appropriate path.
@@ -20,25 +20,25 @@ appropriate path.
 
 Forseti Scanner recognizes the following rule grammar in YAML or JSON:
 
-````
-rules:
-  - name: $rule_name
-    mode: $rule_mode
-    resource:
-      - type: $resource_type
-        applies_to: $applies_to
-        resource_ids:
-          - $resource_id1
-          - $resource_id2
-          - ...
-    inherit_from_parents: $inherit_from
-    bindings:
-      - role: $role_name
-        members:
-          - $member1
-          - $member2
-          ...
-````
+  ````
+  rules:
+    - name: $rule_name
+      mode: $rule_mode
+      resource:
+        - type: $resource_type
+          applies_to: $applies_to
+          resource_ids:
+            - $resource_id1
+            - $resource_id2
+            - ...
+      inherit_from_parents: $inherit_from
+      bindings:
+        - role: $role_name
+          members:
+            - $member1
+            - $member2
+            ...
+  ````
 
   - `rules`: a sequence of rules.
   - `mode`: a string of one of the following values:

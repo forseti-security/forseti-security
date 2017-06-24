@@ -64,15 +64,17 @@ the following values:
 Following are examples of different values for the `src-path` and
 `release-version`:
 
-````
-# master release:
-release-version: "master"
-src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/master.tar.gz
+  ````
+  # master branch:
+  branch-name: "master"
+  # release-version: "1.0"
+  src-path: https://github.com/GoogleCloudPlatform/forseti-security
 
-# v1.0 release:
-release-version: "1.0"
-src-path: https://github.com/GoogleCloudPlatform/forseti-security/archive/v1.0.tar.gz
-````
+  # v1.0 release:
+  # branch-name: "master"
+  release-version: "1.0"
+  src-path: https://github.com/GoogleCloudPlatform/forseti-security
+  ````
 
 You can also modify the following templates:
 

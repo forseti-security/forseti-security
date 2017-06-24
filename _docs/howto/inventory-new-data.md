@@ -15,7 +15,7 @@ To add new GCP resource types to Forseti Inventory, follow the process below:
   field of data you retrieve from an API should correspond to a column in the
   table schema.
   1. Define a new table schema for the *raw* data you'll store. The GCP API
-  sends data stored as JSON.
+  returns data formatted as JSON.
   1. Create a
   [pull request](https://help.github.com/articles/creating-a-pull-request/) to
   add initial table schema. To learn more, refer to this

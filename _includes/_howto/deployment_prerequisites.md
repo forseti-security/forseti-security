@@ -39,11 +39,33 @@ To create a service account for Forseti Inventory, Scanner, and Enforcer, follow
   1. Grant the required Cloud IAM roles to the service account by running the
   following:
 
-         gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-         --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-         --role=roles/browser \
-         --role=roles/compute.networkAdmin \
-         --role=roles/editor \
-         --role=roles/iam.securityReviewer \
-         --role=roles/resourcemanager.folderAdmin \
-         --role=roles/storage.admin
+    ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/browser
+    ```
+    ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/compute.networkAdmin
+    ```
+    ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/editor
+    ```
+    ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/iam.securityReviewer
+    ```
+    ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/resourcemanager.folderAdmin
+    ```
+    ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/storage.admin
+    ```

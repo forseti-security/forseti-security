@@ -7,11 +7,6 @@ title: Community
 
 Coming soon.
 
-## [GCP Resource Coverage]({% link _docs/quickstarts/inventory/index.md %}#gcp-resource-coverage)
-
-GCP Resources that currently have coverage in Forseti or are planned to have
-coverage.
-
 ## Contact Us
 
 Reach out to us with questions by contacting
