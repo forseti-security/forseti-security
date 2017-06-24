@@ -1,62 +1,56 @@
 ---
-title: Scanner
+title: Forseti Scanner Quickstart
 order: 101
 ---
-# Scanner
+# {{ page.title }}
 
-The Forseti Scanner takes a rules definition file (either json or
-yaml) as input and uses it to audit your Google Cloud Platform resources (e.g.
-organizations, projects). After running the audit, it outputs rule violations
-to Cloud SQL and optionally writes it to a bucket in Google Cloud Storage.
+This quickstart describes how to get started with Forseti Scanner. Forseti
+Scanner uses a JSON or YAML rules definition file to audit your Google Cloud
+Platform (GCP) resources, such as organizations or projects. After running the
+audit, Forseti Scanner outputs rule violations to Cloud SQL and optionally
+writes it to a bucket in Google Cloud Storage.
 
-Note: This is different from the Cloud Security Scanner, which does AppEngine vulnerability scanning. Please refer to the documentation for [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
+Forseti Scanner is different from the Cloud Security Scanner, which does App
+Engine vulnerability scanning. Learn more about
+[Cloud Security Scanner](https://cloud.google.com/security-scanner/).
 
-## Running the scanner
+## Running Forseti Scanner
 
-* Activate the virtualenv (if applicable) of your Forseti installation.
+To run Forseti Scanner, follow the process below:
 
-* A sample rules file can be found in the samples/ directory. You should edit
-  this to fit your environment.
+  1. Activate any virtualenv you're using for your Forseti installation,
+  if applicable.
 
-* To see all the available commandline flags for the scanner, run:
+  1. Edit the sample `rules.yaml` file in the `samples/` directory to fit your
+  environment. Learn more about
+  [defining rules for Forseti Scanner]({% link _docs/howto/scanner-rules.md %}).
 
-  ```sh
-  $ forseti_scanner --helpfull
-  ```
+  1. Run Scanner for your rules file location:
 
-  To run the scanner with a local rules file:
+     1. If you're using a rules file stored in Google Cloud Storage, such as
+      gs://my-bucket-name/rules/rules.yaml, run the following command:
 
-  ```sh
-  $ forseti_scanner --rules path/to/rules.yaml
-  ```
+             forseti_scanner --rules "gs://my-bucket-name/rules/rules.yaml"
 
-  To run the scanner with a rules file stored in GCS, e.g.
-  `gs://my-bucket-name/rules/rules.yaml`:
+     1. If you're using a rules file stored on Google Cloud Storage, such
+      as `gs://my-project-id/rules/rules.yaml`, run the following command
+      where `RULES_PATH` is the location of your rules file in the project,
+      and `PROJECT_ID` is the project ID in which the rules file is stored:
 
-  ```sh
-  $ forseti_scanner --rules "gs://my-bucket-name/rules/rules.yaml"
-  ```
+             forseti_scanner --rules RULES_PATH.yaml --input_bucket PROJECT_ID
 
-* By default, the scanner will save the csv output to a temporary
-location. Specify an output path (it can also be a GCS bucket with 
-the `gs://<bucket-name>` syntax) in order to save the csv there.
+  1. By default, Forseti Scanner saves the CSV output to a temporary location.
+  To specify an output location, add the following flag to the command
+  where OUTPUT_PATH is the location (either on the local filesystem or in GCS)
+  where you want to save the CSV
 
-  To specify the output location for the violations:
+         --output_path OUTPUT_PATH
 
-  ```sh
-  $ forseti_scanner --rules "rules/rules.yaml" --output_path path/for/output/
-  ```
-
-* If you are developing a new feature or bug fix, you can also use the
-convenience [dev_scanner.sh script](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/scanner/dev_scanner.sh.sample)
-to run scanner so you don't have to set PYTHONPATH and other commandline flags
+If you're developing a new feature or bug fix, you can run Forseti Scanner
+using [`./dev_scanner.sh`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/scanner/dev_scanner.sh.sample).
+By doing so, you won't have to set the `PYTHONPATH` or other commandline flags
 manually.
 
-```sh
-$ ./dev_scanner.sh
-```
+## What's next
 
-## Defining rules
-
-Refer to the [documentation]({{ site.baseurl }}{% link modules/core/scanner/rules.md %})
-on the rules schema.
+- Learn about [defining rules]({% link _docs/howto/scanner-rules.md %}).

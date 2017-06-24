@@ -1,7 +1,7 @@
 ---
-title: FAQ
+title: Frequently Asked Questions 
 ---
-# Frequently Asked Questions
+# {{ page.title }}
 
 Here are some frequently asked questions about Forseti Security.
 
