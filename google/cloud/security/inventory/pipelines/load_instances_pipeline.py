@@ -24,6 +24,7 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -36,11 +37,11 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         """Create an iterator of instances to load into database.
 
         Args:
-            resource_from_api: A dict of instances, keyed by
+            resource_from_api (dict): A dict of instances, keyed by
                 project id, from GCP API.
 
         Yields:
-            Iterator of instance properties in a dict.
+            dict: Instance properties.
         """
         for (project_id, instances) in resource_from_api.iteritems():
             for instance in instances:
@@ -78,7 +79,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         compute instances for each.
 
         Returns:
-            A dict mapping projects with their instances (list):
+            dict: A map of projects with their instances (list):
             {project_id: [instances]}
         """
         projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
@@ -93,7 +94,22 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         return instances
 
     def run(self):
-        """Run the pipeline."""
+        """Run the pipeline.
+
+        Sometimes, can_forward_ip will be a None value, instead of strictly
+        boolean.  This will cause MySQL to display the warning message:
+        "Incorrect integer value: '' for column 'can_ip_forward at row N"
+        on loading the data.  This can be safely ignored as the row will
+        still be loaded with the can_ip_forward as 0 value.
+
+        There is a fix for this here:
+        https://stackoverflow.com/a/5968530/2830207
+        But it will be hacky to implement, essentially a customized SQL
+        statement and condition checking.  So, leaving the warning as is.
+
+        Alternatively, can change this column type to varchar.  Then, cast it
+        to boolean when retrieved on the forseti application side.
+        """
         instances = self._retrieve()
         loadable_instances = self._transform(instances)
         self._load(self.RESOURCE_NAME, loadable_instances)

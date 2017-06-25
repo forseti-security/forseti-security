@@ -27,6 +27,12 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
 # pylint: disable=line-too-long
 from google.cloud.security.common.gcp_type import cloudsql_access_controls as csql_acls
+
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+
+
 # pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)

@@ -14,18 +14,23 @@
 """Email pipeline to notify that inventory snapshots have been completed."""
 
 # TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long,no-name-in-module
+# pylint: disable=line-too-long
 from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.notifier.pipelines import base_notification_pipeline as bnp
-# pylint: enable=line-too-long,no-name-in-module
+# pylint: enable=line-too-long
+
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc
+# pylint: disable=missing-param-doc
 
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
+class EmailInventorySnapshotSummaryPipeline(bnp.BaseNotificationPipeline):
     """Email pipeline for inventory snapshot summary."""
 
     # TODO: See if the base pipline init() can be reused.
@@ -98,9 +103,6 @@ class EmailInventorySnapshopSummaryPipeline(bnp.BaseNotificationPipeline):
             inventory_pipelines: List of inventory pipelines.
             email_sender: String of the sender of the email.
             email_recipient: String of the recipient of the email.
-
-        Returns:
-             None
         """
         email_subject, email_content = self._compose(
             snapshot_time, snapshot_timestamp, status, inventory_pipelines)

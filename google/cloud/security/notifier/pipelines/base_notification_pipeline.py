@@ -16,15 +16,18 @@
 
 import abc
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long,no-name-in-module
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import log_util
-# pylint: enable=line-too-long,no-name-in-module
 
 LOGGER = log_util.get_logger(__name__)
+
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=missing-param-doc,redundant-returns-doc
+
 
 # pylint: disable=too-many-instance-attributes
 class BaseNotificationPipeline(object):

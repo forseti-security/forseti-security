@@ -15,7 +15,7 @@
 # The toplevel deployment script for Forseti Security.
 # Be sure to edit this file and its templates to suit your environment.
 
-# Change these import paths as necessary to suit your environement.
+# Change these import paths as necessary to suit your environment.
 imports:
 - path: ../../deployment-templates/inventory/cloudsql-instance.py
   name: cloudsql-instance.py
@@ -40,6 +40,8 @@ resources:
 # Cloud Storage
 - name: SCANNER_BUCKET
   type: bucket.py
+  properties:
+    region: us
 
 # Compute Engine
 - name: forseti-instance
@@ -47,8 +49,8 @@ resources:
   properties:
     # GCE instance properties
     image-project: ubuntu-os-cloud
-    image-family: ubuntu-1404-lts
-    instance-type: g1-small
+    image-family: ubuntu-1604-lts
+    instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
     service-account: GCP_SERVICE_ACCOUNT
@@ -73,8 +75,8 @@ resources:
     # e.g. "I want to deploy release 1.0"
     #    # branch-name: "master" <-- COMMENT OUT
     #    release-version: "1.0"
-    #branch-name: ""
-    release-version: "1.0.2"
+    branch-name: "master"
+    #release-version: RELEASE_VERSION
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 
@@ -90,5 +92,5 @@ resources:
 
     # Flags for Inventory to collect GSuite Google Groups information.
     inventory-groups: true
-    groups-domain-super-admin-email: EMAIL_ADDRESS_OF_A_GSUITE_SUPER_ADMIN
+    groups-domain-super-admin-email: GSUITE_SUPER_ADMIN_EMAIL
     groups-service-account-key-file: "/home/ubuntu/service-account-key.json"

@@ -30,6 +30,10 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,redundant-returns-doc
+
+
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('email_recipient', None,
@@ -115,7 +119,7 @@ class EmailUtil(object):
 
         try:
             response = self._execute_send(email)
-        except (urllib2.URLError, urllib2.HTTPError) as e:
+        except urllib2.HTTPError as e:
             LOGGER.error('Unable to send email: %s %s',
                          e.code, e.reason)
             raise util_errors.EmailSendError

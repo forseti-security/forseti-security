@@ -39,8 +39,9 @@ class ModelManagerTest(ForsetiTestCase):
         """Start with no models, create one, delete it again."""
         self.assertEquals(0, len(self.model_manager.models()),
                           'Expecting no models to exist')
-        handle = self.model_manager.create()
-        self.assertEqual([handle], self.model_manager.models(),
+        handle = self.model_manager.create(name='test_model')
+        self.assertEqual([handle],
+                         [m.handle for m in self.model_manager.models()],
                          'Expecting the created model to be listed')
         self.model_manager.delete(handle)
         self.assertEqual(0, len(self.model_manager.models()),
@@ -51,16 +52,17 @@ class ModelManagerTest(ForsetiTestCase):
         self.assertEqual(0, len(self.model_manager.models()),
                          'Expecting no models to exist')
         handles = []
-        num_handles = 32
-        for _ in range(num_handles):
-            handles.append(self.model_manager.create())
+        num_models = 32
+        for i in range(num_models):
+            handles.append(self.model_manager.create(name=str(i)))
 
-        self.assertEqual(set(handles), set(self.model_manager.models()),
+        self.assertEqual(set(handles),
+                         set([m.handle for m in self.model_manager.models()]),
                          'Expecting the created models to be listed')
 
-        self.assertEqual(len(handles), num_handles)
+        self.assertEqual(len(handles), num_models)
 
-        for i in range(num_handles):
+        for i in range(num_models):
             self.model_manager.delete(handles[i])
         self.assertEqual(0, len(self.model_manager.models()),
                          'Expecting no models to exist after deletion')

@@ -33,7 +33,10 @@ CREATE_TABLE = """
 
 SELECT_SNAPSHOT_CYCLES_TABLE = """
     SELECT TABLE_NAME from information_schema.tables
-    WHERE TABLE_NAME = 'snapshot_cycles';"""
+    WHERE TABLE_NAME = 'snapshot_cycles' 
+    AND TABLE_SCHEMA in (
+        SELECT DATABASE()
+        );"""
 
 INSERT_CYCLE = """
     INSERT INTO snapshot_cycles
