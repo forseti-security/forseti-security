@@ -9,7 +9,7 @@ See [LICENSE](https://github.com/GoogleCloudPlatform/forseti-security/blob/maste
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
 
 ## Developing on forsetisecurity.org
 
