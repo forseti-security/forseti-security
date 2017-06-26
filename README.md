@@ -93,9 +93,9 @@ to update all three locations:
 
 ### Customizing the Bootstrap Material Design Theme
 
-The material design theme for bootstrap is adapted from
+The Material Design theme for Bootstrap is adapted from
 [FezVrasta/bootstrap-material-design](https://github.com/FezVrasta/bootstrap-material-design)
-(see it's
+(see its
 [LICENSE in third_party/](https://github.com/GoogleCloudPlatform/forseti-security/blob/gh-pages/third_party/bootstrap-material-design/LICENSE.md)).
 
 First, clone the repository. Next, follow the installation instructions in the
