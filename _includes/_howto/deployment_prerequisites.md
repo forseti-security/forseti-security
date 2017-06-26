@@ -8,16 +8,16 @@ enable required APIs:
   Account and Project displayed match your Forseti Security project. If it
   doesn't match, run the following commands to configure gcloud for your
   Forseti Security project:
-    2. Run `gcloud auth login` and use your Google credentials to authenticate.
-    2. Run `gcloud init` and select your Forseti Security project and Google
-    account.
+      1. Run `gcloud auth login` and use your Google credentials to authenticate.
+      1. Run `gcloud init` and select your Forseti Security project and Google
+      account.
   1. Enable the required APIs by running `gcloud beta service-management enable`
   for each of the following API paths:
-    - **Cloud SQL API:** `sql-component.googleapis.com`
-    - **Cloud SQL Admin API:** `sqladmin.googleapis.com`
-    - **Cloud Resource Manager API:** `cloudresourcemanager.googleapis.com`
-    - **Admin SDK API:** `admin.googleapis.com`
-    - **Deployment Manager API:** `deploymentmanager.googleapis.com`
+      - **Cloud SQL API:** `sql-component.googleapis.com`
+      - **Cloud SQL Admin API:** `sqladmin.googleapis.com`
+      - **Cloud Resource Manager API:** `cloudresourcemanager.googleapis.com`
+      - **Admin SDK API:** `admin.googleapis.com`
+      - **Deployment Manager API:** `deploymentmanager.googleapis.com`
 
 ### Creating service accounts
 
@@ -39,33 +39,27 @@ To create a service account for Forseti Inventory, Scanner, and Enforcer, follow
   1. Grant the required Cloud IAM roles to the service account by running the
   following:
 
-    ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/browser
-    ```
-    ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/compute.networkAdmin
-    ```
-    ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/editor
-    ```
-    ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/iam.securityReviewer
-    ```
-    ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/resourcemanager.folderAdmin
-    ```
-    ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/storage.admin
-    ```
+          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+          --role=roles/browser
+
+          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+          --role=roles/compute.networkAdmin
+
+          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+          --role=roles/editor
+
+          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+          --role=roles/iam.securityReviewer
+
+          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+          --role=roles/resourcemanager.folderAdmin
+
+          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+          --role=roles/storage.admin
+
