@@ -220,18 +220,23 @@ def _create_dao_map(configs):
     These will be re-usable so that the db connection can apply across
     different pipelines.
 
+    Args:
+        configs (dict): Forseti configurations.
+
     Returns:
         dict: Dictionary of DAOs.
     """
     try:
         return {
             'appengine_dao': appengine_dao.AppEngineDao(configs),
-            'backend_service_dao': backend_service_dao.BackendServiceDao(configs),
+            'backend_service_dao':
+                backend_service_dao.BackendServiceDao(configs),
             'bucket_dao': bucket_dao.BucketDao(configs),
             'cloudsql_dao': cloudsql_dao.CloudsqlDao(configs),
             'dao': dao.Dao(configs),
             'folder_dao': folder_dao.FolderDao(configs),
-            'forwarding_rules_dao': forwarding_rules_dao.ForwardingRulesDao(configs),
+            'forwarding_rules_dao':
+                forwarding_rules_dao.ForwardingRulesDao(configs),
             'instance_dao': instance_dao.InstanceDao(configs),
             'instance_group_dao': instance_group_dao.InstanceGroupDao(configs),
             'instance_group_manager_dao':

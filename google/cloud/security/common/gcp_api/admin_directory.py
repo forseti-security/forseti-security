@@ -33,7 +33,8 @@ class AdminDirectoryClient(_base_client.BaseClient):
     def __init__(self, **kwargs):
         """Initialize.
 
-        Returns:
+        Args:
+            kwargs (dict): Extra args.
         """
 
         super(AdminDirectoryClient, self).__init__(
@@ -46,6 +47,9 @@ class AdminDirectoryClient(_base_client.BaseClient):
 
     def _build_credentials(self, configs):
         """Build credentials required for accessing the directory API.
+
+        Args:
+            configs (dict): Forseti configurations.
 
         Returns:
             object: Credentials as built by oauth2client.

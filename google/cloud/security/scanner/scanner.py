@@ -256,7 +256,7 @@ def _output_results(forseti_configs, scanner_configs, all_violations,
         snapshot_timestamp: The snapshot timetamp associated with this scan.
         **kwargs: The rest of the args.
     """
-
+    # pylint: disable=too-many-locals
     # Write violations to database.
     flattening_scheme = kwargs.get('flattening_scheme')
     resource_name = sm.RESOURCE_MAP[flattening_scheme]
@@ -317,6 +317,7 @@ def _output_results(forseti_configs, scanner_configs, all_violations,
                     'payload': payload
                 }
                 notifier.process(message)
+    # pylint: enable=too-many-locals
 
 def _upload_csv(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.

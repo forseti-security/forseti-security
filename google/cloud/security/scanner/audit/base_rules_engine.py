@@ -50,7 +50,7 @@ class BaseRulesEngine(object):
         self.full_rules_path = rules_file_path.strip()
         self.snapshot_timestamp = snapshot_timestamp
 
-    def build_rule_book(self):
+    def build_rule_book(self, configs):
         """Build RuleBook from the rules definition file."""
         raise NotImplementedError('Implement in a child class.')
 

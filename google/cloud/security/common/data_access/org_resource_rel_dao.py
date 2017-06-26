@@ -28,7 +28,11 @@ class OrgResourceRelDao(object):
     """DAO for organization resource entity relationships."""
 
     def __init__(self, configs):
-        """Initialize."""
+        """Initialize.
+
+        Args:
+            configs (dict): Forseti configurations.
+        """
         # Map the org resource type to the appropriate dao class
         self._resource_db_lookup = {
             resource.ResourceType.ORGANIZATION: {

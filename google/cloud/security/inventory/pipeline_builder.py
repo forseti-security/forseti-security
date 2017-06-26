@@ -36,7 +36,8 @@ class PipelineBuilder(object):
 
         Args:
             cycle_timestamp (str): Timestamp formatted as YYYYMMDDTHHMMSSZ.
-            configs (dict): Configurations.
+            inventory_configs (dict): Inventory configurations.
+            forseti_configs (dict): Forseti configurations.
             api_map (dict): GCP API info, mapped to each resource.
             dao_map (dict): DAO instances, mapped to each resource.
 

@@ -82,8 +82,9 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
             dict: A map of projects with their instances (list):
             {project_id: [instances]}
         """
-        projects = (proj_dao.ProjectDao(self.configs)
-                            .get_projects(self.cycle_timestamp))
+        projects = (proj_dao
+                    .ProjectDao(self.configs)
+                    .get_projects(self.cycle_timestamp))
         instances = {}
         for project in projects:
             try:

@@ -78,8 +78,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         project_policies = {}
         project_policies = (
             project_dao.ProjectDao(self.configs)
-                       .get_project_policies('projects',
-                                             self.snapshot_timestamp))
+            .get_project_policies('projects',
+                                  self.snapshot_timestamp))
         return project_policies
 
     def run(self):

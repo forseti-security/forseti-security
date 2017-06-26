@@ -14,19 +14,11 @@
 
 """Provides the database connector."""
 
-import gflags as flags
-
 import MySQLdb
 from MySQLdb import OperationalError
 
 from google.cloud.security.common.data_access.errors import MySQLError
 from google.cloud.security.common.util import log_util
-
-FLAGS = flags.FLAGS
-flags.DEFINE_string('db_host', '127.0.0.1',
-                    'Cloud SQL instance hostname/IP address')
-flags.DEFINE_string('db_name', 'forseti_security', 'Cloud SQL database name')
-flags.DEFINE_string('db_user', 'root', 'Cloud SQL user')
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -37,12 +29,12 @@ class DbConnector(object):
     def __init__(self, configs=None):
         """Initialize the db connector.
 
+        Args:
+            configs (dict): Forseti configurations.
+
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        if configs is None:
-            configs = FLAGS.FlagValuesDict()
-
         try:
             self.conn = MySQLdb.connect(
                 host=configs['db_host'],

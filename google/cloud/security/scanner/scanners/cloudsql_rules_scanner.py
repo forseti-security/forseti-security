@@ -45,22 +45,20 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         """Get projects from data source.
         """
         project_policies = {}
-        project_policies = (
-            project_dao
-                .ProjectDao(self.configs)
-                .get_project_policies('projects',
-                                      self.snapshot_timestamp))
+        project_policies = (project_dao
+                            .ProjectDao(self.configs)
+                            .get_project_policies('projects',
+                                                  self.snapshot_timestamp))
         return project_policies
 
     def _get_cloudsql_acls(self):
         """Get CloudSQL acls from data source.
         """
         cloudsql_acls = {}
-        cloudsql_acls = (
-            cloudsql_dao
-                .CloudsqlDao(self.configs)
-                .get_cloudsql_acls('cloudsql_instances',
-                                   self.snapshot_timestamp))
+        cloudsql_acls = (cloudsql_dao
+                         .CloudsqlDao(self.configs)
+                         .get_cloudsql_acls('cloudsql_instances',
+                                            self.snapshot_timestamp))
 
         return cloudsql_acls
 

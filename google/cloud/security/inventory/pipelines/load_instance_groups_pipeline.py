@@ -77,8 +77,9 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
             A dict mapping projects with their instance groups (list):
             {project_id: [instance groups]}
         """
-        projects = (proj_dao.ProjectDao(self.configs)
-                            .get_projects(self.cycle_timestamp))
+        projects = (proj_dao
+                    .ProjectDao(self.configs)
+                    .get_projects(self.cycle_timestamp))
         igs = {}
         for project in projects:
             try:
