@@ -6,7 +6,8 @@ Here's a handy checklist to ensure your PR goes smoothly.
 [Contributor License Agreement](https://opensource.google.com/docs/cla/)
 - [] Ensure the code conforms to Google's
 [python style](https://google.github.io/styleguide/pyguide.html).
-- [] Ensure that your PR includes increased unit-test coverage (if applicable).
+- [] Ensure that your PR at a minimum doesn't decrease unit-test coverage
+(if applicable).
 - [] Ensure the the
 [unit-tests](http://forsetisecurity.org/docs/development/#executing-tests)
 still pass
