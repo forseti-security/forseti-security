@@ -32,67 +32,76 @@ pip install pylint
 # From the root of forseti-security using pylint >= 1.6.5
 PYTHONPATH=./ pylint --rcfile=./pylintrc
 ```
-
+      
 ## Submitting a pull request
 
 To submit a pull request for Forseti, follow the process below:
 
   1. Fork the project, clone your fork to your machine, and configure the
-  upstream remote:
+  upstream remote.
+  
+      ```
+      # Fork the project via GitHub UI.
 
-         # Fork the project via GitHub UI.
+      # Clone your forked repository into a local directory.
+      git clone FORKED_REPOSITORY_URL
 
-         # Clone your forked repository into a local directory.
-         git clone FORKED_REPOSITORY_URL
+        # Navigate to your the directory.
+        cd <path to your directory from above>
 
-         # Navigate to your the directory.
-         cd <path to your directory from above>
+      # Assign the original repository to a remote called "upstream".
+      # Using HTTPS
+      git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
 
-         # Assign the original repository to a remote called "upstream".
-         # Using HTTPS
-         git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
+      # Using SSH
+      git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
 
-         # Using SSH
-         git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
+      # Verify new upstream remote is added correctly.
+      git remote -v
 
-         # Verify new upstream remote is added correctly.
-         git remote -v
-
-         origin  git@github.com:YOUR_FORK (fetch)
-         origin  git@github.com:YOUR_FORK (push)
-         upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
-         upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
+      origin  git@github.com:YOUR_FORK (fetch)
+      origin  git@github.com:YOUR_FORK (push)
+      upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (fetch)
+      upstream  git@github.com:GoogleCloudPlatform/forseti-security.git (push)
+      ```
 
   1. Fetch the latest changes from upstream into your cloned repository:
 
-         git fetch upstream
-         git checkout master
-         git merge upstream/master
+      ```
+      git fetch upstream
+      git checkout master
+      git merge upstream/master
+      ```
+    
 
   1. Create a new local development branch for your feature or bug fix:
 
-         git checkout -b YOUR_DEVELOPMENT_BRANCH
+      ```
+      git checkout -b YOUR_DEVELOPMENT_BRANCH
+      ```
 
   1. Create your change.
 
-      - Don't incorporate multiple changes in one PR. A change should be a
-      logical, self-contained unit of work, feature, or fix. This simplifies
-      troubleshooting and rollbacks.
-      - Learn how to execute
-      [Inventory](http://forsetisecurity.org/docs/quickstarts/inventory/)
-      [Scanner](http://forsetisecurity.org/docs/quickstarts/scanner/), or
-      [Enforcer](http://forsetisecurity.org/docs/quickstarts/enforcer/).
+  - Don't incorporate multiple changes in one PR. A change should be a
+  logical, self-contained unit of work, feature, or fix. This simplifies
+  troubleshooting and rollbacks.
+  - Learn how to execute
+  [Inventory](http://forsetisecurity.org/docs/quickstarts/inventory/),
+  [Scanner](http://forsetisecurity.org/docs/quickstarts/scanner/), or
+  [Enforcer](http://forsetisecurity.org/docs/quickstarts/enforcer/).
 
   1. Create tests for your change.
 
-      - You should write applicable unit tests for your changes, especially for
-      changes involving substantial logic.
-      - Learn how to
-      [run the tests](http://forsetisecurity.org/docs/development/#executing-tests).
+  - You should write applicable unit tests for your changes, especially for
+  changes involving substantial logic.
+  - Learn how to
+  [run the tests](http://forsetisecurity.org/docs/development/#executing-tests).
 
   1. Commit your changes and push them to your development branch:
 
-         git push origin YOUR_DEVELOPMENT_BRANCH
+      ```
+      git push origin YOUR_DEVELOPMENT_BRANCH
+      ```
 
   1. Open a
   [pull request](https://help.github.com/articles/about-pull-requests/) to
@@ -100,10 +109,10 @@ To submit a pull request for Forseti, follow the process below:
 
       - All submissions, including submissions by project members, require a
       code review.
-      - The Github UI will display whether you have any merge conflicts that need
-      to be resolved.
-      - All tests must pass before we review your PR. To test locally, you can
-      install the git hooks under `scripts/githooks`.
+      - The Github UI will display whether you have any merge conflicts that
+      need to be resolved.
+      - All tests must pass before we review your PR. To ensure this happens we 
+      recommend copying the `scripts/githooks` into your `.git/hooks`.
 
   1. After your PR is approved and all merge conflicts are resolved, we'll
   merge your PR.
