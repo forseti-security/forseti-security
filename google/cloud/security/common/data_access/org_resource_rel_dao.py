@@ -27,20 +27,20 @@ from google.cloud.security.common.gcp_type import resource
 class OrgResourceRelDao(object):
     """DAO for organization resource entity relationships."""
 
-    def __init__(self):
+    def __init__(self, configs):
         """Initialize."""
         # Map the org resource type to the appropriate dao class
         self._resource_db_lookup = {
             resource.ResourceType.ORGANIZATION: {
-                'dao': organization_dao.OrganizationDao(),
+                'dao': organization_dao.OrganizationDao(configs),
                 'get': 'get_organization',
             },
             resource.ResourceType.FOLDER: {
-                'dao': folder_dao.FolderDao(),
+                'dao': folder_dao.FolderDao(configs),
                 'get': 'get_folder',
             },
             resource.ResourceType.PROJECT: {
-                'dao': project_dao.ProjectDao(),
+                'dao': project_dao.ProjectDao(configs),
                 'get': 'get_project',
             }
         }

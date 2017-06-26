@@ -1,0 +1,64 @@
+# Copyright 2017 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+##################################################################
+# gsuite
+##################################################################
+# The fully qualified path and filename to the key file to access GSuite.
+# REQUIRED if inventory groups and running locally.
+gsuite_service_account_key_file: /usr/local/google/home/henryc/git/forseti-security/super_admin_key.json
+
+# An email address of a super-admin in the GSuite domain.
+# REQUIRED if inventory groups.
+domain_super_admin_email: henry@henrychang.mygbiz.com
+
+##################################################################
+# quota
+##################################################################
+
+max_bigquery_api_calls_per_100_seconds: 17000
+
+max_compute_api_calls_per_second: 20
+
+max_crm_api_calls_per_100_seconds: 400
+
+max_admin_api_calls_per_day: 150000
+
+max_results_admin_api: 500
+
+max_sqladmin_api_calls_per_100_seconds: 100
+
+##################################################################
+# database
+##################################################################
+# IP address of the machine that is hosting the db instance.
+db_host: 127.0.0.1
+
+# Name of the user to access the db.
+db_user: sqlproxy
+
+# Name of the database to use.
+db_name: cloud_inventory
+
+##################################################################
+# notification
+##################################################################
+# Email of the recipient that will receive inventory loader notifications sent.
+email_recipient: henryc@google.com
+
+# Email of the sender of inventory loader notifications.
+email_sender: goldspin@gmail.com
+
+# SendGrid API Key
+sendgrid_api_key: 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

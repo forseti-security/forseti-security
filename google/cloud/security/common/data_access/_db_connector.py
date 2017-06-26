@@ -34,13 +34,14 @@ LOGGER = log_util.get_logger(__name__)
 class DbConnector(object):
     """Database connector."""
 
-    def __init__(self):
+    def __init__(self, configs=None):
         """Initialize the db connector.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        configs = FLAGS.FlagValuesDict()
+        if configs is None:
+            configs = FLAGS.FlagValuesDict()
 
         try:
             self.conn = MySQLdb.connect(

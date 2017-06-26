@@ -14,7 +14,6 @@
 
 """Wrapper for the BigQuery API client."""
 
-import gflags as flags
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
@@ -24,11 +23,6 @@ from google.cloud.security.common.util import log_util
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 
-
-FLAGS = flags.FLAGS
-
-flags.DEFINE_integer('max_bigquery_api_calls_per_100_seconds', 17000,
-                     'BigQuery Discovery requests per 100 seconds.')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -42,15 +36,16 @@ class BigQueryClient(_base_client.BaseClient):
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100
     # pylint: enable=invalid-name
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(BigQueryClient, self).__init__(
-            api_name=self.API_NAME)
+            api_name=self.API_NAME, **kwargs)
         self.rate_limiter = self.get_rate_limiter()
 
     def get_rate_limiter(self):
         """Return an appropriate rate limiter."""
-        return RateLimiter(FLAGS.max_bigquery_api_calls_per_100_seconds,
-                           self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
+        return RateLimiter(
+            self.configs.get('max_bigquery_api_calls_per_100_seconds'),
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_bigquery_projectids(self):
         """Request and page through bigquery projectids.

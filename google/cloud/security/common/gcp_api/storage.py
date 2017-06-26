@@ -56,9 +56,9 @@ class StorageClient(_base_client.BaseClient):
 
     API_NAME = 'storage'
 
-    def __init__(self, credentials=None):
+    def __init__(self, credentials=None, **kwargs):
         super(StorageClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+            credentials=credentials, api_name=self.API_NAME, **kwargs)
         # Storage API has unlimited rate.
 
     def put_text_file(self, local_file_path, full_bucket_path):

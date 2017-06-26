@@ -124,9 +124,10 @@ class IamRulesEngine(bre.BaseRulesEngine):
             snapshot_timestamp=snapshot_timestamp)
         self.rule_book = None
 
-    def build_rule_book(self):
+    def build_rule_book(self, configs):
         """Build IamRuleBook from the rules definition file."""
         self.rule_book = IamRuleBook(
+            configs,
             self._load_rule_definitions(),
             snapshot_timestamp=self.snapshot_timestamp)
 
@@ -193,6 +194,7 @@ class IamRuleBook(bre.BaseRuleBook):
     """
 
     def __init__(self,
+                 configs,
                  rule_defs=None,
                  snapshot_timestamp=None):
         """Initialize.
@@ -212,7 +214,7 @@ class IamRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
         if snapshot_timestamp:
             self.snapshot_timestamp = snapshot_timestamp
-        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao()
+        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(configs)
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):

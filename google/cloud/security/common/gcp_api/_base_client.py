@@ -70,6 +70,7 @@ class BaseClient(object):
                 https://developers.google.com/api-client-library/python/apis/
             kwargs: Additional args such as version.
         """
+        self.configs = kwargs.get('configs')
         if not credentials:
             credentials = GoogleCredentials.get_application_default()
         self._credentials = credentials

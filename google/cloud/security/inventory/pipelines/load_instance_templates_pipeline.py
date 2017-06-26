@@ -72,7 +72,8 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
             A dict mapping projects with their instance templates (list):
             {project_id: [instance templates]}
         """
-        projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
+        projects = (proj_dao.ProjectDao(self.configs)
+                            .get_projects(self.cycle_timestamp))
         instance_templates = {}
         for project in projects:
             try:

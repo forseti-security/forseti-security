@@ -81,7 +81,8 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
             A dict mapping projects with their forwarding rules (list):
             {project_id: [forwarding_rules]}
         """
-        projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
+        projects = (proj_dao.ProjectDao(self.configs)
+                            .get_projects(self.cycle_timestamp))
         forwarding_rules = {}
         for project in projects:
             project_fwd_rules = []

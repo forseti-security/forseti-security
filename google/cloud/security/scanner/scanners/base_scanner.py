@@ -32,7 +32,7 @@ class BaseScanner(object):
     """This is a base class skeleton for data retrival pipelines"""
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, snapshot_timestamp):
+    def __init__(self, configs, snapshot_timestamp):
         """Constructor for the base pipeline.
 
         Args:
@@ -41,6 +41,7 @@ class BaseScanner(object):
         Returns:
             None
         """
+        self.configs = configs
         self.snapshot_timestamp = snapshot_timestamp
 
     @abc.abstractmethod

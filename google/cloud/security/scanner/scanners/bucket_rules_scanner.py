@@ -30,13 +30,14 @@ LOGGER = log_util.get_logger(__name__)
 
 class BucketsAclScanner(base_scanner.BaseScanner):
     """Pipeline to Bucket acls data from DAO"""
-    def __init__(self, snapshot_timestamp):
+    def __init__(self, configs, snapshot_timestamp):
         """Initialization.
 
         Args:
             snapshot_timestamp: The snapshot timestamp
         """
         super(BucketsAclScanner, self).__init__(
+            configs,
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 
@@ -45,17 +46,20 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         """
         project_policies = {}
         project_policies = (
-            project_dao.ProjectDao().get_project_policies('projects',
-                                                          self.\
-                                                          snapshot_timestamp))
+            project_dao
+                .ProjectDao(self.configs)
+                .get_project_policies('projects',
+                                      self.snapshot_timestamp))
         return project_policies
 
     def _get_bucket_acls(self):
         """Get bucket acls from data source.
         """
         buckets_acls = {}
-        buckets_acls = bucket_dao.BucketDao().\
-                       get_buckets_acls('buckets_acl', self.snapshot_timestamp)
+        buckets_acls = (
+            bucket_dao.BucketDao(self.configs)
+                      .get_buckets_acls('buckets_acl',
+                                        self.snapshot_timestamp))
         return buckets_acls
 
     @staticmethod

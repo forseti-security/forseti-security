@@ -14,7 +14,6 @@
 
 """Wrapper for Resource Manager API client."""
 
-import gflags as flags
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
@@ -28,14 +27,6 @@ from google.cloud.security.common.util import log_util
 # pylint: disable=missing-type-doc,missing-return-type-doc,redundant-returns-doc
 # pylint: disable=missing-param-doc,missing-yield-doc,missing-yield-type-doc
 
-
-FLAGS = flags.FLAGS
-
-flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager read queries per 100 seconds.')
-
-flags.DEFINE_integer('max_crm_api_writes_per_100_seconds', 1000,
-                     'Cloud Resource Manager write requests per 100 seconds.')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -53,7 +44,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         # TODO: we will need multiple rate limiters when we need to invoke
         # the CRM write API for enforcement.
         self.rate_limiter = RateLimiter(
-            FLAGS.max_crm_api_calls_per_100_seconds,
+            self.configs.get('max_crm_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_project(self, project_id):

@@ -68,9 +68,10 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
-    def build_rule_book(self):
+    def build_rule_book(self, configs):
         """Build CloudSQLRuleBook from the rules definition file."""
-        self.rule_book = CloudSqlRuleBook(self._load_rule_definitions())
+        self.rule_book = CloudSqlRuleBook(configs,
+                                          self._load_rule_definitions())
 
     # pylint: disable=arguments-differ
     def find_policy_violations(self, cloudsql_acls,
@@ -96,7 +97,7 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
 class CloudSqlRuleBook(bre.BaseRuleBook):
     """The RuleBook for CloudSQL acls resources."""
 
-    def __init__(self, rule_defs=None):
+    def __init__(self, configs, rule_defs=None):
         """Initialization.
 
         Args:
