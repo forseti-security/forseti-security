@@ -12,7 +12,10 @@ with Forseti Security.
 
 We are continually improving Forseti Security and invite you to submit feature
 requests and bug reports under Issues. If you would like to contribute to our
-development efforts, please review our [contributing guidelines](/CONTRIBUTING.md)
-and submit a pull request.
+development efforts, please review our
+[contributing guidelines](/.github/CONTRIBUTING.md) and submit a pull request.
 
-## [Community](http://forsetisecurity.org/community/)
+## Community
+
+Check out our [community page](http://forsetisecurity.org/community) for ways
+to engage with the Forseti Community.
