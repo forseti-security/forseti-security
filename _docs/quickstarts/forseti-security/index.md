@@ -1,5 +1,5 @@
 ---
-title: Forseti Security Quickstart
+title: Forseti Security
 order: 002
 ---
 # {{ page.title }}
