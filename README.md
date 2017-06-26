@@ -15,4 +15,4 @@ requests and bug reports under Issues. If you would like to contribute to our
 development efforts, please review our [contributing guidelines](/CONTRIBUTING.md)
 and submit a pull request.
 
-## [Community](http://http://forsetisecurity.org/community/)
+## [Community](http://forsetisecurity.org/community/)
