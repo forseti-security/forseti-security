@@ -25,8 +25,15 @@ To add new GCP resource types to Forseti Inventory, follow the process below:
   to fetch your data. If Forseti isn't currently collecting the data you want
   from GCP, you'll need to extend Forseti's API support for
   [Google Cloud APIs](https://cloud.google.com/apis/docs/overview).
-  1. Update your pipeline_requirements_map.py to reference the configuration in
-  inventory_conf.yaml.
+  1. The pipeline_requirements_map.py file is an internal map that defines the requirements for each pipeline. The map values are the dependencies the pipeline needs to run. Specify the following values in pipeline_requirements_map.py:
+      1. The key with the name of the resource, which you'll reference in inventory_conf.yaml.
+      1. The module_name, which is the pipeline name without the file extension. For example, if pipeline is `example_pipeline.py`, the module name is `example_pipeline`.
+      1. The parent resource this resource depends on.
+      1. The name of the API the pipeline uses.
+      1. The name of the data access object (DAO) the pipeline uses.
+  1. Update inventory_conf.yaml to reference the new pipeline:
+      1. Specify the name of the resource that the new pipeline adds to inventory.
+      1. Specify if the pipeline will run.
   1. Flatten the data collected from your API so you can store it in a CSV or
   normalized storage system. Learn more about [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/pipelines/load_projects_pipeline.py#L32).
   1. Load the flattened data into the database table.
