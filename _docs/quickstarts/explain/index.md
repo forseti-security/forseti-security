@@ -1,5 +1,5 @@
 ---
-title: IAM Explain Quickstart
+title: IAM Explain
 order: 202
 ---
 # {{ page.title }}

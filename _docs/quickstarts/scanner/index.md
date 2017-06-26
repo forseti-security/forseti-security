@@ -1,5 +1,5 @@
 ---
-title: Forseti Scanner Quickstart
+title: Scanner
 order: 101
 ---
 # {{ page.title }}

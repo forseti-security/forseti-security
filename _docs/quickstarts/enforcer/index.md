@@ -1,5 +1,5 @@
 ---
-title: Enforcer Quickstart
+title: Enforcer
 order: 201
 ---
 # {{ page.title }}
