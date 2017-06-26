@@ -39,7 +39,3 @@ RUN pip install -q --upgrade \
     mock \
     pylint
 
-ADD . /forseti-security/
-WORKDIR /forseti-security/
-RUN python setup.py install
-RUN yes | which forseti_inventory

@@ -306,7 +306,6 @@ def define_model(model_name, dbengine, model_seed):
             Member.__table__.drop(engine)
             Resource.__table__.drop(engine)
 
-
         @classmethod
         def explain_granted(cls, session, member_name, resource_type_name,
                             role, permission):
