@@ -37,6 +37,11 @@ class BigQueryClient(_base_client.BaseClient):
     # pylint: enable=invalid-name
 
     def __init__(self, **kwargs):
+        """Initialize.
+
+        Args:
+            kwargs (dict): Extra args.
+        """
         super(BigQueryClient, self).__init__(
             api_name=self.API_NAME, **kwargs)
         self.rate_limiter = self.get_rate_limiter()

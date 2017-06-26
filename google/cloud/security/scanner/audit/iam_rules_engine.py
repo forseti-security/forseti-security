@@ -200,6 +200,7 @@ class IamRuleBook(bre.BaseRuleBook):
         """Initialize.
 
         Args:
+            configs (dict): Forseti configurations.
             rule_defs: The parsed dictionary of rules from the YAML
                 definition file.
             snapshot_timestamp: The snapshot to lookup data.
