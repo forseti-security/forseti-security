@@ -24,17 +24,16 @@ Forseti uses Cloud SQL to store data. It connects to the Cloud SQL instance by
 using the Cloud SQL proxy to authenticate to GCP with your Google credentials.
 To set up Cloud SQL for Forseti, follow the steps below:
 
-  1. Go to the [Cloud Console SQL page](https://console.cloud.google.com/sql)
-  and follow the steps below to create a new instance:
-    2. Select a **MySQL** database engine.
-    2. Select a **Second Generation** instance type.
-    2. On the **Create a MySQL Second Generation instance** page, enter an
-    **Instance ID** and **Root password**, then select the following settings:
-      3. **Database version:** MySQL 5.7
-      3. **Machine type:** db-n1-standard-1 machine type
-      3. **Storage capacity:** 25 GB
-    2. Add or modify other database details as you wish.
-    2. When you're finished setting up the database, click **Create**.
+  1. Go to the [Cloud Console SQL page](https://console.cloud.google.com/sql) and follow the steps below to create a new instance:
+      1. Select a **MySQL** database engine.
+      1. Select a **Second Generation** instance type.
+      1. On the **Create a MySQL Second Generation instance** page, enter an
+      **Instance ID** and **Root password**, then select the following settings:
+          1. **Database version:** MySQL 5.7
+          1. **Machine type:** db-n1-standard-1 machine type
+          1. **Storage capacity:** 25 GB
+      1. Add or modify other database details as you wish.
+      1. When you're finished setting up the database, click **Create**.
   1. [Create a new user](https://cloud.google.com/sql/docs/mysql/create-manage-users#creating)
   , such as `forseti_user`, with
   [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges)
