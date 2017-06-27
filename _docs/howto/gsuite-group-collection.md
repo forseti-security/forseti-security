@@ -13,16 +13,16 @@ To enable collection of GSuite Google Groups, follow the steps below to create a
 service account just for this functionality:
 
 1.  Create a service account to inventory GSuite Google Groups:
-    1.  Go to your [Google Cloud Platform
-        console](https://console.cloud.google.com/iam-admin/serviceaccounts) and
+    1.  Go to your
+        [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts) and
         create a new service account.
     1.  Enable `domain-wide delegation`.
     1.  Create and download the JSON key to your local environment.
     1.  Note the `domain-wide client-id`. This will be a large number.
 1.  Enable the service account in your GSuite admin control panel. You must have
     the **super admin** role in admin.google.com to complete these steps:
-    1.  Go to admin.google.com and access [advanced
-        settings](https://admin.google.com/ManageOauthClients).
+    1.  Go to admin.google.com and access
+        [advanced settings](https://admin.google.com/ManageOauthClients).
     1.  Specify the `domain-wide client-id` you noted above.
     1.  Specify the scope
         `https://www.googleapis.com/auth/admin.directory.group.readonly`.
@@ -51,8 +51,8 @@ forseti_inventory --config_path PATH_TO_inventory_config \
 
 ## Deploying with GSuite Google Groups collection
 
-After you [create a
-deployment]({% link _docs/quickstarts/forseti-security/index.md %}), run the
+After you
+[create a deployment]({% link _docs/quickstarts/forseti-security/index.md %}), run the
 following commands to complete deployment of GSuite Google Groups collection
 
 ```
