@@ -178,11 +178,12 @@ def _get_output_filename(now_utc):
     output_filename = SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
     return output_filename
 
-def _get_timestamp(configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
+def _get_timestamp(forseti_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
     Args:
-        statuses: The snapshot statuses to search for latest timestamp.
+        forseti_configs (dict): Forseti configurations.
+        statuses (tuple): The snapshot statuses to search for latest timestamp.
 
     Returns:
         The latest snapshot timestamp string.
@@ -191,7 +192,7 @@ def _get_timestamp(configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     latest_timestamp = None
     try:
         latest_timestamp = (
-            dao.Dao(configs).get_latest_snapshot_timestamp(statuses))
+            dao.Dao(forseti_configs).get_latest_snapshot_timestamp(statuses))
     except db_errors.MySQLError as err:
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 

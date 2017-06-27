@@ -14,7 +14,6 @@
 
 """Wrapper for AppEngine API client."""
 
-import gflags as flags
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
@@ -26,11 +25,6 @@ from googleapiclient.errors import HttpError
 # pylint: disable=missing-param-doc
 
 
-FLAGS = flags.FLAGS
-
-flags.DEFINE_integer('max_appengine_api_calls_per_second', 20,
-                     'AppEngine API calls per seconds.')
-
 class AppEngineClient(_base_client.BaseClient):
     """AppEngine Client.
 
@@ -39,11 +33,12 @@ class AppEngineClient(_base_client.BaseClient):
 
     API_NAME = 'appengine'
 
-    def __init__(self, credentials=None, version=None):
+    def __init__(self, credentials=None, version=None, **kwargs):
         super(AppEngineClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME, version=version)
         self.rate_limiter = RateLimiter(
-            FLAGS.max_appengine_api_calls_per_second, 1)
+            self.forseti_configs.get('max_appengine_api_calls_per_second'),
+            1)
 
     def get_app(self, project_id):
         """Gets information about an application.

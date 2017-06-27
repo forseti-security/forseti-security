@@ -38,18 +38,18 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
 
         super(AdminDirectoryClient, self).__init__(
-            credentials=self._build_credentials(kwargs.get('configs')),
+            credentials=self._build_credentials(kwargs.get('forseti_configs')),
             api_name=self.API_NAME, **kwargs)
 
         self.rate_limiter = RateLimiter(
-            self.configs.get('max_admin_api_calls_per_day'),
+            self.forseti_configs.get('max_admin_api_calls_per_day'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def _build_credentials(self, configs):
+    def _build_credentials(self, forseti_configs):
         """Build credentials required for accessing the directory API.
 
         Args:
-            configs (dict): Forseti configurations.
+            forseti_configs (dict): Forseti configurations.
 
         Returns:
             object: Credentials as built by oauth2client.
@@ -59,14 +59,14 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                configs.get('gsuite_service_account_key_file'),
+                forseti_configs.get('gsuite_service_account_key_file'),
                 scopes=self.REQUIRED_SCOPES)
         except (ValueError, KeyError, TypeError, IOError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential: %s', e)
 
         return credentials.create_delegated(
-            configs.get('domain_super_admin_email'))
+            forseti_configs.get('domain_super_admin_email'))
 
     def get_rate_limiter(self):
         """Return an appriopriate rate limiter.
@@ -74,8 +74,9 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Returns:
             object: The rate limiter.
         """
-        return RateLimiter(self.configs.get('max_admin_api_calls_per_day'),
-                           self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
+        return RateLimiter(
+            self.forseti_configs.get('max_admin_api_calls_per_day'),
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_group_members(self, group_key):
         """Get all the members for specified groups.
@@ -92,7 +93,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         members_api = self.service.members()
         request = members_api.list(
             groupKey=group_key,
-            maxResults=self.configs.get('max_results_admin_api'))
+            maxResults=self.forseti_configs.get('max_results_admin_api'))
 
         paged_results = self._build_paged_result(
             request, members_api, self.rate_limiter)

@@ -124,10 +124,14 @@ class IamRulesEngine(bre.BaseRulesEngine):
             snapshot_timestamp=snapshot_timestamp)
         self.rule_book = None
 
-    def build_rule_book(self, configs):
-        """Build IamRuleBook from the rules definition file."""
+    def build_rule_book(self, forseti_configs):
+        """Build IamRuleBook from the rules definition file.
+        
+        Args:
+            forseti_configs (dict): Forseti configurations.
+        """
         self.rule_book = IamRuleBook(
-            configs,
+            forseti_configs,
             self._load_rule_definitions(),
             snapshot_timestamp=self.snapshot_timestamp)
 
@@ -194,13 +198,13 @@ class IamRuleBook(bre.BaseRuleBook):
     """
 
     def __init__(self,
-                 configs,
+                 forseti_configs,
                  rule_defs=None,
                  snapshot_timestamp=None):
         """Initialize.
 
         Args:
-            configs (dict): Forseti configurations.
+            forseti_configs (dict): Forseti configurations.
             rule_defs: The parsed dictionary of rules from the YAML
                 definition file.
             snapshot_timestamp: The snapshot to lookup data.
@@ -215,7 +219,8 @@ class IamRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
         if snapshot_timestamp:
             self.snapshot_timestamp = snapshot_timestamp
-        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(configs)
+        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
+            forseti_configs)
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):

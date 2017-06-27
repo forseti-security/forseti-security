@@ -17,6 +17,8 @@
 ##################################################################
 # Resource names can be found by running 'forseti_inventory --list_resources'.
 pipelines:
+  - resource: appengine
+    enabled: true
   - resource: backend_services
     enabled: true
   - resource: bigquery_datasets

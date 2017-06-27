@@ -68,9 +68,13 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
-    def build_rule_book(self, configs):
-        """Build BucketsRuleBook from the rules definition file."""
-        self.rule_book = BucketsRuleBook(configs, self._load_rule_definitions())
+    def build_rule_book(self, forseti_configs):
+        """Build BucketsRuleBook from the rules definition file.
+
+        forseti_configs (dict): Forseti configurations.
+        """
+        self.rule_book = BucketsRuleBook(forseti_configs,
+                                         self._load_rule_definitions())
 
     # pylint: disable=arguments-differ
     def find_policy_violations(self, buckets_acls,
@@ -96,10 +100,11 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
 class BucketsRuleBook(bre.BaseRuleBook):
     """The RuleBook for bucket acls resources."""
 
-    def __init__(self, configs, rule_defs=None):
+    def __init__(self, forseti_configs, rule_defs=None):
         """Initialization.
 
         Args:
+            forseti_configs (dict): Forseti configurations.
             rule_defs: rule definitons
         """
         super(BucketsRuleBook, self).__init__()

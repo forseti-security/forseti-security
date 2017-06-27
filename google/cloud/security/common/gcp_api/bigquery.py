@@ -49,7 +49,7 @@ class BigQueryClient(_base_client.BaseClient):
     def get_rate_limiter(self):
         """Return an appropriate rate limiter."""
         return RateLimiter(
-            self.configs.get('max_bigquery_api_calls_per_100_seconds'),
+            self.forseti_configs.get('max_bigquery_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_bigquery_projectids(self):

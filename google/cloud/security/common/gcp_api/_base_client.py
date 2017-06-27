@@ -70,7 +70,7 @@ class BaseClient(object):
                 https://developers.google.com/api-client-library/python/apis/
             kwargs: Additional args such as version.
         """
-        self.configs = kwargs.get('configs')
+        self.forseti_configs = kwargs.get('forseti_configs')
         if not credentials:
             credentials = GoogleCredentials.get_application_default()
         self._credentials = credentials

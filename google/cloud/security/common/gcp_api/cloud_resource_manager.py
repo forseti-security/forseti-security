@@ -44,7 +44,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         # TODO: we will need multiple rate limiters when we need to invoke
         # the CRM write API for enforcement.
         self.rate_limiter = RateLimiter(
-            self.configs.get('max_crm_api_calls_per_100_seconds'),
+            self.forseti_configs.get('max_crm_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_project(self, project_id):

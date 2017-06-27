@@ -32,16 +32,17 @@ class BaseScanner(object):
     """This is a base class skeleton for data retrival pipelines"""
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, configs, snapshot_timestamp):
+    def __init__(self, forseti_configs, snapshot_timestamp):
         """Constructor for the base pipeline.
 
         Args:
-            cycle_timestamp: String of timestamp, formatted as
+            forseti_configs (dict): Forseti configurations.
+            snapshot_timestamp: String of timestamp, formatted as
 
         Returns:
             None
         """
-        self.configs = configs
+        self.forseti_configs = forseti_configs
         self.snapshot_timestamp = snapshot_timestamp
 
     @abc.abstractmethod

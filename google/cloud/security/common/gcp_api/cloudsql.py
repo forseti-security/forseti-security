@@ -41,7 +41,7 @@ class CloudsqlClient(_base_client.BaseClient):
         super(CloudsqlClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME, **kwargs)
         self.rate_limiter = RateLimiter(
-            self.configs.get('max_sqladmin_api_calls_per_100_seconds'),
+            self.forseti_configs.get('max_sqladmin_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_instances(self, project_id):

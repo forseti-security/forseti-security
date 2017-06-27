@@ -42,7 +42,7 @@ class ComputeClient(_base_client.BaseClient):
             version=version,
             **kwargs)
         self.rate_limiter = RateLimiter(
-            self.configs.get('max_compute_api_calls_per_second'), 1)
+            self.forseti_configs.get('max_compute_api_calls_per_second'), 1)
 
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
