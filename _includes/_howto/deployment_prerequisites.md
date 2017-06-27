@@ -35,39 +35,41 @@ To create a service account for Forseti Inventory, Scanner, and Enforcer, follow
   1. Set an environment variable to configure the Application Default
   Credentials to reference the key by running
   
-          export GOOGLE_APPLICATION_CREDENTIALS=SERVICE_ACCOUNT_KEY_PATH
+      ```bash
+      $ export GOOGLE_APPLICATION_CREDENTIALS=SERVICE_ACCOUNT_KEY_PATH
+      ``` 
           
   where `SERVICE_ACCOUNT_KEY_PATH` is the path to the json service account key you just downloaded.
   1. Grant the required Cloud IAM roles to the service account by running the
   following:
 
-      ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/browser
       ```
-      ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/compute.networkAdmin
       ```
-      ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/editor
       ```
-      ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/iam.securityReviewer
       ```
-      ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/resourcemanager.folderAdmin
       ```
-      ```
-      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/storage.admin
       ```

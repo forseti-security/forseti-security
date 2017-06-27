@@ -19,7 +19,7 @@ appropriate path.
 
 Forseti Scanner recognizes the following rule grammar in YAML or JSON:
 
-```
+```yaml
 rules:
   - name: $rule_name
     mode: $rule_mode
