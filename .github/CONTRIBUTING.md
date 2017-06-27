@@ -23,14 +23,14 @@ and any existing styles in the current codebase. Style is checked using pylint.
 To confirm your pull request (PR) passes the Travis pylint test, the following
 test must run without any output:
 
-```
-workon YOUR_VIRTUALENV
+```bash
+$ workon YOUR_VIRTUALENV
 
 # Optional
-pip install pylint
+$ pip install pylint
 
 # From the root of forseti-security using pylint >= 1.6.5
-PYTHONPATH=./ pylint --rcfile=./pylintrc
+$ PYTHONPATH=./ pylint --rcfile=./pylintrc
 ```
       
 ## Submitting a pull request
@@ -40,24 +40,24 @@ To submit a pull request for Forseti, follow the process below:
   1. Fork the project, clone your fork to your machine, and configure the
   upstream remote.
   
-      ```
+      ```bash
       # Fork the project via GitHub UI.
-
+    
       # Clone your forked repository into a local directory.
-      git clone FORKED_REPOSITORY_URL
+      $ git clone FORKED_REPOSITORY_URL
 
-        # Navigate to your the directory.
-        cd <path to your directory from above>
+      # Navigate to your the directory.
+      $ cd <path to your directory from above>
 
       # Assign the original repository to a remote called "upstream".
       # Using HTTPS
-      git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
+      $ git remote add upstream https://github.com/GoogleCloudPlatform/forseti-security.git
 
       # Using SSH
-      git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
+      $ git remote add upstream git@github.com:GoogleCloudPlatform/forseti-security.git
 
       # Verify new upstream remote is added correctly.
-      git remote -v
+      $ git remote -v
 
       origin  git@github.com:YOUR_FORK (fetch)
       origin  git@github.com:YOUR_FORK (push)
@@ -67,17 +67,17 @@ To submit a pull request for Forseti, follow the process below:
 
   1. Fetch the latest changes from upstream into your cloned repository:
 
-      ```
-      git fetch upstream
-      git checkout master
-      git merge upstream/master
+      ```bash
+      $ git fetch upstream
+      $ git checkout master
+      $ git merge upstream/master
       ```
     
 
   1. Create a new local development branch for your feature or bug fix:
 
-      ```
-      git checkout -b YOUR_DEVELOPMENT_BRANCH
+      ```bash
+      $ git checkout -b YOUR_DEVELOPMENT_BRANCH
       ```
 
   1. Create your change.
@@ -99,8 +99,8 @@ To submit a pull request for Forseti, follow the process below:
 
   1. Commit your changes and push them to your development branch:
 
-      ```
-      git push origin YOUR_DEVELOPMENT_BRANCH
+      ```bash
+      $ git push origin YOUR_DEVELOPMENT_BRANCH
       ```
 
   1. Open a
