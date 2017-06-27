@@ -44,7 +44,7 @@ Simply add your page to the appropriate directory.
 
 The category is automatically assigned by the Jekyll configuration:
 
-```
+```yaml
 defaults:
   ...
   - scope:
@@ -104,7 +104,7 @@ Now you can start customizing the LESS files under `less/`.
 
 Once you're finished, build the CSS and JS files with:
 
-```
+```bash
 $ grunt dist-less dist-js
 ``` 
 

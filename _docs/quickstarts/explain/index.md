@@ -29,6 +29,7 @@ clients won't be supported until a first stable API version is released.
 
 Before you set up and deploy IAM Explain, you'll need the following:
 
+  - A running Forseti instance with [group collection enabled]({% link _docs/howto/gsuite-group-collection.md %})
   - A service account with the Cloud SQL Client role. For security purposes,
   it's best to create a separate service account for IAM Explain. However, you
   can use your [Forseti Security service account]({% link _docs/howto/local-deployment.md %}#creating-service-accounts)
@@ -40,7 +41,8 @@ Before you set up and deploy IAM Explain, you'll need the following:
 
 ## Customizing the deployment template
 
-You can use the provided [sample IAM Explain deployment](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/deployment-manager/deploy-explain.yaml.sample)
+You can use the provided
+[sample IAM Explain deployment](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/deployment-manager/deploy-explain.yaml.sample)
 to customize your deployment. You'll need to point to the SQL instance you want
 to use for IAM Explain. To prepare your IAM Explain template, update the
 following values:
@@ -63,10 +65,10 @@ following values:
 After you configure the deployment template variables, run the following
 command to create a new deployment:
 
-````
-gcloud deployment-manager deployments create iam-explain \
+```bash
+$ gcloud deployment-manager deployments create iam-explain \
 --config path/to/deploy-explain.yaml
-````
+```
 
 ## Running the server
 
@@ -116,20 +118,25 @@ methods:
 
 To use a model, run the commands below:
 
-````
-forseti_iam --out-format json explainer list_models
+```bash
+$ forseti_iam --out-format json explainer list_models
+
   {
     "handles": [
       "2654f082f572a9c328cd5bb6f7011b08",
       "33ff45caa913837eb7680056c05d5f31",
   }
-forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
+  
+$ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
   playground list_resources
+  
   ...
-forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
+  
+$ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
   explainer denormalize
+  
   ...
-````
+```
 
 ### Using the playground
 

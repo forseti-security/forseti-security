@@ -64,7 +64,7 @@ the following values:
 Following are examples of different values for the `src-path` and
 `release-version`:
 
-  ````
+  ```
   # master branch:
   branch-name: "master"
   # release-version: "1.0"
@@ -74,7 +74,7 @@ Following are examples of different values for the `src-path` and
   # branch-name: "master"
   release-version: "1.0"
   src-path: https://github.com/GoogleCloudPlatform/forseti-security
-  ````
+  ```
 
 You can also modify the following templates:
 
@@ -95,10 +95,10 @@ You can also modify the following templates:
 After you configure your deployment template variables, use the following code
 to create a new deployment:
 
-````
-gcloud deployment-manager deployments create forseti-security \
+```bash
+$ gcloud deployment-manager deployments create forseti-security \
   --config PATH_TO/deploy-forseti.yaml
-````
+```
 
 To view your deployment details, access the Cloud Console
 [Deployment Manager dashboard](https://console.cloud.google.com/deployments).

@@ -38,7 +38,7 @@ configured on the project. The network name is prepended to the rule name.
 
 Following is an example rule that allows SSH from anywhere:
 
-````
+``x``json
 {
     "sourceRanges": ["0.0.0.0/0"],
     "description": "Allow SSH from anywhere",
@@ -50,7 +50,7 @@ Following is an example rule that allows SSH from anywhere:
     ],
     "name": "allow-ssh"
 }
-````
+``x``
 
 ## Running Forseti Enforcer
 
@@ -58,10 +58,10 @@ Following is an example rule that allows SSH from anywhere:
 
 To run Forseti Enforcer with a local policy file, run the following command:
 
-````
-forseti_enforcer --enforce_project PROJECT_ID \
+```bash
+$ forseti_enforcer --enforce_project PROJECT_ID \
     --policy_file path/to/policy.json
-````
+```
 
 ### Use a Google Cloud Storage policy file
 
@@ -69,7 +69,7 @@ To run Forseti Enforcer with a policy file stored in Google Cloud Storage,
 such as `gs://my-project-id/firewall-policies/default.json`, run the following
 command:
 
-````
-forseti_enforcer --enforce_project PROJECT_ID \
+```bash
+$ forseti_enforcer --enforce_project PROJECT_ID \
     --policy_file gs://my-project-id/firewall-policies/default.json
-````
+```
