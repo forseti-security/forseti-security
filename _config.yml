@@ -1,5 +1,5 @@
 markdown: kramdown
-exclude: [vendor, readme_images/]
+exclude: [vendor, images/readme/]
 title: "Forseti Security"
 description: "Tools to secure Google Cloud Platform"
 google_analytics: UA-98416450-1
