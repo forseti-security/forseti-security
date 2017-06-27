@@ -1,0 +1,21 @@
+<div class="col-sm-4">
+  <h2>Documentation</h2>
+  <ul class="links">
+    {% for tab in site.data.doc_categories %}
+      <li><a href="{{ site.baseurl }}/{{ tab.href }}">{{ tab.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+<div class="col-sm-4">
+  <h2>Resources</h2>
+  <ul class="links">
+    <li><a href="{% link about/index.md %}">About</a></li>
+    <li><a href="{% link faq/index.md %}">FAQ</a></li>
+  </ul>
+</div>
+<div class="col-sm-4">
+  <h2>Community</h2>
+  <ul class="links">
+    <li class="icon github"><a href="{{ site.github.url }}">Github</a></li>
+  </ul>
+</div>

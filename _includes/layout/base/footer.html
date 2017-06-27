@@ -3,32 +3,11 @@
     <div class="row">
       <div class="right-panel col-sm-8 col-sm-push-4">
         <div class="row">
-          <div class="col-sm-4">
-            <h2>Documentation</h2>
-            <ul class="links">
-              {% for tab in site.data.doc_categories %}
-                <li><a href="{{ site.baseurl }}/{{ tab.href }}">{{ tab.title }}</a></li>
-              {% endfor %}
-            </ul>
-          </div>
-          <div class="col-sm-4">
-            <h2>Resources</h2>
-            <ul class="links">
-              <li><a href="{% link about/index.md %}">About</a></li>
-              <li><a href="{% link faq/index.md %}">FAQ</a></li>
-            </ul>
-          </div>
-          <div class="col-sm-4">
-            <h2>Community</h2>
-            <ul class="links">
-              <li class="icon github"><a href="{{ site.github.url }}">Github</a></li>
-            </ul>
-          </div>
+          {% include layout/base/footer/links.html %}
         </div>
       </div>
       <div class="left-panel col-sm-4 col-sm-pull-8">
-        <img class="logo" src="{{ site.baseurl }}/images/trans/5.png" alt="Forseti Security Logo">
-        <p class="description">&copy; {{ 'now' | date: "%Y" }} Forseti Security | open-source tools for GCP security
+        {% include layout/base/footer/copyright.html %}
       </div>
     </div>
   </div>
