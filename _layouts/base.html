@@ -3,28 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="canoncial" href="{{ page.url | remove:'index.html' | remove:'.html' | absolute_url }}">
 
   <!-- favicon -->
-  <!-- <link rel="icon" type="image/png" href="{{ site.baseurl }}/images/trans/6.png" /> -->
   <link rel="icon" type="image/png" href="{{ site.baseurl }}/images/color/favicon180.png" />
 
-  {% if page.title == nil %}
-    <meta name="title" content="Forseti Security">
-    <meta name="og:title" content="Forseti Security">
-  {% else %}
-    <meta name="title" content="{{ page.title }}">
-    <meta name="og:title" content="{{ page.title }}">
-  {% endif %}
+  {% assign meta_title = page.title | default: "Forseti Security" %}
+  <meta name="title" content="{{ meta_title }}">
+  <meta name="og:title" content="{{ meta_title }}">
 
-  {% if page.overview == nil %}
-    <meta name="description" content="{{ site.description }}">
-    <meta name="og:description" content="{{ site.description }}">
-  {% else %}
-    <meta name="description" content="{{ page.overview }}">
-    <meta name="og:description" content="{{ page.overview }}">
-  {% endif %}
+  {% assign meta_description = page.overview | default: site.description %}
+  <meta name="description" content="{{ meta_description }}">
+  <meta name="og:description" content="{{ meta_description }}">
 
   {% if page.title == nil %}
     <title>Forseti Security</title>
@@ -34,36 +26,15 @@
 
   <!-- TODO: Add Google Analytics -->
 
-  <!-- Material Design fonts -->
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700">
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
-  <!-- Bootstrap -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-  <!-- Bootstrap Material Design (https://github.com/FezVrasta/bootstrap-material-design) -->
-  <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/bootstrap-material-design.min.css">
-  <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/ripples.min.css">
-
-  <link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/all.css">
+  {% include layout/base/stylesheets.html %}
 </head>
 <body>
-  {% include nav.html %}
+  {% include layout/base/nav.html %}
 
   {{ content }}
 
-  {% include footer.html %}
+  {% include layout/base/footer.html %}
 
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <!-- Table of Contents rendering for docs page -->
-  <script src="{{ site.baseurl }}/third_party/jekyll-table-of-contents/toc.js"></script>
-  <!-- Bootstrap -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-  <script type="text/javascript">
-    $(document).ready(function() {
-      $("#toc").toc({ title: '', listType: 'ul' });
-    });
-  </script>
+  {% include layout/base/scripts.html %}
 </body>
 </html>

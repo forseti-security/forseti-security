@@ -1,5 +1,5 @@
 #jumbotron-home {
-  background-color: #1976d2;
+  background-color: $brand-primary;
   margin: -20px 0 0;
 
   .container {
@@ -9,6 +9,16 @@
   .logo-info {
     display: inline-block;
     margin: 0 0 25px;
+  }
+
+  .project-title {
+    color: $white;
+    font-size: 46px;
+    font-weight: bold;
+  }
+
+  .project-subtitle {
+    color: $brand-secondary;
   }
 
   button {

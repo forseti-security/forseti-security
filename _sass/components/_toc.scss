@@ -1,7 +1,3 @@
-$gray: #737373;
-$light-gray: lighten($gray, 52%);
-$dark-gray: darken($gray, 20%);
-
 #documentation *:first-child {
   margin-top: 0;
 }
@@ -10,7 +6,7 @@ $dark-gray: darken($gray, 20%);
   display: none !important;
   padding: 0;
 
-  @media (min-width: 768px) {
+  @media (min-width: $screen-sm-min) {
     display: block !important;
   }
 
@@ -27,7 +23,7 @@ $dark-gray: darken($gray, 20%);
     }
 
     a {
-      color: $dark-gray;
+      color: $grey-800;
     }
   }
 }
@@ -35,8 +31,8 @@ $dark-gray: darken($gray, 20%);
 .toc.mobile-toc{
   display: none !important;
 
-  @media (max-width: 768px) {
-    border-left: 4px solid $light-gray;
+  @media (max-width: $screen-xs-max) {
+    border-left: 4px solid $grey-A100;
     display: block !important;
     margin-top: 30px;
   }
