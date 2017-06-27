@@ -275,7 +275,7 @@ def _output_results(forseti_configs, scanner_configs, all_violations,
 
     # TODO: Remove this specific return when tying the scanner to the general
     # violations table.
-    if resource_name == 'groups_violations':
+    if resource_name != 'violations':
         return
 
     # Write the CSV for all the violations.

@@ -30,14 +30,14 @@ class BigqueryTestCase(ForsetiTestCase):
 
     MAX_BIGQUERY_API_CALLS_PER_100_SECONDS = 88888
 
-    @mock.patch.object(bq, 'FLAGS')
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def setUp(self, mock_base_client, mock_flags):
+    @mock.patch('google.cloud.security.common.gcp_api._base_client.discovery')
+    @mock.patch('google.cloud.security.common.gcp_api._base_client.GoogleCredentials')
+    def setUp(self, mock_google_credential, mock_discovery):
         """Set up."""
 
-        mock_flags.max_bigquery_api_calls_per_100_seconds = (
-            self.MAX_BIGQUERY_API_CALLS_PER_100_SECONDS)
-        self.bq_api_client = bq.BigQueryClient()
+        fake_configs = {'max_bigquery_api_calls_per_100_seconds':
+                        self.MAX_BIGQUERY_API_CALLS_PER_100_SECONDS}
+        self.bq_api_client = bq.BigQueryClient(configs=fake_configs)
         self.http_response = httplib2.Response(
                 {'status': '400', 'content-type': 'application/json'}
         )
