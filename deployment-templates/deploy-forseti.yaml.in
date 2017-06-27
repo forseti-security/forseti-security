@@ -13,17 +13,15 @@
 # limitations under the License.
 
 # The toplevel deployment script for Forseti Security.
-# Be sure to edit this file and its templates to suit your environment.
 
-# Change these import paths as necessary to suit your environment.
 imports:
-- path: ../../deployment-templates/inventory/cloudsql-instance.py
+- path: inventory/cloudsql-instance.py
   name: cloudsql-instance.py
-- path: ../../deployment-templates/inventory/cloudsql-database.py
+- path: inventory/cloudsql-database.py
   name: cloudsql-database.py
-- path: ../../deployment-templates/storage/bucket.py
+- path: storage/bucket.py
   name: bucket.py
-- path: ../../deployment-templates/forseti-instance.py
+- path: forseti-instance.py
   name: forseti-instance.py
 
 resources:
@@ -32,16 +30,16 @@ resources:
 - name: cloudsql-instance
   type: cloudsql-instance.py
   properties:
-    region: us-central1
-    instance-name: CLOUDSQL_INSTANCE_NAME
+    region: {CLOUDSQL_REGION}
+    instance-name: {CLOUDSQL_INSTANCE_NAME}
 - name: forseti_security
   type: cloudsql-database.py
 
 # Cloud Storage
-- name: SCANNER_BUCKET
+- name: {SCANNER_BUCKET}
   type: bucket.py
   properties:
-    region: us
+    region: {BUCKET_REGION}
 
 # Compute Engine
 - name: forseti-instance
@@ -51,14 +49,14 @@ resources:
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1604-lts
     instance-type: n1-standard-2
-    zone: $(ref.cloudsql-instance.region)-c
+    zone: $(ref.cloudsql-instance.region)-b
 
-    service-account: GCP_SERVICE_ACCOUNT
+    service-account: {GCP_SERVICE_ACCOUNT}
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
-    scanner-bucket: SCANNER_BUCKET
+    scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
-    organization-id: ORGANIZATION_ID_NUMBER
+    organization-id: {ORGANIZATION_ID_NUMBER}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
@@ -75,8 +73,7 @@ resources:
     # e.g. "I want to deploy release 1.0"
     #    # branch-name: "master" <-- COMMENT OUT
     #    release-version: "1.0"
-    branch-name: "master"
-    #release-version: RELEASE_VERSION
+    {BRANCH_OR_RELEASE}
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 
@@ -86,11 +83,11 @@ resources:
 
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-    sendgrid-api-key: SENDGRID_API_KEY
-    email-sender: NOTIFICATION_SENDER_EMAIL
-    email-recipient: NOTIFICATION_RECIPIENT_EMAIL
+    sendgrid-api-key: {SENDGRID_API_KEY}
+    email-sender: {NOTIFICATION_SENDER_EMAIL}
+    email-recipient: {NOTIFICATION_RECIPIENT_EMAIL}
 
     # Flags for Inventory to collect GSuite Google Groups information.
-    inventory-groups: true
-    groups-domain-super-admin-email: GSUITE_SUPER_ADMIN_EMAIL
+    inventory-groups: {SHOULD_INVENTORY_GROUPS}
+    groups-domain-super-admin-email: {GSUITE_SUPER_ADMIN_EMAIL}
     groups-service-account-key-file: "/home/ubuntu/service-account-key.json"
