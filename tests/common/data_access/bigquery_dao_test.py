@@ -30,8 +30,6 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 class BigqueryDaoTest(ForsetiTestCase):
 	"""Tests for the BigqueryDao."""
 
-	#FAKE_PROJECT_NUMBERS = ['11111']
-
 	@mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
 	def setUp(self, mock_db_connector):
 		mock_db_connector.return_value = None

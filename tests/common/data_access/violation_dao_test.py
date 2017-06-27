@@ -38,9 +38,6 @@ def _flatten_violations(violations, flattening_scheme):
     Yield:
         Iterator of RuleViolations as a dict per member.
     """
-
-    # TODO: Make this nicer
-    #LOGGER.info('Writing violations to csv...')
     for violation in violations:
         if flattening_scheme == 'policy_violations':
             for member in violation.members:
@@ -157,17 +154,15 @@ class ViolationDaoTest(ForsetiTestCase):
             _format_violation() will flatten the violation and truncate the
             property values accordingly.
         """
-
         resource_name = 'policy_violations'
         flattened_fake_violations = scanner._flatten_violations(
                                                           self.fake_violations,
                                                           resource_name)
-        #actual = [f for v in flattened_fake_violations
-        #            for f in violation_dao._format_violation(v, self.resource_name)]
+
         temp_actual = []
         actual = []
         for violation in flattened_fake_violations:
-            violation = violation_dao.Violation(
+            violation = violation_dao.ViolationDao.Violation(
                                   resource_type=violation['resource_type'],
                                   resource_id=violation['resource_id'],
                                   rule_name=violation['rule_name'],
@@ -198,7 +193,6 @@ class ViolationDaoTest(ForsetiTestCase):
             * Assert that conn.commit() is called 3x.
               was called == # of formatted/flattened RuleViolations).
         """
-
         resource_name = 'policy_violations'
         conn_mock = mock.MagicMock()
         commit_mock = mock.MagicMock()
@@ -241,7 +235,6 @@ class ViolationDaoTest(ForsetiTestCase):
             * Assert that get_latest_snapshot_timestamp() doesn't get called.
             * Assert that _create_snapshot_table() gets called once.
         """
-
         fake_custom_timestamp = '11111'
         self.dao.conn = mock.MagicMock()
         self.dao._create_snapshot_table = mock.MagicMock()
@@ -263,7 +256,6 @@ class ViolationDaoTest(ForsetiTestCase):
         Expect:
             Raise MySQLError when create_snapshot_table() raises an error.
         """
-
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
             return_value=self.fake_snapshot_timestamp)
         self.dao._create_snapshot_table = mock.MagicMock(
@@ -287,7 +279,6 @@ class ViolationDaoTest(ForsetiTestCase):
               of errors.
             * Return a tuple of (num_violations-1, [violation])
         """
-
         resource_name = 'policy_violations'
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
             return_value=self.fake_snapshot_timestamp)

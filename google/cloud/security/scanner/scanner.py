@@ -198,15 +198,14 @@ def _flatten_violations(violations, flattening_scheme):
     Yield:
         Iterator of RuleViolations as a dict per member.
     """
-
-    # TODO: Make this nicer
+    # TODO: Write custom flattening methods for each violation type.
     for violation in violations:
         if flattening_scheme == 'policy_violations':
             for member in violation.members:
                 violation_data = {}
                 violation_data['role'] = violation.role
-                violation_data['member'] = '{}:{}'.format(member.type,
-                                                          member.name)
+                violation_data['member'] = '%s:%s' % (member.type, member.name)
+
                 yield {
                     'resource_id': violation.resource_id,
                     'resource_type': violation.resource_type,

@@ -28,7 +28,8 @@ from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 
 
-# TODO: Define more tests
+# TODO: More tests need to be added that cover the rule attributes and how they
+#    are evaluated
 class BigqueryRulesEngineTest(ForsetiTestCase):
     """Tests for the BigqueryRulesEngine."""
 
@@ -49,7 +50,6 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
 
     @mock.patch.object(file_loader,
                        '_read_file_from_gcs', autospec=True)
-
     def test_build_rule_book_from_gcs_works(self, mock_load_rules_from_gcs):
         """Test that a RuleBook is built correctly with a mocked gcs file.
 

@@ -44,7 +44,7 @@ class BigqueryDao(project_dao.ProjectDao):
             YYYYMMDDTHHMMSSZ.
 
         Returns:
-            list: List of Big Query acls.
+            dict: Dictionary keyed by the count of ACLs and then the ACLs.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
@@ -56,20 +56,20 @@ class BigqueryDao(project_dao.ProjectDao):
             rows = self.execute_sql_with_fetch(resource_name,
                                                bigquery_acls_sql,
                                                None)
-            for row in rows:
-                bigquery_acl = bq_acls.\
-                BigqueryAccessControls(dataset_id=row['dataset_id'],
-                                       special_group=\
-                                       row['access_special_group'],
-                                       user_email=row['access_user_by_email'],
-                                       domain=row['access_domain'],
-                                       role=row['role'],
-                                       group_email=\
-                                       row['access_group_by_email'],
-                                       project_id=row['project_id'])
-                bigquery_acls[cnt] = bigquery_acl
-                cnt += 1
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:
             LOGGER.error(errors.MySQLError(resource_name, e))
+
+        for row in rows:
+            bigquery_acl = bq_acls.BigqueryAccessControls(
+                dataset_id=row['dataset_id'],
+                special_group=row['access_special_group'],
+                user_email=row['access_user_by_email'],
+                domain=row['access_domain'],
+                role=row['role'],
+                group_email=row['access_group_by_email'],
+                project_id=row['project_id'])
+            bigquery_acls[cnt] = bigquery_acl
+            cnt += 1
+
         return bigquery_acls

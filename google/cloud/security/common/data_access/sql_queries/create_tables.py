@@ -476,6 +476,7 @@ CREATE_RAW_PROJECT_IAM_POLICIES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+# TODO: define the violation_type enum as a list
 CREATE_VIOLATIONS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

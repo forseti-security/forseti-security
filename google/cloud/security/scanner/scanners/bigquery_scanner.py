@@ -22,7 +22,8 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class BigqueryScanner(base_scanner.BaseScanner):
-    """Pipeline to Big Query acls data from DAO"""
+    """Pipeline to pull Big Query acls data from DAO"""
+
     def __init__(self, snapshot_timestamp):
         """Initialization.
 
@@ -40,9 +41,9 @@ class BigqueryScanner(base_scanner.BaseScanner):
             list: List of Big Query acls.
         """
         bq_acls = {}
-        bq_acls = bigquery_dao.BigqueryDao().\
-                  get_bigquery_acls('bigquery_datasets',
-                                    self.snapshot_timestamp)
+        bq_acls = bigquery_dao.BigqueryDao().get_bigquery_acls(
+            'bigquery_datasets',
+            self.snapshot_timestamp)
         return bq_acls
 
     @staticmethod
@@ -92,9 +93,8 @@ class BigqueryScanner(base_scanner.BaseScanner):
         Returns:
             list: A list of BigQuery violations
         """
-
         all_violations = []
-        LOGGER.info('Finding Big Query acl violations...')
+        LOGGER.info('Finding BigQuery acl violations...')
 
         for (bigquery, bigquery_acl) in bigquery_data:
             LOGGER.debug('%s => %s', bigquery, bigquery_acl)

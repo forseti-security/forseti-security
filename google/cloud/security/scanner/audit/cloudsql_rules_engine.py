@@ -22,31 +22,12 @@ import re
 from google.cloud.security.common.gcp_type import cloudsql_access_controls as csql_acls
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util.regex_util import escape_and_globify
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
 LOGGER = log_util.get_logger(__name__)
-
-
-# TODO: move this to utils since it's used in more that one engine
-def escape_and_globify(pattern_string):
-    """Given a pattern string with a glob, create actual regex pattern.
-
-    To require > 0 length glob, change the "*" to ".+". This is to handle
-    strings like "*@company.com". (THe actual regex would probably be
-    ".*@company.com", except that we don't want to match zero-length
-    usernames before the "@".)
-
-    Args:
-        pattern_string (str): The pattern string of which to make a regex.
-
-    Returns:
-        str: The pattern string, escaped except for the "*", which is
-        transformed into ".+" (match on one or more characters).
-    """
-
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
 
 
 class CloudSqlRulesEngine(bre.BaseRulesEngine):
@@ -139,7 +120,6 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-
         resources = rule_def.get('resource')
 
         for resource in resources:
@@ -213,31 +193,30 @@ class Rule(object):
             namedtuple: Returns RuleViolation named tuple
         """
         filter_list = []
-        if self.rules.instance_name != '^.+$':
-            instance_name_bool = re.match(self.rules.instance_name,
-                                          cloudsql_acl.instance_name)
-        else:
-            instance_name_bool = True
+        is_instance_name_violated = True
+        is_authorized_networks_violated = True
+        is_ssl_enabled_violated = True
 
-        if self.rules.authorized_networks != '^.+$':
-            authorized_networks_regex = re.compile(self.rules.\
-                                                   authorized_networks)
-            filter_list = [
-                net for net in cloudsql_acl.authorized_networks if\
-                authorized_networks_regex.match(net)
-            ]
+        is_instance_name_violated = re.match(self.rules.instance_name,
+                                             cloudsql_acl.instance_name)
 
-            authorized_networks_bool = bool(filter_list)
-        else:
-            authorized_networks_bool = True
+        authorized_networks_regex = re.compile(self.rules.authorized_networks)
+        filter_list = [
+            net for net in cloudsql_acl.authorized_networks if\
+            authorized_networks_regex.match(net)
+        ]
 
-        ssl_enabled_bool = (self.rules.ssl_enabled == cloudsql_acl.ssl_enabled)
+        is_authorized_networks_violated = bool(filter_list)
+
+        is_ssl_enabled_violated = (self.rules.ssl_enabled ==\
+                                   cloudsql_acl.ssl_enabled)
 
         should_raise_violation = (
-            (instance_name_bool is not None and instance_name_bool) and\
-            (authorized_networks_bool is not None and\
-             authorized_networks_bool) and
-            (ssl_enabled_bool is not None and ssl_enabled_bool))
+            (is_instance_name_violated is not None and\
+             is_instance_name_violated) and\
+            (is_authorized_networks_violated is not None and\
+             is_authorized_networks_violated) and
+            (is_ssl_enabled_violated is not None and is_ssl_enabled_violated))
 
         if should_raise_violation:
             yield self.RuleViolation(

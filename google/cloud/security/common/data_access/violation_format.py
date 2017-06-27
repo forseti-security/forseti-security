@@ -29,8 +29,7 @@ def format_violation(violation):
 
     Args:
         violation (namedtuple): The Policy RuleViolation. This is a named
-            tumple with the following attributes 'resource_type','resource_id',
-            'rule_name', 'violation_type' and 'violation_data'
+            tuple (see the ViolationDao class in violation_dao.py).
 
     Yields:
         tuple: A tuple of the rule violation properties.
@@ -53,18 +52,17 @@ def format_violation(violation):
            violation.violation_type,
            json.dumps(violation.violation_data))
 
+# TODO: refactor groups scanner to use the generic violations format
 def format_groups_violation(violation):
     """Format the groups violation data into a tuple.
 
     Args:
         violation (namedtuple): The groups violation. This is a named tuple
-            with the following attributes 'member_email','parent.member_email',
-            'violated_rule_names'
+            (see rules.py in google.cloud.security.scanner.audit).
 
     Yields:
         tuple: A tuple of the violation properties.
     """
-
     member_email = violation.member_email
     if member_email:
         member_email = member_email[:255]

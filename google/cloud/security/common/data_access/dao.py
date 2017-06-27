@@ -32,11 +32,6 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-raises-doc,redundant-returns-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
@@ -118,11 +113,11 @@ class Dao(_db_connector.DbConnector):
         TODO: Make this go away when we start using an ORM.
 
         Args:
-            object_class: The object class to create.
-            row: The database row to map.
+            object_class (object): The object class to create.
+            row (row): The database row to map.
 
         Returns:
-            A new "obj_class", created from the row.
+            obj_class: A new "obj_class", created from the row.
         """
         return object_class(**row)
 
@@ -130,11 +125,12 @@ class Dao(_db_connector.DbConnector):
         """Creates a snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
 
         Returns:
-            snapshot_table_name: String of the created snapshot table.
+            str: String of the created snapshot table.
         """
         snapshot_table_name = self._create_snapshot_table_name(
             resource_name, timestamp)
@@ -149,11 +145,12 @@ class Dao(_db_connector.DbConnector):
         """Create the snapshot table if it doesn't exist.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
 
         Returns:
-            String of the created snapshot table name.
+            str: String of the created snapshot table name.
         """
         return resource_name + '_' + timestamp
 
@@ -161,11 +158,11 @@ class Dao(_db_connector.DbConnector):
         """Returns a snapshot table name.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            snapshot_table_name: String of the created snapshot table.
+            str: String of the created snapshot table.
         """
         try:
             snapshot_table_name = self._create_snapshot_table(
@@ -183,15 +180,13 @@ class Dao(_db_connector.DbConnector):
         """Load data into a snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            data: An iterable or a list of data to be uploaded.
-
-        Returns:
-            None
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+            data (iterable): An iterable or a list of data to be uploaded.
 
         Raises:
-            MySQLError: An error with MySQL has occurred.
+            MySQLError: If an error has occured while executing the query.
         """
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
@@ -205,23 +200,25 @@ class Dao(_db_connector.DbConnector):
                 self.conn.commit()
                 # TODO: Return the snapshot table name so that it can be tracked
                 # in the main snapshot table.
-            except (DataError, IntegrityError, InternalError, NotSupportedError,
-                    OperationalError, ProgrammingError) as e:
+            except (DataError, IntegrityError, InternalError,
+                    NotSupportedError, OperationalError,
+                    ProgrammingError) as e:
                 raise MySQLError(resource_name, e)
 
     def select_record_count(self, resource_name, timestamp):
         """Select the record count from a snapshot table.
 
         Args:
-            resource_name: String of the resource name, which is embedded in
-                the table name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name, which is
+                embedded in the table name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
 
         Returns:
-             Integer of the record count in a snapshot table.
+            int: Integer of the record count in a snapshot table.
 
         Raises:
-            MySQLError: An error with MySQL has occurred.
+            MySQLError: If an error has occured while executing the query.
         """
         try:
             record_count_sql = select_data.RECORD_COUNT.format(
@@ -237,14 +234,15 @@ class Dao(_db_connector.DbConnector):
         """Select the group ids from a snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
 
         Returns:
-             A list of group ids.
+            list: A list of group ids.
 
         Raises:
-            MySQLError: An error with MySQL has occurred.
+            MySQLError: If an error has occured while executing the query.
         """
         try:
             group_ids_sql = select_data.GROUP_IDS.format(timestamp)
@@ -260,15 +258,15 @@ class Dao(_db_connector.DbConnector):
         """Executes a provided sql statement with fetch.
 
         Args:
-            resource_name: String of the resource name.
-            sql: String of the sql statement.
-            values: Tuple of string for sql placeholder values.
+            resource_name (str): String of the resource name.
+            sql (str): String of the sql statement.
+            values (tuple): Tuple of string for sql placeholder values.
 
         Returns:
-             A list of tuples representing rows of sql query result.
+            list: A list of tuples representing rows of sql query result.
 
         Raises:
-            MySQLError: An error with MySQL has occurred.
+            MySQLError: If an error has occured while executing the query.
         """
         try:
             cursor = self.conn.cursor(cursorclass=cursors.DictCursor)
@@ -282,15 +280,12 @@ class Dao(_db_connector.DbConnector):
         """Executes a provided sql statement with commit.
 
         Args:
-            resource_name: String of the resource name.
-            sql: String of the sql statement.
-            values: Tuple of string for sql placeholder values.
-
-        Returns:
-             None
+            resource_name (str): String of the resource name.
+            sql (str): String of the sql statement.
+            values (tuple): Tuple of string for sql placeholder values.
 
         Raises:
-            MySQLError: An error with MySQL has occurred.
+            MySQLError: If an error has occured while executing the query.
         """
         try:
             cursor = self.conn.cursor()
@@ -304,13 +299,13 @@ class Dao(_db_connector.DbConnector):
         """Select the latest timestamp of the completed snapshot.
 
         Args:
-            statuses: The tuple of snapshot statuses to filter on.
+            statuses (tuple): The tuple of snapshot statuses to filter on.
 
         Returns:
-             The string timestamp of the latest complete snapshot.
+            str: The string timestamp of the latest complete snapshot.
 
         Raises:
-            MySQLError (NoResultsError) if no rows are found.
+            MySQLError: If no rows are found.
         """
         # Build a dynamic parameterized query string for filtering the
         # snapshot statuses

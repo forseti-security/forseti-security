@@ -21,31 +21,12 @@ import re
 from google.cloud.security.common.gcp_type import bucket_access_controls as bkt_acls
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util.regex_util import escape_and_globify
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
 LOGGER = log_util.get_logger(__name__)
-
-
-# TODO: move this to utils since it's used in more that one engine
-def escape_and_globify(pattern_string):
-    """Given a pattern string with a glob, create actual regex pattern.
-
-    To require > 0 length glob, change the "*" to ".+". This is to handle
-    strings like "*@company.com". (THe actual regex would probably be
-    ".*@company.com", except that we don't want to match zero-length
-    usernames before the "@".)
-
-    Args:
-        pattern_string (str): The pattern string of which to make a regex.
-
-    Returns:
-        str: The pattern string, escaped except for the "*", which is
-            transformed into ".+" (match on one or more characters).
-    """
-
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
 
 
 class BucketsRulesEngine(bre.BaseRulesEngine):
@@ -138,7 +119,6 @@ class BucketsRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-
         resources = rule_def.get('resource')
 
         for resource in resources:
@@ -215,33 +195,28 @@ class Rule(object):
         Yields:
             namedtuple: Returns RuleViolation named tuple
         """
-        if self.rules.bucket != '^.+$':
-            bucket_bool = re.match(self.rules.bucket, bucket_acl.bucket)
-        else:
-            bucket_bool = True
-        if self.rules.entity != '^.+$':
-            entity_bool = re.match(self.rules.entity, bucket_acl.entity)
-        else:
-            entity_bool = True
-        if self.rules.email != '^.+$':
-            email_bool = re.match(self.rules.email, bucket_acl.email)
-        else:
-            email_bool = True
-        if self.rules.domain != '^.+$':
-            domain_bool = re.match(self.rules.domain, bucket_acl.domain)
-        else:
-            domain_bool = True
-        if self.rules.role != '^.+$':
-            role_bool = re.match(self.rules.role, bucket_acl.role)
-        else:
-            role_bool = True
+        is_bucket_violated = True
+        is_entity_violated = True
+        is_email_violated = True
+        is_domain_violated = True
+        is_role_violated = True
+
+        is_bucket_violated = re.match(self.rules.bucket, bucket_acl.bucket)
+
+        is_entity_violated = re.match(self.rules.entity, bucket_acl.entity)
+
+        is_email_violated = re.match(self.rules.email, bucket_acl.email)
+
+        is_domain_violated = re.match(self.rules.domain, bucket_acl.domain)
+
+        is_role_violated = re.match(self.rules.role, bucket_acl.role)
 
         should_raise_violation = (
-            (bucket_bool is not None and bucket_bool) and
-            (entity_bool is not None and entity_bool) and
-            (email_bool is not None and email_bool) and
-            (domain_bool is not None and domain_bool) and
-            (role_bool is not None and role_bool))
+            (is_bucket_violated is not None and is_bucket_violated) and
+            (is_entity_violated is not None and is_entity_violated) and
+            (is_email_violated is not None and is_email_violated) and
+            (is_domain_violated is not None and is_domain_violated) and
+            (is_role_violated is not None and is_role_violated))
 
         if should_raise_violation:
             yield self.RuleViolation(
