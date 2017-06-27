@@ -2,6 +2,8 @@
 ---
 $baseurl: '{{ site.baseurl }}';
 
+@import "base/colors";
+@import "base/breakpoints";
 @import "base/variables";
 @import "base/override";
 @import "base/icons";

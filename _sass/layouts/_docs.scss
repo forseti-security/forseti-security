@@ -8,7 +8,7 @@
     }
 
     li + li:before {
-      color: #aaa;
+      color: $grey-400;
       content: ">\00a0";
     }
   }
@@ -20,7 +20,7 @@
 }
 
 .edit-on-github a {
-  color: #737373 !important;
+  color: $grey-600 !important;
   .file-name {
     font-weight: bold;
   }
