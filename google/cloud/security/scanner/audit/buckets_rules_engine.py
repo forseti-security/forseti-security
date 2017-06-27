@@ -49,6 +49,7 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         """Build BucketsRuleBook from the rules definition file."""
         self.rule_book = BucketsRuleBook(self._load_rule_definitions())
 
+    # TODO: The naming is confusing and needs to be fixed in all scanners.
     # pylint: disable=arguments-differ
     def find_policy_violations(self, buckets_acls,
                                force_rebuild=False):
@@ -186,6 +187,7 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
+    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, bucket_acl):
         """Find bucket policy acl violations in the rule book.
 

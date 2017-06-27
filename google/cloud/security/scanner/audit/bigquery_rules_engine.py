@@ -48,6 +48,7 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         """Build BigqueryRuleBook from the rules definition file."""
         self.rule_book = BigqueryRuleBook(self._load_rule_definitions())
 
+    # TODO: The naming is confusing and needs to be fixed in all scanners.
     # pylint: disable=arguments-differ
     def find_policy_violations(self, bq_datasets,
                                force_rebuild=False):
@@ -200,6 +201,7 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
+    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, bigquery_acl):
         """Find BigQuery acl violations in the rule book.
 

@@ -50,6 +50,7 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         """Build CloudSQLRuleBook from the rules definition file."""
         self.rule_book = CloudSqlRuleBook(self._load_rule_definitions())
 
+    # TODO: The naming is confusing and needs to be fixed in all scanners.
     # pylint: disable=arguments-differ
     def find_policy_violations(self, cloudsql_acls,
                                force_rebuild=False):
@@ -183,6 +184,7 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
+    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, cloudsql_acl):
         """Find CloudSQL policy acl violations in the rule book.
 
