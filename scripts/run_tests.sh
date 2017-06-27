@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,22 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# A script to perform the linting of python code submits.
+# Delete all running containers
+docker rm -f $(docker ps -a -q)
 
-echo "Running $(which pylint).\n"
+docker build -t forseti/base -f scripts/docker/base . || exit 1
+docker build -t forseti/build -f scripts/docker/forseti --no-cache . || exit 1
+docker run -it -d --name build forseti/build /bin/bash || exit 1
 
-echo "Pylint version: $(pip show pylint).\n"
-
-# The disables specified allow us to have 'I' level messages, just
-# not the ones specified.
-PYTHONPATH=./ \
-  pylint google/ \
-  --rcfile=./pylintrc
-
-if [ $? -ne 0 ]; then
-  echo "Oops, pylint had errors.\n"
-  exit 1
-else
-  echo "Success, pylint had no errors.\n"
-  exit 0
-fi
+docker exec -it build /bin/sh -c "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'" || exit 1
+docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc google/ scripts/gcp_setup/"

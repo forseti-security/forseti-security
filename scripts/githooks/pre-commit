@@ -15,18 +15,41 @@
 
 # A git pre-commit hook to perform linter checks to catch errors locally
 
+# TODO:
+
 # Check if the user is in a virtual environment
+echo -n "Checking for a virtual env..."
 if [ -z $VIRTUAL_ENV ]; then
-	echo "Need to be in a virtual env"
-	exit 1
+    echo " Oops, need to be in a virtual env."
+    exit 1
 fi
+echo " ok."
 
 # Check if pylintrc exists and user is in the top repository directory
 if [ -e "./pylintrc" ]; then
-	echo "Executing pylint..."
-	pylint --rcfile=pylintrc --output-format=text google || exit 1
-else
-	echo "Need to commit from top level repository dir"
-	exit 1
+    echo -n "Executing pylint..."
+    pylint -s n --rcfile=pylintrc --output-format=text google || exit 1
+    if [ $? -ne 0 ]; then
+        echo " Oops, need to commit from top level repository dir."
+        exit 1
+    fi
 fi
+echo " ok."
 
+# Check for TODOs
+echo -n "Checking for TODOs..."
+for FILE in `git diff --name-only --cached`; do
+    if [ -a FILE ]; then
+      egrep -i '# TODO: ' $FILE 2>&1 >/dev/null
+      if [ $? -eq 0 ]; then
+          let TODO_MATCH=1
+          echo $FILE ' contains a TODO'
+      fi
+    fi
+done
+if [ -z $TODO_MATCH ]; then
+    echo " Oops, there are some TODOs to fix. If you really must you can
+    pass in --no-verify."
+    exit 1
+fi
+echo " ok."

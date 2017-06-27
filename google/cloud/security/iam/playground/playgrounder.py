@@ -14,8 +14,12 @@
 
 """ Playground API. """
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc
 
-# pylint: disable=invalid-name,no-self-use,unused-argument
+
+# pylint: disable=invalid-name,no-self-use
 class Playgrounder(object):
     """Playground API implementation."""
 
@@ -74,17 +78,19 @@ class Playgrounder(object):
         with scoped_session as session:
             return data_access.list_group_members(session, member_name_prefix)
 
-    def DelResource(self, model_name, full_resource_name):
+    def DelResource(self, model_name, resource_type_name):
         """Deletes a member from the model."""
 
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
-            data_access.del_resource_by_name(session, full_resource_name)
+            data_access.del_resource_by_name(session, resource_type_name)
             session.commit()
 
-    def AddResource(self, model_name, full_resource_name, resource_type,
-                    parent_full_resource_name, no_require_parent):
+    def AddResource(self, model_name,
+                    resource_type_name,
+                    parent_type_name,
+                    no_require_parent):
         """Adds a resource to the model."""
 
         model_manager = self.config.model_manager
@@ -92,7 +98,8 @@ class Playgrounder(object):
         with scoped_session as session:
             data_access.add_resource_by_name(
                 session,
-                full_resource_name,
+                resource_type_name,
+                parent_type_name,
                 no_require_parent)
             session.commit()
 

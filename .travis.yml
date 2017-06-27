@@ -15,6 +15,7 @@
 sudo: required
 
 language: python
+
 python:
   - "2.7"
 
@@ -22,18 +23,21 @@ services:
   - docker
 
 before_install:
-  # Build the Forseti image containing the dependencies and code
-  - docker build -t forseti/build .
-  # Start the container for testing an code verification
-  - docker run -it -d --name build forseti/build /bin/bash
+  # Build the Forseti base image containing all the dependencies.
+  - docker build -t forseti/base -f scripts/docker/base .
+  # Build the Forseti image containing the dependencies and code.
+  - docker build -t forseti/build -f scripts/docker/forseti --no-cache .
+  # Required for codecov.io to export coverage within a Docker container.
+  - "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
+  # Start the container for testing and code verification.
+  - docker run $CI_ENV -it -d --name build forseti/build /bin/bash
 
 script:
-  # Run code coverage
+  # Run code coverage.
   - docker exec -it build /bin/sh -c "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
-  # Check code compliance
-  - docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc google"
+  # Check code compliance.
+  - docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc google/ scripts/gcp_setup/"
 
 after_success:
-  # Execute coveralls inside the docker container, need to export env for coveralls.io upload
-  - docker exec -it build /bin/sh -c "TRAVIS=${TRAVIS} TRAVIS_JOB_ID=${TRAVIS_JOB_ID} coveralls"
-
+  # Execute codecov inside the docker container. Need to export env for codecov.io upload.
+  - docker exec -it build /bin/sh -c "codecov"

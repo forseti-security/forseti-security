@@ -25,6 +25,12 @@ from google.cloud.security.iam.explain import explainer
 from google.cloud.security.iam.dao import session_creator
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-yield-doc
+# pylint: disable=missing-yield-type-doc
+
+
 # pylint: disable=protected-access
 def autoclose_stream(f):
     """Decorator to close gRPC stream."""
@@ -172,10 +178,12 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     def CreateModel(self, request, context):
         """Creates a new model from an import source."""
 
-        handle = self.explainer.CreateModel(request.type)
-
-        reply = explain_pb2.CreateModelReply()
-        reply.handle = handle
+        model = self.explainer.CreateModel(request.type, request.name)
+        reply = explain_pb2.CreateModelReply(model=explain_pb2.Model(
+            name=model.name,
+            handle=model.handle,
+            status=model.state,
+            message=model.message))
         return reply
 
     def DeleteModel(self, request, _):
@@ -188,9 +196,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     def ListModel(self, request, _):
         """List all models."""
 
-        model_names = self.explainer.ListModel()
+        models = self.explainer.ListModel()
+        models_pb = []
+        for model in models:
+            models_pb.append(explain_pb2.Model(name=model.name,
+                                               handle=model.handle,
+                                               status=model.state,
+                                               message=model.message))
         reply = explain_pb2.ListModelReply()
-        reply.handles.extend(model_names)
+        reply.models.extend(models_pb)
         return reply
 
     def Denormalize(self, _, context):

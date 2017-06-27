@@ -19,7 +19,10 @@ See:
 """
 
 
-# pylint: disable=too-few-public-methods
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-param-doc
+
+
 class InstanceTemplate(object):
     """Represents InstanceTemplate resource."""
 

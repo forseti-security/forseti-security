@@ -25,6 +25,13 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-yield-doc
+# pylint: disable=missing-yield-type-doc,redundant-returns-doc
+
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -152,9 +159,6 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
     def get_resource_rules(self):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
 
-        Args:
-            resource: The resource to find in the ResourceRules map.
-
         Returns:
             A list of ResourceRules.
         """
@@ -190,7 +194,7 @@ class Rule(object):
             cloudsql_acl: CloudSQL ACL resource
 
         Returns:
-            Returns RuleViolation named tuple
+            tuple: A RuleViolation named tuple
         """
         filter_list = []
         if self.rules.instance_name != '^.+$':

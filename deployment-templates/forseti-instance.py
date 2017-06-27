@@ -77,7 +77,7 @@ mkdir -p $USER_HOME/config
 cp samples/inventory/inventory_conf.yaml $USER_HOME/config/inventory_conf.yaml
 
 # Build protos separately.
-python build_protos.py -- clean
+python build_protos.py --clean
 """
         OLD_BUILD_PROTOS = ''
     else:
@@ -103,7 +103,7 @@ cp bin/protoc /usr/local/bin/protoc
     SENDGRID_API_KEY = context.properties.get('sendgrid-api-key')
     EMAIL_SENDER = context.properties.get('email-sender')
     EMAIL_RECIPIENT = context.properties.get('email-recipient')
-    if EMAIL_RECIPIENT is not None:
+    if EMAIL_RECIPIENT:
         email_flags = '--sendgrid_api_key {} --email_sender {} --email_recipient {}'.format(
             SENDGRID_API_KEY,
             EMAIL_SENDER,
@@ -182,6 +182,13 @@ cp bin/protoc /usr/local/bin/protoc
                 'items': [{
                     'key': 'startup-script',
                     'value': """#!/bin/bash
+exec > /tmp/deployment.log
+exec 2>&1
+
+# Ubuntu update
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
 # Forseti setup
 sudo apt-get install -y git unzip
 # Forseti dependencies
@@ -234,18 +241,16 @@ fi
 # Install Forseti Security
 cd $USER_HOME
 rm -rf forseti-*
+rm -rf run_forseti.sh
 pip install --upgrade pip
 pip install --upgrade setuptools
-pip install google-apputils grpcio grpcio-tools protobuf
-
-cd $USER_HOME
+pip install grpcio grpcio-tools
 
 {}
 
 # Download Forseti src; see DOWNLOAD_FORSETI
 {}
 # Prevent namespace clash
-pip uninstall --yes google-apputils
 pip uninstall --yes protobuf
 
 {}

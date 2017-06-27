@@ -30,6 +30,7 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Sequence
 from sqlalchemy import ForeignKey
+from sqlalchemy import Text
 from sqlalchemy import create_engine
 from sqlalchemy import Table
 from sqlalchemy import DateTime
@@ -41,9 +42,13 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
-from google.cloud.security.iam.utils import full_to_type_name
-from google.cloud.security.iam.utils import resource_to_type_name
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
+# pylint: disable=missing-yield-type-doc
+
+POOL_RECYCLE_SECONDS = 300
 
 def generate_model_handle():
     """Generate random model handle."""
@@ -64,32 +69,52 @@ class Model(MODEL_BASE):
     """IAM Explain model object in database."""
 
     __tablename__ = 'model'
-    handle = Column(String(32), primary_key=True)
+    name = Column(String(32), primary_key=True)
+    handle = Column(String(32))
     state = Column(String(32))
     watchdog_timer = Column(DateTime)
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
+    message = Column(Text())
 
     def kick_watchdog(self, session):
         """Used during import to notify the import is still progressing."""
 
         self.watchdog_timer = datetime.datetime.utcnow()
+        session.add(self)
         session.commit()
 
     def set_inprogress(self, session):
         """Set state to 'in progress'."""
 
         self.state = "INPROGRESS"
+        session.add(self)
         session.commit()
 
-    def set_done(self, session):
+    def set_done(self, session, message=""):
         """Indicate a finished import."""
 
         self.state = "DONE"
+        self.message = message
+        session.add(self)
         session.commit()
 
+    def set_error(self, session, message):
+        """Indicate a broken import."""
 
-# pylint: disable=too-many-locals,too-few-public-methods,no-member
+        self.state = "BROKEN"
+        self.message = message
+        session.add(self)
+        session.commit()
+
+    def __repr__(self):
+        """String representation."""
+
+        return "<Model(name='{}', handle='{}' state='{}')>".format(
+            self.name, self.handle, self.state)
+
+
+# pylint: disable=too-many-locals,no-member
 def define_model(model_name, dbengine, model_seed):
     """Defines table classes which point to the corresponding model.
 
@@ -144,14 +169,17 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
-        full_name = Column(String(1024), primary_key=True)
+        full_name = Column(String(1024))
+        type_name = Column(String(256), primary_key=True)
         name = Column(String(128))
         type = Column(String(64))
         policy_update_counter = Column(Integer, default=0)
+        display_name = Column(String(256))
 
-        parent_name = Column(
-            String, ForeignKey('{}.full_name'.format(resources_tablename)))
-        parent = relationship("Resource", remote_side=[full_name])
+        parent_type_name = Column(
+            String(128),
+            ForeignKey('{}.type_name'.format(resources_tablename)))
+        parent = relationship("Resource", remote_side=[type_name])
         bindings = relationship('Binding', back_populates="resource")
 
         def increment_update_counter(self):
@@ -171,7 +199,7 @@ def define_model(model_name, dbengine, model_seed):
                 self.full_name, self.name, self.type)
 
     Resource.children = relationship(
-        "Resource", order_by=Resource.name, back_populates="parent")
+        "Resource", order_by=Resource.full_name, back_populates="parent")
 
     class Member(base):
         """Row entry for a policy member."""
@@ -209,12 +237,12 @@ def define_model(model_name, dbengine, model_seed):
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
 
-        resource_name = Column(Integer, ForeignKey(
-            '{}.name'.format(resources_tablename)))
-        role_name = Column(Integer, ForeignKey(
+        resource_type_name = Column(String(128), ForeignKey(
+            '{}.type_name'.format(resources_tablename)))
+        role_name = Column(String(128), ForeignKey(
             '{}.name'.format(roles_tablename)))
 
-        resource = relationship('Resource', remote_side=[resource_name])
+        resource = relationship('Resource', remote_side=[resource_type_name])
         role = relationship('Role', remote_side=[role_name])
 
         members = relationship('Member',
@@ -226,7 +254,7 @@ def define_model(model_name, dbengine, model_seed):
             return fmt_s.format(
                 self.id,
                 self.role_name,
-                self.resource_name,
+                self.resource_type_name,
                 self.members)
 
     class Role(base):
@@ -262,29 +290,32 @@ def define_model(model_name, dbengine, model_seed):
         TBL_PERMISSION = Permission
         TBL_ROLE = Role
         TBL_RESOURCE = Resource
+        TBL_MEMBERSHIP = group_members
 
         @classmethod
         def delete_all(cls, engine):
             """Delete all data from the model."""
-            Binding.__table__.drop(engine)
-            Member.__table__.drop(engine)
-            Permission.__table__.drop(engine)
-            Role.__table__.drop(engine)
-            Resource.__table__.drop(engine)
             role_permissions.drop(engine)
             binding_members.drop(engine)
             group_members.drop(engine)
 
+            Binding.__table__.drop(engine)
+            Permission.__table__.drop(engine)
+
+            Role.__table__.drop(engine)
+            Member.__table__.drop(engine)
+            Resource.__table__.drop(engine)
+
         @classmethod
-        def explain_granted(cls, session, member_name, full_resource_name,
+        def explain_granted(cls, session, member_name, resource_type_name,
                             role, permission):
             """Provide info about how the member has access to the resource."""
             members, member_graph = cls.reverse_expand_members(
                 session, [member_name], request_graph=True)
             member_names = [m.name for m in members]
-            resource_names = [r.full_name for r in
-                              cls.find_resource_path(session,
-                                                     full_resource_name)]
+            resource_type_names = [r.type_name for r in
+                                   cls.find_resource_path(session,
+                                                          resource_type_name)]
 
             if role:
                 roles = set([role])
@@ -301,21 +332,22 @@ def define_model(model_name, dbengine, model_seed):
 
             qry = qry.filter(Binding.role_name.in_(roles))
             qry = qry.filter(Member.name.in_(member_names))
-            qry = qry.filter(Binding.resource_name.in_(resource_names))
+            qry = qry.filter(
+                Binding.resource_type_name.in_(resource_type_names))
             result = qry.all()
             if not result:
                 raise Exception(
                     'Grant not found: ({},{},{})'.format(
                         member_name,
-                        full_resource_name,
+                        resource_type_name,
                         role if role is not None else permission))
             else:
-                bindings = [(b.resource_name, b.role_name, m.name)
+                bindings = [(b.resource_type_name, b.role_name, m.name)
                             for b, m in result]
-                return bindings, member_graph, resource_names
+                return bindings, member_graph, resource_type_names
 
         @classmethod
-        def explain_denied(cls, session, member_name, resource_names,
+        def explain_denied(cls, session, member_name, resource_type_names,
                            permission_names, role_names):
             """Provide information how to grant access to a member."""
 
@@ -328,8 +360,9 @@ def define_model(model_name, dbengine, model_seed):
                     raise Exception(
                         'No roles covering requested permission set')
 
-            resource_hierarchy = cls.resolve_resource_ancestors(
-                session, resource_names)
+            resource_hierarchy = (
+                cls.resource_ancestors(session,
+                                       resource_type_names))
 
             def find_binding_candidates(resource_hierarchy):
                 """Find the root node in the ancestors.
@@ -363,7 +396,7 @@ def define_model(model_name, dbengine, model_seed):
             bindings = (
                 session.query(Binding, Member)
                 .join(binding_members).join(Member).join(Role)
-                .filter(Binding.resource_name.in_(bind_res_candidates))
+                .filter(Binding.resource_type_name.in_(bind_res_candidates))
                 .filter(Role.name.in_(role_names))
                 .filter(or_(Member.type == 'group',
                             Member.name == member_name))
@@ -386,12 +419,13 @@ def define_model(model_name, dbengine, model_seed):
                 for binding, member in bindings:
                     overgranting = (len(bind_res_candidates) - 1 -
                                     bind_res_candidates.index(
-                                        binding.resource_name))
+                                        binding.resource_type_name))
                     strategies.append(
                         (overgranting, [
                             (binding.role_name,
                              member.name,
-                             binding.resource_name)]))
+                             binding.resource_type_name)]))
+
             return strategies
 
         @classmethod
@@ -410,48 +444,46 @@ def define_model(model_name, dbengine, model_seed):
 
             roles = cls.get_roles_by_permission_names(
                 session, permission_names)
-            qry = session.query(Binding).join(binding_members).join(Member)
-            qry = qry.filter(Binding.role_name.in_([r.name for r in roles]))
-            qry = qry.filter(Member.name.in_(member_names))
-            bindings = qry.all()
 
+            qry = (
+                session.query(Binding)
+                .join(binding_members)
+                .join(Member)
+                .filter(Binding.role_name.in_([r.name for r in roles]))
+                .filter(Member.name.in_(member_names)))
+
+            bindings = qry.yield_per(1024)
             if not expand_resources:
                 return [(binding.role_name,
-                         [binding.resource_name]) for binding in bindings]
+                         [binding.resource_type_name]) for binding in bindings]
 
-            r_type_names = ['/'.join(binding.resource_name.split('/')[-2:])
-                            for binding in bindings]
+            r_type_names = [binding.resource_type_name for binding in bindings]
             expansion = cls.expand_resources_by_type_names(
                 session,
                 r_type_names)
 
-            def fmt(first, second):
-                """Formatting helper."""
-
-                return '{}/{}'.format(first, second)
-
-            res_exp = {fmt(k.type, k.name):
-                       [fmt(v.type, v.name) for v in values]
+            res_exp = {k.type_name:
+                       [v.type_name for v in values]
                        for k, values in expansion.iteritems()}
 
             return [(binding.role_name,
-                     res_exp[full_to_type_name(binding.resource_name)])
+                     res_exp[binding.resource_type_name])
                     for binding in bindings]
 
         @classmethod
-        def query_access_by_resource(cls, session, resource_name,
+        def query_access_by_resource(cls, session, resource_type_name,
                                      permission_names, expand_groups=False):
             """Return members who have access to the given resource."""
 
             roles = cls.get_roles_by_permission_names(
                 session, permission_names)
-            resources = cls.find_resource_path(session, resource_name)
+            resources = cls.find_resource_path(session, resource_type_name)
 
             res = (session.query(Binding, Member)
                    .filter(
                        Binding.role_name.in_([r.name for r in roles]),
-                       Binding.resource_name.in_(
-                           [r.full_name for r in resources]))
+                       Binding.resource_type_name.in_(
+                           [r.type_name for r in resources]))
                    .join(binding_members).join(Member))
 
             role_member_mapping = collections.defaultdict(set)
@@ -493,7 +525,7 @@ def define_model(model_name, dbengine, model_seed):
                    .join(Member))
 
             members = set()
-            for binding in qry.all():
+            for binding in qry.yield_per(per_yield):
                 for member in binding.members:
                     members.add(member.name)
 
@@ -506,7 +538,7 @@ def define_model(model_name, dbengine, model_seed):
                    .filter(
                        Permission.name == role_permissions.c.permissions_name))
 
-            for role, permission in qry.all():
+            for role, permission in qry.yield_per(per_yield):
                 role_permissions_map[role.name].add(permission.name)
 
             for binding, member in (
@@ -516,13 +548,12 @@ def define_model(model_name, dbengine, model_seed):
                     .filter(binding_members.c.members_name == Member.name)
                     .yield_per(per_yield)):
 
-                resource_type_name = full_to_type_name(binding.resource_name)
+                resource_type_name = binding.resource_type_name
                 resource_mapping = cls.expand_resources_by_type_names(
                     session,
                     [resource_type_name])
 
-                f = resource_to_type_name
-                resource_mapping = {f(k): set([f(m) for m in v])
+                resource_mapping = {k.type_name: set([m.type_name for m in v])
                                     for k, v in resource_mapping.iteritems()}
 
                 for expanded_member in expanded_members[member.name]:
@@ -532,10 +563,10 @@ def define_model(model_name, dbengine, model_seed):
                             yield triple
 
         @classmethod
-        def set_iam_policy(cls, session, full_resource_name, policy):
+        def set_iam_policy(cls, session, resource_type_name, policy):
             """Sets an IAM policy for the resource."""
 
-            old_policy = cls.get_iam_policy(session, full_resource_name)
+            old_policy = cls.get_iam_policy(session, resource_type_name)
             if policy['etag'] != old_policy['etag']:
                 raise Exception(
                     'Etags distinct, stored={}, provided={}'.format(
@@ -568,7 +599,7 @@ def define_model(model_name, dbengine, model_seed):
             for role, members in revocations.iteritems():
                 bindings = (
                     session.query(Binding)
-                    .filter(Binding.resource_name == full_resource_name)
+                    .filter(Binding.resource_type_name == resource_type_name)
                     .filter(Binding.role_name == role)
                     .join(binding_members).join(Member)
                     .filter(Member.name.in_(members)).all())
@@ -579,7 +610,7 @@ def define_model(model_name, dbengine, model_seed):
                 inserted = False
                 existing_bindings = (
                     session.query(Binding)
-                    .filter(Binding.resource_name == full_resource_name)
+                    .filter(Binding.resource_type_name == resource_type_name)
                     .filter(Binding.role_name == role).all())
 
                 for binding in existing_bindings:
@@ -591,36 +622,38 @@ def define_model(model_name, dbengine, model_seed):
                                     Member.name == member).one())
                 if not inserted:
                     binding = Binding(
-                        resource_name=full_resource_name,
+                        resource_type_name=resource_type_name,
                         role=session.query(Role).filter(
                             Role.name == role).one())
                     binding.members = session.query(Member).filter(
                         Member.name.in_(members)).all()
                     session.add(binding)
             resource = session.query(Resource).filter(
-                Resource.full_name == full_resource_name).one()
+                Resource.type_name == resource_type_name).one()
             resource.increment_update_counter()
             session.commit()
 
         @classmethod
-        def get_iam_policy(cls, session, full_resource_name):
+        def get_iam_policy(cls, session, resource_type_name):
             """Return the IAM policy for a resource."""
 
             resource = session.query(Resource).filter(
-                Resource.full_name == full_resource_name).one()
+                Resource.type_name == resource_type_name).one()
             policy = {
                 'etag': resource.get_etag(),
                 'bindings': {},
-                'resource': resource.full_name}
-            for binding in session.query(Binding).filter(
-                    Binding.resource_name == full_resource_name).all():
+                'resource': resource.type_name}
+            for binding in (session.query(Binding)
+                            .filter(Binding.resource_type_name ==
+                                    resource_type_name)
+                            .all()):
                 role = binding.role_name
                 members = [m.name for m in binding.members]
                 policy['bindings'][role] = members
             return policy
 
         @classmethod
-        def check_iam_policy(cls, session, full_resource_name, permission_name,
+        def check_iam_policy(cls, session, resource_type_name, permission_name,
                              member_name):
             """Check access according to the resource IAM policy."""
 
@@ -628,14 +661,22 @@ def define_model(model_name, dbengine, model_seed):
                             cls.reverse_expand_members(
                                 session,
                                 [member_name])]
-            resource_names = [r.full_name for r in cls.find_resource_path(
+            resource_type_names = [r.type_name for r in cls.find_resource_path(
                 session,
-                full_resource_name)]
+                resource_type_name)]
+
+            if not member_names:
+                raise Exception('Member not found: {}'.
+                                format(member_name))
+            if not resource_type_names:
+                raise Exception('Resource not found: {}'.
+                                format(resource_type_name))
+
             return (
                 session.query(Permission)
                 .filter(Permission.name == permission_name)
                 .join(role_permissions).join(Role).join(Binding)
-                .filter(Binding.resource_name.in_(resource_names))
+                .filter(Binding.resource_type_name.in_(resource_type_names))
                 .join(binding_members).join(Member)
                 .filter(Member.name.in_(member_names)).first() is not None)
 
@@ -711,54 +752,107 @@ def define_model(model_name, dbengine, model_seed):
                 Member.member_name.startswith(member_name_prefix)).all()]
 
         @classmethod
-        def list_resources_by_prefix(cls, session, full_resource_name_prefix):
+        def iter_resources_by_prefix(cls,
+                                     session,
+                                     full_resource_name_prefix=None,
+                                     type_name_prefix=None,
+                                     type_prefix=None,
+                                     name_prefix=None):
+            """Returns iterator to resources filtered by prefix."""
+
+            if not any([arg is not None for arg in [full_resource_name_prefix,
+                                                    type_name_prefix,
+                                                    type_prefix,
+                                                    name_prefix]]):
+                raise Exception('At least one prefix must be set')
+
+            qry = session.query(Resource)
+            if full_resource_name_prefix:
+                qry = qry.filter(Resource.full_name.startswith(
+                    full_resource_name_prefix))
+            if type_name_prefix:
+                qry = qry.filter(Resource.type_name.startswith(
+                    type_name_prefix))
+            if type_prefix:
+                qry = qry.filter(Resource.type.startswith(
+                    type_prefix))
+            if name_prefix:
+                qry = qry.filter(Resource.name.startswith(
+                    name_prefix))
+
+            for resource in qry.yield_per(1024):
+                yield resource
+
+        @classmethod
+        def list_resources_by_prefix(cls,
+                                     session,
+                                     full_resource_name_prefix=None,
+                                     type_name_prefix=None,
+                                     type_prefix=None,
+                                     name_prefix=None):
             """Returns resources filtered by prefix."""
 
-            return [r.full_name for r in session.query(Resource).filter(
-                Resource.name.startswith(full_resource_name_prefix))
-                    .all()]
+            return list(
+                cls.iter_resources_by_prefix(session,
+                                             full_resource_name_prefix,
+                                             type_name_prefix,
+                                             type_prefix,
+                                             name_prefix))
 
         @classmethod
-        def del_resource_by_type_name(cls, session, resource_type_name):
-            """Deletes a resource specified by type/name."""
-
-            res_type, res_name = resource_type_name.split('/')
-            resource = session.query(Resource).filter(
-                and_(Resource.type == res_type,
-                     Resource.name == res_name)).one()
-            return cls.del_resource_by_name(session, resource.full_name)
-
-        @classmethod
-        def del_resource_by_name(cls, session, full_resource_name):
+        def del_resource_by_name(cls, session, resource_type_name):
             """Deletes a resource specified via full name."""
 
-            session.query(Binding).filter(
-                Binding.resource_name.startswith(full_resource_name)).delete(
-                    synchronize_session='fetch')
-            session.query(Resource).filter(
-                Resource.full_name.startswith(full_resource_name)).delete(
-                    synchronize_session='fetch')
+            resource = (
+                session.query(Resource)
+                .filter(Resource.type_name == resource_type_name).one())
+
+            # Find all children
+            res_qry = (session.query(Resource)
+                       .filter(Resource.full_name.startswith(
+                           resource.full_name)))
+
+            res_type_names = [r.type_name for r in res_qry.yield_per(1024)]
+            binding_qry = (
+                session.query(Binding)
+                .filter(Binding.resource_type_name.in_(res_type_names)))
+            binding_qry.delete(synchronize_session='fetch')
+
+            res_qry.delete(synchronize_session='fetch')
             session.commit()
 
         @classmethod
-        def add_resource_by_name(cls, session, full_name, no_require_parent):
+        def add_resource_by_name(cls,
+                                 session,
+                                 resource_type_name,
+                                 parent_type_name,
+                                 no_require_parent):
             """Adds resource specified via full name."""
 
             if not no_require_parent:
-                full_parent_name = '/'.join(full_name.split("/")[:-2])
                 parent = session.query(Resource).filter(
-                    Resource.full_name == full_parent_name).one()
+                    Resource.type_name == parent_type_name).one()
             else:
                 parent = None
-            return cls.add_resource(session, full_name, parent)
+            return cls.add_resource(session, resource_type_name, parent)
 
         @classmethod
-        def add_resource(cls, session, name, parent=None):
+        def add_resource(cls, session, resource_type_name, parent=None):
             """Adds resource by name."""
 
-            res_type, res_name = name.split('/')[-2:]
-            resource = Resource(full_name=name, name=res_name,
-                                type=res_type, parent=parent)
+            res_type, res_name = resource_type_name.split('/')
+            if parent:
+                full_resource_name = '{}/{}'.format(
+                    parent.full_name,
+                    resource_type_name)
+            else:
+                full_resource_name = resource_type_name
+
+            resource = Resource(full_name=full_resource_name,
+                                type_name=resource_type_name,
+                                name=res_name,
+                                type=res_type,
+                                parent=parent)
             session.add(resource)
             return resource
 
@@ -821,31 +915,30 @@ def define_model(model_name, dbengine, model_seed):
 
             expressions = []
             for res_type_name in res_type_names:
-                res_type, res_name = res_type_name.split('/')
                 expressions.append(and_(
-                    res_key.name == res_name,
-                    res_key.type == res_type))
+                    res_key.type_name == res_type_name))
 
-            res = (session.query(res_key, res_values)
-                   .filter(or_(*expressions)).filter(
-                       res_values.full_name.startswith(
-                           res_key.full_name)).all())
+            res = (
+                session.query(res_key, res_values)
+                .filter(res_key.type_name.in_(res_type_names))
+                .filter(res_values.full_name.startswith(
+                    res_key.full_name)).yield_per(1024))
+
             mapping = collections.defaultdict(set)
             for k, value in res:
                 mapping[k].add(value)
             return mapping
 
         @classmethod
-        def expand_resources_by_names(cls, session, res_names):
+        def expand_resources_by_names(cls, session, res_type_names):
             """Expand resources by type/name format."""
 
-            expressions = []
-            for res_type, res_name in [res.split('/') for res in res_names]:
-                expressions.append(and_(Resource.name == res_name,
-                                        Resource.type == res_type))
+            qry = (
+                session.query(Resource)
+                .filter(Resource.type_name.in_(res_type_names))
+                )
 
-            objects = session.query(Resource).filter(or_(*expressions)).all()
-            full_resource_names = [r.full_name for r in objects]
+            full_resource_names = [r.full_name for r in qry.all()]
             return cls.expand_resources(session, full_resource_names)
 
         @classmethod
@@ -1004,26 +1097,10 @@ def define_model(model_name, dbengine, model_seed):
             return group_set.union(non_group_set)
 
         @classmethod
-        def resource_ancestors_by_name(cls, session, res_names):
+        def resource_ancestors(cls, session, resource_type_names):
             """Resolve the transitive ancestors by type/name format."""
 
-            expressions = []
-            for res_type, res_name in [r.split('/') for r in res_names]:
-                expressions.append(and_(Resource.name == res_name,
-                                        Resource.type == res_type))
-            resources = session.query(Resource).filter(
-                or_(*expressions)).all()
-            full_resource_names = [r.full_name for r in resources]
-            return cls.resolve_resource_ancestors(session, full_resource_names)
-
-        @classmethod
-        def resolve_resource_ancestors(cls, session, full_resource_names):
-            """Resolve the transitive ancestors for the given resources."""
-
-            resources = session.query(Resource).filter(
-                Resource.full_name.in_(full_resource_names)).all()
-
-            resource_names = set([r.full_name for r in resources])
+            resource_names = resource_type_names
             resource_graph = collections.defaultdict(set)
 
             res_childs = aliased(Resource, name='res_childs')
@@ -1039,36 +1116,30 @@ def define_model(model_name, dbengine, model_seed):
                 resources_new = set()
                 for parent, child in (
                         session.query(res_anc, res_childs)
-                        .filter(res_childs.full_name.in_(resources_set))
-                        .filter(res_childs.parent_name == res_anc.full_name)
+                        .filter(res_childs.type_name.in_(resources_set))
+                        .filter(res_childs.parent_type_name ==
+                                res_anc.type_name)
                         .all()):
 
-                    if parent.full_name not in resources_set:
-                        resources_new.add(parent.full_name)
+                    if parent.type_name not in resources_set:
+                        resources_new.add(parent.type_name)
 
-                    resources_set.add(parent.full_name)
-                    resources_set.add(child.full_name)
+                    resources_set.add(parent.type_name)
+                    resources_set.add(child.type_name)
 
-                    resource_graph[parent.full_name].add(child.full_name)
+                    resource_graph[parent.type_name].add(child.type_name)
 
             return resource_graph
 
         @classmethod
-        def find_resource_path_by_name(cls, session, resource_name):
+        def find_resource_path(cls, session, resource_type_name):
             """Find resource ancestors by type/name format."""
 
-            res_type, res_name = resource_name.split('/')
-            resources = session.query(Resource).filter(
-                and_(Resource.name == res_name,
-                     Resource.type == res_type))
-            return cls._find_resource_path(session, resources)
+            qry = (
+                session.query(Resource)
+                .filter(Resource.type_name == resource_type_name))
 
-        @classmethod
-        def find_resource_path(cls, session, full_resource_name):
-            """Find resource ancestors by full name."""
-
-            resources = session.query(Resource).filter(
-                Resource.full_name == full_resource_name).all()
+            resources = qry.all()
             return cls._find_resource_path(session, resources)
 
         @classmethod
@@ -1183,13 +1254,14 @@ class ModelManager(object):
             auto_commit=True)
 
     @mutual_exclusive(LOCK)
-    def create(self):
+    def create(self, name):
         """Create a new model entry in the database."""
 
-        model_name = generate_model_handle()
+        handle = generate_model_handle()
         with self.modelmaker() as session:
             model = Model(
-                handle=model_name,
+                handle=handle,
+                name=name,
                 state="CREATED",
                 created_at=datetime.datetime.utcnow(),
                 watchdog_timer=datetime.datetime.utcnow(),
@@ -1197,7 +1269,7 @@ class ModelManager(object):
             session.add(model)
             self.sessionmakers[model.handle] = define_model(
                 model.handle, self.engine, model.etag_seed)
-            return model_name
+            return handle
 
     def get(self, model):
         """Get model data by name."""
@@ -1205,44 +1277,68 @@ class ModelManager(object):
         session_maker, data_access = self._get(model)
         return ScopedSession(session_maker()), data_access
 
-    def _get(self, model):
+    def _get(self, handle):
         """Get model data by name internal."""
 
-        if model not in self.models():
-            raise KeyError(model)
-        return self.sessionmakers[model]
+        if handle not in [m.handle for m in self.models()]:
+            raise KeyError('handle={}, available={}'.format(
+                handle,
+                [m.handle for m in self.models()]))
+        try:
+            return self.sessionmakers[handle]
+        except KeyError:
+            with self.modelmaker() as session:
+                model = (session.query(Model)
+                         .filter(Model.handle == handle)
+                         .one())
+                self.sessionmakers[model.handle] = define_model(
+                    model.handle, self.engine, model.etag_seed)
+                return self.sessionmakers[model.handle]
 
     @mutual_exclusive(LOCK)
     def delete(self, model_name):
         """Delete a model entry in the database by name."""
 
-        _, data_access = self.sessionmakers[model_name]
-        del self.sessionmakers[model_name]
+        _, data_access = self._get(model_name)
+        if model_name in self.sessionmakers:
+            del self.sessionmakers[model_name]
         with self.modelmaker() as session:
             session.query(Model).filter(Model.handle == model_name).delete()
         data_access.delete_all(self.engine)
 
-    def models(self):
+    def _models(self, expunge=False):
         """Return the list of models from the database."""
 
         with self.modelmaker() as session:
-            return [model.handle for model in session.query(Model).all()]
+            items = session.query(Model).all()
+            if expunge:
+                session.expunge_all()
+            return items
 
-    def model(self, model_name):
+    def models(self):
+        """Expunging wrapper for _models."""
+        return self._models(expunge=True)
+
+    def model(self, model_name, expunge=True):
         """Get model from database by name."""
 
         with self.modelmaker() as session:
-            return session.query(Model).filter(
+            item = session.query(Model).filter(
                 Model.handle == model_name).one()
+            if expunge:
+                session.expunge(item)
+            return item
 
 
 def session_creator(model_name, filename=None, seed=None, echo=False):
     """Create a session maker for the model and db file."""
 
     if filename:
-        engine = create_engine('sqlite:///{}'.format(filename))
+        engine = create_engine('sqlite:///{}'.format(filename),
+                               pool_recycle=POOL_RECYCLE_SECONDS)
     else:
-        engine = create_engine('sqlite:///:memory:', echo=echo)
+        engine = create_engine('sqlite:///:memory:',
+                               pool_recycle=POOL_RECYCLE_SECONDS, echo=echo)
     if seed is None:
         seed = generate_model_seed()
     session_maker, data_access = define_model(model_name, engine, seed)

@@ -29,6 +29,10 @@ STATIC_SERVICE_MAPPING = {
 }
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
+
+
 class ServiceConfig(object):
     """Helper class to implement dependency injection to IAM Explain services.
     """
@@ -43,7 +47,6 @@ class ServiceConfig(object):
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""
         self.thread_pool.apply_async(function)
-
 
 def serve(endpoint, services, explain_connect_string, forseti_connect_string,
           max_workers=1, wait_shutdown_secs=3):

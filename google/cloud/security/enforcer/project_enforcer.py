@@ -28,6 +28,12 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.enforcer import enforcer_log_pb2
 from google.cloud.security.enforcer import gce_firewall_enforcer as fe
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
+
+
 STATUS_SUCCESS = enforcer_log_pb2.SUCCESS
 STATUS_ERROR = enforcer_log_pb2.ERROR
 STATUS_SKIPPED = enforcer_log_pb2.SKIPPED

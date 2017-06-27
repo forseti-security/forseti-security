@@ -20,6 +20,11 @@ Setup logging for Forseti Security. Logs to console and syslog.
 import logging
 import logging.handlers
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc
+
+
 LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(funcName)s %(message)s'
 
 

@@ -24,6 +24,11 @@ from google.cloud.security.iam.playground import playground_pb2
 from google.cloud.security.iam.utils import oneof
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
+
+
 def require_model(f):
     """Decorator to perform check that the model handle exists in the service.
     """
@@ -74,12 +79,13 @@ class ExplainClient(IAMClient):
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
 
-    def new_model(self, source):
+    def new_model(self, source, name):
         """Creates a new model, reply contains the handle."""
 
         return self.stub.CreateModel(
             explain_pb2.CreateModelRequest(
-                type=source))
+                type=source,
+                name=name))
 
     def list_models(self):
         """List existing models in the service."""
@@ -222,25 +228,26 @@ class PlaygroundClient(IAMClient):
             metadata=self.metadata())
 
     @require_model
-    def add_resource(self, full_resource_name, resource_type,
-                     parent_full_resource_name, no_parent=False):
+    def add_resource(self,
+                     resource_type_name,
+                     parent_type_name,
+                     no_parent=False):
         """Add a resource to the hierarchy."""
 
         return self.stub.AddResource(
             playground_pb2.AddResourceRequest(
-                full_resource_name=full_resource_name,
-                resource_type=resource_type,
-                parent_full_resource_name=parent_full_resource_name,
+                resource_type_name=resource_type_name,
+                parent_type_name=parent_type_name,
                 no_require_parent=no_parent),
             metadata=self.metadata())
 
     @require_model
-    def del_resource(self, full_resource_name):
+    def del_resource(self, resource_type_name):
         """Delete a resource from the hierarchy and the subtree."""
 
         return self.stub.DelResource(
             playground_pb2.DelResourceRequest(
-                full_resource_name=full_resource_name),
+                resource_type_name=resource_type_name),
             metadata=self.metadata())
 
     @require_model
@@ -323,6 +330,7 @@ class PlaygroundClient(IAMClient):
                 identity=member_name),
             metadata=self.metadata())
 
+
 class ClientComposition(object):
     """Client composition class.
 
@@ -331,6 +339,7 @@ class ClientComposition(object):
     """
 
     DEFAULT_ENDPOINT = 'localhost:50058'
+
     def __init__(self, endpoint=DEFAULT_ENDPOINT):
         self.channel = grpc.insecure_channel(endpoint)
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
@@ -342,10 +351,10 @@ class ClientComposition(object):
         if not all([c.is_available() for c in self.clients]):
             raise Exception('gRPC connected but services not registered')
 
-    def new_model(self, source):
+    def new_model(self, source, name):
         """Create a new model from the specified source."""
 
-        return self.explain.new_model(source)
+        return self.explain.new_model(source, name)
 
     def list_models(self):
         """List existing models."""
