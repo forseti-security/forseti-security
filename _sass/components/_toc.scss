@@ -35,7 +35,7 @@ $dark-gray: darken($gray, 20%);
 .toc.mobile-toc{
   display: none !important;
 
-  @media (max-width: 768px) {
+  @media (max-width: $screen-xs-max) {
     border-left: 4px solid $light-gray;
     display: block !important;
     margin-top: 30px;

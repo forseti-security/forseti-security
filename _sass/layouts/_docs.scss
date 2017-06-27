@@ -13,7 +13,7 @@
     }
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: $screen-sm-min) {
     /* Specify only margin-bottom to prevent overriding Bootstrap row margins */
     margin-bottom: 20px;
   }

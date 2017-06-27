@@ -3,7 +3,7 @@
   margin-top: 8px;
 }
 
-@media (max-width: 767px) {
+@media (max-width: $screen-xs-max) {
   .navbar .navbar-form {
     border-bottom: 1px solid rgba(0, 0, 0, .1);
     border-top: none;
