@@ -16,7 +16,7 @@ interested in isn't listed, please open an issue or contribute!
 | Compute Engine Instance Group Managers  | Done          | In Progress   | Open          |
 | Compute Engine Instance Templates       | Done          | In Progress   | Open          |
 | Compute Engine Backend Services         | Done          | In Progress   | Open          |
-| Dasher Users                            | Open          | Open          | Open          |
+| GSuite Users                            | Open          | Open          | Open          |
 | Firewall Rules                          | Done          | Open          | Done          |
 | Folders                                 | Done          | In Progress   | Open          |
 | GrantableRoles                          | In Progress   | Open          | Open          |
