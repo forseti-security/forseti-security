@@ -33,14 +33,14 @@ class ComputeClient(_base_client.BaseClient):
 
     API_NAME = 'compute'
 
-    def __init__(self, credentials=None, version=None, **kwargs):
+    def __init__(self, forseti_configs, credentials=None, version=None):
         # The beta api provides more complete firewall rules data.
         # TODO: Remove beta when it becomes GA.
         super(ComputeClient, self).__init__(
+            forseti_configs,
             credentials=credentials,
             api_name=self.API_NAME,
-            version=version,
-            **kwargs)
+            version=version)
         self.rate_limiter = RateLimiter(
             self.forseti_configs.get('max_compute_api_calls_per_second'), 1)
 

@@ -33,9 +33,17 @@ class AppEngineClient(_base_client.BaseClient):
 
     API_NAME = 'appengine'
 
-    def __init__(self, credentials=None, version=None, **kwargs):
+    def __init__(self, forseti_configs, credentials=None, version=None):
+        """Initialize.
+
+        Args:
+            forseti_configs (dict): Forseti configurations.
+        """
         super(AppEngineClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME, version=version)
+            forseti_configs,
+            credentials=credentials,
+            api_name=self.API_NAME,
+            version=version)
         self.rate_limiter = RateLimiter(
             self.forseti_configs.get('max_appengine_api_calls_per_second'),
             1)

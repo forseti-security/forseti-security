@@ -83,7 +83,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
             {project_id: [instances]}
         """
         projects = (proj_dao
-                    .ProjectDao(self.configs)
+                    .ProjectDao(self.forseti_configs)
                     .get_projects(self.cycle_timestamp))
         instances = {}
         for project in projects:

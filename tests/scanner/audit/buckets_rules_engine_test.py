@@ -43,7 +43,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__,
         	'buckets_test_rules_1.yaml')
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
-        rules_engine.build_rule_book({})
+        rules_engine.build_rule_book()
         self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
 
     @mock.patch.object(file_loader,
@@ -74,7 +74,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
 
         mock_load_rules_from_gcs.return_value = file_content
 
-        rules_engine.build_rule_book({})
+        rules_engine.build_rule_book()
         self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_no_resource_type_fails(self):
@@ -83,4 +83,4 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         	'buckets_test_rules_2.yaml')
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
-            rules_engine.build_rule_book({})
+            rules_engine.build_rule_book()

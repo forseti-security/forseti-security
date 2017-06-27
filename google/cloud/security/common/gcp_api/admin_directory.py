@@ -30,16 +30,17 @@ class AdminDirectoryClient(_base_client.BaseClient):
         'https://www.googleapis.com/auth/admin.directory.group.readonly'
     ])
 
-    def __init__(self, **kwargs):
+    def __init__(self, forseti_configs):
         """Initialize.
 
         Args:
-            kwargs (dict): Extra args.
+            forseti_configs (dict): Forseti configurations.
         """
 
         super(AdminDirectoryClient, self).__init__(
-            credentials=self._build_credentials(kwargs.get('forseti_configs')),
-            api_name=self.API_NAME, **kwargs)
+            forseti_configs,
+            credentials=self._build_credentials(forseti_configs),
+            api_name=self.API_NAME)
 
         self.rate_limiter = RateLimiter(
             self.forseti_configs.get('max_admin_api_calls_per_day'),

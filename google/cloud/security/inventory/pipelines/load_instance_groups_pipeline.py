@@ -78,7 +78,7 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
             {project_id: [instance groups]}
         """
         projects = (proj_dao
-                    .ProjectDao(self.configs)
+                    .ProjectDao(self.forseti_configs)
                     .get_projects(self.cycle_timestamp))
         igs = {}
         for project in projects:

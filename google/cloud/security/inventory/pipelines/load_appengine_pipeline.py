@@ -43,7 +43,10 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
             A dict mapping projects with their AppEngine applications:
             {project_id: application}
         """
-        projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
+        projects = (
+            proj_dao
+            .ProjectDao(self.forseti_configs)
+            .get_projects(self.cycle_timestamp))
         apps = {}
         for project in projects:
             app = self.api_client.get_app(project.id)

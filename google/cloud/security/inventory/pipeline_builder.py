@@ -86,9 +86,9 @@ class PipelineBuilder(object):
             api_version = self.api_map.get(api_name).get('version')
             try:
                 if api_version is None:
-                    api = api_class(forseti_configs=self.forseti_configs)
+                    api = api_class(self.forseti_configs)
                 else:
-                    api = api_class(forseti_configs=self.forseti_configs,
+                    api = api_class(self.forseti_configs,
                                     version=api_version)
             except api_errors.ApiExecutionError as e:
                 LOGGER.error('Failed to execute API %s, v=%s',
@@ -101,7 +101,7 @@ class PipelineBuilder(object):
 
     def _find_runnable_pipelines(self, root):
         """Find the enabled pipelines to run.
-conf
+
         Args:
             root (PipelineNode): Represents the top-level starting point
                 of the pipeline dependency tree. The entire pipeline

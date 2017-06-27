@@ -94,7 +94,7 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
             {project_id: [backend_services]}
         """
         projects = (proj_dao
-                    .ProjectDao(self.configs)
+                    .ProjectDao(self.forseti_configs)
                     .get_projects(self.cycle_timestamp))
         backend_services = {}
         for project in projects:
