@@ -60,14 +60,14 @@ class IamRulesEngineTest(ForsetiTestCase):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
-        rules_engine.build_rule_book()
+        rules_engine.build_rule_book({})
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_from_local_json_file_works(self):
         """Test that a RuleBook is built correctly with a json file."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.json')
         rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
-        rules_engine.build_rule_book()
+        rules_engine.build_rule_book({})
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     @mock.patch.object(file_loader,
@@ -98,7 +98,7 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         mock_load_rules_from_gcs.return_value = file_content
 
-        rules_engine.build_rule_book()
+        rules_engine.build_rule_book({})
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_no_resource_type_fails(self):
@@ -106,11 +106,12 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_2.yaml')
         rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
-            rules_engine.build_rule_book()
+            rules_engine.build_rule_book({})
 
     def test_add_single_rule_builds_correct_map(self):
         """Test that adding a single rule builds the correct map."""
-        rule_book = ire.IamRuleBook(test_rules.RULES1, self.fake_timestamp)
+        rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES1, self.fake_timestamp)
         actual_rules = rule_book.resource_rules_map
 
         # expected
@@ -320,7 +321,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES1, self.fake_timestamp)
+            {}, test_rules.RULES1, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -378,7 +379,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES1, self.fake_timestamp)
+            {}, test_rules.RULES1, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -417,7 +418,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook({}, self.fake_timestamp)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, snapshot_timestamp=self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -453,7 +455,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES1, self.fake_timestamp)
+            {}, test_rules.RULES1, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -484,7 +486,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path, self.fake_timestamp)
         # TODO: mock the rules local path to return RULES2
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES2, self.fake_timestamp)
+            {}, test_rules.RULES2, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789], []])
@@ -572,7 +574,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES1, self.fake_timestamp)
+            {}, test_rules.RULES1, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[]])
@@ -613,7 +615,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES3, self.fake_timestamp)
+            {}, test_rules.RULES3, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[], [self.org789]])
@@ -709,7 +711,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES4, self.fake_timestamp)
+            {}, test_rules.RULES4, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[], [self.org789]])
@@ -794,7 +796,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES5, self.fake_timestamp)
+            {}, test_rules.RULES5, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -844,7 +846,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES6, self.fake_timestamp)
+            {}, test_rules.RULES6, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -904,7 +906,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules5 = copy.deepcopy(test_rules.RULES5)
         rules5['rules'][1]['inherit_from_parents'] = True
-        rules_engine.rule_book = ire.IamRuleBook(rules5, self.fake_timestamp)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, rules5, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -966,7 +969,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules5 = copy.deepcopy(test_rules.RULES5)
         rules5['rules'][0]['resource'][0]['applies_to'] = 'self'
-        rules_engine.rule_book = ire.IamRuleBook(rules5, self.fake_timestamp)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, rules5, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -1009,7 +1013,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules6 = copy.deepcopy(test_rules.RULES6)
         rules6['rules'][0]['resource'][0]['applies_to'] = 'self'
-        rules_engine.rule_book = ire.IamRuleBook(rules6, self.fake_timestamp)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, rules6, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[], [self.org789]])
@@ -1080,7 +1085,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES6, self.fake_timestamp)
+            {}, test_rules.RULES6, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
