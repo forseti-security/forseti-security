@@ -63,10 +63,10 @@ following values:
 After you configure the deployment template variables, run the following
 command to create a new deployment:
 
-````
-gcloud deployment-manager deployments create iam-explain \
+```bash
+$ gcloud deployment-manager deployments create iam-explain \
 --config path/to/deploy-explain.yaml
-````
+```
 
 ## Running the server
 
@@ -116,20 +116,25 @@ methods:
 
 To use a model, run the commands below:
 
-````
-forseti_iam --out-format json explainer list_models
+```bash
+$ forseti_iam --out-format json explainer list_models
+
   {
     "handles": [
       "2654f082f572a9c328cd5bb6f7011b08",
       "33ff45caa913837eb7680056c05d5f31",
   }
-forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
+  
+$ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
   playground list_resources
+  
   ...
-forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
+  
+$ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
   explainer denormalize
+  
   ...
-````
+```
 
 ### Using the playground
 

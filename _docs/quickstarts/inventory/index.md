@@ -19,10 +19,10 @@ the virtualenv first.
 
 
 To display Inventory flag options, run the following commands:
-````
-sh
-forseti_inventory --helpshort
-````
+
+```bash
+$ forseti_inventory --helpshort
+```
 
 ## Configuring Inventory pipelines to run
 To run Forseti Inventory, you'll need a configuration file. Download
@@ -30,9 +30,8 @@ the [inventory_conf.yaml sample file](https://github.com/GoogleCloudPlatform/for
 , then run the command below to provide the configuration file to
 `forseti_inventory`:
 
-````
-sh
-forseti_inventory --config_path PATH_TO/inventory_conf.yaml
-````
+```bash
+$ forseti_inventory --config_path PATH_TO/inventory_conf.yaml
+```
 
 Forseti Inventory is now set up to run for your specified projects.
