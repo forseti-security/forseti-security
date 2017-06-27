@@ -103,7 +103,7 @@ use the following command:
 $ python setup.py install
 ```
 
-### Executing Foreseti commands
+### Executing Foresti commands
 
 After you complete the above steps, you should be able to run the following
 command-line tools:
