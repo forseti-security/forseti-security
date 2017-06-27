@@ -54,8 +54,8 @@ To set up Cloud SQL for Forseti, follow the steps below:
 
 ### Installing mysql_config
 
-The MySql-python library requires `mysql_config` to be present in your system.
-Following are example commands to install the library:
+The MySql-python library requires the `mysql_config` utility to be present in your system.
+Following are example commands to install `mysql_config`:
 
 ```bash
 # Ubuntu
