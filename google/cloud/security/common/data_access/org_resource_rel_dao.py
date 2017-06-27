@@ -27,24 +27,24 @@ from google.cloud.security.common.gcp_type import resource
 class OrgResourceRelDao(object):
     """DAO for organization resource entity relationships."""
 
-    def __init__(self, configs):
+    def __init__(self, forseti_configs):
         """Initialize.
 
         Args:
-            configs (dict): Forseti configurations.
+            forseti_configs (dict): Forseti configurations.
         """
         # Map the org resource type to the appropriate dao class
         self._resource_db_lookup = {
             resource.ResourceType.ORGANIZATION: {
-                'dao': organization_dao.OrganizationDao(configs),
+                'dao': organization_dao.OrganizationDao(forseti_configs),
                 'get': 'get_organization',
             },
             resource.ResourceType.FOLDER: {
-                'dao': folder_dao.FolderDao(configs),
+                'dao': folder_dao.FolderDao(forseti_configs),
                 'get': 'get_folder',
             },
             resource.ResourceType.PROJECT: {
-                'dao': project_dao.ProjectDao(configs),
+                'dao': project_dao.ProjectDao(forseti_configs),
                 'get': 'get_project',
             }
         }
