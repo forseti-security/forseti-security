@@ -1,6 +1,6 @@
 # Basic directives.
+exclude: [vendor, images/readme/]
 description: "Tools to secure Google Cloud Platform"
-exclude: [vendor, readme_images/]
 gems:
   - jekyll-sitemap
 github:
