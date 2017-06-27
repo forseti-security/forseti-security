@@ -1,6 +1,6 @@
 <div class="row docs-nav">
   <div class="col-md-9">
-    <ul class="nav nav-tabs">
+    <ul class="nav nav-tabs visible-md-block visible-lg-block">
       {% for tab in site.data.doc_categories %}
         <li {% if page.category == tab.title %}class="active"{% endif %}>
           <a href="{{ site.baseurl }}/{{ tab.href }}">
@@ -9,8 +9,12 @@
         </li>
       {% endfor %}
     </ul>
+    <ol class="breadcrumb visible-xs-block visible-sm-block">
+      <li><a href="{{ site.baseurl }}/docs">Docs</a></li>
+      <li class="active">{{ page.category }}</li>
+    </ol>
   </div>
-  <div class="col-md-3 text-right edit-on-github">
+  <div class="col-md-3 edit-on-github visible-md-block visible-lg-block text-right">
     {% assign filename = page.path | split:"/" | last | downcase %}
     <a class="icon github" href="{{ site.github.url }}/edit/{{ site.github.branch }}/{{ page.path }}">
       Edit this file

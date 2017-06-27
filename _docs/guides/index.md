@@ -4,7 +4,7 @@ order: 001
 ---
 #  {{ page.title }}
 
-## [Contributing to Forseti](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md)
+## [Contributing to Forseti](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md)
 Learn about the process to contribute to Forseti.
 
 ## [Testing]({% link _docs/development/index.md %})

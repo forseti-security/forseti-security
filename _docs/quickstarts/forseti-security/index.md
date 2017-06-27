@@ -41,28 +41,26 @@ configuration:
   Forseti.
   1. The setup wizard checks for valid configurations or creates a new one,
   then it checks if billing is enabled for your project.
-    2. If billing isn't enabled, follow the prompts to enable billing, then
+      * If billing isn't enabled, follow the prompts to enable billing, then
     return to the command-line.
   1. Next, the setup wizard automaticlaly enables required APIs:
-    - Cloud SQL API
-    - Cloud SQL Admin API
-    - Cloud Resource Manager API
-    - Admin SDK API
-    - Deployment Manager API
+      - Cloud SQL API
+      - Cloud SQL Admin API
+      - Cloud Resource Manager API
+      - Admin SDK API
+      - Deployment Manager API
   1. Create a new service account or enter an existing service account for
   accessing GCP.
   1. Optionally create a new service account or enter an existing service
   account for getting GSuite groups.
   1. Next, the setup wizard automatically assigns roles to the GCP service
   account:
-  
-    - `roles/browser`
-    - `roles/compute.networkAdmin`
-    - `roles/editor`
-    - `roles/iam.securityReviewer`
-    - `roles/resourcemanager.folderAdmin`
-    - `roles/storage.admin`
-    
+      - `roles/browser`
+      - `roles/compute.networkAdmin`
+      - `roles/editor`
+      - `roles/iam.securityReviewer`
+      - `roles/resourcemanager.folderAdmin`
+      - `roles/storage.admin`
   1. Enter a name for your bucket and Cloud SQL instance.
   1. Optionally create data storage and a Cloud SQL instance.
   1. If you set up a service account to retrieve GSuite groups, follow the
