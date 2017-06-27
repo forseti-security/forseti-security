@@ -47,8 +47,10 @@ To set up Cloud SQL for Forseti, follow the steps below:
     to proxy your connection to your Cloud SQL instance. Your
     CLOUD_SQL_INSTANCE_NAME is the **instance connection name** under
     **Properties** on the Cloud SQL dashboard instance details.
-
-         path/to/cloud_sql_proxy -instances=CLOUD_SQL_INSTANCE_NAME=tcp:3306
+    
+    ```bash
+    $ <path/to/cloud_sql_proxy> -instances=CLOUD_SQL_INSTANCE_NAME=tcp:3306
+    ```
 
 ### Installing mysql_config
 
