@@ -8,10 +8,9 @@ enable required APIs:
   Account and Project displayed match your Forseti Security project. If it
   doesn't match, run the following commands to configure gcloud for your
   Forseti Security project:
-  
-     * Run `gcloud auth login` and use your Google credentials to authenticate.
-     * Run `gcloud init` and select your Forseti Security project and Google
-        account.
+      1. Run `gcloud auth login` and use your Google credentials to authenticate.
+      1. Run `gcloud init` and select your Forseti Security project and Google
+      account.
   1. Enable the required APIs by running `gcloud beta service-management enable`
   for each of the following API paths:
       - **Cloud SQL API:** `sql-component.googleapis.com`
