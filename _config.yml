@@ -1,19 +1,24 @@
-markdown: kramdown
-exclude: [vendor, images/readme/]
-title: "Forseti Security"
+# Basic directives.
 description: "Tools to secure Google Cloud Platform"
-google_analytics: UA-98416450-1
+exclude: [vendor, readme_images/]
+gems:
+  - jekyll-sitemap
 github:
   url: https://github.com/GoogleCloudPlatform/forseti-security
   branch: gh-pages
+google_analytics: UA-98416450-1
+markdown: kramdown
+title: "Forseti Security"
 
+# Jekyll related directives.
 collections:
   docs:
     output: true
   faq:
     output: false
 
-# The order of document categories is defined in _data/doc_categories.yml
+# Custom site directives.
+# The order of document categories is defined in _data/doc_categories.yml.
 defaults:
   - scope:
       path: _docs
