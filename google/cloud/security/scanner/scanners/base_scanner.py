@@ -22,7 +22,6 @@ from google.cloud.security.common.util import log_util
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc
 # pylint: disable=missing-param-doc,redundant-returns-doc
-# pylint: disable=differing-param-doc
 
 
 LOGGER = log_util.get_logger(__name__)

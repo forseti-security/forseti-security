@@ -126,7 +126,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
 
     def build_rule_book(self, forseti_configs):
         """Build IamRuleBook from the rules definition file.
-        
+
         Args:
             forseti_configs (dict): Forseti configurations.
         """
