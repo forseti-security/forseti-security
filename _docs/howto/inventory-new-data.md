@@ -16,15 +16,15 @@ To add new GCP resource types to Forseti Inventory, follow the process below:
     schema.
 1.  Define a new table schema for the *raw* data you'll store. The GCP API
     returns data formatted as JSON.
-1.  Create a [pull
-    request](https://help.github.com/articles/creating-a-pull-request/) to add
-    initial table schema. To learn more, refer to this [example pull
-    request](https://github.com/GoogleCloudPlatform/forseti-security/pull/159).
+1.  Create a
+    [pull request](https://help.github.com/articles/creating-a-pull-request/) to add
+    initial table schema. To learn more, refer to this
+    [example pull request](https://github.com/GoogleCloudPlatform/forseti-security/pull/159).
 1.  After you merge the table schema pull request, create a
     [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines)
     to fetch your data. If Forseti isn't currently collecting the data you
-    want from GCP, you'll need to extend Forseti's API support for [Google
-    Cloud APIs](https://cloud.google.com/apis/docs/overview).
+    want from GCP, you'll need to extend Forseti's API support for
+    [Google Cloud APIs](https://cloud.google.com/apis/docs/overview).
 1.  The pipeline_requirements_map.py file is an internal map that defines
     the requirements for each pipeline. The map values are the dependencies
     the pipeline needs to run. Specify the following values in
@@ -42,10 +42,9 @@ To add new GCP resource types to Forseti Inventory, follow the process below:
         inventory.
     1.  Specify if the pipeline will run.
 1.  Flatten the data collected from your API so you can store it in a CSV or
-    normalized storage system. Learn more about [flattening the data
-    structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/pipelines/load_projects_pipeline.py#L32).
+    normalized storage system. Learn more about
+    [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/pipelines/load_projects_pipeline.py#L32).
 1.  Load the flattened data into the database table.
 
-For an example of the steps above, see this pull request for [adding fetching
-and storing of
-groups](https://github.com/GoogleCloudPlatform/forseti-security/pull/165).
+For an example of the steps above, see this pull request for
+[adding fetching and storing of groups](https://github.com/GoogleCloudPlatform/forseti-security/pull/165).
