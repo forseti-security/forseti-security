@@ -105,7 +105,7 @@ use the following command:
 $ python setup.py install
 ```
 
-### Executing Foresti commands
+### Executing Forseti commands
 
 After you complete the above steps, you should be able to run the following
 command-line tools:
