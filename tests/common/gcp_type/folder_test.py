@@ -48,12 +48,10 @@ class FolderTest(ForsetiTestCase):
         self.assertEqual(folder.FolderLifecycleState.ACTIVE,
                          f1.lifecycle_state)
 
-    @mock.patch.object(
-        crm.CloudResourceManagerClient, 'get_folder', autospec=True)
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def test_folder_exists(self, mock_base, mock_crm):
+    @mock.patch('google.cloud.security.common.gcp_type.folder.crm')
+    def test_folder_exists(self, mock_crm):
         """Tests that the folder exists."""
-        mock_crm.return_value = True
+        mock_crm.get_folder.return_value = True
         self.assertTrue(self.folder1.exists())
 
 

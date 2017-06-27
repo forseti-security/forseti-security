@@ -93,12 +93,10 @@ class OrganizationTest(ForsetiTestCase):
         self.assertTrue(org1 != project1)
         self.assertTrue(org1 != folder1)
 
-    @mock.patch.object(CloudResourceManagerClient, 'get_organization',
-                       autospec=True)
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def test_org_exists(self, mock_base, mock_crm):
+    @mock.patch('google.cloud.security.common.gcp_type.organization.crm')
+    def test_org_exists(self, mock_crm):
         """Tests that the organization exists."""
-        mock_crm.return_value = True
+        mock_crm.get_organization.return_value = True
         self.assertTrue(self.org1.exists())
 
 
