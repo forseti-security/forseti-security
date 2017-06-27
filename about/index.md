@@ -33,7 +33,7 @@ prevent unsafe changes.
 Helps you to understand, test, and develop Cloud Identity and Access Management
 (Cloud IAM) policies.
 
-## [Contributing](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md)
+## [Contributing](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md)
 
 We are continually improving Forseti Security and invite you to submit feature
 requests and bug reports.

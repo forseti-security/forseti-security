@@ -46,27 +46,27 @@ To set up Cloud SQL for Forseti, follow the steps below:
   Your CLOUD_SQL_INSTANCE_NAME is the **instance connection name** under
   **Properties** on the Cloud SQL dashboard instance details.
 
-          PATH_TO_CLOUD_SQL_PROXY/cloud_sql_proxy -instances=CLOUD_SQL_INSTANCE_NAME=tcp:3306
+          path/to/cloud_sql_proxy -instances=CLOUD_SQL_INSTANCE_NAME=tcp:3306
 
 ### Installing mysql_config
 
 The MySql-python library requires `mysql_config` to be present in your system.
 Following are example commands to install the library:
 
-````
+```
 # Ubuntu
 # Note: If libmysqlclient-dev doesn't install `mysql_config`, then try also installing `mysql_server`.
 sudo apt-get install libmysqlclient-dev
 
 # OSX
 brew install mysql
-````
+```
 
 ### Creating a virtualenv
 
 Use the commands below to install and create a virtualenv:
 
-````
+```
 # install virtualenv
 sudo apt-get install python-pip
 sudo pip install --upgrade virtualenvwrapper
@@ -74,33 +74,33 @@ sudo pip install --upgrade virtualenvwrapper
 # create a virtualnv
 mkvirtualenv forseti-security
 workon forseti-security
-````
+```
 
 ### Getting the source code
 
 Use the command below to clone the repo if you haven't already:
 
-````
+```
 git clone https://github.com/GoogleCloudPlatform/forseti-security.git
-````
+```
 
 ### Installing build dependencies
 
 To install required build dependencies, run the following commands:
 
-````
+```
 pip install grpcio grpcio-tools google-apputils
-````
+```
 
 ### Building proto files and running the python setup
 
 To build proto files and run the python setup, navigate to your cloned repo and
 use the following command:
 
-````
+```
 python build_protos.py
 python setup.py install
-````
+```
 
 ### Executing Foreseti commands
 

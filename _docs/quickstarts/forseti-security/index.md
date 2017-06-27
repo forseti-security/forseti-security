@@ -1,5 +1,5 @@
 ---
-title: Forseti Security Quickstart
+title: Forseti Security
 order: 002
 ---
 # {{ page.title }}
@@ -41,7 +41,7 @@ configuration:
   Forseti.
   1. The setup wizard checks for valid configurations or creates a new one,
   then it checks if billing is enabled for your project.
-    2. If billing isn't enabled, follow the prompts to enable billing, then
+      * If billing isn't enabled, follow the prompts to enable billing, then
     return to the command-line.
   1. Next, the setup wizard automaticlaly enables required APIs:
       - Cloud SQL API

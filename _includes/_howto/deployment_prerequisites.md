@@ -25,8 +25,7 @@ Next, you'll create service accounts with Cloud Identity and Access Management
 (Cloud IAM) roles to allow Forseti to read GCP data and to manage Forseti
 modules. It's best to create your Forseti service accounts under a new GCP
 project. You'll be able to use the service accounts in other projects and
-easily control the number of users who have Editor or Owner roles. Learn about
-[Creating and Enabling Service Accounts for Instances](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances).
+easily control the number of users who have Editor or Owner roles.
 
 To create a service account for Forseti Inventory, Scanner, and Enforcer, follow the steps below:
 
@@ -35,31 +34,40 @@ To create a service account for Forseti Inventory, Scanner, and Enforcer, follow
   1. Create and download the json key to your local environment.
   1. Set an environment variable to configure the Application Default
   Credentials to reference the key by running
-          `export GOOGLE_APPLICATION_CREDENTIALS=PATH_TO_SERVICE_ACCOUNT_KEY`
+  
+          export GOOGLE_APPLICATION_CREDENTIALS=SERVICE_ACCOUNT_KEY_PATH
+          
+  where `SERVICE_ACCOUNT_KEY_PATH` is the path to the json service account key you just downloaded.
   1. Grant the required Cloud IAM roles to the service account by running the
   following:
 
-          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-          --role=roles/browser
-
-          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-          --role=roles/compute.networkAdmin
-
-          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-          --role=roles/editor
-
-          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-          --role=roles/iam.securityReviewer
-
-          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-          --role=roles/resourcemanager.folderAdmin
-
-          gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-          --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-          --role=roles/storage.admin
-
+      ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/browser
+      ```
+      ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/compute.networkAdmin
+      ```
+      ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/editor
+      ```
+      ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/iam.securityReviewer
+      ```
+      ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/resourcemanager.folderAdmin
+      ```
+      ```
+      gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/storage.admin
+      ```

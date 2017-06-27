@@ -9,7 +9,7 @@ See [LICENSE](https://github.com/GoogleCloudPlatform/forseti-security/blob/maste
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
 
 ## Developing on forsetisecurity.org
 
@@ -76,7 +76,7 @@ Documentation pages can be nested by adding a new page to a category
 sub-directory, e.g., `_docs/quickstarts/subdir/sub_page.md`. This will cause
 your documentation page to be indented to the right.
 
-You must be careful when `order`ing nested pages. As far as Jekyll is
+You must be careful when ordering nested pages. As far as Jekyll is
 concerned, the hierarchy is flat for a given category. If
 `docs/quickstarts/top_page.md` has `order: 2` and
 `_docs/quickstarts/subdir/sub_page.md` has `order: 1`, then `sub_page` will
