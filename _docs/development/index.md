@@ -14,15 +14,21 @@ You can find the unit tests in the top-level `tests/` directory.
 
 To execute tests, run the command below:
 
-`python setup.py google_test --test-dir tests/`
+```bash
+$ python setup.py google_test
+```
 
 To execute the tests just for a particular module:
 
-`python setup.py google_test --test-dir tests/MODULE_NAME`
+```bash
+$ python setup.py google_test --test-dir tests/MODULE_NAME
+```
 
 To run tests for a particular file pattern:
 
-`python setup.py google_test --test-module-pattern tests`
+```bash
+$ python setup.py google_test --test-module-pattern tests
+```
 
 ### Known issues
 

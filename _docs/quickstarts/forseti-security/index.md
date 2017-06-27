@@ -20,16 +20,21 @@ deployment on GCP. Follow the setup prompts below to save your Forseti
 configuration:
 
   1. To download the setup wizard, run:
-
-         git clone https://github.com/GoogleCloudPlatform/forseti-security
+  
+      ```bash
+      $ git clone https://github.com/GoogleCloudPlatform/forseti-security
+      ```
 
   1. Navigate to the setup wizard directory:
-
-         cd forseti-security/scripts/gcp_setup
+  
+      ```bash
+      $ cd forseti-security/scripts/gcp_setup
+      ```
 
   1. Start the setup process:
-
-         python setup_forseti.py
+     ```bash
+     $ python setup_forseti.py
+     ```
 
   1. Follow the prompts to download and install the
   [gcloud command-line tool](https://cloud.google.com/sdk/gcloud/).

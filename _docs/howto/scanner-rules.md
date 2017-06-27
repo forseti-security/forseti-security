@@ -20,25 +20,25 @@ appropriate path.
 
 Forseti Scanner recognizes the following rule grammar in YAML or JSON:
 
-  ```yaml
-  rules:
-    - name: $rule_name
-      mode: $rule_mode
-      resource:
-        - type: $resource_type
-          applies_to: $applies_to
-          resource_ids:
-            - $resource_id1
-            - $resource_id2
-            - ...
-      inherit_from_parents: $inherit_from
-      bindings:
-        - role: $role_name
-          members:
-            - $member1
-            - $member2
-            ...
-  ```
+```yaml
+rules:
+  - name: $rule_name
+    mode: $rule_mode
+    resource:
+      - type: $resource_type
+        applies_to: $applies_to
+        resource_ids:
+          - $resource_id1
+          - $resource_id2
+          - ...
+    inherit_from_parents: $inherit_from
+    bindings:
+      - role: $role_name
+        members:
+          - $member1
+          - $member2
+          ...
+```
 
   - `rules`: a sequence of rules.
   - `mode`: a string of one of the following values:
