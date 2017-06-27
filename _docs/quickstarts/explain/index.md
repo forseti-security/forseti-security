@@ -29,6 +29,7 @@ clients won't be supported until a first stable API version is released.
 
 Before you set up and deploy IAM Explain, you'll need the following:
 
+  - A running Forseti instance with [group collection enabled]({% link _docs/howto/gsuite-group-collection.md%})
   - A service account with the Cloud SQL Client role. For security purposes,
   it's best to create a separate service account for IAM Explain. However, you
   can use your [Forseti Security service account]({% link _docs/howto/local-deployment.md %}#creating-service-accounts)
