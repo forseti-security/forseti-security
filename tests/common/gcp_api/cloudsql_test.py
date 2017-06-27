@@ -33,8 +33,9 @@ class CloudsqlTest(basetest.TestCase):
     @mock.patch('google.cloud.security.common.gcp_api._base_client.GoogleCredentials')
     def setUp(self, mock_google_credential, mock_discovery):
         """Set up."""
-        fake_configs = {'max_sqladmin_api_calls_per_100_seconds': 88888}
-        self.sql_api_client = cloudsql.CloudsqlClient(configs=fake_configs)
+        fake_forseti_configs = {'max_sqladmin_api_calls_per_100_seconds': 88888}
+        self.sql_api_client = cloudsql.CloudsqlClient(
+            forseti_configs=fake_forseti_configs)
 
     def test_get_instances(self):
         """Test get cloudsql instances."""
