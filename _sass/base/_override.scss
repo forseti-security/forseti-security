@@ -3,19 +3,31 @@
   margin-top: 8px;
 }
 
+@media (max-width: $screen-xs-max) {
+  .navbar .navbar-form {
+    border-bottom: 1px solid $black-alpha-10;
+    border-top: none;
+    -webkit-box-shadow: 0 1px 0 $white-alpha-10;
+    box-shadow: 0 1px 0 $white-alpha-10;
+    margin-top: 16px;
+    padding: 0 15px 16px 15px;
+
+  }
+}
+
 .nav-tabs {
   background: transparent;
   border: none;
 
   > li {
     > a {
-      color: #737373;
+      color: $grey-600;
       margin-right: 5px;
 
       &:hover,
       &:focus {
-        border-bottom: 2px solid #737373;
-        color: #737373;
+        border-bottom: 2px solid $grey-600;
+        color: $grey-600;
       }  
     }
 
@@ -25,8 +37,8 @@
       a:focus {
         background-color: transparent;
         border: none;
-        border-bottom: 2px solid #1976d2;
-        color: #1976d2;
+        border-bottom: 2px solid $brand-primary;
+        color: $brand-primary;
       }
     }
   }

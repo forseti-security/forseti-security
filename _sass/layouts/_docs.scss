@@ -1,10 +1,26 @@
 .docs-nav {
-  /* Specify only margin-bottom to prevent overriding Bootstrap row margins */
-  margin-bottom: 20px;
+  .breadcrumb {
+    background: none;
+    border-radius: 0;
+
+    a {
+      text-decoration: underline;
+    }
+
+    li + li:before {
+      color: $grey-400;
+      content: ">\00a0";
+    }
+  }
+
+  @media (min-width: $screen-sm-min) {
+    /* Specify only margin-bottom to prevent overriding Bootstrap row margins */
+    margin-bottom: 20px;
+  }
 }
 
 .edit-on-github a {
-  color: #737373 !important;
+  color: $grey-600 !important;
   .file-name {
     font-weight: bold;
   }

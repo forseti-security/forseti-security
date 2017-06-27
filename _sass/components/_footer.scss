@@ -1,10 +1,10 @@
 .site-footer {
-  background-color: #4e4f4f;
+  background-color: $footer-bg;
   /* box-shadow extends footer all the way to the bottom of the page, even if
      there's not enough content to fill the entire vertical space; otherwise
      it's clipped */
-  box-shadow: 0 500px 0 500px #4e4f4f;
-  color: #fff;
+  box-shadow: 0 500px 0 500px $footer-bg;
+  color: $white;
   margin-top: 40px;
   padding: 35px 0 35px;
 
@@ -12,10 +12,14 @@
     .logo {
       margin-bottom: 20px;
       width: 40px;
+
+      @media (max-width: $screen-xs-max) {
+        margin: 20px 0 10px;
+      }
     }
 
     .description {
-      color: #ccc;
+      color: $footer-text;
       font-size: 12px;
     }
   }
@@ -32,7 +36,7 @@
       list-style-type: none;
 
       a {
-        color: #ccc;
+        color: $footer-text;
       }
 
       .icon::before {

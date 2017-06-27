@@ -1,68 +1,81 @@
 ---
-title: Scanner Rules
+title: Defining Rules for Forseti Scanner
 order: 102
 ---
 # {{ page.title }}
+This page describes how to define rules for Forseti Scanner.
 
-## Defining IAM policy rules
+## Defining custom rules
 
-The Forseti Scanner recognizes the following rule grammar (either in YAML or JSON):
+By default, the DM template includes a rules.yaml file that allows service
+accounts on the organization and its children Cloud IAM policies. To define
+custom rules, edit your `rules.yaml` and then upload to your `SCANNER_BUCKET`.
+The `py/forseti_instance.py` template defaults to `gs://SCANNER_BUCKET/rules`.
+If you've stored `rules.yaml` in a different location, make sure to update the
+template. You'll need to replace every instance of `rules/rules.yaml` with the
+appropriate path.
 
-    ```yaml
-    rules:
-      - name: $rule_name
-        mode: $rule_mode
-        resource:
-          - type: $resource_type
-            applies_to: $applies_to
-            resource_ids:
-              - $resource_id1
-              - $resource_id2
-              - ...
-        inherit_from_parents: $inherit_from
-        bindings:
-          - role: $role_name
-            members:
-              - $member1
-              - $member2
-              ...
-    ```
+## Defining Cloud IAM policy rules
 
-`rules` is a sequence of rules.
+Forseti Scanner recognizes the following rule grammar in YAML or JSON:
 
-`mode` is string of one of the following values:
- * "whitelist" - allow the members defined
- * "blacklist" - block the members defined
- * "required' - these members with these roles must be found in the policy
+```
+rules:
+  - name: $rule_name
+    mode: $rule_mode
+    resource:
+      - type: $resource_type
+        applies_to: $applies_to
+        resource_ids:
+          - $resource_id1
+          - $resource_id2
+          - ...
+    inherit_from_parents: $inherit_from
+    bindings:
+      - role: $role_name
+        members:
+          - $member1
+          - $member2
+          ...
+```
 
-`resource_type` is a string of one of the following values:
- * "organization"
- * "folder" (coming soon)
- * "project"
+-   `rules`: a sequence of rules.
+-   `mode`: a string of one of the following values:
+    -   `whitelist`: allow the members defined.
+    -   `blacklist`: block the members defined
+    -   `required`: defined members with the specified roles must be found in
+        policy.
+-   `resource_type`: a string of one of the following values:
+    -   `organization`
+    -   `folder` (coming soon)
+    -   `project`
+-   `applies_to`: a string of one of the following values:
+    -   `self`: the rule only applies to the specified resource
+    -   `children`: the rule only applies to the child resources of the
+        specified resource.
+    -   `self_and_children`: the rule applies to the specified resource and its
+        child resources.
+-   `inherit_from_parents`: a true or false boolean that defines whether a
+    specified resource inherits ancestor rules.
+-   `role_name`: a
+    [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam) such as
+    `roles/editor` or `roles/viewer`.
+    -   You can also use wildcards, such as `roles/*`. Refer to samples or the
+        unit tests directory for examples.
+-   `members`: a list of Cloud IAM members, such as `username@company.com`. You
+    can also use wildcards, such as `serviceAccount:@.gserviceaccount.com` (any
+    service accounts).
 
-`applies_to` is a string of one of the following values:
- * "self" - the rule only applies to the specified resource
- * "children" - the rule only applies to the child resources of this resource
- * "self_and_children" - the rule applies to all
+## Defining Google Groups rules
 
-`inherit_from_parents` is a boolean, either true or false, that tells whether
-the resource being checked should look in its inheritance hierarchy and apply
-the ancestor rules.
-
-`role_name` is one of the
-[IAM roles](https://cloud.google.com/compute/docs/access/iam) e.g.
-"roles/editor" or "roles/viewer". Roles can also be wildcarded, e.g. roles/*.
-Refer to the samples or the unit tests directory for examples.
-
-In the members list, specify IAM members, e.g. user:someone@company.com.
-You can also use wildcards on the member name, e.g.
-serviceAccount:*@*.gserviceaccount.com ("any service accounts").
-
-More information about IAM users types can be found in the
-[policy documentation](https://cloud.google.com/iam/reference/rest/v1/Policy).
-
-# Defining Google Groups rules
 Coming soon.
 
-# Defining GCS bucket rules
+## Defining GCS bucket rules
+
 Coming soon.
+
+## What's next
+
+-   Learn more about
+    [Cloud IAM Policy](https://cloud.google.com/iam/reference/rest/v1/Policy)
+    including user types.
