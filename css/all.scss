@@ -5,7 +5,7 @@ $baseurl: '{{ site.baseurl }}';
 @import "base/override";
 @import "base/icons";
 @import "components/toc";
-@import "components/docs_category_nav";
+@import "components/docs/category_nav";
 @import "components/navbar";
 @import "components/footer";
 @import "layouts/homepage";

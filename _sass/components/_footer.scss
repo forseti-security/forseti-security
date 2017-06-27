@@ -12,6 +12,10 @@
     .logo {
       margin-bottom: 20px;
       width: 40px;
+
+      @media (max-width: 767px) {
+        margin: 20px 0 10px;
+      }
     }
 
     .description {
