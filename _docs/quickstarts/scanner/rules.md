@@ -57,8 +57,8 @@ rules:
         child resources.
 -   `inherit_from_parents`: a true or false boolean that defines whether a
     specified resource inherits ancestor rules.
--   `role_name`: a [Cloud IAM
-    role](https://cloud.google.com/compute/docs/access/iam) such as
+-   `role_name`: a
+    [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam) such as
     `roles/editor` or `roles/viewer`.
     -   You can also use wildcards, such as `roles/*`. Refer to samples or the
         unit tests directory for examples.
@@ -76,6 +76,6 @@ Coming soon.
 
 ## What's next
 
--   Learn more about [Cloud IAM
-    Policy](https://cloud.google.com/iam/reference/rest/v1/Policy) including
-    user types.
+-   Learn more about
+    [Cloud IAM Policy](https://cloud.google.com/iam/reference/rest/v1/Policy)
+    including user types.
