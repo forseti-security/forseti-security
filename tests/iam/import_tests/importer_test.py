@@ -46,8 +46,8 @@ def get_db_file_path(db_name):
 class ImporterTest(ForsetiTestCase):
     """Test importer based on database dump."""
 
-    def setUp(self):
-        """Create an import from a Forseti dump."""
+    def test_status_done(self):
+        """Test if the status of the import is 'done'."""
 
         EXPLAIN_CONNECT = 'sqlite:///:memory:'
         FORSETI_CONNECT = 'sqlite:///{}'.format(
@@ -70,7 +70,5 @@ class ImporterTest(ForsetiTestCase):
                 self.service_config)
             import_runner.run()
 
-    def test_status_done(self):
-        """Test if the status of the import is 'done'."""
         model = self.model_manager.model(self.model_name)
         self.assertEqual(model.state, 'DONE', 'Model state should be DONE')
