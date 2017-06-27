@@ -131,6 +131,7 @@ class BaseClient(object):
             if rate_limiter is not None:
                 with rate_limiter:
                     return request.execute()
+            return request.execute()
         except HttpError as e:
             if (e.resp.status == 403 and
                     e.resp.get('content-type', '').startswith(
