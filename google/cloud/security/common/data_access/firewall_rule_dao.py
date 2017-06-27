@@ -12,33 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data access object for Instance."""
+"""Data access object for FirewallRule."""
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import instance
+from google.cloud.security.common.gcp_type import firewall_rule
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class InstanceDao(dao.Dao):
-    """Instance DAO."""
+class FirewallRuleDao(dao.Dao):
+    """Firewall rule DAO."""
 
-    def get_instances(self, timestamp):
-        """Get instances from a particular snapshot.
+    def get_firewall_rules(self, timestamp):
+        """Get firewall rules from a particular snapshot.
 
         Args:
             timestamp: The snapshot timestamp.
 
         Returns:
-            A list of Instance.
+            A list of FirewallRule.
 
         Raises:
             MySQLError if a MySQL error occurs.
         """
-        query = select_data.INSTANCES.format(timestamp)
+        query = select_data.FIREWALL_RULES.format(timestamp)
         rows = self.execute_sql_with_fetch(
-            resource.ResourceType.INSTANCE, query, ())
-        return [self.map_row_to_object(instance.Instance, row) for row in rows]
+            resource.ResourceType.FIREWALL_RULE, query, ())
+        return [self.map_row_to_object(firewall_rule.FirewallRule, row)
+                for row in rows]

@@ -372,6 +372,7 @@ CREATE_INSTANCE_GROUPS_TABLE = """
         `project_id` varchar(255) DEFAULT NULL,
         `creation_timestamp` datetime DEFAULT NULL,
         `description` varchar(255) DEFAULT NULL,
+        `instance_urls` json DEFAULT NULL,
         `name` varchar(255) DEFAULT NULL,
         `named_ports` json DEFAULT NULL,
         `network` varchar(255) DEFAULT NULL,

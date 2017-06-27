@@ -148,6 +148,38 @@ class ComputeClient(_base_client.BaseClient):
         return self._flatten_aggregated_list_results(
             paged_results, 'instances')
 
+    def get_instance_group_instances(self, project_id, zone,
+                                     instance_group_name):
+        """Get the instance groups for a project.
+
+        Args:
+            project_id: The project id.
+            zone: The instance group's zone.
+            instance_group_name: The instance group's name.
+
+        Return:
+            A list of instance URLs for this instance group.
+
+        Raise:
+            api_errors.ApiExecutionError if API raises an error.
+        """
+        instance_groups_api = self.service.instanceGroups()
+        list_request = instance_groups_api.listInstances(
+            project=project_id,
+            zone=zone,
+            instanceGroup=instance_group_name)
+        list_next_request = instance_groups_api.listInstances_next
+
+        paged_results = self._build_paged_result(
+            list_request, instance_groups_api, self.rate_limiter,
+            next_stub=list_next_request)
+        return [
+            instance_data.get('instance')
+            for instance_data in self._flatten_list_results(
+                paged_results, 'items')
+            if 'instance' in instance_data
+        ]
+
     def get_instance_groups(self, project_id):
         """Get the instance groups for a project.
 
@@ -169,8 +201,12 @@ class ComputeClient(_base_client.BaseClient):
             list_request, instance_groups_api, self.rate_limiter,
             next_stub=list_next_request)
 
-        return self._flatten_aggregated_list_results(
+        instance_groups = self._flatten_aggregated_list_results(
             paged_results, 'instanceGroups')
+        for instance_group in instance_groups:
+            instance_group.instance_urls = self.get_instance_group_instances(
+                self, project_id, instance_group.zone, instance_group.name)
+        return instance_groups
 
     def get_instance_templates(self, project_id):
         """Get the instance templates for a project.

@@ -28,4 +28,6 @@ class InstanceTemplate(object):
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
         self.name = kwargs.get('name')
+        self.project_id = kwargs.get('project_id')
         self.properties = kwargs.get('properties')
+        self.resource_id = kwargs.get('id')

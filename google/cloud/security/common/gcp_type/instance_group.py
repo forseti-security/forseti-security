@@ -29,10 +29,13 @@ class InstanceGroup(object):
         """InstanceGroup resource."""
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
+        self.instance_urls = kwargs.get('instance_urls')
         self.name = kwargs.get('name')
         self.named_ports = kwargs.get('named_ports')
         self.network = kwargs.get('network')
+        self.project_id = kwargs.get('project_id')
         self.region = kwargs.get('region')
+        self.resource_id = kwargs.get('id')
         self.size = kwargs.get('size')
         self.subnetwork = kwargs.get('subnetwork')
         self.zone = kwargs.get('zone')

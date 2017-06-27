@@ -18,13 +18,6 @@ from collections import namedtuple
 import itertools
 import re
 
-# pylint: disable=line-too-long
-from google.cloud.security.common.gcp_type import backend_service
-from google.cloud.security.common.gcp_type import instance_group_manager
-from google.cloud.security.common.gcp_type import instance_group
-from google.cloud.security.common.gcp_type import instance
-from google.cloud.security.common.gcp_type import instance_template
-# pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
@@ -52,10 +45,12 @@ def escape_and_globify(pattern_string):
     return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
 
 
-IapRuleDef = collections.namedtuple('IapRuleDef',
-                                    ['backend_service_name',
-                                     'allowed_direct_access_networks',
-                                     'allow_exposure_via_alternate_service'])
+IapRuleDef = namedtuple('IapRuleDef',
+                        ['backend_service_name',
+                         'allowed_alternate_services',
+                         'allowed_direct_access_sources',
+                         'allowed_iap_enabled',
+                        ])
 
 
 class IapRulesEngine(bre.BaseRulesEngine):
@@ -76,7 +71,7 @@ class IapRulesEngine(bre.BaseRulesEngine):
         self.rule_book = IapRuleBook(self._load_rule_definitions())
 
     # pylint: disable=arguments-differ
-    def find_policy_violations(self, the_backend_service,
+    def find_policy_violations(self, iap_resource,
                                force_rebuild=False):
         """Determine whether IAP-related settings violate rules."""
         violations = itertools.chain()
@@ -85,9 +80,9 @@ class IapRulesEngine(bre.BaseRulesEngine):
         resource_rules = self.rule_book.get_resource_rules()
 
         for rule in resource_rules:
-            violations = itertools.chain(violations,
-                                         rule.\
-                                         find_policy_violations(the_backend_service))
+            violations = itertools.chain(
+                violations,
+                rule.find_policy_violations(iap_resource))
         return violations
 
     def add_rules(self, rules):
@@ -138,16 +133,21 @@ class IapRuleBook(bre.BaseRuleBook):
 
             backend_service_name = escape_and_globify(
                 rule_def.get('backend_service_name'))
-            allowed_direct_access_networks = escape_and_globify(
-                rule_def.get('allowed_direct_access_networks'))
-            allow_exposure_via_alternate_service = rule_def.get(
-                'allow_exposure_via_alternate_service')
+            allowed_alternate_services = rule_def.get(
+                'allowed_alternate_services')
+            allowed_direct_access_sources = escape_and_globify(
+                rule_def.get('allowed_direct_access_sources'))
+            allowed_iap_enabled = rule_def.get('allowed_iap_enabled')
 
             rule_def_resource = IapRuleDef(
-                backend_service_name=escape_and_globify(instance_name),
-                authorized_networks=escape_and_globify(authorized_networks),
-                allow_exposure_via_alternate_service=(
-                    allow_exposure_via_alternate_service),
+                backend_service_name=escape_and_globify(
+                    backend_service_name),
+                allowed_alternate_services=(
+                    allowed_alternate_services),
+                allowed_direct_access_sources=escape_and_globify(
+                    allowed_direct_access_sources),
+                allowed_iap_enabled=escape_and_globify(
+                    allowed_iap_enabled),
             )
 
             rule = Rule(rule_name=rule_def.get('name'),
@@ -193,59 +193,69 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
-    def find_policy_violations(self, the_backend_service):
+    def find_policy_violations(self, iap_resource):
         """Find IAP policy violations in the rule book.
 
         Args:
-            the_backend_service: BackendService resource
+            iap_resource: IapResource
 
         Returns:
             Returns RuleViolation named tuple
         """
-        filter_list = []
         if self.rules.backend_service_name != '^.+$':
-            bs_name_bool = re.match(self.rules.backend_service_name,
-                                    the_backend_service.name)
-        else:
-            bs_name_bool = True
+            if not re.match(self.rules.backend_service_name,
+                            iap_resource.backend_service_name):
+                return
 
-        if self.rules.allowed_direct_access_networks != '^.+$':
-            networks_regex = re.compile(self.rules.\
-                                        allowed_direct_access_networks)
-            filter_list = [
-                net for net in cloudsql_acl.authorized_networks if\
-                authorized_networks_regex.match(net)
+        if self.rules.allowed_alternate_services != '^.+$':
+            alternate_services_regex = re.compile(
+                self.rules.allowed_alternate_services)
+            alternate_services_violations = [
+                service for service in iap_resource.alternate_services
+                if alternate_services_regex.match(service)
             ]
-
-            allowed_direct_networks_bool = bool(filter_list)
         else:
-            allowed_direct_networks_bool = True
+            alternate_services_violations = []
 
-        if not self.rules.allow_exposure_via_alternate_service:
-            exposed_via_alternate_services_bool = bool(filter_list)
+        if self.rules.allowed_iap_enabled != '^.+$':
+            iap_enabled_regex = re.compile(
+                self.rules.allowed_iap_enabled)
+            iap_enabled_violation = not iap_enabled_regex.match(
+                iap_resource.iap_enabled)
         else:
-            exposed_via_alternate_services_bool = False
+            iap_enabled_violation = False
+
+        if self.rules.allowed_direct_access_sources != '^.+$':
+            sources_regex = re.compile(self.rules.\
+                                       allowed_direct_access_sources)
+            direct_access_sources_violations = [
+                source for source in iap_resource.direct_access_sources
+                if sources_regex.match(source)
+            ]
+        else:
+            direct_access_sources_violations = []
 
         should_raise_violation = (
-            (bs_name_bool is not None and bs_name_bool) and\
-            (allowed_direct_networks_bool is not None and\
-             allowed_direct_networks_bool) and\
-            (exposed_via_alternate_service_bool is not None and\
-             exposed_via_alternate_service_bool))
+            alternate_services_violations or
+            iap_enabled_violation or
+            direct_access_sources_violations)
 
         if should_raise_violation:
             yield self.RuleViolation(
                 resource_type='project',
-                resource_id=the_backend_service.project_number,
+                resource_id=iap_resource.project_id,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='IAP_VIOLATION',
-                backend_service_name=the_backend_service.name,
-                direct_access_networks=direct_access_networks,
-                exposed_via_services=exposed_via_services)
+                backend_service_name=iap_resource.backend_service_name,
+                alternate_services_violations=alternate_services_violations,
+                iap_enabled_violation=iap_enabled_violation,
+                direct_access_sources_violations=(
+                    direct_access_sources_violations))
 
-    RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type',
-                                'backend_service_name', 'direct_access_networks',
-                                'exposed_via_services'])
+    RuleViolation = namedtuple(
+        'RuleViolation',
+        ['resource_type', 'resource_id', 'rule_name',
+         'rule_index', 'violation_type',
+         'backend_service_name', 'alternate_services_violations',
+         'iap_enabled_violation', 'direct_access_sources_violations'])

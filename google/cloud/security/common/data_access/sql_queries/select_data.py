@@ -210,7 +210,7 @@ INSTANCES = """
 
 INSTANCE_GROUPS = """
     SELECT id, project_id, creation_timestamp, name, description,
-    named_ports, network, region, size, subnetwork, zone
+    instance_urls, named_ports, network, region, size, subnetwork, zone
     FROM instance_groups_{0}
 """
 
