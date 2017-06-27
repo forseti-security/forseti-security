@@ -37,8 +37,8 @@
       a:focus {
         background-color: transparent;
         border: none;
-        border-bottom: 2px solid #1976d2;
-        color: #1976d2;
+        border-bottom: 2px solid $brand-primary;
+        color: $brand-primary;
       }
     }
   }

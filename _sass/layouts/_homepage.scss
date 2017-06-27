@@ -1,5 +1,5 @@
 #jumbotron-home {
-  background-color: #1976d2;
+  background-color: $brand-primary;
   margin: -20px 0 0;
 
   .container {
@@ -13,13 +13,12 @@
 
   .project-title {
     color: #fff;
-    // font-size: 1.2em;
     font-size: 46px;
     font-weight: bold;
   }
 
   .project-subtitle {
-    color: #ffc400;
+    color: $brand-secondary;
   }
 
   button {
