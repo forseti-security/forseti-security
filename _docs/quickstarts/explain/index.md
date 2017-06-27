@@ -79,21 +79,26 @@ together with a Forseti deployment, use one of the following methods:
   - Standard start/restart, if you used the deployment manager to create IAM
   Explain:
 
-        systemctl start cloudsqlproxy
-        systemctl start forseti
+    ```bash
+    $ systemctl start cloudsqlproxy
+    $ systemctl start forseti
+    ```
 
     - The services should automatically start right after the deployment.
     - You can find a deployment log at `/tmp/deployment.log`.
 
   - Start the server in a local installation:
 
-        forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/forseti_db'\
-        'mysql://root@127.0.0.1:3306/explain_db' playground explain
+    ```bash
+    $ forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/forseti_db'\
+     'mysql://root@127.0.0.1:3306/explain_db' playground explain
+    ```
 
     - Use the SQL proxy to establish a connection to the Cloud SQL instance:
-
-          cloud_sql_proxy -instances=$PROJECT:$REGION:$INSTANCE=tcp:3306
-
+    
+    ```bash
+    $ cloud_sql_proxy -instances=$PROJECT:$REGION:$INSTANCE=tcp:3306
+    ```
 
 ## Running the client
 
@@ -107,12 +112,16 @@ methods:
 
 
   - Importing a Forseti model:
-
-        forseti_iam explain create_model forseti
+  
+    ```bash
+    forseti_iam explain create_model forseti
+    ```
 
   - Creating an empty model:
 
-        forseti_iam explain create_model empty
+    ```bash
+    $ forseti_iam explain create_model empty
+    ```
 
 ### Using an explain model
 
@@ -145,6 +154,8 @@ the current state of a model. For example,
 `forseti_iam playground list_resources` displays all the resources available
 in the model. On its own, it enables you to set and check new policies. When
 used with an explain model, it also enables you to simulate a state
-modification and compare it to the live explain output. To view all the
+modification and compare it to the live explain output.
+
+To view all the
 commands available for IAM Explain playground, run
 `forseti_iam playground --help`.

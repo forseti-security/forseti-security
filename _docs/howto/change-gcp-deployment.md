@@ -11,8 +11,10 @@ notification email address, instance type, or `src-path` when you want your depl
   1. Edit `deploy-forseti.yaml` and update the values you want to change.
   1. Run the following update command:
 
-         gcloud deployment-manager deployments update forseti-security \
-         --config path/to/deploy-forseti.yaml
+      ```bash
+      $ gcloud deployment-manager deployments update forseti-security \
+       --config path/to/deploy-forseti.yaml
+      ```
 
 If you change the Compute Engine instance's startup script, such as changing
 the properties in the `deploy-forseti.yaml` "Compute Engine" section or the
@@ -20,6 +22,8 @@ startup script in `py/forseti-instance.py`, you may need to reset the instance.
 To reset the instance and make sure changes take effect, run the following
 command:
 
-`gcloud compute instances reset COMPUTE_ENGINE_INSTANCE_NAME`
+```bash
+$ gcloud compute instances reset COMPUTE_ENGINE_INSTANCE_NAME
+```
 
 Learn more about [Updating a Deployment](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments).

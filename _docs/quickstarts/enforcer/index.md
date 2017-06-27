@@ -38,7 +38,7 @@ configured on the project. The network name is prepended to the rule name.
 
 Following is an example rule that allows SSH from anywhere:
 
-``x``json
+```json
 {
     "sourceRanges": ["0.0.0.0/0"],
     "description": "Allow SSH from anywhere",
@@ -50,7 +50,7 @@ Following is an example rule that allows SSH from anywhere:
     ],
     "name": "allow-ssh"
 }
-``x``
+```
 
 ## Running Forseti Enforcer
 
