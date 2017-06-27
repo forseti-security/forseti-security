@@ -7,6 +7,7 @@ github:
   url: https://github.com/GoogleCloudPlatform/forseti-security
   branch: gh-pages
 google_analytics: UA-98416450-1
+highlighter: rouge
 markdown: kramdown
 title: "Forseti Security"
 

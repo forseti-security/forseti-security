@@ -65,10 +65,10 @@ following values:
 After you configure the deployment template variables, run the following
 command to create a new deployment:
 
-```bash
-$ gcloud deployment-manager deployments create iam-explain \
---config path/to/deploy-explain.yaml
-```
+  ```bash
+  $ gcloud deployment-manager deployments create iam-explain \
+  --config path/to/deploy-explain.yaml
+  ```
 
 ## Running the server
 
@@ -79,26 +79,26 @@ together with a Forseti deployment, use one of the following methods:
   - Standard start/restart, if you used the deployment manager to create IAM
   Explain:
 
-    ```bash
-    $ systemctl start cloudsqlproxy
-    $ systemctl start forseti
-    ```
+      ```bash
+      $ systemctl start cloudsqlproxy
+      $ systemctl start forseti
+      ```
 
     - The services should automatically start right after the deployment.
     - You can find a deployment log at `/tmp/deployment.log`.
 
   - Start the server in a local installation:
 
-    ```bash
-    $ forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/forseti_db'\
-     'mysql://root@127.0.0.1:3306/explain_db' playground explain
-    ```
+      ```bash
+      $ forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/forseti_db'\
+       'mysql://root@127.0.0.1:3306/explain_db' playground explain
+      ```
 
-    - Use the SQL proxy to establish a connection to the Cloud SQL instance:
-    
-    ```bash
-    $ cloud_sql_proxy -instances=$PROJECT:$REGION:$INSTANCE=tcp:3306
-    ```
+  - Use the SQL proxy to establish a connection to the Cloud SQL instance:
+  
+      ```bash
+      $ cloud_sql_proxy -instances=$PROJECT:$REGION:$INSTANCE=tcp:3306
+      ```
 
 ## Running the client
 
@@ -113,39 +113,39 @@ methods:
 
   - Importing a Forseti model:
   
-    ```bash
-    forseti_iam explain create_model forseti
-    ```
+      ```bash
+      $ forseti_iam explain create_model forseti
+      ```
 
   - Creating an empty model:
 
-    ```bash
-    $ forseti_iam explain create_model empty
-    ```
+      ```bash
+      $ forseti_iam explain create_model empty
+      ```
 
 ### Using an explain model
 
 To use a model, run the commands below:
 
-```bash
-$ forseti_iam --out-format json explainer list_models
+  ```bash
+  $ forseti_iam --out-format json explainer list_models
 
-  {
-    "handles": [
-      "2654f082f572a9c328cd5bb6f7011b08",
-      "33ff45caa913837eb7680056c05d5f31",
-  }
-  
-$ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
-  playground list_resources
-  
-  ...
-  
-$ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
-  explainer denormalize
-  
-  ...
-```
+    {
+      "handles": [
+        "2654f082f572a9c328cd5bb6f7011b08",
+        "33ff45caa913837eb7680056c05d5f31",
+    }
+    
+  $ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
+    playground list_resources
+    
+    ...
+    
+  $ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
+    explainer denormalize
+    
+    ...
+  ```
 
 ### Using the playground
 

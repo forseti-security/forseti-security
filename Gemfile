@@ -8,4 +8,3 @@ gem 'therubyracer'
 # Needed for Travis CI.
 gem 'html-proofer'
 gem 'jekyll'
-

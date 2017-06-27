@@ -95,10 +95,10 @@ You can also modify the following templates:
 After you configure your deployment template variables, use the following code
 to create a new deployment:
 
-```bash
-$ gcloud deployment-manager deployments create forseti-security \
-  --config PATH_TO/deploy-forseti.yaml
-```
+  ```bash
+  $ gcloud deployment-manager deployments create forseti-security \
+    --config PATH_TO/deploy-forseti.yaml
+  ```
 
 To view your deployment details, access the Cloud Console
 [Deployment Manager dashboard](https://console.cloud.google.com/deployments).

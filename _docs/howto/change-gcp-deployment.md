@@ -22,8 +22,8 @@ startup script in `py/forseti-instance.py`, you may need to reset the instance.
 To reset the instance and make sure changes take effect, run the following
 command:
 
-```bash
-$ gcloud compute instances reset COMPUTE_ENGINE_INSTANCE_NAME
-```
+  ```bash
+  $ gcloud compute instances reset COMPUTE_ENGINE_INSTANCE_NAME
+  ```
 
 Learn more about [Updating a Deployment](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments).
