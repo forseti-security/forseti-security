@@ -96,10 +96,11 @@ message AuthorizationTuple {
 
 message CreateModelRequest {
 	string type = 1;
+	string name = 2;
 }
 
 message CreateModelReply {
-	string handle = 1;
+	Model model = 1;
 }
 
 message DeleteModelRequest {
@@ -110,14 +111,21 @@ message DeleteModelReply {
 	enum Status {
 		SUCCESS = 0;
 	}
-	Status statis = 1;
+	Status status = 1;
 }
 
 message ListModelRequest {
 }
 
 message ListModelReply {
-	repeated string handles = 1;
+	repeated Model models = 1;
+}
+
+message Model {
+	string handle = 1;
+	string name = 2;
+	string status = 3;
+	string message = 4;
 }
 
 message GetPermissionsByRolesRequest {

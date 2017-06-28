@@ -12,19 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates a Cloud Storage bucket template for Forseti Security."""
-
-def GenerateConfig(context):
-    """Generate configuration."""
-    resources = []
-
-    resources.append({
-        'name': context.env['name'],
-        'type': 'storage.v1.bucket',
-        'properties': {
-            'project': context.env['project'],
-            'region': context.properties['region'],
-        }
-    })
-
-    return {'resources': resources}
+"""Importer Tests for IAM package."""
