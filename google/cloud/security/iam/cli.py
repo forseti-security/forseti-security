@@ -238,6 +238,7 @@ def define_explainer_parser(parent):
         help='List permissions by role(s)')
     perms_by_roles_parser.add_argument(
         '--roles',
+        nargs='*',
         default=[],
         help='Role names')
     perms_by_roles_parser.add_argument(
