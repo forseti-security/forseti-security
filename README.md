@@ -91,6 +91,28 @@ to update all three locations:
 - `_config.yml`: add/update category default for given directory
 - `_docs/...`: add/update directory name
 
+### Front-matter Conventions
+
+#### On documentation pages
+
+There are three panels on a documentation page:
+
+[![Documentation Panels](images/readme/docs_panels.jpg)](#)
+
+- Left Sidebar
+- Main
+- Right Sidebar
+
+You are able to control the display of the left- and right-sidebar independently, using the front-matter:
+
+```yaml
+---
+hide:
+  left_sidebar: true
+  right_sidebar: true
+---
+```
+
 ### Customizing the Bootstrap Material Design Theme
 
 The Material Design theme for Bootstrap is adapted from

@@ -1,6 +1,8 @@
 ---
 title: All How-to Guides 
 order: 1
+hide:
+  right_sidebar: true
 ---
 #  {{ page.title }}
 

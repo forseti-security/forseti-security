@@ -5,11 +5,20 @@ layout: default
 
 <div class="row">
   <div class="col-md-3">
-    {% include layout/docs/category_nav.html %}
+    {% unless page.hide.left_sidebar %} 
+      {% include layout/docs/category_nav.html %}
+    {% endunless %}
   </div>
+
   <div id="documentation" class="col-md-7">
     {{ content }}
   </div>
-  <div id="toc" class="col-md-2 toc">
-  </div>
+
+  {% unless page.hide.right_sidebar %}
+    <div id="toc" class="col-md-2 toc">
+    </div>
+  {% else %}
+    <div class="col-md-2">
+    </div>
+  {% endunless %}
 </div>
