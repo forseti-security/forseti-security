@@ -1,6 +1,7 @@
 # Basic directives.
-exclude: [vendor, images/readme/]
+custom_search_engine_id: 013699703217164175118:veyyqmfmpj4
 description: "Tools to secure Google Cloud Platform"
+exclude: [vendor, images/readme/]
 gems:
   - jekyll-sitemap
 github:
@@ -10,7 +11,6 @@ google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
 title: "Forseti Security"
-custom_search_engine_id: 013699703217164175118:veyyqmfmpj4
 
 # Jekyll related directives.
 collections:
