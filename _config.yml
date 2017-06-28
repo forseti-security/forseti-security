@@ -28,17 +28,13 @@ defaults:
       category: Overview
       layout: docs
   - scope:
-      path: _docs/development
-    values:
-      category: Development
-  - scope:
       path: _docs/howto
     values:
-      category: How Tos
+      category: Howtos
   - scope:
       path: _docs/quickstarts
     values:
-      category: Quick Starts
+      category: Quickstarts
   - scope:
       path: _docs/guides
     values:
