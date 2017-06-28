@@ -46,7 +46,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         """Get projects from data source."""
         project_policies = {}
         project_policies = (project_dao
-                            .ProjectDao(self.forsti_configs)
+                            .ProjectDao(self.forseti_configs)
                             .get_project_policies('projects',
                                                   self.snapshot_timestamp))
         return project_policies
