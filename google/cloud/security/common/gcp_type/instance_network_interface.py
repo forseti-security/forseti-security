@@ -28,14 +28,13 @@ class InstanceNetworkInterface(object):
         network_dictionary = json.loads(network_interface)
         if len(network_dictionary) > 1:
                LOGGER.error('Should only be one interface ties to an virtual instance.')
-#TODO not all networks have all categories, error check and make none 
-        self.kind = network_dictionary[0]('kind')
-        self.network = network_dictionary[0]('network')
-        self.subnetwork = network_dictionary[0]('subnetwork')
-        self.networkIP = network_dictionary[0]('networkIP')
-        self.name = network_dictionary[0]('name')
-        self.accessConfigs = network_dictionary[0]('accessConfigs')
-        self.aliasIpRanges = network_dictionary[0]('aliasIpRanges')
+        self.kind = network_dictionary[0].get('kind')
+        self.network = network_dictionary[0].get('network')
+        self.subnetwork = network_dictionary[0].get('subnetwork')
+        self.networkIP = network_dictionary[0].get('networkIP')
+        self.name = network_dictionary[0].get('name')
+        self.accessConfigs = network_dictionary[0].get('accessConfigs')
+        self.aliasIpRanges = network_dictionary[0].get('aliasIpRanges')
 
 
     def __repr__(self):

@@ -340,6 +340,17 @@ INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
     'raw_instance_group_manager',
 ]
 
+INSTANCE_NETWORK_INTERFACE_VIOLATIONS = [
+    'resource_type',
+    'resource_id',
+    'rule_name',
+    'rule_index',
+    'violation_type',
+    'project',
+    'network',
+    'ip',
+]
+
 ORG_IAM_POLICIES_FIELDNAMES = [
     'org_id',
     'role',
@@ -424,6 +435,7 @@ CSV_FIELDNAME_MAP = {
     'instance_groups': INSTANCE_GROUPS_FIELDNAMES,
     'instance_templates': INSTANCE_TEMPLATES_FIELDNAMES,
     'instance_group_managers': INSTANCE_GROUP_MANAGERS_FIELDNAMES,
+    'instance_network_interface_violations': INSTANCE_NETWORK_INTERFACE_VIOLATIONS,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,
     'policy_violations': POLICY_VIOLATION_FIELDNAMES,
