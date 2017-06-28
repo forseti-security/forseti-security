@@ -61,8 +61,15 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('scanner_config_path', None,
                     'Path to the scanner config file.')
 
-flags.DEFINE_string('forseti_config_path', None,
-                    'Path to the forseti config file.')
+# Hack to make the scanner_test pass due to duplicate flag error here
+# and in inventory_loader.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string('forseti_config_path', None,
+                        'Path to the forseti config file.')
+except flags.DuplicateFlagError:
+    pass
 
 flags.DEFINE_string('rules', None,
                     ('Path to rules file (yaml/json). '
@@ -99,13 +106,13 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    scanner_config_path = FLAGS.get('scanner_config_path')
+    scanner_config_path = FLAGS.scanner_config_path
     if not scanner_config_path:
         LOGGER.error('Path to scanner config needs to be specified.')
         sys.exit()
     scanner_configs = file_loader.read_and_parse_file(scanner_config_path)
 
-    forseti_config_path = FLAGS.get('forseti_config_path')
+    forseti_config_path = FLAGS.forseti_config_path
     if not forseti_config_path:
         LOGGER.error('Path to forseti config needs to be specified.')
         sys.exit()

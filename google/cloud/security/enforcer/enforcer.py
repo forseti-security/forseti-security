@@ -151,7 +151,7 @@ def main(argv):
 
     del argv
 
-    forseti_config_path = FLAGS.get('forseti_config_path')
+    forseti_config_path = FLAGS.forseti_config_path
     if forseti_config_path is None:
         LOGGER.error('Path to forseti config needs to be specified.')
         sys.exit()
