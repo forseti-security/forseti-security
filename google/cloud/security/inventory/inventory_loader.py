@@ -280,10 +280,8 @@ def main(_):
         LOGGER.error('Path to forseti config needs to be specified.')
         sys.exit()
 
-    inventory_configs = file_loader.read_and_parse_file(
-        inventory_flags.get('inventory_config_path'))
-    forseti_configs = file_loader.read_and_parse_file(
-        inventory_flags.get('forseti_config_path'))
+    inventory_configs = file_loader.read_and_parse_file(inventory_config_path)
+    forseti_configs = file_loader.read_and_parse_file(forseti_config_path)
 
     dao_map = _create_dao_map(forseti_configs)
 

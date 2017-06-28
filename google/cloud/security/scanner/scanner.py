@@ -99,17 +99,17 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    if not FLAGS.scanner_config_path:
+    scanner_config_path = FLAGS.get('scanner_config_path')
+    if not scanner_config_path:
         LOGGER.error('Path to scanner config needs to be specified.')
         sys.exit()
-    scanner_configs = file_loader.read_and_parse_file(
-        FLAGS.scanner_config_path)
+    scanner_configs = file_loader.read_and_parse_file(scanner_config_path)
 
-    if not FLAGS.forseti_config_path:
+    forseti_config_path = FLAGS.get('forseti_config_path')
+    if not forseti_config_path:
         LOGGER.error('Path to forseti config needs to be specified.')
         sys.exit()
-    forseti_configs = file_loader.read_and_parse_file(
-        FLAGS.forseti_config_path)
+    forseti_configs = file_loader.read_and_parse_file(forseti_config_path)
 
     snapshot_timestamp = _get_timestamp(forseti_configs)
     if not snapshot_timestamp:
