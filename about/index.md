@@ -12,7 +12,7 @@ Forseti Security.
 ## Forseti Security
 
 Forseti's core modules come with every deployment of the tool. They can be
-enabled, configured, and executed independtly of each other. When deployed these
+enabled, configured, and executed independently of each other. When deployed these
 modules work together to provide their respective features.
 
 **[Inventory]({% link _docs/quickstarts/inventory/index.md %})**
@@ -22,8 +22,8 @@ history of what was in your cloud.
 
 **[Policy Scanner]({% link _docs/quickstarts/scanner/index.md %})**
 
-Helps you monitor inventoried GCP resources like Cloud IAM, bigquery,
-Cloud Storage bucket ACLs, and
+Helps you monitor inventoried GCP resources like Cloud IAM,
+BigQuery datasets, Cloud Storage bucket ACLs, and
 [more]({% link _docs/quickstarts/inventory/index.md %}#google-cloud-platform-resource-coverage)
 to ensure that role-based access controls are set as you intended, by
 notifying you when specific policies change unexpectedly.
