@@ -41,6 +41,7 @@ LOGGER = log_util.get_logger(__name__)
 class BatchFirewallEnforcer(object):
     """Manage the parallel enforcement of firewall policies across projects."""
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  forseti_configs=None,
                  dry_run=False,
@@ -61,7 +62,6 @@ class BatchFirewallEnforcer(object):
               operations on a single project's firewall rules. Set to 0 to
               allow unlimited in flight asynchronous operations.
         """
-        # pylint: disable=too-many-instance-attributes
         self.forseti_configs = forseti_configs
         self.enforcement_log = enforcer_log_pb2.EnforcerLog()
         self._dry_run = dry_run
@@ -73,7 +73,7 @@ class BatchFirewallEnforcer(object):
         self.compute = compute.ComputeClient(self.forseti_configs)
 
         self.batch_id = None
-        # pylint: enable=too-many-instance-attributes
+    # pylint: enable=too-many-instance-attributes
 
     def run(self, project_policies, prechange_callback=None,
             new_result_callback=None):
