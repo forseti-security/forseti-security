@@ -36,12 +36,12 @@ LOGGER = log_util.get_logger(__name__)
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc
+# pylint: disable=too-many-instance-attributes
 
 
 class BatchFirewallEnforcer(object):
     """Manage the parallel enforcement of firewall policies across projects."""
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  forseti_configs=None,
                  dry_run=False,
@@ -73,7 +73,6 @@ class BatchFirewallEnforcer(object):
         self.compute = compute.ComputeClient(self.forseti_configs)
 
         self.batch_id = None
-    # pylint: enable=too-many-instance-attributes
 
     def run(self, project_policies, prechange_callback=None,
             new_result_callback=None):
