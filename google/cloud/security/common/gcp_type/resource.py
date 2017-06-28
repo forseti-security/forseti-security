@@ -45,7 +45,7 @@ class ResourceType(object):
     INSTANCE_GROUP = 'instance_group'
     INSTANCE_GROUP_MANAGER = 'instance_group_manager'
     INSTANCE_TEMPLATE = 'instance_template'
-    GCE_NETWORK = 'gce_network'
+    INSTANCE_NETWORK_INTERFACE = 'instance_network_interface'
     
     # Data storage
     BUCKETS_ACL = 'buckets_acl'
