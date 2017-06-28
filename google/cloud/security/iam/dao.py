@@ -94,7 +94,7 @@ class Model(MODEL_BASE):
     def set_done(self, session, message=''):
         """Indicate a finished import."""
 
-        self.state = "DONE"
+        self.state = "SUCCESS"
         self.message = message
         session.add(self)
         session.commit()
