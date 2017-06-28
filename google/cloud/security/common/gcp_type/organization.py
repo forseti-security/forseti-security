@@ -55,14 +55,3 @@ class Organization(resource.Resource):
             name=name,
             display_name=display_name,
             lifecycle_state=lifecycle_state)
-
-    def exists(self):
-        """Verify that the org exists.
-
-        Returns:
-            True if we can get the org from GCP, otherwise False.
-        """
-        crm_client = crm.CloudResourceManagerClient()
-        org = crm_client.get_organization(self.name)
-
-        return org is not None

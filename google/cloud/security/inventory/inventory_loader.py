@@ -214,37 +214,40 @@ def _configure_logging(loglevel):
     level = LOGLEVELS.setdefault(loglevel, 'info')
     log_util.set_logger_level(level)
 
-def _create_dao_map(configs):
+def _create_dao_map(forseti_configs):
     """Create a map of DAOs.
 
     These will be re-usable so that the db connection can apply across
     different pipelines.
 
     Args:
-        configs (dict): Forseti configurations.
+        forseti_configs (dict): Forseti configurations.
 
     Returns:
         dict: Dictionary of DAOs.
     """
     try:
         return {
-            'appengine_dao': appengine_dao.AppEngineDao(configs),
+            'appengine_dao': appengine_dao.AppEngineDao(forseti_configs),
             'backend_service_dao':
-                backend_service_dao.BackendServiceDao(configs),
-            'bucket_dao': bucket_dao.BucketDao(configs),
-            'cloudsql_dao': cloudsql_dao.CloudsqlDao(configs),
-            'dao': dao.Dao(configs),
-            'folder_dao': folder_dao.FolderDao(configs),
+                backend_service_dao.BackendServiceDao(forseti_configs),
+            'bucket_dao': bucket_dao.BucketDao(forseti_configs),
+            'cloudsql_dao': cloudsql_dao.CloudsqlDao(forseti_configs),
+            'dao': dao.Dao(forseti_configs),
+            'folder_dao': folder_dao.FolderDao(forseti_configs),
             'forwarding_rules_dao':
-                forwarding_rules_dao.ForwardingRulesDao(configs),
-            'instance_dao': instance_dao.InstanceDao(configs),
-            'instance_group_dao': instance_group_dao.InstanceGroupDao(configs),
+                forwarding_rules_dao.ForwardingRulesDao(forseti_configs),
+            'instance_dao': instance_dao.InstanceDao(forseti_configs),
+            'instance_group_dao':
+                instance_group_dao.InstanceGroupDao(forseti_configs),
             'instance_group_manager_dao':
-                instance_group_manager_dao.InstanceGroupManagerDao(configs),
+                instance_group_manager_dao.InstanceGroupManagerDao(
+                    forseti_configs),
             'instance_template_dao':
-                instance_template_dao.InstanceTemplateDao(configs),
-            'organization_dao': organization_dao.OrganizationDao(configs),
-            'project_dao': project_dao.ProjectDao(configs),
+                instance_template_dao.InstanceTemplateDao(forseti_configs),
+            'organization_dao': organization_dao.OrganizationDao(
+                forseti_configs),
+            'project_dao': project_dao.ProjectDao(forseti_configs),
         }
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error to creating DAO map.\n%s', e)

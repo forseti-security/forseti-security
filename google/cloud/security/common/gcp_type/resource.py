@@ -173,8 +173,3 @@ class Resource(object):
     def lifecycle_state(self):
         """Lifecycle state."""
         return self._lifecycle_state
-
-    @abc.abstractmethod
-    def exists(self):
-        """Verify that the resource exists in GCP."""
-        raise NotImplementedError('Implement exists() in subclass')

@@ -55,14 +55,3 @@ class Folder(resource.Resource):
             display_name=display_name,
             parent=parent,
             lifecycle_state=lifecycle_state)
-
-    def exists(self):
-        """Verify that the folder exists.
-
-        Returns:
-            True if we can get the folder from GCP, otherwise False.
-        """
-        crm_client = crm.CloudResourceManagerClient()
-        folder = crm_client.get_folder(self.id)
-
-        return folder is not None

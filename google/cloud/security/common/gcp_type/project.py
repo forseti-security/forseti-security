@@ -66,14 +66,3 @@ class Project(resource.Resource):
     def get_project_number(self):
         """Returns the project number."""
         return self.project_number
-
-    def exists(self):
-        """Verify that the project exists.
-
-        Returns:
-            True if we can get the project from GCP, otherwise False.
-        """
-        crm_client = crm.CloudResourceManagerClient()
-        project = crm_client.get_project(self.id)
-
-        return project is not None
