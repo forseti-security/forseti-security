@@ -285,12 +285,13 @@ def create_table_names(timestamp):
 class Importer(object):
     """Forseti data importer to iterate the inventory and policies."""
 
+    SUPPORTED_SCHEMA = '1.0'
+
     def __init__(self, db_connect_string):
         engine = create_engine(db_connect_string, pool_recycle=3600)
         BASE.metadata.create_all(engine)
         session = sessionmaker(bind=engine)
         self.session = session()
-        self._get_latest_snapshot()
         self.engine = engine
 
     def _table_exists_or_raise(self, table, context_msg=None):
@@ -310,17 +311,25 @@ class Importer(object):
             raise Exception(msg)
 
     def _get_latest_snapshot(self):
-        """Find the latest snapshot from the database."""
+        """Find the latest snapshot from the database.
+            Returns:
+                object: Forseti snapshot description table.
+        """
 
-        self.snapshot = self.session.query(Snapshot).\
-            filter(Snapshot.status == SnapshotState.SUCCESS).\
-            order_by(Snapshot.start_time.desc()).first()
+        return (
+            self.session.query(Snapshot)
+            .filter(Snapshot.status == SnapshotState.SUCCESS)
+            .filter(Snapshot.schema_version == self.SUPPORTED_SCHEMA)
+            .order_by(Snapshot.start_time.desc())
+            .first())
 
     def __iter__(self):
         """Main interface to get the data, returns assets and then policies."""
 
+        snapshot = self._get_latest_snapshot()
+
         organization, folders, tables, policies, group_membership = \
-            create_table_names(self.snapshot.cycle_timestamp)
+            create_table_names(snapshot.cycle_timestamp)
 
         # Organizations
         self._table_exists_or_raise(organization)
