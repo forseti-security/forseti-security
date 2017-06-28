@@ -67,8 +67,15 @@ flags.DEFINE_integer('maximum_project_writer_threads', 1,
                      'operations on project firewalls.',
                      lower_bound=0, upper_bound=50)
 
-flags.DEFINE_string('forseti_config_path', None,
-                    'Path to the forseti config file.')
+# Hack to make the test pass due to duplicate flag error here, scanner
+# and inventory_loader.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string('forseti_config_path', None,
+                        'Path to the forseti config file.')
+except flags.DuplicateFlagError:
+    pass
 
 # Setup flags
 FLAGS = flags.FLAGS
