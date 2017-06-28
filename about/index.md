@@ -22,8 +22,8 @@ history of what was in your cloud.
 
 **[Policy Scanner]({% link _docs/quickstarts/scanner/index.md %})**
 
-Helps you monitor inventoried GCP resources like Cloud IAM, bigquery,
-Cloud Storage bucket ACLs, and
+Helps you monitor inventoried GCP resources like Cloud IAM,
+BigQuery datasets, Cloud Storage bucket ACLs, and
 [more]({% link _docs/quickstarts/inventory/index.md %}#google-cloud-platform-resource-coverage)
 to ensure that role-based access controls are set as you intended, by
 notifying you when specific policies change unexpectedly.
