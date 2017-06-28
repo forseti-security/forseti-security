@@ -89,3 +89,40 @@ class LoadAppenginePipelineTest(basetest.TestCase):
         self.assertEquals(
             fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP,
             actual)
+
+    @mock.patch.object(
+        load_appengine_pipeline.LoadAppenginePipeline,
+        '_get_loaded_count')
+    @mock.patch.object(
+        load_appengine_pipeline.LoadAppenginePipeline,
+        '_load')
+    @mock.patch.object(
+        load_appengine_pipeline.LoadAppenginePipeline,
+        '_transform')
+    @mock.patch.object(
+        load_appengine_pipeline.LoadAppenginePipeline,
+        '_retrieve')
+    def test_subroutines_are_called_by_run(
+            self,
+            mock_retrieve,
+            mock_transform,
+            mock_load,
+            mock_get_loaded_count):
+        """Test that the subroutines are called by run."""
+        mock_retrieve.return_value = (
+            fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP)
+        mock_transform.return_value = (
+            fake_appengine_applications.EXPECTED_LOADABLE_APPLICATIONS)
+        self.pipeline.run()
+
+        mock_transform.assert_called_once_with(
+            fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP)
+
+        self.assertEquals(1, mock_load.call_count)
+
+        # The regular data is loaded.
+        called_args, called_kwargs = mock_load.call_args_list[0]
+        expected_args = (
+            self.pipeline.RESOURCE_NAME,
+            fake_appengine_applications.EXPECTED_LOADABLE_APPLICATIONS)
+        self.assertEquals(expected_args, called_args)
