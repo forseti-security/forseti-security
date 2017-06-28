@@ -197,3 +197,52 @@ def format_groups_violation(violation):
     yield (member_email,
            group_email,
            violated_rule_names)
+
+
+def format_instance_network_interface_violation(violation):
+    """Format the InstanceNetworkInterface acls violation data into a tuple.
+
+    Also flattens the RuleViolation, since it consists of the resource,
+    rule, and members that don't meet the rule criteria.
+
+    Various properties of RuleViolation may also have values that exceed the
+    declared column length, so truncate as necessary to prevent MySQL errors.
+
+    Args:
+        violation: The InstanceNetworkInterface RuleViolation.
+
+    Yields:
+        A tuple of the rule violation properties.
+    """
+    resource_type = violation.resource_type
+    if resource_type:
+        resource_type = resource_type[:255]
+
+    resource_id = violation.resource_id
+    if resource_id:
+        resource_id = str(resource_id)[:255]
+
+    rule_name = violation.rule_name
+    if rule_name:
+        rule_name = rule_name[:255]
+
+    project = violation.project
+    if project:
+        project = project[:255]
+
+    network = violation.networks
+    if network:
+        network = network[:255]
+
+    ip = str(violation.ip)
+    if ip:
+        ip = ip[:255]
+
+    yield (resource_type,
+           resource_id,
+           rule_name,
+           violation.rule_index,
+           violation.violation_type,
+           project,
+           network,
+           ip)

@@ -235,6 +235,17 @@ def _flatten_violations(violations, flattening_scheme):
                 'authorized_networks': violation.authorized_networks,
                 'ssl_enabled': violation.ssl_enabled,
             }
+        if flattening_scheme == 'instance_network_interface_violations':
+            yield {
+                'resource_id': violation.resource_id,
+                'resource_type': violation.resource_type,
+                'rule_index': violation.rule_index,
+                'rule_name': violation.rule_name,
+                'violation_type': violation.violation_type,
+                'project': violation.project,
+                'network': violation.network,
+                'ip': violation.ip,
+            }
 
 def _output_results(all_violations, snapshot_timestamp, **kwargs):
     """Send the output results.

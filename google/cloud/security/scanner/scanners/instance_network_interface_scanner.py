@@ -33,22 +33,21 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         super(InstanceNetworkInterfaceScanner, self).__init__(
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
-
+    
     def get_instance_networks_interfaces(self):
-         """Get network info from a particular snapshot.
- 
-         Args:
-               timestamp: The snapshot timestamp.
+        """Get network info from a particular snapshot.
            Returns:
                A list of networks from a particular project
            Raises:
                MySQLError if a MySQL error occurs.
-        I set and the list it to get rid of duplicates 
+        I set the list  to get rid of duplicates 
         """
-        return list(set([self.parse_network_instance(instance) for instance in self.instance_dao.get_instances(this.timestamp)]))
+        instances = self.instance_dao.get_instances(self.snapshot_timestamp)
+        return list(set([self.parse_network_instance(instance) for instance in instances]))
 
     def parse_instance_network_instance(self, instance_object):
         return ini.InstanceNetworkInterface(instance_object.network_interfaces)
+
     def _get_project_policies(self):
         """Get projects from data source.
         """

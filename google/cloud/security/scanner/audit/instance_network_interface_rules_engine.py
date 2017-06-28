@@ -208,22 +208,6 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
-    def ips_of_access_type(self, instance_network_interface, access_type):
-        """
-        figure out if the instance is externally facing
-        Args:
-                instance_network_interface: InstanceNetworkInterface obj
-        """
-        if 'accessConfigs' not in instance_network_interface:
-            return []
-
-        ips = []
-        for access_config in instance_network_interface.accessConfigs:
-            # TODO: wildcard matching? There is only one accessType right now. 
-            # Also I think by checkingn the accessConfigs we can figure out if its external but not sure
-            if access_config['type'] == access_type:
-                ips.append(access_config['natIP'])
-        return ips
 
     def find_violations(self, instance_network_interface):
         """
@@ -231,14 +215,29 @@ class Rule(object):
         Args:
                 instance_network_interface: InstanceNetworkInterface obj
         """
-        if instance_network_interface.network not in self.rules.whitelist:
-            ips = self.ips_of_access_type(instance_network_interface, self.rules.access_type)
-            if len(ips) > 0:
-                yield self.Ruleviolation(
-                    rule_name=self.rule_name,
-                    rule_index=self.rule_index,
-                    violation_type='UNENFORCED_NETWORK_VIOLATION',
-                    project=enforced_networks_rules.project,
-                    network=enforced_networks_rules.network,
-                    enforced_networks=enforced_networks_rules.enforced_networks)
-#todo add ruleRiolation
+        network_and_project = re.search('compute\/v1\/projects\/([^\/]*).*networks\/([^\/]*)', instance_network_interface.get('network'))
+        project = network_and_project.group(1)
+        network = network_and_project.group(2)
+        is_external_network = "accessConfigs" in network_dictionary[0]
+        if network not in self.rules.whitelist.get(project) and is_external_network:
+            yield self.RuleViolation(
+                rule_name=self.rule_name,
+                rule_index=self.rule_index,
+                violation_type='UNENFORCED_NETWORK_VIOLATION',
+                project=project,
+                network=network,
+                ips=instance_network.access_config.get('natIP'))
+
+    # Rule violation.
+    # resource_type: string
+    # resource_id: string
+    # rule_name: string
+    # rule_index: int
+    # violation_type: UNENFORCED_NETWORK_VIOLATION
+    # project: string
+    # network: string
+    # ip: string
+    RuleViolation = namedtuple('RuleViolation',
+                            ['resource_type', 'resource_id', 'rule_name',
+                            'rule_index', 'violation_type', 'project',
+                            'network', 'ip'])
