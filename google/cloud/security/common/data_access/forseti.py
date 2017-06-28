@@ -291,6 +291,23 @@ class Importer(object):
         session = sessionmaker(bind=engine)
         self.session = session()
         self._get_latest_snapshot()
+        self.engine = engine
+
+    def _table_exists_or_raise(self, table, context_msg=None):
+        """Raises exception if table does not exists.
+            Args:
+                table (object): Table to check for existence
+                context_msg (str): Additional information
+            Raises:
+                Exception: Indicate that the table does not exist
+        """
+
+        table_name = table.__tablename__
+        if not self.engine.has_table(table_name):
+            msg = 'Table not found: {}'.format(table_name)
+            if context_msg:
+                msg = '{}, hint: {}'.format(msg, context_msg)
+            raise Exception(msg)
 
     def _get_latest_snapshot(self):
         """Find the latest snapshot from the database."""
@@ -305,10 +322,13 @@ class Importer(object):
         organization, folders, tables, policies, group_membership = \
             create_table_names(self.snapshot.cycle_timestamp)
 
+        # Organizations
+        self._table_exists_or_raise(organization)
         forseti_org = self.session.query(organization).one()
         yield "organizations", forseti_org
 
         # Folders
+        self._table_exists_or_raise(folders)
         folder_set = (
             self.session.query(folders)
             .filter(folders.parent_type == 'organization')
@@ -330,7 +350,11 @@ class Importer(object):
             for item in self.session.query(table).yield_per(PER_YIELD):
                 yield res_type, item
 
+        # Groups and membership
         membership, groups = group_membership
+        hint = 'Did you enable Forseti group collection?'
+        self._table_exists_or_raise(membership, hint)
+        self._table_exists_or_raise(groups, hint)
         query_groups = (
             self.session.query(groups)
             .with_entities(literal_column("'GROUP'"), groups.group_email))
@@ -357,5 +381,6 @@ class Importer(object):
             member_groups.append(group)
 
         for policy_table in policies:
+            self._table_exists_or_raise(policy_table)
             for policy in self.session.query(policy_table).all():
                 yield 'policy', policy
