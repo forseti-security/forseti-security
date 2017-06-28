@@ -7,13 +7,11 @@ rules:
     role: '*'
     resource:
         - resource_ids:
-          - 660570133860
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
   - name: sample bucket acls rule to search for exposed buckets
     bucket: '*'
     entity: AllAuthenticatedUsers
-    email: '*'
-    domain: '*'
     role: '*' 
     resource:
         - resource_ids:
-          - 660570133860
+          - YOUR_ORG_ID / YOUR_PROJECT_ID

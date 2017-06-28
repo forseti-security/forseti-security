@@ -45,22 +45,22 @@ max_sqladmin_api_calls_per_100_seconds: 100
 # database
 ##################################################################
 # IP address of the machine that is hosting the db instance.
-db_host: 127.0.0.1
+db_host: IP_ADDRESS_OF_THE_DB_HOST
 
 # Name of the user to access the db.
-db_user: sqlproxy
+db_user: NAME_OF_THE_DB_USER
 
 # Name of the database to use.
-db_name: cloud_inventory
+db_name: NAME_OF_THE_DATABASE
 
 ##################################################################
 # notification
 ##################################################################
 # Email of the recipient that will receive inventory loader notifications sent.
-email_recipient: henryc@google.com
+email_recipient: EMAIL_OF_THE_RECIPIENT
 
 # Email of the sender of inventory loader notifications.
-email_sender: goldspin@gmail.com
+email_sender: EMAIL_OF_THE_SENDER
 
 # SendGrid API Key
-sendgrid_api_key: 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
+sendgrid_api_key: SENDGRID_API_KEY
