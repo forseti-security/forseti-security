@@ -3,11 +3,12 @@ title: Quickstarts
 order: 001
 hide:
   right_sidebar: true
-  left_sidebar: true
 ---
 [Start here]({% link _docs/quickstarts/forseti-security/index.md %}) by
 setting up Forseti Security to improve the security of your Google Cloud
 Platform environments.
+
+---
 
 **[Inventory]({% link _docs/quickstarts/inventory/index.md %})**
 

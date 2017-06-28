@@ -6,6 +6,11 @@ hide:
 ---
 # {{ page.title }}
 
+## Contributing
+
+We welcome your contributions! Check out our guidelines for
+[contributing](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+
 ## Testing
 
 This page describes how to run tests on your Forseti contributions.

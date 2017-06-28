@@ -13,3 +13,7 @@ Get started with Forseti Security and modules in a few minutes.
 
 Perform specific tasks like changing a deployment or setting up email
 notifications.
+
+**[Guides]({% link _docs/guides/index.md %})**
+
+Learn about important tasks like contributing code to Forseti.
