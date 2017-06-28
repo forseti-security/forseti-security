@@ -14,6 +14,15 @@ Forseti Scanner is different from the Cloud Security Scanner, which does App
 Engine vulnerability scanning. Learn more about
 [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
 
+## Scanner Rule Engines
+
+Forseti Scanner currently runs a single scanner engine at a time. To see a list of 
+available engines, run:
+
+```bash
+$ forseti_scanner --list_engines
+```
+
 ## Running Forseti Scanner
 
 To run Forseti Scanner, follow the process below:
@@ -34,10 +43,8 @@ To run Forseti Scanner, follow the process below:
           $ forseti_scanner --rules "gs://my-bucket-name/rules/rules.yaml"
           ```
 
-     1. If you're using a rules file stored on Google Cloud Storage, such
-      as `gs://my-project-id/rules/rules.yaml`, run the following command
-      where `RULES_PATH` is the location of your rules file in the project,
-      and `PROJECT_ID` is the project ID in which the rules file is stored:
+     1. If you're using a rules file stored locally, the `RULES_LOCATION` will
+      correspond to the local path of that rules file.
       
           ```bash
           $ forseti_scanner --rules RULES_PATH.yaml --input_bucket PROJECT_ID
@@ -49,7 +56,9 @@ To run Forseti Scanner, follow the process below:
   where you want to save the CSV
 
       ```bash
-      $ forseti_scanner --rules RULES_PATH.yaml --input_bucket PROJECT_ID --output_path OUTPUT_PATH
+      $ forseti_scanner --rules path/to/rules.yaml \
+        --engine_name ENGINE_NAME \
+        --output_path OUTPUT_PATH
       ```
 
 If you're developing a new feature or bug fix, you can run Forseti Scanner

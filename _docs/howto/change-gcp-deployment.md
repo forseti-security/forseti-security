@@ -18,7 +18,7 @@ notification email address, instance type, or `src-path` when you want your depl
 
 If you change the Compute Engine instance's startup script, such as changing
 the properties in the `deploy-forseti.yaml` "Compute Engine" section or the
-startup script in `py/forseti-instance.py`, you may need to reset the instance.
+startup script in `forseti-instance.py`, you may need to reset the instance.
 To reset the instance and make sure changes take effect, run the following
 command:
 

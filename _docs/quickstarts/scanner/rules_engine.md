@@ -11,7 +11,7 @@ for the following resources:
 *   Organizations
 *   Projects
 
-For example rule books, see the `samples/` directory.
+For example rule files, see the `samples/` directory.
 
 ## `IamRulesEngine` Overview
 
