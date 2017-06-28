@@ -29,6 +29,8 @@ import time
 
 from distutils import spawn
 
+# pylint: disable=no-self-use
+
 
 def org_id_from_org_name(org_name):
     """Extract the organization id (number) from the organization name.
@@ -72,6 +74,25 @@ class ForsetiGcpSetup(object):
 
     DEFAULT_BUCKET_FORMAT = 'gs://{}-forseti'
     GCS_LS_ERROR_REGEX = re.compile(r'^(.*Exception): (\d{3})', re.MULTILINE)
+    BUCKET_REGIONS = [
+        {'desc': 'Asia Pacific', 'region': 'Multi-Region', 'value': 'asia'},
+        {'desc': 'Europe', 'region': 'Multi-Region', 'value': 'eu'},
+        {'desc': 'United States', 'region': 'Multi-Region', 'value': 'us'},
+
+        {'desc': 'Iowa', 'region': 'Americas', 'value': 'us-central1'},
+        {'desc': 'South Carolina', 'region': 'Americas', 'value': 'us-east1'},
+        {'desc': 'Northern Virginia', 'region': 'Americas',
+         'value': 'us-east4'},
+        {'desc': 'Oregon', 'region': 'Americas', 'value': 'us-west1'},
+
+        {'desc': 'Taiwan', 'region': 'Asia-Pacific', 'value': 'asia-east1'},
+        {'desc': 'Tokyo', 'region': 'Asia-Pacific', 'value': 'asia-northeast1'},
+        {'desc': 'Singapore', 'region': 'Asia-Pacific',
+         'value': 'asia-southeast1'},
+
+        {'desc': 'Belgium', 'region': 'Europe', 'value': 'europe-west1'},
+        {'desc': 'London', 'region': 'Europe', 'value': 'europe-west2'},
+    ]
 
     DEFAULT_CLOUDSQL_INSTANCE_NAME = 'forseti-security'
     DEFAULT_CLOUDSQL_USER = 'forseti_user'
@@ -80,9 +101,34 @@ class ForsetiGcpSetup(object):
     CLOUDSQL_STORAGE_SIZE_GB = '25'
     CLOUDSQL_STORAGE_TYPE = 'SSD'
     CLOUDSQL_ERROR_REGEX = re.compile(r'HTTPError (\d{3}):', re.MULTILINE)
+    CLOUDSQL_REGIONS = [
+        {'desc': 'Iowa', 'region': 'Americas', 'value': 'us-central1'},
+        {'desc': 'South Carolina', 'region': 'Americas', 'value': 'us-east1'},
+        {'desc': 'Northern Virginia', 'region': 'Americas',
+         'value': 'us-east4'},
+        {'desc': 'Oregon', 'region': 'Americas', 'value': 'us-west1'},
 
-    def __init__(self):
-        """Init."""
+        {'desc': 'Taiwan', 'region': 'Asia-Pacific', 'value': 'asia-east1'},
+        {'desc': 'Tokyo', 'region': 'Asia-Pacific', 'value': 'asia-northeast1'},
+
+        {'desc': 'Belgium', 'region': 'Europe', 'value': 'europe-west1'},
+        {'desc': 'London', 'region': 'Europe', 'value': 'europe-west2'},
+    ]
+
+    BRANCH_RELEASE_FMT = '{}: "{}"'
+    DEPLOY_TPL_DIR_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
+            __file__)))), 'deployment-templates')
+
+    def __init__(self, **kwargs):
+        """Init.
+
+        Args:
+            kwargs (dict): The kwargs.
+        """
+        self.branch = kwargs.get('branch')
+        self.version = kwargs.get('version')
+
         self.config_name = None
         self.auth_account = None
         self.organization_id = None
@@ -91,11 +137,16 @@ class ForsetiGcpSetup(object):
         self.gsuite_service_account = None
         self.gsuite_svc_acct_key_location = None
         self.rules_bucket_name = None
-        self.bucket_location = None
+        self.bucket_region = None
         self.cloudsql_instance = None
         self.cloudsql_user = None
         self.cloudsql_region = None
-        self.should_inventory_groups = False
+        self.created_deployment = False
+
+        self.sendgrid_api_key = '""'
+        self.notification_sender_email = '""'
+        self.notification_recipient_email = '""'
+        self.gsuite_super_admin_email = '""'
 
     def __repr__(self):
         """String representation of this instance.
@@ -123,7 +174,8 @@ class ForsetiGcpSetup(object):
         self.setup_cloudsql_name()
         self.setup_cloudsql_user()
         self.generate_deployment_templates()
-        self.create_data_storage()
+        if not self.created_deployment:
+            self.create_data_storage()
         self.post_install_instructions()
 
     @staticmethod
@@ -165,7 +217,7 @@ class ForsetiGcpSetup(object):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         out, err = proc.communicate()
-        if not proc.returncode:
+        if proc.returncode:
             print(err)
 
         if out:
@@ -189,8 +241,8 @@ class ForsetiGcpSetup(object):
     def _choose_organization(self, orgs):
         """Choose from a list of organizations.
 
-            Args:
-                orgs(dict): A dictionary of orgs from gcloud.
+        Args:
+            orgs(dict): A dictionary of orgs from gcloud.
         """
         if not orgs:
             self._print_banner('No organizations found. Exiting.')
@@ -226,15 +278,14 @@ class ForsetiGcpSetup(object):
         while True:
             project_choice = raw_input(
                 'Which project do you want to use for Forseti Security?\n'
-                '[1] Existing project\n'
-                '[2] Create a new project\n'
+                '[1] Create new project (recommended)\n'
+                '[2] Existing project\n'
                 'Enter your choice: ').strip()
-            # Only break the loop when input is valid
             if project_choice == '1':
-                project_id = self._use_project()
-                break
-            if project_choice == '2':
                 project_id = self._create_project()
+            if project_choice == '2':
+                project_id = self._use_project()
+            if project_id:
                 break
 
         self._set_project(project_id)
@@ -250,8 +301,7 @@ class ForsetiGcpSetup(object):
         """
         while True:
             project_id = raw_input(
-                '\nEnter a project id '
-                '(alphanumeric and hyphens): ').strip()
+                '\nEnter a project id (alphanumeric and hyphens): ').strip()
             if self.PROJECT_ID_REGEX.match(project_id):
                 proj_create_cmd = [
                     'gcloud', 'projects', 'create', project_id,
@@ -264,7 +314,6 @@ class ForsetiGcpSetup(object):
                     return project_id
         return None
 
-    # pylint: disable=no-self-use
     def _use_project(self):
         """Verify whether use has access to a project by describing it.
 
@@ -277,22 +326,29 @@ class ForsetiGcpSetup(object):
         print('\nBe advised! We recommend using a project dedicated to '
               'running Forseti.\n')
         while True:
-            project_id = raw_input('\nEnter a project id: ').strip()
-            exit_status = subprocess.call(
+            project_id = raw_input(
+                '\nEnter a project id or press [enter] to cancel: ').strip()
+            if not project_id:
+                break
+            proc = subprocess.Popen(
                 ['gcloud', 'projects', 'describe',
                  ('--format=table[box,title="Project"]'
                   '(name,projectId,projectNumber)'),
-                 project_id])
-            if not exit_status:
+                 project_id],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+            _, _ = proc.communicate()
+            if proc.returncode:
+                print('Invalid project id, please try again.')
+            else:
                 return project_id
         return None
-    # pylint: enable=no-self-use
 
     def _set_project(self, project_id):
         """Save the gcloud configuration for future use.
 
-            Args:
-                project_id(str): A string representation of the GCP projectid.
+        Args:
+            project_id (str): A string representation of the GCP projectid.
         """
         print('\nTrying to activate configuration {}...'.format(project_id))
         return_val = subprocess.call(
@@ -309,7 +365,7 @@ class ForsetiGcpSetup(object):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         _, err = proc.communicate()
-        if not proc.returncode:
+        if proc.returncode:
             print(err)
         self.project_id = project_id
 
@@ -333,6 +389,7 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             billing_proc.stdout.close()
+            billing_proc.stderr.close()
             out, _ = billing_enabled.communicate()
             if out:
                 print('Billing has been enabled for this project, continue...')
@@ -355,10 +412,12 @@ class ForsetiGcpSetup(object):
                'https://console.cloud.google.com/'
                'billing?project={}\n\n'
                'After you enable billing, setup will continue.\n'
+               'If you think you made a mistake, press Ctrl-C to exit, then '
+               're-run this script to start over.\n'
                .format(self.project_id)))
 
     def enable_apis(self):
-        """Enable necessary APIs for Forseti Security
+        """Enable necessary APIs for Forseti Security.
 
             1. Cloud SQL
             2. Cloud SQL Admin
@@ -375,7 +434,7 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if not proc.returncode:
+            if proc.returncode:
                 print(err)
             else:
                 print('Done.')
@@ -385,10 +444,12 @@ class ForsetiGcpSetup(object):
         self._print_banner('Setup service accounts')
 
         svc_acct_actions = [
-            {'usage': 'accessing GCP',
+            {'usage': 'accessing GCP.',
              'acct': 'gcp_service_account',
              'default_name': 'forseti-gcp'},
-            {'usage': 'getting GSuite groups',
+            {'usage': ('getting GSuite groups. This should be a different '
+                       'service account from the one you are using for '
+                       'accessing GCP.'),
              'acct': 'gsuite_service_account',
              'default_name': 'forseti-gsuite',
              'skippable': True},
@@ -399,7 +460,7 @@ class ForsetiGcpSetup(object):
             if skippable:
                 skip_text = '[3] Skip for now\n'
             action_text = (
-                'Forseti requires a service account for %s.\n'
+                'Forseti requires a service account for %s\n'
                 '[1] Use existing service account\n'
                 '[2] Create new service account\n'
                 '%s'
@@ -408,49 +469,60 @@ class ForsetiGcpSetup(object):
                 svc_acct_choice = raw_input(action_text).strip()
                 # Only break the loop when input is valid
                 if svc_acct_choice == '1':
-                    svc_acct = self._use_svc_acct()
-                    break
+                    svc_acct = self._use_svc_acct(action['acct'])
                 if svc_acct_choice == '2':
                     svc_acct = self._create_svc_acct(action['default_name'])
-                    break
                 if svc_acct_choice == '3' and skippable:
                     print('Skipping service account creation.')
                     break
-
-            self._set_service_account(action['acct'], svc_acct)
+                if svc_acct:
+                    self._set_service_account(action['acct'], svc_acct)
+                    break
 
             # After setting the service account property, check if
-            # the Gsuite service account key needs to be downloaded.
-            if svc_acct_choice == '2' and svc_acct and \
+            # the GSuite service account key needs to be downloaded.
+            # Only download the key if the service account was created.
+            if svc_acct_choice == '2' and self.gsuite_service_account and \
                action['acct'] == 'gsuite_service_account':
                 self._download_gsuite_svc_acct_key()
 
-    # pylint: disable=no-self-use
-    def _use_svc_acct(self):
+    def _use_svc_acct(self, svc_acct_type):
         """Use an existing service account.
 
-            Returns:
-                existing_svc_acct(str): The user specified service account.
+        Args:
+            svc_acct_type (str): The service account type.
+
+        Returns:
+            str: The user specified service account.
         """
         existing_svc_acct = None
-        while not existing_svc_acct:
+        while True:
             existing_svc_acct = raw_input(
                 'Enter the full email of the service account '
-                'you want to use: ').strip()
+                'you want to use or press [enter] to cancel: ').strip().lower()
+
+            if not existing_svc_acct:
+                return None
+
+            if svc_acct_type == 'gsuite_service_account' and \
+               existing_svc_acct == self.gcp_service_account:
+                print('You are already using this service account for GCP. '
+                      'Please choose another, or press [enter] to cancel.')
+                continue
+
             proc = subprocess.Popen(
                 ['gcloud', 'iam', 'service-accounts', 'describe',
                  existing_svc_acct],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if not proc.returncode:
+            if proc.returncode:
                 print(err)
             else:
                 break
 
         print('\nOk, using existing service account: %s\n' % existing_svc_acct)
         return existing_svc_acct
-    # pylint: enable=no-self-use
 
     def _create_svc_acct(self, default_name):
         """Create a service account.
@@ -473,7 +545,7 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if not proc.returncode:
+            if proc.returncode:
                 print(err)
             else:
                 break
@@ -485,7 +557,7 @@ class ForsetiGcpSetup(object):
 
     def _download_gsuite_svc_acct_key(self):
         """Download the service account key."""
-        print('Downloading Gsuite service account key for %s'
+        print('Downloading GSuite service account key for %s'
               % self.gsuite_service_account)
         proc = subprocess.Popen(
             ['gcloud', 'iam', 'service-accounts', 'keys',
@@ -494,7 +566,7 @@ class ForsetiGcpSetup(object):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         _, err = proc.communicate()
-        if not proc.returncode:
+        if proc.returncode:
             print(err)
 
         self.gsuite_svc_acct_key_location = os.path.abspath(
@@ -506,7 +578,7 @@ class ForsetiGcpSetup(object):
         """Set the service account.
 
         Args:
-            which_svc_acct (str): Which service account (GCP/Gsuite) to set.
+            which_svc_acct (str): Which service account (GCP/GSuite) to set.
             svc_acct (str): The service account full name.
         """
         setattr(self, which_svc_acct, svc_acct)
@@ -514,12 +586,12 @@ class ForsetiGcpSetup(object):
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
-            Project Browser
-            Security Reviewer
-            Project Editor
-            Resource Manager Folder Admin
-            Storage Object Admin
-            Compute Network Admin
+        Project Browser
+        Security Reviewer
+        Project Editor
+        Resource Manager Folder Admin
+        Storage Object Admin
+        Compute Network Admin
         """
         self._print_banner('Assigning roles to the GCP service account')
         if not self.organization_id:
@@ -539,10 +611,10 @@ class ForsetiGcpSetup(object):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if not proc.returncode:
+            if proc.returncode:
                 print(err)
             else:
-                print('Done')
+                print('Done.')
 
     def setup_bucket_name(self):
         """Ask user to come up with a bucket name for the rules."""
@@ -550,8 +622,9 @@ class ForsetiGcpSetup(object):
         default_bucket = self.DEFAULT_BUCKET_FORMAT.format(self.project_id)
 
         while True:
-            bucket_name = raw_input('Enter a bucket name (default: {}): '
-                                    .format(default_bucket)).strip().lower()
+            bucket_name = raw_input(
+                'Enter a bucket name (press [enter] to use '
+                'the default: {}): '.format(default_bucket)).strip().lower()
             if not bucket_name:
                 bucket_name = default_bucket
 
@@ -562,33 +635,70 @@ class ForsetiGcpSetup(object):
                 self.rules_bucket_name = bucket_name
                 break
 
+        print('Choose a region in which to create your bucket:')
+        self.bucket_region = self._choose_region(self.BUCKET_REGIONS)
+
+    def _choose_region(self, regions):
+        """Choose which region to create data storage.
+
+        Args:
+            regions (list): List of regions.
+
+        Returns:
+            str: The region in which to create the data storage.
+        """
+        while True:
+            prev_region = None
+            for (i, region) in enumerate(regions):
+                if region['region'] != prev_region:
+                    print('\nRegion: %s' % region['region'])
+                    print('--------------------------------')
+                prev_region = region['region']
+                print('[%s] %s' % (i+1, region['desc']))
+            input_choice = raw_input(
+                'Enter the number of your choice: ').strip()
+            try:
+                choice = int(input_choice)
+                if choice < 1 or choice > len(regions):
+                    raise ValueError('Invalid input choice')
+                else:
+                    return regions[choice-1]['value']
+            except (TypeError, ValueError):
+                print('Invalid choice, try again')
+
     def create_bucket(self):
         """Create the bucket."""
-        print('Creating bucket...')
+        print('\nCreating bucket...')
         proc = subprocess.Popen(
-            ['gsutil', 'mb', self.rules_bucket_name],
+            ['gsutil', 'mb', '-l', self.bucket_region, self.rules_bucket_name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         _, err = proc.communicate()
-        if not proc.returncode:
+        if proc.returncode:
             print(err)
+        else:
+            print('Done.\n')
 
     def setup_cloudsql_name(self):
         """Ask user to name their Cloud SQL instance."""
         self._print_banner('Setup Cloud SQL name')
         instance_name = raw_input(
             'Enter a name for the Forseti Cloud SQL instance '
-            '(default: {}) '.format(self.DEFAULT_CLOUDSQL_INSTANCE_NAME))\
+            '(press [enter] to use the default: {}) '.format(
+                self.DEFAULT_CLOUDSQL_INSTANCE_NAME))\
             .strip().lower()
         if not instance_name:
             instance_name = self.DEFAULT_CLOUDSQL_INSTANCE_NAME
         self.cloudsql_instance = instance_name
 
+        print('\nChoose the region in which to host your Cloud SQL:')
+        self.cloudsql_region = self._choose_region(self.CLOUDSQL_REGIONS)
+
     def setup_cloudsql_user(self):
         """Ask user to input Cloud SQL user name."""
         sql_user = raw_input(
             'Enter the sql user name of your choice '
-            '(default: {}) '
+            '(press [enter] to use the default: {}) '
             .format(self.DEFAULT_CLOUDSQL_USER)).strip().lower()
         if not sql_user:
             sql_user = self.DEFAULT_CLOUDSQL_USER
@@ -601,6 +711,7 @@ class ForsetiGcpSetup(object):
 
             proc = subprocess.Popen(
                 ['gcloud', 'sql', 'instances', 'create', self.cloudsql_instance,
+                 '--region=%s' % self.cloudsql_region,
                  '--database-version=%s' % self.CLOUDSQL_DB_VERSION,
                  '--tier=%s' % self.CLOUDSQL_TIER,
                  '--storage-size=%s' % self.CLOUDSQL_STORAGE_SIZE_GB,
@@ -608,7 +719,7 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if not proc.returncode:
+            if proc.returncode:
                 print(err)
 
         if self.cloudsql_instance:
@@ -619,18 +730,98 @@ class ForsetiGcpSetup(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             _, err = proc.communicate()
-            if not proc.returncode:
+            if proc.returncode:
                 print(err)
+            else:
+                print('Done.\n')
 
     def generate_deployment_templates(self):
         """Generate deployment templates."""
-        # TODO: generate deployment templates
-        # TODO: ask if we should create the deployment
-        pass
+        self._print_banner('Generate Deployment Manager templates')
+
+        deploy_tpl_path = os.path.abspath(
+            os.path.join(
+                self.DEPLOY_TPL_DIR_PATH,
+                'deploy-forseti.yaml.in'))
+        out_tpl_path = os.path.abspath(
+            os.path.join(
+                self.DEPLOY_TPL_DIR_PATH,
+                'deploy-forseti-{}.yaml'.format(os.getpid())))
+
+        # Ask for SendGrid API Key
+        sendgrid_api_key = raw_input(
+            'What is your SendGrid API key? (press [enter] to '
+            'leave blank) ').strip()
+        if sendgrid_api_key:
+            self.sendgrid_api_key = sendgrid_api_key
+
+        # Ask for notification sender email
+        notification_sender_email = raw_input(
+            'What is the sender email address for your notifications? '
+            '(press [enter] to leave blank) ').strip()
+        if notification_sender_email:
+            self.notification_sender_email = notification_sender_email
+
+        # Ask for notification recipient email
+        notification_recipient_email = raw_input(
+            'At what email address do you want to receive notifications? '
+            '(press [enter] to leave blank) ').strip()
+        if notification_recipient_email:
+            self.notification_recipient_email = notification_recipient_email
+
+        # Ask for GSuite super admin email
+        gsuite_super_admin_email = raw_input(
+            'What is your GSuite super admin\'s email? '
+            '(press [enter] to leave blank) ').strip()
+        if gsuite_super_admin_email:
+            self.gsuite_super_admin_email = gsuite_super_admin_email
+
+        # Determine which branch or release of Forseti to deploy
+        if self.version:
+            branch_or_release = self.BRANCH_RELEASE_FMT.format(
+                'release-version', self.version)
+        else:
+            if not self.branch:
+                self.branch = 'master'
+            branch_or_release = self.BRANCH_RELEASE_FMT.format(
+                'branch-name', self.branch)
+
+        deploy_values = {
+            'CLOUDSQL_REGION': self.cloudsql_region,
+            'CLOUDSQL_INSTANCE_NAME': self.cloudsql_instance,
+            'SCANNER_BUCKET': self.rules_bucket_name[len('gs://'):],
+            'BUCKET_REGION': self.bucket_region,
+            'GCP_SERVICE_ACCOUNT': self.gcp_service_account,
+            'ORGANIZATION_ID_NUMBER': self.organization_id,
+            'BRANCH_OR_RELEASE': branch_or_release,
+            'SENDGRID_API_KEY': self.sendgrid_api_key,
+            'NOTIFICATION_SENDER_EMAIL': self.notification_sender_email,
+            'NOTIFICATION_RECIPIENT_EMAIL': self.notification_recipient_email,
+            'SHOULD_INVENTORY_GROUPS': bool(self.gsuite_service_account),
+            'GSUITE_SUPER_ADMIN_EMAIL': self.gsuite_super_admin_email,
+        }
+        with open(deploy_tpl_path, 'r') as in_tmpl:
+            tmpl_contents = in_tmpl.read()
+            out_contents = tmpl_contents.format(**deploy_values)
+            with open(out_tpl_path, 'w') as out_tmpl:
+                out_tmpl.write(out_contents)
+
+        print('\nCreated a deployment template:\n    %s\n' % out_tpl_path)
+
+        deploy_choice = raw_input('Create a GCP deployment? '
+                                  '(y/N) ').strip().lower()
+        if deploy_choice == 'y':
+            self.created_deployment = True
+            _ = subprocess.call(
+                ['gcloud', 'deployment-manager', 'deployments', 'create',
+                 'forseti-security-{}'.format(os.getpid()),
+                 '--config={}'.format(out_tpl_path)])
 
     def create_data_storage(self):
         """Create Cloud SQL instance and Cloud Storage bucket. (optional)"""
         self._print_banner('Create data storage (optional)')
+        print('Be advised! Only do these next 2 steps if you plan to deploy '
+              'locally or without Deployment Manager!\n')
         should_create_bucket = raw_input(
             'Create Cloud Storage bucket now? (y/N) ').strip().lower()
         if should_create_bucket == 'y':
@@ -644,9 +835,9 @@ class ForsetiGcpSetup(object):
     def post_install_instructions(self):
         """Show post-install instructions.
 
-            Print link to go to GSuite service account and enable DWD, if GSuite
-            service account was created.
-            Print link for deployment manager dashboard.
+        Print link to go to GSuite service account and enable DWD, if GSuite
+        service account was created.
+        Print link for deployment manager dashboard.
         """
         self._print_banner('Post-setup instructions')
 
@@ -655,29 +846,56 @@ class ForsetiGcpSetup(object):
 
         if self.gsuite_service_account:
             print('It looks like you created a service account for retrieving '
-                  'Gsuite groups. There is just more step to enable the groups '
-                  'retrieval.\n'
-                  'Please go to the following link: \n'
-                  '    '
-                  'https://console.cloud.google.com/iam-admin/serviceaccounts'
-                  '/project?project=%s&organizationId=%s\n\n'
-                  '  1) Look for the service account with ID "%s".\n'
-                  '  2) Click the dot menu to show some options.\n'
-                  '  3) Click "Edit".\n'
-                  '  4) Check the box to "Enable domain-wide-delegation".\n'
-                  '  5) Click "Save".\n'
-                  '  6) Follow instructions on how to link the service account '
-                  'to Gsuite:\n'
-                  '    '
-                  'PLACEHOLDER FOR LINK ON HOW TO ENABLE SERVICE ACCT FOR '
-                  'GSUITE\n\n'
-                  '  Your Gsuite service account key has been downloaded to:\n'
-                  '    '
-                  '%s\n'
-                  %
-                  (self.project_id,
-                   self.organization_id,
-                   self.gsuite_service_account,
-                   self.gsuite_svc_acct_key_location))
+                  'GSuite groups.\n'
+                  'There are just a few more steps to enable the groups '
+                  'retrieval.\n\n')
 
-        # TODO: print deployment manager dashboard
+            instructions = []
+            instructions.append(
+                '{}) Enable Domain Wide Delegation on %s.\n'
+                'Please go to the following link:\n\n'
+                '    https://console.cloud.google.com/iam-admin'
+                '/serviceaccounts/project?project=%s&organizationId=%s\n\n'
+                '  a) Look for the service account with ID "%s".\n'
+                '  b) Click the dot menu on the right to see some options.\n'
+                '  c) Click "Edit".\n'
+                '  d) Check the box to "Enable domain-wide-delegation".\n'
+                '  e) Click "Save".\n\n'
+                %
+                (self.project_id,
+                 self.organization_id,
+                 self.gsuite_service_account,
+                 self.gsuite_service_account))
+
+            if not self.gsuite_svc_acct_key_location:
+                instructions.append(
+                    '{}) Create and download the service account key.\n'
+                    '  a) Click the dot menu again to see some options.\n'
+                    '  b) Click "Create Key".\n'
+                    '  c) Make sure the Key Type is "JSON".\n'
+                    '  d) Click "Create". This downloads the key to your '
+                    'computer.\n\n')
+
+            instructions.append(
+                '{}) Follow instructions on how to link the service account '
+                'to GSuite:\n\n'
+                '    '
+                'PLACEHOLDER FOR LINK ON HOW TO ENABLE SERVICE ACCT FOR '
+                'GSUITE\n\n')
+
+            if self.gsuite_svc_acct_key_location:
+                instructions.append(
+                    '{}) Your GSuite service account key has been '
+                    'downloaded to:\n\n    %s\n\n'
+                    'You will need the key when you run Forseti Inventory.\n'
+                    % self.gsuite_svc_acct_key_location)
+
+            for (i, instr_text) in enumerate(instructions):
+                print(instr_text.format(i+1))
+
+        if self.created_deployment:
+            print('Since you chose to create a deployment via Deployment '
+                  'Manager, you can check out the details in the Cloud '
+                  'Console:\n\n'
+                  '    https://console.cloud.google.com/deployments?'
+                  'project={}\n'.format(self.project_id))

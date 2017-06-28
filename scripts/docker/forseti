@@ -12,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates a Cloud Storage bucket template for Forseti Security."""
+# Dockerfile (experimental) for getting Forseti up and running.
+# You still need to do all the other prereq GCP setup (e.g.
+# setting up service accounts, GCP infrastructure).
 
-def GenerateConfig(context):
-    """Generate configuration."""
-    resources = []
+FROM forseti/base
 
-    resources.append({
-        'name': context.env['name'],
-        'type': 'storage.v1.bucket',
-        'properties': {
-            'project': context.env['project'],
-            'region': context.properties['region'],
-        }
-    })
-
-    return {'resources': resources}
+ADD . /forseti-security/
+WORKDIR /forseti-security/
+RUN python setup.py install
+RUN yes | which forseti_inventory

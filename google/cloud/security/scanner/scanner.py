@@ -40,7 +40,6 @@ import sys
 from datetime import datetime
 import gflags as flags
 
-# pylint: disable=line-too-long
 from google.apputils import app
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
@@ -49,8 +48,7 @@ from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import engine_map as em
 from google.cloud.security.scanner.scanners import scanners_map as sm
-from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline
-# pylint: enable=line-too-long
+from google.cloud.security.notifier import notifier
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -286,18 +284,22 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
 
             # Send summary email.
             if FLAGS.email_recipient is not None:
-                email_pipeline = (
-                    email_scanner_summary_pipeline.EmailScannerSummaryPipeline(
-                        FLAGS.sendgrid_api_key))
-                email_pipeline.run(
-                    output_csv_name,
-                    _get_output_filename(now_utc),
-                    now_utc,
-                    all_violations,
-                    kwargs.get('resource_counts', {}),
-                    violation_errors,
-                    FLAGS.email_sender,
-                    FLAGS.email_recipient)
+                payload = {
+                    'email_sender': FLAGS.email_sender,
+                    'email_recipient': FLAGS.email_recipient,
+                    'sendgrid_api_key': FLAGS.sendgrid_api_key,
+                    'output_csv_name': output_csv_name,
+                    'output_filename': _get_output_filename(now_utc),
+                    'now_utc': now_utc,
+                    'all_violations': all_violations,
+                    'resource_counts': kwargs.get('resource_counts', {}),
+                    'violation_errors': violation_errors
+                }
+                message = {
+                    'status': 'scanner_done',
+                    'payload': payload
+                }
+                notifier.process(message)
 
 def _upload_csv(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
