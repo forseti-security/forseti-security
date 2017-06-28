@@ -56,7 +56,7 @@ class StorageClient(_base_client.BaseClient):
 
     API_NAME = 'storage'
 
-    def __init__(self, forseti_configs, credentials=None):
+    def __init__(self, forseti_configs=None, credentials=None):
         super(StorageClient, self).__init__(
             forseti_configs, credentials=credentials, api_name=self.API_NAME)
         # Storage API has unlimited rate.
