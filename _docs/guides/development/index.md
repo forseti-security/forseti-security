@@ -1,10 +1,15 @@
 ---
-title: Development Overview
+title: Development
 order: 001
 hide:
-  right_sidebar: true
+  left_sidebar: true
 ---
 # {{ page.title }}
+
+## Contributing
+
+We welcome your contributions! Check out our guidelines for
+[contributing](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
 
 ## Testing
 
