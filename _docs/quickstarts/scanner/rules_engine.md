@@ -1,5 +1,5 @@
 ---
-title: Scanner Rules Engine
+title: Rules Engine
 order: 103
 ---
 # {{ page.title }}

@@ -1,5 +1,5 @@
 ---
-title: Defining Rules for Forseti Scanner
+title: Defining Rules
 order: 102
 ---
 # {{ page.title }}

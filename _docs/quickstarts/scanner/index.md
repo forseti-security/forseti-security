@@ -36,16 +36,19 @@ To run Forseti Scanner, follow the process below:
 
   1. Run Scanner for your rules file location:
 
-        ```bash
-        $ forseti_scanner --rules RULES_LOCATION --engine_name ENGINE_NAME
-        ```
+     1. If you're using a rules file stored in Google Cloud Storage, such as
+      gs://my-bucket-name/rules/rules.yaml, run the following command:
+
+          ```bash
+          $ forseti_scanner --rules "gs://my-bucket-name/rules/rules.yaml"
+          ```
 
      1. If you're using a rules file stored locally, the `RULES_LOCATION` will
       correspond to the local path of that rules file.
       
-     1. If you're using a rules file stored in Google Cloud Storage, the
-      `RULES_LOCATION` will be something like `gs://my-bucket-name/rules/rules.yaml`.
-
+          ```bash
+          $ forseti_scanner --rules RULES_PATH.yaml --input_bucket PROJECT_ID
+          ```
 
   1. By default, Forseti Scanner saves the CSV output to a temporary location.
   To specify an output location, add the following flag to the command

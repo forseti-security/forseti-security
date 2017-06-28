@@ -32,9 +32,10 @@ configuration:
       ```
 
   1. Start the setup process:
-     ```bash
-     $ python setup_forseti.py
-     ```
+  
+      ```bash
+      $ python setup_forseti.py
+      ```
 
   1. Follow the prompts to download and install the
   [gcloud command-line tool](https://cloud.google.com/sdk/gcloud/).
