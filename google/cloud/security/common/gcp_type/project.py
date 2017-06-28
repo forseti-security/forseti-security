@@ -17,7 +17,6 @@
 See: https://cloud.google.com/resource-manager/reference/rest/v1/projects
 """
 
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_type import resource
 
 
