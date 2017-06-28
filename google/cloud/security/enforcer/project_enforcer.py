@@ -73,7 +73,7 @@ class ProjectEnforcer(object):
         """
         self.project_id = project_id
 
-        self.forseti_configs=forseti_configs
+        self.forseti_configs = forseti_configs
         self.result = enforcer_log_pb2.ProjectResult()
         self.result.project_id = self.project_id
 
@@ -126,7 +126,7 @@ class ProjectEnforcer(object):
           and an audit log with any changes made.
         """
         if not compute_service:
-            gce_api = compute.ComputeClient()
+            gce_api = compute.ComputeClient(self.forseti_configs)
             compute_service = gce_api.service
 
         # pylint: disable=attribute-defined-outside-init
