@@ -1,6 +1,8 @@
 ---
 title: Development Overview
 order: 001
+hide:
+  right_sidebar: true
 ---
 # {{ page.title }}
 

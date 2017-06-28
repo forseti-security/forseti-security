@@ -1,6 +1,9 @@
 ---
 title: Forseti Security Documentation
 order: 1
+hide: 
+  left_sidebar: true
+  right_sidebar: true
 ---
 # {{ page.title }}
 
