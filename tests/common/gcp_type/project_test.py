@@ -100,12 +100,6 @@ class ProjectTest(ForsetiTestCase):
 
         self.assertTrue(project != org)
 
-    @mock.patch('google.cloud.security.common.gcp_type.project.crm')
-    def test_org_exists(self, mock_crm):
-        """Tests that the organization exists."""
-        mock_crm.get_project.return_value = True
-        self.assertTrue(self.project1.exists())
-
 
 if __name__ == '__main__':
     unittest.main()
