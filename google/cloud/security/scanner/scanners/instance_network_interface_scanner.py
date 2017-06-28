@@ -14,16 +14,15 @@
 
 """Scanner for the Networks Enforcer acls rules engine."""
 from google.cloud.security.common.util import log_util
-from google.cloud.security.common.data_access import gce_networks_dao
-from google.cloud.security.common.data_access import project_dao
+from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
-from google.cloud.security.scanner.audit import gce_networking_rules_engine
+from google.cloud.security.scanner.audit import instance_network_interface_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class GceFirewallNetworksScanner(base_scanner.BaseScanner):
+class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     """Pipeline to network enforcer from DAO"""
     def __init__(self, snapshot_timestamp):
         """Initialization.
@@ -31,10 +30,25 @@ class GceFirewallNetworksScanner(base_scanner.BaseScanner):
         Args:
             snapshot_timestamp: The snapshot timestamp
         """
-        super(GceFirewallNetworksScanner, self).__init__(
+        super(InstanceNetworkInterfaceScanner, self).__init__(
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 
+    def get_instance_networks_interfaces(self):
+         """Get network info from a particular snapshot.
+ 
+         Args:
+               timestamp: The snapshot timestamp.
+           Returns:
+               A list of networks from a particular project
+           Raises:
+               MySQLError if a MySQL error occurs.
+        I set and the list it to get rid of duplicates 
+        """
+        return list(set([self.parse_network_instance(instance) for instance in self.instance_dao.get_instances(this.timestamp)]))
+
+    def parse_instance_network_instance(self, instance_object):
+        return ini.InstanceNetworkInterface(instance_object.network_interfaces)
     def _get_project_policies(self):
         """Get projects from data source.
         """
@@ -45,17 +59,8 @@ class GceFirewallNetworksScanner(base_scanner.BaseScanner):
                                                           snapshot_timestamp))
         return project_policies
 
-    def _get_gce_instances(self):
-        """Get GCE networks from data source.
-        """
-        gce_networks = {}
-        gce_networks = gce_networks_dao.GceNetworksDao().\
-                        get_networks(self.snapshot_timestamp)
-
-        return gce_networks
-
     @staticmethod
-    def _get_resource_count(project_policies, gce_instances):
+    def _get_resource_count(project_policies, instance_network_interfaces):
         """Get resource count for org and project policies.
 
         Args:
@@ -66,7 +71,7 @@ class GceFirewallNetworksScanner(base_scanner.BaseScanner):
         """
         resource_counts = {
             ResourceType.PROJECT: len(project_policies),
-            ResourceType.GCE_NETWORK: len(gce_instances),
+            ResourceType.INSTANCE_NETWORK_INTERFACE: len(instance_network_interfaces),
         }
 
         return resource_counts
@@ -75,12 +80,12 @@ class GceFirewallNetworksScanner(base_scanner.BaseScanner):
         """Runs the data collection."""
         enforced_networks_data = []
         project_policies = {}
-        gce_instances = self._get_gce_instances()
-        enforced_networks_data.append(gce_instances)
+        instance_network_interfaces = self.get_instance_networks_interfaces()
+        enforced_networks_data.append(instance_network_interfaces)
         enforced_networks_data.append(project_policies.iteritems())
 
         resource_counts = self._get_resource_count(project_policies,
-                                                   gce_instances)
+                                                   instance_network_interfaces)
 
         return enforced_networks_data, resource_counts
 
@@ -100,10 +105,10 @@ class GceFirewallNetworksScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding enforced networks violations...')
         
-        for enforced_networks in enforced_networks_data:
-            LOGGER.debug('%s', enforced_networks)
-            violations = rules_engine.find_policy_violations(
-                enforced_networks)
+        for instance_network_interface in instance_network_interfaces:
+            LOGGER.debug('%s', instance_network_interface)
+            violations = rules_engine.find_violations(
+                instance_network_interface)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations

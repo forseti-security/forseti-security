@@ -1,9 +1,0 @@
-rules:
-  project: '*'
-  network: '*'
-  is_external_network: 'True'
-  whitelist: 
-     xpn-master: 
-         - 'xpn-network': 'xpn-network'
-         - 'security-network': 'default'
-

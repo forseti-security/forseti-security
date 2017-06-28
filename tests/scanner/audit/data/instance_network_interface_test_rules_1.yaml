@@ -1,0 +1,9 @@
+rules:
+  - name: Check external firewalls
+    project: '*'
+    network: '*'
+    is_external_network: 'True'
+    whitelist: 
+      - 'xpn-network': 'xpn-network'
+      - 'security-network': 'default'
+
