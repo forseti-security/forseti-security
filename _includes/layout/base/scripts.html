@@ -28,9 +28,21 @@
 <script src="{{ site.baseurl }}/third_party/bootstrap-material-design/js/material.min.js"></script>
 <script src="{{ site.baseurl }}/third_party/bootstrap-material-design/js/ripples.min.js"></script>
 
+<!-- URLSearchParams polyfill -->
+<script src="{{ site.baseurl }}/third_party/url-search-params/url-search-params.min.js"></script>
+
 <script type="text/javascript">
   $(document).ready(function() {
     $("#toc").toc({ title: '', listType: 'ul' });
     $.material.init();
+
+    populate_search_input();
   });
+
+  function populate_search_input() {
+    var params = new URLSearchParams(window.location.search),
+        query = params.get("q");
+
+    $("input[name='q']").val(query);
+  }
 </script>
