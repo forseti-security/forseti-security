@@ -13,7 +13,7 @@ Forseti Security.
 
 Forseti's core modules come with every deployment of the tool. They can be
 enabled, configured, and executed independently of each other. When deployed
-these tmodules work together to provide their respective features.
+these modules work together to provide their respective features.
 
 **[Inventory]({% link _docs/quickstarts/inventory/index.md %})**
 
