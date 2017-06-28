@@ -1,36 +1,20 @@
 ---
-title: All How-to Guides 
+title: Howtos
 order: 1
 hide:
   right_sidebar: true
 ---
-#  {{ page.title }}
 
-## [Deploying Forseti on Google Cloud Platform]({% link _docs/howto/gcp-deployment.md %})
+Follow a howto on deploying Forseti Security.
 
-Deploy Forseti on Google Cloud Platform.
+- [Deploying Forseti on Google Cloud Platform]({% link _docs/howto/gcp-deployment.md %})
+- [Deploying Forseti in a Local Environment]({% link _docs/howto/local-deployment.md %})
+- [Changing a Deployment]({% link _docs/howto/change-gcp-deployment.md %})
 
-## [Deploying Forseti in a Local Environment]({% link _docs/howto/local-deployment.md %})
+Enable or change features about Forseti Security.
 
-Deploy Forseti in a local environment.
-
-## [Enabling Email Notification]({% link _docs/howto/email-notification.md %})
-
-Enable email notification for Forseti Security.
-
-## [Enabling GSuite Google Groups Collection]({% link _docs/howto/gsuite-group-collection.md %})
-
-Enable GSuite Google Groups collection for Scanner and Enforcer.
-
-## [Changing a Deployment]({% link _docs/howto/change-gcp-deployment.md %})
-
-Make changes to your Forseti deployment.
-
-## [Collecting and Storing New Data in Forseti Inventory]({% link _docs/howto/inventory-new-data.md %})
-
-Collect and store new data types for Forseti Inventory.
-
-## [Defining Rules for Forseti Scanner]({% link _docs/howto/scanner-rules.md %})
-
-Define Cloud IAM policy rules and custom rules for Forseti Scanner.
+- [Enabling Email Notification]({% link _docs/howto/email-notification.md %})
+- [Enabling GSuite Google Groups Collection]({% link _docs/howto/gsuite-group-collection.md %})
+- [Collecting and Storing New Data in Forseti Inventory]({% link _docs/howto/inventory-new-data.md %})
+- [Defining Rules for Forseti Scanner]({% link _docs/howto/scanner-rules.md %})
 
