@@ -15,6 +15,7 @@
 ##################################################################
 # gsuite
 ##################################################################
+
 # The fully qualified path and filename to the key file to access GSuite.
 # REQUIRED if inventory groups and running locally.
 groups_service_account_key_file: /usr/local/google/home/henryc/git/forseti-security/super_admin_key.json
@@ -25,7 +26,11 @@ domain_super_admin_email: henry@henrychang.mygbiz.com
 
 ##################################################################
 # quota
+# 
+# The pre-populated values GitHub source are the API defaults.
 ##################################################################
+
+max_admin_api_calls_per_day: 150000
 
 max_appengine_api_calls_per_second: 20
 
@@ -35,8 +40,6 @@ max_compute_api_calls_per_second: 20
 
 max_crm_api_calls_per_100_seconds: 400
 
-max_admin_api_calls_per_day: 150000
-
 max_results_admin_api: 500
 
 max_sqladmin_api_calls_per_100_seconds: 100
@@ -44,6 +47,7 @@ max_sqladmin_api_calls_per_100_seconds: 100
 ##################################################################
 # database
 ##################################################################
+
 # IP address of the machine that is hosting the db instance.
 db_host: IP_ADDRESS_OF_THE_DB_HOST
 
@@ -56,6 +60,7 @@ db_name: NAME_OF_THE_DATABASE
 ##################################################################
 # notification
 ##################################################################
+
 # Email of the recipient that will receive inventory loader notifications sent.
 email_recipient: EMAIL_OF_THE_RECIPIENT
 

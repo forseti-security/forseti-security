@@ -45,20 +45,22 @@ class BucketsAclScanner(base_scanner.BaseScanner):
     def _get_project_policies(self):
         """Get projects from data source."""
         project_policies = {}
-        project_policies = (project_dao
-                            .ProjectDao(self.forseti_configs)
-                            .get_project_policies('projects',
-                                                  self.snapshot_timestamp))
+        project_policies = (
+            project_dao
+            .ProjectDao(self.forseti_configs)
+            .get_project_policies('projects',
+                                  self.snapshot_timestamp))
         return project_policies
 
     def _get_bucket_acls(self):
         """Get bucket acls from data source.
         """
         buckets_acls = {}
-        buckets_acls = (bucket_dao
-                        .BucketDao(self.forseti_configs)
-                        .get_buckets_acls('buckets_acl',
-                                          self.snapshot_timestamp))
+        buckets_acls = (
+            bucket_dao
+            .BucketDao(self.forseti_configs)
+            .get_buckets_acls('buckets_acl',
+                              self.snapshot_timestamp))
         return buckets_acls
 
     @staticmethod

@@ -21,8 +21,7 @@ Usage:
   Run scanner:
   $ forseti_scanner \\
       --rules <rules path> \\
-      --engine_name <rule engine name> \\
-      --output_path <output path (optional)> \\
+      --engine_name <rule engine name>
 """
 
 

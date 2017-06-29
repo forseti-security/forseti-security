@@ -15,6 +15,7 @@
 ##################################################################
 # pipeline
 ##################################################################
+
 # Resource names can be found by running 'forseti_inventory --list_resources'.
 pipelines:
   - resource: appengine
