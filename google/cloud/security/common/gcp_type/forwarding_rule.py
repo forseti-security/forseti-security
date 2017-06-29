@@ -19,7 +19,6 @@ See: https://cloud.google.com/compute/docs/reference/latest/forwardingRules
 
 from google.cloud.security.common.util import parser
 
-
 # pylint: disable=too-many-instance-attributes
 class ForwardingRule(object):
     """Represents ForwardRule resource."""
@@ -46,6 +45,3 @@ class ForwardingRule(object):
         self.subnetwork = kwargs.get('subnetwork')
         self.network = kwargs.get('network')
         self.backend_service = kwargs.get('backend_service')
-
-    # TODO: Create utility methods to reconstruct full region, target, and
-    # self link.

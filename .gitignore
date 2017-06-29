@@ -2,6 +2,9 @@
 .project
 .pydevproject
 
+# Pycharm metafile dir
+.idea/*
+
 # Compiled python
 *.pyc
 

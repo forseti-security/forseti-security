@@ -18,6 +18,7 @@ RESOURCE_MAP = {
     'bigquery_acl_violations': 'violations',
     'buckets_acl_violations': 'violations',
     'cloudsql_acl_violations': 'violations',
+    'forwarding_rule_violtions' : 'violations',
     'groups_violations': 'groups_violations',
     'policy_violations': 'violations',
     'iap_violations': 'violations',
