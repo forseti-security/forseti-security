@@ -7,10 +7,11 @@ gems:
 github:
   url: https://github.com/GoogleCloudPlatform/forseti-security
   branch: gh-pages
-repository: GoogleCloudPlatform/forseti-security
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
+# Needed for local builds and using {{ site.github }}.
+repository: GoogleCloudPlatform/forseti-security
 title: "Forseti Security"
 
 # Jekyll related directives.
