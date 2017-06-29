@@ -214,9 +214,9 @@ class Rule(object):
                                    cloudsql_acl.ssl_enabled)
 
         should_raise_violation = (
-            (is_instance_name_violated is not None and\
-             is_instance_name_violated) and\
-            (is_authorized_networks_violated is not None and\
+            (is_instance_name_violated is not None and
+             is_instance_name_violated) and
+            (is_authorized_networks_violated is not None and
              is_authorized_networks_violated) and
             (is_ssl_enabled_violated is not None and is_ssl_enabled_violated))
 

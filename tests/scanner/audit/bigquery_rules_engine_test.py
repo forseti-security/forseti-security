@@ -20,13 +20,30 @@ import mock
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.security.common.gcp_type import bigquery_access_controls as bq_acls
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import bigquery_rules_engine as bqe
 from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
+from tests.scanner.audit.data import bigquery_test_rules
+from tests.scanner.test_data import fake_bigquery_scanner_data
 
+
+def create_list_of_bq_objects_from_data():
+    fake_bigquery_scanner_list = []
+    for data in fake_bigquery_scanner_data.BIGQUERY_DATA:
+        temp_test_bq_acl = bq_acls.BigqueryAccessControls(
+            dataset_id=data['dataset_id'],
+            special_group=data['access_special_group'],
+            user_email=data['access_user_by_email'],
+            domain=data['access_domain'],
+            role=data['role'],
+            group_email=data['access_group_by_email'],
+            project_id=data['project_id'])
+        fake_bigquery_scanner_list.append(temp_test_bq_acl)
+    return fake_bigquery_scanner_list
 
 # TODO: More tests need to be added that cover the rule attributes and how they
 #    are evaluated
@@ -38,6 +55,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         self.rule_index = 0
         self.bqe = bqe
         self.bqe.LOGGER = mock.MagicMock()
+        self.fake_timestamp = '12345'
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
@@ -87,3 +105,33 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
                            rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
+
+    def test_find_violations_with_no_violations(self):
+        """Test that a rule for a given rule there are no violations."""
+        rules_local_path = get_datafile_path(
+            __file__, 
+            'bigquery_test_rules_3.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls_data = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls_data:
+            violation = rules_engine.find_policy_violations(bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
+
+    def test_find_violations_with_violations(self):
+        """Test that a rule for a given rule there are violations."""
+        rules_local_path = get_datafile_path(
+            __file__, 
+            'bigquery_test_rules_4.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls_data = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls_data:
+            violation = rules_engine.find_policy_violations(bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual(
+            fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,
+            actual_violations_list)

@@ -50,7 +50,7 @@ class ViolationDao(dao.Dao):
                 insert.
 
         Raise:
-            MySQLError: If snapshot table could not be created.
+            MySQLError: is raised when the snapshot table can not be created.
         """
 
         try:
@@ -115,7 +115,7 @@ def _format_violation(violation, resource_name):
         resource_name (str): String that defines a resource.
 
     Returns:
-        tuple: If successful this will return a tuple of formatted violation.
+        tuple: A tuple of formatted violation.
     """
     formatted_output = vm.VIOLATION_MAP[resource_name](violation)
     return formatted_output

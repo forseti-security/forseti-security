@@ -186,7 +186,8 @@ class Dao(_db_connector.DbConnector):
             data (iterable): An iterable or a list of data to be uploaded.
 
         Raises:
-            MySQLError: If an error has occured while executing the query.
+            MySQLError: is raised when an error has occured while executing
+                the query.
         """
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
@@ -218,7 +219,8 @@ class Dao(_db_connector.DbConnector):
             int: Integer of the record count in a snapshot table.
 
         Raises:
-            MySQLError: If an error has occured while executing the query.
+            MySQLError: is raised when an error has occured while executing
+                the query.
         """
         try:
             record_count_sql = select_data.RECORD_COUNT.format(
@@ -242,7 +244,8 @@ class Dao(_db_connector.DbConnector):
             list: A list of group ids.
 
         Raises:
-            MySQLError: If an error has occured while executing the query.
+            MySQLError: is raised when an error has occured while executing
+                the query.
         """
         try:
             group_ids_sql = select_data.GROUP_IDS.format(timestamp)
@@ -266,7 +269,8 @@ class Dao(_db_connector.DbConnector):
             list: A list of tuples representing rows of sql query result.
 
         Raises:
-            MySQLError: If an error has occured while executing the query.
+            MySQLError: is raised when an error has occured while executing
+                the query.
         """
         try:
             cursor = self.conn.cursor(cursorclass=cursors.DictCursor)
@@ -285,7 +289,8 @@ class Dao(_db_connector.DbConnector):
             values (tuple): Tuple of string for sql placeholder values.
 
         Raises:
-            MySQLError: If an error has occured while executing the query.
+            MySQLError: is raised when an error has occured while executing
+                the query.
         """
         try:
             cursor = self.conn.cursor()
@@ -305,7 +310,7 @@ class Dao(_db_connector.DbConnector):
             str: The string timestamp of the latest complete snapshot.
 
         Raises:
-            MySQLError: If no rows are found.
+            MySQLError: is raised when no rows are found.
         """
         # Build a dynamic parameterized query string for filtering the
         # snapshot statuses

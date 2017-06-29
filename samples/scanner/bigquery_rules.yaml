@@ -1,3 +1,4 @@
+# The BigQuery scanner rules are blacklists.
 rules:
   - name: sample BigQuery rule to search for public datasets
     dataset_id: '*'
