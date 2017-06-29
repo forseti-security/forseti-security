@@ -18,11 +18,11 @@
 
 # The fully qualified path and filename to the key file to access GSuite.
 # REQUIRED if inventory groups and running locally.
-groups_service_account_key_file: /usr/local/google/home/henryc/git/forseti-security/super_admin_key.json
+groups_service_account_key_file: FULLY_QUALIFIED_PATH_AND_FILENAME
 
 # An email address of a super-admin in the GSuite domain.
 # REQUIRED if inventory groups.
-domain_super_admin_email: henry@henrychang.mygbiz.com
+domain_super_admin_email: DOMAIN_SUPER_ADMIN_EMAIL
 
 ##################################################################
 # quota
