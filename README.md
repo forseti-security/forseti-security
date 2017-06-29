@@ -113,6 +113,12 @@ hide:
 ---
 ```
 
+#### On FAQ pages
+
+The order of an FAQ *within* its category is controlled by the `order` front-matter variable.
+
+FAQs are sorted ascendingly within a category and rendered top-to-bottom.
+
 ### Customizing the Bootstrap Material Design Theme
 
 The Material Design theme for Bootstrap is adapted from

@@ -1,6 +1,6 @@
 ---
 title: Deleting a deployment
-order: 3
+order: 1
 ---
 #  {{ page.title }}
 
