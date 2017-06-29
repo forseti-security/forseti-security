@@ -72,8 +72,8 @@ class ImporterTest(ForsetiTestCase):
 
         model = self.model_manager.model(self.model_name)
         self.assertEqual(model.state,
-                         'SUCCESS',
-                         'Model state should be set to SUCCESS')
+                         'PARTIAL_SUCCESS',
+                         'Model state should be set to PARTIAL_SUCCESS')
 
     def test_missing_group_collection(self):
         """Test if a missing group membership table is handled"""

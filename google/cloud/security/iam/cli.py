@@ -14,9 +14,10 @@
 
 """ IAM Explain CLI. """
 
-#pylint: disable=too-many-locals
+# pylint: disable=too-many-locals
 
 import argparse
+import json
 import os
 from google.protobuf.json_format import MessageToJson
 
@@ -524,7 +525,7 @@ def run_playground(client, config, output):
     def do_set_policy():
         """Set access"""
         result = client.set_iam_policy(config.resource,
-                                       config.policy)
+                                       json.loads(config.policy))
         output.write(result)
 
     actions = {

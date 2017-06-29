@@ -76,6 +76,7 @@ class Model(MODEL_BASE):
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
     message = Column(Text())
+    warnings = Column(Text())
 
     def kick_watchdog(self, session):
         """Used during import to notify the import is still progressing."""
@@ -84,19 +85,41 @@ class Model(MODEL_BASE):
         session.add(self)
         session.commit()
 
-    def set_inprogress(self, session):
-        """Set state to 'in progress'."""
+    def add_warning(self, session, warning):
+        """Add a warning to the model.
 
-        self.state = "INPROGRESS"
+        Args:
+            warning (str): Warning message
+        """
+
+        warning_message = '{}\n'.format(warning)
+        if not self.warnings:
+            self.warnings = warning_message
+        else:
+            self.warnings += warning_message
         session.add(self)
         session.commit()
 
-    def set_done(self, session, message=''):
-        """Indicate a finished import."""
+    def set_inprogress(self, session):
+        """Set state to 'in progress'."""
 
-        self.state = "SUCCESS"
-        self.message = message
         session.add(self)
+        self.state = "INPROGRESS"
+        session.commit()
+
+    def set_done(self, session, message=''):
+        """Indicate a finished import.
+            Args:
+                session (object): Database session
+                message (str): Success message or ''
+        """
+
+        session.add(self)
+        if self.warnings:
+            self.state = "PARTIAL_SUCCESS"
+        else:
+            self.state = "SUCCESS"
+        self.message = message
         session.commit()
 
     def set_error(self, session, message):
