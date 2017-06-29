@@ -363,6 +363,55 @@ class ForsetiImporter(object):
                 parent=parent))
         return sqlinst
 
+    def _convert_binding(self, res_type, res_id, binding):
+        """Converts a policy binding into the respective db model.
+
+        Args:
+            res_type (str): Type of the bound resource
+            res_id (str): Id of the bound resource
+            binding (dict): role:members dictionary
+        """
+        members = []
+        for member in binding.iter_members():
+            members.append(self.session.merge(
+                self.dao.TBL_MEMBER(
+                    name='{}/{}'.format(member.get_type(),
+                                        member.get_name()),
+                    member_name=member.get_name(),
+                    type=member.get_type())))
+
+        try:
+            role = (
+                self.session.query(self.dao.TBL_ROLE)
+                .filter(self.dao.TBL_ROLE.name == binding.get_role())
+                .one())
+        except Exception:  # pylint: disable=broad-except
+            try:
+                permission_names = self._get_permissions_for_role(
+                    binding.get_role())
+            except KeyError as err:
+                self.model.add_warning(self.session, str(err))
+                permission_names = []
+
+            permissions = (
+                [self.session.merge(self.dao.TBL_PERMISSION(name=p))
+                 for p in permission_names])
+            role = self.dao.TBL_ROLE(name=binding.get_role(),
+                                     permissions=permissions)
+            for permission in permissions:
+                self.session.add(permission)
+            self.session.add(role)
+
+        res_type_name = '{}/{}'.format(res_type, res_id)
+        resource = (
+            self.session.query(self.dao.TBL_RESOURCE)
+            .filter(self.dao.TBL_RESOURCE.type_name == res_type_name)
+            .one())
+        self.session.add(
+            self.dao.TBL_BINDING(resource=resource,
+                                 role=role,
+                                 members=members))
+
     def _convert_policy(self, forseti_policy):
         """Creates a db object from a Forseti policy.
 
@@ -373,38 +422,7 @@ class ForsetiImporter(object):
         res_type, res_id = forseti_policy.get_resource_reference()
         policy = Policy(forseti_policy)
         for binding in policy.iter_bindings():
-            members = []
-            for member in binding.iter_members():
-                members.append(self.session.merge(
-                    self.dao.TBL_MEMBER(
-                        name='{}/{}'.format(member.get_type(),
-                                            member.get_name()),
-                        member_name=member.get_name(),
-                        type=member.get_type())))
-
-            try:
-                role = self.session.query(self.dao.TBL_ROLE).filter(
-                    self.dao.TBL_ROLE.name == binding.get_role()).one()
-            except Exception:  # pylint: disable=broad-except
-                permissions = (
-                    [self.session.merge(self.dao.TBL_PERMISSION(name=p))
-                     for p in self._get_permissions_for_role(
-                         binding.get_role())])
-                role = self.dao.TBL_ROLE(name=binding.get_role(),
-                                         permissions=permissions)
-                for permission in permissions:
-                    self.session.add(permission)
-                self.session.add(role)
-
-            res_type_name = '{}/{}'.format(res_type, res_id)
-            resource = (
-                self.session.query(self.dao.TBL_RESOURCE)
-                .filter(self.dao.TBL_RESOURCE.type_name == res_type_name)
-                .one())
-            self.session.add(
-                self.dao.TBL_BINDING(resource=resource,
-                                     role=role,
-                                     members=members))
+            self._convert_binding(res_type, res_id, binding)
 
     def _convert_membership(self, forseti_membership):
         """Creates a db membership from a Forseti membership.
@@ -447,15 +465,23 @@ class ForsetiImporter(object):
                                 type='group',
                                 member_name=forseti_group))
 
-    def _get_permissions_for_role(self, rolename):
+    def _get_permissions_for_role(self, role_type_name):
         """Returns permissions defined for that role name.
         Args:
-            rolename (str): role name to get permissiosn for.
+            role_type_name (str): role name in format roles/name to get
+                                  the respective permissions for.
         Returns:
             set: Set of permissions containing the role.
+
+        Raises:
+            KeyError: If the role could not be found.
         """
 
-        return self.curated_roles[rolename]
+        role_name = role_type_name.split('/', 1)[-1]
+        if role_name not in self.curated_roles:
+            warning = 'Permissions for role not found: {}'.format(role_name)
+            raise KeyError(warning)
+        return self.curated_roles[role_name]
 
     def run(self):
         """Runs the import.
