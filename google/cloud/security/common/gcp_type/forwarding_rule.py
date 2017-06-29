@@ -21,7 +21,10 @@ from google.cloud.security.common.util import parser
 
 # pylint: disable=too-many-instance-attributes
 class ForwardingRule(object):
-    """Represents ForwardRule resource."""
+    """Represents ForwardRule resource.
+    Args:
+            kwargs: The object's attributes.
+    """
 
     def __init__(self, **kwargs):
         """ForwardingRule resource.
