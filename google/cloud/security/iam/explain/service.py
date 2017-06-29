@@ -202,7 +202,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             models_pb.append(explain_pb2.Model(name=model.name,
                                                handle=model.handle,
                                                status=model.state,
-                                               message=model.message))
+                                               message=model.message,
+                                               warnings=model.warnings))
         reply = explain_pb2.ListModelReply()
         reply.models.extend(models_pb)
         return reply
