@@ -19,7 +19,7 @@ Subscribe to
 [announce@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/announce)
 for key news from the team.
 
-**Discuss**(#discuss)
+**Discuss**
 
 Subscribe or post to
 [discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss)
