@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" applications data."""
+"""Applications data."""
 
 from google.cloud.security.common.util import parser
 
