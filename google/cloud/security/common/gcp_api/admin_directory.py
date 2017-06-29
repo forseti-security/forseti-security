@@ -60,7 +60,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
         """
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                forseti_configs.get('gsuite_service_account_key_file'),
+                forseti_configs.get('groups_service_account_key_file'),
                 scopes=self.REQUIRED_SCOPES)
         except (ValueError, KeyError, TypeError, IOError) as e:
             raise api_errors.ApiExecutionError(

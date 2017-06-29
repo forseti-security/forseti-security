@@ -35,7 +35,7 @@ def can_inventory_groups(configs):
     """
     required_execution_config_flags = [
         configs.get('domain_super_admin_email'),
-        configs.get('gsuite_service_account_key_file')]
+        configs.get('groups_service_account_key_file')]
 
     return all(required_execution_config_flags)
 

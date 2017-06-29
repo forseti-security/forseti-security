@@ -116,7 +116,7 @@ cp bin/protoc /usr/local/bin/protoc
     if SHOULD_INVENTORY_GROUPS:
         GROUPS_DOMAIN_SUPER_ADMIN_EMAIL = context.properties[
             'groups-domain-super-admin-email']
-        GSUITE_SERVICE_ACCOUNT_KEY_FILE = context.properties[
+        GROUPS_SERVICE_ACCOUNT_KEY_FILE = context.properties[
             'groups-service-account-key-file']
 
         # TODO: remove this in a future version
@@ -128,11 +128,11 @@ cp bin/protoc /usr/local/bin/protoc
         inventory_groups_flags = (
             ' {} '
             '--domain_super_admin_email {} '
-            '--gsuite_service_account_key_file {} '
+            '--groups_service_account_key_file {} '
                 .format(
                     OLD_SHOULD_INV_GROUPS_FLAG,
                     GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
-                    GSUITE_SERVICE_ACCOUNT_KEY_FILE,
+                    GROUPS_SERVICE_ACCOUNT_KEY_FILE,
                 )
             )
         inventory_command = inventory_command + inventory_groups_flags
