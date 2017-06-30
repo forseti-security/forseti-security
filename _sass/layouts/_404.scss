@@ -1,0 +1,30 @@
+#page-404 {
+  background: #d8d8d8;
+  color: $grey-800;
+  margin: -20px 0 -40px;
+  padding: 40px 0 40px;
+  text-align: center;
+
+  .error-code {
+    font-size: 56px;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .error-description {
+    margin: 0 0 40px;
+  }
+
+  img {
+    margin-bottom: 40px;
+  }
+
+  .page-name {
+    background: $white;
+    border: 1px solid $grey-400;
+    border-radius: 3px;
+    color: $grey-600;
+    display: inline-block;
+    padding: 2px 6px;
+  }
+}

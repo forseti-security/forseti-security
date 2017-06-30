@@ -1,0 +1,14 @@
+---
+title: Page Not Found
+layout: base
+---
+<div id="page-404">
+  <h1 class="error-code">404</h1>
+  <h2 class="error-description">Page Not Found</h2>
+  <img src="{{ site.baseurl }}/images/greyed-logo.png" alt="Forseti: Open-source tools for GCP security">
+  <p class="error-message">The page <span class="page-name"></span> does not exist.</p>
+</div>
+<script type="text/javascript">
+  var pageName = document.getElementsByClassName("page-name")[0];
+  pageName.innerText = window.location.pathname;
+</script>

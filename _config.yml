@@ -41,3 +41,12 @@ defaults:
       path: _docs/guides
     values:
       category: Guides
+# The order of faq categories is defined in _data/faq_categories.yml
+  - scope:
+      path: _faq/category_1
+    values:
+      category: Category 1
+  - scope:
+      path: _faq/category_2
+    values:
+      category: Category 2
