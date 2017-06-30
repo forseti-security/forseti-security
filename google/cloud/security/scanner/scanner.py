@@ -58,8 +58,16 @@ FLAGS = flags.FLAGS
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
-flags.DEFINE_string('config_path', None,
-                    'Path to the Forseti config file.')
+
+# Hack to make the test pass due to duplicate flag error here
+# and inventory_loader.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string('config_path', None,
+                        'Path to the Forseti config file.')
+except flags.DuplicateFlagError:
+    pass
 
 flags.DEFINE_string('rules', None,
                     ('Path to rules file (yaml/json). '

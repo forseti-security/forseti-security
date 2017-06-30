@@ -37,8 +37,15 @@ from google.cloud.security.enforcer import batch_enforcer
 from google.cloud.security.enforcer import enforcer_log_pb2
 
 
-flags.DEFINE_string('config_path', None,
-                    'Path to the Forseti config file.')
+# Hack to make the test pass due to duplicate flag error here
+# and inventory_loader.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string('config_path', None,
+                        'Path to the Forseti config file.')
+except flags.DuplicateFlagError:
+    pass
 
 flags.DEFINE_string('enforce_project', None,
                     'A single projectId to enforce the firewall on. Must be '
