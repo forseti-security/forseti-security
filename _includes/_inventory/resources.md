@@ -4,6 +4,7 @@ This page lists the Google Cloud Platform (GCP) resources that currently have
 coverage in Forseti or are planned to have coverage. If a resource you're
 interested in isn't listed, please open an issue or contribute!
 
+{: .table .table-striped .table-hover}
 | Resource                                | Inventory     | Scanner       | Enforcer      |
 | --------------------------------------- | ------------- | ------------- | ------------- |
 | [App Engine Apps](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps) | In Progress | TODO | TODO |
