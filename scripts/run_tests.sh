@@ -1,3 +1,4 @@
+#!/bin/sh
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates a Cloud Storage bucket template for Forseti Security."""
+# Delete all running containers
+docker rm -f $(docker ps -a -q)
 
-def GenerateConfig(context):
-    """Generate configuration."""
-    resources = []
+docker build -t forseti/base -f scripts/docker/base . || exit 1
+docker build -t forseti/build -f scripts/docker/forseti --no-cache . || exit 1
+docker run -it -d --name build forseti/build /bin/bash || exit 1
 
-    resources.append({
-        'name': context.env['name'],
-        'type': 'storage.v1.bucket',
-        'properties': {
-            'project': context.env['project'],
-            'region': context.properties['region'],
-        }
-    })
-
-    return {'resources': resources}
+docker exec -it build /bin/sh -c "coverage run --source='google.cloud.security' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'" || exit 1
+docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc google/ scripts/gcp_setup/"
