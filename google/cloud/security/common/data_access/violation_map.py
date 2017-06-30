@@ -14,9 +14,11 @@
 
 """Provides violations map"""
 
+# pylint: disable=line-too-long
 from google.cloud.security.common.data_access import violation_format as vf
 from google.cloud.security.common.data_access.sql_queries import load_data
 from google.cloud.security.common.data_access.sql_queries import select_data as sd
+# pylint: enable=line-too-long
 
 VIOLATION_MAP = {
     'violations': vf.format_violation,
