@@ -13,4 +13,5 @@ $baseurl: '{{ site.baseurl }}';
 @import "components/footer";
 @import "layouts/homepage";
 @import "layouts/docs";
+@import "layouts/404";
 @import "rouge/github_codeblock";
