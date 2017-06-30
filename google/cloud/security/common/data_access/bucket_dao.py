@@ -30,10 +30,6 @@ from google.cloud.security.common.gcp_type import bucket_access_controls as bkt_
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -45,12 +41,13 @@ class BucketDao(project_dao.ProjectDao):
         """Select the buckets for project from a buckets snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            project_number: Project number
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+            project_number (int): Project number
 
         Returns:
-            List of project buckets.
+            list: List of project buckets.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
@@ -66,11 +63,12 @@ class BucketDao(project_dao.ProjectDao):
         """Select the bucket acls from a bucket acls snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
 
         Returns:
-            List of bucket acls.
+            list: List of bucket acls.
 
         Raises:
             MySQLError: An error with MySQL has occurred.

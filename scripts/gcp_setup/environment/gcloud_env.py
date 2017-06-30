@@ -115,8 +115,20 @@ class ForsetiGcpSetup(object):
         {'desc': 'London', 'region': 'Europe', 'value': 'europe-west2'},
     ]
 
-    def __init__(self):
-        """Init."""
+    BRANCH_RELEASE_FMT = '{}: "{}"'
+    DEPLOY_TPL_DIR_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
+            __file__)))), 'deployment-templates')
+
+    def __init__(self, **kwargs):
+        """Init.
+
+        Args:
+            kwargs (dict): The kwargs.
+        """
+        self.branch = kwargs.get('branch')
+        self.version = kwargs.get('version')
+
         self.config_name = None
         self.auth_account = None
         self.organization_id = None
@@ -125,11 +137,16 @@ class ForsetiGcpSetup(object):
         self.gsuite_service_account = None
         self.gsuite_svc_acct_key_location = None
         self.rules_bucket_name = None
-        self.bucket_location = None
+        self.bucket_region = None
         self.cloudsql_instance = None
         self.cloudsql_user = None
         self.cloudsql_region = None
-        self.should_inventory_groups = False
+        self.created_deployment = False
+
+        self.sendgrid_api_key = '""'
+        self.notification_sender_email = '""'
+        self.notification_recipient_email = '""'
+        self.gsuite_super_admin_email = '""'
 
     def __repr__(self):
         """String representation of this instance.
@@ -157,7 +174,8 @@ class ForsetiGcpSetup(object):
         self.setup_cloudsql_name()
         self.setup_cloudsql_user()
         self.generate_deployment_templates()
-        self.create_data_storage()
+        if not self.created_deployment:
+            self.create_data_storage()
         self.post_install_instructions()
 
     @staticmethod
@@ -223,8 +241,8 @@ class ForsetiGcpSetup(object):
     def _choose_organization(self, orgs):
         """Choose from a list of organizations.
 
-            Args:
-                orgs(dict): A dictionary of orgs from gcloud.
+        Args:
+            orgs(dict): A dictionary of orgs from gcloud.
         """
         if not orgs:
             self._print_banner('No organizations found. Exiting.')
@@ -329,8 +347,8 @@ class ForsetiGcpSetup(object):
     def _set_project(self, project_id):
         """Save the gcloud configuration for future use.
 
-            Args:
-                project_id(str): A string representation of the GCP projectid.
+        Args:
+            project_id (str): A string representation of the GCP projectid.
         """
         print('\nTrying to activate configuration {}...'.format(project_id))
         return_val = subprocess.call(
@@ -399,7 +417,7 @@ class ForsetiGcpSetup(object):
                .format(self.project_id)))
 
     def enable_apis(self):
-        """Enable necessary APIs for Forseti Security
+        """Enable necessary APIs for Forseti Security.
 
             1. Cloud SQL
             2. Cloud SQL Admin
@@ -471,11 +489,11 @@ class ForsetiGcpSetup(object):
     def _use_svc_acct(self, svc_acct_type):
         """Use an existing service account.
 
-            Args:
-                svc_acct_type (str): The service account type.
+        Args:
+            svc_acct_type (str): The service account type.
 
-            Returns:
-                str: The user specified service account.
+        Returns:
+            str: The user specified service account.
         """
         existing_svc_acct = None
         while True:
@@ -568,12 +586,12 @@ class ForsetiGcpSetup(object):
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
-            Project Browser
-            Security Reviewer
-            Project Editor
-            Resource Manager Folder Admin
-            Storage Object Admin
-            Compute Network Admin
+        Project Browser
+        Security Reviewer
+        Project Editor
+        Resource Manager Folder Admin
+        Storage Object Admin
+        Compute Network Admin
         """
         self._print_banner('Assigning roles to the GCP service account')
         if not self.organization_id:
@@ -617,6 +635,9 @@ class ForsetiGcpSetup(object):
                 self.rules_bucket_name = bucket_name
                 break
 
+        print('Choose a region in which to create your bucket:')
+        self.bucket_region = self._choose_region(self.BUCKET_REGIONS)
+
     def _choose_region(self, regions):
         """Choose which region to create data storage.
 
@@ -630,9 +651,7 @@ class ForsetiGcpSetup(object):
             prev_region = None
             for (i, region) in enumerate(regions):
                 if region['region'] != prev_region:
-                    if prev_region is not None:
-                        print('\n')
-                    print('Region: %s' % region['region'])
+                    print('\nRegion: %s' % region['region'])
                     print('--------------------------------')
                 prev_region = region['region']
                 print('[%s] %s' % (i+1, region['desc']))
@@ -649,12 +668,9 @@ class ForsetiGcpSetup(object):
 
     def create_bucket(self):
         """Create the bucket."""
-        print('Choose a region in which to create your bucket:\n')
-        bucket_region = self._choose_region(self.BUCKET_REGIONS)
-
         print('\nCreating bucket...')
         proc = subprocess.Popen(
-            ['gsutil', 'mb', '-l', bucket_region, self.rules_bucket_name],
+            ['gsutil', 'mb', '-l', self.bucket_region, self.rules_bucket_name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         _, err = proc.communicate()
@@ -675,6 +691,9 @@ class ForsetiGcpSetup(object):
             instance_name = self.DEFAULT_CLOUDSQL_INSTANCE_NAME
         self.cloudsql_instance = instance_name
 
+        print('\nChoose the region in which to host your Cloud SQL:')
+        self.cloudsql_region = self._choose_region(self.CLOUDSQL_REGIONS)
+
     def setup_cloudsql_user(self):
         """Ask user to input Cloud SQL user name."""
         sql_user = raw_input(
@@ -688,14 +707,11 @@ class ForsetiGcpSetup(object):
     def create_cloudsql_instance(self):
         """Create Cloud SQL instance."""
         if self.cloudsql_instance:
-            print('Choose the region in which to host your Cloud SQL:')
-            sql_region = self._choose_region(self.CLOUDSQL_REGIONS)
-
             print('Creating Cloud SQL instance... This will take awhile...')
 
             proc = subprocess.Popen(
                 ['gcloud', 'sql', 'instances', 'create', self.cloudsql_instance,
-                 '--region=%s' % sql_region,
+                 '--region=%s' % self.cloudsql_region,
                  '--database-version=%s' % self.CLOUDSQL_DB_VERSION,
                  '--tier=%s' % self.CLOUDSQL_TIER,
                  '--storage-size=%s' % self.CLOUDSQL_STORAGE_SIZE_GB,
@@ -721,13 +737,91 @@ class ForsetiGcpSetup(object):
 
     def generate_deployment_templates(self):
         """Generate deployment templates."""
-        # TODO: generate deployment templates
-        # TODO: ask if we should create the deployment
-        pass
+        self._print_banner('Generate Deployment Manager templates')
+
+        deploy_tpl_path = os.path.abspath(
+            os.path.join(
+                self.DEPLOY_TPL_DIR_PATH,
+                'deploy-forseti.yaml.in'))
+        out_tpl_path = os.path.abspath(
+            os.path.join(
+                self.DEPLOY_TPL_DIR_PATH,
+                'deploy-forseti-{}.yaml'.format(os.getpid())))
+
+        # Ask for SendGrid API Key
+        sendgrid_api_key = raw_input(
+            'What is your SendGrid API key? (press [enter] to '
+            'leave blank) ').strip()
+        if sendgrid_api_key:
+            self.sendgrid_api_key = sendgrid_api_key
+
+        # Ask for notification sender email
+        notification_sender_email = raw_input(
+            'What is the sender email address for your notifications? '
+            '(press [enter] to leave blank) ').strip()
+        if notification_sender_email:
+            self.notification_sender_email = notification_sender_email
+
+        # Ask for notification recipient email
+        notification_recipient_email = raw_input(
+            'At what email address do you want to receive notifications? '
+            '(press [enter] to leave blank) ').strip()
+        if notification_recipient_email:
+            self.notification_recipient_email = notification_recipient_email
+
+        # Ask for GSuite super admin email
+        gsuite_super_admin_email = raw_input(
+            'What is your GSuite super admin\'s email? '
+            '(press [enter] to leave blank) ').strip()
+        if gsuite_super_admin_email:
+            self.gsuite_super_admin_email = gsuite_super_admin_email
+
+        # Determine which branch or release of Forseti to deploy
+        if self.version:
+            branch_or_release = self.BRANCH_RELEASE_FMT.format(
+                'release-version', self.version)
+        else:
+            if not self.branch:
+                self.branch = 'master'
+            branch_or_release = self.BRANCH_RELEASE_FMT.format(
+                'branch-name', self.branch)
+
+        deploy_values = {
+            'CLOUDSQL_REGION': self.cloudsql_region,
+            'CLOUDSQL_INSTANCE_NAME': self.cloudsql_instance,
+            'SCANNER_BUCKET': self.rules_bucket_name[len('gs://'):],
+            'BUCKET_REGION': self.bucket_region,
+            'GCP_SERVICE_ACCOUNT': self.gcp_service_account,
+            'ORGANIZATION_ID_NUMBER': self.organization_id,
+            'BRANCH_OR_RELEASE': branch_or_release,
+            'SENDGRID_API_KEY': self.sendgrid_api_key,
+            'NOTIFICATION_SENDER_EMAIL': self.notification_sender_email,
+            'NOTIFICATION_RECIPIENT_EMAIL': self.notification_recipient_email,
+            'SHOULD_INVENTORY_GROUPS': bool(self.gsuite_service_account),
+            'GSUITE_SUPER_ADMIN_EMAIL': self.gsuite_super_admin_email,
+        }
+        with open(deploy_tpl_path, 'r') as in_tmpl:
+            tmpl_contents = in_tmpl.read()
+            out_contents = tmpl_contents.format(**deploy_values)
+            with open(out_tpl_path, 'w') as out_tmpl:
+                out_tmpl.write(out_contents)
+
+        print('\nCreated a deployment template:\n    %s\n' % out_tpl_path)
+
+        deploy_choice = raw_input('Create a GCP deployment? '
+                                  '(y/N) ').strip().lower()
+        if deploy_choice == 'y':
+            self.created_deployment = True
+            _ = subprocess.call(
+                ['gcloud', 'deployment-manager', 'deployments', 'create',
+                 'forseti-security-{}'.format(os.getpid()),
+                 '--config={}'.format(out_tpl_path)])
 
     def create_data_storage(self):
         """Create Cloud SQL instance and Cloud Storage bucket. (optional)"""
         self._print_banner('Create data storage (optional)')
+        print('Be advised! Only do these next 2 steps if you plan to deploy '
+              'locally or without Deployment Manager!\n')
         should_create_bucket = raw_input(
             'Create Cloud Storage bucket now? (y/N) ').strip().lower()
         if should_create_bucket == 'y':
@@ -741,9 +835,9 @@ class ForsetiGcpSetup(object):
     def post_install_instructions(self):
         """Show post-install instructions.
 
-            Print link to go to GSuite service account and enable DWD, if GSuite
-            service account was created.
-            Print link for deployment manager dashboard.
+        Print link to go to GSuite service account and enable DWD, if GSuite
+        service account was created.
+        Print link for deployment manager dashboard.
         """
         self._print_banner('Post-setup instructions')
 
@@ -799,4 +893,9 @@ class ForsetiGcpSetup(object):
             for (i, instr_text) in enumerate(instructions):
                 print(instr_text.format(i+1))
 
-        # TODO: print deployment manager dashboard
+        if self.created_deployment:
+            print('Since you chose to create a deployment via Deployment '
+                  'Manager, you can check out the details in the Cloud '
+                  'Console:\n\n'
+                  '    https://console.cloud.google.com/deployments?'
+                  'project={}\n'.format(self.project_id))

@@ -103,7 +103,7 @@ cp bin/protoc /usr/local/bin/protoc
     SENDGRID_API_KEY = context.properties.get('sendgrid-api-key')
     EMAIL_SENDER = context.properties.get('email-sender')
     EMAIL_RECIPIENT = context.properties.get('email-recipient')
-    if EMAIL_RECIPIENT is not None:
+    if EMAIL_RECIPIENT:
         email_flags = '--sendgrid_api_key {} --email_sender {} --email_recipient {}'.format(
             SENDGRID_API_KEY,
             EMAIL_SENDER,
