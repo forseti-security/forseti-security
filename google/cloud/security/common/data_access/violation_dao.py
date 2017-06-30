@@ -65,8 +65,8 @@ class ViolationDao(dao.Dao):
         except MySQLdb.Error, e:
             if 'already exists' in str(e):
                 LOGGER.info('snapshot table already present')
-                snapshot_table = self._get_snapshot_table(resource_name, snapshot_timestamp)
-                pass
+                snapshot_table = self._get_snapshot_table(
+                    resource_name, snapshot_timestamp)
             else:
                 raise db_errors.MySQLError(resource_name, e)
 
