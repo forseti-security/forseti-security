@@ -16,7 +16,9 @@
 from google.cloud.security.common.gcp_type import iam_policy
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline
+from google.cloud.security.scanner import scanner
 from google.cloud.security.scanner.audit import rules as audit_rules
+from google.cloud.security.scanner.scanners import scanners_map as sm
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -32,7 +34,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
         members = [iam_policy.IamPolicyMember.create_from(u)
             for u in ['user:a@b.c', 'group:g@h.i', 'serviceAccount:x@y.z']
         ]
-        all_violations = [
+        unflattened_violations = [
             audit_rules.RuleViolation(
                 resource_type='organization',
                 resource_id='abc111',
@@ -50,6 +52,9 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
                 role='role2',
                 members=tuple(members)),
         ]
+        flattening_scheme = sm.FLATTENING_MAP['IamRulesEngine']
+        all_violations = scanner._flatten_violations(
+            unflattened_violations, flattening_scheme)
         total_resources = {
             resource.ResourceType.ORGANIZATION: 1,
             resource.ResourceType.PROJECT: 1,
