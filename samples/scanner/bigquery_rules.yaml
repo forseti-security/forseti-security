@@ -12,23 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""SQL queries to load data into snapshot tables."""
-
-LOAD_DATA = """
-    LOAD DATA LOCAL INFILE '{0}'
-    INTO TABLE {1} FIELDS TERMINATED BY ','
-    ({2});
-"""
-
-INSERT_VIOLATION = """
-    INSERT INTO {0}
-    (resource_type, resource_id, rule_name, rule_index,
-     violation_type, violation_data)
-    VALUES (%s, %s, %s, %s, %s, %s)
-"""
-
-INSERT_GROUPS_VIOLATION = """
-    INSERT INTO {0}
-    (member_email, group_email, rule_name)
-    VALUES (%s, %s, %s)
-"""
+# The BigQuery scanner rules are blacklists.
+rules:
+  - name: sample BigQuery rule to search for public datasets
+    dataset_id: '*'
+    special_group: '*'
+    user_email: '*'
+    domain: '*'
+    group_email: '*'
+    role: 'allAuthenticatedUsers'
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID

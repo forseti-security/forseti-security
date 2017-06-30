@@ -13,6 +13,7 @@
 # limitations under the License.
 """A Enforced Network Resource."""
 
+import json
 
 # pylint: disable=too-few-public-methods
 class InstanceNetworkInterface(object):

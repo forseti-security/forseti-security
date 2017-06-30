@@ -17,6 +17,7 @@
 # pylint: disable=line-too-long
 from google.cloud.security.scanner.scanners.groups_scanner import GroupsScanner
 from google.cloud.security.scanner.scanners.iam_rules_scanner import IamPolicyScanner
+from google.cloud.security.scanner.scanners.bigquery_scanner import BigqueryScanner
 from google.cloud.security.scanner.scanners.bucket_rules_scanner import BucketsAclScanner
 from google.cloud.security.scanner.scanners.cloudsql_rules_scanner import CloudSqlAclScanner
 from google.cloud.security.scanner.scanners.instance_network_interface_scanner import InstanceNetworkInterfaceScanner
@@ -24,25 +25,28 @@ from google.cloud.security.scanner.scanners.instance_network_interface_scanner i
 
 
 SCANNER_MAP = {
-    'GroupsRulesEngine': GroupsScanner,
-    'IamRulesEngine': IamPolicyScanner,
+    'BigqueryRulesEngine': BigqueryScanner,
     'BucketsRulesEngine': BucketsAclScanner,
     'CloudSqlRulesEngine': CloudSqlAclScanner,
+    'GroupsRulesEngine': GroupsScanner,
+    'IamRulesEngine': IamPolicyScanner
     'InstanceNetworkInterfaceRulesEngine': InstanceNetworkInterfaceScanner
 }
 
 FLATTENING_MAP = {
-    'IamRulesEngine': 'policy_violations',
+    'BigqueryRulesEngine': 'bigquery_acl_violations',
     'BucketsRulesEngine': 'buckets_acl_violations',
     'CloudSqlRulesEngine': 'cloudsql_acl_violations',
     'GroupsRulesEngine': 'groups_violations',
+    'IamRulesEngine': 'policy_violations'
     'InstanceNetworkInterfaceRulesEngine': 'instance_network_interface_violations'
 }
 
 RESOURCE_MAP = {
-    'policy_violations': 'violations',
-    'buckets_acl_violations': 'buckets_acl_violations',
-    'cloudsql_acl_violations': 'cloudsql_acl_violations',
+    'bigquery_acl_violations': 'violations',
+    'buckets_acl_violations': 'violations',
+    'cloudsql_acl_violations': 'violations',
     'groups_violations': 'groups_violations',
-    'instance_network_interface_violations': 'instance_network_interface_violations'
+    'instance_network_interface_violations': 'violations'
+    'policy_violations': 'violations'
 }

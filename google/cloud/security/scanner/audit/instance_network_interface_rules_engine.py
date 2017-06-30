@@ -79,7 +79,7 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         for rule in resource_rules:
             violations = itertools.chain(violations,
                                          rule.\
-                                         find_policy_violations(instance_network_interface))
+                                         find_violations(instance_network_interface))
         return violations
 
     def add_rules(self, rules):
@@ -215,22 +215,33 @@ class Rule(object):
         Args:
                 instance_network_interface: InstanceNetworkInterface obj
         """
-        network_and_project = re.search('compute\/v1\/projects\/([^\/]*).*networks\/([^\/]*)', instance_network_interface.get('network'))
+        network_and_project = re.search('compute\/v1\/projects\/([^\/]*).*networks\/([^\/]*)', instance_network_interface.network)
         project = network_and_project.group(1)
         network = network_and_project.group(2)
-        is_external_network = "accessConfigs" in network_dictionary[0]
-        if network not in self.rules.whitelist.get(project) and is_external_network:
+        is_external_network = instance_network_interface.accessConfigs is not None
+        if not self.rules['whitelist'].get(project):
+            if is_external_network:
+                yield self.RuleViolation(
+                    resource_type='instance',
+                    rule_name=self.rule_name,
+                    rule_index=self.rule_index,
+                    violation_type='UNENFORCED_NETWORK_VIOLATION',
+                    project=project,
+                    network=network,
+                    ips='project_not_covered')
+
+        elif network not in self.rules['whitelist'].get(project) and is_external_network:
             yield self.RuleViolation(
+                resource_type='instance',
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='UNENFORCED_NETWORK_VIOLATION',
                 project=project,
                 network=network,
-                ips=instance_network.access_config.get('natIP'))
+                ips=instance_network_interface.accessConfigs[0].get('natIP'))
 
     # Rule violation.
     # resource_type: string
-    # resource_id: string
     # rule_name: string
     # rule_index: int
     # violation_type: UNENFORCED_NETWORK_VIOLATION
@@ -238,6 +249,6 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                            ['resource_type', 'resource_id', 'rule_name',
+                            ['resource_type', 'rule_name',
                             'rule_index', 'violation_type', 'project',
-                            'network', 'ip'])
+                            'network', 'ips'])

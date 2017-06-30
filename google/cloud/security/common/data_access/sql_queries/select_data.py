@@ -154,14 +154,6 @@ SELECT_VIOLATIONS = """
     SELECT * FROM violations_{0};
 """
 
-SELECT_BUCKETS_ACL_VIOLATIONS = """
-    SELECT * FROM buckets_acl_violations_{0};
-"""
-
-SELECT_CLOUDSQL_ACL_VIOLATION = """
-    SELECT * FROM cloudsql_acl_violations_{0};
-"""
-
 SELECT_GROUPS_VIOLATIONS = """
     SELECT * FROM groups_violations_{0};
 """
@@ -215,6 +207,10 @@ INSTANCE_GROUP_MANAGERS = """
     instance_template, named_ports, region, target_pools, target_size,
     zone
     FROM instance_group_managers_{0}
+"""
+
+BIGQUERY_ACLS = """
+    SELECT * FROM bigquery_datasets_{0};
 """
 
 BUCKET_ACLS = """

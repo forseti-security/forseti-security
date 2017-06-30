@@ -12,23 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""SQL queries to load data into snapshot tables."""
+"""BigQuery rules to use in the unit tests."""
 
-LOAD_DATA = """
-    LOAD DATA LOCAL INFILE '{0}'
-    INTO TABLE {1} FIELDS TERMINATED BY ','
-    ({2});
-"""
-
-INSERT_VIOLATION = """
-    INSERT INTO {0}
-    (resource_type, resource_id, rule_name, rule_index,
-     violation_type, violation_data)
-    VALUES (%s, %s, %s, %s, %s, %s)
-"""
-
-INSERT_GROUPS_VIOLATION = """
-    INSERT INTO {0}
-    (member_email, group_email, rule_name)
-    VALUES (%s, %s, %s)
-"""
+RULES1 = {
+    'rules': [{
+            'name': 'my rule',
+            'dataset_id': '*',
+            'special_group': '*',
+            'user_email': '*',
+            'domain': '*',
+            'group_email': '*',
+            'role': 'OWNER',
+            'resource': [{
+                    'type': 'organization',
+                    'resource_ids': ['123456789012']
+                }],
+        }]
+}

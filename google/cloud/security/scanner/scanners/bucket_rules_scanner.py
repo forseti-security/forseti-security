@@ -20,11 +20,6 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,differing-param-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -34,7 +29,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         """Initialization.
 
         Args:
-            snapshot_timestamp: The snapshot timestamp
+            snapshot_timestamp (str): The snapshot timestamp
         """
         super(BucketsAclScanner, self).__init__(
             snapshot_timestamp)
@@ -42,6 +37,9 @@ class BucketsAclScanner(base_scanner.BaseScanner):
 
     def _get_project_policies(self):
         """Get projects from data source.
+
+        Returns:
+            dict: If successful returns a dictionary of project policies
         """
         project_policies = {}
         project_policies = (
@@ -52,6 +50,9 @@ class BucketsAclScanner(base_scanner.BaseScanner):
 
     def _get_bucket_acls(self):
         """Get bucket acls from data source.
+
+        Returns:
+            list: List of bucket acls.
         """
         buckets_acls = {}
         buckets_acls = bucket_dao.BucketDao().\
@@ -63,10 +64,10 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies: organization policies from inventory.
-            project_policies: project policies from inventory.
+            project_policies (list): project policies from inventory.
+            buckets_acls (list): buclet acls from inventory.
         Returns:
-            Resource count map
+            dict: Resource count map
         """
         resource_counts = {
             ResourceType.PROJECT: len(project_policies),
@@ -76,7 +77,13 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         return resource_counts
 
     def run(self):
-        """Runs the data collection."""
+        """Runs the data collection.
+
+        Returns:
+            tuple: Returns a tuple of lists. The first one is a list of
+                bucket ACL data. The second one is a dictionary of resource
+                counts
+        """
         buckets_acls_data = []
         project_policies = {}
         buckets_acls = self._get_bucket_acls()
@@ -93,11 +100,11 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            bucket_data: Buckets to find violations in
-            rules_engine: The rules engine to run.
+            bucket_data (list): Buckets to find violations in
+            rules_engine (BucketRulesEngine): The rules engine to run.
 
         Returns:
-            A list of violations
+            list: A list of bucket violations
         """
 
         all_violations = []
