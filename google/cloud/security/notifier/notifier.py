@@ -72,7 +72,8 @@ def find_pipelines(pipeline_name):
                and issubclass(obj, BaseNotificationPipeline) \
                and obj is not BaseNotificationPipeline:
                 return obj
-    except ImportError:
+    except ImportError, e:
+        LOGGER.error('Can\'t import pipeline %s: %s' % (pipeline_name, e.message))
         return None
 
 def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
@@ -158,7 +159,7 @@ def main(_):
     for resource in RESOURCE_MAP:
         try:
             violations[resource] = v_dao.get_all_violations(
-                timestamp, RESOURCE_MAP[resource])
+                timestamp, resource)
         except db_errors.MySQLError, e:
             # even if an error is raised we still want to continue execution
             # this is because if we don't have violations the Mysql table

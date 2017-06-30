@@ -34,6 +34,9 @@ VIOLATION_INSERT_MAP = {
 }
 
 VIOLATION_SELECT_MAP = {
-    'violations': select_data.SELECT_VIOLATIONS.format,
+    'policy_violations': select_data.SELECT_POLICY_VIOLATIONS.format,
     'groups_violations': select_data.SELECT_GROUPS_VIOLATIONS.format,
+    'bigquery_acl_violations': select_data.SELECT_BIGQUERY_ACL_VIOLATIONS.format,
+    'buckets_acl_violations': select_data.SELECT_BUCKETS_ACL_VIOLATIONS.format,
+    'cloudsql_acl_violations': select_data.SELECT_CLOUDSQL_VIOLATIONS.format,
 }
