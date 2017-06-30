@@ -62,6 +62,13 @@ from google.cloud.security.notifier import notifier
 
 FLAGS = flags.FLAGS
 
+LOGLEVELS = {
+    'debug': logging.DEBUG,
+    'info' : logging.INFO,
+    'warning' : logging.WARN,
+    'error' : logging.ERROR,
+}
+
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for --config_path.')
 
