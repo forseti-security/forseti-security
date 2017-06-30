@@ -95,19 +95,6 @@ BUCKETS_ACL_FIELDNAMES = [
     'raw_bucket_acl'
 ]
 
-BUCKETS_ACL_VIOLATIONS = [
-    'resource_type',
-    'resource_id',
-    'rule_name',
-    'rule_index',
-    'violation_type',
-    'role',
-    'entity',
-    'email',
-    'domain',
-    'bucket'
-]
-
 # TODO: Add pydoc to describe the mapping of the custom field naming
 # to the field names in the resource objects.
 # https://cloud.google.com/storage/docs/json_api/v1/buckets#resource
@@ -123,17 +110,6 @@ BUCKETS_FIELDNAMES = [
     'bucket_selflink',
     'bucket_lifecycle_raw',
     'raw_bucket'
-]
-
-CLOUDSQL_ACL_VIOLATIONS = [
-    'resource_type',
-    'resource_id',
-    'rule_name',
-    'rule_index',
-    'violation_type',
-    'instance_name',
-    'authorized_networks',
-    'ssl_enabled',
 ]
 
 CLOUDSQL_INSTANCES_FIELDNAMES = [
@@ -370,14 +346,13 @@ ORGANIZATIONS_FIELDNAMES = [
 ]
 
 
-POLICY_VIOLATION_FIELDNAMES = [
+VIOLATION_FIELDNAMES = [
     'resource_id',
     'resource_type',
     'rule_index',
     'rule_name',
     'violation_type',
-    'role',
-    'member'
+    'violation_data'
 ]
 
 PROJECT_IAM_POLICIES_FIELDNAMES = [
@@ -420,8 +395,6 @@ CSV_FIELDNAME_MAP = {
     'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
-    'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
-    'cloudsql_acl_violations': CLOUDSQL_ACL_VIOLATIONS,
     'cloudsql_instances': CLOUDSQL_INSTANCES_FIELDNAMES,
     'cloudsql_ipaddresses': CLOUDSQL_IPADDRESSES_FIELDNAMES,
     'cloudsql_ipconfiguration_authorizednetworks': \
@@ -438,7 +411,7 @@ CSV_FIELDNAME_MAP = {
     'instance_network_interface_violations': INSTANCE_NETWORK_INTERFACE_VIOLATIONS,
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,
-    'policy_violations': POLICY_VIOLATION_FIELDNAMES,
+    'violations': VIOLATION_FIELDNAMES,
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
     'raw_buckets': RAW_BUCKETS_FIELDNAMES,

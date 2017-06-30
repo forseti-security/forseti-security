@@ -14,10 +14,6 @@
 """A CloudSQL ACL Resource."""
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-
-
 class CloudSqlAccessControl(object):
     """CloudSQL ACL Resource."""
 
@@ -26,10 +22,11 @@ class CloudSqlAccessControl(object):
         """Initialize
 
         Args:
-            instance_name: CloudSQL instance name
-            authorized_networks: Authorized networks for CloudSQL instance
-            ssl_enabled: SSL enabled
-            project_number: the project number
+            instance_name (str): CloudSQL instance name
+            authorized_networks (str): Authorized networks for CloudSQL
+                instance
+            ssl_enabled (str): SSL enabled
+            project_number (int): the project number
         """
         self.instance_name = instance_name
         self.authorized_networks = authorized_networks
@@ -37,6 +34,10 @@ class CloudSqlAccessControl(object):
         self.project_number = project_number
 
     def __hash__(self):
-        """Return hash of properties."""
+        """Return hash of properties.
+
+        Returns:
+            hash: returns the hash of the class properties.
+        """
         return hash((self.instance_name, self.authorized_networks,
                      self.ssl_enabled, self.project_number))
