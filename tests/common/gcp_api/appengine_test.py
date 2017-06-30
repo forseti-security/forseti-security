@@ -26,7 +26,7 @@ class AppEngineTest(ForsetiTestCase):
     @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
     def setUp(self, mock_base_client):
         """Set up."""
-        self.client = appengine.AppEngineClient()
+        self.client = appengine.AppEngineClient({})
 
     def test_get_app(self):
         self.client.service = mock.MagicMock()
