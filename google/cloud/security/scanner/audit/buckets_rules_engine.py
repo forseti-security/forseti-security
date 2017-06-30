@@ -47,7 +47,7 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
 
     def build_rule_book(self, global_configs=None):
         """Build BucketsRuleBook from the rules definition file.
-        
+
         Args:
             global_configs (dict): Global configurations.
         """

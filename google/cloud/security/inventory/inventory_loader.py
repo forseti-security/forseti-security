@@ -74,8 +74,15 @@ flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for --config_path.')
 
-flags.DEFINE_string('config_path', None,
-                    'Path to the Forseti config file.')
+# Hack to make the test pass due to duplicate flag error here
+# and scanner, enforcer.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string('config_path', None,
+                        'Path to the Forseti config file.')
+except flags.DuplicateFlagError:
+    pass
 
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z

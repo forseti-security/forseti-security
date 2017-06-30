@@ -46,7 +46,7 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
 
     def build_rule_book(self, global_configs=None):
         """Build BigqueryRuleBook from the rules definition file.
-        
+
         Args:
             global_configs (dict): Global configurations.
         """
