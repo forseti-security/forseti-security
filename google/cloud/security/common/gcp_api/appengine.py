@@ -33,6 +33,11 @@ class AppEngineClient(_base_client.BaseClient):
 
     API_NAME = 'appengine'
 
+    # TODO: Remove pylint disable.
+    # pylint: disable=invalid-name
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 1
+    # pylint: enable=invalid-name
+
     def __init__(self, global_configs, credentials=None, version=None):
         """Initialize.
 
@@ -47,7 +52,7 @@ class AppEngineClient(_base_client.BaseClient):
 
         self.rate_limiter = RateLimiter(
             self.global_configs.get('max_appengine_api_calls_per_second'),
-            1)
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_app(self, project_id):
         """Gets information about an application.

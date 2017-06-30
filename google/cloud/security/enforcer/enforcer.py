@@ -161,7 +161,7 @@ def main(argv):
 
     config_path = FLAGS.config_path
     if config_path is None:
-        LOGGER.error('Path to forseti config needs to be specified.')
+        LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
     global_configs = file_loader.read_and_parse_file(config_path)
 

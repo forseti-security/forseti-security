@@ -42,6 +42,9 @@ global:
 
 inventory:
 
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
     pipelines:
         - resource: appengine
           enabled: true

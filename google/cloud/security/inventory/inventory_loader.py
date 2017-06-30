@@ -18,8 +18,7 @@
 
 Usage:
   $ forseti_inventory \\
-      --config_path (required) \\
-      --loglevel <debug|info|warning|error>
+      --config_path (required)
 
 To see all the dependent flags:
   $ forseti_inventory --helpfull
@@ -62,14 +61,6 @@ from google.cloud.security.notifier import notifier
 
 
 FLAGS = flags.FLAGS
-
-LOGLEVELS = {
-    'debug': logging.DEBUG,
-    'info' : logging.INFO,
-    'warning' : logging.WARN,
-    'error' : logging.ERROR,
-}
-flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for --config_path.')
@@ -268,20 +259,20 @@ def main(_):
     del _
     inventory_flags = FLAGS.FlagValuesDict()
 
-    _configure_logging(inventory_flags.get('loglevel'))
-
     if inventory_flags.get('list_resources'):
         inventory_util.list_resource_pipelines()
         sys.exit()
 
     config_path = inventory_flags.get('config_path')
     if config_path is None:
-        LOGGER.error('Path to forseti config needs to be specified.')
+        LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
 
     configs = file_loader.read_and_parse_file(config_path)
     global_configs = configs.get('global')
     inventory_configs = configs.get('inventory')
+
+    _configure_logging(inventory_configs.get('loglevel'))
 
     dao_map = _create_dao_map(global_configs)
 
