@@ -41,7 +41,7 @@ class ComputeClient(_base_client.BaseClient):
             credentials=credentials,
             api_name=self.API_NAME,
             version=version)
-        
+
         self.rate_limiter = RateLimiter(
             self.global_configs.get('max_compute_api_calls_per_second'),
             1)

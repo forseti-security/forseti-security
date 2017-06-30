@@ -47,7 +47,11 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
-        """Build CloudSQLRuleBook from the rules definition file."""
+        """Build CloudSQLRuleBook from the rules definition file.
+        
+        Args:
+            global_configs (dict): Global configurations.
+        """
         self.rule_book = CloudSqlRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
