@@ -16,6 +16,7 @@
 
 from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
 # pylint: disable=line-too-long
+from google.cloud.security.scanner.audit.bigquery_rules_engine import BigqueryRulesEngine
 from google.cloud.security.scanner.audit.buckets_rules_engine import BucketsRulesEngine
 from google.cloud.security.scanner.audit.cloudsql_rules_engine import CloudSqlRulesEngine
 # pylint: enable=line-too-long
@@ -23,6 +24,7 @@ from google.cloud.security.scanner.audit.cloudsql_rules_engine import CloudSqlRu
 
 ENGINE_TO_DATA_MAP = {
     'IamRulesEngine': IamRulesEngine,
+    'BigqueryRulesEngine': BigqueryRulesEngine,
     'BucketsRulesEngine': BucketsRulesEngine,
     'CloudSqlRulesEngine': CloudSqlRulesEngine,
 }
