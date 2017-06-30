@@ -77,10 +77,10 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             The project policies.
         """
         project_policies = {}
-        project_policies = (
-            project_dao.ProjectDao(self.global_configs)
-            .get_project_policies('projects',
-                                  self.snapshot_timestamp))
+        project_policies = (project_dao
+                            .ProjectDao(self.global_configs)
+                            .get_project_policies('projects',
+                                                  self.snapshot_timestamp))
         return project_policies
 
     def run(self):
