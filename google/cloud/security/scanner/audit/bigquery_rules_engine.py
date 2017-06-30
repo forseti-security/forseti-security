@@ -1,4 +1,3 @@
-
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,25 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for CloudSQL acls"""
+"""Rules engine for Big Query data sets"""
 from collections import namedtuple
 import itertools
 import re
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.gcp_type import cloudsql_access_controls as csql_acls
+from google.cloud.security.common.gcp_type import bigquery_access_controls as bq_acls
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.regex_util import escape_and_globify
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
-
 LOGGER = log_util.get_logger(__name__)
 
 
-class CloudSqlRulesEngine(bre.BaseRulesEngine):
-    """Rules engine for CloudSQL acls"""
+class BigqueryRulesEngine(bre.BaseRulesEngine):
+    """Rules engine for Big Query data sets"""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -42,23 +40,22 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
                 If set, this will be the snapshot timestamp
                 used in the engine.
         """
-        super(CloudSqlRulesEngine,
+        super(BigqueryRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
-    def build_rule_book(self, global_configs=None):
-        """Build CloudSQLRuleBook from the rules definition file."""
-        self.rule_book = CloudSqlRuleBook(self._load_rule_definitions())
+    def build_rule_book(self):
+        """Build BigqueryRuleBook from the rules definition file."""
+        self.rule_book = BigqueryRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     # pylint: disable=arguments-differ
-    def find_policy_violations(self, cloudsql_acls,
+    def find_policy_violations(self, bq_datasets,
                                force_rebuild=False):
-        """Determine whether CloudSQL acls violates rules.
+        """Determine whether Big Query datasets violate rules.
 
         Args:
-            cloudsql_acls (CloudsqlAccessControls): Object containing
-                ACL data
+            bq_datasets (list): Object containing ACL data.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -71,9 +68,9 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         resource_rules = self.rule_book.get_resource_rules()
 
         for rule in resource_rules:
-            violations = itertools.chain(violations,
-                                         rule.\
-                                         find_policy_violations(cloudsql_acls))
+            violations = itertools.chain(
+                violations,
+                rule.find_policy_violations(bq_datasets))
         return violations
 
     def add_rules(self, rules):
@@ -86,16 +83,16 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
             self.rule_book.add_rules(rules)
 
 
-class CloudSqlRuleBook(bre.BaseRuleBook):
-    """The RuleBook for CloudSQL acls resources."""
+class BigqueryRuleBook(bre.BaseRuleBook):
+    """The RuleBook for Big Query dataset resources."""
 
     def __init__(self, rule_defs=None):
         """Initialization.
 
         Args:
-            rule_defs (dict): rule definitons
+            rule_defs (dict): rule definitons dictionary.
         """
-        super(CloudSqlRuleBook, self).__init__()
+        super(BigqueryRuleBook, self).__init__()
         self.resource_rules_map = {}
         if not rule_defs:
             self.rule_defs = {}
@@ -104,10 +101,10 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
 
     def add_rules(self, rule_defs):
-        """Add rules to the rule book
+        """Add rules to the rule book.
 
         Args:
-            rule_defs (dict): rule definitions dictionary
+            rule_defs (dict): rule definitions dictionary.
         """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
@@ -130,27 +127,38 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-            instance_name = rule_def.get('instance_name')
-            authorized_networks = rule_def.get('authorized_networks')
-            ssl_enabled = rule_def.get('ssl_enabled')
+            dataset_id = rule_def.get('dataset_id')
+            special_group = rule_def.get('special_group')
+            user_email = rule_def.get('user_email')
+            domain = rule_def.get('domain')
+            group_email = rule_def.get('group_email')
+            role = rule_def.get('role')
 
-            if (instance_name is None) or (authorized_networks is None) or\
-             (ssl_enabled is None):
+            is_any_none = any(item is None for item in [
+                dataset_id,
+                special_group,
+                user_email,
+                domain,
+                group_email,
+                role])
+
+            if is_any_none:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_def.get('name')))
 
-            rule_def_resource = csql_acls.CloudSqlAccessControl(
-                escape_and_globify(instance_name),
-                escape_and_globify(authorized_networks),
-                ssl_enabled)
+            rule_def_resource = bq_acls.BigqueryAccessControls(
+                escape_and_globify(dataset_id),
+                escape_and_globify(special_group),
+                escape_and_globify(user_email),
+                escape_and_globify(domain),
+                escape_and_globify(group_email),
+                escape_and_globify(role.upper()))
 
             rule = Rule(rule_name=rule_def.get('name'),
                         rule_index=rule_index,
                         rules=rule_def_resource)
 
-            resource_rules = self.resource_rules_map.get(rule_index)
-
-            if not resource_rules:
+            if not self.resource_rules_map.get(rule_index):
                 self.resource_rules_map[rule_index] = rule
 
     def get_resource_rules(self):
@@ -172,76 +180,78 @@ class Rule(object):
        Also finds violations.
     """
 
+    rule_violation_attributes = ['resource_type', 'resource_id', 'rule_name',
+                                 'rule_index', 'violation_type', 'dataset_id',
+                                 'role', 'special_group', 'user_email',
+                                 'domain', 'group_email']
+    frozen_rule_attributes = frozenset(rule_violation_attributes)
+    RuleViolation = namedtuple(
+        'RuleViolation',
+        frozen_rule_attributes)
+
     def __init__(self, rule_name, rule_index, rules):
         """Initialize.
 
         Args:
-            rule_name (str): Name of the loaded rule
-            rule_index (int): The index of the rule from the rule definitions
-            rules (dict): The rules from the file
+            rule_name (str): Name of the loaded rule.
+            rule_index (int): The index of the rule from the rule definitions.
+            rules (dict): The rules from the file.
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.rules = rules
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, cloudsql_acl):
-        """Find CloudSQL policy acl violations in the rule book.
+    def find_policy_violations(self, bigquery_acl):
+        """Find BigQuery acl violations in the rule book.
 
         Args:
-            cloudsql_acl (CloudsqlAccessControls): CloudSQL ACL resource
+            bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.
 
         Yields:
-            namedtuple: Returns RuleViolation named tuple
+            namedtuple: Returns RuleViolation named tuple.
         """
-        filter_list = []
-        is_instance_name_violated = True
-        is_authorized_networks_violated = True
-        is_ssl_enabled_violated = True
+        is_dataset_id_violated = True
+        is_special_group_violated = True
+        is_user_email_bool_violated = True
+        is_domain_violated = True
+        is_group_email_violated = True
+        is_role_violated = True
 
-        is_instance_name_violated = re.match(self.rules.instance_name,
-                                             cloudsql_acl.instance_name)
+        is_dataset_id_violated = re.match(self.rules.dataset_id,
+                                          bigquery_acl.dataset_id)
 
-        authorized_networks_regex = re.compile(self.rules.authorized_networks)
-        filter_list = [
-            net for net in cloudsql_acl.authorized_networks if\
-            authorized_networks_regex.match(net)
-        ]
+        is_special_group_violated = re.match(self.rules.special_group,
+                                             bigquery_acl.special_group)
 
-        is_authorized_networks_violated = bool(filter_list)
+        is_user_email_bool_violated = re.match(self.rules.user_email,
+                                               bigquery_acl.user_email)
 
-        is_ssl_enabled_violated = (self.rules.ssl_enabled ==\
-                                   cloudsql_acl.ssl_enabled)
+        is_domain_violated = re.match(self.rules.domain, bigquery_acl.domain)
 
-        should_raise_violation = (
-            (is_instance_name_violated is not None and
-             is_instance_name_violated) and
-            (is_authorized_networks_violated is not None and
-             is_authorized_networks_violated) and
-            (is_ssl_enabled_violated is not None and is_ssl_enabled_violated))
+        is_group_email_violated = re.match(self.rules.group_email,
+                                           bigquery_acl.group_email)
+
+        is_role_violated = re.match(self.rules.role, bigquery_acl.role)
+
+        should_raise_violation = all([
+            is_dataset_id_violated,
+            is_special_group_violated,
+            is_user_email_bool_violated,
+            is_domain_violated,
+            is_group_email_violated,
+            is_role_violated])
 
         if should_raise_violation:
             yield self.RuleViolation(
                 resource_type='project',
-                resource_id=cloudsql_acl.project_number,
+                resource_id=bigquery_acl.project_id,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
-                violation_type='CLOUD_SQL_VIOLATION',
-                instance_name=cloudsql_acl.instance_name,
-                authorized_networks=cloudsql_acl.authorized_networks,
-                ssl_enabled=cloudsql_acl.ssl_enabled)
-
-    # Rule violation.
-    # resource_type: string
-    # resource_id: string
-    # rule_name: string
-    # rule_index: int
-    # violation_type: CLOUD_SQL_VIOLATION
-    # instance_name: string
-    # authorized_networks: string
-    # ssl_enabled: string
-    RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type',
-                                'instance_name', 'authorized_networks',
-                                'ssl_enabled'])
+                violation_type='BIGQUERY_VIOLATION',
+                dataset_id=bigquery_acl.dataset_id,
+                role=bigquery_acl.role,
+                special_group=bigquery_acl.special_group,
+                user_email=bigquery_acl.user_email,
+                domain=bigquery_acl.domain,
+                group_email=bigquery_acl.group_email)

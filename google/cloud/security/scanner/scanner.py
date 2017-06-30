@@ -209,44 +209,66 @@ def _flatten_violations(violations, flattening_scheme):
     Yield:
         Iterator of RuleViolations as a dict per member.
     """
-
-    # TODO: Make this nicer
-    LOGGER.info('Writing violations to csv...')
+    # TODO: Write custom flattening methods for each violation type.
     for violation in violations:
         if flattening_scheme == 'policy_violations':
             for member in violation.members:
+                violation_data = {}
+                violation_data['role'] = violation.role
+                violation_data['member'] = '%s:%s' % (member.type, member.name)
+
                 yield {
                     'resource_id': violation.resource_id,
                     'resource_type': violation.resource_type,
                     'rule_index': violation.rule_index,
                     'rule_name': violation.rule_name,
                     'violation_type': violation.violation_type,
-                    'role': violation.role,
-                    'member': '{}:{}'.format(member.type, member.name)
+                    'violation_data': violation_data
                 }
         if flattening_scheme == 'buckets_acl_violations':
+            violation_data = {}
+            violation_data['role'] = violation.role
+            violation_data['entity'] = violation.entity
+            violation_data['email'] = violation.email
+            violation_data['domain'] = violation.domain
+            violation_data['bucket'] = violation.bucket
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'role': violation.role,
-                'entity': violation.entity,
-                'email': violation.email,
-                'domain': violation.domain,
-                'bucket': violation.bucket,
+                'violation_data': violation_data
             }
         if flattening_scheme == 'cloudsql_acl_violations':
+            violation_data = {}
+            violation_data['instance_name'] = violation.instance_name
+            violation_data['authorized_networks'] =\
+                                                  violation.authorized_networks
+            violation_data['ssl_enabled'] = violation.ssl_enabled
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'instance_name': violation.instance_name,
-                'authorized_networks': violation.authorized_networks,
-                'ssl_enabled': violation.ssl_enabled,
+                'violation_data': violation_data
+            }
+        if flattening_scheme == 'bigquery_acl_violations':
+            violation_data = {}
+            violation_data['dataset_id'] = violation.dataset_id
+            violation_data['access_domain'] = violation.domain
+            violation_data['access_user_by_email'] = violation.user_email
+            violation_data['access_special_group'] = violation.special_group
+            violation_data['access_group_by_email'] = violation.group_email
+            violation_data['role'] = violation.role
+            yield {
+                'resource_id': violation.resource_id,
+                'resource_type': violation.resource_type,
+                'rule_index': violation.rule_index,
+                'rule_name': violation.rule_name,
+                'violation_type': violation.violation_type,
+                'violation_data': violation_data
             }
 
 def _output_results(global_configs, scanner_configs, all_violations,
@@ -263,10 +285,12 @@ def _output_results(global_configs, scanner_configs, all_violations,
     flattening_scheme = kwargs.get('flattening_scheme')
     resource_name = sm.RESOURCE_MAP[flattening_scheme]
     (inserted_row_count, violation_errors) = (0, [])
+    all_violations = _flatten_violations(all_violations, flattening_scheme)
     try:
         vdao = violation_dao.ViolationDao(global_configs)
         (inserted_row_count, violation_errors) = vdao.insert_violations(
-            all_violations, resource_name=resource_name,
+            all_violations,
+            resource_name=resource_name,
             snapshot_timestamp=snapshot_timestamp)
     except db_errors.MySQLError as err:
         LOGGER.error('Error importing violations to database: %s', err)
@@ -282,11 +306,11 @@ def _output_results(global_configs, scanner_configs, all_violations,
 
     # Write the CSV for all the violations.
     if scanner_configs.get('output_path'):
+        LOGGER.info('Writing violations to csv...')
         output_csv_name = None
         with csv_writer.write_csv(
-            resource_name=flattening_scheme,
-            data=_flatten_violations(all_violations,
-                                     flattening_scheme),
+            resource_name=resource_name,
+            data=all_violations,
             write_header=True) as csv_file:
             output_csv_name = csv_file.name
             LOGGER.info('CSV filename: %s', output_csv_name)
