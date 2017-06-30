@@ -73,7 +73,7 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
             {project_id: [instance templates]}
         """
         projects = (proj_dao
-                    .ProjectDao(self.forseti_configs)
+                    .ProjectDao(self.global_configs)
                     .get_projects(self.cycle_timestamp))
         instance_templates = {}
         for project in projects:

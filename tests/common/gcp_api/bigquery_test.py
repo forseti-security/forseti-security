@@ -35,11 +35,11 @@ class BigqueryTestCase(ForsetiTestCase):
     def setUp(self, mock_google_credential, mock_discovery):
         """Set up."""
 
-        fake_forseti_configs = {
+        fake_global_configs = {
             'max_bigquery_api_calls_per_100_seconds':
                 self.MAX_BIGQUERY_API_CALLS_PER_100_SECONDS}
         self.bq_api_client = bq.BigQueryClient(
-            forseti_configs=fake_forseti_configs)
+            global_configs=fake_global_configs)
         self.http_response = httplib2.Response(
                 {'status': '400', 'content-type': 'application/json'}
         )

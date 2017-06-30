@@ -34,18 +34,18 @@ LOGGER = log_util.get_logger(__name__)
 class IamPolicyScanner(base_scanner.BaseScanner):
     """Pipeline to IAM data from DAO"""
 
-    def __init__(self, forseti_configs, snapshot_timestamp):
+    def __init__(self, global_configs, snapshot_timestamp):
         """Constructor for the base pipeline.
 
         Args:
-            forseti_configs (dict): Forseti configurations.
+            global_configs (dict): Global configurations.
             cycle_timestamp: String of timestamp, formatted as
 
         Returns:
             None
         """
         super(IamPolicyScanner, self).__init__(
-            forseti_configs,
+            global_configs,
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 
@@ -60,7 +60,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """
         org_policies = {}
         try:
-            org_dao = organization_dao.OrganizationDao(self.forseti_configs)
+            org_dao = organization_dao.OrganizationDao(self.global_configs)
             org_policies = org_dao.get_org_iam_policies(
                 'organizations', self.snapshot_timestamp)
         except da_errors.MySQLError as e:
@@ -78,7 +78,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """
         project_policies = {}
         project_policies = (
-            project_dao.ProjectDao(self.forseti_configs)
+            project_dao.ProjectDao(self.global_configs)
             .get_project_policies('projects',
                                   self.snapshot_timestamp))
         return project_policies

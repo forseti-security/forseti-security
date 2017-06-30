@@ -45,7 +45,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
         """
         projects = (
             proj_dao
-            .ProjectDao(self.forseti_configs)
+            .ProjectDao(self.global_configs)
             .get_projects(self.cycle_timestamp))
         apps = {}
         for project in projects:

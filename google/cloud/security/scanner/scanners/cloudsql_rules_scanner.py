@@ -30,15 +30,15 @@ LOGGER = log_util.get_logger(__name__)
 
 class CloudSqlAclScanner(base_scanner.BaseScanner):
     """Pipeline to CloudSQL acls data from DAO"""
-    def __init__(self, forseti_configs, snapshot_timestamp):
+    def __init__(self, global_configs, snapshot_timestamp):
         """Initialization.
 
         Args:
-            forseti_configs (dict): Forseti configurations.
+            global_configs (dict): Global configurations.
             snapshot_timestamp: The snapshot timestamp
         """
         super(CloudSqlAclScanner, self).__init__(
-            forseti_configs,
+            global_configs,
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 
@@ -46,7 +46,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         """Get projects from data source."""
         project_policies = {}
         project_policies = (project_dao
-                            .ProjectDao(self.forseti_configs)
+                            .ProjectDao(self.global_configs)
                             .get_project_policies('projects',
                                                   self.snapshot_timestamp))
         return project_policies
@@ -56,7 +56,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         """
         cloudsql_acls = {}
         cloudsql_acls = (cloudsql_dao
-                         .CloudsqlDao(self.forseti_configs)
+                         .CloudsqlDao(self.global_configs)
                          .get_cloudsql_acls('cloudsql_instances',
                                             self.snapshot_timestamp))
 

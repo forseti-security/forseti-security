@@ -26,20 +26,20 @@ LOGGER = log_util.get_logger(__name__)
 class DbConnector(object):
     """Database connector."""
 
-    def __init__(self, forseti_configs=None):
+    def __init__(self, global_configs=None):
         """Initialize the db connector.
 
         Args:
-            forseti_configs (dict): Forseti configurations.
+            global_configs (dict): Global configurations.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
         try:
             self.conn = MySQLdb.connect(
-                host=forseti_configs['db_host'],
-                user=forseti_configs['db_user'],
-                db=forseti_configs['db_name'],
+                host=global_configs['db_host'],
+                user=global_configs['db_user'],
+                db=global_configs['db_name'],
                 local_infile=1)
         except OperationalError as e:
             LOGGER.error('Unable to create mysql connector:\n%s', e)

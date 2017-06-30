@@ -30,15 +30,15 @@ LOGGER = log_util.get_logger(__name__)
 
 class BucketsAclScanner(base_scanner.BaseScanner):
     """Pipeline to Bucket acls data from DAO"""
-    def __init__(self, forseti_configs, snapshot_timestamp):
+    def __init__(self, global_configs, snapshot_timestamp):
         """Initialization.
 
         Args:
-            forseti_configs (dict): Forseti configurations.
+            global_configs (dict): Global configurations.
             snapshot_timestamp: The snapshot timestamp
         """
         super(BucketsAclScanner, self).__init__(
-            forseti_configs,
+            global_configs,
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 
@@ -47,7 +47,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         project_policies = {}
         project_policies = (
             project_dao
-            .ProjectDao(self.forseti_configs)
+            .ProjectDao(self.global_configs)
             .get_project_policies('projects',
                                   self.snapshot_timestamp))
         return project_policies
@@ -58,7 +58,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         buckets_acls = {}
         buckets_acls = (
             bucket_dao
-            .BucketDao(self.forseti_configs)
+            .BucketDao(self.global_configs)
             .get_buckets_acls('buckets_acl',
                               self.snapshot_timestamp))
         return buckets_acls

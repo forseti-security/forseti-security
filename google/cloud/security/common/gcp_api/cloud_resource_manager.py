@@ -37,14 +37,14 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     API_NAME = 'cloudresourcemanager'
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
-    def __init__(self, forseti_configs, **kwargs):
+    def __init__(self, global_configs, **kwargs):
         super(CloudResourceManagerClient, self).__init__(
-            forseti_configs, api_name=self.API_NAME, **kwargs)
+            global_configs, api_name=self.API_NAME, **kwargs)
 
         # TODO: we will need multiple rate limiters when we need to invoke
         # the CRM write API for enforcement.
         self.rate_limiter = RateLimiter(
-            self.forseti_configs.get('max_crm_api_calls_per_100_seconds'),
+            self.global_configs.get('max_crm_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_project(self, project_id):

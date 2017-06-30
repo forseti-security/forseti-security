@@ -82,7 +82,7 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
             {project_id: [forwarding_rules]}
         """
         projects = (proj_dao
-                    .ProjectDao(self.forseti_configs)
+                    .ProjectDao(self.global_configs)
                     .get_projects(self.cycle_timestamp))
         forwarding_rules = {}
         for project in projects:

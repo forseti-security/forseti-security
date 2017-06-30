@@ -43,7 +43,7 @@ class BatchFirewallEnforcer(object):
     """Manage the parallel enforcement of firewall policies across projects."""
 
     def __init__(self,
-                 forseti_configs=None,
+                 global_configs=None,
                  dry_run=False,
                  concurrent_workers=1,
                  project_sema=None,
@@ -51,7 +51,7 @@ class BatchFirewallEnforcer(object):
         """Initialize.
 
         Args:
-          forseti_configs (dict): Forseti configurations.
+          global_configs (dict): Global configurations.
           dry_run: If True, will simply log what action would have been taken
               without actually applying any modifications.
           concurrent_workers: The number of parallel enforcement threads to
@@ -62,7 +62,7 @@ class BatchFirewallEnforcer(object):
               operations on a single project's firewall rules. Set to 0 to
               allow unlimited in flight asynchronous operations.
         """
-        self.forseti_configs = forseti_configs
+        self.global_configs = global_configs
         self.enforcement_log = enforcer_log_pb2.EnforcerLog()
         self._dry_run = dry_run
         self._concurrent_workers = concurrent_workers
@@ -70,7 +70,7 @@ class BatchFirewallEnforcer(object):
         self._project_sema = project_sema
         self._max_running_operations = max_running_operations
 
-        self.compute = compute.ComputeClient(self.forseti_configs)
+        self.compute = compute.ComputeClient(self.global_configs)
 
         self.batch_id = None
 
@@ -190,7 +190,7 @@ class BatchFirewallEnforcer(object):
         """
         enforcer = project_enforcer.ProjectEnforcer(
             project_id,
-            forseti_configs=self.forseti_configs,
+            global_configs=self.global_configs,
             dry_run=self._dry_run,
             project_sema=self._project_sema,
             max_running_operations=self._max_running_operations)

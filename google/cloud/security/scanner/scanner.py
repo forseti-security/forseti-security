@@ -20,6 +20,7 @@ Usage:
 
   Run scanner:
   $ forseti_scanner \\
+      --config_path (required) \\
       --rules <rules path> \\
       --engine_name <rule engine name>
 """
@@ -57,18 +58,8 @@ FLAGS = flags.FLAGS
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
-flags.DEFINE_string('scanner_config_path', None,
-                    'Path to the scanner config file.')
-
-# Hack to make the scanner_test pass due to duplicate flag error here
-# and in inventory_loader.
-# TODO: Find a way to remove this try/except, possibly dividing the tests
-# into different test suites.
-try:
-    flags.DEFINE_string('forseti_config_path', None,
-                        'Path to the forseti config file.')
-except flags.DuplicateFlagError:
-    pass
+flags.DEFINE_string('config_path', None,
+                    'Path to the Forseti config file.')
 
 flags.DEFINE_string('rules', None,
                     ('Path to rules file (yaml/json). '
@@ -105,25 +96,21 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    scanner_config_path = FLAGS.scanner_config_path
-    if not scanner_config_path:
-        LOGGER.error('Path to scanner config needs to be specified.')
+    config_path = FLAGS.config_path
+    if not config_path:
+        LOGGER.error('Path to config needs to be specified.')
         sys.exit()
-    scanner_configs = file_loader.read_and_parse_file(scanner_config_path)
+    configs = file_loader.read_and_parse_file(config_path)
+    global_configs = configs.get('global')
+    scanner_configs = configs.get('scanner')
 
-    forseti_config_path = FLAGS.forseti_config_path
-    if not forseti_config_path:
-        LOGGER.error('Path to forseti config needs to be specified.')
-        sys.exit()
-    forseti_configs = file_loader.read_and_parse_file(forseti_config_path)
-
-    snapshot_timestamp = _get_timestamp(forseti_configs)
+    snapshot_timestamp = _get_timestamp(global_configs)
     if not snapshot_timestamp:
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
     # Load scanner from map
-    scanner = sm.SCANNER_MAP[rules_engine_name](forseti_configs,
+    scanner = sm.SCANNER_MAP[rules_engine_name](global_configs,
                                                 snapshot_timestamp)
 
     # The Groups Scanner uses a different approach to apply and
@@ -135,7 +122,7 @@ def main(_):
         # Instantiate rules engine with supplied rules file
         rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
             rules_file_path=FLAGS.rules, snapshot_timestamp=snapshot_timestamp)
-        rules_engine.build_rule_book(forseti_configs)
+        rules_engine.build_rule_book(global_configs)
 
         iter_objects, resource_counts = scanner.run()
 
@@ -148,7 +135,7 @@ def main(_):
     # If there are violations, send results.
     flattening_scheme = sm.FLATTENING_MAP[rules_engine_name]
     if all_violations:
-        _output_results(forseti_configs,
+        _output_results(global_configs,
                         scanner_configs,
                         all_violations,
                         snapshot_timestamp,
@@ -184,11 +171,11 @@ def _get_output_filename(now_utc):
     output_filename = SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
     return output_filename
 
-def _get_timestamp(forseti_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
+def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
     Args:
-        forseti_configs (dict): Forseti configurations.
+        global_configs (dict): Global configurations.
         statuses (tuple): The snapshot statuses to search for latest timestamp.
 
     Returns:
@@ -198,7 +185,7 @@ def _get_timestamp(forseti_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     latest_timestamp = None
     try:
         latest_timestamp = (
-            dao.Dao(forseti_configs).get_latest_snapshot_timestamp(statuses))
+            dao.Dao(global_configs).get_latest_snapshot_timestamp(statuses))
     except db_errors.MySQLError as err:
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
@@ -254,7 +241,7 @@ def _flatten_violations(violations, flattening_scheme):
                 'ssl_enabled': violation.ssl_enabled,
             }
 
-def _output_results(forseti_configs, scanner_configs, all_violations,
+def _output_results(global_configs, scanner_configs, all_violations,
                     snapshot_timestamp, **kwargs):
     """Send the output results.
 
@@ -269,7 +256,7 @@ def _output_results(forseti_configs, scanner_configs, all_violations,
     resource_name = sm.RESOURCE_MAP[flattening_scheme]
     (inserted_row_count, violation_errors) = (0, [])
     try:
-        vdao = violation_dao.ViolationDao(forseti_configs)
+        vdao = violation_dao.ViolationDao(global_configs)
         (inserted_row_count, violation_errors) = vdao.insert_violations(
             all_violations, resource_name=resource_name,
             snapshot_timestamp=snapshot_timestamp)
@@ -307,11 +294,11 @@ def _output_results(forseti_configs, scanner_configs, all_violations,
             _upload_csv(output_path, now_utc, output_csv_name)
 
             # Send summary email.
-            if forseti_configs.get('email_recipient') is not None:
+            if global_configs.get('email_recipient') is not None:
                 payload = {
-                    'email_sender': forseti_configs.get('email_sender'),
-                    'email_recipient': forseti_configs.get('email_recipient'),
-                    'sendgrid_api_key': forseti_configs.get('sendgrid_api_key'),
+                    'email_sender': global_configs.get('email_sender'),
+                    'email_recipient': global_configs.get('email_recipient'),
+                    'sendgrid_api_key': global_configs.get('sendgrid_api_key'),
                     'output_csv_name': output_csv_name,
                     'output_filename': _get_output_filename(now_utc),
                     'now_utc': now_utc,

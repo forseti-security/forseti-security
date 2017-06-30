@@ -74,11 +74,8 @@ flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for --config_path.')
 
-flags.DEFINE_string('inventory_config_path', None,
-                    'Path to the inventory config file.')
-
-flags.DEFINE_string('forseti_config_path', None,
-                    'Path to the forseti config file.')
+flags.DEFINE_string('config_path', None,
+                    'Path to the Forseti config file.')
 
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
@@ -214,40 +211,40 @@ def _configure_logging(loglevel):
     level = LOGLEVELS.setdefault(loglevel, 'info')
     log_util.set_logger_level(level)
 
-def _create_dao_map(forseti_configs):
+def _create_dao_map(global_configs):
     """Create a map of DAOs.
 
     These will be re-usable so that the db connection can apply across
     different pipelines.
 
     Args:
-        forseti_configs (dict): Forseti configurations.
+        global_configs (dict): Global configurations.
 
     Returns:
         dict: Dictionary of DAOs.
     """
     try:
         return {
-            'appengine_dao': appengine_dao.AppEngineDao(forseti_configs),
+            'appengine_dao': appengine_dao.AppEngineDao(global_configs),
             'backend_service_dao':
-                backend_service_dao.BackendServiceDao(forseti_configs),
-            'bucket_dao': bucket_dao.BucketDao(forseti_configs),
-            'cloudsql_dao': cloudsql_dao.CloudsqlDao(forseti_configs),
-            'dao': dao.Dao(forseti_configs),
-            'folder_dao': folder_dao.FolderDao(forseti_configs),
+                backend_service_dao.BackendServiceDao(global_configs),
+            'bucket_dao': bucket_dao.BucketDao(global_configs),
+            'cloudsql_dao': cloudsql_dao.CloudsqlDao(global_configs),
+            'dao': dao.Dao(global_configs),
+            'folder_dao': folder_dao.FolderDao(global_configs),
             'forwarding_rules_dao':
-                forwarding_rules_dao.ForwardingRulesDao(forseti_configs),
-            'instance_dao': instance_dao.InstanceDao(forseti_configs),
+                forwarding_rules_dao.ForwardingRulesDao(global_configs),
+            'instance_dao': instance_dao.InstanceDao(global_configs),
             'instance_group_dao':
-                instance_group_dao.InstanceGroupDao(forseti_configs),
+                instance_group_dao.InstanceGroupDao(global_configs),
             'instance_group_manager_dao':
                 instance_group_manager_dao.InstanceGroupManagerDao(
-                    forseti_configs),
+                    global_configs),
             'instance_template_dao':
-                instance_template_dao.InstanceTemplateDao(forseti_configs),
+                instance_template_dao.InstanceTemplateDao(global_configs),
             'organization_dao': organization_dao.OrganizationDao(
-                forseti_configs),
-            'project_dao': project_dao.ProjectDao(forseti_configs),
+                global_configs),
+            'project_dao': project_dao.ProjectDao(global_configs),
         }
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error to creating DAO map.\n%s', e)
@@ -270,27 +267,23 @@ def main(_):
         inventory_util.list_resource_pipelines()
         sys.exit()
 
-    inventory_config_path = inventory_flags.get('inventory_config_path')
-    if inventory_config_path is None:
-        LOGGER.error('Path to inventory config needs to be specified.')
-        sys.exit()
-
-    forseti_config_path = inventory_flags.get('forseti_config_path')
-    if forseti_config_path is None:
+    config_path = inventory_flags.get('config_path')
+    if config_path is None:
         LOGGER.error('Path to forseti config needs to be specified.')
         sys.exit()
 
-    inventory_configs = file_loader.read_and_parse_file(inventory_config_path)
-    forseti_configs = file_loader.read_and_parse_file(forseti_config_path)
+    configs = file_loader.read_and_parse_file(config_path)
+    global_configs = configs.get('global')
+    inventory_configs = configs.get('inventory')
 
-    dao_map = _create_dao_map(forseti_configs)
+    dao_map = _create_dao_map(global_configs)
 
     cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
 
     pipeline_builder = builder.PipelineBuilder(
         cycle_timestamp,
         inventory_configs,
-        forseti_configs,
+        global_configs,
         api_map.API_MAP,
         dao_map)
     pipelines = pipeline_builder.build()
@@ -307,11 +300,11 @@ def main(_):
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
 
-    if forseti_configs.get('email_recipient') is not None:
+    if global_configs.get('email_recipient') is not None:
         payload = {
-            'email_sender': forseti_configs.get('email_sender'),
-            'email_recipient': forseti_configs.get('email_recipient'),
-            'sendgrid_api_key': forseti_configs.get('sendgrid_api_key'),
+            'email_sender': global_configs.get('email_sender'),
+            'email_recipient': global_configs.get('email_recipient'),
+            'sendgrid_api_key': global_configs.get('sendgrid_api_key'),
             'cycle_time': cycle_time,
             'cycle_timestamp': cycle_timestamp,
             'snapshot_cycle_status': snapshot_cycle_status,

@@ -37,11 +37,11 @@ MY_CUSTOMER = 'my_customer'
 class GroupsScanner(base_scanner.BaseScanner):
     """Pipeline to IAM data from DAO"""
 
-    def __init__(self, forseti_configs, snapshot_timestamp):
+    def __init__(self, global_configs, snapshot_timestamp):
         """Constructor for the base pipeline.
 
         Args:
-            forseti_configs (dict): Forseti configurations.
+            global_configs (dict): Global configurations.
             snapshot_timestamp: String of timestamp, formatted as
                 YYYYMMDDTHHMMSSZ.
 
@@ -49,9 +49,9 @@ class GroupsScanner(base_scanner.BaseScanner):
             None
         """
         super(GroupsScanner, self).__init__(
-            forseti_configs,
+            global_configs,
             snapshot_timestamp)
-        self.dao = group_dao.GroupDao(forseti_configs)
+        self.dao = group_dao.GroupDao(global_configs)
 
     def get_recursive_members(self, starting_node, timestamp):
         """Get all the recursive members of a group.

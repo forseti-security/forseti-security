@@ -36,21 +36,22 @@ class BigQueryClient(_base_client.BaseClient):
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100
     # pylint: enable=invalid-name
 
-    def __init__(self, forseti_configs):
+    def __init__(self, global_configs):
         """Initialize.
 
         Args:
-            forseti_configs (dict): Forseti configurations.
+            global_configs (dict): Global configurations.
         """
         super(BigQueryClient, self).__init__(
-            forseti_configs,
+            global_configs,
             api_name=self.API_NAME)
         self.rate_limiter = self.get_rate_limiter()
 
     def get_rate_limiter(self):
         """Return an appropriate rate limiter."""
+
         return RateLimiter(
-            self.forseti_configs.get('max_bigquery_api_calls_per_100_seconds'),
+            self.global_configs.get('max_bigquery_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_bigquery_projectids(self):

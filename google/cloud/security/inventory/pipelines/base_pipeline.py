@@ -41,12 +41,12 @@ class BasePipeline(object):
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-    def __init__(self, cycle_timestamp, forseti_configs, api_client, dao):
+    def __init__(self, cycle_timestamp, global_configs, api_client, dao):
         """Constructor for the base pipeline.
 
         Args:
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            forseti_configs (dict): Forseti configurations.
+            global_configs (dict): Global configurations.
             api_client: API client object.
             dao: Data access object.
 
@@ -54,7 +54,7 @@ class BasePipeline(object):
             None
         """
         self.cycle_timestamp = cycle_timestamp
-        self.forseti_configs = forseti_configs
+        self.global_configs = global_configs
         self.api_client = api_client
         self.dao = dao
         self.count = None

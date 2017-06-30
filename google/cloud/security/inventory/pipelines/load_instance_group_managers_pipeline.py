@@ -83,7 +83,7 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
             {project_id: [instance group managers]}
         """
         projects = (proj_dao
-                    .ProjectDao(self.forseti_configs)
+                    .ProjectDao(self.global_configs)
                     .get_projects(self.cycle_timestamp))
         igms = {}
         for project in projects:

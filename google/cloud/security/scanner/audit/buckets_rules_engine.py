@@ -68,7 +68,7 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
-    def build_rule_book(self, forseti_configs=None):
+    def build_rule_book(self, global_configs=None):
         """Build BucketsRuleBook from the rules definition file."""
         self.rule_book = BucketsRuleBook(self._load_rule_definitions())
 

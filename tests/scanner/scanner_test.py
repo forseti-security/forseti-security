@@ -34,7 +34,7 @@ from tests.inventory.pipelines.test_data import fake_iam_policies
 
 class ScannerRunnerTest(ForsetiTestCase):
 
-    FAKE_FORSETI_CONFIGS = {
+    FAKE_global_configs = {
         'db_host': 'foo_host',
         'db_user': 'foo_user',
         'db_name': 'foo_db',
@@ -174,7 +174,7 @@ class ScannerRunnerTest(ForsetiTestCase):
     def test_get_timestamp(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""
         mock_get_ss_timestamp.return_value = self.fake_timestamp
-        actual = self.scanner._get_timestamp(self.FAKE_FORSETI_CONFIGS)
+        actual = self.scanner._get_timestamp(self.FAKE_global_configs)
         expected = self.fake_timestamp
         self.assertEquals(expected, actual)
 
@@ -186,7 +186,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         """Test that get_timestamp() works."""
         mock_get_ss_timestamp.side_effect = errors.MySQLError(
             'snapshot_cycles', mock.MagicMock())
-        actual = self.scanner._get_timestamp(self.FAKE_FORSETI_CONFIGS)
+        actual = self.scanner._get_timestamp(self.FAKE_global_configs)
         expected = None
         self.assertEquals(expected, actual)
         self.assertEquals(1, self.scanner.LOGGER.error.call_count)
@@ -206,7 +206,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_get_org_iam.return_value = org_policies
 
         actual = self.irs.IamPolicyScanner(
-            self.FAKE_FORSETI_CONFIGS, self.fake_timestamp)._get_org_policies()
+            self.FAKE_global_configs, self.fake_timestamp)._get_org_policies()
         mock_get_org_iam.assert_called_once_with('organizations',
                                                  self.fake_timestamp)
         self.assertEqual(org_policies, actual)
@@ -225,7 +225,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         }]
         mock_get_proj_iam.return_value = proj_policies
         actual = self.irs.IamPolicyScanner(
-            self.FAKE_FORSETI_CONFIGS, self.fake_timestamp)._get_project_policies()
+            self.FAKE_global_configs, self.fake_timestamp)._get_project_policies()
         mock_get_proj_iam.assert_called_once_with('projects', self.fake_timestamp)
         self.assertEqual(proj_policies, actual)
 
@@ -236,7 +236,7 @@ class ScannerRunnerTest(ForsetiTestCase):
     def test_get_timestamp(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""
         mock_get_ss_timestamp.return_value = self.fake_timestamp
-        actual = scanner._get_timestamp(self.FAKE_FORSETI_CONFIGS)
+        actual = scanner._get_timestamp(self.FAKE_global_configs)
         self.assertEqual(1, mock_get_ss_timestamp.call_count)
         self.assertEqual(self.fake_timestamp, actual)
 
@@ -249,7 +249,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_get_ss_timestamp.side_effect = errors.MySQLError(
             'snapshot_cycles', mock.MagicMock())
         scanner.LOGGER = mock.MagicMock()
-        actual = scanner._get_timestamp(self.FAKE_FORSETI_CONFIGS)
+        actual = scanner._get_timestamp(self.FAKE_global_configs)
         self.assertEqual(1, scanner.LOGGER.error.call_count)
         self.assertIsNone(actual)
 
@@ -293,10 +293,10 @@ class ScannerRunnerTest(ForsetiTestCase):
     
         mock_violation_dao.return_value = (1, [])
     
-        fake_forseti_configs = self.FAKE_FORSETI_CONFIGS
-        fake_forseti_configs.pop('email_recipient')
+        fake_global_configs = self.FAKE_global_configs
+        fake_global_configs.pop('email_recipient')
         self.scanner._output_results(
-            fake_forseti_configs,
+            fake_global_configs,
             self.FAKE_SCANNER_CONFIGS,
             ['a'],
             self.fake_timestamp,
@@ -351,7 +351,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_violation_dao.return_value = (1, [])
     
         self.scanner._output_results(
-            self.FAKE_FORSETI_CONFIGS,
+            self.FAKE_global_configs,
             self.FAKE_SCANNER_CONFIGS,
             fake_violations,
             self.fake_timestamp,

@@ -30,14 +30,14 @@ LOGGER = log_util.get_logger(__name__)
 class PipelineBuilder(object):
     """Inventory Pipeline Builder."""
 
-    def __init__(self, cycle_timestamp, inventory_configs, forseti_configs,
+    def __init__(self, cycle_timestamp, inventory_configs, global_configs,
                  api_map, dao_map):
         """Initialize the pipeline builder.
 
         Args:
             cycle_timestamp (str): Timestamp formatted as YYYYMMDDTHHMMSSZ.
             inventory_configs (dict): Inventory configurations.
-            forseti_configs (dict): Forseti configurations.
+            global_configs (dict): Global configurations.
             api_map (dict): GCP API info, mapped to each resource.
             dao_map (dict): DAO instances, mapped to each resource.
 
@@ -45,7 +45,7 @@ class PipelineBuilder(object):
         """
         self.cycle_timestamp = cycle_timestamp
         self.inventory_configs = inventory_configs
-        self.forseti_configs = forseti_configs
+        self.global_configs = global_configs
         self.api_map = api_map
         self.dao_map = dao_map
         self.initialized_api_map = {}
@@ -86,9 +86,9 @@ class PipelineBuilder(object):
             api_version = self.api_map.get(api_name).get('version')
             try:
                 if api_version is None:
-                    api = api_class(self.forseti_configs)
+                    api = api_class(self.global_configs)
                 else:
-                    api = api_class(self.forseti_configs,
+                    api = api_class(self.global_configs,
                                     version=api_version)
             except api_errors.ApiExecutionError as e:
                 LOGGER.error('Failed to execute API %s, v=%s',
@@ -188,7 +188,7 @@ class PipelineBuilder(object):
                     continue
 
                 pipeline = pipeline_class(
-                    self.cycle_timestamp, self.forseti_configs, api, dao)
+                    self.cycle_timestamp, self.global_configs, api, dao)
                 runnable_pipelines.append(pipeline)
 
         return runnable_pipelines

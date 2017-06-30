@@ -41,11 +41,11 @@ class CloudResourceManagerTest(ForsetiTestCase):
     def setUp(self, mock_google_credential, mock_discovery):
         """Set up."""
 
-        fake_forseti_configs = {
+        fake_global_configs = {
             'max_crm_api_calls_per_100_seconds':
                 self.MAX_CRM_API_CALLS_PER_100_SECONDS}
         self.crm_api_client = crm.CloudResourceManagerClient(
-            forseti_configs=fake_forseti_configs)
+            global_configs=fake_global_configs)
 
         self.crm_api_client.service = mock.MagicMock()
         self.crm_api_client.service.projects = mock.MagicMock()

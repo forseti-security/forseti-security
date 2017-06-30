@@ -56,9 +56,9 @@ class StorageClient(_base_client.BaseClient):
 
     API_NAME = 'storage'
 
-    def __init__(self, forseti_configs=None, credentials=None):
+    def __init__(self, global_configs=None, credentials=None):
         super(StorageClient, self).__init__(
-            forseti_configs, credentials=credentials, api_name=self.API_NAME)
+            global_configs, credentials=credentials, api_name=self.API_NAME)
         # Storage API has unlimited rate.
 
     def put_text_file(self, local_file_path, full_bucket_path):

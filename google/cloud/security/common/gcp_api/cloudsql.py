@@ -37,11 +37,12 @@ class CloudsqlClient(_base_client.BaseClient):
     API_NAME = 'sqladmin'
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
-    def __init__(self, forseti_configs, credentials=None):
+    def __init__(self, global_configs, credentials=None):
         super(CloudsqlClient, self).__init__(
-            forseti_configs, credentials=credentials, api_name=self.API_NAME)
+            global_configs, credentials=credentials, api_name=self.API_NAME)
+
         self.rate_limiter = RateLimiter(
-            self.forseti_configs.get('max_sqladmin_api_calls_per_100_seconds'),
+            self.global_configs.get('max_sqladmin_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_instances(self, project_id):

@@ -27,6 +27,6 @@ class IamClient(_base_client.BaseClient):
 
     API_NAME = 'iam'
 
-    def __init__(self, forseti_configs, credentials=None):
+    def __init__(self, global_configs, credentials=None):
         super(IamClient, self).__init__(
-            forseti_configs, credentials=credentials, api_name=self.API_NAME)
+            global_configs, credentials=credentials, api_name=self.API_NAME)
