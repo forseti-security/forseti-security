@@ -73,7 +73,7 @@ def find_pipelines(pipeline_name):
                and obj is not BaseNotificationPipeline:
                 return obj
     except ImportError, e:
-        LOGGER.error('Can\'t import pipeline %s: %s' % (pipeline_name, e.message))
+        LOGGER.error('Can\'t import pipeline %s', pipeline_name, e.message)
         return None
 
 def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
