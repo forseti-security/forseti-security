@@ -25,11 +25,6 @@ from google.cloud.security.common.util import log_util
 from googleapiclient.errors import HttpError
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc
-
-
 FLAGS = flags.FLAGS
 
 # This API is also limited to 100K queries per day.
@@ -47,6 +42,12 @@ class CloudsqlClient(_base_client.BaseClient):
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
     def __init__(self, credentials=None):
+        """Initialize.
+
+        Args:
+            credentials (GoogleCredentials): Google credentials for auth-ing
+                to the API.
+        """
         super(CloudsqlClient, self).__init__(
             credentials=credentials, api_name=self.API_NAME)
         self.rate_limiter = RateLimiter(
@@ -57,16 +58,22 @@ class CloudsqlClient(_base_client.BaseClient):
         """Gets all CloudSQL instances for a project.
 
         Args:
-            project_id: The project id for a GCP project.
+            project_id (int): The project id for a GCP project.
 
         Returns:
+            dict: If successful, this function returns a dictionary for the
+                instances in the project.
             {
-              "kind": "storage#buckets",
+              "kind": "sql#instancesList",
               "nextPageToken": string,
               "items": [
-                buckets Resource
+                instances Resource
               ]
             }
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP ClodSQL API fails
         """
         instances_api = self.service.instances()
         try:
