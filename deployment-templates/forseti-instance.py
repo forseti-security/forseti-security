@@ -65,7 +65,7 @@ cd forseti-security-{}
     NEW_FORSETI_CONFIG = """
 # Copy the default inventory config to a more permanent directory
 mkdir -p $USER_HOME/config
-cp samples/inventory/inventory_conf.yaml $USER_HOME/config/inventory_conf.yaml
+cp samples/forseti/foseti_conf.yaml $USER_HOME/config/forseti_conf.yaml
 
 # Build protos separately.
 python build_protos.py --clean
