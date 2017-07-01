@@ -53,9 +53,10 @@ cd forseti-security-{}
     )
 
     scanner_command = (
-        '/usr/local/bin/forseti_scanner --rules {} --config_path {} '
+        '/usr/local/bin/forseti_scanner --rules {} --engine {} --config_path {} '
             .format(
                 'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
+                'IamRulesEngine',
                 FORSETI_CONFIG_PATH,
             )
     )
