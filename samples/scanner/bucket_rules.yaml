@@ -11,6 +11,8 @@ rules:
   - name: sample bucket acls rule to search for exposed buckets
     bucket: '*'
     entity: AllAuthenticatedUsers
+    email: '*'
+    domain: '*'
     role: '*' 
     resource:
         - resource_ids:
