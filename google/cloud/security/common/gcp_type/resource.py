@@ -48,6 +48,7 @@ class ResourceType(object):
     INSTANCE_TEMPLATE = 'instance_template'
 
     # Data storage
+    BIGQUERY_ACL = 'bigquery_datasets'
     BUCKETS_ACL = 'buckets_acl'
     CLOUDSQL_ACL = 'cloudsql_instances'
 
