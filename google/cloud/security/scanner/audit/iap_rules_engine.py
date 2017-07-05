@@ -19,30 +19,11 @@ import itertools
 import re
 
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import regex_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 LOGGER = log_util.get_logger(__name__)
-
-
-# TODO: move this to utils since it's used in more that one engine
-def escape_and_globify(pattern_string):
-    """Given a pattern string with a glob, create actual regex pattern.
-
-    To require > 0 length glob, change the "*" to ".+". This is to handle
-    strings like "*@company.com". (THe actual regex would probably be
-    ".*@company.com", except that we don't want to match zero-length
-    usernames before the "@".)
-
-    Args:
-        pattern_string: The pattern string of which to make a regex.
-
-    Returns:
-    The pattern string, escaped except for the "*", which is
-    transformed into ".+" (match on one or more characters).
-    """
-
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
 
 
 IapRuleDef = namedtuple('IapRuleDef',
@@ -131,22 +112,22 @@ class IapRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-            backend_service_name = escape_and_globify(
+            backend_service_name = regex_util.escape_and_globify(
                 rule_def.get('backend_service_name'))
             allowed_alternate_services = rule_def.get(
                 'allowed_alternate_services')
-            allowed_direct_access_sources = escape_and_globify(
+            allowed_direct_access_sources = regex_util.escape_and_globify(
                 rule_def.get('allowed_direct_access_sources'))
             allowed_iap_enabled = rule_def.get('allowed_iap_enabled')
 
             rule_def_resource = IapRuleDef(
-                backend_service_name=escape_and_globify(
+                backend_service_name=regex_util.escape_and_globify(
                     backend_service_name),
                 allowed_alternate_services=(
                     allowed_alternate_services),
-                allowed_direct_access_sources=escape_and_globify(
+                allowed_direct_access_sources=regex_util.escape_and_globify(
                     allowed_direct_access_sources),
-                allowed_iap_enabled=escape_and_globify(
+                allowed_iap_enabled=regex_util.escape_and_globify(
                     allowed_iap_enabled),
             )
 
