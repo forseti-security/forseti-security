@@ -6,4 +6,4 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - YOUR_ORG_ID / YOUR_PROJECT_ID
+          - 660570133860

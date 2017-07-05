@@ -18,7 +18,7 @@
 
 Usage:
   $ forseti_inventory \\
-      --config_path (required)
+      --forseti_config (optional)
 
 To see all the dependent flags:
   $ forseti_inventory --helpfull
@@ -70,15 +70,17 @@ LOGLEVELS = {
 }
 
 flags.DEFINE_boolean('list_resources', False,
-                     'List valid resources for --config_path.')
+                     'List valid resources for inventory.')
 
 # Hack to make the test pass due to duplicate flag error here
 # and scanner, enforcer.
 # TODO: Find a way to remove this try/except, possibly dividing the tests
 # into different test suites.
 try:
-    flags.DEFINE_string('config_path', None,
-                        'Path to the Forseti config file.')
+    flags.DEFINE_string(
+        'forseti_config',
+        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        'Fully qualified path and filename of the Forseti config file.')
 except flags.DuplicateFlagError:
     pass
 
@@ -270,12 +272,17 @@ def main(_):
         inventory_util.list_resource_pipelines()
         sys.exit()
 
-    config_path = inventory_flags.get('config_path')
-    if config_path is None:
+    forseti_config = inventory_flags.get('forseti_config')
+    if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
 
-    configs = file_loader.read_and_parse_file(config_path)
+    try:
+        configs = file_loader.read_and_parse_file(forseti_config)
+    except IOError:
+        LOGGER.error('Unable to open Forseti Security config file. '
+                     'Please check your path and filename and try again.')
+        sys.exit()
     global_configs = configs.get('global')
     inventory_configs = configs.get('inventory')
 

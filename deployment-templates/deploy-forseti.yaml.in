@@ -13,9 +13,7 @@
 # limitations under the License.
 
 # The toplevel deployment script for Forseti Security.
-# Be sure to edit this file and its templates to suit your environment.
 
-# Change these import paths as necessary to suit your environment.
 imports:
 - path: inventory/cloudsql-instance.py
   name: cloudsql-instance.py
@@ -75,8 +73,7 @@ resources:
     # e.g. "I want to deploy release 1.0"
     #    # branch-name: "master" <-- COMMENT OUT
     #    release-version: "1.0"
-    branch-name: BRANCH_NAME
-    #release-version: RELEASE_VERSION
+    {BRANCH_OR_RELEASE}
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 
@@ -84,5 +81,13 @@ resources:
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
 
-    # Fully-qualified path and name of the Forseti Security config file.
-    forseti-config-path: {FORSETI_CONFIG_PATH}
+    # Remove or comment out the email properties if you do not want Forseti to
+    # send email notifications.
+    sendgrid-api-key: {SENDGRID_API_KEY}
+    email-sender: {NOTIFICATION_SENDER_EMAIL}
+    email-recipient: {NOTIFICATION_RECIPIENT_EMAIL}
+
+    # Flags for Inventory to collect GSuite Google Groups information.
+    inventory-groups: {SHOULD_INVENTORY_GROUPS}
+    groups-domain-super-admin-email: {GSUITE_SUPER_ADMIN_EMAIL}
+    groups-service-account-key-file: "/home/ubuntu/service-account-key.json"

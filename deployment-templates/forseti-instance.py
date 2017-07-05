@@ -43,30 +43,27 @@ cd forseti-security-{}
 
     SCANNER_BUCKET = context.properties['scanner-bucket']
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    FORSETI_CONFIG_PATH = context.properties['forseti-config-path']
+    FORSETI_CONFIG = context.properties['forseti-config']
 
     inventory_command = (
-        '/usr/local/bin/forseti_inventory --config_path {} '
+        '/usr/local/bin/forseti_inventory --forseti_config {} '
             .format(
-                FORSETI_CONFIG_PATH,
+                FORSETI_CONFIG,
             )
     )
 
     scanner_command = (
-        '/usr/local/bin/forseti_scanner --rules {} --engine {} --config_path {} '
+        ('/usr/local/bin/forseti_scanner --rules {} --engine {} '
+         '--forseti_config {} ')
             .format(
                 'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
                 'IamRulesEngine',
-                FORSETI_CONFIG_PATH,
+                FORSETI_CONFIG,
             )
     )
 
     # TODO: remove this little hack when we update the release...
     NEW_FORSETI_CONFIG = """
-# Copy the default inventory config to a more permanent directory
-mkdir -p $USER_HOME/config
-cp samples/forseti/foseti_conf.yaml $USER_HOME/config/forseti_conf.yaml
-
 # Build protos separately.
 python build_protos.py --clean
 """

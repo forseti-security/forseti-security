@@ -24,6 +24,9 @@ global:
     domain_super_admin_email: DOMAIN_SUPER_ADMIN_EMAIL
 
     # notification
+    # Remove or comment out the email properties if you do not want Forseti to
+    # send email notifications.
+    
     email_recipient: EMAIL_RECIPIENT
     email_sender: EMAIL_SENDER
     sendgrid_api_key: SENDGRID_API_KEY

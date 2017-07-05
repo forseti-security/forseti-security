@@ -42,8 +42,10 @@ from google.cloud.security.enforcer import enforcer_log_pb2
 # TODO: Find a way to remove this try/except, possibly dividing the tests
 # into different test suites.
 try:
-    flags.DEFINE_string('config_path', None,
-                        'Path to the Forseti config file.')
+    flags.DEFINE_string(
+        'forseti_config',
+        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        'Fully qualified path and filename of the Forseti config file.')
 except flags.DuplicateFlagError:
     pass
 
@@ -159,11 +161,18 @@ def main(argv):
 
     del argv
 
-    config_path = FLAGS.config_path
-    if config_path is None:
+    forseti_config = FLAGS.forseti_config
+    if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
-    global_configs = file_loader.read_and_parse_file(config_path)
+
+    try:
+        configs = file_loader.read_and_parse_file(forseti_config)
+    except IOError:
+        LOGGER.error('Unable to open Forseti Security config file. '
+                     'Please check your path and filename and try again.')
+        sys.exit()
+    global_configs = configs.get('global')
 
     enforcer = initialize_batch_enforcer(
         global_configs, FLAGS.concurrent_threads,

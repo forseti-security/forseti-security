@@ -20,7 +20,7 @@ Usage:
 
   Run scanner:
   $ forseti_scanner \\
-      --config_path (required) \\
+      --forseti_config (optional) \\
       --rules <rules path> \\
       --engine_name <rule engine name>
 """
@@ -64,8 +64,10 @@ FLAGS = flags.FLAGS
 # TODO: Find a way to remove this try/except, possibly dividing the tests
 # into different test suites.
 try:
-    flags.DEFINE_string('config_path', None,
-                        'Path to the Forseti config file.')
+    flags.DEFINE_string(
+        'forseti_config',
+        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        'Fully qualified path and filename of the Forseti config file.')
 except flags.DuplicateFlagError:
     pass
 
@@ -104,11 +106,18 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    config_path = FLAGS.config_path
-    if not config_path:
+    forseti_config = FLAGS.forseti_config
+    if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
-    configs = file_loader.read_and_parse_file(config_path)
+    
+    try:
+        configs = file_loader.read_and_parse_file(forseti_config)
+    except IOError:
+        LOGGER.error('Unable to open Forseti Security config file. '
+                     'Please check your path and filename and try again.')
+        sys.exit()
+    configs = file_loader.read_and_parse_file(forseti_config)
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')
 
