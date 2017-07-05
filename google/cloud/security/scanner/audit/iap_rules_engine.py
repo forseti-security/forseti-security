@@ -121,14 +121,10 @@ class IapRuleBook(bre.BaseRuleBook):
             allowed_iap_enabled = rule_def.get('allowed_iap_enabled')
 
             rule_def_resource = IapRuleDef(
-                backend_service_name=regex_util.escape_and_globify(
-                    backend_service_name),
-                allowed_alternate_services=(
-                    allowed_alternate_services),
-                allowed_direct_access_sources=regex_util.escape_and_globify(
-                    allowed_direct_access_sources),
-                allowed_iap_enabled=regex_util.escape_and_globify(
-                    allowed_iap_enabled),
+                backend_service_name=backend_service_name,
+                allowed_alternate_services=allowed_alternate_services,
+                allowed_direct_access_sources=allowed_direct_access_sources,
+                allowed_iap_enabled=allowed_iap_enabled,
             )
 
             rule = Rule(rule_name=rule_def.get('name'),
