@@ -46,8 +46,12 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
-    def build_rule_book(self):
-        """Build CloudSQLRuleBook from the rules definition file."""
+    def build_rule_book(self, global_configs=None):
+        """Build CloudSQLRuleBook from the rules definition file.
+
+        Args:
+            global_configs (dict): Global configurations.
+        """
         self.rule_book = CloudSqlRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
