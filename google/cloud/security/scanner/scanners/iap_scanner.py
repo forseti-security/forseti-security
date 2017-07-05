@@ -14,8 +14,8 @@
 
 """Scanner for the Identity-Aware Proxy rules engine."""
 import collections
-import re
 
+# pylint: disable=line-too-long
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import backend_service_dao
 from google.cloud.security.common.data_access import firewall_rule_dao
@@ -23,43 +23,14 @@ from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.data_access import instance_group_dao
 from google.cloud.security.common.data_access import instance_group_manager_dao
 from google.cloud.security.common.data_access import instance_template_dao
+from google.cloud.security.common.gcp_type import instance_group as instance_group_type
+from google.cloud.security.common.gcp_type import instance as instance_type
+from google.cloud.security.common.gcp_type import instance_template as instance_template_type
+from google.cloud.security.common.gcp_type import network as network_type
 from google.cloud.security.scanner.scanners import base_scanner
+# pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
-INSTANCE_URL_RE = re.compile(
-    r'''(?x)^.*
-        /projects/(?P<project>.*?)
-        /zones/(?P<zone>.*?)
-        /instances/(?P<name>.*)$''')
-INSTANCE_GROUP_URL_RE = re.compile(
-    r'''(?x)^.*
-        /projects/(?P<project>.*?)
-        /regions/(?P<region>.*?)
-        /instanceGroups/(?P<name>.*)$''')
-INSTANCE_TEMPLATE_URL_RE = re.compile(
-    r'''(?x)^.*
-        /projects/(?P<project>.*?)
-        /global
-        /instanceTemplates/(?P<name>.*)$''')
-NETWORK_URL_RE = re.compile(
-    r'''(?x)^.*
-        (?:projects/(?P<project>.*?)/)?
-        global
-        /networks/(?P<name>.*)$''')
-
-
-BackendServicePath = collections.namedtuple(
-    'BackendServicePath',
-    ['project', 'name'])
-InstanceGroupPath = collections.namedtuple(
-    'InstanceGroupPath',
-    ['project', 'region', 'name'])
-InstancePath = collections.namedtuple(
-    'InstancePath',
-    ['project', 'zone', 'name'])
-InstanceTemplatePath = collections.namedtuple(
-    'InstanceTemplatePath',
-    ['project', 'name'])
 IapResource = collections.namedtuple(
     'IapResource',
     ['backend_service_name',
@@ -68,9 +39,6 @@ IapResource = collections.namedtuple(
      'direct_access_sources',
      'iap_enabled',
     ])
-NetworkPath = collections.namedtuple(
-    'NetworkPath',
-    ['project', 'name'])
 NetworkPort = collections.namedtuple(
     'NetworkPort',
     ['network', 'port'])
@@ -81,72 +49,48 @@ class _RunData(object):
                  instance_groups, instance_group_managers, instance_templates):
         self.backend_services = backend_services
         self.firewall_rules = firewall_rules
-        self.instances_by_path = dict(
-            (InstancePath(
-                project_id=instance.project_id,
-                zone=instance.zone,
-                name=instance.name),
-             instance) for instance in instances)
+        self.instances_by_key = dict((instance.key, instance)
+                                     for instance in instances)
+        self.instance_groups_by_key = dict((instance_group.key, instance_group)
+                                           for instance_group
+                                           in instance_groups)
 
-        self.instance_groups_by_path = dict(
-            (InstanceGroupPath(
-                project=instance_group.project_id,
-                region=instance_group.region,
-                name=instance_group.name),
-             instance_group) for instance_group in instance_groups)
-
-        self.instance_templates_by_instance_group_path = {}
-        instance_templates_by_path = dict(
-            (InstanceTemplatePath(
-                project=instance_template.project_id,
-                name=instance_template.name),
-             instance_template)
-            for instance_template in instance_templates)
+        self.instance_templates_by_instance_group_key = {}
+        instance_templates_by_key = dict((instance_template.key,
+                                          instance_template)
+                                         for instance_template
+                                         in instance_templates)
         for instance_group_manager in instance_group_managers:
             instance_group_url = instance_group_manager.instance_group
             if not instance_group_url:
                 continue
-            instance_group_path = self._instance_group_url_to_path(
+            instance_group_key = instance_group_type.Key.from_url(
                 instance_group_url)
             instance_template_url = instance_group_manager.instance_template
-            match = INSTANCE_TEMPLATE_URL_RE.match(instance_template_url)
-            instance_template_path = InstanceTemplatePath(
-                project=match.group('project'),
-                name=match.group('name'))
-            instance_template = instance_templates_by_path.get(
-                instance_template_path)
+            instance_template_key = instance_template_type.Key.from_url(
+                instance_template_url)
+            instance_template = instance_templates_by_key.get(
+                instance_template_key)
             if instance_template:
-                self.instance_templates_by_instance_group_path[
-                    instance_group_path] = instance_template
-
-    @classmethod
-    def _instance_group_url_to_path(cls, instance_group_url):
-        match = INSTANCE_GROUP_URL_RE.match(instance_group_url)
-        return InstanceGroupPath(
-            project=match.group('project'),
-            region=match.group('region'),
-            name=match.group('name'))
+                self.instance_templates_by_instance_group_key[
+                    instance_group_key] = instance_template
 
     def instance_group_network_port(self, backend_service, instance_group):
         port = self.find_instance_group_port(backend_service,
                                              instance_group)
         return NetworkPort(
-            network=self.network_url_to_path(
-                instance_group.network,
-                project=instance_group.project_id),
+            network=network_type.Key.from_args(
+                project_id=instance_group.project_id,
+                name=instance_group.network),
             port=port)
 
     def find_instance_group_by_url(self, instance_group_url):
-        target_path = self._instance_group_url_to_path(instance_group_url)
-        return self.instance_groups_by_path.get(target_path)
+        target_key = instance_group_type.Key.from_url(instance_group_url)
+        return self.instance_groups_by_key.get(target_key)
 
     def find_instance_by_url(self, instance_url):
-        match = INSTANCE_URL_RE.match(instance_url)
-        target_path = InstancePath(
-            project=match.group('project'),
-            zone=match.group('zone'),
-            name=match.group('name'))
-        return self.instances_by_path.get(target_path)
+        target_key = instance_type.Key.from_url(instance_url)
+        return self.instances_by_key.get(target_key)
 
     @classmethod
     def find_instance_group_port(cls, backend_service, instance_group):
@@ -181,8 +125,8 @@ class _RunData(object):
 
         relevant_rules_by_priority = collections.defaultdict(lambda: [])
         for firewall_rule in self.firewall_rules:
-            firewall_network = self.network_url_to_path(
-                firewall_rule.network, firewall_rule.project_id)
+            firewall_network = network_type.Key.from_url(
+                firewall_rule.network, project_id=firewall_rule.project_id)
             if firewall_network != network_port.network:
                 continue
 
@@ -213,16 +157,6 @@ class _RunData(object):
                             firewall_rule.source_tags)
         return allowed_sources
 
-    @classmethod
-    def network_url_to_path(cls, network_url, project):
-        # Accept network 'URLs' as seen in firewall rule resources.
-        # xref:
-        # https://cloud.google.com/compute/docs/reference/latest/firewalls
-        match = NETWORK_URL_RE.match(network_url)
-        return NetworkPath(
-            project=match.group('project') or project,
-            name=match.group('name'))
-
     def tags_for_instance_group(self, instance_group):
         tags = set()
 
@@ -235,12 +169,8 @@ class _RunData(object):
 
         # If it's a managed instance group, also get tags from the
         # instance template.
-        instance_group_path = InstanceGroupPath(
-            project=instance_group.project_id,
-            region=instance_group.region,
-            name=instance_group.name)
-        instance_template = self.instance_templates_by_instance_group_path.get(
-            instance_group_path)
+        instance_template = self.instance_templates_by_instance_group_key.get(
+            instance_group.key)
         if instance_template:
             template_tags = instance_template.properties.get('tags', {})
             tags.update(template_tags.get('items', []))
@@ -334,9 +264,7 @@ class IapScanner(base_scanner.BaseScanner):
                                 break
 
                     if found_alternate_service:
-                        alternate_services.add(BackendServicePath(
-                            project=backend_service2.project_id,
-                            name=backend_service2.name))
+                        alternate_services.add(backend_service2.key)
             iap_resources.append(IapResource(
                 backend_service_name=backend_service.name,
                 backend_service_project=backend_service.project_id,
