@@ -51,9 +51,11 @@
   }
 
   function generate_copy_code_buttons() {
-    $("pre.highlight").prepend(
-      '<a class="copy-code"><i class="material-icons">content_copy</i></a>'
+    var $copy_button = $("<a>", {"class": "copy-code"}).append(
+      $("<i>", {"class": "material-icons", "text": "content_copy"})
     );
+
+    $("pre.highlight").prepend($copy_button);
 
     new Clipboard(".copy-code", {
       target: function(trigger) {
