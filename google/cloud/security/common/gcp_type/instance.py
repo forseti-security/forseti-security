@@ -17,6 +17,10 @@
 See: https://cloud.google.com/compute/docs/reference/latest/instances
 """
 
+
+from google.cloud.security.common.gcp_type import key
+
+
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-param-doc
 
@@ -45,5 +49,42 @@ class Instance(object):
         self.tags = kwargs.get('tags')
         self.zone = kwargs.get('zone')
 
-    # TODO: Create utility methods to reconstruct full region, target, and
-    # self link.
+    @property
+    def key(self):
+        return Key.from_args(self.project_id, self.zone, self.name)
+
+
+KEY_OBJECT_KIND = 'Instance'
+
+
+class Key(key.Key):
+
+    @staticmethod
+    def from_args(project_id, zone, name):
+        return Key(KEY_OBJECT_KIND, {
+            'project_id': project_id,
+            'zone': zone,
+            'name': name})
+
+    @staticmethod
+    def from_url(url):
+        obj = Key._from_url(KEY_OBJECT_KIND,
+                            {'projects': 'project_id',
+                             'zones': 'zone',
+                             'instances': 'name'},
+                            url)
+        if obj.project_id is None or obj.zone is None or obj.name is None:
+            raise ValueError('Missing fields in URL %r' % url)
+        return obj
+
+    @property
+    def project_id(self):
+        return self._path_component('project_id')
+
+    @property
+    def zone(self):
+        return self._path_component('zone')
+
+    @property
+    def name(self):
+        return self._path_component('name')

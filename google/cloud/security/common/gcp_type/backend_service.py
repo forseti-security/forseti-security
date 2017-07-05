@@ -17,6 +17,10 @@
 See: https://cloud.google.com/compute/docs/reference/latest/backendServices
 """
 
+
+from google.cloud.security.common.gcp_type import key
+
+
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-param-doc
 
@@ -47,5 +51,40 @@ class BackendService(object):
         self.session_affinity = kwargs.get('session_affinity')
         self.timeout_sec = kwargs.get('timeout_sec')
 
-    # TODO: Create utility methods to reconstruct full region, target, and
-    # self link.
+    @property
+    def key(self):
+        return Key.from_args(self.project_id, self.name, region=self.region)
+
+
+KEY_OBJECT_KIND = 'BackendService'
+
+
+class Key(key.Key):
+
+    # Backend services can be regional or global.
+    @staticmethod
+    def from_args(project_id, name, region=None):
+        return Key(KEY_OBJECT_KIND, {
+            'project_id': project_id,
+            'name': name,
+            'region': region})
+
+    @staticmethod
+    def from_url(url):
+        obj = Key._from_url(
+            KEY_OBJECT_KIND,
+            {'projects': 'project_id',
+             'regions': 'region',
+             'backendServices': 'name'},
+            url)
+        if obj.project_id is None or obj.name is None:
+            raise ValueError('Missing fields in URL %r' % url)
+        return obj
+
+    @property
+    def project_id(self):
+        return self._path_component('project_id')
+
+    @property
+    def name(self):
+        return self._path_component('name')
