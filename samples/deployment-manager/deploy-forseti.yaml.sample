@@ -85,4 +85,4 @@ resources:
     db-port: 3306
 
     # Fully-qualified path and name of the Forseti Security config file.
-    forseti-config: {FORSETI_CONFIG}
+    forseti-config: FORSETI_CONFIG
