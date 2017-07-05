@@ -57,7 +57,8 @@ def _attach_user_agent(request):
 class BaseClient(object):
     """Base client for a specified GCP API and credentials."""
 
-    def __init__(self, credentials=None, api_name=None, **kwargs):
+    def __init__(self, global_configs, credentials=None, api_name=None,
+                 **kwargs):
         """Thin client wrapper over the Google Discovery API.
 
         The intent for this class is to define the Google APIs expected by
@@ -65,11 +66,13 @@ class BaseClient(object):
         be stable and could cause unknown issues in Forseti.
 
         Args:
+            global_configs (dict): Global configurations.
             credentials: Google credentials for auth-ing to the API.
             api_name: The API name to wrap. More details here:
                 https://developers.google.com/api-client-library/python/apis/
             kwargs: Additional args such as version.
         """
+        self.global_configs = global_configs
         if not credentials:
             credentials = GoogleCredentials.get_application_default()
         self._credentials = credentials

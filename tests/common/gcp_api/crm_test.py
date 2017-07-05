@@ -36,14 +36,16 @@ class CloudResourceManagerTest(ForsetiTestCase):
 
     MAX_CRM_API_CALLS_PER_100_SECONDS = 88888
 
-    @mock.patch.object(crm, 'FLAGS')
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def setUp(self, mock_base_client, mock_flags):
+    @mock.patch('google.cloud.security.common.gcp_api._base_client.discovery')
+    @mock.patch('google.cloud.security.common.gcp_api._base_client.GoogleCredentials')
+    def setUp(self, mock_google_credential, mock_discovery):
         """Set up."""
 
-        mock_flags.max_crm_api_calls_per_100_seconds = (
-            self.MAX_CRM_API_CALLS_PER_100_SECONDS)
-        self.crm_api_client = crm.CloudResourceManagerClient()
+        fake_global_configs = {
+            'max_crm_api_calls_per_100_seconds':
+                self.MAX_CRM_API_CALLS_PER_100_SECONDS}
+        self.crm_api_client = crm.CloudResourceManagerClient(
+            global_configs=fake_global_configs)
 
         self.crm_api_client.service = mock.MagicMock()
         self.crm_api_client.service.projects = mock.MagicMock()

@@ -54,6 +54,7 @@ class EnforcerTest(ForsetiTestCase):
         self.mock_time.now().AsSecondsSinceEpoch.return_value = MOCK_TIMESTAMP
 
         self.enforcer = enforcer.initialize_batch_enforcer(
+            {},
             concurrent_threads=1,
             max_write_threads=1,
             max_running_operations=0,

@@ -37,7 +37,7 @@ class OrgResourceRelDaoTest(ForsetiTestCase):
         mock_org_dao.return_value = None
         mock_folder_dao.return_value = None
         mock_project_dao.return_value = None
-        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao()
+        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao({})
 
         # TODO: move this to separate module
         self.fake_org = organization.Organization(
