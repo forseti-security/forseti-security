@@ -17,8 +17,6 @@
 import mock
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_client
-from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.gcp_type.folder import Folder
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import ProjectLifecycleState
@@ -101,14 +99,6 @@ class ProjectTest(ForsetiTestCase):
         org = Organization(id_2, display_name=name_2)
 
         self.assertTrue(project != org)
-
-    @mock.patch.object(CloudResourceManagerClient, 'get_project',
-                       autospec=True)
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def test_org_exists(self, mock_base, mock_crm):
-        """Tests that the organization exists."""
-        mock_crm.return_value = True
-        self.assertTrue(self.project1.exists())
 
 
 if __name__ == '__main__':

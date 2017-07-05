@@ -51,15 +51,16 @@ class StorageClient(_base_client.BaseClient):
 
     API_NAME = 'storage'
 
-    def __init__(self, credentials=None):
+    def __init__(self, global_configs=None, credentials=None):
         """Initialize.
 
         Args:
+            global_configs (dict): Global configurations.
             credentials (GoogleCredentials): Google credentials for auth-ing
                 to the API.
         """
         super(StorageClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+            global_configs, credentials=credentials, api_name=self.API_NAME)
         # Storage API has unlimited rate.
 
     def put_text_file(self, local_file_path, full_bucket_path):

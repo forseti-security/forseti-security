@@ -53,6 +53,7 @@ class ProjectEnforcer(object):
     # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  project_id,
+                 global_configs=None,
                  dry_run=False,
                  project_sema=None,
                  max_running_operations=0):
@@ -60,6 +61,7 @@ class ProjectEnforcer(object):
 
         Args:
           project_id: The project id for the project to enforce.
+          global_configs (dict): Global configurations.
           dry_run: Set to true to ensure no actual changes are made to the
               project. EnforcePolicy will still return a ProjectResult proto
               showing the changes that would have been made.
@@ -71,6 +73,7 @@ class ProjectEnforcer(object):
         """
         self.project_id = project_id
 
+        self.global_configs = global_configs
         self.result = enforcer_log_pb2.ProjectResult()
         self.result.project_id = self.project_id
 
@@ -123,7 +126,7 @@ class ProjectEnforcer(object):
           and an audit log with any changes made.
         """
         if not compute_service:
-            gce_api = compute.ComputeClient()
+            gce_api = compute.ComputeClient(self.global_configs)
             compute_service = gce_api.service
 
         # pylint: disable=attribute-defined-outside-init

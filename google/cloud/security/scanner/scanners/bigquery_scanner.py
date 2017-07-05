@@ -41,9 +41,10 @@ class BigqueryScanner(base_scanner.BaseScanner):
             list: List of Big Query acls.
         """
         bq_acls = {}
-        bq_acls = bigquery_dao.BigqueryDao().get_bigquery_acls(
-            'bigquery_datasets',
-            self.snapshot_timestamp)
+        bq_acls = (bigquery_dao
+                   .BigqueryDao(self.global_configs)
+                   .get_bigquery_acls('bigquery_datasets',
+                                      self.snapshot_timestamp))
         return bq_acls
 
     @staticmethod
