@@ -19,6 +19,9 @@ See:
 """
 
 
+from google.cloud.security.common.gcp_type import key
+
+
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-param-doc
 
@@ -42,5 +45,54 @@ class InstanceGroup(object):
         self.subnetwork = kwargs.get('subnetwork')
         self.zone = kwargs.get('zone')
 
-    # TODO: Create utility methods to reconstruct full region, target, and
-    # self link.
+    @property
+    def key(self):
+        return Key.from_args(self.project_id, self.name,
+                             region=self.region,
+                             zone=self.zone)
+
+
+KEY_OBJECT_KIND = 'InstanceGroup'
+
+
+class Key(key.Key):
+
+    @staticmethod
+    def from_args(project_id, name, region=None, zone=None):
+        if not bool(region) ^ bool(zone):
+            raise ValueError('Key must specify one of either region or zone')
+        return Key(KEY_OBJECT_KIND, {
+            'project_id': project_id,
+            'region': region,
+            'zone': zone,
+            'name': name})
+
+    @classmethod
+    def from_url(cls, url):
+        obj = Key._from_url(KEY_OBJECT_KIND,
+                            {'projects': 'project_id',
+                             'regions': 'region',
+                             'zones': 'zone',
+                             'instanceGroups': 'name'},
+                            url)
+        if (obj.project_id is None or
+                obj.name is None or
+                not (bool(obj.zone) ^ bool(obj.region))):
+            raise ValueError('Invalid fields in URL %r' % url)
+        return obj
+
+    @property
+    def project_id(self):
+        return self._path_component('project_id')
+
+    @property
+    def region(self):
+        return self._path_component('region')
+
+    @property
+    def zone(self):
+        return self._path_component('zone')
+
+    @property
+    def name(self):
+        return self._path_component('name')

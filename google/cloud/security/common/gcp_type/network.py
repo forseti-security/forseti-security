@@ -12,38 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A Compute InstanceTemplate.
+"""A Compute Network.
 
-See:
- https://cloud.google.com/compute/docs/reference/latest/instanceTemplates
+See: https://cloud.google.com/compute/docs/reference/beta/networks
 """
 
 
 from google.cloud.security.common.gcp_type import key
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc
-
-
-class InstanceTemplate(object):
-    """Represents InstanceTemplate resource."""
-
-    def __init__(self, **kwargs):
-        """InstanceTemplate resource."""
-        self.creation_timestamp = kwargs.get('creation_timestamp')
-        self.description = kwargs.get('description')
-        self.name = kwargs.get('name')
-        self.project_id = kwargs.get('project_id')
-        self.properties = kwargs.get('properties')
-        self.resource_id = kwargs.get('id')
-
-    @property
-    def key(self):
-        return Key.from_args(self.project_id, self.name)
-
-
-KEY_OBJECT_KIND = 'InstanceTemplate'
+KEY_OBJECT_KIND = 'Network'
 
 
 class Key(key.Key):
@@ -55,13 +33,23 @@ class Key(key.Key):
             'name': name})
 
     @staticmethod
-    def from_url(url):
+    def from_url(url, project_id=None):
+        """Accepts relative network 'URLs' as seen in firewall rule resources.
+
+           xref:
+           https://cloud.google.com/compute/docs/reference/latest/firewalls
+        """
+        if '://' not in url:
+            url = 'https://www.googleapis.com/compute/v1/%s' % url
         obj = Key._from_url(KEY_OBJECT_KIND,
                             {'projects': 'project_id',
-                             'instanceTemplates': 'name'},
+                             'networks': 'name'},
                             url)
-        if obj.project_id is None or obj.name is None:
+        if obj.name is None or (project_id is None and
+                                    obj.project_id is None):
             raise ValueError('Missing fields in URL %r' % url)
+        elif obj.project_id is None:
+            obj._set_path_component('project_id', project_id)
         return obj
 
     @property
