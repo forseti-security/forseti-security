@@ -17,9 +17,6 @@
 ALL_ENABLED = [
     'organizations',
     'folders',
-    'groups',
-    'group_members',
-    'org_iam_policies',
     'projects',
     'bigquery_datasets',
     'buckets',
@@ -27,19 +24,24 @@ ALL_ENABLED = [
     'cloudsql',
     'firewall_rules',
     'forwarding_rules',
-    'project_iam_policies'                                       
+    'project_iam_policies',
+    'groups',
+    'group_members',
+    'org_iam_policies',
 ]
 
 ALL_DISABLED = []
 
 ONE_RESOURCE_IS_ENABLED = [
     'organizations',
+    'folders',
     'projects',
     'firewall_rules',
 ]
 
 TWO_RESOURCES_ARE_ENABLED = [
     'organizations',
+    'folders',
     'projects',
     'cloudsql',
     'firewall_rules',
@@ -47,31 +49,33 @@ TWO_RESOURCES_ARE_ENABLED = [
 
 THREE_RESOURCES_ARE_ENABLED_GROUP_MEMBERS = [
     'organizations',
-    'groups',
-    'group_members',
+    'folders',
     'projects',
     'cloudsql',
     'firewall_rules',
+    'groups',
+    'group_members',
 ]
 
 THREE_RESOURCES_ARE_ENABLED_GROUPS = [
     'organizations',
-    'groups',
+    'folders',
     'projects',
     'cloudsql',
     'firewall_rules',
+    'groups',
 ]
 
 CORE_RESOURCES_ARE_ENABLED = [
     'organizations',
     'folders',
-    'groups',
-    'group_members',
-    'org_iam_policies',
     'projects',
     'buckets',
     'buckets_acl',
     'firewall_rules',
     'forwarding_rules',
-    'project_iam_policies'                                       
+    'project_iam_policies',
+    'groups',
+    'group_members',
+    'org_iam_policies',
 ]
