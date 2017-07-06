@@ -210,7 +210,7 @@ class ComputeClient(_base_client.BaseClient):
             paged_results, 'instanceGroups')
         for instance_group in instance_groups:
             instance_group.instance_urls = self.get_instance_group_instances(
-                self, project_id, instance_group.zone, instance_group.name)
+                project_id, instance_group.zone, instance_group.name)
         return instance_groups
 
     def get_instance_templates(self, project_id):

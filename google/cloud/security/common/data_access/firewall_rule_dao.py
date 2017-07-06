@@ -30,10 +30,10 @@ class FirewallRuleDao(dao.Dao):
         """Get firewall rules from a particular snapshot.
 
         Args:
-            timestamp: The snapshot timestamp.
+            timestamp (int): The snapshot timestamp.
 
         Returns:
-            A list of FirewallRule.
+            list: FirewallRule
 
         Raises:
             MySQLError if a MySQL error occurs.

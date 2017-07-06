@@ -41,12 +41,14 @@ class IapRulesEngine(bre.BaseRulesEngine):
         """Initialize.
 
         Args:
-            rules_file_path: file location of rules
+            rules_file_path (str): file location of rules
+            snapshot_timestamp (int): snapshot to load
         """
         super(IapRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
+    # pylint: disable=arguments-differ
     def build_rule_book(self):
         """Build IapRuleBook from the rules definition file."""
         self.rule_book = IapRuleBook(self._load_rule_definitions())
@@ -54,7 +56,14 @@ class IapRulesEngine(bre.BaseRulesEngine):
     # pylint: disable=arguments-differ
     def find_policy_violations(self, iap_resource,
                                force_rebuild=False):
-        """Determine whether IAP-related settings violate rules."""
+        """Determine whether IAP-related settings violate rules.
+
+        Args:
+            iap_resource (IapResource): find violations on this
+            force_rebuild (bool): whether to rebuild the rulebook
+
+        Returns:
+            list: RuleViolation"""
         violations = itertools.chain()
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
@@ -67,7 +76,10 @@ class IapRulesEngine(bre.BaseRulesEngine):
         return violations
 
     def add_rules(self, rules):
-        """Add rules to the rule book."""
+        """Add rules to the rule book.
+
+        Args:
+            rules (list): IapRuleDef"""
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
@@ -79,7 +91,7 @@ class IapRuleBook(bre.BaseRuleBook):
         """Initialization.
 
         Args:
-            rule_defs: rule definitons
+            rule_defs (list): IapRuleDef rule definitons
         """
         super(IapRuleBook, self).__init__()
         self.resource_rules_map = {}
@@ -90,7 +102,10 @@ class IapRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
 
     def add_rules(self, rule_defs):
-        """Add rules to the rule book"""
+        """Add rules to the rule book.
+
+        Args:
+            rule_defs (list): rule definition property dicts"""
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
@@ -98,9 +113,9 @@ class IapRuleBook(bre.BaseRuleBook):
         """Add a rule to the rule book.
 
         Args:
-            rule_def: A dictionary containing rule definition properties.
-            rule_index: The index of the rule from the rule definitions.
-            Assigned automatically when the rule book is built.
+            rule_def (dict): rule definition properties
+            rule_index (int): index of the rule from the rule definitions,
+                              assigned automatically when the rule book is built
         """
 
         resources = rule_def.get('resource')
@@ -139,11 +154,8 @@ class IapRuleBook(bre.BaseRuleBook):
     def get_resource_rules(self):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
 
-        Args:
-            resource: The resource to find in the ResourceRules map.
-
         Returns:
-            A list of ResourceRules.
+            list: ResourceRules
         """
         resource_rules = []
 
@@ -155,6 +167,7 @@ class IapRuleBook(bre.BaseRuleBook):
 
 class Rule(object):
     """Rule properties from the rule definition file.
+
     Also finds violations.
     """
 
@@ -162,9 +175,9 @@ class Rule(object):
         """Initialize.
 
         Args:
-            rule_name: Name of the loaded rule
-            rule_index: The index of the rule from the rule definitions
-            rules: The rules from the file
+            rule_name (str): Name of the loaded rule
+            rule_index (int): The index of the rule from the rule definitions
+            rules (list): list of ResourceRule
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
@@ -174,10 +187,10 @@ class Rule(object):
         """Find IAP policy violations in the rule book.
 
         Args:
-            iap_resource: IapResource
+            iap_resource (IapResource): resource to inspect
 
-        Returns:
-            Returns RuleViolation named tuple
+        Yields:
+            RuleViolation: IAP violations
         """
         if self.rules.backend_service_name != '^.+$':
             if not re.match(self.rules.backend_service_name,
@@ -205,17 +218,17 @@ class Rule(object):
         if self.rules.allowed_direct_access_sources != '^.+$':
             sources_regex = re.compile(self.rules.\
                                        allowed_direct_access_sources)
-            direct_access_sources_violations = [
+            direct_sources_violations = [
                 source for source in iap_resource.direct_access_sources
                 if sources_regex.match(source)
             ]
         else:
-            direct_access_sources_violations = []
+            direct_sources_violations = []
 
         should_raise_violation = (
             alternate_services_violations or
             iap_enabled_violation or
-            direct_access_sources_violations)
+            direct_sources_violations)
 
         if should_raise_violation:
             yield self.RuleViolation(
@@ -228,7 +241,7 @@ class Rule(object):
                 alternate_services_violations=alternate_services_violations,
                 iap_enabled_violation=iap_enabled_violation,
                 direct_access_sources_violations=(
-                    direct_access_sources_violations))
+                    direct_sources_violations))
 
     RuleViolation = namedtuple(
         'RuleViolation',

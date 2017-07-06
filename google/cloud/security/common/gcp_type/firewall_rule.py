@@ -17,7 +17,6 @@
 See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 """
 
-# pylint: disable=too-few-public-methods
 # pylint: disable=too-many-instance-attributes
 
 
@@ -25,7 +24,10 @@ class FirewallRule(object):
     """Represents Firewall resource."""
 
     def __init__(self, **kwargs):
-        """Firewall resource."""
+        """Firewall resource.
+
+        Args:
+          kwargs (dict): Object properties"""
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
         self.create_time = kwargs.get('firewall_rule_create_time')
@@ -43,7 +45,14 @@ class FirewallRule(object):
 
     @property
     def priority(self):
+        """The effective priority of the firewall rule.
+
+        Per https://cloud.google.com/compute/docs/reference/latest/firewalls
+        the default priority is 1000.
+
+        Returns:
+          int: Rule priority (lower is more important)
+        """
         if self._priority is None:
             return 1000
-        else:
-            return self._priority
+        return self._priority
