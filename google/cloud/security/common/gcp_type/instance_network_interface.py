@@ -13,10 +13,12 @@
 # limitations under the License.
 """A Enforced Network Resource."""
 
+import json
 
 # pylint: disable=too-few-public-methods
 class InstanceNetworkInterface(object):
-    """InstanceNetworkInterface Resource."""
+
+
 
     def __init__(self, network_interface):
         """Initialize
@@ -27,7 +29,7 @@ class InstanceNetworkInterface(object):
 
         network_dictionary = json.loads(network_interface)
         if len(network_dictionary) > 1:
-               LOGGER.error('Should only be one interface ties to an virtual instance.')
+            LOGGER.error('Should only be one interface ties to an virtual instance.')
         self.kind = network_dictionary[0].get('kind')
         self.network = network_dictionary[0].get('network')
         self.subnetwork = network_dictionary[0].get('subnetwork')
@@ -50,7 +52,7 @@ class InstanceNetworkInterface(object):
         return (not self.__eq__(other))
 
     def __eq__(self, other):
-        if isinstance(self, GceNetwork):
+        if isinstance(self, InstanceNetworkInterface):
             return ((self.kind == other.kind) and 
                     (self.network == other.network) and 
                     (self.subnetwork == other.subnetwork) and
