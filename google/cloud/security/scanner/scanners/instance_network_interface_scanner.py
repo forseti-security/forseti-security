@@ -31,8 +31,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         Args:
             snapshot_timestamp: The snapshot timestamp
         """
-        super(InstanceNetworkInterfaceScanner, self).__init__(
-            snapshot_timestamp)
+        super(InstanceNetworkInterfaceScanner, self).__init__(snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
     
     def get_instance_networks_interfaces(self):
