@@ -1,6 +1,6 @@
 ---
 title: Contributing to Forseti
-order: 001
+order: 002
 ---
 
 #  {{ page.title }}
