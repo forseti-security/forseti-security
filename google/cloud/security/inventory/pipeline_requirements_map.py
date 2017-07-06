@@ -102,7 +102,7 @@ REQUIREMENTS_MAP = {
          'dao_name': 'organization_dao'},
     'projects':
         {'module_name': 'load_projects_pipeline',
-         'depends_on': 'organizations',
+         'depends_on': 'folders',
          'api_name': 'crm_api',
          'dao_name': 'project_dao'},
     'projects_iam_policies':
