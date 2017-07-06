@@ -25,19 +25,41 @@ KEY_OBJECT_KIND = 'Network'
 
 
 class Key(key.Key):
+    """An identifier for a specific network."""
 
     @staticmethod
     def from_args(project_id, name):
+        """Construct a Key from specific values.
+
+        Args:
+            project_id (str): project_id
+            name (str): name
+
+        Returns:
+            Key: the key
+        """
         return Key(KEY_OBJECT_KIND, {
             'project_id': project_id,
             'name': name})
 
     @staticmethod
     def from_url(url, project_id=None):
-        """Accepts relative network 'URLs' as seen in firewall rule resources.
+        """Construct a Key from a URL.
 
+           Accepts relative network 'URLs' as seen in firewall rule resources.
            xref:
            https://cloud.google.com/compute/docs/reference/latest/firewalls
+
+        Args:
+            url (str): Object reference URL
+            project_id (str): Default project ID if, in the case of a relative
+                              URL, none is present
+
+        Returns:
+            Key: the key
+
+        Raises:
+            ValueError: Required parameters are missing.
         """
         if '://' not in url:
             url = 'https://www.googleapis.com/compute/v1/%s' % url
@@ -52,8 +74,18 @@ class Key(key.Key):
 
     @property
     def project_id(self):
+        """Object property: project_id
+
+        Returns:
+            str: project_id
+        """
         return self._path_component('project_id')
 
     @property
     def name(self):
+        """Object property: name
+
+        Returns:
+            str: name
+        """
         return self._path_component('name')
