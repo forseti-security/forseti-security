@@ -1,8 +1,6 @@
 ---
 title: Testing
-order: 001
-hide:
-  left_sidebar: true
+order: 2
 ---
 # {{ page.title }}
 
