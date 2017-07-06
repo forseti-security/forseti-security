@@ -152,8 +152,7 @@ BUCKETS_BY_PROJECT_ID = """
 # TODO: reduce these sql to a generic statement
 SELECT_POLICY_VIOLATIONS = """
     SELECT * FROM violations_{0}
-    WHERE violation_type = 'ADDED' 
-    OR violation_type = 'REMOVED';
+    WHERE violation_type in ['ADDED', 'REMOVED'];
 """
 
 SELECT_BIGQUERY_ACL_VIOLATIONS = """
