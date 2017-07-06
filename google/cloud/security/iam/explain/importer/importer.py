@@ -27,7 +27,20 @@ from google.cloud.security.iam.explain.importer import roles as roledef
 
 class ResourceCache(dict):
     """Resource cache."""
-    pass
+    def __setitem__(self, key, value):
+        """Overriding to assert the keys does not exist previously.
+
+            Args:
+                key (object): Key into the dict.
+                value (object): Value to set.
+
+            Raises:
+                Exception: If the key already exists in the dict.
+        """
+
+        if key in self:
+            raise Exception('Key should not exist: {}'.format(key))
+        super(ResourceCache, self).__setitem__(key, value)
 
 
 class MemberCache(dict):
@@ -312,6 +325,7 @@ class ForsetiImporter(object):
                 display_name=forseti_project.project_name,
                 parent=obj))
         self.resource_cache[project.type_name] = (project, full_project_name)
+        self.resource_cache[forseti_project.project_id] = (project, full_project_name)
         return project
 
     def _convert_bucket(self, forseti_bucket):
@@ -336,6 +350,32 @@ class ForsetiImporter(object):
                 type='bucket',
                 parent=parent))
         return bucket
+
+    def _convert_instance(self, forseti_instance):
+        """Creates a db object from a Forseti gce instance.
+
+        Args:
+            forseti_instance (object): Forseti DB object for a gce instance.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+
+        instance_name = 'instance/{}#{}'.format(
+            forseti_instance.project_id,
+            forseti_instance.name)
+        parent, full_parent_name = self.resource_cache[
+            forseti_instance.project_id]
+
+        full_instance_name = '{}/{}'.format(full_parent_name, instance_name)
+        instance = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_instance_name,
+                type_name=instance_name,
+                name=forseti_instance.name,
+                type='instance',
+                parent=parent))
+        return instance
 
     def _convert_cloudsqlinstance(self, forseti_cloudsqlinstance):
         """Creates a db sql instance from a Forseti sql instance.
@@ -504,6 +544,7 @@ class ForsetiImporter(object):
                 'cloudsqlinstances': self._convert_cloudsqlinstance,
                 'group': self._convert_group,
                 'membership': self._convert_membership,
+                'instances': self._convert_instance,
                 }
 
             item_counter = 0

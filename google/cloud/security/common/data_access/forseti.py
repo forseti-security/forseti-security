@@ -271,11 +271,31 @@ def create_table_names(timestamp):
                 self.id,
                 self.name)
 
+    class Instances(BASE):
+        """Represents a Cloud GCE instance."""
+
+        __tablename__ = 'instances_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_id = Column(String(255))
+        name = Column(String(255))
+        service_accounts = Column(Text())
+        raw_instance = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Instance(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.name)
+
     result = (Organization,
               Folders,
               [('projects', Project),
                ('buckets', Bucket),
-               ('cloudsqlinstances', CloudSqlInstances)],
+               ('cloudsqlinstances', CloudSqlInstances),
+               ('instances', Instances)],
               [OrganizationPolicy, ProjectPolicy],
               [GroupMembers, Groups])
     TABLE_CACHE[timestamp] = result
