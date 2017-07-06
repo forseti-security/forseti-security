@@ -326,6 +326,24 @@ def create_table_names(timestamp):
                 self.id,
                 self.dataset_id)
 
+    class BackendServices(BASE):
+        """Represents a Cloud Backend Service."""
+
+        __tablename__ = 'backend_services_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_id = Column(String(255))
+        name = Column(String(255))
+        raw_backend_service = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Bigquery Dataset(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.name)
+
     result = (Organization,
               Folders,
               [('projects', Project),
@@ -333,7 +351,8 @@ def create_table_names(timestamp):
                ('cloudsqlinstances', CloudSqlInstances),
                ('instances', Instances),
                ('instancegroups', InstanceGroups),
-               ('bigquerydatasets', BigqueryDatasets)],
+               ('bigquerydatasets', BigqueryDatasets),
+               ('backendservices', BackendServices)],
               [OrganizationPolicy, ProjectPolicy],
               [GroupMembers, Groups])
     TABLE_CACHE[timestamp] = result

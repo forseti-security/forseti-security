@@ -388,20 +388,22 @@ class ForsetiImporter(object):
             object: dao Resource() table object.
         """
 
-        instance_group_name = 'instancegroup/{}#{}'.format(
+        instance_group_name = '{}#{}'.format(
             forseti_instance_group.project_id,
             forseti_instance_group.name)
+        instance_group_type_name = 'instancegroup/{}'.format(
+            instance_group_name)
         parent, full_parent_name = self.resource_cache[
             forseti_instance_group.project_id]
 
         full_instance_name = '{}/{}'.format(
-            full_parent_name, instance_group_name)
+            full_parent_name, instance_group_type_name)
 
         instance = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
-                type_name=instance_group_name,
-                name=forseti_instance_group.name,
+                type_name=instance_group_type_name,
+                name=instance_group_name,
                 type='instancegroup',
                 parent=parent))
         return instance
@@ -416,22 +418,54 @@ class ForsetiImporter(object):
         Returns:
             object: dao Resource() table object.
         """
-
-        bigquery_dataset_name = 'bigquerydataset/{}#{}'.format(
+        bigquery_dataset_name = '{}#{}'.format(
             forseti_bigquery_dataset.project_id,
             forseti_bigquery_dataset.dataset_id)
+        bigquery_dataset_type_name = 'bigquerydataset/{}'.format(
+            bigquery_dataset_name)
         parent, full_parent_name = self.resource_cache[
             forseti_bigquery_dataset.project_id]
 
         full_instance_name = '{}/{}'.format(
-            full_parent_name, bigquery_dataset_name)
+            full_parent_name, bigquery_dataset_type_name)
 
         instance = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
-                type_name=bigquery_dataset_name,
-                name=forseti_bigquery_dataset.dataset_id,
+                type_name=bigquery_dataset_type_name,
+                name=bigquery_dataset_name,
                 type='bigquerydataset',
+                parent=parent))
+        return instance
+
+    def _convert_backend_service(self, forseti_backend_service):
+        """Creates a db object from a Forseti backend service.
+
+        Args:
+            forseti_backend_service (object): Forseti DB object for a gce
+            backend service.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+
+        backend_service_name = '{}#{}'.format(
+            forseti_backend_service.project_id,
+            forseti_backend_service.name)
+        backend_service_type_name = 'backendservice/{}'.format(
+            backend_service_name)
+        parent, full_parent_name = self.resource_cache[
+            forseti_backend_service.project_id]
+
+        full_instance_name = '{}/{}'.format(
+            full_parent_name, forseti_backend_service)
+
+        instance = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_instance_name,
+                type_name=backend_service_type_name,
+                name=backend_service_name,
+                type='backendservice',
                 parent=parent))
         return instance
 
@@ -605,6 +639,7 @@ class ForsetiImporter(object):
                 'instances': self._convert_instance,
                 'instancegroups': self._convert_instance_group,
                 'bigquerydatasets': self._convert_bigquery_dataset,
+                'backendservices': self._convert_backend_service,
                 }
 
             item_counter = 0
