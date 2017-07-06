@@ -140,13 +140,10 @@ class Key(object):
             int: (-1 if self < other, 0 if self == other, 1 if self > other)
         """
         # pylint: disable=protected-access
-        # Yay for pylint bugs...
-        # pylint: disable=no-else-return
         if isinstance(other, Key):
             return (cmp(self._object_kind, other._object_kind) or
                     cmp(self._object_path_tuple, other._object_path_tuple))
-        else:
-            return cmp(self, other)
+        return cmp(self, other)
 
     def __hash__(self):
         """Hashcode for the object.
