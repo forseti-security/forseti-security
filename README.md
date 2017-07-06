@@ -7,6 +7,11 @@ This branch (gh-pages) hosts the content used to build the
 
 See [LICENSE](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/LICENSE)
 
+### Third-party licenses
+
+Third-party code and their respective licsenses are in
+[third_party/](https://github.com/GoogleCloudPlatform/forseti-security/tree/gh-pages/third_party).
+
 ## Contributing
 
 See [CONTRIBUTING.md](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
