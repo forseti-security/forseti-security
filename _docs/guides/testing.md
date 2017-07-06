@@ -1,21 +1,14 @@
 ---
-title: Development
+title: Testing
 order: 001
 hide:
   left_sidebar: true
 ---
 # {{ page.title }}
 
-## Contributing
-
-We welcome your contributions! Check out our guidelines for
-[contributing](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
-
-## Testing
-
 This page describes how to run tests on your Forseti contributions.
 
-### Executing tests
+## Executing tests
 
 You can find the unit tests in the top-level `tests/` directory.
 
@@ -37,7 +30,7 @@ To run tests for a particular file pattern:
   $ python setup.py google_test --test-module-pattern tests
   ```
 
-### Known issues
+## Known issues
 
 The unit tests have a lot of errors about gflags. You can ignore these at this
 time.
