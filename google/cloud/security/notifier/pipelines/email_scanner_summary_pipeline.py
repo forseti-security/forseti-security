@@ -13,21 +13,14 @@
 # limitations under the License.
 """Email pipeline for scanner summary."""
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
 import collections
 
+# pylint: disable=line-too-long
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.notifier.pipelines import base_notification_pipeline as bnp
 # pylint: enable=line-too-long
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,redundant-returns-doc
-# pylint: disable=missing-param-doc
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -37,11 +30,17 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
 
     # TODO: See if the base pipline init() can be reused.
     def __init__(self, sendgrid_key):  # pylint: disable=super-init-not-called
+        """Initialize.
+
+        Args:
+            sendgrid_key (str): The SendGrid API key.
+        """
         self.email_util = EmailUtil(sendgrid_key)
 
     def _compose(  # pylint: disable=arguments-differ
             self, all_violations, total_resources):
         """Compose the scan summary.
+
         Build a summary of the violations and counts for the email.
         resource summary:
             {
@@ -57,12 +56,12 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
                 ...
             }
         Args:
-            all_violations: List of violations.
-            total_resources: A dict of the resources and their count.
+            all_violations (list): List of violations.
+            total_resources (dict): A dict of the resources and their count.
 
         Returns:
-            total_violations: Integer of the total violations.
-            resource_summaries: Dictionary of resource to violations.
+            int: total_violations, an integer of the total violations.
+            dict: resource_summaries, a dict of resource to violations.
                 {'organization':
                     {'pluralized_resource_type': 'Organizations',
                      'total': 1,
@@ -74,12 +73,13 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
                                                 ('foo2_project', 222),
                                                 ('foo3_project', 333)])}}
         """
-
         resource_summaries = {}
         total_violations = 0
 
-        for violation in sorted(all_violations, key=lambda v: v.resource_id):
-            resource_type = violation.resource_type
+        for violation in sorted(all_violations,
+                                key=lambda v: v.get('resource_id')):
+            resource_id = violation.get('resource_id')
+            resource_type = violation.get('resource_type')
             if resource_type not in resource_summaries:
                 resource_summaries[resource_type] = {
                     'pluralized_resource_type': resource_util.pluralize(
@@ -89,14 +89,12 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
                 }
 
             # Keep track of # of violations per resource id.
-            if (violation.resource_id not in
+            if (resource_id not in
                     resource_summaries[resource_type]['violations']):
-                resource_summaries[resource_type][
-                    'violations'][violation.resource_id] = 0
+                resource_summaries[resource_type]['violations'][resource_id] = 0
 
-            resource_summaries[resource_type][
-                'violations'][violation.resource_id] += len(violation.members)
-            total_violations += len(violation.members)
+            resource_summaries[resource_type]['violations'][resource_id] += 1
+            total_violations += 1
 
         return total_violations, resource_summaries
 
@@ -107,12 +105,12 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
         """Send a summary email of the scan.
 
         Args:
-            csv_name: The full path of the local csv filename.
-            output_filename: String of the output filename.
-            now_utc: The UTC datetime right now.
-            violation_errors: Iterable of violation errors.
-            total_violations: Integer of the total violations.
-            resource_summaries: Dictionary of resource to violations.
+            csv_name (str): The full path of the local csv filename.
+            output_filename (str): The output filename.
+            now_utc (datetime): The UTC datetime right now.
+            violation_errors (iterable): Iterable of violation errors.
+            total_violations (int): The total violations.
+            resource_summaries (dict): Maps resource to violations.
                 {'organization':
                     {'pluralized_resource_type': 'Organizations',
                      'total': 1,
@@ -123,10 +121,9 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
                      'violations': OrderedDict([('foo1_project', 111),
                                                 ('foo2_project', 222),
                                                 ('foo3_project', 333)])}}
-            email_sender: String of the sender of the email.
-            email_recipient: String of the recipient of the email.
+            email_sender (str): The sender of the email.
+            email_recipient (str): The recipient of the email.
         """
-
         # Render the email template with values.
         scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
         email_content = EmailUtil.render_from_template(
@@ -161,17 +158,14 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
         """Run the email pipeline
 
         Args:
-            csv_name: The full path of the local csv filename.
-            output_filename: String of the output filename.
-            now_utc: The UTC datetime right now.
-            all_violations: The list of violations.
-            total_resources: A dict of the resources and their count.
-            violation_errors: Iterable of violation errors.
-            email_sender: String of the sender of the email.
-            email_recipient: String of the recipient of the email.
-
-        Returns:
-             None
+            csv_name (str): The full path of the local csv filename.
+            output_filename (str): String of the output filename.
+            now_utc (datetime): The UTC datetime right now.
+            all_violations (list): The list of violations.
+            total_resources (dict): A dict of the resources and their count.
+            violation_errors (iterable): Iterable of violation errors.
+            email_sender (str): The sender of the email.
+            email_recipient (str): The recipient of the email.
         """
         total_violations, resource_summaries = self._compose(
             all_violations, total_resources)

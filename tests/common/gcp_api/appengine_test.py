@@ -23,10 +23,14 @@ from google.cloud.security.common.gcp_api import appengine
 class AppEngineTest(ForsetiTestCase):
     """Test the AppEngine client."""
 
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def setUp(self, mock_base_client):
+    @mock.patch('google.cloud.security.common.gcp_api._base_client.discovery')
+    @mock.patch('google.cloud.security.common.gcp_api._base_client.GoogleCredentials')
+    def setUp(self, mock_google_credential, mock_discovery):
         """Set up."""
-        self.client = appengine.AppEngineClient()
+
+        fake_global_configs = {
+            'max_appengine_api_calls_per_second': 20}
+        self.client = appengine.AppEngineClient(fake_global_configs)
 
     def test_get_app(self):
         self.client.service = mock.MagicMock()

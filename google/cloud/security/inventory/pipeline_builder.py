@@ -20,7 +20,6 @@ import sys
 import anytree
 
 from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import pipeline_requirements_map
 
@@ -31,22 +30,22 @@ LOGGER = log_util.get_logger(__name__)
 class PipelineBuilder(object):
     """Inventory Pipeline Builder."""
 
-    def __init__(self, cycle_timestamp, config_path, flags,
+    def __init__(self, cycle_timestamp, inventory_configs, global_configs,
                  api_map, dao_map):
         """Initialize the pipeline builder.
 
         Args:
             cycle_timestamp (str): Timestamp formatted as YYYYMMDDTHHMMSSZ.
-            config_path (str): Path to the inventory config file.
-            flags (dict): Flag values.
+            inventory_configs (dict): Inventory configurations.
+            global_configs (dict): Global configurations.
             api_map (dict): GCP API info, mapped to each resource.
             dao_map (dict): DAO instances, mapped to each resource.
 
         Returns:
         """
         self.cycle_timestamp = cycle_timestamp
-        self.config_path = config_path
-        self.flags = flags
+        self.inventory_configs = inventory_configs
+        self.global_configs = global_configs
         self.api_map = api_map
         self.dao_map = dao_map
         self.initialized_api_map = {}
@@ -87,9 +86,10 @@ class PipelineBuilder(object):
             api_version = self.api_map.get(api_name).get('version')
             try:
                 if api_version is None:
-                    api = api_class()
+                    api = api_class(self.global_configs)
                 else:
-                    api = api_class(version=api_version)
+                    api = api_class(self.global_configs,
+                                    version=api_version)
             except api_errors.ApiExecutionError as e:
                 LOGGER.error('Failed to execute API %s, v=%s',
                              api_class_name, api_version)
@@ -188,7 +188,7 @@ class PipelineBuilder(object):
                     continue
 
                 pipeline = pipeline_class(
-                    self.cycle_timestamp, self.flags, api, dao)
+                    self.cycle_timestamp, self.global_configs, api, dao)
                 runnable_pipelines.append(pipeline)
 
         return runnable_pipelines
@@ -211,8 +211,7 @@ class PipelineBuilder(object):
         # regardless if they should run or not.
         map_of_all_pipeline_nodes = {}
 
-        config = file_loader.read_and_parse_file(self.config_path)
-        configured_pipelines = config.get('pipelines', [])
+        configured_pipelines = self.inventory_configs.get('pipelines', [])
 
         for entry in configured_pipelines:
             map_of_all_pipeline_nodes[entry.get('resource')] = PipelineNode(
