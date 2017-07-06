@@ -12,47 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A Compute InstanceTemplate.
+"""A Compute Network.
 
-See:
- https://cloud.google.com/compute/docs/reference/latest/instanceTemplates
+See: https://cloud.google.com/compute/docs/reference/beta/networks
 """
 
 
 from google.cloud.security.common.gcp_type import key
 
 
-class InstanceTemplate(object):
-    """Represents InstanceTemplate resource."""
-
-    def __init__(self, **kwargs):
-        """InstanceTemplate resource.
-
-        Args:
-            kwargs: The object's attributes.
-        """
-        self.creation_timestamp = kwargs.get('creation_timestamp')
-        self.description = kwargs.get('description')
-        self.name = kwargs.get('name')
-        self.properties = kwargs.get('properties')
-        self.resource_id = kwargs.get('id')
-        self.project_id = kwargs.get('project_id')
-
-    @property
-    def key(self):
-        """Returns a Key identifying the object.
-
-        Returns:
-            Key: the key
-        """
-        return Key.from_args(self.project_id, self.name)
-
-
-KEY_OBJECT_KIND = 'InstanceTemplate'
+KEY_OBJECT_KIND = 'Network'
 
 
 class Key(key.Key):
-    """An identifier for a specific instance template."""
+    """An identifier for a specific network."""
 
     @staticmethod
     def from_args(project_id, name):
@@ -70,11 +43,17 @@ class Key(key.Key):
             'name': name})
 
     @staticmethod
-    def from_url(url):
+    def from_url(url, project_id=None):
         """Construct a Key from a URL.
+
+           Accepts relative network 'URLs' as seen in firewall rule resources.
+           xref:
+           https://cloud.google.com/compute/docs/reference/latest/firewalls
 
         Args:
             url (str): Object reference URL
+            project_id (str): Default project ID if, in the case of a relative
+                              URL, none is present
 
         Returns:
             Key: the key
@@ -82,11 +61,14 @@ class Key(key.Key):
         Raises:
             ValueError: Required parameters are missing.
         """
+        if '://' not in url:
+            url = 'https://www.googleapis.com/compute/v1/%s' % url
         obj = Key._from_url(KEY_OBJECT_KIND,
                             {'projects': 'project_id',
-                             'instanceTemplates': 'name'},
-                            url)
-        if obj.project_id is None or obj.name is None:
+                             'networks': 'name'},
+                            url,
+                            defaults={'project_id': project_id})
+        if obj.name is None or obj.project_id is None:
             raise ValueError('Missing fields in URL %r' % url)
         return obj
 
