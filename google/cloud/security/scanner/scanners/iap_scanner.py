@@ -96,8 +96,8 @@ class _RunData(object):
     def find_instance_group_port(backend_service, instance_group):
         if backend_service.port_name:
             for named_port in (instance_group.named_ports or tuple()):
-                if named_port.name == backend_service.port_name:
-                    return int(named_port.port_number)
+                if named_port.get('name') == backend_service.port_name:
+                    return int(named_port.get('port'))
         return int(backend_service.port)
 
     def firewall_allowed_sources(self, network_port, tag):
@@ -140,7 +140,7 @@ class _RunData(object):
             relevant_rules_by_priority[firewall_rule.priority].append(
                 firewall_rule)
         priorities = relevant_rules_by_priority.keys()
-        priorities.sort()
+        priorities.sort(reverse=True)
         for priority in priorities:
             # DENY at a given priority takes precedence over ALLOW
             for firewall_rule in relevant_rules_by_priority[priority]:
@@ -232,7 +232,7 @@ class IapScanner(base_scanner.BaseScanner):
             direct_access_sources = set()
             for backend in backend_service.backends:
                 instance_group = run_data.find_instance_group_by_url(
-                    backend.group)
+                    backend.get('group'))
                 if not instance_group:
                     continue
 
@@ -246,10 +246,12 @@ class IapScanner(base_scanner.BaseScanner):
                             network_port, tag))
 
                 for backend_service2 in run_data.backend_services:
+                    if backend_service2.key == backend_service.key:
+                        continue
                     found_alternate_service = False
                     for backend2 in backend_service2.backends:
                         instance_group2 = run_data.find_instance_group_by_url(
-                            backend2.group)
+                            backend2.get('group'))
                         if not instance_group2:
                             continue
                         network_port2 = run_data.instance_group_network_port(
@@ -259,7 +261,7 @@ class IapScanner(base_scanner.BaseScanner):
                         if instance_group == instance_group2:
                             found_alternate_service = True
                             break
-                        for instance_url in instance_group.urls:
+                        for instance_url in instance_group.instance_urls:
                             if instance_url in instance_group2.instance_urls:
                                 found_alternate_service = True
                                 break
