@@ -9,7 +9,7 @@ See [LICENSE](https://github.com/GoogleCloudPlatform/forseti-security/blob/maste
 
 ### Third-party licenses
 
-Third-party code and their respective licsenses are in
+Third-party code and their respective licenses are in
 [third_party/](https://github.com/GoogleCloudPlatform/forseti-security/tree/gh-pages/third_party).
 
 ## Contributing
