@@ -39,10 +39,9 @@ class Key(object):
         should use 'from_args' or 'from_url' instead of calling this directly!
 
         Args:
-            object_kind: A string identifying the kind of resource
-                         the key represents.
-            object_path: A dictionary whose keys and values represent
-                         a unique identifier for the object.
+            object_kind (str): the kind of resource the key represents
+            object_path (dict): description of the properties that uniquely
+                                identify the object
         """
         self._object_kind = object_kind
         self._object_path = dict(object_path)
@@ -68,21 +67,26 @@ class Key(object):
         of project 'foo'.
 
         Args:
-            object_kind: A string identifying the kind of resource the key
-                         represents.
-            path_component_map: A dictionary mapping components in the URL
-                                path to object_path keys. In the backend
-                                service example, this would be:
-                                  {'projects': 'project_id',
-                                   'backendServices': 'name'}
-                                The special component 'global' is ignored.
-                                If a component not seen in this map is seen,
-                                this function raises an exception. The caller
-                                is responsible for checking that all required
-                                components were present.
-            url: The resource URL.
-            defaults: If non-None, a dictionary specifying default values
-                      for object_path keys.
+            object_kind (str): the kind of resource the key represents
+            path_component_map (dict): maps components in the URL
+                                       path to object_path keys. In the backend
+                                       service example, this would be:
+                                         {'projects': 'project_id',
+                                          'backendServices': 'name'}
+                                       The special component 'global'
+                                       is ignored.  If a component not
+                                       seen in this map is seen, this
+                                       function raises an
+                                       exception. The caller is
+                                       responsible for checking that
+                                       all required components were
+                                       present.
+            url (str): resource URL
+            defaults (dict): If non-None, a dictionary specifying default values
+                             for object_path keys.
+
+        Returns:
+            Key: a Key instance
 
         Raises:
             ValueError: If the URL is invalid.
@@ -116,14 +120,44 @@ class Key(object):
             return cls(object_kind, object_path)
 
     def _path_component(self, key):
+        """Retrieves a specific element from the path.
+
+        Args:
+            key (str): the component to retrieve
+
+        Returns:
+            object: the value
+        """
         return self._object_path.get(key)
 
     def __cmp__(self, other):
-        return (cmp(self._object_kind, other._object_kind) or
-                cmp(self._object_path_tuple, other._object_path_tuple))
+        """Compare a Key with another object for sorting purposes.
+
+        Args:
+            other (object): the object to compare with
+
+        Returns:
+            int: (-1 if self < other, 0 if self == other, 1 if self > other)
+        """
+        # pylint: disable=protected-access
+        if isinstance(other, Key):
+            return (cmp(self._object_kind, other._object_kind) or
+                    cmp(self._object_path_tuple, other._object_path_tuple))
+        else:
+            return cmp(self, other)
 
     def __hash__(self):
+        """Hashcode for the object.
+
+        Returns:
+            int: the hash code
+        """
         return hash((self._object_kind, self._object_path_tuple))
 
     def __repr__(self):
+        """Debugging representation of the object.
+
+        Returns:
+            str: the debug string
+        """
         return 'Key(%r, %r)' % (self._object_kind, self._object_path)
