@@ -3,7 +3,6 @@ title: Guides
 order: 001
 hide:
   right_sidebar: true
-  left_sidebar: true
 ---
 **[Contributing to Forseti](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md)**
 
