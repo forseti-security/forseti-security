@@ -44,7 +44,7 @@ class BaseRulesEngineTest(ForsetiTestCase):
         """Test that invoking build_rule_book() raises NotImplementedError."""
         base = bre.BaseRulesEngine('foo')
         with self.assertRaises(NotImplementedError):
-            base.build_rule_book()
+            base.build_rule_book({})
 
 
 class BaseRulesBookTest(ForsetiTestCase):

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Scanner runner script test."""
 
 from datetime import datetime
@@ -26,7 +25,7 @@ from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao as vdao
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
-from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline
+from google.cloud.security.notifier import notifier
 from google.cloud.security.scanner import scanner
 from google.cloud.security.scanner.audit import iam_rules_engine as ire
 from google.cloud.security.scanner.scanners import iam_rules_scanner as irs
@@ -35,10 +34,19 @@ from tests.inventory.pipelines.test_data import fake_iam_policies
 
 class ScannerRunnerTest(ForsetiTestCase):
 
+    FAKE_global_configs = {
+        'db_host': 'foo_host',
+        'db_user': 'foo_user',
+        'db_name': 'foo_db',
+        'email_recipient': 'foo_email_recipient'
+    }
+
+    FAKE_SCANNER_CONFIGS = {'output_path': 'foo_output_path'}
+
     def setUp(self):
         fake_utcnow = datetime(
-            year=1900, month=1, day=1,
-            hour=0, minute=0, second=0, microsecond=0)
+            year=1900, month=1, day=1, hour=0, minute=0, second=0,
+            microsecond=0)
         self.fake_utcnow = fake_utcnow
         self.fake_utcnow_str = self.fake_utcnow.strftime(
             scanner.OUTPUT_TIMESTAMP_FMT)
@@ -120,7 +128,7 @@ class ScannerRunnerTest(ForsetiTestCase):
 
     # TODO: fix this test
     #def test_find_violations(self):
-        """Test that find_violations() is called.
+    """Test that find_violations() is called.
 
         Setup:
             * Create fake policies.
@@ -131,6 +139,7 @@ class ScannerRunnerTest(ForsetiTestCase):
             * LOGGER.info called 1x.
             * LOGGER.debug called 4x.
         """
+
     #    policies = [
     #        ('x',
     #         {'role': 'roles/a', 'members': ['user:a@b.c', 'group:g@h.i']}),
@@ -159,27 +168,33 @@ class ScannerRunnerTest(ForsetiTestCase):
         self.assertEquals(expected, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp')
+    @mock.patch(
+        'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
+    )
     def test_get_timestamp(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""
         mock_get_ss_timestamp.return_value = self.fake_timestamp
-        actual = self.scanner._get_timestamp()
+        actual = self.scanner._get_timestamp(self.FAKE_global_configs)
         expected = self.fake_timestamp
         self.assertEquals(expected, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp')
+    @mock.patch(
+        'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
+    )
     def test_get_timestamp_handles_error(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""
         mock_get_ss_timestamp.side_effect = errors.MySQLError(
             'snapshot_cycles', mock.MagicMock())
-        actual = self.scanner._get_timestamp()
+        actual = self.scanner._get_timestamp(self.FAKE_global_configs)
         expected = None
         self.assertEquals(expected, actual)
         self.assertEquals(1, self.scanner.LOGGER.error.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.organization_dao.OrganizationDao.get_org_iam_policies')
+    @mock.patch(
+        'google.cloud.security.common.data_access.organization_dao.OrganizationDao.get_org_iam_policies'
+    )
     def test_get_org_policies_works(self, mock_get_org_iam, mock_conn):
         """Test that get_org_policies() works."""
         org_policies = [{
@@ -190,12 +205,16 @@ class ScannerRunnerTest(ForsetiTestCase):
         }]
         mock_get_org_iam.return_value = org_policies
 
-        actual = self.irs.IamPolicyScanner(self.fake_timestamp)._get_org_policies()
-        mock_get_org_iam.assert_called_once_with('organizations', self.fake_timestamp)
+        actual = self.irs.IamPolicyScanner(
+            self.FAKE_global_configs, self.fake_timestamp)._get_org_policies()
+        mock_get_org_iam.assert_called_once_with('organizations',
+                                                 self.fake_timestamp)
         self.assertEqual(org_policies, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_project_policies')
+    @mock.patch(
+        'google.cloud.security.common.data_access.project_dao.ProjectDao.get_project_policies'
+    )
     def test_get_project_policies(self, mock_get_proj_iam, mock_conn):
         """Test that get_org_policies() works."""
         proj_policies = [{
@@ -205,27 +224,32 @@ class ScannerRunnerTest(ForsetiTestCase):
             }
         }]
         mock_get_proj_iam.return_value = proj_policies
-        actual = self.irs.IamPolicyScanner(self.fake_timestamp)._get_project_policies()
+        actual = self.irs.IamPolicyScanner(
+            self.FAKE_global_configs, self.fake_timestamp)._get_project_policies()
         mock_get_proj_iam.assert_called_once_with('projects', self.fake_timestamp)
         self.assertEqual(proj_policies, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp')
+    @mock.patch(
+        'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
+    )
     def test_get_timestamp(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""
         mock_get_ss_timestamp.return_value = self.fake_timestamp
-        actual = scanner._get_timestamp()
+        actual = scanner._get_timestamp(self.FAKE_global_configs)
         self.assertEqual(1, mock_get_ss_timestamp.call_count)
         self.assertEqual(self.fake_timestamp, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp')
+    @mock.patch(
+        'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
+    )
     def test_get_timestamp_db_errors(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""
         mock_get_ss_timestamp.side_effect = errors.MySQLError(
             'snapshot_cycles', mock.MagicMock())
         scanner.LOGGER = mock.MagicMock()
-        actual = scanner._get_timestamp()
+        actual = scanner._get_timestamp(self.FAKE_global_configs)
         self.assertEqual(1, scanner.LOGGER.error.call_count)
         self.assertIsNone(actual)
 
@@ -233,18 +257,12 @@ class ScannerRunnerTest(ForsetiTestCase):
     @mock.patch.object(csv_writer, 'write_csv', autospec=True)
     @mock.patch.object(os, 'path', autospec=True)
     @mock.patch.object(scanner, '_upload_csv')
-    @mock.patch.object(email_scanner_summary_pipeline, 'EmailScannerSummaryPipeline')
+    @mock.patch.object(notifier, 'process')
     @mock.patch('google.cloud.security.scanner.scanner.datetime')
     @mock.patch.object(vdao.ViolationDao, 'insert_violations')
     def test_output_results_local_no_email(
-            self,
-            mock_violation_dao,
-            mock_datetime,
-            mock_email_pipeline,
-            mock_upload,
-            mock_path,
-            mock_write_csv,
-            mock_conn):
+        self, mock_violation_dao, mock_datetime, mock_notifier_process,
+        mock_upload, mock_path, mock_write_csv, mock_conn):
         """Test output results for local output, and don't send email.
 
         Setup:
@@ -262,60 +280,57 @@ class ScannerRunnerTest(ForsetiTestCase):
         fake_csv_name = 'fake.csv'
         fake_full_path = '/fake/output/path'
         flattening_scheme = 'policy_violations'
-
-        self.scanner.FLAGS.email_recipient = None
-        self.scanner.FLAGS.output_path = fake_full_path
-
+    
         mock_write_csv.return_value = mock.MagicMock()
         mock_write_csv.return_value.__enter__ = mock.MagicMock()
-        type(mock_write_csv.return_value.__enter__.return_value).name = fake_csv_name
-
+        type(
+            mock_write_csv.return_value.__enter__.return_value).name = fake_csv_name
+    
         mock_datetime.utcnow = mock.MagicMock()
         mock_datetime.utcnow.return_value = self.fake_utcnow
         mock_path.abspath = mock.MagicMock()
         mock_path.abspath.return_value = fake_full_path
-
+    
         mock_violation_dao.return_value = (1, [])
-
-        self.scanner._output_results(['a'], self.fake_timestamp,
+    
+        fake_global_configs = self.FAKE_global_configs
+        fake_global_configs.pop('email_recipient')
+        self.scanner._output_results(
+            fake_global_configs,
+            self.FAKE_SCANNER_CONFIGS,
+            ['a'],
+            self.fake_timestamp,
             flattening_scheme=flattening_scheme)
-
-        mock_upload.assert_called_once_with(
-            fake_full_path, self.fake_utcnow, fake_csv_name)
-        self.assertEquals(0, mock_email_pipeline.call_count)
-
+    
+        mock_upload.assert_called_once_with(fake_full_path, self.fake_utcnow,
+                                            fake_csv_name)
+        self.assertEquals(0, mock_notifier_process.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch.object(csv_writer, 'write_csv', autospec=True)
     @mock.patch.object(os, 'path', autospec=True)
     @mock.patch.object(scanner, '_upload_csv')
-    @mock.patch.object(email_scanner_summary_pipeline, 'EmailScannerSummaryPipeline')
+    @mock.patch.object(notifier, 'process')
     @mock.patch('google.cloud.security.scanner.scanner.datetime')
     @mock.patch.object(vdao.ViolationDao, 'insert_violations')
-    def test_output_results_gcs_email(
-            self,
-            mock_violation_dao,
-            mock_datetime,
-            mock_email_pipeline,
-            mock_upload,
-            mock_path,
-            mock_write_csv,
-            mock_conn):
+    def test_output_results_gcs_email(self, mock_violation_dao, mock_datetime,
+                                      mock_notifier_process, mock_upload,
+                                      mock_path, mock_write_csv, mock_conn):
         """Test output results for GCS upload and send email.
-
-        Setup:
-            * Create fake violations.
-            * Create fake counts.
-            * Create fake csv filename.
-            * Create fake file path.
-            * Mock out the ViolationDao.
-            * Set FLAGS values.
-            * Mock the context manager and the csv file name.
-            * Mock the timestamp for the email.
-            * Mock the file path.
-
-        Expect:
-            * _upload_csv() is called once with the fake parameters.
+    
+            Setup:
+                * Create fake violations.
+                * Create fake counts.
+                * Create fake csv filename.
+                * Create fake file path.
+                * Mock out the ViolationDao.
+                * Set FLAGS values.
+                * Mock the context manager and the csv file name.
+                * Mock the timestamp for the email.
+                * Mock the file path.
+    
+            Expect:
+                * _upload_csv() is called once with the fake parameters.
         """
 
         fake_violations = ['a']
@@ -323,10 +338,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         fake_csv_name = 'fake.csv'
         fake_full_path = 'gs://fake-bucket/output/path'
         flattening_scheme = 'policy_violations'
-
-        self.scanner.FLAGS.email_recipient = 'fake@somewhere.com'
-        self.scanner.FLAGS.output_path = fake_full_path
-
+    
         mock_write_csv.return_value = mock.MagicMock()
         mock_write_csv.return_value.__enter__ = mock.MagicMock()
         type(mock_write_csv.return_value \
@@ -335,17 +347,20 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_datetime.utcnow.return_value = self.fake_utcnow
         mock_path.abspath = mock.MagicMock()
         mock_path.abspath.return_value = fake_full_path
-
+    
         mock_violation_dao.return_value = (1, [])
+    
+        self.scanner._output_results(
+            self.FAKE_global_configs,
+            self.FAKE_SCANNER_CONFIGS,
+            fake_violations,
+            self.fake_timestamp,
+            resource_counts=fake_counts,
+            flattening_scheme=flattening_scheme)
 
-        self.scanner._output_results(fake_violations,
-                                     self.fake_timestamp,
-                                     resource_counts=fake_counts,
-                                     flattening_scheme=flattening_scheme)
-
-        mock_upload.assert_called_once_with(
-            fake_full_path, self.fake_utcnow, fake_csv_name)
-        mock_email_pipeline.assert_called_once()
+        mock_upload.assert_called_once_with(fake_full_path, self.fake_utcnow,
+                                            fake_csv_name)
+        mock_notifier_process.assert_called_once()
 
 
 if __name__ == '__main__':

@@ -25,13 +25,15 @@ LOGGER = log_util.get_logger(__name__)
 
 class CloudSqlAclScanner(base_scanner.BaseScanner):
     """Pipeline to CloudSQL acls data from DAO"""
-    def __init__(self, snapshot_timestamp):
+    def __init__(self, global_configs, snapshot_timestamp):
         """Initialization.
 
         Args:
+            global_configs (dict): Global configurations.
             snapshot_timestamp (str): The snapshot timestamp
         """
         super(CloudSqlAclScanner, self).__init__(
+            global_configs,
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 
@@ -42,10 +44,10 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
             dict: If successful returns a dictionary of project policies
         """
         project_policies = {}
-        project_policies = (
-            project_dao.ProjectDao().get_project_policies('projects',
-                                                          self.\
-                                                          snapshot_timestamp))
+        project_policies = (project_dao
+                            .ProjectDao(self.global_configs)
+                            .get_project_policies('projects',
+                                                  self.snapshot_timestamp))
         return project_policies
 
     def _get_cloudsql_acls(self):
@@ -55,9 +57,10 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
             list: List of CloudSql acls.
         """
         cloudsql_acls = {}
-        cloudsql_acls = cloudsql_dao.CloudsqlDao().\
-                        get_cloudsql_acls('cloudsql_instances',
-                                          self.snapshot_timestamp)
+        cloudsql_acls = (cloudsql_dao
+                         .CloudsqlDao(self.global_configs)
+                         .get_cloudsql_acls('cloudsql_instances',
+                                            self.snapshot_timestamp))
 
         return cloudsql_acls
 

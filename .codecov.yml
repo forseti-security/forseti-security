@@ -7,8 +7,7 @@ coverage:
       default:
         enabled: yes
         threshold: 1%
-      patch:
-        enabled: yes
-        threshold: 1%
 comment:
-  behavior: new
+  layout: "diff, files"
+  behavior: default
+  require_changes: yes
