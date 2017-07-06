@@ -28,18 +28,6 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 class ResourceTest(ForsetiTestCase):
     """Test Resource."""
 
-    def test_create_resource_raises_notimplemented(self):
-        """Test create Resource raises NotImplemented due to abstract method."""
-        my_resource_id = 'resource-id-1'
-        my_resource_name = 'My resource name'
-        Resource.__abstractmethods__ = frozenset()
-        abs_res = Resource(resource_id=my_resource_id,
-                           resource_type=ResourceType.PROJECT,
-                           name='projects/%s' % my_resource_id,
-                           display_name=my_resource_name)
-        with self.assertRaises(NotImplementedError):
-            abs_res.exists()
-
     def test_get_resource_types_exist(self):
         """Test that the Resource Types exist."""
         self.assertEqual(ResourceType.ORGANIZATION,

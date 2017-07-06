@@ -48,7 +48,8 @@ class BaseClientTest(ForsetiTestCase):
         supported_api = self.supported_apis[api_name]
         mock_credentials = mock.MagicMock()
 
-        client = _base_client.BaseClient(credentials=mock_credentials,
+        client = _base_client.BaseClient({},
+                                         credentials=mock_credentials,
                                          api_name=api_name)
 
         self.assertEqual((api_name, supported_api['version']),
@@ -76,7 +77,8 @@ class BaseClientTest(ForsetiTestCase):
         mock_credentials = mock.MagicMock()
         _base_client.LOGGER = mock.MagicMock()
 
-        client = _base_client.BaseClient(credentials=mock_credentials,
+        client = _base_client.BaseClient({},
+                                         credentials=mock_credentials,
                                          api_name=api_name,
                                          version=provided_version)
 
