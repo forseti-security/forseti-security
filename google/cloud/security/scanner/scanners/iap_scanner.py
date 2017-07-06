@@ -79,9 +79,9 @@ class _RunData(object):
         port = self.find_instance_group_port(backend_service,
                                              instance_group)
         return NetworkPort(
-            network=network_type.Key.from_args(
-                project_id=instance_group.project_id,
-                name=instance_group.network),
+            network=network_type.Key.from_url(
+                instance_group.network,
+                project_id=instance_group.project_id),
             port=port)
 
     def find_instance_group_by_url(self, instance_group_url):
@@ -92,10 +92,10 @@ class _RunData(object):
         target_key = instance_type.Key.from_url(instance_url)
         return self.instances_by_key.get(target_key)
 
-    @classmethod
-    def find_instance_group_port(cls, backend_service, instance_group):
+    @staticmethod
+    def find_instance_group_port(backend_service, instance_group):
         if backend_service.port_name:
-            for named_port in instance_group.named_ports:
+            for named_port in (instance_group.named_ports or tuple()):
                 if named_port.name == backend_service.port_name:
                     return int(named_port.port_number)
         return int(backend_service.port)
@@ -104,11 +104,11 @@ class _RunData(object):
         allowed_sources = set()
 
         def firewall_entry_applies(firewall_entry):
-            if firewall_entry.IPProtocol not in (6, '6', 'tcp'):
+            if firewall_entry.get('IPProtocol') not in (6, '6', 'tcp'):
                 return False
-            if not firewall_entry.ports:
+            if not firewall_entry.get('ports'):
                 return True
-            for fw_port_range in firewall_entry.ports:
+            for fw_port_range in firewall_entry.get('ports'):
                 fw_port_range = str(fw_port_range)
                 if '-' in fw_port_range:
                     range_ends = fw_port_range.split('-')
@@ -130,7 +130,8 @@ class _RunData(object):
             if firewall_network != network_port.network:
                 continue
 
-            if firewall_rule.tags and tag not in firewall_rule.tags:
+            if (firewall_rule.target_tags and
+                    tag not in firewall_rule.target_tags):
                 continue
 
             if firewall_rule.direction and firewall_rule.direction != 'INGRESS':
@@ -143,18 +144,18 @@ class _RunData(object):
         for priority in priorities:
             # DENY at a given priority takes precedence over ALLOW
             for firewall_rule in relevant_rules_by_priority[priority]:
-                for allowed in firewall_rule.allowed:
+                for allowed in (firewall_rule.allowed or []):
                     if firewall_entry_applies(allowed):
-                        allowed_sources.update(firewall_rule.source_ranges)
-                        allowed_sources.update(firewall_rule.source_tags)
+                        allowed_sources.update(firewall_rule.source_ranges or [])
+                        allowed_sources.update(firewall_rule.source_tags or [])
                         continue
             for firewall_rule in relevant_rules_by_priority[priority]:
-                for denied in firewall_rule.denied:
+                for denied in (firewall_rule.denied or []):
                     if firewall_entry_applies(denied):
                         allowed_sources.difference_update(
-                            firewall_rule.source_ranges)
+                            firewall_rule.source_ranges or [])
                         allowed_sources.difference_update(
-                            firewall_rule.source_tags)
+                            firewall_rule.source_tags or [])
         return allowed_sources
 
     def tags_for_instance_group(self, instance_group):
