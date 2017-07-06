@@ -5,7 +5,7 @@ hide:
   right_sidebar: true
   left_sidebar: true
 ---
-**[Contributing to Forseti]({% link _docs/guides/contributing.md %})**
+**[Contributing to Forseti](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md)**
 
 Learn about the process to contribute to Forseti.
 
