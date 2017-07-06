@@ -17,10 +17,10 @@
 from google.apputils import basetest
 import mock
 
+from google.cloud.security.common.util import file_loader
 from google.cloud.security.inventory import api_map
-from tests.inventory.test_data import fake_runnable_pipelines
-
 from google.cloud.security.inventory import pipeline_builder
+from tests.inventory.test_data import fake_runnable_pipelines
 
 
 BASE_PATH = 'tests/inventory/test_data/'
@@ -56,9 +56,10 @@ class PipelineBuilderTest(basetest.TestCase):
             counter += 1
 
     def _setup_pipeline_builder(self, config_filename):
-        config_path = BASE_PATH + config_filename
+        inventory_configs = file_loader.read_and_parse_file(
+            BASE_PATH + config_filename)
         my_pipeline_builder = pipeline_builder.PipelineBuilder(
-            FAKE_TIMESTAMP, config_path, mock.MagicMock(),
+            FAKE_TIMESTAMP, inventory_configs, mock.MagicMock(),
             mock.MagicMock(), mock.MagicMock())
         my_pipeline_builder._get_api = mock.MagicMock()
         return my_pipeline_builder

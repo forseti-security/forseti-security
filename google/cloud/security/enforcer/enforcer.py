@@ -25,14 +25,29 @@ Usage for enforcing a single project's firewall:
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-raises-doc
 # pylint: disable=missing-param-doc
 
+import sys
 import threading
 
 import gflags as flags
 from google.apputils import app
 
 from google.cloud.security.common.util import file_loader
+from google.cloud.security.common.util import log_util
 from google.cloud.security.enforcer import batch_enforcer
 from google.cloud.security.enforcer import enforcer_log_pb2
+
+
+# Hack to make the test pass due to duplicate flag error here
+# and inventory_loader.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string(
+        'forseti_config',
+        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        'Fully qualified path and filename of the Forseti config file.')
+except flags.DuplicateFlagError:
+    pass
 
 flags.DEFINE_string('enforce_project', None,
                     'A single projectId to enforce the firewall on. Must be '
@@ -68,6 +83,8 @@ flags.DEFINE_integer('maximum_project_writer_threads', 1,
 # Setup flags
 FLAGS = flags.FLAGS
 
+LOGGER = log_util.get_logger(__name__)
+
 
 class Error(Exception):
     """Base error class for the module."""
@@ -76,11 +93,13 @@ class InvalidParsedPolicyFileError(Error):
     """An invalid policy file was parsed."""
 
 
-def initialize_batch_enforcer(concurrent_threads, max_write_threads,
-                              max_running_operations, dry_run):
+def initialize_batch_enforcer(global_configs, concurrent_threads,
+                              max_write_threads, max_running_operations,
+                              dry_run):
     """Initialize and return a BatchFirewallEnforcer object.
 
     Args:
+      global_configs (dict): Global configurations.
       concurrent_threads: The number of parallel enforcement threads to execute.
       max_write_threads: The maximum number of enforcement threads that can be
           actively updating project firewalls.
@@ -98,6 +117,7 @@ def initialize_batch_enforcer(concurrent_threads, max_write_threads,
         project_sema = None
 
     enforcer = batch_enforcer.BatchFirewallEnforcer(
+        global_configs=global_configs,
         dry_run=dry_run,
         concurrent_workers=concurrent_threads,
         project_sema=project_sema,
@@ -141,8 +161,22 @@ def main(argv):
 
     del argv
 
+    forseti_config = FLAGS.forseti_config
+    if forseti_config is None:
+        LOGGER.error('Path to Forseti Security config needs to be specified.')
+        sys.exit()
+
+    try:
+        configs = file_loader.read_and_parse_file(forseti_config)
+    except IOError:
+        LOGGER.error('Unable to open Forseti Security config file. '
+                     'Please check your path and filename and try again.')
+        sys.exit()
+    global_configs = configs.get('global')
+
     enforcer = initialize_batch_enforcer(
-        FLAGS.concurrent_threads, FLAGS.maximum_project_writer_threads,
+        global_configs, FLAGS.concurrent_threads,
+        FLAGS.maximum_project_writer_threads,
         FLAGS.maximum_firewall_write_operations, FLAGS.dry_run)
 
     if FLAGS.enforce_project and FLAGS.policy_file:

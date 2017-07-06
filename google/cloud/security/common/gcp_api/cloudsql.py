@@ -14,23 +14,14 @@
 
 """Wrapper for SQL API client."""
 
-import gflags as flags
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
-
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from googleapiclient.errors import HttpError
 
-
-FLAGS = flags.FLAGS
-
-# This API is also limited to 100K queries per day.
-# But operationally, will use the per-100 seconds rate limit.
-flags.DEFINE_integer('max_sqladmin_api_calls_per_100_seconds', 100,
-                     'Cloud SQL Admin queries per 100 seconds.')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -41,17 +32,19 @@ class CloudsqlClient(_base_client.BaseClient):
     API_NAME = 'sqladmin'
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
-    def __init__(self, credentials=None):
+    def __init__(self, global_configs, credentials=None):
         """Initialize.
 
         Args:
+            global_configs (dict): Global configurations.
             credentials (GoogleCredentials): Google credentials for auth-ing
                 to the API.
         """
         super(CloudsqlClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+            global_configs, credentials=credentials, api_name=self.API_NAME)
+
         self.rate_limiter = RateLimiter(
-            FLAGS.max_sqladmin_api_calls_per_100_seconds,
+            self.global_configs.get('max_sqladmin_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_instances(self, project_id):

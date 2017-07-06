@@ -20,15 +20,9 @@ Usage:
 
   Run scanner:
   $ forseti_scanner \\
+      --forseti_config (optional) \\
       --rules <rules path> \\
-      --engine_name <rule engine name> \\
-      --output_path <output path (optional)> \\
-      --db_host <Cloud SQL database hostname/IP> \\
-      --db_user <Cloud SQL database user> \\
-      --db_name <Cloud SQL database name (required)> \\
-      --sendgrid_api_key <API key to auth SendGrid email service> \\
-      --email_sender <email address of the email sender> \\
-      --email_recipient <email address of the email recipient>
+      --engine_name <rule engine name>
 """
 
 
@@ -45,6 +39,7 @@ from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
+from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import engine_map as em
 from google.cloud.security.scanner.scanners import scanners_map as sm
@@ -63,15 +58,23 @@ FLAGS = flags.FLAGS
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
+
+# Hack to make the test pass due to duplicate flag error here
+# and inventory_loader.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string(
+        'forseti_config',
+        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        'Fully qualified path and filename of the Forseti config file.')
+except flags.DuplicateFlagError:
+    pass
+
 flags.DEFINE_string('rules', None,
                     ('Path to rules file (yaml/json). '
                      'If GCS object, include full path, e.g. '
                      ' "gs://<bucketname>/path/to/file".'))
-
-flags.DEFINE_string('output_path', None,
-                    ('Output path (do not include filename). If GCS location, '
-                     'the format of the path should be '
-                     '"gs://bucket-name/path/for/output".'))
 
 flags.DEFINE_boolean('list_engines', False, 'List all rule engines')
 
@@ -84,7 +87,6 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 def main(_):
     """Run the scanner."""
-
     if FLAGS.list_engines is True:
         _list_rules_engines()
         sys.exit(1)
@@ -104,13 +106,29 @@ def main(_):
                      'Use "forseti_scanner --helpfull" for help.'))
         sys.exit(1)
 
-    snapshot_timestamp = _get_timestamp()
+    forseti_config = FLAGS.forseti_config
+    if forseti_config is None:
+        LOGGER.error('Path to Forseti Security config needs to be specified.')
+        sys.exit()
+
+    try:
+        configs = file_loader.read_and_parse_file(forseti_config)
+    except IOError:
+        LOGGER.error('Unable to open Forseti Security config file. '
+                     'Please check your path and filename and try again.')
+        sys.exit()
+    configs = file_loader.read_and_parse_file(forseti_config)
+    global_configs = configs.get('global')
+    scanner_configs = configs.get('scanner')
+
+    snapshot_timestamp = _get_timestamp(global_configs)
     if not snapshot_timestamp:
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
     # Load scanner from map
-    scanner = sm.SCANNER_MAP[rules_engine_name](snapshot_timestamp)
+    scanner = sm.SCANNER_MAP[rules_engine_name](global_configs,
+                                                snapshot_timestamp)
 
     # The Groups Scanner uses a different approach to apply and
     # evaluate the rules.  Consolidate on next scanner design.
@@ -121,7 +139,7 @@ def main(_):
         # Instantiate rules engine with supplied rules file
         rules_engine = em.ENGINE_TO_DATA_MAP[rules_engine_name](
             rules_file_path=FLAGS.rules, snapshot_timestamp=snapshot_timestamp)
-        rules_engine.build_rule_book()
+        rules_engine.build_rule_book(global_configs)
 
         iter_objects, resource_counts = scanner.run()
 
@@ -134,7 +152,9 @@ def main(_):
     # If there are violations, send results.
     flattening_scheme = sm.FLATTENING_MAP[rules_engine_name]
     if all_violations:
-        _output_results(all_violations,
+        _output_results(global_configs,
+                        scanner_configs,
+                        all_violations,
                         snapshot_timestamp,
                         resource_counts=resource_counts,
                         flattening_scheme=flattening_scheme)
@@ -168,11 +188,12 @@ def _get_output_filename(now_utc):
     output_filename = SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
     return output_filename
 
-def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
+def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
     Args:
-        statuses: The snapshot statuses to search for latest timestamp.
+        global_configs (dict): Global configurations.
+        statuses (tuple): The snapshot statuses to search for latest timestamp.
 
     Returns:
         The latest snapshot timestamp string.
@@ -180,7 +201,8 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     latest_timestamp = None
     try:
-        latest_timestamp = dao.Dao().get_latest_snapshot_timestamp(statuses)
+        latest_timestamp = (
+            dao.Dao(global_configs).get_latest_snapshot_timestamp(statuses))
     except db_errors.MySQLError as err:
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
@@ -258,7 +280,8 @@ def _flatten_violations(violations, flattening_scheme):
                 'violation_data': violation_data
             }
 
-def _output_results(all_violations, snapshot_timestamp, **kwargs):
+def _output_results(global_configs, scanner_configs, all_violations,
+                    snapshot_timestamp, **kwargs):
     """Send the output results.
 
     Args:
@@ -266,14 +289,14 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
         snapshot_timestamp: The snapshot timetamp associated with this scan.
         **kwargs: The rest of the args.
     """
-
+    # pylint: disable=too-many-locals
     # Write violations to database.
     flattening_scheme = kwargs.get('flattening_scheme')
     resource_name = sm.RESOURCE_MAP[flattening_scheme]
     (inserted_row_count, violation_errors) = (0, [])
     all_violations = _flatten_violations(all_violations, flattening_scheme)
     try:
-        vdao = violation_dao.ViolationDao()
+        vdao = violation_dao.ViolationDao(global_configs)
         (inserted_row_count, violation_errors) = vdao.insert_violations(
             all_violations,
             resource_name=resource_name,
@@ -285,8 +308,13 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
     LOGGER.debug('Inserted %s rows with %s errors',
                  inserted_row_count, len(violation_errors))
 
+    # TODO: Remove this specific return when tying the scanner to the general
+    # violations table.
+    if resource_name != 'violations':
+        return
+
     # Write the CSV for all the violations.
-    if FLAGS.output_path:
+    if scanner_configs.get('output_path'):
         LOGGER.info('Writing violations to csv...')
         output_csv_name = None
         with csv_writer.write_csv(
@@ -299,19 +327,19 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
             # Scanner timestamp for output file and email.
             now_utc = datetime.utcnow()
 
-            output_path = FLAGS.output_path
+            output_path = scanner_configs.get('output_path')
             if not output_path.startswith('gs://'):
-                if not os.path.exists(FLAGS.output_path):
+                if not os.path.exists(scanner_configs.get('output_path')):
                     os.makedirs(output_path)
                 output_path = os.path.abspath(output_path)
             _upload_csv(output_path, now_utc, output_csv_name)
 
             # Send summary email.
-            if FLAGS.email_recipient is not None:
+            if global_configs.get('email_recipient') is not None:
                 payload = {
-                    'email_sender': FLAGS.email_sender,
-                    'email_recipient': FLAGS.email_recipient,
-                    'sendgrid_api_key': FLAGS.sendgrid_api_key,
+                    'email_sender': global_configs.get('email_sender'),
+                    'email_recipient': global_configs.get('email_recipient'),
+                    'sendgrid_api_key': global_configs.get('sendgrid_api_key'),
                     'output_csv_name': output_csv_name,
                     'output_filename': _get_output_filename(now_utc),
                     'now_utc': now_utc,
@@ -324,6 +352,7 @@ def _output_results(all_violations, snapshot_timestamp, **kwargs):
                     'payload': payload
                 }
                 notifier.process(message)
+    # pylint: enable=too-many-locals
 
 def _upload_csv(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.

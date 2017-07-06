@@ -82,7 +82,9 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
             A dict mapping projects with their instance group managers (list):
             {project_id: [instance group managers]}
         """
-        projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
+        projects = (proj_dao
+                    .ProjectDao(self.global_configs)
+                    .get_projects(self.cycle_timestamp))
         igms = {}
         for project in projects:
             try:

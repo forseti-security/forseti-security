@@ -14,7 +14,6 @@
 
 """Wrapper for Compute API client."""
 
-import gflags as flags
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
@@ -26,11 +25,6 @@ from google.cloud.security.common.util import log_util
 # pylint: disable=missing-param-doc
 
 
-FLAGS = flags.FLAGS
-
-flags.DEFINE_integer('max_compute_api_calls_per_second', 20,
-                     'Compute API calls per seconds.')
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -39,13 +33,18 @@ class ComputeClient(_base_client.BaseClient):
 
     API_NAME = 'compute'
 
-    def __init__(self, credentials=None, version=None):
+    def __init__(self, global_configs, credentials=None, version=None):
         # The beta api provides more complete firewall rules data.
         # TODO: Remove beta when it becomes GA.
         super(ComputeClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME, version=version)
+            global_configs,
+            credentials=credentials,
+            api_name=self.API_NAME,
+            version=version)
+
         self.rate_limiter = RateLimiter(
-            FLAGS.max_compute_api_calls_per_second, 1)
+            self.global_configs.get('max_compute_api_calls_per_second'),
+            1)
 
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
