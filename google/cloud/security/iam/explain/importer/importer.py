@@ -377,6 +377,64 @@ class ForsetiImporter(object):
                 parent=parent))
         return instance
 
+    def _convert_instance_group(self, forseti_instance_group):
+        """Creates a db object from a Forseti GCE instance group.
+
+        Args:
+            forseti_instance_group (object): Forseti DB object for a gce
+            instance.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+
+        instance_group_name = 'instancegroup/{}#{}'.format(
+            forseti_instance_group.project_id,
+            forseti_instance_group.name)
+        parent, full_parent_name = self.resource_cache[
+            forseti_instance_group.project_id]
+
+        full_instance_name = '{}/{}'.format(
+            full_parent_name, instance_group_name)
+
+        instance = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_instance_name,
+                type_name=instance_group_name,
+                name=forseti_instance_group.name,
+                type='instancegroup',
+                parent=parent))
+        return instance
+
+    def _convert_bigquery_dataset(self, forseti_bigquery_dataset):
+        """Creates a db object from a Forseti Bigquery dataset.
+
+        Args:
+            forseti_biguqery_dataset (object): Forseti DB object for a gce
+            instance.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+
+        bigquery_dataset_name = 'bigquerydataset/{}#{}'.format(
+            forseti_bigquery_dataset.project_id,
+            forseti_bigquery_dataset.dataset_id)
+        parent, full_parent_name = self.resource_cache[
+            forseti_bigquery_dataset.project_id]
+
+        full_instance_name = '{}/{}'.format(
+            full_parent_name, bigquery_dataset_name)
+
+        instance = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_instance_name,
+                type_name=bigquery_dataset_name,
+                name=forseti_bigquery_dataset.dataset_id,
+                type='bigquerydataset',
+                parent=parent))
+        return instance
+
     def _convert_cloudsqlinstance(self, forseti_cloudsqlinstance):
         """Creates a db sql instance from a Forseti sql instance.
 
@@ -545,6 +603,8 @@ class ForsetiImporter(object):
                 'group': self._convert_group,
                 'membership': self._convert_membership,
                 'instances': self._convert_instance,
+                'instancegroups': self._convert_instance_group,
+                'bigquerydatasets': self._convert_bigquery_dataset,
                 }
 
             item_counter = 0

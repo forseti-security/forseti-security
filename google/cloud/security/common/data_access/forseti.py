@@ -290,12 +290,50 @@ def create_table_names(timestamp):
                 self.id,
                 self.name)
 
+    class InstanceGroups(BASE):
+        """Represents a Cloud GCE instance group."""
+
+        __tablename__ = 'instance_groups_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_id = Column(String(255))
+        name = Column(String(255))
+        raw_instance_group = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Instance Group(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.name)
+
+    class BigqueryDatasets(BASE):
+        """Represents a Cloud Bigquery dataset."""
+
+        __tablename__ = 'bigquery_datasets_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_id = Column(String(255))
+        dataset_id = Column(String(255))
+        raw_access_map = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Bigquery Dataset(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.dataset_id)
+
     result = (Organization,
               Folders,
               [('projects', Project),
                ('buckets', Bucket),
                ('cloudsqlinstances', CloudSqlInstances),
-               ('instances', Instances)],
+               ('instances', Instances),
+               ('instancegroups', InstanceGroups),
+               ('bigquerydatasets', BigqueryDatasets)],
               [OrganizationPolicy, ProjectPolicy],
               [GroupMembers, Groups])
     TABLE_CACHE[timestamp] = result
