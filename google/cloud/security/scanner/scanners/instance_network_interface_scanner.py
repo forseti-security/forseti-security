@@ -16,6 +16,7 @@
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.gcp_type import instance_network_interface as ini
 from google.cloud.security.scanner.audit import instance_network_interface_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
@@ -30,8 +31,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         Args:
             snapshot_timestamp: The snapshot timestamp
         """
-        super(InstanceNetworkInterfaceScanner, self).__init__(
-            snapshot_timestamp)
+        super(InstanceNetworkInterfaceScanner, self).__init__(snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
     
     def get_instance_networks_interfaces(self):
@@ -42,8 +42,8 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
                MySQLError if a MySQL error occurs.
         I set the list  to get rid of duplicates 
         """
-        instances = self.instance_dao.get_instances(self.snapshot_timestamp)
-        return list(set([self.parse_network_instance(instance) for instance in instances]))
+        instances = instance_dao.InstanceDao().get_instances(self.snapshot_timestamp)
+        return list(set([self.parse_instance_network_instance(instance) for instance in instances]))
 
     def parse_instance_network_instance(self, instance_object):
         return ini.InstanceNetworkInterface(instance_object.network_interfaces)
@@ -103,11 +103,21 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
 
         all_violations = []
         LOGGER.info('Finding enforced networks violations...')
-        
+        instance_network_interfaces = enforced_networks[0]
+        print(enforced_networks[1])
         for instance_network_interface in instance_network_interfaces:
             LOGGER.debug('%s', instance_network_interface)
-            violations = rules_engine.find_violations(
+            violations = rules_engine.find_policy_violations(
                 instance_network_interface)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
+
+
+instance = InstanceNetworkInterfaceScanner('20170615T173104Z')
+enforced_networks, rcount = instance.run()
+print(rcount)
+RulesEngine = instance_network_interface_rules_engine.InstanceNetworkInterfaceRulesEngine('/Users/carly/Documents/forseti-security/tests/scanner/audit/data/instance_network_interface_test_rules_1.yaml')
+violations = instance.find_violations(enforced_networks, RulesEngine)
+for v in violations:
+    print(str(v))
