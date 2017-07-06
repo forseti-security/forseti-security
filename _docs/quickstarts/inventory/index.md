@@ -26,8 +26,8 @@ To display Inventory flag options, run the following commands:
 
 ## Configuring Inventory pipelines to run
 To run Forseti Inventory, you'll need a configuration file. Download
-the [inventory_conf.yaml sample file](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/inventory/inventory_conf.yaml)
-, then run the command below to provide the configuration file to
+the [forseti_conf.yaml sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/configs/forseti_conf.yaml.sample)
+file , then run the command below to provide the configuration file to
 `forseti_inventory`:
 
   ```bash
