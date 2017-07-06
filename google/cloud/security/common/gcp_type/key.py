@@ -44,11 +44,12 @@ class Key(object):
             object_path: A dictionary whose keys and values represent
                          a unique identifier for the object.
         """
-        self.object_kind = object_kind
-        self.object_path = dict(object_path)
+        self._object_kind = object_kind
+        self._object_path = dict(object_path)
+        self._object_path_tuple = tuple(self._object_path.items())
 
     @classmethod
-    def _from_url(cls, object_kind, path_component_map, url):
+    def _from_url(cls, object_kind, path_component_map, url, defaults=None):
         """Constructs a key given a GCP object reference URL.
 
         Inter-object references in GCP APIs use URLs. These URLs are a sequence
@@ -80,6 +81,8 @@ class Key(object):
                                 is responsible for checking that all required
                                 components were present.
             url: The resource URL.
+            defaults: If non-None, a dictionary specifying default values
+                      for object_path keys.
 
         Raises:
             ValueError: If the URL is invalid.
@@ -90,6 +93,8 @@ class Key(object):
 
         key_name = None
         object_path = dict((key, None) for key in path_component_map.values())
+        if defaults:
+            object_path.update(defaults)
         for path_component in path_components:
             if key_name:
                 object_path[key_name] = path_component
@@ -111,17 +116,14 @@ class Key(object):
             return cls(object_kind, object_path)
 
     def _path_component(self, key):
-        return self.object_path.get(key)
+        return self._object_path.get(key)
 
-    def _set_path_component(self, key, value):
-        self.object_path[key] = value
-
-    def __eq__(self, other):
-        return (self.object_kind == other.object_kind and
-                self.object_path == other.object_path)
+    def __cmp__(self, other):
+        return (cmp(self._object_kind, other._object_kind) or
+                cmp(self._object_path_tuple, other._object_path_tuple))
 
     def __hash__(self):
-        return hash((self.object_kind, self.object_path))
+        return hash((self._object_kind, self._object_path_tuple))
 
     def __repr__(self):
-        return 'Key(%r, %r)' % (self.object_kind, self.object_path)
+        return 'Key(%r, %r)' % (self._object_kind, self._object_path)

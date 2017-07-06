@@ -44,12 +44,10 @@ class Key(key.Key):
         obj = Key._from_url(KEY_OBJECT_KIND,
                             {'projects': 'project_id',
                              'networks': 'name'},
-                            url)
-        if obj.name is None or (project_id is None and
-                                    obj.project_id is None):
+                            url,
+                            defaults={'project_id': project_id})
+        if obj.name is None or obj.project_id is None:
             raise ValueError('Missing fields in URL %r' % url)
-        elif obj.project_id is None:
-            obj._set_path_component('project_id', project_id)
         return obj
 
     @property
