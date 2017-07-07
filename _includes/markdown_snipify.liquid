@@ -1,0 +1,41 @@
+{% comment %}
+  Truncate a Markdown string to a maxinum number of words while maintaining
+  proper formatting.
+
+  Inputs:
+
+    - body (string): in Markdown format
+    - maxwords (integer): maximum number of words to include in snippet
+    - auto_ids (boolean): auto-generate IDs for Markdown headers
+
+  Returns:
+
+    HTML produced by truncated Markdown.
+{% endcomment %}
+
+{% capture newline %}
+{% endcapture %}
+
+{% assign snippet = '' %}
+{% assign totalwords = 0 %}
+{% assign parts = include.body | split:newline %}
+
+{% for part in parts %}
+  {% assign numwords = part | number_of_words %}
+  {% assign totalwords = totalwords | plus:numwords %}
+  {% if totalwords > include.maxwords %}
+    {% assign over = totalwords | minus:include.maxwords %}
+    {% assign difference = numwords | minus:over %}
+    {% assign truncated_part = part | truncatewords:difference %}
+    {% assign snippet = snippet | append:truncated_part | append:newline %}
+    {% break %}
+  {% endif %}
+
+  {% assign snippet = snippet | append:part | append:newline %}
+{% endfor %}
+
+{% if include.auto_ids == false %}
+  {% assign snippet = snippet | append:'{::options auto_ids="false" /}' %}
+{% endif %}
+
+{{ snippet | markdownify }}

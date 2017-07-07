@@ -1,0 +1,9 @@
+<div class="left-sidebar">
+  <h4>Releases</h4>
+
+  <ul class="links">
+    {% for release in site.github.releases %}
+      <li><a href="#{{ release.tag_name | slugify }}">{{ release.tag_name }}</a></li>
+    {% endfor %}
+  </ul>
+</div>

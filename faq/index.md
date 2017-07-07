@@ -11,7 +11,7 @@ Here are some frequently asked questions about Forseti Security.
 
 {% for category in site.data.faq_categories %}
 
-  <h2>{{ category.title }}</h2>
+  <h2 id="{{ category.title | slugify }}">{{ category.title }}</h2>
 
   {% for faq_group in grouped_faqs %}
 
