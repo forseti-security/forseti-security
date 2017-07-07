@@ -7,6 +7,7 @@ $baseurl: '{{ site.baseurl }}';
 @import "base/variables";
 @import "base/override";
 @import "base/icons";
+@import "base/anchorjs";
 @import "components/codeblock";
 @import "components/toc";
 @import "components/docs/category_nav";
