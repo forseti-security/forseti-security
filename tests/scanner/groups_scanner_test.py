@@ -72,7 +72,7 @@ class GroupsScannerTest(ForsetiTestCase):
         mock_dao.get_all_groups.return_value = fake_data.ALL_GROUPS
         mock_dao.get_group_members.side_effect = fake_data.ALL_GROUP_MEMBERS
 
-        scanner = groups_scanner.GroupsScanner({}, '')
+        scanner = groups_scanner.GroupsScanner({}, {}, '', '')
         scanner.dao = mock_dao
         root = scanner._build_group_tree('')
 
@@ -86,7 +86,7 @@ class GroupsScannerTest(ForsetiTestCase):
         with open('tests/scanner/test_data/fake_group_rules.yaml', 'r') as f:
             rules = yaml.load(f)
 
-        scanner = groups_scanner.GroupsScanner({}, '')
+        scanner = groups_scanner.GroupsScanner({}, {}, '', '')
         root_with_rules = scanner._apply_all_rules(root, rules)
 
         self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
@@ -97,7 +97,7 @@ class GroupsScannerTest(ForsetiTestCase):
     @mock.patch('google.cloud.security.scanner.scanners.groups_scanner.group_dao.GroupDao', spec=True)
     def test_find_violations(self, mock_dao):
         root = self._pickle_load('expected_root_with_rules.pickle')
-        scanner = groups_scanner.GroupsScanner({}, '')
+        scanner = groups_scanner.GroupsScanner({}, {}, '', '')
         all_violations = scanner.find_violations(root)
         
         self.assertEquals(3, len(all_violations))
