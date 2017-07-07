@@ -1,0 +1,28 @@
+.left-sidebar {
+  background-color: $grey-100;
+  margin-bottom: 16px;
+  padding: 10px 15px;
+
+  .links {
+    list-style-type: none;
+    padding: 0;
+
+    li {
+      & > a {
+        color: $grey-800;
+        font-size: 14px;
+        line-height: 24px;
+      }
+
+      &.active > a {
+        color: $brand-primary;
+        text-decoration: underline;
+      }
+
+      ul {
+        list-style-type: none;
+        padding-left: 20px;
+      }
+    }
+  }
+}
