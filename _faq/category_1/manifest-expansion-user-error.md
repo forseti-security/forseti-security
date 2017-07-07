@@ -2,6 +2,7 @@
 title: Manifest Expansion User Error
 order: 2
 ---
+{::options auto_ids="false" /}
 #  {{ page.title }}
 
 When creating or updating a deployment via Deployment Manager, if you see a
