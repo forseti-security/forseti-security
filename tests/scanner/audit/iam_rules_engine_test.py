@@ -1127,6 +1127,63 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.assertItemsEqual(expected_violations, actual_violations)
 
+    def test_wildcard_rules_work(self):
+        """Test whitelisted wildcard resources.
+
+        Setup:
+            * Create a RulesEngine with RULES6 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find 1 rule violation.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES8, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                        'user:someone@notcompany.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = set(
+            rules_engine.find_policy_violations(self.project1, project_policy)
+        )
+
+        # expected
+        expected_outstanding_proj = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:someone@notcompany.com')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='org whitelist',
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding_proj['roles/owner'])),
+        ])
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
 
 if __name__ == '__main__':
     unittest.main()

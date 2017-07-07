@@ -33,12 +33,6 @@ from google.cloud.security.scanner.audit import rules as scanner_rules
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -299,9 +293,7 @@ class IamRuleBook(bre.BaseRuleBook):
                 resource_ids = resource.get('resource_ids')
                 resource_type = None
                 # TODO: collect these errors and output them in a log.
-                # Question: should we ever fail fast? I'm thinking "no"
-                # since we still want to try and run as many rules as
-                # possible.
+                # TODO: log the error and keep going
                 try:
                     resource_type = resource_mod.ResourceType.verify(
                         resource.get('type'))
@@ -387,7 +379,11 @@ class IamRuleBook(bre.BaseRuleBook):
                 resource, self.snapshot_timestamp))
 
         for curr_resource in resource_ancestors:
+            wildcard_resource = resource_util.create_resource(
+                resource_id='*', resource_type = curr_resource.type)
             resource_rules = self._get_resource_rules(curr_resource)
+            resource_rules.extend(self._get_resource_rules(wildcard_resource))
+
             # Set to None, because if the direct resource (e.g. project)
             # doesn't have a specific rule, we still should check the
             # ancestry to see if the resource's parents have any rules
@@ -395,28 +391,8 @@ class IamRuleBook(bre.BaseRuleBook):
             inherit_from_parents = None
 
             for resource_rule in resource_rules:
-                # Check whether rules match if the applies_to condition is met:
-                # SELF: check rules if the starting resource == current resource
-                # CHILDREN: check rules if starting resource != current resource
-                # SELF_AND_CHILDREN: always check rules
-                applies_to_self = (
-                    resource_rule.applies_to ==
-                    scanner_rules.RuleAppliesTo.SELF and
-                    resource == curr_resource)
-                applies_to_children = (
-                    resource_rule.applies_to ==
-                    scanner_rules.RuleAppliesTo.CHILDREN and
-                    resource != curr_resource)
-                applies_to_both = (
-                    resource_rule.applies_to ==
-                    scanner_rules.RuleAppliesTo.SELF_AND_CHILDREN)
-
-                rule_applies_to_resource = (
-                    applies_to_self or
-                    applies_to_children or
-                    applies_to_both)
-
-                if not rule_applies_to_resource:
+                if not self._rule_applies_to_resource(
+                        resource, curr_resource, resource_rule):
                     continue
 
                 violations = itertools.chain(
@@ -430,13 +406,42 @@ class IamRuleBook(bre.BaseRuleBook):
             # "inherit" property once per rule. So even though a rule
             # may apply to multiple resources, it will only have one
             # value for "inherit_from_parents".
-            # TODO: Revisit to remove pylint disable
-            # pylint: disable=compare-to-zero
-            if inherit_from_parents is False:
+            if not inherit_from_parents and inherit_from_parents is not None:
                 break
-            # pylint: enable=compare-to-zero
 
         return violations
+
+    @staticmethod
+    def _rule_applies_to_resource(resource, curr_resource, resource_rule):
+        """Check whether rules match if the applies_to condition is met.
+
+        SELF: check rules if the starting resource == current resource
+        CHILDREN: check rules if starting resource != current resource
+        SELF_AND_CHILDREN: always check rules
+
+        Args:
+            resource (Resource): The main resource we're checking the rule
+                against.
+            curr_resource (Resource): A resource that is in the main resource's
+                ancestry.
+            resource_rule (ResourceRule): The rule associated with the resource.
+
+        Returns:
+            bool: True if rule applies to the resource, otherwise false.
+        """
+        applies_to_self = (
+            resource_rule.applies_to ==
+            scanner_rules.RuleAppliesTo.SELF and
+            resource == curr_resource)
+        applies_to_children = (
+            resource_rule.applies_to ==
+            scanner_rules.RuleAppliesTo.CHILDREN and
+            resource != curr_resource)
+        applies_to_both = (
+            resource_rule.applies_to ==
+            scanner_rules.RuleAppliesTo.SELF_AND_CHILDREN)
+
+        return applies_to_self or applies_to_children or applies_to_both
 
 
 class ResourceRules(object):

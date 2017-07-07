@@ -311,3 +311,23 @@ RULES7 = {
         },
     ]
 }
+
+# Simple whitelist to allow any users @ company.com to be present with
+# any roles inside any organization.
+RULES8 = {
+    'rules': [
+        {
+            'name': 'org whitelist',
+            'mode': 'whitelist',
+            'resource': [{
+                    'type': 'organization',
+                    'applies_to': 'self_and_children',
+                    'resource_ids': ['*']
+                }],
+            'bindings': [{
+                    'role': 'roles/*',
+                    'members': ['user:*@company.com']
+                }]
+        },
+    ]
+}
