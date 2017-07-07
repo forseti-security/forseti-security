@@ -1,0 +1,18 @@
+/* Override anchorjs default with 'link' icon from material icons font */
+[data-anchorjs-icon]::after {
+  content: 'link';
+}
+
+.anchorjs-link,
+.panel-title > .anchorjs-link {
+  color: $grey-500;
+  display: inline-block;
+  margin-top: -4px;
+  vertical-align: middle;
+
+  &:focus, &:hover {
+    color: $grey-600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+}

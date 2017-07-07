@@ -19,6 +19,10 @@
   }
 }
 
+#documentation > *:first-child {
+  margin-top: 0;
+}
+
 .edit-on-github a {
   color: $grey-600 !important;
   .file-name {
