@@ -1,0 +1,32 @@
+.panel.panel-release {
+  & > .panel-heading {
+    background-color: $brand-primary-light;
+    color: $white;
+
+    .btn {
+      margin: 0;
+    }
+  }
+
+  .panel-title {
+    float: left;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .download-buttons {
+    float: right;
+    margin: 5px 0 0;
+  }
+
+  .panel-body {
+    & > p { white-space: pre-line; }
+
+    /* Knock every header down a size when rendering release notes */
+    h1 { font-size: 30px; }
+    h2 { font-size: 24px; }
+    h3 { font-size: 18px; }
+    h4 { font-size: 14px; }
+    h5 { font-size: 12px; }
+  }
+}
