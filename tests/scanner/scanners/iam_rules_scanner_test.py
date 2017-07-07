@@ -38,6 +38,19 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.scanner = iam_rules_scanner.IamPolicyScanner(
             {}, {}, '', '')
 
+    def test_get_output_filename(self):
+        """Test that the output filename of the scanner is correct.
+
+        Expected:
+            * Scanner output filename matches the format.
+        """
+        fake_utcnow_str = self.fake_utcnow.strftime(
+            self.scanner.OUTPUT_TIMESTAMP_FMT)
+
+        expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
+        actual = self.scanner._get_output_filename(self.fake_utcnow)
+        self.assertEquals(expected, actual)
+
     @mock.patch(
         'google.cloud.security.scanner.scanners.iam_rules_scanner.organization_dao',
         autospec=True)
@@ -70,7 +83,6 @@ class IamRulesScannerTest(ForsetiTestCase):
         mock_dao.ProjectDao({}).get_project_policies.return_value = fake_policies
         policies = self.scanner._get_project_policies()
         self.assertEqual(fake_policies, policies)
-
 
     @mock.patch(
         'google.cloud.security.scanner.scanners.iam_rules_scanner.notifier',

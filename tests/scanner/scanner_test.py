@@ -147,16 +147,6 @@ class ScannerRunnerTest(ForsetiTestCase):
     #    self.assertEquals(1, self.irep.LOGGER.info.call_count)
     #    self.assertEquals(4, self.irep.LOGGER.debug.call_count)
 
-    def test_get_output_filename(self):
-        """Test that the output filename of the scanner is correct.
-
-        Expected:
-            * Scanner output filename matches the format.
-        """
-        actual = self.scanner._get_output_filename(self.fake_utcnow)
-        expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(self.fake_utcnow_str)
-        self.assertEquals(expected, actual)
-
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch(
         'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
