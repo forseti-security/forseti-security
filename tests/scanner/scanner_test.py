@@ -203,24 +203,6 @@ class ScannerRunnerTest(ForsetiTestCase):
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch(
-        'google.cloud.security.common.data_access.project_dao.ProjectDao.get_project_policies'
-    )
-    def test_get_project_policies(self, mock_get_proj_iam, mock_conn):
-        """Test that get_org_policies() works."""
-        proj_policies = [{
-            project.Project(project_number='11111', project_id='abc111'): {
-                'role': 'roles/a',
-                'members': ['user:a@b.c', 'group:g@h.i']
-            }
-        }]
-        mock_get_proj_iam.return_value = proj_policies
-        actual = self.irs.IamPolicyScanner(
-            self.FAKE_global_configs, self.fake_timestamp)._get_project_policies()
-        mock_get_proj_iam.assert_called_once_with('projects', self.fake_timestamp)
-        self.assertEqual(proj_policies, actual)
-
-    @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch(
         'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
     )
     def test_get_timestamp(self, mock_get_ss_timestamp, mock_conn):

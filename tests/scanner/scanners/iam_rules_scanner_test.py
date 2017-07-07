@@ -18,6 +18,7 @@ from mock.mock import MagicMock
 from datetime import datetime
 import mock
 
+from google.cloud.security.common.gcp_type import project
 from google.cloud.security.scanner.scanners import iam_rules_scanner
 from tests.unittest_utils import ForsetiTestCase
 
@@ -35,6 +36,23 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.fake_scanner_configs = {'output_path': '/fake/output/path'}
         self.scanner = iam_rules_scanner.IamPolicyScanner(
             {}, {}, '', '')
+
+    @mock.patch(
+        'google.cloud.security.scanner.scanners.iam_rules_scanner.project_dao',
+        autospec=True)
+    def test_get_project_policies(self, mock_dao):
+        """Test that get_org_policies() works."""
+
+        fake_policies = [{
+            project.Project(project_number='11111', project_id='abc111'): {
+                'role': 'roles/a',
+                'members': ['user:a@b.c', 'group:g@h.i']
+            }
+        }]
+        mock_dao.ProjectDao({}).get_project_policies.return_value = fake_policies
+        policies = self.scanner._get_project_policies()
+        self.assertEqual(fake_policies, policies)
+
 
     @mock.patch(
         'google.cloud.security.scanner.scanners.iam_rules_scanner.notifier',
@@ -93,7 +111,6 @@ class IamRulesScannerTest(ForsetiTestCase):
             self.fake_utcnow,
             fake_csv_name)
         self.assertEquals(0, mock_notifier.process.call_count)
-
 
     @mock.patch(
         'google.cloud.security.scanner.scanners.iam_rules_scanner.notifier',
