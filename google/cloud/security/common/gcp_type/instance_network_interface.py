@@ -17,8 +17,7 @@ import json
 
 # pylint: disable=too-few-public-methods
 class InstanceNetworkInterface(object):
-
-
+    """InstanceNetworkInterface Resource."""
 
     def __init__(self, network_interface):
         """Initialize

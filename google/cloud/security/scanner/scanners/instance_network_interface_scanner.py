@@ -25,13 +25,16 @@ LOGGER = log_util.get_logger(__name__)
 
 class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     """Pipeline to network enforcer from DAO"""
-    def __init__(self, snapshot_timestamp):
+    def __init__(self, global_configs, snapshot_timestamp):
         """Initialization.
 
         Args:
             snapshot_timestamp: The snapshot timestamp
         """
-        super(InstanceNetworkInterfaceScanner, self).__init__(snapshot_timestamp)
+        super(InstanceNetworkInterfaceScanner, self).__init__(
+            global_configs,
+            snapshot_timestamp)
+        self.global_configs = global_configs
         self.snapshot_timestamp = snapshot_timestamp
     
     def get_instance_networks_interfaces(self):
@@ -70,7 +73,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         """
         resource_counts = {
             ResourceType.PROJECT: len(project_policies),
-            ResourceType.INSTANCE_NETWORK_INTERFACE: len(instance_network_interfaces),
+            ResourceType.INSTANCE: len(instance_network_interfaces),
         }
 
         return resource_counts
@@ -114,7 +117,14 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         return all_violations
 
 
-instance = InstanceNetworkInterfaceScanner('20170615T173104Z')
+FAKE_global_configs = {
+    'db_host': '127.0.0.1',
+    'db_user': 'carlys',
+    'db_name': 'forseti-carlys',
+    'email_recipient': 'foo_email_recipient'
+}
+print(FAKE_global_configs)
+instance = InstanceNetworkInterfaceScanner(FAKE_global_configs, '20170615T173104Z')
 enforced_networks, rcount = instance.run()
 print(rcount)
 RulesEngine = instance_network_interface_rules_engine.InstanceNetworkInterfaceRulesEngine('/Users/carly/Documents/forseti-security/tests/scanner/audit/data/instance_network_interface_test_rules_1.yaml')

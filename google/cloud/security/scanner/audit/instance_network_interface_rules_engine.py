@@ -141,7 +141,7 @@ class InstaceNetworkInterfaceRuleBook(bre.BaseRuleBook):
                     'is_external': boolean 
                 }
                 whitelist {
-                    'network': 'project'...
+                    'network': ['project'...]
     
                 }
             }
