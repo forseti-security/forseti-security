@@ -12,7 +12,7 @@ layout: homepage
           <div class="panel-body">
             <p class="text-primary">Keep track of your environment</p>
             <p>
-              Takes a snapshot of resoukrces on a recurring cadence, so you always have a history of what was in your cloud.
+              Takes a snapshot of resources on a recurring cadence, so you always have a history of what was in your cloud.
             </p>
             <a class="btn btn-link" href="{{ site.baseurl }}/about/index.html">More</a>
           </div>
@@ -26,7 +26,7 @@ layout: homepage
           <div class="panel-body">
             <p class="text-primary">Monitor your policies</p>
             <p>
-              Scan your GCP resources to ensure that access controls are set as you intended and protects against unsafe changes. 
+              Scans your GCP resources to ensure that access controls are set as you intended and protects against unsafe changes. 
             </p>
             <a class="btn btn-link" href="{{ site.baseurl }}/about/index.html">More</a>
           </div>
@@ -40,7 +40,7 @@ layout: homepage
           <div class="panel-body">
             <p class="text-primary">Provide correction</p>
             <p>
-              For the most important policies provide enforced correction to ensure the safest settings on GCP resources.
+              For the most important policies, provide enforced correction to ensure the safest settings on GCP resources.
             </p>
             <a class="btn btn-link" href="{{ site.baseurl }}/about/index.html">More</a>
           </div>
