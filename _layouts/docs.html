@@ -22,17 +22,3 @@ layout: default
     </div>
   {% endunless %}
 </div>
-
-<script src="{{ site.baseurl }}/third_party/anchor-js/anchor.min.js"></script>
-<script type="text/javascript">
-  var selector = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map(function(s) {
-    return '#documentation ' + s;
-  }).join(', ');
-
-  anchors.options = {
-    class: 'material-icons',
-    icon: ''
-  };
-  
-  anchors.add(selector);
-</script>
