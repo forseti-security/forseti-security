@@ -34,6 +34,8 @@ from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import engine_map as em
+from google.cloud.security.scanner.scanners import cloudsql_rules_scanner,\
+    bucket_rules_scanner
 from google.cloud.security.scanner.scanners import iam_rules_scanner
 
 
@@ -62,11 +64,6 @@ try:
 except flags.DuplicateFlagError:
     pass
 
-flags.DEFINE_string('rules', None,
-                    ('Path to rules file (yaml/json). '
-                     'If GCS object, include full path, e.g. '
-                     ' "gs://<bucketname>/path/to/file".'))
-
 flags.DEFINE_boolean('list_engines', False, 'List all rule engines')
 
 flags.DEFINE_string('engine_name', None, 'Which engine to use')
@@ -78,12 +75,31 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 def _get_runnable_scanners(global_configs, scanner_configs, snapshot_timestamp):
         # Load scanner from map
+
+    runnable_scanners = []
+
     scanner = iam_rules_scanner.IamPolicyScanner(
         global_configs,
         scanner_configs,
         snapshot_timestamp,
-        FLAGS.rules)
-    return [scanner]
+        'samples/scanner/rules.yaml')
+    runnable_scanners.append(scanner)
+
+    scanner = bucket_rules_scanner.BucketsAclScanner(
+        global_configs,
+        scanner_configs,
+        snapshot_timestamp,
+        'samples/scanner/bucket_rules.yaml')
+    runnable_scanners.append(scanner)
+
+    scanner = cloudsql_rules_scanner.CloudSqlAclScanner(
+        global_configs,
+        scanner_configs,
+        snapshot_timestamp,
+        'samples/scanner/cloudsql_rules.yaml')
+    runnable_scanners.append(scanner)
+
+    return runnable_scanners
 
 def _list_rules_engines():
     """List rules engines.
@@ -131,12 +147,7 @@ def main(_):
 
     LOGGER.info('Using rules engine: %s', rules_engine_name)
 
-    LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
-
-    if not FLAGS.rules:
-        LOGGER.warn(('Provide a rules file. '
-                     'Use "forseti_scanner --helpfull" for help.'))
-        sys.exit(1)
+#    LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     forseti_config = FLAGS.forseti_config
     if forseti_config is None:

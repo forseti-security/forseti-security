@@ -28,8 +28,8 @@ from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.notifier import notifier
-from google.cloud.security.scanner.scanners import base_scanner
 from google.cloud.security.scanner.audit import iam_rules_engine
+from google.cloud.security.scanner.scanners import base_scanner
 
 
 LOGGER = log_util.get_logger(__name__)

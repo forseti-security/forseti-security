@@ -13,10 +13,13 @@
 # limitations under the License.
 
 """Scanner for the Bucket acls rules engine."""
+
+import itertools
+
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import bucket_dao
-from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.scanner.audit import buckets_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
 
@@ -25,7 +28,8 @@ LOGGER = log_util.get_logger(__name__)
 
 class BucketsAclScanner(base_scanner.BaseScanner):
     """Pipeline to Bucket acls data from DAO"""
-    def __init__(self, global_configs, snapshot_timestamp):
+    def __init__(self, global_configs, scanner_rules, snapshot_timestamp,
+                 rules):
         """Initialization.
 
         Args:
@@ -34,34 +38,59 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         """
         super(BucketsAclScanner, self).__init__(
             global_configs,
-            snapshot_timestamp)
-        self.snapshot_timestamp = snapshot_timestamp
+            scanner_rules,
+            snapshot_timestamp,
+            rules)
+        self.rules_engine = buckets_rules_engine.BucketsRulesEngine(
+            rules_file_path=self.rules,
+            snapshot_timestamp=self.snapshot_timestamp)
+        self.rules_engine.build_rule_book(self.global_configs)
 
-    def _get_project_policies(self):
-        """Get projects from data source.
+    def _flatten_violations(self, violations):
+        for violation in violations:
+            violation_data = {}
+            violation_data['role'] = violation.role
+            violation_data['entity'] = violation.entity
+            violation_data['email'] = violation.email
+            violation_data['domain'] = violation.domain
+            violation_data['bucket'] = violation.bucket
+            yield {
+                'resource_id': violation.resource_id,
+                'resource_type': violation.resource_type,
+                'rule_index': violation.rule_index,
+                'rule_name': violation.rule_name,
+                'violation_type': violation.violation_type,
+                'violation_data': violation_data
+            }
+
+    def _output_results(self, all_violations, resource_counts):
+        resource_name = 'violations'
+
+        all_violations = self._flatten_violations(all_violations)
+        self._output_results_to_db(resource_name, all_violations)
+
+    # pylint: disable=arguments-differ
+    def find_violations(self, bucket_data):
+        """Find violations in the policies.
+
+        Args:
+            bucket_data (list): Buckets to find violations in
+            rules_engine (BucketRulesEngine): The rules engine to run.
 
         Returns:
-            dict: If successful returns a dictionary of project policies
+            list: A list of bucket violations
         """
-        project_policies = {}
-        project_policies = (project_dao
-                            .ProjectDao(self.global_configs)
-                            .get_project_policies('projects',
-                                                  self.snapshot_timestamp))
-        return project_policies
+        bucket_data = itertools.chain(*bucket_data)
+        all_violations = []
+        LOGGER.info('Finding bucket acl violations...')
 
-    def _get_bucket_acls(self):
-        """Get bucket acls from data source.
-
-        Returns:
-            list: List of bucket acls.
-        """
-        buckets_acls = {}
-        buckets_acls = (bucket_dao
-                        .BucketDao(self.global_configs)
-                        .get_buckets_acls('buckets_acl',
-                                          self.snapshot_timestamp))
-        return buckets_acls
+        for (bucket, bucket_acl) in bucket_data:
+            LOGGER.debug('%s => %s', bucket, bucket_acl)
+            violations = self.rules_engine.find_policy_violations(
+                bucket_acl)
+            LOGGER.debug(violations)
+            all_violations.extend(violations)
+        return all_violations
 
     @staticmethod
     def _get_resource_count(project_policies, buckets_acls):
@@ -80,7 +109,20 @@ class BucketsAclScanner(base_scanner.BaseScanner):
 
         return resource_counts
 
-    def run(self):
+    def _get_bucket_acls(self):
+        """Get bucket acls from data source.
+
+        Returns:
+            list: List of bucket acls.
+        """
+        buckets_acls = {}
+        buckets_acls = (bucket_dao
+                        .BucketDao(self.global_configs)
+                        .get_buckets_acls('buckets_acl',
+                                          self.snapshot_timestamp))
+        return buckets_acls
+
+    def _retrieve(self):
         """Runs the data collection.
 
         Returns:
@@ -99,25 +141,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
 
         return buckets_acls_data, resource_counts
 
-    # pylint: disable=arguments-differ
-    def find_violations(self, bucket_data, rules_engine):
-        """Find violations in the policies.
-
-        Args:
-            bucket_data (list): Buckets to find violations in
-            rules_engine (BucketRulesEngine): The rules engine to run.
-
-        Returns:
-            list: A list of bucket violations
-        """
-
-        all_violations = []
-        LOGGER.info('Finding bucket acl violations...')
-
-        for (bucket, bucket_acl) in bucket_data:
-            LOGGER.debug('%s => %s', bucket, bucket_acl)
-            violations = rules_engine.find_policy_violations(
-                bucket_acl)
-            LOGGER.debug(violations)
-            all_violations.extend(violations)
-        return all_violations
+    def run(self):
+        buckets_acls_data, resource_counts = self._retrieve()
+        all_violations = self.find_violations(buckets_acls_data)
+        self._output_results(all_violations, resource_counts)

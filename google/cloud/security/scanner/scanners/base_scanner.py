@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base scanner skeleton."""
+"""Base scanner."""
 
 import abc
 
@@ -53,6 +53,12 @@ class BaseScanner(object):
     def run(self):
         """Runs the pipeline."""
         pass
+
+    @abc.abstractmethod
+    def _retrieve(self, **kwarg):
+        """Runs the pipeline."""
+        pass
+
 
     @abc.abstractmethod
     def find_violations(self, **kwarg):
