@@ -14,7 +14,7 @@ layout: homepage
             <p>
               Takes a snapshot of resources on a recurring cadence, so you always have a history of what was in your cloud.
             </p>
-            <a class="btn btn-link" href="{{ site.baseurl }}/about/index.html">More</a>
+            <a class="btn btn-link" href="{{ site.baseurl }}/docs/quickstarts/inventory/index.html">More</a>
           </div>
         </div>  
       </div>
@@ -28,7 +28,7 @@ layout: homepage
             <p>
               Scans your GCP resources to ensure that access controls are set as you intended and protects against unsafe changes. 
             </p>
-            <a class="btn btn-link" href="{{ site.baseurl }}/about/index.html">More</a>
+            <a class="btn btn-link" href="{{ site.baseurl }}/docs/quickstarts/scanner/index.html">More</a>
           </div>
         </div>  
       </div>
@@ -42,7 +42,7 @@ layout: homepage
             <p>
               For the most important policies, provide enforced correction to ensure the safest settings on GCP resources.
             </p>
-            <a class="btn btn-link" href="{{ site.baseurl }}/about/index.html">More</a>
+            <a class="btn btn-link" href="{{ site.baseurl }}/docs/quickstarts/enforcer/index.html">More</a>
           </div>
         </div>  
       </div>
@@ -56,7 +56,7 @@ layout: homepage
             <p>
               Gain visibility into your IAM policies and answer key questions about who has what access to which resources.
             </p>
-            <a class="btn btn-link" href="{{ site.baseurl }}/about/index.html">More</a>
+            <a class="btn btn-link" href="{{ site.baseurl }}/docs/quickstarts/explain/index.html">More</a>
           </div>
         </div>  
       </div>
