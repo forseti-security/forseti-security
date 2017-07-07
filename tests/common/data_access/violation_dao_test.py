@@ -17,16 +17,12 @@
 from tests.unittest_utils import ForsetiTestCase
 import mock
 import MySQLdb
-import json
 
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao
-from google.cloud.security.common.data_access import violation_map as vm
-from google.cloud.security.common.data_access.sql_queries import load_data
 from google.cloud.security.common.gcp_type import iam_policy as iam
 from google.cloud.security.scanner.audit import rules
-from google.cloud.security.scanner import scanner
 
 
 class ViolationDaoTest(ForsetiTestCase):
