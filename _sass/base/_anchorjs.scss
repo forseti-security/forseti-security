@@ -3,7 +3,8 @@
   content: 'link';
 }
 
-.anchorjs-link {
+.anchorjs-link,
+.panel-title > .anchorjs-link {
   color: $grey-500;
   display: inline-block;
   margin-top: -4px;

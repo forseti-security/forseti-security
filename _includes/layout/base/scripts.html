@@ -55,6 +55,7 @@
 
     populate_search_input();
     generate_copy_code_buttons();
+    open_faq_item();
   });
 
   function populate_search_input() {
@@ -76,5 +77,12 @@
         return trigger.nextElementSibling;
       }
     });
+  }
+
+  function open_faq_item() {
+    if (location.hash != null && location.hash != "") {
+      var target = $(location.hash + ' > a').attr('href');
+      $(target).collapse('show');
+    }
   }
 </script>

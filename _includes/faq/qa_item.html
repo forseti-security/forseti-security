@@ -1,6 +1,6 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h4 class="panel-title">
+    <h4 class="panel-title" id="{{ include.q.title | slugify }}">
       <a data-toggle="collapse" data-parent="{{ include.accordion_id }}" href="#collapse-{{ include.qid }}">
         {{ include.q.title }}
       </a>
