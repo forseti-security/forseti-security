@@ -1,0 +1,31 @@
+{% assign release = include.release %}
+{% assign maxwords = include.maxwords | default:50 %}
+{% assign zip_url = release.zipball_url %}
+{% assign gzip_url = release.tarball_url %}
+{% for asset in release.assets %}
+  {% if asset.content_type == 'application/zip' %}
+    {% assign zip_url = asset.browser_download_url %}
+  {% elsif asset.content_type == 'application/x-gzip' %}
+    {% assign gzip_url = asset.browser_download_url %}
+  {% endif %}
+{% endfor %}
+
+<div class="panel panel-release">
+  <div class="panel-heading clearfix">
+    <h1 class="panel-title" id="{{ release.tag_name | slugify }}">
+      {{ release.tag_name }}<br />
+      <small>{{ release.published_at | date_to_long_string }}</small>
+    </h1>
+    <div class="download-buttons">
+      Download:
+      <a class="btn btn-default btn-raised btn-sm" href="{{ zip_url }}">ZIP</a>
+      <a class="btn btn-default btn-raised btn-sm" href="{{ gzip_url }}">TAR</a>
+    </div>
+  </div>
+  <div class="panel-body">
+    {% include markdown_snipify.liquid body=release.body maxwords=maxwords %}
+  </div>
+  <div class="panel-footer">
+    <a href="{{ release.html_url }}">Read more...</a>
+  </div>
+</div>
