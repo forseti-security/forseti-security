@@ -253,58 +253,6 @@ class ScannerRunnerTest(ForsetiTestCase):
         self.assertEqual(1, scanner.LOGGER.error.call_count)
         self.assertIsNone(actual)
 
-    @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch.object(csv_writer, 'write_csv', autospec=True)
-    @mock.patch.object(os, 'path', autospec=True)
-    @mock.patch.object(scanner, '_upload_csv')
-    @mock.patch.object(notifier, 'process')
-    @mock.patch('google.cloud.security.scanner.scanner.datetime')
-    @mock.patch.object(vdao.ViolationDao, 'insert_violations')
-    def test_output_results_local_no_email(
-        self, mock_violation_dao, mock_datetime, mock_notifier_process,
-        mock_upload, mock_path, mock_write_csv, mock_conn):
-        """Test output results for local output, and don't send email.
-
-        Setup:
-            * Create fake csv filename.
-            * Create fake file path.
-            * Mock out the ViolationDao.
-            * Set FLAGS values.
-            * Mock the context manager and the csv file name.
-            * Mock the timestamp for the email.
-            * Mock the file path.
-
-        Expect:
-            * _upload_csv() is called once with the fake parameters.
-        """
-        fake_csv_name = 'fake.csv'
-        fake_full_path = '/fake/output/path'
-        flattening_scheme = 'policy_violations'
-    
-        mock_write_csv.return_value = mock.MagicMock()
-        mock_write_csv.return_value.__enter__ = mock.MagicMock()
-        type(
-            mock_write_csv.return_value.__enter__.return_value).name = fake_csv_name
-    
-        mock_datetime.utcnow = mock.MagicMock()
-        mock_datetime.utcnow.return_value = self.fake_utcnow
-        mock_path.abspath = mock.MagicMock()
-        mock_path.abspath.return_value = fake_full_path
-    
-        mock_violation_dao.return_value = (1, [])
-    
-        fake_global_configs = self.FAKE_global_configs
-        fake_global_configs.pop('email_recipient')
-        self.scanner._output_results(
-            fake_global_configs,
-            self.FAKE_SCANNER_CONFIGS,
-            ['a'],
-            self.fake_timestamp,
-            flattening_scheme=flattening_scheme)
-    
-        mock_upload.assert_called_once_with(fake_full_path, self.fake_utcnow,
-                                            fake_csv_name)
-        self.assertEquals(0, mock_notifier_process.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch.object(csv_writer, 'write_csv', autospec=True)
