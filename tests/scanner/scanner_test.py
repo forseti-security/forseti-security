@@ -64,16 +64,6 @@ class ScannerRunnerTest(ForsetiTestCase):
         self.fake_project_policies = \
             fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP
 
-    def test_missing_rules_flag_raises_systemexit(self):
-        """Test that missing the `rules` flag raises SystemExit/calls sys.exit()."""
-        self.scanner.FLAGS.rules = None
-        self.scanner.FLAGS.use_scanner_basedir = os.getcwd() \
-        + '/google/cloud/security/scanner'
-        self.scanner.FLAGS.use_engine = 'iam_rules_engine.py'
-        self.scanner.LOGGER.warn = mock.MagicMock()
-        with self.assertRaises(SystemExit):
-            self.scanner.main(self.fake_main_argv)
-
     # TODO: Fix this test
     #@mock.patch.object(ire.IamRulesEngine, 'build_rule_book', autospec=True)
     #@mock.patch.object(scanner, '_get_timestamp')
@@ -252,64 +242,6 @@ class ScannerRunnerTest(ForsetiTestCase):
         actual = scanner._get_timestamp(self.FAKE_global_configs)
         self.assertEqual(1, scanner.LOGGER.error.call_count)
         self.assertIsNone(actual)
-
-
-    @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch.object(csv_writer, 'write_csv', autospec=True)
-    @mock.patch.object(os, 'path', autospec=True)
-    @mock.patch.object(scanner, '_upload_csv')
-    @mock.patch.object(notifier, 'process')
-    @mock.patch('google.cloud.security.scanner.scanner.datetime')
-    @mock.patch.object(vdao.ViolationDao, 'insert_violations')
-    def test_output_results_gcs_email(self, mock_violation_dao, mock_datetime,
-                                      mock_notifier_process, mock_upload,
-                                      mock_path, mock_write_csv, mock_conn):
-        """Test output results for GCS upload and send email.
-    
-            Setup:
-                * Create fake violations.
-                * Create fake counts.
-                * Create fake csv filename.
-                * Create fake file path.
-                * Mock out the ViolationDao.
-                * Set FLAGS values.
-                * Mock the context manager and the csv file name.
-                * Mock the timestamp for the email.
-                * Mock the file path.
-    
-            Expect:
-                * _upload_csv() is called once with the fake parameters.
-        """
-
-        fake_violations = ['a']
-        fake_counts = {'x': 2}
-        fake_csv_name = 'fake.csv'
-        fake_full_path = 'gs://fake-bucket/output/path'
-        flattening_scheme = 'policy_violations'
-    
-        mock_write_csv.return_value = mock.MagicMock()
-        mock_write_csv.return_value.__enter__ = mock.MagicMock()
-        type(mock_write_csv.return_value \
-            .__enter__.return_value).name = fake_csv_name
-        mock_datetime.utcnow = mock.MagicMock()
-        mock_datetime.utcnow.return_value = self.fake_utcnow
-        mock_path.abspath = mock.MagicMock()
-        mock_path.abspath.return_value = fake_full_path
-    
-        mock_violation_dao.return_value = (1, [])
-    
-        self.scanner._output_results(
-            self.FAKE_global_configs,
-            self.FAKE_SCANNER_CONFIGS,
-            fake_violations,
-            self.fake_timestamp,
-            resource_counts=fake_counts,
-            flattening_scheme=flattening_scheme)
-
-        mock_upload.assert_called_once_with(fake_full_path, self.fake_utcnow,
-                                            fake_csv_name)
-        mock_notifier_process.assert_called_once()
-
 
 if __name__ == '__main__':
     unittest.main()
