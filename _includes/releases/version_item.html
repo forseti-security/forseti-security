@@ -23,7 +23,7 @@
     </div>
   </div>
   <div class="panel-body">
-    {% include markdown_snipify.liquid body=release.body maxwords=maxwords %}
+    {% include markdown_snipify.liquid body=release.body maxwords=maxwords auto_ids=false %}
   </div>
   <div class="panel-footer">
     <a href="{{ release.html_url }}">Read more...</a>

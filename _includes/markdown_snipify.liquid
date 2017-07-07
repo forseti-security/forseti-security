@@ -4,8 +4,9 @@
 
   Inputs:
 
-    - body: Markdown formatted string
-    - maxwords: maximum number of words to include in snippet
+    - body (string): in Markdown format
+    - maxwords (integer): maximum number of words to include in snippet
+    - auto_ids (boolean): auto-generate IDs for Markdown headers
 
   Returns:
 
@@ -32,5 +33,9 @@
 
   {% assign snippet = snippet | append:part | append:newline %}
 {% endfor %}
+
+{% if include.auto_ids == false %}
+  {% assign snippet = snippet | append:'{::options auto_ids="false" /}' %}
+{% endif %}
 
 {{ snippet | markdownify }}
