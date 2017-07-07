@@ -34,8 +34,9 @@ from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import engine_map as em
-from google.cloud.security.scanner.scanners import cloudsql_rules_scanner,\
-    bucket_rules_scanner
+from google.cloud.security.scanner.scanners import bigquery_scanner
+from google.cloud.security.scanner.scanners import bucket_rules_scanner
+from google.cloud.security.scanner.scanners import cloudsql_rules_scanner
 from google.cloud.security.scanner.scanners import iam_rules_scanner
 
 
@@ -83,6 +84,13 @@ def _get_runnable_scanners(global_configs, scanner_configs, snapshot_timestamp):
         scanner_configs,
         snapshot_timestamp,
         'samples/scanner/rules.yaml')
+    runnable_scanners.append(scanner)
+
+    scanner = bigquery_scanner.BigqueryScanner(
+        global_configs,
+        scanner_configs,
+        snapshot_timestamp,
+        'samples/scanner/bigquery_rules.yaml')
     runnable_scanners.append(scanner)
 
     scanner = bucket_rules_scanner.BucketsAclScanner(

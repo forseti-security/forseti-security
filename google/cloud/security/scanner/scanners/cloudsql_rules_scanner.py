@@ -124,20 +124,6 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
 
         return cloudsql_acls
 
-    def _get_project_policies(self):
-        """Get projects from data source.
-
-        Returns:
-            dict: If successful returns a dictionary of project policies
-        """
-        project_policies = {}
-        project_policies = (project_dao
-                            .ProjectDao(self.global_configs)
-                            .get_project_policies('projects',
-                                                  self.snapshot_timestamp))
-        return project_policies
-
-
     def _retrieve(self):
         cloudsql_acls_data = []
         project_policies = {}
