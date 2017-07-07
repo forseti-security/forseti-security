@@ -16,6 +16,8 @@
 
 import abc
 
+from google.cloud.security.common.data_access import errors as db_errors
+from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import log_util
 
 
@@ -31,7 +33,8 @@ class BaseScanner(object):
     """This is a base class skeleton for data retrival pipelines"""
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, global_configs, snapshot_timestamp):
+    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
+                 rules):
         """Constructor for the base pipeline.
 
         Args:
@@ -42,7 +45,9 @@ class BaseScanner(object):
             None
         """
         self.global_configs = global_configs
+        self.scanner_configs = scanner_configs
         self.snapshot_timestamp = snapshot_timestamp
+        self.rules = rules
 
     @abc.abstractmethod
     def run(self):
@@ -53,3 +58,28 @@ class BaseScanner(object):
     def find_violations(self, **kwarg):
         """Find violations."""
         pass
+
+    @abc.abstractmethod
+    def _output_results(self, **kwarg):
+        """Output results."""
+        pass
+
+    def _output_results_to_db(self, resource_name, violations):
+        # Write violations to database.
+        resource_name = 'violations'
+        (inserted_row_count, violation_errors) = (0, [])
+        try:
+            vdao = violation_dao.ViolationDao(self.global_configs)
+            (inserted_row_count, violation_errors) = vdao.insert_violations(
+                violations,
+                resource_name=resource_name,
+                snapshot_timestamp=self.snapshot_timestamp)
+        except db_errors.MySQLError as err:
+            LOGGER.error('Error importing violations to database: %s', err)
+
+        # TODO: figure out what to do with the errors. For now, just log it.
+        LOGGER.debug('Inserted %s rows with %s errors',
+                     inserted_row_count, len(violation_errors))
+        
+        return violation_errors
+        
