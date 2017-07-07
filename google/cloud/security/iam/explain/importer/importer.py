@@ -325,7 +325,8 @@ class ForsetiImporter(object):
                 display_name=forseti_project.project_name,
                 parent=obj))
         self.resource_cache[project.type_name] = (project, full_project_name)
-        self.resource_cache[forseti_project.project_id] = (project, full_project_name)
+        self.resource_cache[forseti_project.project_id] = (
+            project, full_project_name)
         return project
 
     def _convert_bucket(self, forseti_bucket):
@@ -412,7 +413,7 @@ class ForsetiImporter(object):
         """Creates a db object from a Forseti Bigquery dataset.
 
         Args:
-            forseti_biguqery_dataset (object): Forseti DB object for a gce
+            forseti_bigquery_dataset (object): Forseti DB object for a gce
             instance.
 
         Returns:
