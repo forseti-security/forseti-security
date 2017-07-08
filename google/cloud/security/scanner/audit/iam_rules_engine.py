@@ -33,12 +33,6 @@ from google.cloud.security.scanner.audit import rules as scanner_rules
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -49,12 +43,11 @@ def _check_whitelist_members(rule_members=None, policy_members=None):
     the violating members.
 
     Args:
-        rule_members: A list of IamPolicyMembers allowed in the rule.
-        policy_members: A list of IamPolicyMembers in the policy.
+        rule_members (list): IamPolicyMembers allowed in the rule.
+        policy_members (list): IamPolicyMembers in the policy.
 
     Return:
-        A list of the violating members: policy members NOT found in
-        the whitelist (rule members).
+        list: Policy members NOT found in the whitelist (rule members).
     """
     violating_members = []
     for policy_member in policy_members:
@@ -70,12 +63,11 @@ def _check_blacklist_members(rule_members=None, policy_members=None):
     violating members.
 
     Args:
-        rule_members: A list of IamPolicyMembers allowed in the rule.
-        policy_members: A list of IamPolicyMembers in the policy.
+        rule_members (list): IamPolicyMembers allowed in the rule.
+        policy_members (list): IamPolicyMembers in the policy.
 
     Return:
-        A list of the violating members: policy members found in
-        the blacklist (rule members).
+        list: Policy members found in the blacklist (rule members).
     """
     violating_members = [
         policy_member
@@ -94,12 +86,11 @@ def _check_required_members(rule_members=None, policy_members=None):
     rules vs rules as subset of policy).
 
     Args:
-        rule_members: A list of IamPolicyMembers allowed in the rule.
-        policy_members: A list of IamPolicyMembers in the policy.
+        rule_members (list): IamPolicyMembers allowed in the rule.
+        policy_members (list): IamPolicyMembers in the policy.
 
     Return:
-        A list of the violating members: rule members not found in the
-        policy (required-whitelist).
+        list: Rule members not found in the policy (required-whitelist).
     """
     violating_members = []
     for rule_member in rule_members:
@@ -116,8 +107,8 @@ class IamRulesEngine(bre.BaseRulesEngine):
         """Initialize.
 
         Args:
-            rules_file_path: File location of rules.
-            snapshot_timestamp: The snapshot to work with.
+            rules_file_path (str): File location of rules.
+            snapshot_timestamp (str): The snapshot to work with.
         """
         super(IamRulesEngine, self).__init__(
             rules_file_path=rules_file_path,
@@ -139,14 +130,15 @@ class IamRulesEngine(bre.BaseRulesEngine):
         """Determine whether policy violates rules.
 
         Args:
-            resource: The resource that the policy belongs to.
-            policy: The policy to compare against the rules.
+            resource (Resource): The resource that the policy belongs to.
+            policy (dict): The policy to compare against the rules.
                 See https://cloud.google.com/iam/reference/rest/v1/Policy.
-            force_rebuild: If True, rebuilds the rule book. This will reload
-                the rules definition file and add the rules to the book.
+            force_rebuild (bool): If True, rebuilds the rule book.
+                This will reload the rules definition file and add the
+                rules to the book.
 
         Returns:
-            A generator of rule violations.
+            iterable: A generator of rule violations.
         """
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
@@ -160,7 +152,11 @@ class IamRulesEngine(bre.BaseRulesEngine):
         return violations
 
     def add_rules(self, rules):
-        """Add rules to the rule book."""
+        """Add rules to the rule book.
+
+        Args:
+            rules (list): The list of rules to add to the book.
+        """
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
@@ -205,9 +201,9 @@ class IamRuleBook(bre.BaseRuleBook):
 
         Args:
             global_configs (dict): Global configurations.
-            rule_defs: The parsed dictionary of rules from the YAML
+            rule_defs (dict): The parsed dictionary of rules from the YAML
                 definition file.
-            snapshot_timestamp: The snapshot to lookup data.
+            snapshot_timestamp (str): The snapshot to lookup data.
         """
         super(IamRuleBook, self).__init__()
         self._rules_sema = threading.BoundedSemaphore(value=1)
@@ -223,22 +219,42 @@ class IamRuleBook(bre.BaseRuleBook):
             global_configs)
 
     def __eq__(self, other):
+        """Equals.
+
+        Args:
+            other (object): Object to compare.
+
+        Returns:
+            bool: True or False.
+        """
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.resource_rules_map == other.resource_rules_map
 
     def __ne__(self, other):
+        """Not Equals.
+
+        Args:
+            other (object): Object to compare.
+
+        Returns:
+            bool: True or False.
+        """
         return not self == other
 
     def __repr__(self):
+        """Object representation.
+
+        Returns:
+            str: The object representation.
+        """
         return 'IamRuleBook <{}>'.format(self.resource_rules_map)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
 
         Args:
-            rule_defs: The parsed dictionary of rules from the YAML
-                       definition file.
+            rule_defs (dict): Rules parsed from the rule definition file.
         """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
@@ -286,8 +302,8 @@ class IamRuleBook(bre.BaseRuleBook):
             }
 
         Args:
-            rule_def: A dictionary containing rule definition properties.
-            rule_index: The index of the rule from the rule definitions.
+            rule_def (dict): Contains rule definition properties.
+            rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
         self._rules_sema.acquire()
@@ -299,9 +315,7 @@ class IamRuleBook(bre.BaseRuleBook):
                 resource_ids = resource.get('resource_ids')
                 resource_type = None
                 # TODO: collect these errors and output them in a log.
-                # Question: should we ever fail fast? I'm thinking "no"
-                # since we still want to try and run as many rules as
-                # possible.
+                # TODO: log the error and keep going
                 try:
                     resource_type = resource_mod.ResourceType.verify(
                         resource.get('type'))
@@ -353,10 +367,10 @@ class IamRuleBook(bre.BaseRuleBook):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
 
         Args:
-            resource: The resource to find in the ResourceRules map.
+            resource (Resource): The resource to find in the ResourceRules map.
 
         Returns:
-            A list of ResourceRules.
+            list: A list of ResourceRules.
         """
         resource_rules = []
 
@@ -371,14 +385,15 @@ class IamRuleBook(bre.BaseRuleBook):
         """Find policy binding violations in the rule book.
 
         Args:
-            resource: The GCP resource associated with the policy binding.
+            resource (Resource): The GCP resource associated with the
+                policy binding.
                 This is where we start looking for rule violations and
                 we move up the resource hierarchy (if permitted by the
                 resource's "inherit_from_parents" property).
-            policy_binding: An IamPolicyBinding.
+            policy_binding (IamPolicyBinding): An IamPolicyBinding.
 
         Returns:
-            A generator of the rule violations.
+            iterable: A generator of the rule violations.
         """
         violations = itertools.chain()
         resource_ancestors = [resource]
@@ -387,7 +402,11 @@ class IamRuleBook(bre.BaseRuleBook):
                 resource, self.snapshot_timestamp))
 
         for curr_resource in resource_ancestors:
+            wildcard_resource = resource_util.create_resource(
+                resource_id='*', resource_type=curr_resource.type)
             resource_rules = self._get_resource_rules(curr_resource)
+            resource_rules.extend(self._get_resource_rules(wildcard_resource))
+
             # Set to None, because if the direct resource (e.g. project)
             # doesn't have a specific rule, we still should check the
             # ancestry to see if the resource's parents have any rules
@@ -395,28 +414,8 @@ class IamRuleBook(bre.BaseRuleBook):
             inherit_from_parents = None
 
             for resource_rule in resource_rules:
-                # Check whether rules match if the applies_to condition is met:
-                # SELF: check rules if the starting resource == current resource
-                # CHILDREN: check rules if starting resource != current resource
-                # SELF_AND_CHILDREN: always check rules
-                applies_to_self = (
-                    resource_rule.applies_to ==
-                    scanner_rules.RuleAppliesTo.SELF and
-                    resource == curr_resource)
-                applies_to_children = (
-                    resource_rule.applies_to ==
-                    scanner_rules.RuleAppliesTo.CHILDREN and
-                    resource != curr_resource)
-                applies_to_both = (
-                    resource_rule.applies_to ==
-                    scanner_rules.RuleAppliesTo.SELF_AND_CHILDREN)
-
-                rule_applies_to_resource = (
-                    applies_to_self or
-                    applies_to_children or
-                    applies_to_both)
-
-                if not rule_applies_to_resource:
+                if not self._rule_applies_to_resource(
+                        resource, curr_resource, resource_rule):
                     continue
 
                 violations = itertools.chain(
@@ -430,13 +429,42 @@ class IamRuleBook(bre.BaseRuleBook):
             # "inherit" property once per rule. So even though a rule
             # may apply to multiple resources, it will only have one
             # value for "inherit_from_parents".
-            # TODO: Revisit to remove pylint disable
-            # pylint: disable=compare-to-zero
-            if inherit_from_parents is False:
+            if not inherit_from_parents and inherit_from_parents is not None:
                 break
-            # pylint: enable=compare-to-zero
 
         return violations
+
+    @staticmethod
+    def _rule_applies_to_resource(resource, curr_resource, resource_rule):
+        """Check whether rules match if the applies_to condition is met.
+
+        SELF: check rules if the starting resource == current resource
+        CHILDREN: check rules if starting resource != current resource
+        SELF_AND_CHILDREN: always check rules
+
+        Args:
+            resource (Resource): The main resource we're checking the rule
+                against.
+            curr_resource (Resource): A resource that is in the main resource's
+                ancestry.
+            resource_rule (ResourceRule): The rule associated with the resource.
+
+        Returns:
+            bool: True if rule applies to the resource, otherwise false.
+        """
+        applies_to_self = (
+            resource_rule.applies_to ==
+            scanner_rules.RuleAppliesTo.SELF and
+            resource == curr_resource)
+        applies_to_children = (
+            resource_rule.applies_to ==
+            scanner_rules.RuleAppliesTo.CHILDREN and
+            resource != curr_resource)
+        applies_to_both = (
+            resource_rule.applies_to ==
+            scanner_rules.RuleAppliesTo.SELF_AND_CHILDREN)
+
+        return applies_to_self or applies_to_children or applies_to_both
 
 
 class ResourceRules(object):
@@ -450,11 +478,11 @@ class ResourceRules(object):
         """Initialize.
 
         Args:
-            resource: The resource to associate with the rule.
-            rules: A set with rules to associate with the resource.
-            applies_to: Whether the rule applies to the resource's
+            resource (Resource): The resource to associate with the rule.
+            rules (set): A set with rules to associate with the resource.
+            applies_to (str): Whether the rule applies to the resource's
                 self, children, or both.
-            inherit_from_parents: Whether the rule lookup should request
+            inherit_from_parents (bool): Whether the rule lookup should request
                 the resource's ancestor's rules.
         """
         if not isinstance(rules, set):
@@ -471,6 +499,14 @@ class ResourceRules(object):
         }
 
     def __eq__(self, other):
+        """Equals
+
+        Args:
+            other (object): The object to compare.
+
+        Returns:
+            bool: True or False
+        """
         if not isinstance(other, type(self)):
             return NotImplemented
         return (self.resource == other.resource and
@@ -479,10 +515,22 @@ class ResourceRules(object):
                 self.inherit_from_parents == other.inherit_from_parents)
 
     def __ne__(self, other):
+        """Not Equals
+
+        Args:
+            other (object): The object to compare.
+
+        Returns:
+            bool: True or False
+        """
         return not self == other
 
     def __repr__(self):
-        """String representation of this node."""
+        """Object representation.
+
+        Returns:
+            str: The object representation.
+        """
         return ('ResourceRules<resource={}, rules={}, '
                 'applies_to={}, inherit_from_parents={}>').format(
                     self.resource, self.rules, self.applies_to,
@@ -498,12 +546,12 @@ class ResourceRules(object):
         3. Require: rule members must all match policy members
 
         Args:
-            policy_resource: The resource that the policy belongs to.
-            binding_to_match: The IamPolicyBinding binding to compare to
-                this rule's bindings.
+            policy_resource (Resource): The resource that the policy belongs to.
+            binding_to_match (IamPolicyBinding): The IamPolicyBinding binding
+                to compare to this rule's bindings.
 
         Yields:
-            A generator of RuleViolations.
+            iterable: A generator of RuleViolations.
         """
         policy_binding = iam_policy.IamPolicyBinding.create_from(
             binding_to_match)
@@ -560,11 +608,12 @@ class ResourceRules(object):
         """Determine which rule mode method to execute for rule audit.
 
         Args:
-            rule_members: The list of rule binding members.
-            policy_members: The list of policy binding members.
+            mode (str): The rule mode.
+            rule_members (list): The rule binding members.
+            policy_members (list): The policy binding members.
 
         Returns:
-            The result of calling the dispatched method.
+            list: The result of calling the dispatched method.
         """
         return self._rule_mode_methods[mode](
             rule_members=rule_members,
