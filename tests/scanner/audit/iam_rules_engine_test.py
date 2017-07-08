@@ -1192,7 +1192,10 @@ class IamRulesEngineTest(ForsetiTestCase):
             * Create policy.
 
         Expected result:
-            * Find 1 rule violation.
+            * Find 2 rule violations:
+               - A policy binding that violates the org whitelist.
+               - A policy binding that violates the org whitelist, even though
+                 the project whitelist allows it.
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
