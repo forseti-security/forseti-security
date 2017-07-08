@@ -325,14 +325,16 @@ class _RunData(object):
 
 class IapScanner(base_scanner.BaseScanner):
     """Pipeline to IAP-related data from DAO"""
-    def __init__(self, snapshot_timestamp):
+
+    def __init__(self, global_configs, snapshot_timestamp):
         """Initialization.
 
         Args:
+            global_configs (dict): Global configurations.
             snapshot_timestamp (int): The snapshot timestamp
         """
         super(IapScanner, self).__init__(
-            snapshot_timestamp)
+            global_configs, snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 
     def _get_backend_services(self):
@@ -409,18 +411,13 @@ class IapScanner(base_scanner.BaseScanner):
 
         return iap_resources
 
-    """
     # pylint: disable=arguments-differ
-    def find_violations(self, iap_data, rules_engine):
-        all_violations = []
-        LOGGER.info('Finding IAP violations...')
+    def find_violations(self, iap_resource, rules_engine):
+        """Find IAP violations.
 
-        for backend_service in iap_data.backend_services:
-            LOGGER.debug('%s', backend_service.name)
-            violations = rules_engine.find_policy_violations(
-                IapResource(backend_service=backend_service,
-                            iap_data=iap_data))
-            LOGGER.debug(violations)
-            all_violations.extend(violations)
-        return all_violations
-    """
+        Args:
+          iap_resource (IapResource): Resource to check.
+          rules_engine (IapRulesEngine): Rules engine to run.
+        """
+        LOGGER.info('Finding IAP violations...')
+        return rules_engine.find_iap_violations(iap_resource)

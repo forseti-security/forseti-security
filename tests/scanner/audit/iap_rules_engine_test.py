@@ -12,36 +12,61 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests IapRulesEngine."""
+"""Tests the IapRulesEngine."""
 
 import copy
 import itertools
 import mock
 import yaml
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
+from google.cloud.security.common.data_access import _db_connector
+from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
+from google.cloud.security.common.gcp_type.organization import Organization
+from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import iap_rules_engine as ire
+from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
+from tests.scanner.audit.data import test_rules
 
 
-class IapRulesEngineTest(basetest.TestCase):
-    """Tests for IapRulesEngine."""
+class IapRulesEngineTest(ForsetiTestCase):
+    """Tests for the IapRulesEngine."""
 
     def setUp(self):
         """Set up."""
-        self.rule_index = 0
-        self.ire = ire
-        self.ire.LOGGER = mock.MagicMock()
+        self.fake_timestamp = '12345'
+        self.org789 = Organization('778899', display_name='My org')
+        self.project1 = Project(
+            'my-project-1', 12345,
+            display_name='My project 1',
+            parent=self.org789)
+        self.project2 = Project('my-project-2', 12346,
+            display_name='My project 2')
+
+        # patch the organization resource relation dao
+        self.patcher = mock.patch('google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
+        self.mock_org_rel_dao = self.patcher.start()
+        self.mock_org_rel_dao.return_value = None
+
+    def tearDown(self):
+        self.patcher.stop()
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
-        rules_local_path = get_datafile_path(__file__,
-        	'iap_test_rules_1.yaml')
+        rules_local_path = get_datafile_path(__file__, 'iap_test_rules_1.yaml')
         rules_engine = ire.IapRulesEngine(rules_file_path=rules_local_path)
-        rules_engine.build_rule_book()
-        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
+        rules_engine.build_rule_book({})
+        self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
+
+    def test_build_rule_book_from_local_json_file_works(self):
+        """Test that a RuleBook is built correctly with a json file."""
+        rules_local_path = get_datafile_path(__file__, 'iap_test_rules_1.json')
+        rules_engine = ire.IapRulesEngine(rules_file_path=rules_local_path)
+        rules_engine.build_rule_book({})
+        self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     @mock.patch.object(file_loader,
                        '_read_file_from_gcs', autospec=True)
@@ -56,7 +81,7 @@ class IapRulesEngineTest(basetest.TestCase):
             There are 4 resources that have rules, in the rule book.
         """
         bucket_name = 'bucket-name'
-        rules_path = 'input/iap_test_rules_1.yaml'
+        rules_path = 'input/test_rules_1.yaml'
         full_rules_path = 'gs://{}/{}'.format(bucket_name, rules_path)
         rules_engine = ire.IapRulesEngine(rules_file_path=full_rules_path)
 
@@ -71,13 +96,57 @@ class IapRulesEngineTest(basetest.TestCase):
 
         mock_load_rules_from_gcs.return_value = file_content
 
-        rules_engine.build_rule_book()
-        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
+        rules_engine.build_rule_book({})
+        self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_no_resource_type_fails(self):
-        """Test that a rule without a resource cannot be created."""
-        rules_local_path = get_datafile_path(__file__,
-        	'iap_test_rules_2.yaml')
+        """Test that a rule without a resource type cannot be created."""
+        rules_local_path = get_datafile_path(__file__, 'iap_test_rules_2.yaml')
         rules_engine = ire.IapRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
-            rules_engine.build_rule_book()
+            rules_engine.build_rule_book({})
+
+    def test_add_single_rule_builds_correct_map(self):
+        """Test that adding a single rule builds the correct map."""
+        rule_book = ire.IapRuleBook(
+            {}, test_rules.RULES1, self.fake_timestamp)
+        actual_rules = rule_book.resource_rules_map
+
+        # expected
+        rule_bindings = [{
+            'role': 'roles/*', 'members': ['user:*@company.com']
+        }]
+        #[IamPolicyBinding.create_from(b) for b in rule_bindings],
+        rule = scanner_rules.Rule('my rule', 0,
+            True,
+            mode='whitelist')
+        expected_org_rules = ire.ResourceRules(self.org789,
+                                               rules=set([rule]),
+                                               applies_to='self_and_children')
+        expected_proj1_rules = ire.ResourceRules(self.project1,
+                                                 rules=set([rule]),
+                                                 applies_to='self')
+        expected_proj2_rules = ire.ResourceRules(self.project2,
+                                                 rules=set([rule]),
+                                                 applies_to='self')
+        expected_rules = {
+            (self.org789, 'self_and_children'): expected_org_rules,
+            (self.project1, 'self'): expected_proj1_rules,
+            (self.project2, 'self'): expected_proj2_rules
+        }
+
+        self.assertEqual(expected_rules, actual_rules)
+
+    def test_invalid_rule_mode_raises_when_verify_mode(self):
+        """Test that an invalid rule mode raises error."""
+        with self.assertRaises(InvalidRulesSchemaError):
+            scanner_rules.RuleMode.verify('nonexistent mode')
+
+    def test_invalid_rule_mode_raises_when_create_rule(self):
+        """Test that creating a Rule with invalid rule mode raises error."""
+        with self.assertRaises(InvalidRulesSchemaError):
+            scanner_rules.Rule('exception', 0, [])
+
+
+if __name__ == '__main__':
+    unittest.main()

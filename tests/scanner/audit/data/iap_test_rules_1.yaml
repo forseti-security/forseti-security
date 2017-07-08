@@ -6,5 +6,6 @@ rules:
     allowed_iap_enabled: 'True'
     resource:
       - type: organization
+        applies_to: self_and_children
         resource_ids:
           - 1234567890

@@ -319,7 +319,7 @@ class ScannerTest(ForsetiTestCase):
             {
                 self.instance_groups['ig_managed'].key: self.instance_templates['it1'],
             },
-            self.data.instance_templates_by_instance_group_key)
+            self.data.instance_templates_by_group_key)
 
     def test_find_instance_group(self):
         self.assertEqual(self.instance_groups['ig_managed'],
@@ -383,7 +383,7 @@ class ScannerTest(ForsetiTestCase):
             self.data.tags_for_instance_group(self.instance_groups['ig_unmanaged']))
 
     def test_run_scanner(self):
-        scanner = iap_scanner.IapScanner(0)
+        scanner = iap_scanner.IapScanner({}, 0)
         scanner._get_backend_services = lambda: self.backend_services.values()
         scanner._get_firewall_rules = lambda: self.firewall_rules.values()
         scanner._get_instances = lambda: self.instances.values()
