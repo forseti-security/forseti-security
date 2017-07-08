@@ -331,3 +331,36 @@ RULES8 = {
         },
     ]
 }
+
+# Whitelist to allow *@company.com on all orgs and their descendents,
+# plus allow my-project-1 to have *@contract-company.com.
+RULES9 = {
+    'rules': [
+        {
+            'name': 'org whitelist',
+            'mode': 'whitelist',
+            'resource': [{
+                    'type': 'organization',
+                    'applies_to': 'self_and_children',
+                    'resource_ids': ['*']
+                }],
+            'bindings': [{
+                    'role': 'roles/*',
+                    'members': ['user:*@company.com']
+                }]
+        }, {
+            'name': 'project whitelist',
+            'mode': 'whitelist',
+            'resource': [{
+                    'type': 'project',
+                    'applies_to': 'self',
+                    'resource_ids': ['my-project-1']
+                }],
+            'inherit_from_parents': True,
+            'bindings': [{
+                    'role': 'roles/editor',
+                    'members': ['user:*@contract-company.com']
+                }]
+        },
+    ]
+}

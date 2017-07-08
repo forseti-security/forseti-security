@@ -243,10 +243,10 @@ class IamRuleBook(bre.BaseRuleBook):
         return not self == other
 
     def __repr__(self):
-        """__repr__
+        """Object representation.
 
         Returns:
-            str: __repr__
+            str: The object representation.
         """
         return 'IamRuleBook <{}>'.format(self.resource_rules_map)
 
@@ -526,10 +526,10 @@ class ResourceRules(object):
         return not self == other
 
     def __repr__(self):
-        """__repr__
+        """Object representation.
 
         Returns:
-            str: __repr__
+            str: The object representation.
         """
         return ('ResourceRules<resource={}, rules={}, '
                 'applies_to={}, inherit_from_parents={}>').format(

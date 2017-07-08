@@ -1127,11 +1127,11 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.assertItemsEqual(expected_violations, actual_violations)
 
-    def test_wildcard_rules_work(self):
+    def test_wildcard_resource_rules_work(self):
         """Test whitelisted wildcard resources.
 
         Setup:
-            * Create a RulesEngine with RULES6 rule set.
+            * Create a RulesEngine with RULES8 rule set.
             * Create policy.
 
         Expected result:
@@ -1180,6 +1180,87 @@ class IamRulesEngineTest(ForsetiTestCase):
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding_proj['roles/owner'])),
+        ])
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_wildcard_resources_with_project_whitelist(self):
+        """Test whitelisted wildcard resources.
+
+        Setup:
+            * Create a RulesEngine with RULES9 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find 1 rule violation.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES9, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        # have to return 2 [self.org789] because the find_ancestors() call is
+        # called twice, once for each find_violations().
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789], [self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                        'user:someone@notcompany.com',
+                        'user:person@contract-company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:person@contract-company.com',
+                    ]
+                },
+            ]
+        }
+
+        actual_violations = set(
+            rules_engine.find_policy_violations(self.project1, project_policy)
+        )
+
+        # expected
+        # someone@notcompany.com not in any whitelists
+        # person@contract-company.com is allowed by the project whitelist
+        # but we still alert due to the org whitelist.
+        expected_outstanding_proj = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:someone@notcompany.com'),
+                IamPolicyMember.create_from('user:person@contract-company.com'),
+            ],
+            'roles/editor': [
+                IamPolicyMember.create_from('user:person@contract-company.com')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='org whitelist',
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding_proj['roles/owner'])),
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='org whitelist',
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][1]['role'],
+                members=tuple(expected_outstanding_proj['roles/editor'])),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
