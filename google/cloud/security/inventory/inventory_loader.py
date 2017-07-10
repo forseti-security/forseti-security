@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: Move all these flags to the config file.
-
 """Loads requested data into inventory.
 
 Usage:
@@ -71,6 +69,8 @@ LOGLEVELS = {
 
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for inventory.')
+
+flags.DEFINE_string('loglevel', 'info', 'Log level (default: info)')
 
 # Hack to make the test pass due to duplicate flag error here
 # and scanner, enforcer.
@@ -172,9 +172,10 @@ def _run_pipelines(pipelines):
     run_statuses = []
     for pipeline in pipelines:
         try:
-            LOGGER.debug('Running pipeline %s', pipeline.__class__.__name__)
+            LOGGER.info('Running pipeline %s', pipeline.__class__.__name__)
             pipeline.run()
             pipeline.status = 'SUCCESS'
+            LOGGER.info('Finished running %s', pipeline.__class__.__name__)
         except (api_errors.ApiInitializationError,
                 inventory_errors.LoadDataPipelineError) as e:
             LOGGER.error('Encountered error loading data.\n%s', e)
