@@ -40,13 +40,14 @@ class ServiceConfig(object):
     def __init__(self, explain_connect_string, forseti_connect_string):
         self.thread_pool = ThreadPool()
 
-        engine = create_engine(explain_connect_string)
+        engine = create_engine(explain_connect_string, pool_recycle=3600)
         self.model_manager = ModelManager(engine)
         self.forseti_connect_string = forseti_connect_string
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""
         self.thread_pool.apply_async(function)
+
 
 def serve(endpoint, services, explain_connect_string, forseti_connect_string,
           max_workers=1, wait_shutdown_secs=3):
