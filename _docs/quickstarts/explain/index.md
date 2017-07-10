@@ -103,7 +103,7 @@ together with a Forseti deployment, use one of the following methods:
 ## Running the client
 
 The IAM Explain client uses hierarchical command parsing. At the top level,
-commands divide into "explain" and "playground".
+commands divide into "explainer" and "playground".
 
 ### Setting up an explain model
 
@@ -114,13 +114,13 @@ methods:
   - Importing a Forseti model:
   
       ```bash
-      $ forseti_iam explain create_model forseti
+      $ forseti_iam explainer create_model forseti
       ```
 
   - Creating an empty model:
 
       ```bash
-      $ forseti_iam explain create_model empty
+      $ forseti_iam explainer create_model empty
       ```
 
 ### Using an explain model
