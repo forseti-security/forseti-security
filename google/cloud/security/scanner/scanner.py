@@ -25,7 +25,6 @@ Usage:
       --engine_name <rule engine name>
 """
 
-
 import itertools
 import os
 import shutil
@@ -162,11 +161,7 @@ def main(_):
     LOGGER.info('Scan complete!')
 
 def _list_rules_engines():
-    """List rules engines.
-
-    Args:
-        audit_base_dir (str): Base directory for rules engines
-    """
+    """List rules engines."""
     for engine in em.ENGINE_TO_DATA_MAP:
         print engine
 
@@ -281,6 +276,8 @@ def _output_results(global_configs, scanner_configs, all_violations,
     """Send the output results.
 
     Args:
+        global_configs (dict): The global configuration.
+        scanner_configs (dict): The scanner configuration.
         all_violations (list): The list of violations to report.
         snapshot_timestamp (str): The snapshot timetamp associated with
             this scan.
@@ -304,7 +301,7 @@ def _output_results(global_configs, scanner_configs, all_violations,
 
     # TODO: figure out what to do with the errors. For now, just log it.
     LOGGER.info('Inserted %s rows with %s errors',
-                 inserted_row_count, len(violation_errors))
+                inserted_row_count, len(violation_errors))
 
     # TODO: Remove this specific return when tying the scanner to the general
     # violations table.

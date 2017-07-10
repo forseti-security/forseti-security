@@ -35,7 +35,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
         Args:
             global_configs (dict): Global configurations.
-            cycle_timestamp (str): String of timestamp, formatted as
+            snapshot_timestamp (str): String of timestamp, formatted as
         """
         super(IamPolicyScanner, self).__init__(
             global_configs,
@@ -44,9 +44,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
     def _get_org_iam_policies(self):
         """Get orgs IAM policies from data source.
-
-        Args:
-            timestamp (str): The snapshot timestamp.
 
         Returns:
             dict: The org policies.
@@ -63,9 +60,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
     def _get_folder_iam_policies(self):
         """Get folder IAM policies from data source.
 
-        Args:
-            timestamp (str): The snapshot timestamp.
-
         Returns:
             dict: The folder policies.
         """
@@ -81,9 +75,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
     def _get_project_iam_policies(self):
         """Get project IAM policies from data source.
 
-        Args:
-            timestamp (str): The snapshot timestamp.
-
         Returns:
             dict: The project policies.
         """
@@ -95,7 +86,12 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         return project_policies
 
     def run(self):
-        """Runs the data collection."""
+        """Runs the data collection.
+
+        Returns:
+            list: List of IAM policy data.
+            dict: A dict of resource counts.
+        """
         policy_data = []
         org_policies = self._get_org_iam_policies()
         folder_policies = self._get_folder_iam_policies()

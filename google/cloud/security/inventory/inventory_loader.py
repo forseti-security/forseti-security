@@ -23,7 +23,6 @@ To see all the dependent flags:
 
 """
 from datetime import datetime
-import logging
 import sys
 
 import gflags as flags
