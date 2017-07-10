@@ -181,18 +181,11 @@ class InstaceNetworkInterfaceRuleBook(bre.BaseRuleBook):
 
     def get_resource_rules(self):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
-        Args:
-            resource: The resource to find in the ResourceRules map.
         Returns:
             A list of ResourceRules.
         """
-        resource_rules = []
-        for resource_rule in self.resource_rules_map:
-            resource_rules.append(self.resource_rules_map[resource_rule])
+        return self.resource_rules_map.values()
 
-        return resource_rules
-
-        resource_rules = []
 
 class Rule(object):
     def __init__(self, rule_name, rule_index, rules):
@@ -228,7 +221,7 @@ class Rule(object):
                     violation_type='UNENFORCED_NETWORK_VIOLATION',
                     project=project,
                     network=network,
-                    ips='project_not_covered')
+                    ips='not an ip')
         elif network not in self.rules['whitelist'].get(project) and is_external_network:
             yield self.RuleViolation(
                 resource_type='instance',
