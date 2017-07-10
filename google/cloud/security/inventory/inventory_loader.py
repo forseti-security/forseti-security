@@ -70,8 +70,6 @@ LOGLEVELS = {
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for inventory.')
 
-flags.DEFINE_string('loglevel', 'info', 'Log level (default: info)')
-
 # Hack to make the test pass due to duplicate flag error here
 # and scanner, enforcer.
 # TODO: Find a way to remove this try/except, possibly dividing the tests
@@ -118,8 +116,6 @@ def _create_snapshot_cycles_table(inventory_dao):
 
     Args:
         inventory_dao (data_access.Dao): Data access object.
-
-    Returns:
     """
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
@@ -191,8 +187,6 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
         inventory_dao (dao.Dao): Data access object.
         cycle_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status (str): The current cycle's status.
-
-    Returns:
     """
     complete_time = datetime.utcnow()
 
@@ -213,8 +207,6 @@ def _configure_logging(loglevel):
 
     Args:
         loglevel (str): The loglevel to set.
-
-    Returns:
     """
     level = LOGLEVELS.setdefault(loglevel, 'info')
     log_util.set_logger_level(level)
@@ -222,7 +214,7 @@ def _configure_logging(loglevel):
 def _create_dao_map(global_configs):
     """Create a map of DAOs.
 
-    These will be re-usable so that the db connection can apply across
+    These will be reusable so that the db connection can apply across
     different pipelines.
 
     Args:
@@ -263,8 +255,6 @@ def main(_):
 
     Args:
         _ (list): args that aren't used
-
-    Returns:
     """
     del _
     inventory_flags = FLAGS.FlagValuesDict()
