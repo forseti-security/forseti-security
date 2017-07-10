@@ -60,13 +60,6 @@ from google.cloud.security.notifier import notifier
 
 FLAGS = flags.FLAGS
 
-LOGLEVELS = {
-    'debug': logging.DEBUG,
-    'info' : logging.INFO,
-    'warning' : logging.WARN,
-    'error' : logging.ERROR,
-}
-
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for inventory.')
 
@@ -202,15 +195,6 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _configure_logging(loglevel):
-    """Configures the loglevel for all loggers.
-
-    Args:
-        loglevel (str): The loglevel to set.
-    """
-    level = LOGLEVELS.setdefault(loglevel, 'info')
-    log_util.set_logger_level(level)
-
 def _create_dao_map(global_configs):
     """Create a map of DAOs.
 
@@ -277,7 +261,7 @@ def main(_):
     global_configs = configs.get('global')
     inventory_configs = configs.get('inventory')
 
-    _configure_logging(inventory_configs.get('loglevel'))
+    log_util.set_logger_level_from_config(inventory_configs.get('loglevel'))
 
     dao_map = _create_dao_map(global_configs)
 
