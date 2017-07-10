@@ -23,6 +23,7 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao as vdao
+from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.notifier import notifier
@@ -211,6 +212,27 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_get_org_iam.assert_called_once_with('organizations',
                                                  self.fake_timestamp)
         self.assertEqual(org_policies, actual)
+
+    @mock.patch.object(MySQLdb, 'connect')
+    @mock.patch(
+        'google.cloud.security.common.data_access.folder_dao.FolderDao.get_folder_iam_policies'
+    )
+    def test_get_folder_policies_works(self, mock_get_folder_iam, mock_conn):
+        """Test that get_folder_iam_policies() works."""
+        folder_policies = [{
+            folder.Folder('11111'): {
+                'role': 'roles/a',
+                'members': ['user:a@b.c', 'group:g@h.i']
+            }
+        }]
+        mock_get_folder_iam.return_value = folder_policies
+
+        actual = self.irs.IamPolicyScanner(
+            self.FAKE_global_configs,
+            self.fake_timestamp)._get_folder_iam_policies()
+        mock_get_folder_iam.assert_called_once_with('folders',
+                                                 self.fake_timestamp)
+        self.assertEqual(folder_policies, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch(
