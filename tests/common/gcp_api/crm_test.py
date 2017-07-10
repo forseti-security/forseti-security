@@ -305,7 +305,7 @@ class CloudResourceManagerTest(ForsetiTestCase):
         self.crm_api_client._execute.side_effect = HttpLib2Error
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.crm_api_client.get_project_iam_policies(
+            self.crm_api_client.get_folder_iam_policies(
                 'folders', folder_id)
 
 
