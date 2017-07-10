@@ -38,7 +38,7 @@ FLATTENING_MAP = {
     'BucketsRulesEngine': 'buckets_acl_violations',
     'CloudSqlRulesEngine': 'cloudsql_acl_violations',
     'GroupsRulesEngine': 'groups_violations',
-    'IamRulesEngine': 'policy_violations'
+    'IamRulesEngine': 'policy_violations',
     'InstanceNetworkInterfaceRulesEngine': 'instance_network_interface_violations'
 }
 
@@ -47,6 +47,6 @@ RESOURCE_MAP = {
     'buckets_acl_violations': 'violations',
     'cloudsql_acl_violations': 'violations',
     'groups_violations': 'groups_violations',
-    'instance_network_interface_violations': 'violations'
+    'instance_network_interface_violations': 'violations',
     'policy_violations': 'violations'
 }

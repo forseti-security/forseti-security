@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Writes the csv files for upload to Cloud SQL."""
-
 from contextlib import contextmanager
 import csv
 import os

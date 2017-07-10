@@ -123,6 +123,7 @@ FAKE_global_configs = {
     'db_name': 'forseti-carlys',
     'email_recipient': 'foo_email_recipient'
 }
+"""
 print(FAKE_global_configs)
 instance = InstanceNetworkInterfaceScanner(FAKE_global_configs, '20170615T173104Z')
 enforced_networks, rcount = instance.run()
@@ -131,3 +132,4 @@ RulesEngine = instance_network_interface_rules_engine.InstanceNetworkInterfaceRu
 violations = instance.find_violations(enforced_networks, RulesEngine)
 for v in violations:
     print(str(v))
+    """
