@@ -15,9 +15,9 @@ We welcome your contributions! Before you start, please review our
 
 This page describes how to run tests on your Forseti contributions.
 
-### Executing tests
+### Unit tests
 
-You can find the unit tests in the top-level `tests/` directory.
+You can find unit tests in the top-level `tests/` directory.
 
 To execute all the unit tests, run the command below:
 
