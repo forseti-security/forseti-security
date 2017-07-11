@@ -49,12 +49,13 @@ configuration:
   then it checks if billing is enabled for your project.
       * If billing isn't enabled, follow the prompts to enable billing, then
     return to the command-line.
-  1. Next, the setup wizard automaticlaly enables required APIs:
+  1. Next, the setup wizard automatically enables required APIs:
       - Cloud SQL API
       - Cloud SQL Admin API
       - Cloud Resource Manager API
       - Admin SDK API
       - Deployment Manager API
+      - Compute Engine API
   1. Create a new service account or enter an existing service account for
   accessing GCP.
   1. Optionally create a new service account or enter an existing service
@@ -68,7 +69,7 @@ configuration:
       - `roles/resourcemanager.folderAdmin`
       - `roles/storage.admin`
   1. Enter a name for your bucket and Cloud SQL instance.
-  1. Optionally create data storage and a Cloud SQL instance.
+  1. Optionally create the bucket and a Cloud SQL instance.
   1. If you set up a service account to retrieve GSuite groups, follow the
   post-setup instructions to access your project in the Cloud Platform Console
   and **Enable domain-wide-delegation**.
