@@ -20,8 +20,8 @@ This page describes how to run tests on your Forseti contributions.
 You can find unit tests in the top-level `tests/` directory. We use [`unittest`](https://docs.python.org/2/library/unittest.html)
 from standard Python to run our tests.
 
-Before you run unit tests, please build the protos. Some of the unit tests
-rely on the compiled protos.
+Before you run unit tests, please build the protos if you haven't already.
+Some of the unit tests will fail if they cannot find the required protos.
 
   ```bash
   # In the toplevel Forseti directory
