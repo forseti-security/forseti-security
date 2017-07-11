@@ -20,8 +20,8 @@ rules:
     user_email: '*'
     domain: '*'
     group_email: '*'
-    role: 'allAuthenticatedUsers'
+    role: 'OWNER'
     resource:
       - type: organization
         resource_ids:
-          - YOUR_ORG_ID / YOUR_PROJECT_ID
+          - 660570133860

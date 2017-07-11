@@ -33,6 +33,7 @@ from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
+from google.cloud.security.scanner import scanner_builder
 from google.cloud.security.scanner.audit import engine_map as em
 from google.cloud.security.scanner.scanners import bigquery_scanner
 from google.cloud.security.scanner.scanners import bucket_rules_scanner
@@ -74,48 +75,6 @@ LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
-
-def _get_runnable_scanners(global_configs, scanner_configs, snapshot_timestamp):
-        # Load scanner from map
-
-    runnable_scanners = []
-
-    scanner = iam_rules_scanner.IamPolicyScanner(
-        global_configs,
-        scanner_configs,
-        snapshot_timestamp,
-        'samples/scanner/rules.yaml')
-    runnable_scanners.append(scanner)
-
-    scanner = groups_scanner.GroupsScanner(
-        global_configs,
-        scanner_configs,
-        snapshot_timestamp,
-        'samples/scanner/group_rules.yaml')
-    runnable_scanners.append(scanner)
-
-    scanner = bigquery_scanner.BigqueryScanner(
-        global_configs,
-        scanner_configs,
-        snapshot_timestamp,
-        'samples/scanner/bigquery_rules.yaml')
-    runnable_scanners.append(scanner)
-
-    scanner = bucket_rules_scanner.BucketsAclScanner(
-        global_configs,
-        scanner_configs,
-        snapshot_timestamp,
-        'samples/scanner/bucket_rules.yaml')
-    runnable_scanners.append(scanner)
-
-    scanner = cloudsql_rules_scanner.CloudSqlAclScanner(
-        global_configs,
-        scanner_configs,
-        snapshot_timestamp,
-        'samples/scanner/cloudsql_rules.yaml')
-    runnable_scanners.append(scanner)
-
-    return runnable_scanners
 
 def _list_rules_engines():
     """List rules engines.
@@ -184,8 +143,8 @@ def main(_):
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
-    runnable_scanners = _get_runnable_scanners(
-        global_configs, scanner_configs, snapshot_timestamp)
+    runnable_scanners = scanner_builder.ScannerBuilder(
+        global_configs, scanner_configs, snapshot_timestamp).build()
 
     for scanner in runnable_scanners:
         scanner.run()
