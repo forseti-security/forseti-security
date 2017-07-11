@@ -63,34 +63,35 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
     def _get_output_filename(self, now_utc):
         """Create the output filename.
-    
+
         Args:
             now_utc: The datetime now in UTC. Generated at the top level to be
                 consistent across the scan.
-    
+
         Returns:
-            The output filename for the csv, formatted with the now_utc timestamp.
+            The output filename for the csv, formatted with the now_utc
+                timestamp.
         """
-    
+
         output_timestamp = now_utc.strftime(self.OUTPUT_TIMESTAMP_FMT)
         output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
         return output_filename
 
     def _upload_csv(self, output_path, now_utc, csv_name):
         """Upload CSV to Cloud Storage.
-    
+
         Args:
             output_path: The output path for the csv.
             now_utc: The UTC timestamp of "now".
             csv_name: The csv_name.
-        """    
+        """
         output_filename = self._get_output_filename(now_utc)
-    
+
         # If output path was specified, copy the csv temp file either to
         # a local file or upload it to Google Cloud Storage.
         full_output_path = os.path.join(output_path, output_filename)
         LOGGER.info('Output path: %s', full_output_path)
-    
+
         if output_path.startswith('gs://'):
             # An output path for GCS must be the full
             # `gs://bucket-name/path/for/output`
@@ -115,7 +116,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 violation_data = {}
                 violation_data['role'] = violation.role
                 violation_data['member'] = '%s:%s' % (member.type, member.name)
-    
+
                 yield {
                     'resource_id': violation.resource_id,
                     'resource_type': violation.resource_type,
@@ -129,14 +130,15 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Output results.
 
         Args:
-            list: A list of BigQuery violations.
+            all_violations (list): A list of violations
+            resource_counts (dict): Resource count map.
         """
         resource_name = 'violations'
 
         all_violations = list(self._flatten_violations(all_violations))
         violation_errors = self._output_results_to_db(resource_name,
                                                       all_violations)
-        
+
         # Write the CSV for all the violations.
         if self.scanner_configs.get('output_path'):
             LOGGER.info('Writing violations to csv...')
@@ -147,10 +149,10 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 write_header=True) as csv_file:
                 output_csv_name = csv_file.name
                 LOGGER.info('CSV filename: %s', output_csv_name)
-    
+
                 # Scanner timestamp for output file and email.
                 now_utc = datetime.utcnow()
-    
+
                 output_path = self.scanner_configs.get('output_path')
                 if not output_path.startswith('gs://'):
                     if not os.path.exists(
@@ -158,15 +160,18 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                         os.makedirs(output_path)
                     output_path = os.path.abspath(output_path)
                 self._upload_csv(output_path, now_utc, output_csv_name)
-    
+
                 # Send summary email.
                 # TODO: Untangle this email by looking for the csv content
                 # from the saved copy. 
                 if self.global_configs.get('email_recipient') is not None:
                     payload = {
-                        'email_sender': self.global_configs.get('email_sender'),
-                        'email_recipient': self.global_configs.get('email_recipient'),
-                        'sendgrid_api_key': self.global_configs.get('sendgrid_api_key'),
+                        'email_sender':
+                            self.global_configs.get('email_sender'),
+                        'email_recipient':
+                            self.global_configs.get('email_recipient'),
+                        'sendgrid_api_key':
+                            self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
                         'output_filename': self._get_output_filename(now_utc),
                         'now_utc': now_utc,
@@ -185,11 +190,10 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            policies: The list of policies to find violations in.
-            rules_engine: The rules engine to run.
+            policies (list): The list of policies to find violations in.
 
         Returns:
-            A list of violations
+            all_violations (list): A list of violations
         """        
         policies = itertools.chain(*policies)
         all_violations = []
@@ -202,16 +206,16 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             all_violations.extend(violations)
         return all_violations
 
-
     @staticmethod
     def _get_resource_count(org_policies, project_policies):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies: organisation policies from inventory
-            project_pollicies: project policies from inventory.
+            org_policies (dict): Org policies from inventory.
+            project_policies (dict): Project policies from inventory.
+
         Returns:
-            Resource count map
+            resource_counts (dict): Resource count map.
         """
         resource_counts = {
             ResourceType.ORGANIZATION: len(org_policies),
@@ -223,11 +227,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
     def _get_org_policies(self):
         """Get orgs from data source.
 
-        Args:
-            timestamp: The snapshot timestamp.
-
         Returns:
-            The org policies.
+            org_policies (dict): Org policies from inventory.
         """
         org_policies = {}
         try:
@@ -241,11 +242,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
     def _get_project_policies(self):
         """Get projects from data source.
 
-        Args:
-            timestamp: The snapshot timestamp.
-
         Returns:
-            The project policies.
+            project_policies (dict): Project policies from inventory.
         """
         project_policies = {}
         project_policies = (project_dao
@@ -258,8 +256,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            policy_data (list): IAM policy data.
-            resource_counts (dict): Count of resources. 
+            tuple: First element is list of IAM policy_data.  Second element
+                is a dictionary of resource_counts. 
         """
         policy_data = []
         org_policies = self._get_org_policies()
@@ -277,7 +275,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
     def run(self):
         """Runs the data collection."""
-        
+
         policy_data, resource_counts = self._retrieve()
         all_violations = self.find_violations(policy_data)
         self._output_results(all_violations, resource_counts)

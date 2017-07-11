@@ -25,6 +25,7 @@ from google.cloud.security.scanner.scanners import base_scanner
 LOGGER = log_util.get_logger(__name__)
 
 
+# pylint: disable=arguments-differ
 class BigqueryScanner(base_scanner.BaseScanner):
     """Pipeline to pull Big Query acls data from DAO"""
 
@@ -74,7 +75,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 'violation_data': violation_data
             }
 
-    def _output_results(self, all_violations):
+    def _output_results(self, all_violations, resource_counts):
         """Output results.
 
         Args:
@@ -152,7 +153,10 @@ class BigqueryScanner(base_scanner.BaseScanner):
         bigquery_acls_data.append(bigquery_acls.iteritems())
         bigquery_acls_data.append(project_policies.iteritems())
 
-        return bigquery_acls_data
+        resource_counts = self._get_resource_count(project_policies,
+                                                   bigquery_acls)
+
+        return bigquery_acls_data, resource_counts
 
     def run(self):
         """Runs the data collection.
@@ -162,6 +166,6 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 BigQuery ACL data. The second one is a dictionary of resource
                 counts
         """
-        bigquery_acls_data = self._retrieve()
+        bigquery_acls_data, resource_counts = self._retrieve()
         all_violations = self.find_violations(bigquery_acls_data)
-        self._output_results(all_violations)
+        self._output_results(all_violations, resource_counts)

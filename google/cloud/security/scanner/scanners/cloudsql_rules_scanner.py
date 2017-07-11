@@ -70,7 +70,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
                 'violation_data': violation_data
             }
 
-    def _output_results(self, all_violations):
+    def _output_results(self, all_violations, resource_counts):
         """Output results.
 
         Args:
