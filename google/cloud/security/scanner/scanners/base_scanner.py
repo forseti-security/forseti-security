@@ -21,11 +21,6 @@ from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-param-doc,redundant-returns-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -39,10 +34,8 @@ class BaseScanner(object):
 
         Args:
             global_configs (dict): Global configurations.
-            snapshot_timestamp: String of timestamp, formatted as
-
-        Returns:
-            None
+            snapshot_timestamp (str): Snapshot timestamp,
+                formatted as YYYYMMDDTHHMMSSZ.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
@@ -71,6 +64,13 @@ class BaseScanner(object):
         pass
 
     def _output_results_to_db(self, resource_name, violations):
+        """Output scanner results to DB.
+
+        Args:
+            resource_name (str): Resource name.
+            violations (list): A list of violations.
+        """
+
         # Write violations to database.
         resource_name = 'violations'
         (inserted_row_count, violation_errors) = (0, [])
@@ -86,6 +86,6 @@ class BaseScanner(object):
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))
-        
+
         return violation_errors
         

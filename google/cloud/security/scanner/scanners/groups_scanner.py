@@ -160,9 +160,6 @@ class GroupsScanner(base_scanner.BaseScanner):
             # Determine if the node is in violations or not.
             # All rules must be fulfilled, for a node to not be in violation.
             # If any rule is not fulfilled, then node is in violation.
-            #
-            # truth table
-            # http://stackoverflow.com/a/19389957/2830207
             if not any(whitelist_rule_statuses):
                 all_violations.append(node)
 

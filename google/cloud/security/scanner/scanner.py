@@ -91,7 +91,7 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
 def main(_):
     """Run the scanners.
-    
+
     Args:
         _ (list): Result of last expression evaluated by interpreter. Unused.
     """

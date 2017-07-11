@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from mock.mock import MagicMock
 
 """Scanner runner script test."""
 
@@ -26,8 +25,9 @@ from tests.unittest_utils import ForsetiTestCase
 
 class IamRulesScannerTest(ForsetiTestCase):
 
-    @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
-                autospec=True)
+    @mock.patch(
+        'google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
+        autospec=True)
     def setUp(self, mock_rules_engine):
 
         self.fake_utcnow = datetime(
@@ -63,7 +63,8 @@ class IamRulesScannerTest(ForsetiTestCase):
             }
         }]
 
-        mock_dao.OrganizationDao({}).get_org_iam_policies.return_value = fake_policies
+        mock_dao.OrganizationDao({}).get_org_iam_policies.return_value = (
+            fake_policies)
         policies = self.scanner._get_org_policies()
         self.assertEqual(fake_policies, policies)
 
@@ -80,7 +81,8 @@ class IamRulesScannerTest(ForsetiTestCase):
             }
         }]
 
-        mock_dao.ProjectDao({}).get_project_policies.return_value = fake_policies
+        mock_dao.ProjectDao({}).get_project_policies.return_value = (
+            fake_policies)
         policies = self.scanner._get_project_policies()
         self.assertEqual(fake_policies, policies)
 
@@ -104,7 +106,8 @@ class IamRulesScannerTest(ForsetiTestCase):
         '_output_results_to_db', autospec=True)
     @mock.patch.object(
         iam_rules_scanner.IamPolicyScanner,
-        '_flatten_violations', autospec=True)
+        '_flatten_violations')
+    # autospec on staticmethod will return noncallable mock
     def test_output_results_local_no_email(
         self, mock_flatten_violations, mock_output_results_to_db,
         mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
@@ -162,7 +165,8 @@ class IamRulesScannerTest(ForsetiTestCase):
         '_output_results_to_db', autospec=True)
     @mock.patch.object(
         iam_rules_scanner.IamPolicyScanner,
-        '_flatten_violations', autospec=True)
+        '_flatten_violations')
+    # autospec on staticmethod will return noncallable mock
     def test_output_results_gcs_email(
         self, mock_flatten_violations, mock_output_results_to_db,
         mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
@@ -191,7 +195,6 @@ class IamRulesScannerTest(ForsetiTestCase):
             self.fake_utcnow,
             fake_csv_name)
         self.assertEquals(1, mock_notifier.process.call_count)
-        
 
 
 if __name__ == '__main__':
