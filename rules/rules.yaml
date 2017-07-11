@@ -5,7 +5,7 @@ rules:
       - type: organization
         applies_to: self_and_children
         resource_ids:
-          - 660570133860
+          - YOUR_ORG_ID
     inherit_from_parents: true
     bindings:
       - role: roles/*
