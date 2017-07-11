@@ -202,6 +202,14 @@ FIREWALL_RULES_FIELDNAMES = [
     'raw_firewall_rule'
 ]
 
+FOLDER_IAM_POLICIES_FIELDNAMES = [
+    'folder_id',
+    'role',
+    'member_type',
+    'member_name',
+    'member_domain'
+]
+
 FOLDERS_FIELDNAMES = [
     'folder_id',
     'name',
@@ -211,6 +219,11 @@ FOLDERS_FIELDNAMES = [
     'parent_id',
     'raw_folder',
     'create_time',
+]
+
+RAW_FOLDER_IAM_POLICIES_FIELDNAMES = [
+    'folder_id',
+    'iam_policy'
 ]
 
 FORWARDING_RULES_FIELDNAMES = [
@@ -380,31 +393,45 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
 
 CSV_FIELDNAME_MAP = {
     'appengine': APPENGINE_SERVICES_FIELDNAMES,
+
     'backend_services': BACKEND_SERVICES_FIELDNAMES,
+
     'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
+
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
+    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
+
     'cloudsql_instances': CLOUDSQL_INSTANCES_FIELDNAMES,
     'cloudsql_ipaddresses': CLOUDSQL_IPADDRESSES_FIELDNAMES,
     'cloudsql_ipconfiguration_authorizednetworks': \
         CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES,
+
     'firewall_rules': FIREWALL_RULES_FIELDNAMES,
+
+    'folder_iam_policies': FOLDER_IAM_POLICIES_FIELDNAMES,
     'folders': FOLDERS_FIELDNAMES,
+    'raw_folder_iam_policies': RAW_FOLDER_IAM_POLICIES_FIELDNAMES,
+
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
+
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
+
     'instances': INSTANCES_FIELDNAMES,
     'instance_groups': INSTANCE_GROUPS_FIELDNAMES,
     'instance_templates': INSTANCE_TEMPLATES_FIELDNAMES,
     'instance_group_managers': INSTANCE_GROUP_MANAGERS_FIELDNAMES,
+
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,
-    'violations': VIOLATION_FIELDNAMES,
+    'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAMES,
+
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
-    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
-    'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAMES,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
+
+    'violations': VIOLATION_FIELDNAMES,
 }
 
 

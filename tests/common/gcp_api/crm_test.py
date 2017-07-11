@@ -275,6 +275,39 @@ class CloudResourceManagerTest(ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             list(self.crm_api_client.get_folders('folders'))
 
+    def test_get_folder_iam_policies(self):
+        """Test get folder IAM policies."""
+
+        mock_get_iam_policy = mock.MagicMock()
+        self.crm_api_client.service \
+            .folders.return_value.getIamPolicy = mock_get_iam_policy
+
+        folder_id = '11111'
+        response = '22222'
+        expected_result = {'folder_id': folder_id, 'iam_policy': response}
+        self.crm_api_client._execute = mock.MagicMock(return_value=response)
+        result = self.crm_api_client.get_folder_iam_policies(
+            'folders', folder_id)
+
+        self.assertEquals(expected_result, result)
+        self.crm_api_client.service.folders.assert_called_once_with()
+        mock_get_iam_policy.assert_called_once_with(
+            resource='folders/11111', body={})
+
+    def test_get_folder_iam_policies_raises_error(self):
+        """Test get_folder_iam_policies() raises ApiExecutionError."""
+
+        folder_id = '11111'
+        response = '22222'
+        expected_result = {'folder_id': folder_id, 'iam_policy': response}
+
+        self.crm_api_client._execute = mock.MagicMock()
+        self.crm_api_client._execute.side_effect = HttpLib2Error
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.crm_api_client.get_folder_iam_policies(
+                'folders', folder_id)
+
 
 if __name__ == '__main__':
     unittest.main()
