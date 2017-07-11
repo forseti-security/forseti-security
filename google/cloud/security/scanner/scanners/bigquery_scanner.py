@@ -145,7 +145,6 @@ class BigqueryScanner(base_scanner.BaseScanner):
 
         Returns:
             bigquery_acls_data (list): Bigquery ACL data. 
-            resource_counts (dict): Count of resources. 
         """
         bigquery_acls_data = []
         project_policies = {}
@@ -153,10 +152,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
         bigquery_acls_data.append(bigquery_acls.iteritems())
         bigquery_acls_data.append(project_policies.iteritems())
 
-        resource_counts = self._get_resource_count(project_policies,
-                                                   bigquery_acls)
-
-        return bigquery_acls_data, resource_counts
+        return bigquery_acls_data
 
     def run(self):
         """Runs the data collection.
@@ -166,6 +162,6 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 BigQuery ACL data. The second one is a dictionary of resource
                 counts
         """
-        bigquery_acls_data, resource_counts = self._retrieve()
+        bigquery_acls_data = self._retrieve()
         all_violations = self.find_violations(bigquery_acls_data)
         self._output_results(all_violations)

@@ -51,7 +51,8 @@ class GroupsScanner(base_scanner.BaseScanner):
             rules_file)
         self.dao = group_dao.GroupDao(global_configs)
 
-    def _flatten_violations(self, violations):
+    @staticmethod
+    def _flatten_violations(violations):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:
