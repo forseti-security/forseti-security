@@ -23,24 +23,20 @@ from standard Python to run our tests.
 Before you run unit tests, please build the protos if you haven't already.
 Some of the unit tests will fail if they cannot find the required protos.
 
+**The following commands should be run in the _top-level_ directory of Forseti.**
+
   ```bash
-  # In the toplevel Forseti directory
-  
-  $ python build_protos.py --clean
+  python build_protos.py --clean
   ```
 
-To execute all the unit tests, run the command below:
+To execute all the unit tests:
 
   ```bash
-  # In the toplevel Forseti directory
-  
-  $ python -m unittest discover -s . -p "*_test*"
+  python -m unittest discover -s . -p "*_test*"
   ```
 
 To execute the tests just for a particular file pattern:
 
   ```bash
-  # In the toplevel Forseti directory
-  
-  $ python -m unittest discover -s . -p "*some_feature_test*"
+  python -m unittest discover -s . -p "*some_feature_test*"
   ```
