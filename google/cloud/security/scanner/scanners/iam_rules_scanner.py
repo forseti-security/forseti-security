@@ -37,7 +37,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class IamPolicyScanner(base_scanner.BaseScanner):
-    """Pipeline to IAM data from DAO"""
+    """Scanner for IAM data."""
 
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
     OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'

@@ -28,7 +28,8 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class CloudSqlAclScanner(base_scanner.BaseScanner):
-    """Pipeline to CloudSQL acls data from DAO"""
+    """Scanner for CloudSQL acls,"""
+
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
         """Initialization.

@@ -28,7 +28,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class BigqueryScanner(base_scanner.BaseScanner):
-    """Pipeline to pull BigQuery acls data from DAO"""
+    """Scanner for BigQuery acls."""
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):

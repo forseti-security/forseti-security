@@ -25,7 +25,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class BaseScanner(object):
-    """This is a base class skeleton for data retrival pipelines"""
+    """This is a base class skeleton for scanners."""
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,

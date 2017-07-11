@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Builds the inventory scanners to run, and in the correct order to run."""
+"""Builds the scanners to run."""
 
 import importlib
 import inspect

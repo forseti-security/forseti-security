@@ -21,8 +21,6 @@ Usage:
   Run scanner:
   $ forseti_scanner \\
       --forseti_config (optional) \\
-      --rules <rules path> \\
-      --engine_name <rule engine name>
 """
 import sys
 

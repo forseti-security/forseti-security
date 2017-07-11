@@ -31,7 +31,7 @@ MY_CUSTOMER = 'my_customer'
 
 # pylint: disable=arguments-differ
 class GroupsScanner(base_scanner.BaseScanner):
-    """Pipeline to IAM data from DAO"""
+    """Scanner for IAM data."""
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules_file):
