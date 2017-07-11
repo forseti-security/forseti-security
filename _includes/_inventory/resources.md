@@ -19,7 +19,7 @@ interested in isn't listed, please open an issue or contribute!
 | [Compute Engine Instance Templates](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates) | Done | In Progress | TODO |
 | [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) | Done | TODO | Done |
 | [Folders](https://cloud.google.com/resource-manager/reference/rest/v2beta1/folders) | Done | Done | TODO |
-| [Folder Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) | Done | Done | TODO |
+| [Folders Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) | Done | Done | TODO |
 | [GSuite Groups](https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups) | Done | Done | TODO |
 | [GSuite Group Members](https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members) | Done | Done | TODO |
 | [IAM GrantableRoles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) | In Progress | TODO | TODO |
