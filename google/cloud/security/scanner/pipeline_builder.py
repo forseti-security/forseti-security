@@ -19,13 +19,13 @@ import inspect
 import sys
 
 from google.cloud.security.common.util import log_util
-from google.cloud.security.scanner import scanner_requirements_map
+from google.cloud.security.scanner import pipeline_requirements_map
 
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class ScannerBuilder(object):
+class PipelineBuilder(object):
     """Inventory Pipeline Builder."""
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp):
@@ -51,7 +51,7 @@ class ScannerBuilder(object):
             if pipeline.get('enabled'):
                 module_path = 'google.cloud.security.scanner.scanners.{}'
                 module_name = module_path.format(
-                    scanner_requirements_map.REQUIREMENTS_MAP
+                    pipeline_requirements_map.REQUIREMENTS_MAP
                     .get(pipeline.get('name'))
                     .get('module_name'))
                 try:
@@ -61,7 +61,7 @@ class ScannerBuilder(object):
                     continue
 
                 class_name = (
-                    scanner_requirements_map.REQUIREMENTS_MAP
+                    pipeline_requirements_map.REQUIREMENTS_MAP
                     .get(pipeline.get('name'))
                     .get('class_name'))
                 try:
@@ -75,9 +75,10 @@ class ScannerBuilder(object):
                 # where forseti runs.
                 scanner_path = inspect.getfile(scanner_class)
                 rules_path = scanner_path.split('/google/cloud/security')[0]
-                rule = rules_path + (scanner_requirements_map.REQUIREMENTS_MAP
-                    .get(pipeline.get('name'))
-                    .get('rule_filename'))
+                rule_filename = (pipeline_requirements_map.REQUIREMENTS_MAP
+                                .get(pipeline.get('name'))
+                                .get('rule_filename'))
+                rule = '{}/rules/{}'.format(rules_path, rule_filename)
 
                 scanner = scanner_class(self.global_configs,
                                         self.scanner_configs,

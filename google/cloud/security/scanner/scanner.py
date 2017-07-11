@@ -33,13 +33,8 @@ from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
-from google.cloud.security.scanner import scanner_builder
+from google.cloud.security.scanner import pipeline_builder
 from google.cloud.security.scanner.audit import engine_map as em
-from google.cloud.security.scanner.scanners import bigquery_scanner
-from google.cloud.security.scanner.scanners import bucket_rules_scanner
-from google.cloud.security.scanner.scanners import cloudsql_rules_scanner
-from google.cloud.security.scanner.scanners import groups_scanner
-from google.cloud.security.scanner.scanners import iam_rules_scanner
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -143,7 +138,7 @@ def main(_):
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
-    runnable_scanners = scanner_builder.ScannerBuilder(
+    runnable_scanners = pipeline_builder.PipelineBuilder(
         global_configs, scanner_configs, snapshot_timestamp).build()
 
     for scanner in runnable_scanners:
