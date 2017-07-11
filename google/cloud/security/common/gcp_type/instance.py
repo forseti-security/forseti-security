@@ -17,7 +17,7 @@
 See: https://cloud.google.com/compute/docs/reference/latest/instances
 """
 
-
+import json
 from google.cloud.security.common.gcp_type import key
 
 
@@ -57,6 +57,13 @@ class Instance(object):
             Key: the key
         """
         return Key.from_args(self.project_id, self.zone, self.name)
+
+    def create_network_interfaces(self):
+        """
+        Returns a list of network_interface objects.
+        """
+        network_interfaces = json.loads(self.network_interfaces)
+        return [InstanceNetworkInterface(**ni) for ni in network_interfaces]
 
 
 KEY_OBJECT_KIND = 'Instance'
@@ -130,3 +137,53 @@ class Key(key.Key):
             str: name
         """
         return self._path_component('name')
+
+
+import json
+
+# pylint: disable=too-few-public-methods
+class InstanceNetworkInterface(object):
+    """InstanceNetworkInterface Resource."""
+
+    def __init__(self, **kwargs):
+        """Initialize
+
+        Args:
+            network_interfaces: json from instances on the network_interfaces
+        """
+
+        
+        self.kind = kwargs.get('kind')
+        self.network = kwargs.get('network')
+        self.subnetwork = kwargs.get('subnetwork')
+        self.networkIP = kwargs.get('networkIP')
+        self.name = kwargs.get('name')
+        self.accessConfigs = kwargs.get('accessConfigs')
+        self.aliasIpRanges = kwargs.get('aliasIpRanges')
+
+
+    def __repr__(self):
+        return 'kind: %s Network: %s subnetwork: %s networkIp %s name %s \
+            accessConfigs %s aliasIpRanges %s' % (self.kind, self.network, \
+            self.subnetwork, self.networkIP, self.name, self.accessConfigs, \
+            self.aliasIpRanges)
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
+    def __ne__(self, other):
+        return (not self.__eq__(other))
+
+    def __eq__(self, other):
+        if isinstance(self, InstanceNetworkInterface):
+            return ((self.kind == other.kind) and 
+                    (self.network == other.network) and 
+                    (self.subnetwork == other.subnetwork) and
+                    (self.networkIp == other.networkIP) and
+                    (self.name == other.name) and 
+                    (self.accessConfigs == other.network) and 
+                    (self.subnetwork == other.accessConfigs) and
+                    (self.alliasIpRanges == other.alliasIpRanges)
+                    )
+        else:
+            return False

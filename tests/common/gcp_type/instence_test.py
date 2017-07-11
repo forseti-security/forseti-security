@@ -26,7 +26,7 @@ class InstanceTest(ForsetiTestCase):
     # Test IamPolicyMember
     def test_network_interface_creation(self):
     	"""Test that network_interface creation is correct."""
-        network_interfaces = instance.Instance(**fake_instance.FAKE_INSTANCE_RESPONSE_1).create_network_interface()
+        network_interfaces = instance.Instance(**fake_instance.FAKE_INSTANCE_RESPONSE_1).create_network_interfaces()
         self.assertEqual(len(network_interfaces), 1)
         nw = network_interfaces[0]
         self.assertEqual('compute#networkInterface', nw.kind)
@@ -39,7 +39,7 @@ class InstanceTest(ForsetiTestCase):
 
     def test_recognizes_two_network_interfaces(self):
         """Test that it recognizes two network_interfaces."""
-        network_interfaces = instance.Instance(**fake_instance.FAKE_INSTANCE_RESPONSE_2).create_network_interface()
+        network_interfaces = instance.Instance(**fake_instance.FAKE_INSTANCE_RESPONSE_2).create_network_interfaces()
         self.assertEqual(len(network_interfaces), 2)
 
 if __name__ == '__main__':

@@ -31,7 +31,6 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         Args:
             snapshot_timestamp: The snapshot timestamp
         """
-<<<<<<< HEAD
         super(InstanceNetworkInterfaceScanner, self).__init__(
             global_configs,
             snapshot_timestamp)
