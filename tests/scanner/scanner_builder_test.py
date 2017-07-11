@@ -17,11 +17,10 @@
 from google.apputils import basetest
 import mock
 
-from google.cloud.security.scanner import pipeline_builder
-from tests.scanner.test_data import fake_runnable_pipelines
+from google.cloud.security.scanner import scanner_builder
+from tests.scanner.test_data import fake_runnable_scanners
 
 
-BASE_PATH = 'tests/scanner/test_data/'
 FAKE_TIMESTAMP = '20001225T121212Z'
 FAKE_GLOBAL_CONFIGS = {
     'db_host': 'foo',
@@ -30,8 +29,8 @@ FAKE_GLOBAL_CONFIGS = {
 }
 
 
-class PipelineBuilderTest(basetest.TestCase):
-    """Tests for the scanner pipeline builder test."""
+class ScannerBuilderTest(basetest.TestCase):
+    """Tests for the scanner builder test."""
 
     @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
                 autospec=True)
@@ -46,8 +45,8 @@ class PipelineBuilderTest(basetest.TestCase):
                        mock_bucket_rules_engine,
                        mock_cloudsql_rules_engine,
                        mock_iam_rules_engine):
-        builder = pipeline_builder.PipelineBuilder(
-            FAKE_GLOBAL_CONFIGS, fake_runnable_pipelines.ALL_ENABLED,
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_ENABLED,
             FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
         
@@ -59,8 +58,8 @@ class PipelineBuilderTest(basetest.TestCase):
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
 
     def testAllDisabled(self):
-        builder = pipeline_builder.PipelineBuilder(
-            FAKE_GLOBAL_CONFIGS, fake_runnable_pipelines.ALL_DISABLED,
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_DISABLED,
             FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
         
@@ -69,8 +68,8 @@ class PipelineBuilderTest(basetest.TestCase):
     @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
                 autospec=True)
     def testOneEnabled(self, mock_iam_rules_engine):
-        builder = pipeline_builder.PipelineBuilder(
-            FAKE_GLOBAL_CONFIGS, fake_runnable_pipelines.ONE_ENABLED,
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ONE_ENABLED,
             FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
         
@@ -84,8 +83,8 @@ class PipelineBuilderTest(basetest.TestCase):
     @mock.patch('google.cloud.security.scanner.scanners.bucket_rules_scanner.buckets_rules_engine',
                 autospec=True)
     def testTwoEnabled(self, mock_bucket_rules_engine, mock_iam_rules_engine):
-        builder = pipeline_builder.PipelineBuilder(
-            FAKE_GLOBAL_CONFIGS, fake_runnable_pipelines.TWO_ENABLED,
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.TWO_ENABLED,
             FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 

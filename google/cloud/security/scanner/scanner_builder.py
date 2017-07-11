@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Builds the inventory pipelines to run, and in the correct order to run."""
+"""Builds the inventory scanners to run, and in the correct order to run."""
 
 import importlib
 import inspect
 import sys
 
 from google.cloud.security.common.util import log_util
-from google.cloud.security.scanner import pipeline_requirements_map
+from google.cloud.security.scanner import scanner_requirements_map
 
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class PipelineBuilder(object):
-    """Inventory Pipeline Builder."""
+class ScannerBuilder(object):
+    """Scanner Builder."""
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp):
         """Initialize the scanner builder.
@@ -44,15 +44,15 @@ class PipelineBuilder(object):
         """Build the enabled scanners to run.
 
         Returns:
-            list: List of pipelines instances that will be run.
+            list: List of scanners instances that will be run.
         """
         runnable_scanners = []
-        for pipeline in self.scanner_configs.get('pipelines'):
-            if pipeline.get('enabled'):
+        for scanner in self.scanner_configs.get('scanners'):
+            if scanner.get('enabled'):
                 module_path = 'google.cloud.security.scanner.scanners.{}'
                 module_name = module_path.format(
-                    pipeline_requirements_map.REQUIREMENTS_MAP
-                    .get(pipeline.get('name'))
+                    scanner_requirements_map.REQUIREMENTS_MAP
+                    .get(scanner.get('name'))
                     .get('module_name'))
                 try:
                     module = importlib.import_module(module_name)
@@ -61,8 +61,8 @@ class PipelineBuilder(object):
                     continue
 
                 class_name = (
-                    pipeline_requirements_map.REQUIREMENTS_MAP
-                    .get(pipeline.get('name'))
+                    scanner_requirements_map.REQUIREMENTS_MAP
+                    .get(scanner.get('name'))
                     .get('class_name'))
                 try:
                     scanner_class = getattr(module, class_name)
@@ -75,8 +75,8 @@ class PipelineBuilder(object):
                 # where forseti runs.
                 scanner_path = inspect.getfile(scanner_class)
                 rules_path = scanner_path.split('/google/cloud/security')[0]
-                rule_filename = (pipeline_requirements_map.REQUIREMENTS_MAP
-                                .get(pipeline.get('name'))
+                rule_filename = (scanner_requirements_map.REQUIREMENTS_MAP
+                                .get(scanner.get('name'))
                                 .get('rule_filename'))
                 rule = '{}/rules/{}'.format(rules_path, rule_filename)
 

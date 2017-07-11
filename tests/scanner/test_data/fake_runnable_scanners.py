@@ -12,25 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Fake runnable pipelines."""
+"""Fake runnable scanners."""
 
-ALL_ENABLED = {'pipelines': [
+ALL_ENABLED = {'scanners': [
     {'name': 'bigquery', 'enabled': True},
     {'name': 'bucket_acl', 'enabled': True},
     {'name': 'cloudsql_acl', 'enabled': True},
     {'name': 'iam_policy', 'enabled': True}
 ]}
 
-ALL_DISABLED = {'pipelines': []}
+ALL_DISABLED = {'scanners': []}
 
-ONE_ENABLED = {'pipelines': [
+ONE_ENABLED = {'scanners': [
     {'name': 'bigquery', 'enabled': False},
     {'name': 'bucket_acl', 'enabled': False},
     {'name': 'cloudsql_acl', 'enabled': False},
     {'name': 'iam_policy', 'enabled': True}
 ]}
 
-TWO_ENABLED = {'pipelines': [
+TWO_ENABLED = {'scanners': [
     {'name': 'bigquery', 'enabled': False},
     {'name': 'bucket_acl', 'enabled': True},
     {'name': 'cloudsql_acl', 'enabled': False},
