@@ -25,7 +25,6 @@ from google.cloud.security.scanner.scanners import base_scanner
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=arguments-differ
 class BigqueryScanner(base_scanner.BaseScanner):
     """Pipeline to pull Big Query acls data from DAO"""
 
@@ -49,7 +48,8 @@ class BigqueryScanner(base_scanner.BaseScanner):
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
-    def _flatten_violations(self, violations):
+    @staticmethod
+    def _flatten_violations(violations):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:
@@ -79,7 +79,8 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Output results.
 
         Args:
-            list: A list of BigQuery violations.
+            all_violations (list): A list of BigQuery violations.
+            resource_counts (dict): Resource count map.
         """
         resource_name = 'violations'
 
@@ -92,7 +93,6 @@ class BigqueryScanner(base_scanner.BaseScanner):
 
         Args:
             bigquery_data (list): Big Query data to find violations in
-            rules_engine (BigqueryRulesEngine): The rules engine to run.
 
         Returns:
             list: A list of BigQuery violations
@@ -145,7 +145,9 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            bigquery_acls_data (list): Bigquery ACL data. 
+            tuple: Returns a tuple of lists. The first one is a list of
+                BigQuery ACL data. The second one is a dictionary of resource
+                counts.
         """
         bigquery_acls_data = []
         project_policies = {}
@@ -159,13 +161,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
         return bigquery_acls_data, resource_counts
 
     def run(self):
-        """Runs the data collection.
-
-        Returns:
-            tuple: Returns a tuple of lists. The first one is a list of
-                BigQuery ACL data. The second one is a dictionary of resource
-                counts
-        """
+        """Runs the data collection."""
         bigquery_acls_data, resource_counts = self._retrieve()
         all_violations = self.find_violations(bigquery_acls_data)
         self._output_results(all_violations, resource_counts)
