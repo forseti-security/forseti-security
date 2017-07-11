@@ -85,7 +85,7 @@ class BaseScanner(object):
             violations (list): A list of violations.
 
         Returns:
-            list: Violations that encountered an error during insert. 
+            list: Violations that encountered an error during insert.
         """
 
         # Write violations to database.
