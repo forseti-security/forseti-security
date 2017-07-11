@@ -168,4 +168,4 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """
         bigquery_acls_data, resource_counts = self._retrieve()
         all_violations = self.find_violations(bigquery_acls_data)
-        self._output_results(all_violations, resource_counts)
+        self._output_results(all_violations)

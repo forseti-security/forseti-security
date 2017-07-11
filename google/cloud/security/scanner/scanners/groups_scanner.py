@@ -93,7 +93,8 @@ class GroupsScanner(base_scanner.BaseScanner):
         self._output_results_to_db(resource_name, all_violations)
 
     # pylint: disable=too-many-branches
-    def find_violations(self, root):
+    @staticmethod
+    def find_violations(root):
         """Find violations, starting from the given root.
 
         At this point, we can start to find violations at each node!
@@ -109,10 +110,10 @@ class GroupsScanner(base_scanner.BaseScanner):
         i.e. if all rules pass, then the node is not in violation.
 
         Args:
-            root: The nodes (tree structure) to find violations in.
+            root (node): The nodes (tree structure) to find violations in.
 
         Returns:
-            A list of nodes that are in violation.
+            list: Nodes that are in violation.
         """
         all_violations = []
         for node in anytree.iterators.PreOrderIter(root):
@@ -176,24 +177,25 @@ class GroupsScanner(base_scanner.BaseScanner):
             rule (dict): A dictionary representation of a rule.
 
         Returns:
-            Member node with all its recursive members, with the rule appended.
+            node: Member node with all its recursive members,
+                with the rule appended.
         """
         for node in anytree.iterators.PreOrderIter(starting_node):
             node.rules.append(rule)
         return starting_node
 
-    def _apply_all_rules(self, starting_node, rules):
+    def _apply_all_rules(self, starting_node, group_rules):
         """Apply all rules to all the applicable nodes.
 
         Args:
             starting_node (node): Member node from which to start appending the
                 rule.
-            rules (dict): A list of rules, in dictionary form.
+            group_rules (dict): A list of rules, in dictionary form.
 
         Returns:
-            Member node with all the rules applied to all the nodes.
+            node: Member node with all the rules applied to all the nodes.
         """
-        for rule in rules:
+        for rule in group_rules:
             if rule.get('group_email') == MY_CUSTOMER:
                 # Apply rule to every node.
                 # Because this is simply the root node, there is no need
@@ -225,7 +227,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            Member node with all its recursive members.
+            node: Member node with all its recursive members.
         """
         queue = Queue()
         queue.put(starting_node)
@@ -253,7 +255,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            The tree structure of all the groups in the organization.
+            node: The tree structure of all the groups in the organization.
         """
         root = MemberNode(MY_CUSTOMER, MY_CUSTOMER)
 
@@ -278,7 +280,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             None
 
         Returns:
-            The tree structure of all the groups in the organization.
+            node: The tree structure of all the groups in the organization.
         """
         root = self._build_group_tree(self.snapshot_timestamp)
         return root
@@ -289,14 +291,14 @@ class GroupsScanner(base_scanner.BaseScanner):
         root = self._retrieve()
 
         with open(self.rules, 'r') as f:
-            rules_file = yaml.load(f)
+            group_rules = yaml.load(f)
 
-        root = self._apply_all_rules(root, rules_file)
+        root = self._apply_all_rules(root, group_rules)
 
         all_violations = self.find_violations(root)
 
         self._output_results(all_violations)
-        
+
 
 class MemberNode(anytree.node.NodeMixin):
     """A custom anytree node with Group Member attributes."""
@@ -304,7 +306,7 @@ class MemberNode(anytree.node.NodeMixin):
     def __init__(self, member_id, member_email,
                  member_type=None, member_status=None, parent=None):
         """Initialization
-        
+
         Args:
             member_id (str): id of the member
             member_email (str): email of the member
