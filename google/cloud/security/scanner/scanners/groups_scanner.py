@@ -29,6 +29,7 @@ LOGGER = log_util.get_logger(__name__)
 MY_CUSTOMER = 'my_customer'
 
 
+# pylint: disable=arguments-differ
 class GroupsScanner(base_scanner.BaseScanner):
     """Pipeline to IAM data from DAO"""
 
@@ -161,7 +162,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             # truth table
             # http://stackoverflow.com/a/19389957/2830207
             if not any(whitelist_rule_statuses):
-                all_violations.append(node)
+                all_violations.append(object)
 
         return all_violations
 
@@ -170,12 +171,12 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Append the rule to all the applicable nodes.
 
         Args:
-            starting_node (node): Member node from which to start appending
+            starting_node (object): Member node from which to start appending
                 the rule.
             rule (dict): A dictionary representation of a rule.
 
         Returns:
-            starting_node (node): Member node with all its recursive members,
+            starting_node (object): Member node with all its recursive members,
                 with the rule appended.
         """
         for node in anytree.iterators.PreOrderIter(starting_node):
@@ -186,12 +187,12 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Apply all rules to all the applicable nodes.
 
         Args:
-            starting_node (node): Member node from which to start appending the
+            starting_node (object): Member node from which to start appending the
                 rule.
             rules (dict): A list of rules, in dictionary form.
 
         Returns:
-            starting_node (node): Member node with all the rules applied
+            starting_node (object): Member node with all the rules applied
                to all the nodes.
         """
         for rule in rules:
@@ -221,12 +222,12 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Get all the recursive members of a group.
 
         Args:
-            starting_node (node): Member node from which to start getting
+            starting_node (object): Member node from which to start getting
                 the recursive members.
             timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            starting_node (node): Member node with all its recursive members.
+            starting_node (object): Member node with all its recursive members.
         """
         queue = Queue()
         queue.put(starting_node)
@@ -254,7 +255,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            The root node that holds the tree structure of all the groups
+            root (object): The tree structure of all the groups
                 in the organization.
         """
         root = MemberNode(MY_CUSTOMER, MY_CUSTOMER)
@@ -280,22 +281,21 @@ class GroupsScanner(base_scanner.BaseScanner):
             None
 
         Returns:
-            The root node that holds the tree structure of all the groups
+            root (object): The tree structure of all the groups
                 in the organization.
         """
         root = self._build_group_tree(self.snapshot_timestamp)
         return root
 
-    # pylint: disable=arguments-differ
     def run(self):
         """Runs the groups scanner."""
 
         root = self._retrieve()
 
         with open(self.rules, 'r') as f:
-            rules = yaml.load(f)
+            rules_file = yaml.load(f)
 
-        root = self._apply_all_rules(root, rules)
+        root = self._apply_all_rules(root, rules_file)
 
         all_violations = self.find_violations(root)
 
@@ -314,7 +314,7 @@ class MemberNode(anytree.node.NodeMixin):
             member_email (str): email of the member
             member_type (str): type of the member
             member_status (str): status of the member
-            parent (node): parent node
+            parent (object): parent node
         """
         self.member_id = member_id
         self.member_email = member_email
