@@ -31,7 +31,7 @@ file , then run the command below to provide the configuration file to
 `forseti_inventory`:
 
   ```bash
-  $ forseti_inventory --config_path PATH_TO/inventory_conf.yaml
+  $ forseti_inventory --config_path path/to/forseti_conf.yaml
   ```
 
 Forseti Inventory is now set up to run for your specified projects.
