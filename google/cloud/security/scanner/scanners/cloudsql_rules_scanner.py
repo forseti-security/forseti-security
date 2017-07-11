@@ -94,7 +94,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         Returns:
             list: A list of CloudSQL violations
         """
-        cloudsql_data = itertools.chain(*cloudsql_data)
+        cloudsql_data = list(itertools.chain(*cloudsql_data))
 
         all_violations = []
         LOGGER.info('Finding CloudSQL acl violations...')

@@ -49,31 +49,30 @@ class BaseScanner(object):
         pass
 
     @abc.abstractmethod
-    def _retrieve(self, **kwarg):
+    def _retrieve(self, **kwargs):
         """Runs the pipeline.
 
         Args:
-            **kwarg: Arbitrary keyword arguments.
+            **kwargs: Arbitrary keyword arguments.
         """
         pass
 
-
     @abc.abstractmethod
-    def _find_violations(self, **kwarg):
+    def _find_violations(self, **kwargs):
         """Find violations.
 
 
         Args:
-            **kwarg: Arbitrary keyword arguments.
+            **kwargs: Arbitrary keyword arguments.
         """
         pass
 
     @abc.abstractmethod
-    def _output_results(self, **kwarg):
+    def _output_results(self, **kwargs):
         """Output results.
 
         Args:
-            **kwarg: Arbitrary keyword arguments.
+            **kwargs: Arbitrary keyword arguments.
         """
         pass
 
@@ -87,8 +86,6 @@ class BaseScanner(object):
         Returns:
             list: Violations that encountered an error during insert.
         """
-
-        # Write violations to database.
         resource_name = 'violations'
         (inserted_row_count, violation_errors) = (0, [])
         try:

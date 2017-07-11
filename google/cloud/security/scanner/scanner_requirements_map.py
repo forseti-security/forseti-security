@@ -37,5 +37,5 @@ REQUIREMENTS_MAP = {
     'iam_policy':
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',
-         'rules_filename': 'rules.yaml'},
+         'rules_filename': 'iam_rules.yaml'},
 }
