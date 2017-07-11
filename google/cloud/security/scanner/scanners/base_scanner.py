@@ -54,7 +54,7 @@ class BaseScanner(object):
 
 
     @abc.abstractmethod
-    def find_violations(self, **kwarg):
+    def _find_violations(self, **kwarg):
         """Find violations."""
         pass
 
@@ -88,4 +88,3 @@ class BaseScanner(object):
                      inserted_row_count, len(violation_errors))
 
         return violation_errors
-        

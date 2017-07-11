@@ -188,7 +188,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     notifier.process(message)
 
     # pylint: disable=arguments-differ
-    def find_violations(self, policies):
+    def _find_violations(self, policies):
         """Find violations in the policies.
 
         Args:
@@ -279,5 +279,5 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Runs the data collection."""
 
         policy_data, resource_counts = self._retrieve()
-        all_violations = self.find_violations(policy_data)
+        all_violations = self._find_violations(policy_data)
         self._output_results(all_violations, resource_counts)

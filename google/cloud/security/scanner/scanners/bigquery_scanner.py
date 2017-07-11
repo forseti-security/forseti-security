@@ -88,8 +88,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(resource_name, all_violations)
 
-    # pylint: disable=arguments-differ
-    def find_violations(self, bigquery_data):
+    def _find_violations(self, bigquery_data):
         """Find violations in the policies.
 
         Args:
@@ -159,5 +158,5 @@ class BigqueryScanner(base_scanner.BaseScanner):
     def run(self):
         """Runs the data collection."""
         bigquery_acls_data = self._retrieve()
-        all_violations = self.find_violations(bigquery_acls_data)
+        all_violations = self._find_violations(bigquery_acls_data)
         self._output_results(all_violations)

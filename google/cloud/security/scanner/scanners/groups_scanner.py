@@ -95,7 +95,7 @@ class GroupsScanner(base_scanner.BaseScanner):
 
     # pylint: disable=too-many-branches
     @staticmethod
-    def find_violations(root):
+    def _find_violations(root):
         """Find violations, starting from the given root.
 
         At this point, we can start to find violations at each node!
@@ -216,7 +216,7 @@ class GroupsScanner(base_scanner.BaseScanner):
 
         return starting_node
 
-    def get_recursive_members(self, starting_node, timestamp):
+    def _get_recursive_members(self, starting_node, timestamp):
         """Get all the recursive members of a group.
 
         Args:
@@ -264,7 +264,7 @@ class GroupsScanner(base_scanner.BaseScanner):
                                     'group',
                                     'ACTIVE',
                                     root)
-            group_node = self.get_recursive_members(group_node, timestamp)
+            group_node = self._get_recursive_members(group_node, timestamp)
 
         LOGGER.debug(anytree.RenderTree(
             root, style=anytree.AsciiStyle()).by_attr('member_email'))
@@ -293,7 +293,7 @@ class GroupsScanner(base_scanner.BaseScanner):
 
         root = self._apply_all_rules(root, group_rules)
 
-        all_violations = self.find_violations(root)
+        all_violations = self._find_violations(root)
 
         self._output_results(all_violations)
 

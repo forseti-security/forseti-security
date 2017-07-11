@@ -85,8 +85,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(resource_name, all_violations)
 
-    # pylint: disable=arguments-differ
-    def find_violations(self, cloudsql_data):
+    def _find_violations(self, cloudsql_data):
         """Find violations in the policies.
 
         Args:
@@ -159,5 +158,5 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
     def run(self):
         """Runs the data collection."""
         cloudsql_acls_data = self._retrieve()
-        all_violations = self.find_violations(cloudsql_acls_data)
+        all_violations = self._find_violations(cloudsql_acls_data)
         self._output_results(all_violations)

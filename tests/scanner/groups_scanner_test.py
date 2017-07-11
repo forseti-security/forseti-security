@@ -98,7 +98,7 @@ class GroupsScannerTest(ForsetiTestCase):
     def test_find_violations(self, mock_dao):
         root = self._pickle_load('expected_root_with_rules.pickle')
         scanner = groups_scanner.GroupsScanner({}, {}, '', '')
-        all_violations = scanner.find_violations(root)
+        all_violations = scanner._find_violations(root)
         
         self.assertEquals(3, len(all_violations))
         for violation in all_violations:
