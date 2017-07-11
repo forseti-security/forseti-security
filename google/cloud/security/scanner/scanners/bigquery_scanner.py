@@ -116,6 +116,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
         Args:
             project_policies (list): project policies from inventory.
             bigquery_acls (list): BigQuery acls from inventory.
+
         Returns:
             dict: Resource count map
         """

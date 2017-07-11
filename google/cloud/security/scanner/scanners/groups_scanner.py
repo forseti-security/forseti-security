@@ -34,22 +34,22 @@ class GroupsScanner(base_scanner.BaseScanner):
     """Pipeline to IAM data from DAO"""
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
-                 rules):
+                 rules_file):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            rules (str): Fully-qualified path and filename of the rules file.
+            rules_file (str): Fully-qualified path and filename of the rules
+                file.
         """
         super(GroupsScanner, self).__init__(
             global_configs,
             scanner_configs,
             snapshot_timestamp,
-            rules)
+            rules_file)
         self.dao = group_dao.GroupDao(global_configs)
-
 
     def _flatten_violations(self, violations):
         """Flatten RuleViolations into a dict for each RuleViolation member.
@@ -171,13 +171,12 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Append the rule to all the applicable nodes.
 
         Args:
-            starting_node (:obj:`node`): Member node from which to start appending
+            starting_node (node): Member node from which to start appending
                 the rule.
             rule (dict): A dictionary representation of a rule.
 
         Returns:
-            starting_node (:obj:`node`): Member node with all its recursive members,
-                with the rule appended.
+            Member node with all its recursive members, with the rule appended.
         """
         for node in anytree.iterators.PreOrderIter(starting_node):
             node.rules.append(rule)
@@ -187,13 +186,12 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Apply all rules to all the applicable nodes.
 
         Args:
-            starting_node (:obj:`node`): Member node from which to start appending the
+            starting_node (node): Member node from which to start appending the
                 rule.
             rules (dict): A list of rules, in dictionary form.
 
         Returns:
-            starting_node (:obj:`node`): Member node with all the rules applied
-               to all the nodes.
+            Member node with all the rules applied to all the nodes.
         """
         for rule in rules:
             if rule.get('group_email') == MY_CUSTOMER:
@@ -222,12 +220,12 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Get all the recursive members of a group.
 
         Args:
-            starting_node (:obj:`node`): Member node from which to start getting
+            starting_node (node): Member node from which to start getting
                 the recursive members.
             timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            starting_node (:obj:`node`): Member node with all its recursive members.
+            Member node with all its recursive members.
         """
         queue = Queue()
         queue.put(starting_node)
@@ -255,8 +253,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            root (:obj:`node`): The tree structure of all the groups
-                in the organization.
+            The tree structure of all the groups in the organization.
         """
         root = MemberNode(MY_CUSTOMER, MY_CUSTOMER)
 
@@ -281,8 +278,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             None
 
         Returns:
-            root (:obj:`node`): The tree structure of all the groups
-                in the organization.
+            The tree structure of all the groups in the organization.
         """
         root = self._build_group_tree(self.snapshot_timestamp)
         return root
@@ -300,7 +296,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         all_violations = self.find_violations(root)
 
         self._output_results(all_violations)
-
+        
 
 class MemberNode(anytree.node.NodeMixin):
     """A custom anytree node with Group Member attributes."""
@@ -308,13 +304,13 @@ class MemberNode(anytree.node.NodeMixin):
     def __init__(self, member_id, member_email,
                  member_type=None, member_status=None, parent=None):
         """Initialization
-
+        
         Args:
             member_id (str): id of the member
             member_email (str): email of the member
             member_type (str): type of the member
             member_status (str): status of the member
-            parent (:obj:`node`): parent node
+            parent (node): parent node
         """
         self.member_id = member_id
         self.member_email = member_email
