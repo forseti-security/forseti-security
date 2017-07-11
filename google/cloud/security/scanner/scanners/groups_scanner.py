@@ -51,6 +51,14 @@ class GroupsScanner(base_scanner.BaseScanner):
 
 
     def _flatten_violations(self, violations):
+        """Flatten RuleViolations into a dict for each RuleViolation member.
+
+        Args:
+            violations (list): The RuleViolations to flatten.
+
+        Yields:
+            dict: Iterator of RuleViolations as a dict per member.
+        """
         for violation in violations:
             violation_data = {}
             violation_data['violated_rule_names'] = violation.violated_rule_names
@@ -72,13 +80,17 @@ class GroupsScanner(base_scanner.BaseScanner):
             }
 
     def _output_results(self, all_violations):
+        """Output results.
+
+        Args:
+            all_violations (list): A list of nodes that are in violation.
+        """
         resource_name = 'violations'
 
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(resource_name, all_violations)
 
 
-    # pylint: disable=arguments-differ
     # pylint: disable=too-many-branches
     def find_violations(self, root):
         """Find violations, starting from the given root.
@@ -158,12 +170,13 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Append the rule to all the applicable nodes.
 
         Args:
-            starting_node: Member node from which to start appending the rule.
-            rule: A dictionary representation of a rule.
+            starting_node (node): Member node from which to start appending
+                the rule.
+            rule (dict): A dictionary representation of a rule.
 
         Returns:
-            starting_node: Member node with all its recursive members, with
-            the rule appended.
+            starting_node (node): Member node with all its recursive members,
+                with the rule appended.
         """
         for node in anytree.iterators.PreOrderIter(starting_node):
             node.rules.append(rule)
@@ -173,11 +186,12 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Apply all rules to all the applicable nodes.
 
         Args:
-            starting_node: Member node from which to start appending the rule.
-            rules: A list of rules, in dictionary form.
+            starting_node (node): Member node from which to start appending the
+                rule.
+            rules (dict): A list of rules, in dictionary form.
 
         Returns:
-            starting_node: Member node with all the rules applied
+            starting_node (node): Member node with all the rules applied
                to all the nodes.
         """
         for rule in rules:
@@ -207,13 +221,12 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Get all the recursive members of a group.
 
         Args:
-            starting_node: Member node from which to start getting the recursive
-                members.
-            timestamp: String of snapshot timestamp, formatted as
-                YYYYMMDDTHHMMSSZ.
+            starting_node (node): Member node from which to start getting
+                the recursive members.
+            timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            starting_node: Member node with all its recursive members.
+            starting_node (node): Member node with all its recursive members.
         """
         queue = Queue()
         queue.put(starting_node)
@@ -238,8 +251,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         """Build a tree of all the groups in the organization.
 
         Args:
-            timestamp: String of snapshot timestamp, formatted as
-                YYYYMMDDTHHMMSSZ.
+            timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
             The root node that holds the tree structure of all the groups
@@ -262,19 +274,21 @@ class GroupsScanner(base_scanner.BaseScanner):
         return root
 
     def _retrieve(self):
+        """Retrieves the group tree.
+
+        Args:
+            None
+
+        Returns:
+            The root node that holds the tree structure of all the groups
+                in the organization.
+        """
         root = self._build_group_tree(self.snapshot_timestamp)
         return root
 
     # pylint: disable=arguments-differ
     def run(self):
-        """Runs the groups scanner.
-
-        Args:
-            rules: String of the path to rules file (yaml/json).
-
-        Returns:
-            List of all the nodes in violations.
-        """
+        """Runs the groups scanner."""
 
         root = self._retrieve()
 
@@ -293,6 +307,15 @@ class MemberNode(anytree.node.NodeMixin):
 
     def __init__(self, member_id, member_email,
                  member_type=None, member_status=None, parent=None):
+        """Initialization
+        
+        Args:
+            member_id (str): id of the member
+            member_email (str): email of the member
+            member_type (str): type of the member
+            member_status (str): status of the member
+            parent (node): parent node
+        """
         self.member_id = member_id
         self.member_email = member_email
         self.member_type = member_type

@@ -49,6 +49,14 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         self.rules_engine.build_rule_book(self.global_configs)
 
     def _flatten_violations(self, violations):
+        """Flatten RuleViolations into a dict for each RuleViolation member.
+
+        Args:
+            violations (list): The RuleViolations to flatten.
+
+        Yields:
+            dict: Iterator of RuleViolations as a dict per member.
+        """
         for violation in violations:
             violation_data = {}
             violation_data['role'] = violation.role
@@ -65,7 +73,12 @@ class BucketsAclScanner(base_scanner.BaseScanner):
                 'violation_data': violation_data
             }
 
-    def _output_results(self, all_violations, resource_counts):
+    def _output_results(self, all_violations):
+        """Output results.
+
+        Args:
+            list: A list of BigQuery violations.
+        """
         resource_name = 'violations'
 
         all_violations = self._flatten_violations(all_violations)
@@ -125,12 +138,11 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         return buckets_acls
 
     def _retrieve(self):
-        """Runs the data collection.
+        """Retrieves the data for scanner.
 
         Returns:
-            tuple: Returns a tuple of lists. The first one is a list of
-                bucket ACL data. The second one is a dictionary of resource
-                counts
+            buckets_acls_data (list): Bucket ACL data.
+            resource_counts (dict): Count of resources. 
         """
         buckets_acls_data = []
         project_policies = {}

@@ -18,7 +18,6 @@ import itertools
 
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import cloudsql_dao
-from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.audit import cloudsql_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
@@ -48,6 +47,14 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         self.rules_engine.build_rule_book(self.global_configs)
 
     def _flatten_violations(self, violations):
+        """Flatten RuleViolations into a dict for each RuleViolation member.
+
+        Args:
+            violations (list): The RuleViolations to flatten.
+
+        Yields:
+            dict: Iterator of RuleViolations as a dict per member.
+        """
         for violation in violations:
             violation_data = {}
             violation_data['instance_name'] = violation.instance_name
@@ -63,7 +70,12 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
                 'violation_data': violation_data
             }
 
-    def _output_results(self, all_violations, resource_counts):
+    def _output_results(self, all_violations):
+        """Output results.
+
+        Args:
+            list: A list of BigQuery violations.
+        """
         resource_name = 'violations'
 
         all_violations = self._flatten_violations(all_violations)
@@ -125,6 +137,12 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         return cloudsql_acls
 
     def _retrieve(self):
+        """Retrieves the data for scanner.
+
+        Returns:
+            cloudsql_acls_data (list): CloudSQL ACL data.
+            resource_counts (dict): Count of resources. 
+        """
         cloudsql_acls_data = []
         project_policies = {}
         cloudsql_acls = self._get_cloudsql_acls()

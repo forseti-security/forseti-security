@@ -102,6 +102,14 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             shutil.copy(csv_name, full_output_path)
 
     def _flatten_violations(self, violations):
+        """Flatten RuleViolations into a dict for each RuleViolation member.
+
+        Args:
+            violations (list): The RuleViolations to flatten.
+
+        Yields:
+            dict: Iterator of RuleViolations as a dict per member.
+        """
         for violation in violations:
             for member in violation.members:
                 violation_data = {}
@@ -118,7 +126,11 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 }
 
     def _output_results(self, all_violations, resource_counts):
+        """Output results.
 
+        Args:
+            list: A list of BigQuery violations.
+        """
         resource_name = 'violations'
 
         all_violations = list(self._flatten_violations(all_violations))
@@ -243,6 +255,12 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         return project_policies
 
     def _retrieve(self):
+        """Retrieves the data for scanner.
+
+        Returns:
+            policy_data (list): IAM policy data.
+            resource_counts (dict): Count of resources. 
+        """
         policy_data = []
         org_policies = self._get_org_policies()
         project_policies = self._get_project_policies()
