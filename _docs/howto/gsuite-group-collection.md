@@ -32,7 +32,6 @@ service account just for this functionality:
 After you create a service account above, edit the following variables in your
 version of `deploy-forseti.yaml`:
 
--   `inventory-groups`: set to `true` to enable collection.
 -   `groups-domain-super-admin-email`: Use of the Admin API requires delegation
     (impersonation). Enter an email address of a Super Admin in the GSuite
     account.
@@ -44,16 +43,14 @@ command where `–groups_service_account_key_file` is the path to the
 domain-wide-delegation key created for the groups-only service account.
 
   ```bash
-  $ forseti_inventory --config_path PATH_TO_inventory_config \
-    --domain_super_admin_email GSUITE_SUPER_ADMIN_EMAIL \
-    --groups_service_account_key_file SERVICE_ACCOUNT_KEY
+  $ forseti_inventory --forseti_config path/to/forseti_conf.yaml
   ```
 
 ## Deploying with GSuite Google Groups collection
 
 After you
 [create a deployment]({% link _docs/quickstarts/forseti-security/index.md %}), run the
-following commands to complete deployment of GSuite Google Groups collection
+following commands to complete deployment of GSuite Google Groups collection.
 
   ```bash
   $ gcloud compute copy-files PATH_TO_DOWNLOAD_KEY \
