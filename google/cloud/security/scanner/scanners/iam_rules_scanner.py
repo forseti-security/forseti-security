@@ -187,7 +187,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     }
                     notifier.process(message)
 
-    # pylint: disable=arguments-differ
     def _find_violations(self, policies):
         """Find violations in the policies.
 

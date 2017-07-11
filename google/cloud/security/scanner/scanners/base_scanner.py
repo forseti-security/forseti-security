@@ -34,8 +34,9 @@ class BaseScanner(object):
 
         Args:
             global_configs (dict): Global configurations.
-            snapshot_timestamp (str): Snapshot timestamp,
-                formatted as YYYYMMDDTHHMMSSZ.
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
@@ -49,18 +50,31 @@ class BaseScanner(object):
 
     @abc.abstractmethod
     def _retrieve(self, **kwarg):
-        """Runs the pipeline."""
+        """Runs the pipeline.
+
+        Args:
+            **kwarg: Arbitrary keyword arguments.
+        """
         pass
 
 
     @abc.abstractmethod
     def _find_violations(self, **kwarg):
-        """Find violations."""
+        """Find violations.
+
+
+        Args:
+            **kwarg: Arbitrary keyword arguments.
+        """
         pass
 
     @abc.abstractmethod
     def _output_results(self, **kwarg):
-        """Output results."""
+        """Output results.
+
+        Args:
+            **kwarg: Arbitrary keyword arguments.
+        """
         pass
 
     def _output_results_to_db(self, resource_name, violations):
@@ -69,6 +83,9 @@ class BaseScanner(object):
         Args:
             resource_name (str): Resource name.
             violations (list): A list of violations.
+
+        Returns:
+            list: Violations that encountered an error during insert. 
         """
 
         # Write violations to database.
