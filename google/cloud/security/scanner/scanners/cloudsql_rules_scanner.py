@@ -34,7 +34,9 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
 
         Args:
             global_configs (dict): Global configurations.
-            snapshot_timestamp (str): The snapshot timestamp
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         super(CloudSqlAclScanner, self).__init__(
             global_configs,
@@ -46,7 +48,8 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
-    def _flatten_violations(self, violations):
+    @staticmethod
+    def _flatten_violations(violations):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:
@@ -70,11 +73,11 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
                 'violation_data': violation_data
             }
 
-    def _output_results(self, all_violations, resource_counts):
+    def _output_results(self, all_violations):
         """Output results.
 
         Args:
-            list: A list of BigQuery violations.
+            all_violations (list): A list of violations.
         """
         resource_name = 'violations'
 
@@ -87,7 +90,6 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
 
         Args:
             cloudsql_data (list): CloudSQL data to find violations in
-            rules_engine (CloudsqlRulesEngine): The rules engine to run.
 
         Returns:
             list: A list of CloudSQL violations
@@ -140,8 +142,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            cloudsql_acls_data (list): CloudSQL ACL data.
-            resource_counts (dict): Count of resources. 
+            list: CloudSQL ACL data.
         """
         cloudsql_acls_data = []
         project_policies = {}
@@ -155,13 +156,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         return cloudsql_acls_data, resource_counts
 
     def run(self):
-        """Runs the data collection.
-
-        Returns:
-            tuple: Returns a tuple of lists. The first one is a list of
-                CloudSql ACL data. The second one is a dictionary of resource
-                counts
-        """
-        cloudsql_acls_data, resource_counts = self._retrieve()
+        """Runs the data collection."""
+        cloudsql_acls_data = self._retrieve()
         all_violations = self.find_violations(cloudsql_acls_data)
-        self._output_results(all_violations, resource_counts)
+        self._output_results(all_violations)

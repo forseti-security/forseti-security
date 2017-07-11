@@ -77,7 +77,7 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
         statuses (tuple): The snapshot statuses to search for latest timestamp.
 
     Returns:
-        latest_timestamp (str): The latest snapshot timestamp.
+        str: The latest snapshot timestamp.
     """
 
     latest_timestamp = None
@@ -90,7 +90,11 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     return latest_timestamp
 
 def main(_):
-    """Run the scanners."""
+    """Run the scanners.
+    
+    Args:
+        _ (list): Result of last expression evaluated by interpreter. Unused.
+    """
     if FLAGS.list_engines is True:
         _list_rules_engines()
         sys.exit(1)

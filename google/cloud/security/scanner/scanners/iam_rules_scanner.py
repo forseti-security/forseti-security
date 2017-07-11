@@ -31,11 +31,11 @@ from google.cloud.security.notifier import notifier
 from google.cloud.security.scanner.audit import iam_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
+# pylint: disable=arguments-differ
 
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=arguments-differ
 class IamPolicyScanner(base_scanner.BaseScanner):
     """Pipeline to IAM data from DAO"""
 
@@ -70,7 +70,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 level to be consistent across the scan.
 
         Returns:
-            The output filename for the csv, formatted with the now_utc
+            str: The output filename for the csv, formatted with the now_utc
                 timestamp.
         """
 

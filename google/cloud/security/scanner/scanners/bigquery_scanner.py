@@ -22,6 +22,8 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.audit import bigquery_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
+# pylint: disable=arguments-differ
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -75,12 +77,11 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 'violation_data': violation_data
             }
 
-    def _output_results(self, all_violations, resource_counts):
+    def _output_results(self, all_violations):
         """Output results.
 
         Args:
             all_violations (list): A list of BigQuery violations.
-            resource_counts (dict): Resource count map.
         """
         resource_name = 'violations'
 
@@ -145,9 +146,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            tuple: Returns a tuple of lists. The first one is a list of
-                BigQuery ACL data. The second one is a dictionary of resource
-                counts.
+            list: BigQuery ACL data
         """
         bigquery_acls_data = []
         project_policies = {}
@@ -155,13 +154,10 @@ class BigqueryScanner(base_scanner.BaseScanner):
         bigquery_acls_data.append(bigquery_acls.iteritems())
         bigquery_acls_data.append(project_policies.iteritems())
 
-        resource_counts = self._get_resource_count(project_policies,
-                                                   bigquery_acls)
-
-        return bigquery_acls_data, resource_counts
+        return bigquery_acls_data
 
     def run(self):
         """Runs the data collection."""
-        bigquery_acls_data, resource_counts = self._retrieve()
+        bigquery_acls_data = self._retrieve()
         all_violations = self.find_violations(bigquery_acls_data)
-        self._output_results(all_violations, resource_counts)
+        self._output_results(all_violations)
