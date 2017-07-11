@@ -8,8 +8,8 @@ hide:
 
 ## Contributing
 
-We welcome your contributions! Check out our guidelines for
-[contributing](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+We welcome your contributions! Before you start, please review our
+[contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
 
 ## Testing
 
