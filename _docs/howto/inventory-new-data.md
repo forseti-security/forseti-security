@@ -37,12 +37,12 @@ To add new GCP resource types to Forseti Inventory, follow the process below:
     1.  The parent resource this resource depends on.
     1.  The name of the API the pipeline uses.
     1.  The name of the data access object (DAO) the pipeline uses.
-1.  Update inventory_conf.yaml to reference the new pipeline:
+1.  Update forseti_conf.yaml to reference the new pipeline:
     1.  Specify the name of the resource that the new pipeline adds to
         inventory.
     1.  Specify if the pipeline will run.
 1.  Flatten the data collected from your API so you can store it in a CSV or
-    normalized storage system. Learn more about
+    normalized storage system. See an example of
     [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/pipelines/load_projects_pipeline.py#L32).
 1.  Load the flattened data into the database table.
 
