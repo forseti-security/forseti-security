@@ -76,8 +76,8 @@ class ScannerBuilder(object):
                 scanner_path = inspect.getfile(scanner_class)
                 rules_path = scanner_path.split('/google/cloud/security')[0]
                 rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
-                                 .get(scanner.get('name'))
-                                 .get('rules_filename'))
+                                  .get(scanner.get('name'))
+                                  .get('rules_filename'))
                 rules = '{}/rules/{}'.format(rules_path, rules_filename)
                 LOGGER.info('Initializing the rules engine:\nUsing rules: %s',
                             rules)

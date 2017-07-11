@@ -35,6 +35,7 @@ from google.cloud.security.scanner.scanners import base_scanner
 LOGGER = log_util.get_logger(__name__)
 
 
+# pylint: disable=arguments-differ
 class IamPolicyScanner(base_scanner.BaseScanner):
     """Pipeline to IAM data from DAO"""
 
@@ -65,8 +66,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Create the output filename.
 
         Args:
-            now_utc: The datetime now in UTC. Generated at the top level to be
-                consistent across the scan.
+            now_utc (datetime): The datetime now in UTC. Generated at the top
+                level to be consistent across the scan.
 
         Returns:
             The output filename for the csv, formatted with the now_utc
@@ -81,9 +82,9 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Upload CSV to Cloud Storage.
 
         Args:
-            output_path: The output path for the csv.
-            now_utc: The UTC timestamp of "now".
-            csv_name: The csv_name.
+            output_path (str): The output path for the csv.
+            now_utc (datetime): The UTC timestamp of "now".
+            csv_name (str): The csv_name.
         """
         output_filename = self._get_output_filename(now_utc)
 
@@ -102,7 +103,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             # Otherwise, just copy it to the output path.
             shutil.copy(csv_name, full_output_path)
 
-    def _flatten_violations(self, violations):
+    @staticmethod
+    def _flatten_violations(violations):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:
@@ -156,14 +158,14 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 output_path = self.scanner_configs.get('output_path')
                 if not output_path.startswith('gs://'):
                     if not os.path.exists(
-                        self.scanner_configs.get('output_path')):
+                            self.scanner_configs.get('output_path')):
                         os.makedirs(output_path)
                     output_path = os.path.abspath(output_path)
                 self._upload_csv(output_path, now_utc, output_csv_name)
 
                 # Send summary email.
                 # TODO: Untangle this email by looking for the csv content
-                # from the saved copy. 
+                # from the saved copy.
                 if self.global_configs.get('email_recipient') is not None:
                     payload = {
                         'email_sender':
@@ -193,8 +195,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             policies (list): The list of policies to find violations in.
 
         Returns:
-            all_violations (list): A list of violations
-        """        
+            list: A list of all violations
+        """
         policies = itertools.chain(*policies)
         all_violations = []
         LOGGER.info('Finding policy violations...')
@@ -215,7 +217,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             project_policies (dict): Project policies from inventory.
 
         Returns:
-            resource_counts (dict): Resource count map.
+            dict: Resource count map.
         """
         resource_counts = {
             ResourceType.ORGANIZATION: len(org_policies),
@@ -228,7 +230,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Get orgs from data source.
 
         Returns:
-            org_policies (dict): Org policies from inventory.
+            dict: Org policies from inventory.
         """
         org_policies = {}
         try:
@@ -243,7 +245,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Get projects from data source.
 
         Returns:
-            project_policies (dict): Project policies from inventory.
+            dict: Project policies from inventory.
         """
         project_policies = {}
         project_policies = (project_dao
@@ -257,7 +259,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
         Returns:
             tuple: First element is list of IAM policy_data.  Second element
-                is a dictionary of resource_counts. 
+                is a dictionary of resource_counts.
         """
         policy_data = []
         org_policies = self._get_org_policies()
