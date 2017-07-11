@@ -37,12 +37,6 @@ from google.cloud.security.scanner import scanner_builder
 from google.cloud.security.scanner.audit import engine_map as em
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,redundant-returns-doc
-# pylint: disable=differing-param-doc,missing-yield-type-doc
-
-
 # Setup flags
 FLAGS = flags.FLAGS
 
@@ -64,7 +58,6 @@ except flags.DuplicateFlagError:
 
 flags.DEFINE_boolean('list_engines', False, 'List all rule engines')
 
-flags.DEFINE_string('engine_name', None, 'Which engine to use')
 
 LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
@@ -72,14 +65,7 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
 def _list_rules_engines():
-    """List rules engines.
-
-    Args:
-        audit_base_dir: base directory for rules engines
-
-    Returns:
-        None
-    """
+    """List rules engines."""
     for engine in em.ENGINE_TO_DATA_MAP:
         print engine
 
@@ -91,7 +77,7 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
         statuses (tuple): The snapshot statuses to search for latest timestamp.
 
     Returns:
-        The latest snapshot timestamp string.
+        latest_timestamp (str): The latest snapshot timestamp.
     """
 
     latest_timestamp = None
@@ -104,20 +90,10 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     return latest_timestamp
 
 def main(_):
-    """Run the scanner."""
+    """Run the scanners."""
     if FLAGS.list_engines is True:
         _list_rules_engines()
         sys.exit(1)
-
-    if not FLAGS.engine_name:
-        LOGGER.warn('Provide an engine name')
-        sys.exit(1)
-    else:
-        rules_engine_name = FLAGS.engine_name
-
-    LOGGER.info('Using rules engine: %s', rules_engine_name)
-
-#    LOGGER.info('Initializing the rules engine:\nUsing rules: %s', FLAGS.rules)
 
     forseti_config = FLAGS.forseti_config
     if forseti_config is None:

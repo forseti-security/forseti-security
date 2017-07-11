@@ -33,7 +33,10 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Initialization.
 
         Args:
-            snapshot_timestamp (str): The snapshot timestamp
+            global_configs (dict): Global configurations.
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         super(BigqueryScanner, self).__init__(
             global_configs,

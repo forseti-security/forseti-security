@@ -44,7 +44,7 @@ class ScannerBuilder(object):
         """Build the enabled scanners to run.
 
         Returns:
-            list: List of scanners instances that will be run.
+            list: Scanner instances that will be run.
         """
         runnable_scanners = []
         for scanner in self.scanner_configs.get('scanners'):
@@ -75,15 +75,17 @@ class ScannerBuilder(object):
                 # where forseti runs.
                 scanner_path = inspect.getfile(scanner_class)
                 rules_path = scanner_path.split('/google/cloud/security')[0]
-                rule_filename = (scanner_requirements_map.REQUIREMENTS_MAP
-                                .get(scanner.get('name'))
-                                .get('rule_filename'))
-                rule = '{}/rules/{}'.format(rules_path, rule_filename)
+                rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
+                                 .get(scanner.get('name'))
+                                 .get('rules_filename'))
+                rules = '{}/rules/{}'.format(rules_path, rules_filename)
+                LOGGER.info('Initializing the rules engine:\nUsing rules: %s',
+                            rules)
 
                 scanner = scanner_class(self.global_configs,
                                         self.scanner_configs,
                                         self.snapshot_timestamp,
-                                        rule)
+                                        rules)
                 runnable_scanners.append(scanner)
 
         return runnable_scanners

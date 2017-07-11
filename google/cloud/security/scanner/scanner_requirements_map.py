@@ -21,21 +21,21 @@ REQUIREMENTS_MAP = {
     'bigquery':
         {'module_name': 'bigquery_scanner',
          'class_name': 'BigqueryScanner',
-         'rule_filename': 'bigquery_rules.yaml'},
+         'rules_filename': 'bigquery_rules.yaml'},
     'bucket_acl':
         {'module_name': 'bucket_rules_scanner',
          'class_name': 'BucketsAclScanner',
-         'rule_filename': 'bucket_rules.yaml'},
+         'rules_filename': 'bucket_rules.yaml'},
     'cloudsql_acl':
         {'module_name': 'cloudsql_rules_scanner',
          'class_name': 'CloudSqlAclScanner',
-         'rule_filename': 'cloudsql_rules.yaml'},
+         'rules_filename': 'cloudsql_rules.yaml'},
     'group':
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
-         'rule_filename': 'group_rules.yaml'},
+         'rules_filename': 'group_rules.yaml'},
     'iam_policy':
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',
-         'rule_filename': 'rules.yaml'},
+         'rules_filename': 'rules.yaml'},
 }

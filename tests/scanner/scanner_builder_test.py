@@ -30,7 +30,7 @@ FAKE_GLOBAL_CONFIGS = {
 
 
 class ScannerBuilderTest(basetest.TestCase):
-    """Tests for the scanner builder test."""
+    """Tests for the scanner builder."""
 
     @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
                 autospec=True)

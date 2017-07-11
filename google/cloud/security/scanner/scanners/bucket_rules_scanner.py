@@ -34,7 +34,9 @@ class BucketsAclScanner(base_scanner.BaseScanner):
 
         Args:
             global_configs (dict): Global configurations.
-            snapshot_timestamp (str): The snapshot timestamp
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         super(BucketsAclScanner, self).__init__(
             global_configs,

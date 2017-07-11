@@ -25,12 +25,6 @@ from google.cloud.security.scanner.scanners import base_scanner
 from google.cloud.security.scanner.audit import rules
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,differing-param-doc
-# pylint: disable=redundant-returns-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 MY_CUSTOMER = 'my_customer'
 
@@ -40,15 +34,13 @@ class GroupsScanner(base_scanner.BaseScanner):
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
-        """Constructor for the base pipeline.
+        """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
-            snapshot_timestamp: String of timestamp, formatted as
-                YYYYMMDDTHHMMSSZ.
-
-        Returns:
-            None
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         super(GroupsScanner, self).__init__(
             global_configs,

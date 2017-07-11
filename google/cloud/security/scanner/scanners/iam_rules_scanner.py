@@ -43,14 +43,13 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
-        """Constructor for the base pipeline.
+        """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
-            cycle_timestamp: String of timestamp, formatted as
-
-        Returns:
-            None
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IamPolicyScanner, self).__init__(
             global_configs,
