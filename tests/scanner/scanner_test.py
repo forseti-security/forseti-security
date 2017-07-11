@@ -23,6 +23,7 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao as vdao
+from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.notifier import notifier
@@ -196,7 +197,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         'google.cloud.security.common.data_access.organization_dao.OrganizationDao.get_org_iam_policies'
     )
     def test_get_org_policies_works(self, mock_get_org_iam, mock_conn):
-        """Test that get_org_policies() works."""
+        """Test that get_org_iam_policies() works."""
         org_policies = [{
             organization.Organization('11111'): {
                 'role': 'roles/a',
@@ -206,17 +207,39 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_get_org_iam.return_value = org_policies
 
         actual = self.irs.IamPolicyScanner(
-            self.FAKE_global_configs, self.fake_timestamp)._get_org_policies()
+            self.FAKE_global_configs,
+            self.fake_timestamp)._get_org_iam_policies()
         mock_get_org_iam.assert_called_once_with('organizations',
                                                  self.fake_timestamp)
         self.assertEqual(org_policies, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch(
+        'google.cloud.security.common.data_access.folder_dao.FolderDao.get_folder_iam_policies'
+    )
+    def test_get_folder_policies_works(self, mock_get_folder_iam, mock_conn):
+        """Test that get_folder_iam_policies() works."""
+        folder_policies = [{
+            folder.Folder('11111'): {
+                'role': 'roles/a',
+                'members': ['user:a@b.c', 'group:g@h.i']
+            }
+        }]
+        mock_get_folder_iam.return_value = folder_policies
+
+        actual = self.irs.IamPolicyScanner(
+            self.FAKE_global_configs,
+            self.fake_timestamp)._get_folder_iam_policies()
+        mock_get_folder_iam.assert_called_once_with('folders',
+                                                 self.fake_timestamp)
+        self.assertEqual(folder_policies, actual)
+
+    @mock.patch.object(MySQLdb, 'connect')
+    @mock.patch(
         'google.cloud.security.common.data_access.project_dao.ProjectDao.get_project_policies'
     )
     def test_get_project_policies(self, mock_get_proj_iam, mock_conn):
-        """Test that get_org_policies() works."""
+        """Test that get_project_iam_policies() works."""
         proj_policies = [{
             project.Project(project_number='11111', project_id='abc111'): {
                 'role': 'roles/a',
@@ -225,8 +248,10 @@ class ScannerRunnerTest(ForsetiTestCase):
         }]
         mock_get_proj_iam.return_value = proj_policies
         actual = self.irs.IamPolicyScanner(
-            self.FAKE_global_configs, self.fake_timestamp)._get_project_policies()
-        mock_get_proj_iam.assert_called_once_with('projects', self.fake_timestamp)
+            self.FAKE_global_configs,
+            self.fake_timestamp)._get_project_iam_policies()
+        mock_get_proj_iam.assert_called_once_with(
+            'projects', self.fake_timestamp)
         self.assertEqual(proj_policies, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
@@ -257,12 +282,13 @@ class ScannerRunnerTest(ForsetiTestCase):
     @mock.patch.object(csv_writer, 'write_csv', autospec=True)
     @mock.patch.object(os, 'path', autospec=True)
     @mock.patch.object(scanner, '_upload_csv')
+    @mock.patch.object(scanner, '_flatten_violations')
     @mock.patch.object(notifier, 'process')
     @mock.patch('google.cloud.security.scanner.scanner.datetime')
     @mock.patch.object(vdao.ViolationDao, 'insert_violations')
     def test_output_results_local_no_email(
         self, mock_violation_dao, mock_datetime, mock_notifier_process,
-        mock_upload, mock_path, mock_write_csv, mock_conn):
+        mock_flatten, mock_upload, mock_path, mock_write_csv, mock_conn):
         """Test output results for local output, and don't send email.
 
         Setup:
@@ -310,12 +336,13 @@ class ScannerRunnerTest(ForsetiTestCase):
     @mock.patch.object(csv_writer, 'write_csv', autospec=True)
     @mock.patch.object(os, 'path', autospec=True)
     @mock.patch.object(scanner, '_upload_csv')
+    @mock.patch.object(scanner, '_flatten_violations')
     @mock.patch.object(notifier, 'process')
     @mock.patch('google.cloud.security.scanner.scanner.datetime')
     @mock.patch.object(vdao.ViolationDao, 'insert_violations')
     def test_output_results_gcs_email(self, mock_violation_dao, mock_datetime,
-                                      mock_notifier_process, mock_upload,
-                                      mock_path, mock_write_csv, mock_conn):
+        mock_notifier_process, mock_flatten, mock_upload, mock_path,
+        mock_write_csv, mock_conn):
         """Test output results for GCS upload and send email.
     
             Setup:
