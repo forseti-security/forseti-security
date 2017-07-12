@@ -53,21 +53,16 @@ cd forseti-security-{}
     )
 
     scanner_command = (
-        ('/usr/local/bin/forseti_scanner --rules {} --engine {} '
-         '--forseti_config {} ')
+        ('/usr/local/bin/forseti_scanner --forseti_config {} ')
             .format(
-                'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
-                'IamRulesEngine',
                 FORSETI_CONFIG,
             )
     )
 
-    # TODO: remove this little hack when we update the release...
-    NEW_FORSETI_CONFIG = """
+    NEW_BUILD_PROTOS = """
 # Build protos separately.
 python build_protos.py --clean
 """
-    OLD_BUILD_PROTOS = ''
 
     resources = []
 
@@ -147,44 +142,18 @@ fi
 
 $USER_HOME/cloud_sql_proxy -instances={}=tcp:{} &
 
-# Check if rules.yaml exists
-RULES_FILE=$(gsutil ls gs://{}/rules/rules.yaml)
-if [ $? -eq 1 ]; then
-        cd $USER_HOME
-        read -d '' RULES_YAML << EOF
-rules:
-  - name: sample whitelist
-    mode: whitelist
-    resource:
-      - type: organization
-        applies_to: self_and_children
-        resource_ids:
-          - {}
-    inherit_from_parents: true
-    bindings:
-      - role: roles/*
-        members:
-          - serviceAccount:*@*.gserviceaccount.com
-EOF
-        echo "$RULES_YAML" > $USER_HOME/rules.yaml
-        gsutil cp $USER_HOME/rules.yaml gs://{}/rules/rules.yaml
-fi
-
 # Install Forseti Security
 cd $USER_HOME
 rm -rf forseti-*
 rm -rf run_forseti.sh
 pip install --upgrade pip
 pip install --upgrade setuptools
-pip install grpcio grpcio-tools
-
-{}
+pip install grpcio grpcio-tools google-apputils
 
 # Download Forseti src; see DOWNLOAD_FORSETI
 {}
-# Prevent namespace clash
-pip uninstall --yes protobuf
 
+# Build protos
 {}
 
 python setup.py install
@@ -192,6 +161,12 @@ python setup.py install
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
+
+if [ ! -f {} ]; then
+    echo Forseti conf not found, exiting.
+    exit 1
+fi
+
 # inventory command
 {}
 # scanner command
@@ -210,21 +185,15 @@ chmod +x $USER_HOME/run_forseti.sh
     CLOUDSQL_CONN_STRING,
     context.properties['db-port'],
 
-    # rules.yaml
-    SCANNER_BUCKET,
-    ORGANIZATION_ID,
-    SCANNER_BUCKET,
-
-    # old style build protobufs
-    OLD_BUILD_PROTOS,
-
     # install forseti
     DOWNLOAD_FORSETI,
 
-    # copy Forseti config file
-    NEW_FORSETI_CONFIG,
+    # new style build protos
+    NEW_BUILD_PROTOS,
 
     # run_forseti.sh
+    FORSETI_CONFIG,
+
     # - forseti_inventory
     inventory_command,
 
