@@ -20,7 +20,7 @@ rules:
       - type: organization
         applies_to: self
         resource_ids:
-          - *
+          - '*'
     inherit_from_parents: true
     bindings:
       - role: roles/resourcemanager.organizationAdmin
@@ -33,10 +33,10 @@ rules:
       - type: folder
         applies_to: self
         resource_ids:
-          - *
+          - '*'
     inherit_from_parents: true
     bindings:
-      - role: roles/resourcemanager.organizationAdmin
+      - role: roles/resourcemanager.folderAdmin
         members:
           - user:*@YOURDOMAIN
           - group:*@YOURDOMAIN
