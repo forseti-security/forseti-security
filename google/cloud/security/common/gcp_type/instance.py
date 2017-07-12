@@ -59,7 +59,7 @@ class Instance(object):
         return Key.from_args(self.project_id, self.zone, self.name)
 
     def create_network_interfaces(self):
-        """Returns a list of network_interface objects."""
+        """Return a list of network_interface objects."""
         network_interfaces = json.loads(self.network_interfaces)
         return [InstanceNetworkInterface(**ni) for ni in network_interfaces]
 
@@ -145,22 +145,21 @@ class InstanceNetworkInterface(object):
         """Initialize
 
         Args:
-            network_interfaces: json from instances on the network_interfaces
+            kwargs: json from a single instance on the network_interfaces
         """
         self.kind = kwargs.get('kind')
         self.network = kwargs.get('network')
         self.subnetwork = kwargs.get('subnetwork')
-        self.networkIP = kwargs.get('networkIP')
+        self.network_ip = kwargs.get('networkIP')
         self.name = kwargs.get('name')
-        self.accessConfigs = kwargs.get('accessConfigs')
-        self.aliasIpRanges = kwargs.get('aliasIpRanges')
+        self.access_configs = kwargs.get('accessConfigs')
+        self.alias_ip_ranges = kwargs.get('aliasIpRanges')
 
     def __repr__(self):
-        return 'kind: %s Network: %s subnetwork: %s networkIp %s name %s' \
-            'accessConfigs %s aliasIpRanges %s' % (self.kind, self.network,
-            self.subnetwork, self.networkIP, self.name,
-            self.accessConfigs,
-            self.aliasIpRanges)
+        return 'kind: %s Network: %s subnetwork: %s network_ip %s name %s' \
+            'access_configs %s alias_ip_ranges %s' % (
+                self.kind, self.network, self.subnetwork, self.network_ip,
+                self.name, self.access_configs, self.alias_ip_ranges)
 
     def __hash__(self):
         return hash(self.__repr__())
@@ -173,11 +172,8 @@ class InstanceNetworkInterface(object):
             return ((self.kind == other.kind) and
                     (self.network == other.network) and
                     (self.subnetwork == other.subnetwork) and
-                    (self.networkIp == other.networkIP) and
+                    (self.network_ip == other.network_ip) and
                     (self.name == other.name) and
-                    (self.accessConfigs == other.network) and
-                    (self.subnetwork == other.accessConfigs) and
-                    (self.alliasIpRanges == other.alliasIpRanges)
-                    )
-        else:
-            return False
+                    (self.access_configs == other.access_configs) and
+                    (self.alias_ip_ranges == other.alias_ip_ranges))
+        return False

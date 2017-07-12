@@ -214,7 +214,7 @@ class Rule(object):
             instance_network_interface.network)
         project = network_and_project.group(1)
         network = network_and_project.group(2)
-        is_external_network = instance_network_interface.accessConfigs \
+        is_external_network = instance_network_interface.access_configs \
             is not None
         if not self.rules['whitelist'].get(project):
             if is_external_network:
@@ -235,7 +235,7 @@ class Rule(object):
                 violation_type='UNENFORCED_NETWORK_VIOLATION',
                 project=project,
                 network=network,
-                ips=instance_network_interface.accessConfigs[0].get('natIP'))
+                ips=instance_network_interface.access_configs[0].get('natIP'))
 
     # Rule violation.
     # resource_type: string

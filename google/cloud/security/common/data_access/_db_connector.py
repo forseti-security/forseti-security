@@ -37,9 +37,9 @@ class DbConnector(object):
         """
         try:
             self.conn = MySQLdb.connect(
-                host='127.0.0.1', #global_configs['db_host'],
-                user='carlys', #global_configs['db_user'],
-                db= 'forseti_carlys', #global_configs['db_name'],
+                host=global_configs['db_host'],
+                user=global_configs['db_user'],
+                db=global_configs['db_name'],
                 local_infile=1)
         except OperationalError as e:
             LOGGER.error('Unable to create mysql connector:\n%s', e)
