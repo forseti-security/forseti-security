@@ -1,0 +1,13 @@
+rules:
+  - name: all networks covered in whitelist
+    project: '*'
+    network: '*'
+    is_external_network: True
+    whitelist:
+      xpn-master: 
+        - xpn-network
+      steel-ridge-91615: 
+        - default 
+        - xpn-network
+      playready-windows-1:
+        - default
