@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from google.cloud.security.common.data_access.forseti import PER_YIELD
 
 """ Database abstraction objects for IAM Explain. """
 
@@ -37,6 +36,7 @@ from sqlalchemy import Table
 from sqlalchemy import DateTime
 from sqlalchemy import or_
 from sqlalchemy import and_
+from sqlalchemy import not_
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
@@ -48,9 +48,10 @@ from google.cloud.security.iam.utils import mutual_exclusive
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc
+# pylint: disable=missing-yield-type-doc,too-many-branches
 
 POOL_RECYCLE_SECONDS = 300
+PER_YIELD = 1024
 
 
 def generate_model_handle():
@@ -358,6 +359,7 @@ def define_model(model_name, dbengine, model_seed):
             """
 
             def get_dialect(session):
+                """Return the active SqlAlchemy dialect."""
                 return session.bind.dialect.name
 
             if get_dialect(session) != 'sqlite':
@@ -379,10 +381,13 @@ def define_model(model_name, dbengine, model_seed):
                         ['parent', 'member'],
                         group_members.select()
                         .where(
-                            group_members.c.group_name.startswith('group/'))
+                            group_members.c.group_name.startswith('group/')
+                            )
                         .where(
-                            group_members.c.members_name.startswith('group/'))
-                                 ))
+                            group_members.c.members_name.startswith('group/')
+                            )
+                        )
+                    )
 
                 session.execute(qry)
 
@@ -408,7 +413,7 @@ def define_model(model_name, dbengine, model_seed):
                             ['parent', 'member'],
                             stmt))
 
-                    rows_affected = session.execute(qry).rowcount > 0
+                    rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
             except Exception:
                 session.rollback()
@@ -417,7 +422,7 @@ def define_model(model_name, dbengine, model_seed):
                 if get_dialect(session) != 'sqlite':
                     session.execute('UNLOCK TABLES')
                 session.commit()
-                return iterations
+            return iterations
 
         @classmethod
         def explain_granted(cls, session, member_name, resource_type_name,
@@ -625,18 +630,26 @@ def define_model(model_name, dbengine, model_seed):
                     .filter(expanded_resources.full_name.startswith(
                         Resource.full_name))
                     .filter(Resource.type_name == Binding.resource_type_name)
-                    .filter(Binding.role_name.in_(role_names))
-                    .order_by(Resource.name.desc(), Binding.role_name.desc())
-                    .distinct())
-
+                    .filter(Binding.role_name.in_(role_names)))
             else:
                 qry = (
                     session.query(Resource, Binding, Member)
                     .filter(binding_members.c.bindings_id == Binding.id)
                     .filter(binding_members.c.members_name == Member.name)
                     .filter(Resource.type_name == Binding.resource_type_name)
-                    .filter(Binding.role_name.in_(role_names))
-                    .order_by(Resource.name.desc(), Binding.role_name.desc()))
+                    .filter(Binding.role_name.in_(role_names)))
+
+            qry = qry.order_by(Resource.name.asc(), Binding.role_name.asc())
+
+            if expand_groups:
+                to_expand = set([m.name for _, _, m in
+                                 qry.yield_per(PER_YIELD)])
+                expansion = cls.expand_members_map(session,
+                                                   to_expand,
+                                                   show_group_members=False,
+                                                   member_contain_self=True)
+
+            qry = qry.distinct()
 
             cur_resource = None
             cur_role = None
@@ -647,7 +660,10 @@ def define_model(model_name, dbengine, model_seed):
                         yield cur_role, cur_resource, cur_members
                     cur_resource = resource.type_name
                     cur_role = binding.role_name
-                    cur_members = set([member.name])
+                    cur_members = set()
+                if expand_groups:
+                    for member_name in expansion[member.name]:
+                        cur_members.add(member_name)
                 else:
                     cur_members.add(member.name)
             if cur_resource is not None:
@@ -1098,7 +1114,7 @@ def define_model(model_name, dbengine, model_seed):
                             parents=parents)
             session.add(member)
             session.commit()
-            if denorm and res_type == 'group' and len(parents) > 0:
+            if denorm and res_type == 'group' and parents:
                 cls.denorm_group_in_group(session)
             return member
 
@@ -1244,13 +1260,18 @@ def define_model(model_name, dbengine, model_seed):
                 .select_from(
                     t_ging.join(t_members,
                                 t_ging.c.member == t_members.c.group_name))
-                )
+                ).where(t_ging.c.parent.in_(group_names))
+            if not show_group_members:
+                transitive_membership = transitive_membership.where(
+                    not_(t_members.c.members_name.startswith('group/')))
             qry = session.query(transitive_membership)
 
             direct_membership = (
-                    select([t_members.c.group_name, t_members.c.members_name])
-                    .where(t_members.c.group_name.in_(group_names))
-                )
+                select([t_members.c.group_name, t_members.c.members_name])
+                .where(t_members.c.group_name.in_(group_names)))
+            if not show_group_members:
+                direct_membership = direct_membership.where(
+                    not_(t_members.c.members_name.startswith('group/')))
             qry = qry.union(direct_membership)
 
             if show_group_members:

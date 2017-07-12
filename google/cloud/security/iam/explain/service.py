@@ -131,11 +131,12 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         model_name = self._get_handle(context)
 
         for role, resource, members in (
-            self.explainer.GetAccessByPermissions(model_name,
-                                                  request.role_name,
-                                                  request.permission_name,
-                                                  request.expand_groups,
-                                                  request.expand_resources)):
+                self.explainer.GetAccessByPermissions(
+                    model_name,
+                    request.role_name,
+                    request.permission_name,
+                    request.expand_groups,
+                    request.expand_resources)):
             yield explain_pb2.Access(members=members,
                                      role=role,
                                      resource=resource)

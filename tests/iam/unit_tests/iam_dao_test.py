@@ -546,6 +546,7 @@ class DaoTest(ForsetiTestCase):
         client = ModelCreatorClient(session, data_access)
         _ = ModelCreator(ACCESS_BY_PERMISSIONS_1, client)
 
+        # Query by role
         expected_by_role = {
                 'viewer': [
                         (u'r/res1', set([u'group/g1'])),
@@ -571,6 +572,7 @@ class DaoTest(ForsetiTestCase):
                 self.assertIn((acc_res, acc_members), access,
                               'Should find access in expected')
 
+        # Query by permission
         expected_by_permission = {
                 'readonly': [
                         (u'r/res1', set([u'group/g1'])),
@@ -597,6 +599,7 @@ class DaoTest(ForsetiTestCase):
                 self.assertIn((acc_res, acc_members), access,
                               'Should find access in expected')
 
+        # Test the source expansion
         expected_by_permission = {
                 'delete': [
                         (u'r/res1', set([u'user/u1'])),
@@ -616,6 +619,30 @@ class DaoTest(ForsetiTestCase):
                 _, acc_res, acc_members = item
                 if not (acc_res, acc_members) in access:
                     print '{}, {}'.format((acc_res, acc_members), access)
+                self.assertIn((acc_res, acc_members), access,
+                              'Should find access in expected')
+
+
+        # Test the group expansion
+        expected_by_permission = {
+                'delete': [
+                        (u'r/res1', set([u'user/u1'])),
+                        (u'r/res4', set([u'user/u3',
+                                         u'user/u4',
+                                         u'group/g2'])),
+                    ],
+            }
+
+        for perm, access in expected_by_permission.iteritems():
+            result = [r for r in (
+                data_access.query_access_by_permission(
+                    session,
+                    permission_name=perm,
+                    expand_groups=True,
+                    expand_resources=False))]
+
+            for item in result:
+                _, acc_res, acc_members = item
                 self.assertIn((acc_res, acc_members), access,
                               'Should find access in expected')
 

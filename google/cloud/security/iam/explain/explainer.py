@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from google.cloud.security.common import data_access
 
 """ Explain API. """
 
@@ -111,11 +110,11 @@ class Explainer(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             for role, resource, members in (
-                data_access.query_access_by_permission(session,
-                                                       role_name,
-                                                       permission_name,
-                                                       expand_groups,
-                                                       expand_resources)):
+                    data_access.query_access_by_permission(session,
+                                                           role_name,
+                                                           permission_name,
+                                                           expand_groups,
+                                                           expand_resources)):
                 yield role, resource, members
 
     def GetAccessByMembers(self, model_name, member_name, permission_names,

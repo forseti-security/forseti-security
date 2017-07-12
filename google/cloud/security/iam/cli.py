@@ -462,10 +462,10 @@ def run_explainer(client, config, output):
     def do_query_access_by_authz():
         """Query access by role or permission"""
         for access in (
-            client.query_access_by_permissions(config.role,
-                                               config.permission,
-                                               config.expand_groups,
-                                               config.expand_resources)):
+                client.query_access_by_permissions(config.role,
+                                                   config.permission,
+                                                   config.expand_groups,
+                                                   config.expand_resources)):
 
             output.write(access)
 
