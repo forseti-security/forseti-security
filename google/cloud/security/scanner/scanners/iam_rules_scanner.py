@@ -20,18 +20,20 @@ import os
 import shutil
 import sys
 
-from google.cloud.security.common.util import log_util
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import errors as db_errors
+from google.cloud.security.common.data_access import folder_dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier import notifier
 from google.cloud.security.scanner.audit import iam_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
 # pylint: disable=arguments-differ
+
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -70,10 +72,9 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 level to be consistent across the scan.
 
         Returns:
-            str: The output filename for the csv, formatted with the now_utc
-                timestamp.
+            str: The output filename for the csv, formatted with the
+                now_utc timestamp.
         """
-
         output_timestamp = now_utc.strftime(self.OUTPUT_TIMESTAMP_FMT)
         output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
         return output_filename
@@ -203,29 +204,28 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             LOGGER.debug('%s => %s', resource, policy)
             violations = self.rules_engine.find_policy_violations(
                 resource, policy)
-            LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
 
     @staticmethod
-    def _get_resource_count(org_policies, project_policies):
-        """Get resource count for org and project policies.
+    def _get_resource_count(**kwargs):
+        """Get resource count for IAM policies.
 
         Args:
-            org_policies (dict): Org policies from inventory.
-            project_policies (dict): Project policies from inventory.
+            kwargs: The policies to get resource counts for.
 
         Returns:
             dict: Resource count map.
         """
         resource_counts = {
-            ResourceType.ORGANIZATION: len(org_policies),
-            ResourceType.PROJECT: len(project_policies),
+            ResourceType.ORGANIZATION: len(kwargs.get('org_iam_policies', [])),
+            ResourceType.FOLDER: len(kwargs.get('folder_iam_policies', [])),
+            ResourceType.PROJECT: len(kwargs.get('project_iam_policies', [])),
         }
 
         return resource_counts
 
-    def _get_org_policies(self):
+    def _get_org_iam_policies(self):
         """Get orgs from data source.
 
         Returns:
@@ -240,7 +240,22 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             LOGGER.error('Error getting Organization IAM policies: %s', e)
         return org_policies
 
-    def _get_project_policies(self):
+    def _get_folder_iam_policies(self):
+        """Get folder IAM policies from data source.
+
+        Returns:
+            dict: The folder policies.
+        """
+        folder_policies = {}
+        try:
+            fdao = folder_dao.FolderDao(self.global_configs)
+            folder_policies = fdao.get_folder_iam_policies(
+                'folders', self.snapshot_timestamp)
+        except da_errors.MySQLError as e:
+            LOGGER.error('Error getting Folder IAM policies: %s', e)
+        return folder_policies
+
+    def _get_project_iam_policies(self):
         """Get projects from data source.
 
         Returns:
@@ -257,19 +272,23 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            tuple: First element is list of IAM policy_data.  Second element
-                is a dictionary of resource_counts.
+            list: List of IAM policy data.
+            dict: A dict of resource counts.
         """
         policy_data = []
-        org_policies = self._get_org_policies()
-        project_policies = self._get_project_policies()
+        org_policies = self._get_org_iam_policies()
+        folder_policies = self._get_folder_iam_policies()
+        project_policies = self._get_project_iam_policies()
 
-        if not org_policies and not project_policies:
+        if not any([org_policies, folder_policies, project_policies]):
             LOGGER.warn('No policies found. Exiting.')
             sys.exit(1)
-        resource_counts = self._get_resource_count(org_policies,
-                                                   project_policies)
+        resource_counts = self._get_resource_count(
+            org_iam_policies=org_policies,
+            folder_iam_policies=folder_policies,
+            project_iam_policies=project_policies)
         policy_data.append(org_policies.iteritems())
+        policy_data.append(folder_policies.iteritems())
         policy_data.append(project_policies.iteritems())
 
         return policy_data, resource_counts

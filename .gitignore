@@ -22,6 +22,7 @@ scripts/dev*.sh
 
 # User-edited configs
 deployment-templates/*.yaml
+configs/*.yaml
 
 # Build/dist
 .eggs/

@@ -77,7 +77,6 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     Returns:
         str: The latest snapshot timestamp.
     """
-
     latest_timestamp = None
     try:
         latest_timestamp = (
@@ -91,7 +90,7 @@ def main(_):
     """Run the scanners.
 
     Args:
-        _ (list): Result of last expression evaluated by interpreter. Unused.
+        _ (list): argv, unused due to apputils.
     """
     if FLAGS.list_engines is True:
         _list_rules_engines()
@@ -110,6 +109,8 @@ def main(_):
         sys.exit()
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')
+
+    log_util.set_logger_level_from_config(scanner_configs.get('loglevel'))
 
     snapshot_timestamp = _get_timestamp(global_configs)
     if not snapshot_timestamp:

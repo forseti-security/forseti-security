@@ -109,7 +109,7 @@ FOLDER_BY_ID = """
 """
 
 FOLDER_IAM_POLICIES = """
-    SELECT f.folder_id, f.display_name, p.lifecycle_state,
+    SELECT f.folder_id, f.display_name, f.lifecycle_state,
     f.parent_type, f.parent_id, i.iam_policy
     FROM folders_{0} f INNER JOIN raw_folder_iam_policies_{1} i
     ON f.folder_id = i.folder_id
@@ -149,9 +149,24 @@ BUCKETS_BY_PROJECT_ID = """
     WHERE project_number = {1};
 """
 
+# TODO: reduce these sql to a generic statement
+SELECT_POLICY_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type in ('ADDED', 'REMOVED');
+"""
 
-SELECT_VIOLATIONS = """
-    SELECT * FROM violations_{0};
+SELECT_BIGQUERY_ACL_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'BIGQUERY_VIOLATION';
+"""
+
+SELECT_BUCKETS_ACL_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'BUCKET_VIOLATION';
+"""
+SELECT_CLOUDSQL_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'CLOUD_SQL_VIOLATION';
 """
 
 SELECT_GROUPS_VIOLATIONS = """

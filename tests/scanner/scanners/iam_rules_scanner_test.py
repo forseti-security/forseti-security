@@ -17,6 +17,7 @@
 from datetime import datetime
 import mock
 
+from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.scanner.scanners import iam_rules_scanner
@@ -65,8 +66,26 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         mock_dao.OrganizationDao({}).get_org_iam_policies.return_value = (
             fake_policies)
-        policies = self.scanner._get_org_policies()
+        policies = self.scanner._get_org_iam_policies()
         self.assertEqual(fake_policies, policies)
+
+    @mock.patch(
+        'google.cloud.security.scanner.scanners.iam_rules_scanner.folder_dao',
+        autospec=True)
+    def test_get_folder_policies_works(self, mock_dao):
+        """Test that get_folder_iam_policies() works."""
+
+        fake_folder_policies = [{
+            folder.Folder('11111'): {
+                'role': 'roles/a',
+                'members': ['user:a@b.c', 'group:g@h.i']
+            }
+        }]
+
+        mock_dao.FolderDao({}).get_folder_iam_policies.return_value = (
+            fake_folder_policies)
+        policies = self.scanner._get_folder_iam_policies() 
+        self.assertEqual(fake_folder_policies, policies)
 
     @mock.patch(
         'google.cloud.security.scanner.scanners.iam_rules_scanner.project_dao',
@@ -83,7 +102,7 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         mock_dao.ProjectDao({}).get_project_policies.return_value = (
             fake_policies)
-        policies = self.scanner._get_project_policies()
+        policies = self.scanner._get_project_iam_policies()
         self.assertEqual(fake_policies, policies)
 
     @mock.patch(

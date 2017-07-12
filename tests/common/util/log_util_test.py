@@ -42,5 +42,18 @@ class LogUtilTest(ForsetiTestCase):
         log_util.set_logger_level(logging.INFO)
         self.assertEqual(previous_logger.level, logging.INFO, 'Level should have changed back to INFO')
 
+    def test_set_logger_level_from_config(self):
+        """Test that a config value for logger sets the correct logger level."""
+        previous_logger = log_util.get_logger('test_module_4')
+        self.assertEqual(previous_logger.level, logging.INFO,
+            'Default loglevel should be INFO')
+        log_util.set_logger_level_from_config('debug')
+        future_logger = log_util.get_logger('test_module_5')
+        self.assertEqual(future_logger.level, logging.DEBUG,
+            'Next loglevel should be DEBUG')
+        log_util.set_logger_level_from_config('junk')
+        self.assertEqual(previous_logger.level, logging.DEBUG,
+            'Level should have remained DEBUG')
+
 if __name__ == '__main__':
     unittest.main()

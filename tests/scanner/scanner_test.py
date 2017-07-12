@@ -14,18 +14,12 @@
 """Scanner runner script test."""
 
 from datetime import datetime
-import os
 
 import mock
 import MySQLdb
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import errors
-from google.cloud.security.common.data_access import violation_dao as vdao
-from google.cloud.security.common.gcp_type import organization
-from google.cloud.security.common.gcp_type import project
-from google.cloud.security.notifier import notifier
 from google.cloud.security.scanner import scanner
 from google.cloud.security.scanner.audit import iam_rules_engine as ire
 from google.cloud.security.scanner.scanners import iam_rules_scanner as irs
@@ -147,16 +141,6 @@ class ScannerRunnerTest(ForsetiTestCase):
     #    self.assertEquals(1, self.irep.LOGGER.info.call_count)
     #    self.assertEquals(4, self.irep.LOGGER.debug.call_count)
 
-    @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch(
-        'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
-    )
-    def test_get_timestamp(self, mock_get_ss_timestamp, mock_conn):
-        """Test that get_timestamp() works."""
-        mock_get_ss_timestamp.return_value = self.fake_timestamp
-        actual = self.scanner._get_timestamp(self.FAKE_global_configs)
-        expected = self.fake_timestamp
-        self.assertEquals(expected, actual)
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch(
