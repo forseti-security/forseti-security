@@ -24,13 +24,15 @@ LOGGER = log_util.get_logger(__name__)
 class BigqueryScanner(base_scanner.BaseScanner):
     """Pipeline to pull Big Query acls data from DAO"""
 
-    def __init__(self, snapshot_timestamp):
+    def __init__(self, global_configs, snapshot_timestamp):
         """Initialization.
 
         Args:
+            global_configs (dict): Global configurations.
             snapshot_timestamp (str): The snapshot timestamp
         """
         super(BigqueryScanner, self).__init__(
+            global_configs,
             snapshot_timestamp)
         self.snapshot_timestamp = snapshot_timestamp
 

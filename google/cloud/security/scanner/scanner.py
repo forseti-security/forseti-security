@@ -25,7 +25,6 @@ Usage:
       --engine_name <rule engine name>
 """
 
-
 import itertools
 import os
 import shutil
@@ -44,12 +43,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import engine_map as em
 from google.cloud.security.scanner.scanners import scanners_map as sm
 from google.cloud.security.notifier import notifier
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,redundant-returns-doc
-# pylint: disable=differing-param-doc,missing-yield-type-doc
 
 
 # Setup flags
@@ -86,7 +79,11 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
 def main(_):
-    """Run the scanner."""
+    """Run the scanner.
+
+    Args:
+        _ (list): argv, unused due to apputils.
+    """
     if FLAGS.list_engines is True:
         _list_rules_engines()
         sys.exit(1)
@@ -120,6 +117,8 @@ def main(_):
     configs = file_loader.read_and_parse_file(forseti_config)
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')
+
+    log_util.set_logger_level_from_config(scanner_configs.get('loglevel'))
 
     snapshot_timestamp = _get_timestamp(global_configs)
     if not snapshot_timestamp:
@@ -162,14 +161,7 @@ def main(_):
     LOGGER.info('Scan complete!')
 
 def _list_rules_engines():
-    """List rules engines.
-
-    Args:
-        audit_base_dir: base directory for rules engines
-
-    Returns:
-        None
-    """
+    """List rules engines."""
     for engine in em.ENGINE_TO_DATA_MAP:
         print engine
 
@@ -177,13 +169,13 @@ def _get_output_filename(now_utc):
     """Create the output filename.
 
     Args:
-        now_utc: The datetime now in UTC. Generated at the top level to be
-            consistent across the scan.
+        now_utc (datetime): The datetime now in UTC. Generated at the
+            top level to be consistent across the scan.
 
     Returns:
-        The output filename for the csv, formatted with the now_utc timestamp.
+        str: The output filename for the csv, formatted with the
+            now_utc timestamp.
     """
-
     output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
     output_filename = SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
     return output_filename
@@ -196,9 +188,8 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
         statuses (tuple): The snapshot statuses to search for latest timestamp.
 
     Returns:
-        The latest snapshot timestamp string.
+        str: The latest snapshot timestamp.
     """
-
     latest_timestamp = None
     try:
         latest_timestamp = (
@@ -212,11 +203,11 @@ def _flatten_violations(violations, flattening_scheme):
     """Flatten RuleViolations into a dict for each RuleViolation member.
 
     Args:
-        violations: The RuleViolations to flatten.
-        flattening_scheme: Which flattening scheme to use
+        violations (list): The RuleViolations to flatten.
+        flattening_scheme (str): Which flattening scheme to use.
 
-    Yield:
-        Iterator of RuleViolations as a dict per member.
+    Yields:
+        dict: Iterator of RuleViolations as a dict per member.
     """
     # TODO: Write custom flattening methods for each violation type.
     for violation in violations:
@@ -285,16 +276,20 @@ def _output_results(global_configs, scanner_configs, all_violations,
     """Send the output results.
 
     Args:
-        all_violations: The list of violations to report.
-        snapshot_timestamp: The snapshot timetamp associated with this scan.
-        **kwargs: The rest of the args.
+        global_configs (dict): The global configuration.
+        scanner_configs (dict): The scanner configuration.
+        all_violations (list): The list of violations to report.
+        snapshot_timestamp (str): The snapshot timetamp associated with
+            this scan.
+        kwargs (dict): The rest of the args.
     """
     # pylint: disable=too-many-locals
     # Write violations to database.
     flattening_scheme = kwargs.get('flattening_scheme')
     resource_name = sm.RESOURCE_MAP[flattening_scheme]
     (inserted_row_count, violation_errors) = (0, [])
-    all_violations = _flatten_violations(all_violations, flattening_scheme)
+    all_violations = list(_flatten_violations(
+        all_violations, flattening_scheme))
     try:
         vdao = violation_dao.ViolationDao(global_configs)
         (inserted_row_count, violation_errors) = vdao.insert_violations(
@@ -305,8 +300,8 @@ def _output_results(global_configs, scanner_configs, all_violations,
         LOGGER.error('Error importing violations to database: %s', err)
 
     # TODO: figure out what to do with the errors. For now, just log it.
-    LOGGER.debug('Inserted %s rows with %s errors',
-                 inserted_row_count, len(violation_errors))
+    LOGGER.info('Inserted %s rows with %s errors',
+                inserted_row_count, len(violation_errors))
 
     # TODO: Remove this specific return when tying the scanner to the general
     # violations table.
@@ -358,11 +353,10 @@ def _upload_csv(output_path, now_utc, csv_name):
     """Upload CSV to Cloud Storage.
 
     Args:
-        output_path: The output path for the csv.
-        now_utc: The UTC timestamp of "now".
-        csv_name: The csv_name.
+        output_path (str): The output path for the csv.
+        now_utc (datetime): The UTC timestamp of "now".
+        csv_name (str): The csv_name.
     """
-
     from google.cloud.security.common.gcp_api import storage
 
     output_filename = _get_output_filename(now_utc)

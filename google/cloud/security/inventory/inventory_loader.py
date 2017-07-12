@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: Move all these flags to the config file.
-
 """Loads requested data into inventory.
 
 Usage:
@@ -25,7 +23,6 @@ To see all the dependent flags:
 
 """
 from datetime import datetime
-import logging
 import sys
 
 import gflags as flags
@@ -61,13 +58,6 @@ from google.cloud.security.notifier import notifier
 
 
 FLAGS = flags.FLAGS
-
-LOGLEVELS = {
-    'debug': logging.DEBUG,
-    'info' : logging.INFO,
-    'warning' : logging.WARN,
-    'error' : logging.ERROR,
-}
 
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for inventory.')
@@ -118,8 +108,6 @@ def _create_snapshot_cycles_table(inventory_dao):
 
     Args:
         inventory_dao (data_access.Dao): Data access object.
-
-    Returns:
     """
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
@@ -172,9 +160,10 @@ def _run_pipelines(pipelines):
     run_statuses = []
     for pipeline in pipelines:
         try:
-            LOGGER.debug('Running pipeline %s', pipeline.__class__.__name__)
+            LOGGER.info('Running pipeline %s', pipeline.__class__.__name__)
             pipeline.run()
             pipeline.status = 'SUCCESS'
+            LOGGER.info('Finished running %s', pipeline.__class__.__name__)
         except (api_errors.ApiInitializationError,
                 inventory_errors.LoadDataPipelineError) as e:
             LOGGER.error('Encountered error loading data.\n%s', e)
@@ -190,8 +179,6 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
         inventory_dao (dao.Dao): Data access object.
         cycle_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status (str): The current cycle's status.
-
-    Returns:
     """
     complete_time = datetime.utcnow()
 
@@ -207,21 +194,10 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _configure_logging(loglevel):
-    """Configures the loglevel for all loggers.
-
-    Args:
-        loglevel (str): The loglevel to set.
-
-    Returns:
-    """
-    level = LOGLEVELS.setdefault(loglevel, 'info')
-    log_util.set_logger_level(level)
-
 def _create_dao_map(global_configs):
     """Create a map of DAOs.
 
-    These will be re-usable so that the db connection can apply across
+    These will be reusable so that the db connection can apply across
     different pipelines.
 
     Args:
@@ -262,8 +238,6 @@ def main(_):
 
     Args:
         _ (list): args that aren't used
-
-    Returns:
     """
     del _
     inventory_flags = FLAGS.FlagValuesDict()
@@ -286,7 +260,7 @@ def main(_):
     global_configs = configs.get('global')
     inventory_configs = configs.get('inventory')
 
-    _configure_logging(inventory_configs.get('loglevel'))
+    log_util.set_logger_level_from_config(inventory_configs.get('loglevel'))
 
     dao_map = _create_dao_map(global_configs)
 

@@ -120,7 +120,7 @@ FOLDER_BY_ID = """
 """
 
 FOLDER_IAM_POLICIES = """
-    SELECT f.folder_id, f.display_name, p.lifecycle_state,
+    SELECT f.folder_id, f.display_name, f.lifecycle_state,
     f.parent_type, f.parent_id, i.iam_policy
     FROM folders_{0} f INNER JOIN raw_folder_iam_policies_{1} i
     ON f.folder_id = i.folder_id

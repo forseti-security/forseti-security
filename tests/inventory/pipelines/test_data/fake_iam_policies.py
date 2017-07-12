@@ -36,6 +36,27 @@ FAKE_ORG_IAM_POLICY_MAP = [{
             ], 'etag': 'BwVHXBMqO0k='}
 }]
 
+FAKE_FOLDER_IAM_POLICY_MAP = [{
+    'folder_id': '12345',
+    'iam_policy': {
+        'bindings': [
+            {'role': 'roles/billing.creator', 'members': [
+                'domain:foo.com'
+            ]},
+            {'role': 'roles/browser', 'members': [
+                'serviceAccount:55555-compute@developer.gserviceaccount.com',
+                'serviceAccount:99999-compute@developer.gserviceaccount.com',
+                ]},
+            {'role': 'roles/resourcemanager.folderAdmin',
+             'members': ['user:foo@foo.com']},
+            {'role': 'roles/resourcemanager.organizationAdmin', 'members': [
+                'user:foo@foo.com',
+                'user:bar@foo.com'
+                ]},
+            {'role': 'roles/resourcemanager.projectCreator', 'members': ['domain:foo.com']}
+            ], 'etag': 'BwVHXBMqO0k='}
+}]
+
 FAKE_PROJECT_IAM_POLICY_MAP = [{
     'project_number': 555555555555,
     'iam_policy': {
@@ -95,6 +116,43 @@ EXPECTED_LOADABLE_ORG_IAM_POLICY = [
      'member_type': 'user',
      'member_name': 'bar'},
     {'org_id': 666666,
+     'role': 'resourcemanager.projectCreator',
+     'member_domain': 'foo.com',
+     'member_type': 'domain', 'member_name': ''},
+]
+
+EXPECTED_LOADABLE_FOLDER_IAM_POLICY = [
+    {'folder_id': '12345',
+     'role': 'billing.creator',
+     'member_domain': 'foo.com',
+     'member_type': 'domain',
+     'member_name': ''},
+    {'folder_id': '12345',
+     'role': 'browser',
+     'member_domain': 'developer.gserviceaccount.com',
+     'member_type': 'serviceAccount',
+     'member_name': '55555-compute'},
+    {'folder_id': '12345',
+     'role': 'browser',
+     'member_domain': 'developer.gserviceaccount.com',
+     'member_type': 'serviceAccount',
+     'member_name': '99999-compute'},
+    {'folder_id': '12345',
+     'role': 'resourcemanager.folderAdmin',
+     'member_domain': 'foo.com',
+     'member_type': 'user',
+     'member_name': 'foo'},
+    {'folder_id': '12345',
+     'role': 'resourcemanager.organizationAdmin',
+     'member_domain': 'foo.com',
+     'member_type': 'user',
+     'member_name': 'foo'},
+    {'folder_id': '12345',
+     'role': 'resourcemanager.organizationAdmin',
+     'member_domain': 'foo.com',
+     'member_type': 'user',
+     'member_name': 'bar'},
+    {'folder_id': '12345',
      'role': 'resourcemanager.projectCreator',
      'member_domain': 'foo.com',
      'member_type': 'domain', 'member_name': ''},
