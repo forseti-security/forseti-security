@@ -120,6 +120,8 @@ def main(_):
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, snapshot_timestamp).build()
 
+    # TODO: Make resilient by letting the batch continue to run even if one
+    # scanner errors out.
     for scanner in runnable_scanners:
         scanner.run()
 
