@@ -58,7 +58,7 @@ class Playgrounder(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             return data_access.add_group_member(
-                session, member_type_name, parent_type_names, True)
+                session, member_type_name, parent_type_names, denorm=True)
 
     def DelGroupMember(self, model_name, member_name, parent_name,
                        only_delete_relationship):
@@ -68,7 +68,11 @@ class Playgrounder(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             return data_access.del_group_member(
-                session, member_name, parent_name, only_delete_relationship)
+                session,
+                member_name,
+                parent_name,
+                only_delete_relationship,
+                denorm=True)
 
     def ListGroupMembers(self, model_name, member_name_prefix):
         """Lists a member from the model."""

@@ -347,14 +347,14 @@ class DaoTest(ForsetiTestCase):
         client = ModelCreatorClient(session, data_access)
         _ = ModelCreator(MEMBER_TESTING_3, client)
 
-        map = data_access.expand_members_map(session, ['group/g1'])
+        members_map = data_access.expand_members_map(session, ['group/g1'])
         self.assertEqual(set([
                 u'group/g1',
                 u'group/g1g1',
                 u'user/g1g1u1',
                 u'user/g1g1u2',
                 u'user/g1g1u3',
-            ]), map[u'group/g1'])
+            ]), members_map[u'group/g1'])
 
     def test_explain_granted(self):
         """Test explain_granted."""
@@ -505,14 +505,14 @@ class DaoTest(ForsetiTestCase):
                          'Denormalization should have taken 4 iterations.')
 
         expected = [
-                (u'group/g2g1', u'group/g2'),
-                (u'group/g1', u'group/g3'),
-                (u'group/g2', u'group/g3'),
-                (u'group/g1', u'group/g4'),
-                (u'group/g3', u'group/g4'),
-                (u'group/g4', u'group/g5'),
-                (u'group/g5', u'group/g6'),
-                (u'group/g6', u'group/g7'),
+                (u'group/g2', u'group/g2g1'),
+                (u'group/g3', u'group/g1'),
+                (u'group/g3', u'group/g2'),
+                (u'group/g4', u'group/g1'),
+                (u'group/g4', u'group/g3'),
+                (u'group/g5', u'group/g4'),
+                (u'group/g6', u'group/g5'),
+                (u'group/g7', u'group/g6'),
             ]
 
         def transitive_closure(expected):
@@ -837,7 +837,7 @@ class DaoTest(ForsetiTestCase):
 
     def test_denormalize(self):
         """Test denormalization."""
-        session_maker, data_access = session_creator('test',None,None,False)
+        session_maker, data_access = session_creator('test', None, None, False)
         session = session_maker()
         client = ModelCreatorClient(session, data_access)
         _ = ModelCreator(DENORMALIZATION_TESTING_1, client)

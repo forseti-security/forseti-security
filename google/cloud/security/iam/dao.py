@@ -239,14 +239,14 @@ def define_model(model_name, dbengine, model_seed):
         parents = relationship(
             'Member',
             secondary=group_members,
-            primaryjoin=name == group_members.c.group_name,
-            secondaryjoin=name == group_members.c.members_name)
+            primaryjoin=name == group_members.c.members_name,
+            secondaryjoin=name == group_members.c.group_name)
 
         children = relationship(
             'Member',
             secondary=group_members,
-            primaryjoin=name == group_members.c.members_name,
-            secondaryjoin=name == group_members.c.group_name)
+            primaryjoin=name == group_members.c.group_name,
+            secondaryjoin=name == group_members.c.members_name)
 
         bindings = relationship('Binding',
                                 secondary=binding_members,
@@ -412,6 +412,7 @@ def define_model(model_name, dbengine, model_seed):
                     iterations += 1
             except Exception:
                 session.rollback()
+                raise
             finally:
                 if get_dialect(session) != 'sqlite':
                     session.execute('UNLOCK TABLES')
@@ -699,7 +700,7 @@ def define_model(model_name, dbengine, model_seed):
             return qry.all()
 
         @classmethod
-        def denormalize(cls, session, per_yield=1024):
+        def denormalize(cls, session):
             """Denormalize the model into access triples."""
 
             qry = (session.query(Binding)
@@ -707,7 +708,7 @@ def define_model(model_name, dbengine, model_seed):
                    .join(Member))
 
             members = set()
-            for binding in qry.yield_per(per_yield):
+            for binding in qry.yield_per(PER_YIELD):
                 for member in binding.members:
                     members.add(member.name)
 
@@ -716,11 +717,12 @@ def define_model(model_name, dbengine, model_seed):
 
             qry = (session.query(Role, Permission)
                    .join(role_permissions)
-                   .filter(Role.name == role_permissions.c.roles_name)
+                   .filter(
+                       Role.name == role_permissions.c.roles_name)
                    .filter(
                        Permission.name == role_permissions.c.permissions_name))
 
-            for role, permission in qry.yield_per(per_yield):
+            for role, permission in qry.yield_per(PER_YIELD):
                 role_permissions_map[role.name].add(permission.name)
 
             for binding, member in (
@@ -728,7 +730,7 @@ def define_model(model_name, dbengine, model_seed):
                     .join(binding_members)
                     .filter(binding_members.c.bindings_id == Binding.id)
                     .filter(binding_members.c.members_name == Member.name)
-                    .yield_per(per_yield)):
+                    .yield_per(PER_YIELD)):
 
                 resource_type_name = binding.resource_type_name
                 resource_mapping = cls.expand_resources_by_type_names(
@@ -915,22 +917,24 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def del_group_member(cls, session, member_type_name, parent_type_name,
-                             only_delete_relationship):
+                             only_delete_relationship, denorm=False):
             """Delete member."""
 
             if only_delete_relationship:
                 group_members_delete = group_members.delete(
-                    and_(group_members.c.group_name == member_type_name,
-                         group_members.c.members_name == parent_type_name))
+                    and_(group_members.c.members_name == member_type_name,
+                         group_members.c.group_name == parent_type_name))
                 session.execute(group_members_delete)
             else:
                 (session.query(Member)
                  .filter(Member.name == member_type_name)
                  .delete())
                 group_members_delete = group_members.delete(
-                    group_members.c.group_name == member_type_name)
+                    group_members.c.members_name == member_type_name)
                 session.execute(group_members_delete)
             session.commit()
+            if denorm:
+                cls.denorm_group_in_group(session)
 
         @classmethod
         def list_group_members(cls, session, member_name_prefix):
@@ -1202,58 +1206,72 @@ def define_model(model_name, dbengine, model_seed):
             return member_set
 
         @classmethod
-        def expand_members_map(cls, session, member_names):
-            """Expand group membership keyed by member."""
+        def expand_members_map(cls,
+                               session,
+                               member_names,
+                               show_group_members=True,
+                               member_contain_self=True):
+            """Expand group membership keyed by member.
 
-            members = session.query(Member).filter(
-                Member.name.in_(member_names)).all()
+            Args:
+                member_names (set): Member names to expand
+                show_group_members (bool): Whether to include subgroups
+                member_contain_self (bool): Whether to include a parent
+                                            as its own member
+            Returns:
+                dict: <Member, set(Children).
+            """
 
-            member_map = collections.defaultdict(set)
-            for member in members:
-                member_map[member.name] = set()
+            def separate_groups(member_names):
+                """Separate groups and other members in two lists."""
+                groups = []
+                others = []
+                for name in member_names:
+                    if name.startswith('group/'):
+                        groups.append(name)
+                    else:
+                        others.append(name)
+                return groups, others
 
-            def is_group(member):
-                """Returns true iff the member is a group."""
-                return member.type == 'group'
+            group_names, other_names = separate_groups(member_names)
 
-            all_member_set = set([m.name for m in members])
-            new_member_set = set([m.name for m in members if is_group(m)])
+            t_ging = GroupInGroup.__table__
+            t_members = group_members
 
-            while new_member_set:
-                to_query_set = new_member_set
-                new_member_set = set()
+            transitive_membership = (
+                # This resolves groups to its transitive non-group members
+                select([t_ging.c.parent, t_members.c.members_name])
+                .select_from(
+                    t_ging.join(t_members,
+                                t_ging.c.member == t_members.c.group_name))
+                )
+            qry = session.query(transitive_membership)
 
-                qry = (session.query(group_members)
-                       .filter(group_members.c.members_name.in_(to_query_set)))
-                for member, parent in qry.all():
+            direct_membership = (
+                    select([t_members.c.group_name, t_members.c.members_name])
+                    .where(t_members.c.group_name.in_(group_names))
+                )
+            qry = qry.union(direct_membership)
 
-                    member_map[parent].add(member)
+            if show_group_members:
+                # Show groups as members of other groups
+                group_in_groups = (
+                    select([t_ging.c.parent, t_ging.c.member])
+                    .where(t_ging.c.parent.in_(group_names))
+                    )
+                qry = qry.union(group_in_groups)
 
-                    if (member.startswith('group/') and
-                            member not in all_member_set):
-                        new_member_set.add(member)
+            # Build the result dict
+            result = collections.defaultdict(set)
+            for parent, child in qry.yield_per(PER_YIELD):
+                result[parent].add(child)
+            for parent in other_names:
+                result[parent] = set()
 
-                    all_member_set.add(parent)
-                    all_member_set.add(member)
-
-            def denormalize_membership(parent_name, member_map,
-                                       cur_member_set):
-                """Parent->members map to Parent->transitive members."""
-                cur_member_set.add(parent_name)
-                if parent_name not in member_map:
-                    return set()
-                members_to_add = (member_map[parent_name]
-                                  .difference(cur_member_set))
-                for member in members_to_add:
-                    cur_member_set.add(member)
-                    new_members = denormalize_membership(member,
-                                                         member_map,
-                                                         cur_member_set)
-                    cur_member_set = cur_member_set.union(new_members)
-                return cur_member_set
-
-            result = {m: denormalize_membership(m, member_map, set())
-                      for m in member_names}
+            # Add each parent as its own member
+            if member_contain_self:
+                for name in member_names:
+                    result[name].add(name)
             return result
 
         @classmethod

@@ -42,6 +42,8 @@ class ModelCreatorClient:
 
     def commit(self):
         self.session.commit()
+        self.data_access.denorm_group_in_group(self.session)
+        self.session.commit()
 
 class ModelCreator:
     def __init__(self, model, client):
