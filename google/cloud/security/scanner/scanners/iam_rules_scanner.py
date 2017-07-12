@@ -251,7 +251,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             fdao = folder_dao.FolderDao(self.global_configs)
             folder_policies = fdao.get_folder_iam_policies(
                 'folders', self.snapshot_timestamp)
-        except da_errors.MySQLError as e:
+        except db_errors.MySQLError as e:
             LOGGER.error('Error getting Folder IAM policies: %s', e)
         return folder_policies
 
