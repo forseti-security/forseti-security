@@ -27,9 +27,8 @@ from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import iap_rules_engine as ire
-from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
-from tests.scanner.audit.data import test_rules
+from tests.scanner.audit.data import test_iap_rules
 
 
 class IapRulesEngineTest(ForsetiTestCase):
@@ -59,14 +58,14 @@ class IapRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'iap_test_rules_1.yaml')
         rules_engine = ire.IapRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book({})
-        self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_from_local_json_file_works(self):
         """Test that a RuleBook is built correctly with a json file."""
         rules_local_path = get_datafile_path(__file__, 'iap_test_rules_1.json')
         rules_engine = ire.IapRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book({})
-        self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
 
     @mock.patch.object(file_loader,
                        '_read_file_from_gcs', autospec=True)
@@ -97,7 +96,7 @@ class IapRulesEngineTest(ForsetiTestCase):
         mock_load_rules_from_gcs.return_value = file_content
 
         rules_engine.build_rule_book({})
-        self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_no_resource_type_fails(self):
         """Test that a rule without a resource type cannot be created."""
@@ -109,17 +108,13 @@ class IapRulesEngineTest(ForsetiTestCase):
     def test_add_single_rule_builds_correct_map(self):
         """Test that adding a single rule builds the correct map."""
         rule_book = ire.IapRuleBook(
-            {}, test_rules.RULES1, self.fake_timestamp)
+            {}, test_iap_rules.RULES1, self.fake_timestamp)
         actual_rules = rule_book.resource_rules_map
 
         # expected
-        rule_bindings = [{
-            'role': 'roles/*', 'members': ['user:*@company.com']
-        }]
         #[IamPolicyBinding.create_from(b) for b in rule_bindings],
-        rule = scanner_rules.Rule('my rule', 0,
-            True,
-            mode='whitelist')
+        rule = ire.Rule('my rule', 0,
+                        '^$', '^$', '^.*$')
         expected_org_rules = ire.ResourceRules(self.org789,
                                                rules=set([rule]),
                                                applies_to='self_and_children')
@@ -134,18 +129,8 @@ class IapRulesEngineTest(ForsetiTestCase):
             (self.project1, 'self'): expected_proj1_rules,
             (self.project2, 'self'): expected_proj2_rules
         }
-
+        self.maxDiff = None
         self.assertEqual(expected_rules, actual_rules)
-
-    def test_invalid_rule_mode_raises_when_verify_mode(self):
-        """Test that an invalid rule mode raises error."""
-        with self.assertRaises(InvalidRulesSchemaError):
-            scanner_rules.RuleMode.verify('nonexistent mode')
-
-    def test_invalid_rule_mode_raises_when_create_rule(self):
-        """Test that creating a Rule with invalid rule mode raises error."""
-        with self.assertRaises(InvalidRulesSchemaError):
-            scanner_rules.Rule('exception', 0, [])
 
 
 if __name__ == '__main__':

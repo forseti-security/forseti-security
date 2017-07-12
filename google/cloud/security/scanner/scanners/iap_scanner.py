@@ -274,6 +274,10 @@ class _RunData(object):
                     self.firewall_allowed_sources(
                         network_port, tag))
 
+        # Don't count the load balancer as a direct access source.
+        direct_access_sources.remove('130.211.0.0/22')
+        direct_access_sources.remove('35.191.0.0/16')
+
         for backend_service2 in self.backend_services:
             if self.is_alternate_service(backend_service, backend_service2):
                 alternate_services.add(backend_service2.key)

@@ -31,6 +31,10 @@ from google.cloud.security.scanner.audit import rules as scanner_rules
 LOGGER = log_util.get_logger(__name__)
 
 
+# TODO: This duplicates a lot of resource-handling code from the IAM
+# rules engine.
+
+
 class IapRulesEngine(bre.BaseRulesEngine):
     """Rules engine for applying IAP policies to backend services"""
 
@@ -138,10 +142,10 @@ class IapRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-            allowed_alternate_services = rule_def.get(
-                'allowed_alternate_services', '*')
+            allowed_alternate_services = regex_util.escape_and_globify(
+                rule_def.get('allowed_alternate_services', ''))
             allowed_direct_access_sources = regex_util.escape_and_globify(
-                rule_def.get('allowed_direct_access_sources', '*'))
+                rule_def.get('allowed_direct_access_sources', ''))
             allowed_iap_enabled = regex_util.escape_and_globify(
                 rule_def.get('allowed_iap_enabled', '*'))
 
@@ -324,6 +328,24 @@ class ResourceRules(object):
             rule_members=rule_members,
             policy_members=policy_members)
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (self.resource == other.resource and
+                self.rules == other.rules and
+                self.applies_to == other.applies_to and
+                self.inherit_from_parents == other.inherit_from_parents)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __repr__(self):
+        """String representation of this node."""
+        return ('IapResourceRules<resource={}, rules={}, '
+                'applies_to={}, inherit_from_parents={}>').format(
+                    self.resource, self.rules, self.applies_to,
+                    self.inherit_from_parents)
+
 
 class Rule(object):
     """Rule properties from the rule definition file.
@@ -363,7 +385,16 @@ class Rule(object):
         Yields:
             RuleViolation: IAP violations
         """
-        if self.allowed_alternate_services != '^.+$':
+        if self.allowed_iap_enabled != '^.+$':
+            iap_enabled_regex = re.compile(
+                self.allowed_iap_enabled)
+            iap_enabled_violation = not iap_enabled_regex.match(
+                iap_resource.iap_enabled)
+        else:
+            iap_enabled_violation = False
+
+        if (iap_resource.iap_enabled and
+                self.allowed_alternate_services != '^.+$'):
             alternate_services_regex = re.compile(
                 self.allowed_alternate_services)
             alternate_services_violations = [
@@ -373,15 +404,8 @@ class Rule(object):
         else:
             alternate_services_violations = []
 
-        if self.allowed_iap_enabled != '^.+$':
-            iap_enabled_regex = re.compile(
-                self.allowed_iap_enabled)
-            iap_enabled_violation = not iap_enabled_regex.match(
-                iap_resource.iap_enabled)
-        else:
-            iap_enabled_violation = False
-
-        if self.allowed_direct_access_sources != '^.+$':
+        if (iap_resource.iap_enabled and
+                self.allowed_direct_access_sources != '^.+$'):
             sources_regex = re.compile(
                 self.allowed_direct_access_sources)
             direct_sources_violations = [
@@ -407,6 +431,46 @@ class Rule(object):
                 iap_enabled_violation=iap_enabled_violation,
                 direct_access_sources_violations=(
                     direct_sources_violations))
+
+    def __repr__(self):
+        """String representation of this node."""
+        return ('IapRule<rule_name={}, rule_index={}, '
+                'allowed_alternate_services={}, '
+                'allowed_direct_access_sources={}, '
+                'allowed_iap_enabled={}>').format(
+                    self.rule_name, self.rule_index,
+                    self.allowed_alternate_services,
+                    self.allowed_direct_access_sources,
+                    self.allowed_iap_enabled)
+
+    def __eq__(self, other):
+        """Test whether Rule equals other Rule."""
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (self.rule_name == other.rule_name and
+                self.rule_index == other.rule_index and
+                (self.allowed_alternate_services ==
+                 other.allowed_alternate_services) and
+                (self.allowed_direct_access_sources ==
+                 other.allowed_direct_access_sources) and
+                self.allowed_iap_enabled == other.allowed_iap_enabled)
+
+    def __ne__(self, other):
+        """Test whether Rule is not equal to another Rule."""
+        return not self == other
+
+    def __hash__(self):
+        """Make a hash of the rule index.
+
+        For now, this will suffice since the rule index is assigned
+        automatically when the rules map is built, and the scanner
+        only handles one rule file at a time. Later on, we'll need to
+        revisit this hash method when we process multiple rule files.
+
+        Returns:
+            The hash of the rule index.
+        """
+        return hash(self.rule_index)
 
     RuleViolation = namedtuple(
         'RuleViolation',
