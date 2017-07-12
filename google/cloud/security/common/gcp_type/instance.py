@@ -51,7 +51,7 @@ class Instance(object):
 
     @property
     def key(self):
-        """Returns a Key identifying the object.
+        """Return a Key identifying the object.
 
         Returns:
             Key: the key
@@ -59,9 +59,7 @@ class Instance(object):
         return Key.from_args(self.project_id, self.zone, self.name)
 
     def create_network_interfaces(self):
-        """
-        Returns a list of network_interface objects.
-        """
+        """Returns a list of network_interface objects."""
         network_interfaces = json.loads(self.network_interfaces)
         return [InstanceNetworkInterface(**ni) for ni in network_interfaces]
 
@@ -139,8 +137,6 @@ class Key(key.Key):
         return self._path_component('name')
 
 
-import json
-
 # pylint: disable=too-few-public-methods
 class InstanceNetworkInterface(object):
     """InstanceNetworkInterface Resource."""
@@ -151,8 +147,6 @@ class InstanceNetworkInterface(object):
         Args:
             network_interfaces: json from instances on the network_interfaces
         """
-
-        
         self.kind = kwargs.get('kind')
         self.network = kwargs.get('network')
         self.subnetwork = kwargs.get('subnetwork')
@@ -161,11 +155,11 @@ class InstanceNetworkInterface(object):
         self.accessConfigs = kwargs.get('accessConfigs')
         self.aliasIpRanges = kwargs.get('aliasIpRanges')
 
-
     def __repr__(self):
-        return 'kind: %s Network: %s subnetwork: %s networkIp %s name %s \
-            accessConfigs %s aliasIpRanges %s' % (self.kind, self.network, \
-            self.subnetwork, self.networkIP, self.name, self.accessConfigs, \
+        return 'kind: %s Network: %s subnetwork: %s networkIp %s name %s' \
+            'accessConfigs %s aliasIpRanges %s' % (self.kind, self.network,
+            self.subnetwork, self.networkIP, self.name,
+            self.accessConfigs,
             self.aliasIpRanges)
 
     def __hash__(self):
@@ -176,12 +170,12 @@ class InstanceNetworkInterface(object):
 
     def __eq__(self, other):
         if isinstance(self, InstanceNetworkInterface):
-            return ((self.kind == other.kind) and 
-                    (self.network == other.network) and 
+            return ((self.kind == other.kind) and
+                    (self.network == other.network) and
                     (self.subnetwork == other.subnetwork) and
                     (self.networkIp == other.networkIP) and
-                    (self.name == other.name) and 
-                    (self.accessConfigs == other.network) and 
+                    (self.name == other.name) and
+                    (self.accessConfigs == other.network) and
                     (self.subnetwork == other.accessConfigs) and
                     (self.alliasIpRanges == other.alliasIpRanges)
                     )

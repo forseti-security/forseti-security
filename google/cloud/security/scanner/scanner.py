@@ -271,15 +271,17 @@ def _flatten_violations(violations, flattening_scheme):
                 'violation_data': violation_data
             }
         if flattening_scheme == 'instance_network_interface_violations':
+            violation_data = {}
+            violation_data['project'] = violation.project
+            violation_data['network'] = violation.network
+            violation_data['ip'] = violation.ip
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'project': violation.project,
-                'network': violation.network,
-                'ip': violation.ip,
+                'violation_data': violation_data
             }
 
 def _output_results(global_configs, scanner_configs, all_violations,

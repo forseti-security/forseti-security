@@ -95,4 +95,4 @@ scanner:
     # Output path (do not include filename).
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
-    output_path: OUTPUT_PATH
+    output_path: 
