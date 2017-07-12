@@ -95,7 +95,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         Returns:
             list: A list of CloudSQL violations
         """
-        cloudsql_data = list(itertools.chain(*cloudsql_data))
+        cloudsql_data = itertools.chain(*cloudsql_data)
 
         all_violations = []
         LOGGER.info('Finding CloudSQL acl violations...')
@@ -151,10 +151,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         cloudsql_acls_data.append(cloudsql_acls.iteritems())
         cloudsql_acls_data.append(project_policies.iteritems())
 
-        resource_counts = self._get_resource_count(project_policies,
-                                                   cloudsql_acls)
-
-        return cloudsql_acls_data, resource_counts
+        return cloudsql_acls_data
 
     def run(self):
         """Runs the data collection."""
