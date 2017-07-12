@@ -64,6 +64,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
+    # TODO: Move this to the base class if need to be used by other modules.
     def _get_output_filename(self, now_utc):
         """Create the output filename.
 
@@ -79,6 +80,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
         return output_filename
 
+    # TODO: Move this to the base class if need to be used by other modules.
     def _upload_csv(self, output_path, now_utc, csv_name):
         """Upload CSV to Cloud Storage.
 
