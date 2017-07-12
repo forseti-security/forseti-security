@@ -275,8 +275,8 @@ class _RunData(object):
                         network_port, tag))
 
         # Don't count the load balancer as a direct access source.
-        direct_access_sources.remove('130.211.0.0/22')
-        direct_access_sources.remove('35.191.0.0/16')
+        direct_access_sources.discard('130.211.0.0/22')
+        direct_access_sources.discard('35.191.0.0/16')
 
         for backend_service2 in self.backend_services:
             if self.is_alternate_service(backend_service, backend_service2):
@@ -347,7 +347,7 @@ class IapScanner(base_scanner.BaseScanner):
         Returns:
             list: BackendService
         """
-        return backend_service_dao.BackendServiceDao().\
+        return backend_service_dao.BackendServiceDao(self.global_configs).\
                         get_backend_services(self.snapshot_timestamp)
 
     def _get_firewall_rules(self):
@@ -356,7 +356,7 @@ class IapScanner(base_scanner.BaseScanner):
         Returns:
             list: FirewallRule
         """
-        return firewall_rule_dao.FirewallRuleDao().\
+        return firewall_rule_dao.FirewallRuleDao(self.global_configs).\
                         get_firewall_rules(self.snapshot_timestamp)
 
     def _get_instances(self):
@@ -365,7 +365,7 @@ class IapScanner(base_scanner.BaseScanner):
         Returns:
             list: Instance
         """
-        return instance_dao.InstanceDao().\
+        return instance_dao.InstanceDao(self.global_configs).\
                         get_instances(self.snapshot_timestamp)
 
     def _get_instance_groups(self):
@@ -374,7 +374,7 @@ class IapScanner(base_scanner.BaseScanner):
         Returns:
             list: InstanceGroup
         """
-        return instance_group_dao.InstanceGroupDao().\
+        return instance_group_dao.InstanceGroupDao(self.global_configs).\
                         get_instance_groups(self.snapshot_timestamp)
 
     def _get_instance_group_managers(self):
@@ -383,8 +383,9 @@ class IapScanner(base_scanner.BaseScanner):
         Returns:
             list: InstanceGroupManager
         """
-        return instance_group_manager_dao.InstanceGroupManagerDao().\
-                        get_instance_group_managers(self.snapshot_timestamp)
+        return instance_group_manager_dao.InstanceGroupManagerDao(
+            self.global_configs).get_instance_group_managers(
+                self.snapshot_timestamp)
 
     def _get_instance_templates(self):
         """Retrieves instance templates.
@@ -392,7 +393,7 @@ class IapScanner(base_scanner.BaseScanner):
         Returns:
             list: InstanceTemplate
         """
-        return instance_template_dao.InstanceTemplateDao().\
+        return instance_template_dao.InstanceTemplateDao(self.global_configs).\
                         get_instance_templates(self.snapshot_timestamp)
 
     def run(self):
