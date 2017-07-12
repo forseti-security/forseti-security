@@ -63,6 +63,8 @@ inventory:
           enabled: true
         - resource: firewall_rules
           enabled: true
+        - resource: folder_iam_policies
+          enabled: true
         - resource: folders
           enabled: true
         - resource: forwarding_rules
