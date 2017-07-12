@@ -98,3 +98,15 @@ scanner:
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
     output_path: OUTPUT_PATH
+
+    scanners:
+        - name: bigquery
+          enabled: true
+        - name: bucket_acl
+          enabled: true
+        - name: cloudsql_acl
+          enabled: true
+        - name: group
+          enabled: true
+        - name: iam_policy
+          enabled: true
