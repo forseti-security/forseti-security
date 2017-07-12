@@ -26,7 +26,8 @@ from google.cloud.security.common.util.threadpool import ThreadPool
 from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPANSION_2,\
     MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1, ROLES_PERMISSIONS_TESTING_1,\
     DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2,\
-    MEMBER_TESTING_3, EXPLAIN_GRANTED_1
+    MEMBER_TESTING_3, EXPLAIN_GRANTED_1, GROUP_IN_GROUP_TESTING_1,\
+    ACCESS_BY_PERMISSIONS_1
 from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
 
 def create_test_engine():
@@ -406,14 +407,14 @@ class DaoTest(ForsetiTestCase):
             }
 
         check_3 = {
-            'parameters' : ('user/u1', 'r/res1', 'admin', None),
-            'bindings' : [
+            'parameters': ('user/u1', 'r/res1', 'admin', None),
+            'bindings': [
                     ('r/res1', 'admin', 'user/u1'),
                 ],
-            'member_graph' : {
-                'user/u1' : set([]),
+            'member_graph': {
+                'user/u1': set([]),
                 },
-            'ancestors' : [
+            'ancestors': [
                 'r/res1',
                 ]
             }
@@ -490,6 +491,133 @@ class DaoTest(ForsetiTestCase):
         self.assertEqual(len(expectation), len(explanation))
         for item in expectation:
             self.assertIn(item, explanation)
+
+    def test_denorm_group_in_group(self):
+        """Test group_in_group denormalization."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(GROUP_IN_GROUP_TESTING_1, client)
+
+        iterations = data_access.denorm_group_in_group(session)
+        self.assertEqual(iterations,
+                         4,
+                         'Denormalization should have taken 4 iterations.')
+
+        expected = [
+                (u'group/g2g1', u'group/g2'),
+                (u'group/g1', u'group/g3'),
+                (u'group/g2', u'group/g3'),
+                (u'group/g1', u'group/g4'),
+                (u'group/g3', u'group/g4'),
+                (u'group/g4', u'group/g5'),
+                (u'group/g5', u'group/g6'),
+                (u'group/g6', u'group/g7'),
+            ]
+
+        def transitive_closure(expected):
+            relation = set()
+            for item in expected:
+                relation.add(item)
+            size = 0
+            while size < len(relation):
+                size = len(relation)
+                to_add = set()
+                for p1, g1 in relation:
+                    for p2, g2 in relation:
+                        if p2 == g1:
+                            to_add.add((p1, g2))
+                for item in to_add:
+                    relation = relation.union(to_add)
+            return relation
+        expected = transitive_closure(expected)
+
+        entries = session.query(data_access.TBL_GROUP_IN_GROUP).all()
+        denormed_set = set([(i.parent, i.member) for i in entries])
+        self.assertEqual(
+            expected,
+            denormed_set,
+            'Denormalized should be equivalent to transitive closure')
+
+    def test_query_access_by_permission(self):
+        """Test query_access_by_permission."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(ACCESS_BY_PERMISSIONS_1, client)
+
+        expected_by_role = {
+                'viewer': [
+                        (u'r/res1', set([u'group/g1'])),
+                        (u'r/res2', set([u'group/g1'])),
+                        (u'r/res3', set([u'group/g1', u'group/g3'])),
+                    ],
+                'admin': [
+                        (u'r/res1', set([u'user/u1'])),
+                        (u'r/res4', set([u'group/g2'])),
+                    ],
+                'writer': [
+                        (u'r/res3', set([u'group/g3'])),
+                    ],
+            }
+
+        for role, access in expected_by_role.iteritems():
+            result = [r for r in (
+                data_access.query_access_by_permission(session, role))]
+            for item in result:
+                _, acc_res, acc_members = item
+                if not (acc_res, acc_members) in access:
+                    print '{}, {}'.format((acc_res, acc_members), access)
+                self.assertIn((acc_res, acc_members), access,
+                              'Should find access in expected')
+
+        expected_by_permission = {
+                'readonly': [
+                        (u'r/res1', set([u'group/g1'])),
+                        (u'r/res2', set([u'group/g1'])),
+                        (u'r/res3', set([u'group/g1', u'group/g3'])),
+                    ],
+                'delete': [
+                        (u'r/res1', set([u'user/u1'])),
+                        (u'r/res4', set([u'group/g2'])),
+                    ],
+                'writeonly': [
+                        (u'r/res3', set([u'group/g3'])),
+                    ],
+            }
+
+        for perm, access in expected_by_permission.iteritems():
+            result = [r for r in (
+                data_access.query_access_by_permission(session,
+                                                       permission_name=perm))]
+            for item in result:
+                _, acc_res, acc_members = item
+                if not (acc_res, acc_members) in access:
+                    print '{}, {}'.format((acc_res, acc_members), access)
+                self.assertIn((acc_res, acc_members), access,
+                              'Should find access in expected')
+
+        expected_by_permission = {
+                'delete': [
+                        (u'r/res1', set([u'user/u1'])),
+                        (u'r/res2', set([u'user/u1'])),
+                        (u'r/res3', set([u'user/u1'])),
+                        (u'r/res4', set([u'user/u1'])),
+                        (u'r/res4', set([u'group/g2'])),
+                    ],
+            }
+
+        for perm, access in expected_by_permission.iteritems():
+            result = [r for r in (
+                data_access.query_access_by_permission(session,
+                                                       permission_name=perm,
+                                                       expand_resources=True))]
+            for item in result:
+                _, acc_res, acc_members = item
+                if not (acc_res, acc_members) in access:
+                    print '{}, {}'.format((acc_res, acc_members), access)
+                self.assertIn((acc_res, acc_members), access,
+                              'Should find access in expected')
 
     def test_query_access_by_member(self):
         """Test query_access_by_member."""

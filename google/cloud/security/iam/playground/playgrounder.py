@@ -58,7 +58,7 @@ class Playgrounder(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             return data_access.add_group_member(
-                session, member_type_name, parent_type_names)
+                session, member_type_name, parent_type_names, True)
 
     def DelGroupMember(self, model_name, member_name, parent_name,
                        only_delete_relationship):

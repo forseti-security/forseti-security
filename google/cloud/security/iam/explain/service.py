@@ -117,6 +117,29 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
              for resource, role, member in bindings])
         return reply
 
+    def GetAccessByPermissions(self, request, context):
+        """Returns stream of access based on permission/role.
+
+        Args:
+            request (object): grpg request.
+            context (object): grpg context.
+
+        Yields:
+            Generator for access tuples.
+        """
+
+        model_name = self._get_handle(context)
+
+        for role, resource, members in (
+            self.explainer.GetAccessByPermissions(model_name,
+                                                  request.role_name,
+                                                  request.permission_name,
+                                                  request.expand_groups,
+                                                  request.expand_resources)):
+            yield explain_pb2.Access(members=members,
+                                     role=role,
+                                     resource=resource)
+
     def GetAccessByResources(self, request, context):
         """Returns members having access to the specified resource."""
 

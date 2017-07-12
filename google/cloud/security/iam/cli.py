@@ -265,6 +265,30 @@ def define_explainer_parser(parent):
         default=False,
         help='Expand the resource hierarchy')
 
+    query_access_by_authz = action_subparser.add_parser(
+        'access_by_authz',
+        help='List access by role or permission')
+    query_access_by_authz.add_argument(
+        '--permission',
+        default=None,
+        nargs='?',
+        help='Permission to query')
+    query_access_by_authz.add_argument(
+        '--role',
+        default=None,
+        nargs='?',
+        help='Role to query')
+    query_access_by_authz.add_argument(
+        '--expand_groups',
+        type=bool,
+        default=False,
+        help='Expand groups to their members')
+    query_access_by_authz.add_argument(
+        '--expand_resources',
+        type=bool,
+        default=False,
+        help='Expand resources to their children')
+
     query_access_by_resource = action_subparser.add_parser(
         'access_by_resource',
         help='List access by member and permissions')
@@ -435,6 +459,16 @@ def run_explainer(client, config, output):
                                                   config.expand_groups)
         output.write(result)
 
+    def do_query_access_by_authz():
+        """Query access by role or permission"""
+        for access in (
+            client.query_access_by_permissions(config.role,
+                                               config.permission,
+                                               config.expand_groups,
+                                               config.expand_resources)):
+
+            output.write(access)
+
     actions = {
         'list_models': do_list_models,
         'delete_model': do_delete_model,
@@ -444,7 +478,8 @@ def run_explainer(client, config, output):
         'why_denied': do_why_not_granted,
         'list_permissions': do_list_permissions,
         'access_by_member': do_query_access_by_member,
-        'access_by_resource': do_query_access_by_resource}
+        'access_by_resource': do_query_access_by_resource,
+        'access_by_authz': do_query_access_by_authz}
 
     actions[config.action]()
 

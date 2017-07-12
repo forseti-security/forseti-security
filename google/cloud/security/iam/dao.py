@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from google.cloud.security.common.data_access.forseti import PER_YIELD
 
 """ Database abstraction objects for IAM Explain. """
 
@@ -39,6 +40,7 @@ from sqlalchemy import and_
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import select
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
@@ -49,6 +51,7 @@ from google.cloud.security.iam.utils import mutual_exclusive
 # pylint: disable=missing-yield-type-doc
 
 POOL_RECYCLE_SECONDS = 300
+
 
 def generate_model_handle():
     """Generate random model handle."""
@@ -151,6 +154,7 @@ def define_model(model_name, dbengine, model_seed):
 
     base = declarative_base()
 
+    denormed_group_in_group = '{}_group_in_group'.format(model_name)
     bindings_tablename = '{}_bindings'.format(model_name)
     roles_tablename = '{}_roles'.format(model_name)
     permissions_tablename = '{}_permissions'.format(model_name)
@@ -253,6 +257,19 @@ def define_model(model_name, dbengine, model_seed):
             return "<Member(name='{}', type='{}')>".format(
                 self.name, self.type)
 
+    class GroupInGroup(base):
+        """Row for a group-in-group membership."""
+
+        __tablename__ = denormed_group_in_group
+        parent = Column(String(256), primary_key=True)
+        member = Column(String(256), primary_key=True)
+
+        def __repr__(self):
+            """String representation."""
+            return "<GroupInGroup(parent='{}', member='{}')>".format(
+                self.parent,
+                self.member)
+
     class Binding(base):
         """Row for a binding between resource, roles and members."""
 
@@ -308,6 +325,7 @@ def define_model(model_name, dbengine, model_seed):
     class ModelAccess(object):
         """Data model facade, implement main API against database."""
 
+        TBL_GROUP_IN_GROUP = GroupInGroup
         TBL_BINDING = Binding
         TBL_MEMBER = Member
         TBL_PERMISSION = Permission
@@ -328,6 +346,77 @@ def define_model(model_name, dbengine, model_seed):
             Role.__table__.drop(engine)
             Member.__table__.drop(engine)
             Resource.__table__.drop(engine)
+
+        @classmethod
+        def denorm_group_in_group(cls, session):
+            """Denormalize group-in-group relation.
+
+            Args:
+                session (object): Database session to use.
+            Returns:
+                int: Number of iterations.
+            """
+
+            def get_dialect(session):
+                return session.bind.dialect.name
+
+            if get_dialect(session) != 'sqlite':
+                # Lock tables for denormalization
+                locked_tables = [GroupInGroup.__tablename__,
+                                 group_members.name]
+                lock_stmts = ['{} WRITE'.format(tbl) for tbl in locked_tables]
+                session.execute('LOCK TABLES {}'.format(
+                    ', '.join(lock_stmts)))
+
+            try:
+                # Remove all existing rows in the denormalization
+                session.execute(GroupInGroup.__table__.delete())
+
+                # Select member relation into GroupInGroup
+                qry = (
+                    GroupInGroup.__table__.insert()
+                    .from_select(
+                        ['parent', 'member'],
+                        group_members.select()
+                        .where(
+                            group_members.c.group_name.startswith('group/'))
+                        .where(
+                            group_members.c.members_name.startswith('group/'))
+                                 ))
+
+                session.execute(qry)
+
+                tbl1 = aliased(GroupInGroup.__table__)
+                tbl2 = aliased(GroupInGroup.__table__)
+
+                iterations = 0
+                rows_affected = True
+                while rows_affected:
+                    # Join membership on its own to find transitive
+                    expansion = tbl1.join(tbl2, tbl1.c.member == tbl2.c.parent)
+                    stmt = (
+                        select([tbl1.c.parent, tbl2.c.member])
+                        .select_from(expansion))
+
+                    # Exclude duplicates, only insert new relations
+                    stmt = stmt.except_(select([tbl1.c.parent, tbl1.c.member]))
+
+                    # Execute the query and insert into the table
+                    qry = (
+                        GroupInGroup.__table__.insert()
+                        .from_select(
+                            ['parent', 'member'],
+                            stmt))
+
+                    rows_affected = session.execute(qry).rowcount > 0
+                    iterations += 1
+            except Exception:
+                session.rollback()
+            finally:
+                if get_dialect(session) != 'sqlite':
+                    session.execute('UNLOCK TABLES')
+                session.commit()
+                return iterations
 
         @classmethod
         def explain_granted(cls, session, member_name, resource_type_name,
@@ -492,6 +581,76 @@ def define_model(model_name, dbengine, model_seed):
             return [(binding.role_name,
                      res_exp[binding.resource_type_name])
                     for binding in bindings]
+
+        @classmethod
+        def query_access_by_permission(cls,
+                                       session,
+                                       role_name=None,
+                                       permission_name=None,
+                                       expand_groups=False,
+                                       expand_resources=False):
+            """Return all the (Principal, Resource) combinations allowing
+            satisfying access via the specified permission.
+
+            Args:
+                session (object): Database session.
+                permission_name (str): Permission name to query for.
+                expand_groups (bool): Whether or not to expand groups.
+                expand_resources (bool): Whether or not to expand resources.
+
+            Yields:
+                A generator of access tuples.
+
+            Raises:
+                ValueError: If neither role nor permission is set.
+            """
+
+            if role_name:
+                role_names = [role_name]
+            elif permission_name:
+                role_names = [p.name for p in
+                              cls.get_roles_by_permission_names(
+                                  session,
+                                  [permission_name])]
+            else:
+                raise ValueError('Either role or permission must be set')
+
+            if expand_resources:
+                expanded_resources = aliased(Resource)
+                qry = (
+                    session.query(expanded_resources, Binding, Member)
+                    .filter(binding_members.c.bindings_id == Binding.id)
+                    .filter(binding_members.c.members_name == Member.name)
+                    .filter(expanded_resources.full_name.startswith(
+                        Resource.full_name))
+                    .filter(Resource.type_name == Binding.resource_type_name)
+                    .filter(Binding.role_name.in_(role_names))
+                    .order_by(Resource.name.desc(), Binding.role_name.desc())
+                    .distinct())
+
+            else:
+                qry = (
+                    session.query(Resource, Binding, Member)
+                    .filter(binding_members.c.bindings_id == Binding.id)
+                    .filter(binding_members.c.members_name == Member.name)
+                    .filter(Resource.type_name == Binding.resource_type_name)
+                    .filter(Binding.role_name.in_(role_names))
+                    .order_by(Resource.name.desc(), Binding.role_name.desc()))
+
+            cur_resource = None
+            cur_role = None
+            cur_members = set()
+            for resource, binding, member in qry.yield_per(PER_YIELD):
+                if cur_resource != resource.type_name:
+                    if cur_resource is not None:
+                        yield cur_role, cur_resource, cur_members
+                    cur_resource = resource.type_name
+                    cur_role = binding.role_name
+                    cur_members = set([member.name])
+                else:
+                    cur_members.add(member.name)
+            if cur_resource is not None:
+                yield cur_role, cur_resource, cur_members
 
         @classmethod
         def query_access_by_resource(cls, session, resource_type_name,
@@ -741,11 +900,17 @@ def define_model(model_name, dbengine, model_seed):
             session.commit()
 
         @classmethod
-        def add_group_member(cls, session, member_type_name,
-                             parent_type_names):
+        def add_group_member(cls,
+                             session,
+                             member_type_name,
+                             parent_type_names,
+                             denorm=False):
             """Add member, optionally with parent relationship."""
 
-            cls.add_member(session, member_type_name, parent_type_names)
+            cls.add_member(session,
+                           member_type_name,
+                           parent_type_names,
+                           denorm)
             session.commit()
 
         @classmethod
@@ -906,7 +1071,11 @@ def define_model(model_name, dbengine, model_seed):
             return binding
 
         @classmethod
-        def add_member(cls, session, type_name, parent_type_names=None):
+        def add_member(cls,
+                       session,
+                       type_name,
+                       parent_type_names=None,
+                       denorm=False):
             """Add a member to the model."""
 
             if not parent_type_names:
@@ -924,6 +1093,9 @@ def define_model(model_name, dbengine, model_seed):
                             type=res_type,
                             parents=parents)
             session.add(member)
+            session.commit()
+            if denorm and res_type == 'group' and len(parents) > 0:
+                cls.denorm_group_in_group(session)
             return member
 
         @classmethod
