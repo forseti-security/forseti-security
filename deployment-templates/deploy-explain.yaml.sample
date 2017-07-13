@@ -16,7 +16,7 @@
 # Be sure to edit this file and its templates to suit your environment.
 
 imports:
-- path: ../../deployment-templates/explain-instance.py
+- path: compute-engine/explain-instance.py
   name: explain-instance.py
 
 resources:
