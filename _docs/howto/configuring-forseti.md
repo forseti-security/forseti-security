@@ -40,8 +40,8 @@ Forseti Inventory:
 
 `forseti_inventory --forseti_config path/to/forseti_conf.yaml`
 
-If you change a configuration (such as, change which pipeline or scanner to
-run), you'll need to restart the appropriate module so it picks up the new
+If you change a configuration such as by changing which pipeline or scanner to
+run, you'll need to restart the appropriate module so it picks up the new
 configuration change.
 
 ## What's next
