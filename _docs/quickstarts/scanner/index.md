@@ -68,4 +68,5 @@ manually.
 
 ## What's next
 
+- Read about [configuring Forseti]({% link _docs/howto/configuring-forseti.md %})
 - Learn about [defining rules]({% link _docs/howto/scanner-rules.md %}).
