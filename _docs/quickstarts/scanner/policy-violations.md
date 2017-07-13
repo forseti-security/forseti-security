@@ -1,5 +1,5 @@
 ---
-title: Violations
+title: Policy Violations
 order: 104
 ---
 
@@ -18,7 +18,7 @@ output location for the CSV, edit the `forseti_conf.yaml` file as follows:
 output_path: OUTPUT_PATH
 ```
 
-All the violations are saved to a new violations table in the Cloud SQL database
+All policy violations are saved to a new violations table in the Cloud SQL database
 by default, for every scanner batch run, using the database configurations that
 are already in place. The violations table name includes the snapshot timestamp
-and you can query the table for each kind of violation.
+and you can query the table for each kind of policy violation.
