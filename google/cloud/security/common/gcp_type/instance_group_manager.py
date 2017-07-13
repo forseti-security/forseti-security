@@ -18,6 +18,8 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers
 """
 
+from google.cloud.security.common.util import parser
+
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-param-doc
 
@@ -34,11 +36,11 @@ class InstanceGroupManager(object):
         self.instance_group = kwargs.get('instance_group')
         self.instance_template = kwargs.get('instance_template')
         self.name = kwargs.get('name')
-        self.named_ports = kwargs.get('named_ports')
+        self.named_ports = parser.json_unstringify(kwargs.get('named_ports'))
         self.project_id = kwargs.get('project_id')
         self.region = kwargs.get('region')
         self.resource_id = kwargs.get('id')
-        self.target_pools = kwargs.get('target_pools')
+        self.target_pools = parser.json_unstringify(kwargs.get('target_pools'))
         self.target_size = kwargs.get('target_size')
         self.zone = kwargs.get('zone')
 

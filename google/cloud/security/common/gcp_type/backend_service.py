@@ -17,8 +17,10 @@
 See: https://cloud.google.com/compute/docs/reference/latest/backendServices
 """
 
+import os
 
 from google.cloud.security.common.gcp_type import key
+from google.cloud.security.common.util import parser
 
 
 # pylint: disable=too-many-instance-attributes
@@ -32,14 +34,16 @@ class BackendService(object):
             kwargs: The object's attributes.
         """
         self.affinity_cookie_ttl_sec = kwargs.get('affinity_cookie_ttl_sec')
-        self.backends = kwargs.get('backends')
-        self.cdn_policy = kwargs.get('cdn_policy')
-        self.connection_draining = kwargs.get('connection_draining')
+        self.backends = parser.json_unstringify(kwargs.get('backends'))
+        self.cdn_policy = parser.json_unstringify(kwargs.get('cdn_policy'))
+        self.connection_draining = parser.json_unstringify(
+            kwargs.get('connection_draining'))
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
         self.enable_cdn = kwargs.get('enable_cdn')
-        self.health_checks = kwargs.get('health_checks')
-        self.iap = kwargs.get('iap')
+        self.health_checks = parser.json_unstringify(
+            kwargs.get('health_checks'))
+        self.iap = parser.json_unstringify(kwargs.get('iap'))
         self.load_balancing_scheme = kwargs.get('load_balancing_scheme')
         self.name = kwargs.get('name')
         self.port = kwargs.get('port')
@@ -80,6 +84,8 @@ class Key(key.Key):
         Returns:
             Key: the key
         """
+        if region:
+            region = os.path.basename(region)
         return Key(KEY_OBJECT_KIND, {
             'project_id': project_id,
             'name': name,

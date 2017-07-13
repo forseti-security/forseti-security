@@ -17,6 +17,8 @@
 See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 """
 
+from google.cloud.security.common.util import parser
+
 # pylint: disable=too-many-instance-attributes
 
 
@@ -36,12 +38,18 @@ class FirewallRule(object):
         self.network = kwargs.get('firewall_rule_network')
         self._priority = kwargs.get('firewall_rule_priority')
         self.direction = kwargs.get('firewall_rule_direction')
-        self.source_ranges = kwargs.get('firewall_rule_source_ranges')
-        self.destination_ranges = kwargs.get('firewall_rule_destination_ranges')
-        self.source_tags = kwargs.get('firewall_rule_source_tags')
-        self.target_tags = kwargs.get('firewall_rule_target_tags')
-        self.allowed = kwargs.get('firewall_rule_allowed')
-        self.denied = kwargs.get('firewall_rule_denied')
+        self.source_ranges = parser.json_unstringify(
+            kwargs.get('firewall_rule_source_ranges'))
+        self.destination_ranges = parser.json_unstringify(
+            kwargs.get('firewall_rule_destination_ranges'))
+        self.source_tags = parser.json_unstringify(
+            kwargs.get('firewall_rule_source_tags'))
+        self.target_tags = parser.json_unstringify(
+            kwargs.get('firewall_rule_target_tags'))
+        self.allowed = parser.json_unstringify(
+            kwargs.get('firewall_rule_allowed'))
+        self.denied = parser.json_unstringify(
+            kwargs.get('firewall_rule_denied'))
 
     @property
     def priority(self):

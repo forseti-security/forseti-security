@@ -19,6 +19,7 @@ import itertools
 import re
 
 from google.cloud.security.common.data_access import org_resource_rel_dao
+from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type import errors as resource_errors
 from google.cloud.security.common.gcp_type import resource as resource_mod
 from google.cloud.security.common.gcp_type import resource_util
@@ -62,20 +63,19 @@ class IapRulesEngine(bre.BaseRulesEngine):
             self._load_rule_definitions(),
             snapshot_timestamp=self.snapshot_timestamp)
 
-    def find_iap_violations(self, resource, iap_resource, force_rebuild=False):
+    def find_iap_violations(self, iap_resource, force_rebuild=False):
         """Determine whether IAP-related settings violate rules.
 
         Args:
-            resource (Resource): find violations on this
             iap_resource (IapResource): IAP resource data
             force_rebuild (bool): whether to rebuild the rulebook
 
         Returns:
-            generator: Of RuleViolation
+            list: RuleViolation
         """
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
-        return self.rule_book.find_violations(resource, iap_resource)
+        return self.rule_book.find_violations(iap_resource)
 
     def add_rules(self, rules):
         """Add rules to the rule book.
@@ -108,6 +108,7 @@ class IapRuleBook(bre.BaseRuleBook):
             self.snapshot_timestamp = snapshot_timestamp
         self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
             global_configs)
+        self.project_dao = project_dao.ProjectDao(global_configs)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
@@ -200,28 +201,28 @@ class IapRuleBook(bre.BaseRuleBook):
 
         return resource_rules
 
-    def find_violations(self, resource, iap_resource):
+    def find_violations(self, iap_resource):
         """Find violations in the rule book.
 
         Args:
-
-            resource (BackendService): The backend service to examine.
-                This is where we start looking for rule violations and
-                we move up the resource hierarchy (if permitted by the
-                resource's "inherit_from_parents" property).
             iap_resource (IapResource): IAP data
 
         Returns:
-            A generator of the rule violations.
+            list: RuleViolation
         """
-        violations = itertools.chain()
+        violations = []
+        resource = iap_resource.backend_service
         resource_ancestors = [resource]
+
+        project = self.project_dao.get_project(resource.project_id,
+                                               self.snapshot_timestamp)
+        resource_ancestors.append(project)
         resource_ancestors.extend(
             self.org_res_rel_dao.find_ancestors(
-                resource, self.snapshot_timestamp))
+                project, self.snapshot_timestamp))
 
         for curr_resource in resource_ancestors:
-            resource_rules = self._get_resource_rules(curr_resource)
+            resource_rules = self.get_resource_rules(curr_resource)
             # Set to None, because if the direct resource (e.g. project)
             # doesn't have a specific rule, we still should check the
             # ancestry to see if the resource's parents have any rules
@@ -253,8 +254,7 @@ class IapRuleBook(bre.BaseRuleBook):
                 if not rule_applies_to_resource:
                     continue
 
-                violations = itertools.chain(
-                    violations,
+                violations.extend(
                     resource_rule.find_mismatches(resource, iap_resource))
 
                 inherit_from_parents = resource_rule.inherit_from_parents
@@ -270,6 +270,7 @@ class IapRuleBook(bre.BaseRuleBook):
                 break
             # pylint: enable=compare-to-zero
 
+        print 'XXX: Returning violations: %r' % violations
         return violations
 
 
@@ -306,10 +307,14 @@ class ResourceRules(object):
             iap_resource (IapResource): IAP data
 
         Returns:
-            generator: RuleViolation
+            list: RuleViolation
         """
-        return itertools.chain(*[rule.find_mismatches(resource, iap_resource)
-                                 for rule in self.rules])
+        violations = []
+        for rule in self.rules:
+            violation = rule.find_mismatches(resource, iap_resource)
+            if violation:
+                violations.append(violation)
+        return violations
 
     def _dispatch_rule_mode_check(self, mode, rule_members=None,
                                   policy_members=None):
@@ -380,7 +385,7 @@ class Rule(object):
             resource (Resource): resource to inspect
             iap_resource (IapResource): IAP data
 
-        Yields:
+        Returns:
             RuleViolation: IAP violations
         """
         if self.allowed_iap_enabled != '^.+$':
@@ -402,6 +407,9 @@ class Rule(object):
         else:
             alternate_services_violations = []
 
+        print 'XXX: Has violation? %r / %r / %r' % (iap_resource.iap_enabled,
+                                                    self.allowed_direct_access_sources,
+                                                    iap_resource.direct_access_sources)
         if (iap_resource.iap_enabled and
                 self.allowed_direct_access_sources != '^.+$'):
             sources_regex = re.compile(
@@ -410,6 +418,7 @@ class Rule(object):
                 source for source in iap_resource.direct_access_sources
                 if not sources_regex.match(source)
             ]
+            print 'XXX: Violation: %r' % direct_sources_violations
         else:
             direct_sources_violations = []
 
@@ -419,9 +428,10 @@ class Rule(object):
             direct_sources_violations)
 
         if should_raise_violation:
-            yield RuleViolation(
-                resource_type=resource.type,
-                resource_id=resource.id,
+            return RuleViolation(
+                resource_type=resource_mod.ResourceType.BACKEND_SERVICE,
+                resource_name=resource.name,
+                resource_id=resource.resource_id,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='IAP_VIOLATION',
@@ -429,6 +439,8 @@ class Rule(object):
                 iap_enabled_violation=iap_enabled_violation,
                 direct_access_sources_violations=(
                     direct_sources_violations))
+        else:
+            return None
 
     def __repr__(self):
         """String representation of this node."""
@@ -473,7 +485,7 @@ class Rule(object):
 
 RuleViolation = namedtuple(
     'RuleViolation',
-    ['resource_type', 'resource_id', 'rule_name',
+    ['resource_type', 'resource_id', 'resource_name', 'rule_name',
      'rule_index', 'violation_type',
      'alternate_services_violations',
      'iap_enabled_violation', 'direct_access_sources_violations'])

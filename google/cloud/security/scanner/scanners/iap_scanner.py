@@ -27,14 +27,14 @@ from google.cloud.security.common.gcp_type import instance_group as instance_gro
 from google.cloud.security.common.gcp_type import instance as instance_type
 from google.cloud.security.common.gcp_type import instance_template as instance_template_type
 from google.cloud.security.common.gcp_type import network as network_type
+from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
 # pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
 IapResource = collections.namedtuple(
     'IapResource',
-    ['backend_service_name',
-     'backend_service_project',
+    ['backend_service',
      'alternate_services',
      'direct_access_sources',
      'iap_enabled',
@@ -59,6 +59,14 @@ class _RunData(object):
             instance_group_managers (list): InstanceGroupMananger
             instance_templates (list): InstanceTemplate
         """
+        self.resource_counts = {
+            ResourceType.BACKEND_SERVICE: len(backend_services),
+            ResourceType.FIREWALL_RULE: len(firewall_rules),
+            ResourceType.INSTANCE: len(instances),
+            ResourceType.INSTANCE_GROUP: len(instance_groups),
+            ResourceType.INSTANCE_GROUP_MANAGER: len(instance_group_managers),
+            ResourceType.INSTANCE_TEMPLATE: len(instance_templates),
+        }
         self.backend_services = backend_services
         self.firewall_rules = firewall_rules
         self.instances_by_key = dict((instance.key, instance)
@@ -268,6 +276,8 @@ class _RunData(object):
             network_port = self.instance_group_network_port(
                 backend_service, instance_group)
 
+            direct_access_sources.update(
+                self.firewall_allowed_sources(network_port, None))
             tags = self.tags_for_instance_group(instance_group)
             for tag in tags:
                 direct_access_sources.update(
@@ -283,8 +293,7 @@ class _RunData(object):
                 alternate_services.add(backend_service2.key)
 
         return IapResource(
-            backend_service_name=backend_service.name,
-            backend_service_project=backend_service.project_id,
+            backend_service=backend_service,
             alternate_services=alternate_services,
             direct_access_sources=direct_access_sources,
             iap_enabled=(backend_service.iap.get('enabled', False)
@@ -400,7 +409,9 @@ class IapScanner(base_scanner.BaseScanner):
         """Runs the data collection.
 
         Returns:
-            list: IapResource"""
+            list: List of data to pass to the rules engine
+            dict: A dict of resource counts.
+        """
         run_data = _RunData(
             backend_services=self._get_backend_services(),
             firewall_rules=self._get_firewall_rules(),
@@ -414,15 +425,19 @@ class IapScanner(base_scanner.BaseScanner):
         for backend_service in run_data.backend_services:
             iap_resources.append(run_data.make_iap_resource(backend_service))
 
-        return iap_resources
+        return (iap_resources,), run_data.resource_counts
 
     # pylint: disable=arguments-differ
-    def find_violations(self, iap_resource, rules_engine):
+    def find_violations(self, iap_resources, rules_engine):
         """Find IAP violations.
 
         Args:
-          iap_resource (IapResource): Resource to check.
-          rules_engine (IapRulesEngine): Rules engine to run.
+            iap_resouces (list): IapResource to find violations in
+            rules_engine (IapRulesEngine): Rules engine to run.
         """
         LOGGER.info('Finding IAP violations...')
-        return rules_engine.find_iap_violations(iap_resource)
+        ret = []
+        for iap_resource in iap_resources:
+            ret.extend(rules_engine.find_iap_violations(iap_resource))
+        print 'XXX: find_violations returning %r' % ret
+        return ret

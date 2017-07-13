@@ -18,8 +18,10 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceGroups
 """
 
+import os
 
 from google.cloud.security.common.gcp_type import key
+from google.cloud.security.common.util import parser
 
 
 # pylint: disable=too-many-instance-attributes
@@ -34,9 +36,10 @@ class InstanceGroup(object):
         """
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
-        self.instance_urls = kwargs.get('instance_urls')
+        self.instance_urls = parser.json_unstringify(
+            kwargs.get('instance_urls'))
         self.name = kwargs.get('name')
-        self.named_ports = kwargs.get('named_ports')
+        self.named_ports = parser.json_unstringify(kwargs.get('named_ports'))
         self.network = kwargs.get('network')
         self.project_id = kwargs.get('project_id')
         self.region = kwargs.get('region')
@@ -84,6 +87,10 @@ class Key(key.Key):
         """
         if not bool(region) ^ bool(zone):
             raise ValueError('Key must specify one of either region or zone')
+        if region:
+            region = os.path.basename(region)
+        if zone:
+            zone = os.path.basename(zone)
         return Key(KEY_OBJECT_KIND, {
             'project_id': project_id,
             'region': region,

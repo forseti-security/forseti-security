@@ -18,8 +18,8 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceTemplates
 """
 
-
 from google.cloud.security.common.gcp_type import key
+from google.cloud.security.common.util import parser
 
 
 class InstanceTemplate(object):
@@ -35,7 +35,7 @@ class InstanceTemplate(object):
         self.description = kwargs.get('description')
         self.name = kwargs.get('name')
         self.project_id = kwargs.get('project_id')
-        self.properties = kwargs.get('properties')
+        self.properties = parser.json_unstringify(kwargs.get('properties'))
         self.resource_id = kwargs.get('id')
         self.project_id = kwargs.get('project_id')
 

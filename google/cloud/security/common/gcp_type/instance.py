@@ -17,8 +17,10 @@
 See: https://cloud.google.com/compute/docs/reference/latest/instances
 """
 
+import os
 
 from google.cloud.security.common.gcp_type import key
+from google.cloud.security.common.util import parser
 
 
 # pylint: disable=too-many-instance-attributes
@@ -35,18 +37,20 @@ class Instance(object):
         self.cpu_platform = kwargs.get('cpu_platform')
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
-        self.disks = kwargs.get('disks')
+        self.disks = parser.json_unstringify(kwargs.get('disks'))
         self.machine_type = kwargs.get('machine_type')
-        self.metadata = kwargs.get('metadata')
+        self.metadata = parser.json_unstringify(kwargs.get('metadata'))
         self.name = kwargs.get('name')
-        self.network_interfaces = kwargs.get('network_interfaces')
+        self.network_interfaces = parser.json_unstringify(
+            kwargs.get('network_interfaces'))
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
-        self.scheduling = kwargs.get('scheduling')
-        self.service_accounts = kwargs.get('service_accounts')
+        self.scheduling = parser.json_unstringify(kwargs.get('scheduling'))
+        self.service_accounts = parser.json_unstringify(
+            kwargs.get('service_accounts'))
         self.status = kwargs.get('status')
         self.status_message = kwargs.get('status_message')
-        self.tags = kwargs.get('tags')
+        self.tags = parser.json_unstringify(kwargs.get('tags'))
         self.zone = kwargs.get('zone')
 
     @property
@@ -77,6 +81,8 @@ class Key(key.Key):
         Returns:
             Key: the key
         """
+        if zone:
+            zone = os.path.basename(zone)
         return Key(KEY_OBJECT_KIND, {
             'project_id': project_id,
             'zone': zone,
