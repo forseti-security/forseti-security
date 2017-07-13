@@ -43,7 +43,6 @@ class InstanceDao(dao.Dao):
         Raises:
             MySQLError if a MySQL error occurs.
         """
-
         query = select_data.INSTANCES.format(timestamp)
         rows = self.execute_sql_with_fetch(
             resource.ResourceType.INSTANCE, query, ())

@@ -41,8 +41,6 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
 # no longer need this 
     def setUp(self):
         """Set up."""
-        self.fake_timestamp = '12345'
-        self.network_interface = [{"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/v1/projects/xpn-master/global/networks/xpn-network", "networkIP": "10.175.3.132", "subnetwork": "https://www.googleapis.com/compute/v1/projects/xpn-master/regions/asia-east1/subnetworks/xpn-ase1", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "104.199.244.119"}]}]
 
         # patch the organization resource relation dao
         self.patcher = mock.patch('google.cloud.security.common.data_access.instance_dao.InstanceDao')
@@ -51,7 +49,6 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
 
     def tearDown(self):
         self.patcher.stop()
-
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""

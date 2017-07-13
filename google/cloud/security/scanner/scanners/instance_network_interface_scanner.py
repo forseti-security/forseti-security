@@ -44,9 +44,9 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
 
            Returns:
                A list of networks from a particular project
+
            Raises:
                MySQLError if a MySQL error occurs.
-        I set the list  to get rid of duplicates
         """
         instances = instance_dao.InstanceDao().get_instances(
             self.snapshot_timestamp)
@@ -73,8 +73,9 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies: organization policies from inventory.
-            project_policies: project policies from inventory.
+            project_policies: dict containing the projects
+                (gcp_type.project.Project) and their iam policies (dict).
+            instance_network_interfaces: list of network_interface objects. 
         Returns:
             Resource count map
         """
@@ -102,8 +103,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-        #TODO: should enforced_network_data be a gce_instance
-            enforced_networks_data: enforced networks data
+            enforced_networks_data: Enforced networks data
             to find violations in
             rules_engine: The rules engine to run.
 

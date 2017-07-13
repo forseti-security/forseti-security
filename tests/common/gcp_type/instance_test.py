@@ -20,7 +20,7 @@ from tests.common.gcp_type.test_data import fake_instance
 
 
 class InstanceTest(ForsetiTestCase):
-    """Test IAM Policy class."""
+    """Test Instance class."""
 
     def test_network_interface_creation(self):
         """Test that network_interface creation is correct."""
@@ -33,14 +33,14 @@ class InstanceTest(ForsetiTestCase):
         self.assertEqual('compute#networkInterface', nw.kind)
         self.assertEqual('nic0', nw.name)
         self.assertEqual('https://www.googleapis.com/compute/v1/projects/'
-                         'xpn-master/global/networks/xpn-network', nw.network)
-        self.assertEqual('10.175.3.132', nw.networkIP)
+                         'project-1/global/networks/network-1', nw.network)
+        self.assertEqual('000.000.000.000', nw.network_ip)
         self.assertEqual('https://www.googleapis.com/compute/v1/projects'
-                         '/xpn-master/regions/asia-east1/subnetworks/xpn-ase1',
+                         '/project-1/regions/datacenter/subnetworks/subnetwork-1',
                          nw.subnetwork)
         self.assertEqual([{u'kind': u'compute#accessConfig',
                          u'type': u'ONE_TO_ONE_NAT', u'name': u'External NAT',
-                          u'natIP': u'104.199.244.119'}], nw.accessConfigs)
+                          u'natIP': u'000.000.000.001'}], nw.access_configs)
 
     def test_recognizes_two_network_interfaces(self):
         """Test that it recognizes two network_interfaces."""

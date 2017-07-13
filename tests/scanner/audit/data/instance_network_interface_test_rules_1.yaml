@@ -4,10 +4,10 @@ rules:
     network: '*'
     is_external_network: True
     whitelist:
-      xpn-master: 
-        - xpn-network
-      steel-ridge-91615: 
-        - default 
-        - xpn-network
-      playready-windows-1:
-        - default
+      master: 
+        - master-1
+      network: 
+        - network-1 
+        - network-2
+      default:
+        - default-1

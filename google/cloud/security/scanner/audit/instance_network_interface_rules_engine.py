@@ -1,4 +1,3 @@
-
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,31 +17,12 @@ from collections import namedtuple
 import itertools
 import re
 
-# pylint: enable=line-too-long
+from google.cloud.security.common.util.regex_util import escape_and_globify
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 LOGGER = log_util.get_logger(__name__)
-
-
-def escape_and_globify(pattern_string):
-    """Given a pattern string with a glob, create actual regex pattern.
-
-    To require > 0 length glob, change the "*" to ".+". This is to handle
-    strings like "*@company.com". (THe actual regex would probably be
-    ".*@company.com", except that we don't want to match zero-length
-    usernames before the "@".)
-
-    Args:
-        pattern_string: The pattern string of which to make a regex.
-
-    Returns:
-    The pattern string, escaped except for the "*", which is
-    transformed into ".+" (match on one or more characters).
-    """
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
-
 
 class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
     """Rules engine for InstanceNetworkInterfaceRules."""
@@ -58,8 +38,8 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
-        """Build InstaceNetworkInterfaceRuleBook from rules definition file."""
-        self.rule_book = InstaceNetworkInterfaceRuleBook(
+        """Build InstanceNetworkInterfaceRuleBook from rules definition file."""
+        self.rule_book = InstanceNetworkInterfaceRuleBook(
             self._load_rule_definitions())
 
     # pylint: disable=arguments-differ
@@ -73,8 +53,7 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
 
         for rule in resource_rules:
             violations = itertools.chain(violations,
-                                         rule.
-                                         find_violations(
+                                         rule.find_violations(
                                              instance_network_interface))
         return violations
 
@@ -83,8 +62,7 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
-
-class InstaceNetworkInterfaceRuleBook(bre.BaseRuleBook):
+class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
     """The RuleBook for enforced networks resources."""
 
     def __init__(self,
@@ -96,7 +74,7 @@ class InstaceNetworkInterfaceRuleBook(bre.BaseRuleBook):
                 definition file.
             snapshot_timestamp: The snapshot to lookup data.
         """
-        super(InstaceNetworkInterfaceRuleBook, self).__init__()
+        super(InstanceNetworkInterfaceRuleBook, self).__init__()
         self.resource_rules_map = {}
         if not rule_defs:
             self.rule_defs = {}
@@ -126,7 +104,8 @@ class InstaceNetworkInterfaceRuleBook(bre.BaseRuleBook):
                 network: whitelist
                 is_externam
                 whitelist:
-                  - project:network
+                  - project
+                        - network
 
         ... gets parsed into:
 
@@ -177,11 +156,7 @@ class InstaceNetworkInterfaceRuleBook(bre.BaseRuleBook):
             self.resource_rules_map[rule_index] = rule
 
     def get_resource_rules(self):
-        """Get all the resource rules for (resource, RuleAppliesTo.*).
-
-        Returns:
-            A list of ResourceRules.
-        """
+        """Get all the resource rules."""
         return self.resource_rules_map.values()
 
 
@@ -194,20 +169,17 @@ class Rule(object):
         Args:
             rule_name: Name of the loaded rule
             rule_index: The index of the rule from the  definitions
-            rules: the network instance
-            the resources to accosiate with the rules
-             (so far every network_instance)
+            rules: The resources associated with the rules like the whitelist
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.rules = rules
 
     def find_violations(self, instance_network_interface):
-        """
-        Raise violation is the ip is not in the whitelist.
+        """Raise violation is the ip is not in the whitelist.
 
         Args:
-                instance_network_interface: InstanceNetworkInterface obj
+            instance_network_interface: InstanceNetworkInterface obj
         """
         network_and_project = re.search(
             'compute\/v1\/projects\/([^\/]*).*networks\/([^\/]*)',
@@ -222,20 +194,20 @@ class Rule(object):
                     resource_type='instance',
                     rule_name=self.rule_name,
                     rule_index=self.rule_index,
-                    violation_type='UNENFORCED_NETWORK_VIOLATION',
+                    violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
                     project=project,
                     network=network,
-                    ips='not an ip')
+                    ip=None)
         elif network not in self.rules['whitelist'].get(project) and \
                 is_external_network:
             yield self.RuleViolation(
                 resource_type='instance',
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
-                violation_type='UNENFORCED_NETWORK_VIOLATION',
+                violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
                 project=project,
                 network=network,
-                ips=instance_network_interface.access_configs[0].get('natIP'))
+                ip=instance_network_interface.access_configs[0].get('natIP'))
 
     # Rule violation.
     # resource_type: string
@@ -248,4 +220,4 @@ class Rule(object):
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'rule_name',
                                 'rule_index', 'violation_type', 'project',
-                                'network', 'ips'])
+                                'network', 'ip'])

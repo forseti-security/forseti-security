@@ -328,7 +328,6 @@ INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
     'raw_instance_group_manager',
 ]
 
-
 ORG_IAM_POLICIES_FIELDNAMES = [
     'org_id',
     'role',
