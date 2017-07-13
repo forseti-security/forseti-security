@@ -95,7 +95,7 @@ To submit a pull request for Forseti, follow the process below:
      - You should write applicable unit tests for your changes, especially for 
        changes involving substantial logic.
      - Learn how to
-       [run the tests](http://forsetisecurity.org/docs/development/#executing-tests).
+       [run the tests](http://forsetisecurity.org/docs/guides/testing#executing-tests).
 
   1. Commit your changes and push them to your development branch:
 
