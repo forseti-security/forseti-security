@@ -69,3 +69,4 @@ manually.
 ## What's next
 
 - Learn about [defining rules]({% link _docs/howto/scanner-rules.md %}).
+- Read about how Scanner outputs [rule violations]({% link _docs/howto/rule-violations.md %}).
