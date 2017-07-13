@@ -8,27 +8,26 @@ This page describes how to run tests on your Forseti contributions.
 
 ## Executing tests
 
-You can find the unit tests in the top-level `tests/` directory.
+You can find unit tests in the top-level `tests/` directory. We use [`unittest`](https://docs.python.org/2/library/unittest.html)
+from standard Python to run our tests.
 
-To execute tests, run the command below:
+Before you run unit tests, build the protos if you haven't already.
+Some of the unit tests will fail if they can't find the required protos.
 
-  ```bash
-  $ python setup.py google_test
-  ```
-
-To execute the tests just for a particular module:
+**Run the following commands in the _top-level_ directory of Forseti.**
 
   ```bash
-  $ python setup.py google_test --test-dir tests/MODULE_NAME
+  python build_protos.py --clean
   ```
 
-To run tests for a particular file pattern:
+To execute all the unit tests:
 
   ```bash
-  $ python setup.py google_test --test-module-pattern tests
+  python -m unittest discover -s . -p "*_test*"
   ```
 
-## Known issues
+To execute the tests just for a particular file pattern:
 
-The unit tests have a lot of errors about gflags. You can ignore these at this
-time.
+  ```bash
+  python -m unittest discover -s . -p "*some_feature_test*"
+  ```
