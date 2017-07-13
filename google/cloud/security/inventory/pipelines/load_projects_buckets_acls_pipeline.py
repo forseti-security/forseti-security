@@ -72,7 +72,8 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
                     }
 
     def _retrieve(self):
-        """Retrieve the project buckets acls from GCP.
+
+      """Retrieve the project buckets acls from GCP.
 
         Args:
             None

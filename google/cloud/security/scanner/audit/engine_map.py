@@ -14,17 +14,19 @@
 
 """Map for the rule engine names to rule engine classes."""
 
-from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
 # pylint: disable=line-too-long
 from google.cloud.security.scanner.audit.bigquery_rules_engine import BigqueryRulesEngine
 from google.cloud.security.scanner.audit.buckets_rules_engine import BucketsRulesEngine
 from google.cloud.security.scanner.audit.cloudsql_rules_engine import CloudSqlRulesEngine
+from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
+from google.cloud.security.scanner.audit.iap_rules_engine import IapRulesEngine
 # pylint: enable=line-too-long
 
 
 ENGINE_TO_DATA_MAP = {
-    'IamRulesEngine': IamRulesEngine,
     'BigqueryRulesEngine': BigqueryRulesEngine,
     'BucketsRulesEngine': BucketsRulesEngine,
     'CloudSqlRulesEngine': CloudSqlRulesEngine,
+    'IamRulesEngine': IamRulesEngine,
+    'IapRulesEngine': IapRulesEngine,
 }

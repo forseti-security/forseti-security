@@ -15,11 +15,12 @@
 """Map for mapping rules engine to scanner class"""
 
 # pylint: disable=line-too-long
-from google.cloud.security.scanner.scanners.groups_scanner import GroupsScanner
-from google.cloud.security.scanner.scanners.iam_rules_scanner import IamPolicyScanner
 from google.cloud.security.scanner.scanners.bigquery_scanner import BigqueryScanner
 from google.cloud.security.scanner.scanners.bucket_rules_scanner import BucketsAclScanner
 from google.cloud.security.scanner.scanners.cloudsql_rules_scanner import CloudSqlAclScanner
+from google.cloud.security.scanner.scanners.groups_scanner import GroupsScanner
+from google.cloud.security.scanner.scanners.iam_rules_scanner import IamPolicyScanner
+from google.cloud.security.scanner.scanners.iap_scanner import IapScanner
 # pylint: enable=line-too-long
 
 
@@ -28,7 +29,8 @@ SCANNER_MAP = {
     'BucketsRulesEngine': BucketsAclScanner,
     'CloudSqlRulesEngine': CloudSqlAclScanner,
     'GroupsRulesEngine': GroupsScanner,
-    'IamRulesEngine': IamPolicyScanner
+    'IamRulesEngine': IamPolicyScanner,
+    'IapRulesEngine': IapScanner,
 }
 
 FLATTENING_MAP = {
@@ -36,7 +38,8 @@ FLATTENING_MAP = {
     'BucketsRulesEngine': 'buckets_acl_violations',
     'CloudSqlRulesEngine': 'cloudsql_acl_violations',
     'GroupsRulesEngine': 'groups_violations',
-    'IamRulesEngine': 'policy_violations'
+    'IamRulesEngine': 'policy_violations',
+    'IapRulesEngine': 'iap_violations',
 }
 
 RESOURCE_MAP = {
@@ -44,5 +47,6 @@ RESOURCE_MAP = {
     'buckets_acl_violations': 'violations',
     'cloudsql_acl_violations': 'violations',
     'groups_violations': 'groups_violations',
-    'policy_violations': 'violations'
+    'policy_violations': 'violations',
+    'iap_violations': 'violations',
 }

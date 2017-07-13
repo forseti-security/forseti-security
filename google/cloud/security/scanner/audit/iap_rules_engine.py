@@ -205,12 +205,10 @@ class IapRuleBook(bre.BaseRuleBook):
 
         Args:
 
-            resource (Resource): The GCP resource to examine.
-                                 This is where we start looking for
-                                 rule violations and we move up the
-                                 resource hierarchy (if permitted by
-                                 the resource's "inherit_from_parents"
-                                 property).
+            resource (BackendService): The backend service to examine.
+                This is where we start looking for rule violations and
+                we move up the resource hierarchy (if permitted by the
+                resource's "inherit_from_parents" property).
             iap_resource (IapResource): IAP data
 
         Returns:
@@ -310,7 +308,7 @@ class ResourceRules(object):
         Returns:
             generator: RuleViolation
         """
-        return itertools.chain(*[rule.find_mismatches(iap_resource)
+        return itertools.chain(*[rule.find_mismatches(resource, iap_resource)
                                  for rule in self.rules])
 
     def _dispatch_rule_mode_check(self, mode, rule_members=None,
@@ -389,7 +387,7 @@ class Rule(object):
             iap_enabled_regex = re.compile(
                 self.allowed_iap_enabled)
             iap_enabled_violation = not iap_enabled_regex.match(
-                iap_resource.iap_enabled)
+                str(iap_resource.iap_enabled))
         else:
             iap_enabled_violation = False
 
@@ -399,7 +397,7 @@ class Rule(object):
                 self.allowed_alternate_services)
             alternate_services_violations = [
                 service for service in iap_resource.alternate_services
-                if alternate_services_regex.match(service)
+                if not alternate_services_regex.match(service.name)
             ]
         else:
             alternate_services_violations = []
@@ -410,7 +408,7 @@ class Rule(object):
                 self.allowed_direct_access_sources)
             direct_sources_violations = [
                 source for source in iap_resource.direct_access_sources
-                if sources_regex.match(source)
+                if not sources_regex.match(source)
             ]
         else:
             direct_sources_violations = []
@@ -421,7 +419,7 @@ class Rule(object):
             direct_sources_violations)
 
         if should_raise_violation:
-            yield self.RuleViolation(
+            yield RuleViolation(
                 resource_type=resource.type,
                 resource_id=resource.id,
                 rule_name=self.rule_name,
@@ -472,9 +470,10 @@ class Rule(object):
         """
         return hash(self.rule_index)
 
-    RuleViolation = namedtuple(
-        'RuleViolation',
-        ['resource_type', 'resource_id', 'rule_name',
-         'rule_index', 'violation_type',
-         'alternate_services_violations',
-         'iap_enabled_violation', 'direct_access_sources_violations'])
+
+RuleViolation = namedtuple(
+    'RuleViolation',
+    ['resource_type', 'resource_id', 'rule_name',
+     'rule_index', 'violation_type',
+     'alternate_services_violations',
+     'iap_enabled_violation', 'direct_access_sources_violations'])

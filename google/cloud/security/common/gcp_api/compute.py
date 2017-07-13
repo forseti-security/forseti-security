@@ -14,11 +14,11 @@
 
 """Wrapper for Compute API client."""
 
+import os
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.util import log_util
-
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc
@@ -172,7 +172,8 @@ class ComputeClient(_base_client.BaseClient):
         list_request = instance_groups_api.listInstances(
             project=project_id,
             zone=zone,
-            instanceGroup=instance_group_name)
+            instanceGroup=instance_group_name,
+            body={'instanceState': 'ALL'})
         list_next_request = instance_groups_api.listInstances_next
 
         paged_results = self._build_paged_result(
@@ -209,8 +210,11 @@ class ComputeClient(_base_client.BaseClient):
         instance_groups = self._flatten_aggregated_list_results(
             paged_results, 'instanceGroups')
         for instance_group in instance_groups:
-            instance_group.instance_urls = self.get_instance_group_instances(
-                project_id, instance_group.zone, instance_group.name)
+            instance_group['instance_urls'] = self.get_instance_group_instances(
+                project_id,
+                # Turn a zone URL into a zone name
+                os.path.basename(instance_group.get('zone')),
+                instance_group.get('name'))
         return instance_groups
 
     def get_instance_templates(self, project_id):

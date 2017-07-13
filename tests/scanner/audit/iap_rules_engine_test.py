@@ -22,11 +22,13 @@ import yaml
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
+from google.cloud.security.common.gcp_type import backend_service
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import iap_rules_engine as ire
+from google.cloud.security.scanner.scanners import iap_scanner
 from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import test_iap_rules
 
@@ -111,8 +113,6 @@ class IapRulesEngineTest(ForsetiTestCase):
             {}, test_iap_rules.RULES1, self.fake_timestamp)
         actual_rules = rule_book.resource_rules_map
 
-        # expected
-        #[IamPolicyBinding.create_from(b) for b in rule_bindings],
         rule = ire.Rule('my rule', 0,
                         '^$', '^$', '^.*$')
         expected_org_rules = ire.ResourceRules(self.org789,
@@ -131,6 +131,128 @@ class IapRulesEngineTest(ForsetiTestCase):
         }
         self.maxDiff = None
         self.assertEqual(expected_rules, actual_rules)
+
+    def test_no_violations(self):
+        rule = ire.Rule('my rule', 0,
+                        '^$', '^$', '^.*$')
+        resource_rule = ire.ResourceRules(self.org789,
+                                          rules=set([rule]),
+                                          applies_to='self_and_children')
+        iap_resource = iap_scanner.IapResource(
+            backend_service_name='bs1',
+            backend_service_project=self.project1.id,
+            alternate_services=set(),
+            direct_access_sources=set(),
+            iap_enabled=True)
+        results = list(resource_rule.find_mismatches(self.project1,
+                                                     iap_resource))
+        self.assertEquals([], results)
+
+    def test_enabled_violation(self):
+        rule = ire.Rule('my rule', 0,
+                        '^$', '^$', '^True$')
+        resource_rule = ire.ResourceRules(self.org789,
+                                          rules=set([rule]),
+                                          applies_to='self_and_children')
+        iap_resource = iap_scanner.IapResource(
+            backend_service_name='bs1',
+            backend_service_project=self.project1.id,
+            alternate_services=set(),
+            direct_access_sources=set(),
+            iap_enabled=False)
+        results = list(resource_rule.find_mismatches(self.project1,
+                                                     iap_resource))
+        expected_violations = [
+            ire.RuleViolation(
+                resource_type='project',
+                resource_id=self.project1.id,
+                rule_name=rule.rule_name,
+                rule_index=rule.rule_index,
+                violation_type='IAP_VIOLATION',
+                alternate_services_violations=[],
+                direct_access_sources_violations=[],
+                iap_enabled_violation=True),
+        ]
+        self.assertEquals(expected_violations, results)
+
+    def test_alternate_service_violation(self):
+        rule = ire.Rule('my rule', 0,
+                        '^$', '^$', '^.*$')
+        resource_rule = ire.ResourceRules(self.org789,
+                                          rules=set([rule]),
+                                          applies_to='self_and_children')
+        alternate_service = backend_service.Key.from_args(
+            project_id=self.project1.id,
+            name='bs2')
+        iap_resource = iap_scanner.IapResource(
+            backend_service_name='bs1',
+            backend_service_project=self.project1.id,
+            alternate_services=set([alternate_service]),
+            direct_access_sources=set(),
+            iap_enabled=True)
+        results = list(resource_rule.find_mismatches(self.project1,
+                                                     iap_resource))
+        expected_violations = [
+            ire.RuleViolation(
+                resource_type='project',
+                resource_id=self.project1.id,
+                rule_name=rule.rule_name,
+                rule_index=rule.rule_index,
+                violation_type='IAP_VIOLATION',
+                alternate_services_violations=[alternate_service],
+                direct_access_sources_violations=[],
+                iap_enabled_violation=False),
+        ]
+        self.assertEquals(expected_violations, results)
+
+    def test_direct_access_violation(self):
+        rule = ire.Rule('my rule', 0,
+                        '^$', '^$', '^.*$')
+        resource_rule = ire.ResourceRules(self.org789,
+                                          rules=set([rule]),
+                                          applies_to='self_and_children')
+        direct_source = 'some-tag'
+        iap_resource = iap_scanner.IapResource(
+            backend_service_name='bs1',
+            backend_service_project=self.project1.id,
+            alternate_services=set(),
+            direct_access_sources=set([direct_source]),
+            iap_enabled=True)
+        results = list(resource_rule.find_mismatches(self.project1,
+                                                     iap_resource))
+        expected_violations = [
+            ire.RuleViolation(
+                resource_type='project',
+                resource_id=self.project1.id,
+                rule_name=rule.rule_name,
+                rule_index=rule.rule_index,
+                violation_type='IAP_VIOLATION',
+                alternate_services_violations=[],
+                direct_access_sources_violations=[direct_source],
+                iap_enabled_violation=False),
+        ]
+        self.assertEquals(expected_violations, results)
+
+    def test_violations_iap_disabled(self):
+        """If IAP is disabled, don't report other violations."""
+        rule = ire.Rule('my rule', 0,
+                        '^$', '^$', '^.*$')
+        resource_rule = ire.ResourceRules(self.org789,
+                                          rules=set([rule]),
+                                          applies_to='self_and_children')
+        alternate_service = backend_service.Key.from_args(
+            project_id=self.project1.id,
+            name='bs2')
+        iap_resource = iap_scanner.IapResource(
+            backend_service_name='bs1',
+            backend_service_project=self.project1.id,
+            alternate_services=set([alternate_service]),
+            direct_access_sources=set(['some-tag']),
+            iap_enabled=False)
+        results = list(resource_rule.find_mismatches(self.project1,
+                                                     iap_resource))
+        expected_violations = []
+        self.assertEquals(expected_violations, results)
 
 
 if __name__ == '__main__':
