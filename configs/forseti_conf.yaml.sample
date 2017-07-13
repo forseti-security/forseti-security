@@ -13,7 +13,7 @@
 # limitations under the License.
 
 global:
-    
+
     # database
     db_host: DB_HOST
     db_user: DB_USER
@@ -26,7 +26,7 @@ global:
     # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-    
+
     email_recipient: EMAIL_RECIPIENT
     email_sender: EMAIL_SENDER
     sendgrid_api_key: SENDGRID_API_KEY
@@ -96,3 +96,19 @@ scanner:
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
     output_path: OUTPUT_PATH
+
+##############################################################################
+
+# notifier:
+#
+#    # For every resource type you can set up a notification pipeline
+#    # to send alerts for every violation found
+#    resources:
+#        - resource: policy_violations
+#          should_notify: true
+#          pipelines:
+#            - name: email_violations_pipeline
+#              configuration:
+#                sendgrid_api_key: ''
+#                sender: ''
+#                recipient: ''
