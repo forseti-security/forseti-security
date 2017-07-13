@@ -42,10 +42,11 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
     """Email pipeline to perform notifications"""
 
     def __init__(self, resource, cycle_timestamp,
-                 violations, notifier_config, pipeline_config):
+                 violations, global_configs, notifier_config, pipeline_config):
         super(EmailViolationsPipeline, self).__init__(resource,
                                                       cycle_timestamp,
                                                       violations,
+                                                      global_configs,
                                                       notifier_config,
                                                       pipeline_config)
         self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])

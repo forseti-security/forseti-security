@@ -1,0 +1,21 @@
+- name: Allow my company users and gmail users to be in my company groups.
+  group_email: my_customer
+  mode: whitelist
+  conditions:
+    - member_email: '@henrychang.mgbiz.com'
+    - member_email: '@gmail.com'
+
+#- name: Allow mypartner users to be in a group.
+#  group_email: <FOO_GROUP>@<MY_COMPANY DOMAIN>
+#  mode: whitelist
+#  conditions:
+#    - member_email: '@<MY_PARTNER_DOMAIN>'
+
+#- name: Allow mypartner users to be in another group.
+#  group_email: <BAR_GROUP>@<MY_COMPANY DOMAIN>
+#  mode: whitelist
+#  conditions:
+#    - member_email: '@<MY_PARTNER_DOMAIN>'
+
+# TODO: Only employees can be added to a group.
+# This will require user information to be related to members.

@@ -14,35 +14,6 @@
 
 """Map for mapping rules engine to scanner class"""
 
-# pylint: disable=line-too-long
-from google.cloud.security.scanner.scanners.groups_scanner import GroupsScanner
-from google.cloud.security.scanner.scanners.iam_rules_scanner import IamPolicyScanner
-from google.cloud.security.scanner.scanners.bigquery_scanner import BigqueryScanner
-from google.cloud.security.scanner.scanners.bucket_rules_scanner import BucketsAclScanner
-from google.cloud.security.scanner.scanners.cloudsql_rules_scanner import CloudSqlAclScanner
-from google.cloud.security.scanner.scanners.instance_network_interface_scanner import InstanceNetworkInterfaceScanner
-# pylint: enable=line-too-long
-
-
-SCANNER_MAP = {
-    'BigqueryRulesEngine': BigqueryScanner,
-    'BucketsRulesEngine': BucketsAclScanner,
-    'CloudSqlRulesEngine': CloudSqlAclScanner,
-    'GroupsRulesEngine': GroupsScanner,
-    'IamRulesEngine': IamPolicyScanner,
-    'InstanceNetworkInterfaceRulesEngine': InstanceNetworkInterfaceScanner,
-}
-
-FLATTENING_MAP = {
-    'BigqueryRulesEngine': 'bigquery_acl_violations',
-    'BucketsRulesEngine': 'buckets_acl_violations',
-    'CloudSqlRulesEngine': 'cloudsql_acl_violations',
-    'GroupsRulesEngine': 'groups_violations',
-    'IamRulesEngine': 'policy_violations',
-    'InstanceNetworkInterfaceRulesEngine':
-    'instance_network_interface_violations'
-}
-
 RESOURCE_MAP = {
     'bigquery_acl_violations': 'violations',
     'buckets_acl_violations': 'violations',
