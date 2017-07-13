@@ -36,13 +36,14 @@ class BaseNotificationPipeline(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, resource, cycle_timestamp,
-                 violations, notifier_config, pipeline_config):
+                 violations, global_configs, notifier_config, pipeline_config):
         """Constructor for the base pipeline.
 
         Args:
             resource: violation resource name
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
             violations: Dictonary of violations
+            global_confgis: Dictonary of global configurations
             notifier_config: Dictionary of notifier configurations.
             pipeline_config: Dictonary of pipeline confogurations.
 
@@ -51,15 +52,16 @@ class BaseNotificationPipeline(object):
         """
         self.cycle_timestamp = cycle_timestamp
         self.resource = resource
+        self.global_configs = global_configs
         self.notifier_config = notifier_config
         self.pipeline_config = pipeline_config
         # TODO: import api_client
         # self.api_client = api_client
 
         # Initializing DAOs
-        self.dao = dao.Dao()
-        self.project_dao = project_dao.ProjectDao()
-        self.violation_dao = violation_dao.ViolationDao()
+        self.dao = dao.Dao(global_configs)
+        self.project_dao = project_dao.ProjectDao(global_configs)
+        self.violation_dao = violation_dao.ViolationDao(global_configs)
 
         # Get violations
         self.violations = violations
