@@ -43,7 +43,7 @@ class BaseNotificationPipeline(object):
             resource: violation resource name
             cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
             violations: Dictonary of violations
-            global_confgis: Dictonary of global configurations
+            global_configs: Dictonary of global configurations
             notifier_config: Dictionary of notifier configurations.
             pipeline_config: Dictonary of pipeline confogurations.
 

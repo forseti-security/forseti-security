@@ -24,6 +24,7 @@ Usage:
 
 import importlib
 import inspect
+import sys
 import gflags as flags
 
 # pylint: disable=line-too-long
@@ -92,6 +93,7 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
     Args:
+        global_configs (dict): Global configurations.
         statuses (tuple): Snapshot statues.
 
     Returns:
@@ -100,7 +102,8 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     latest_timestamp = None
     try:
-        latest_timestamp = dao.Dao(global_configs).get_latest_snapshot_timestamp(statuses)
+        current_dao = dao.Dao(global_configs)
+        latest_timestamp = current_dao.get_latest_snapshot_timestamp(statuses)
     except db_errors.MySQLError as err:
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
