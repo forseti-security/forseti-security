@@ -23,11 +23,6 @@ from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -35,9 +30,11 @@ def read_and_parse_file(file_path):
     """Parse a json or yaml formatted file from a local path or GCS.
 
     Args:
-        file_path: The full path to the file to read and parse.
-    """
+        file_path (str): The full path to the file to read and parse.
 
+    Returns:
+        dict: The results of parsing the file.
+    """
     file_path = file_path.strip()
 
     if file_path.startswith('gs://'):
@@ -45,9 +42,16 @@ def read_and_parse_file(file_path):
 
     return _read_file_from_local(file_path)
 
-
 def _get_filetype_parser(file_path, parser_type):
-    """Return a parser function for parsing the file."""
+    """Return a parser function for parsing the file.
+
+    Args:
+        file_path (str): The file path.
+        parser_type (str): The file parser type.
+
+    Returns:
+        function: The parser function.
+    """
     filetype_handlers = {
         'json': {
             'string': _parse_json_string,
@@ -71,12 +75,14 @@ def _get_filetype_parser(file_path, parser_type):
 
     return filetype_handlers[file_ext][parser_type]
 
-
 def _read_file_from_gcs(file_path):
     """Load file from GCS.
 
+    Args:
+        file_path (str): The GCS path to the file.
+
     Returns:
-        The parsed dict from the loaded file.
+        dict: The parsed dict from the loaded file.
     """
     storage_client = storage.StorageClient()
 
@@ -85,20 +91,31 @@ def _read_file_from_gcs(file_path):
     parser = _get_filetype_parser(file_path, 'string')
     return parser(file_content)
 
-
 def _read_file_from_local(file_path):
     """Load rules file from local path.
 
+    Args:
+        file_path (str): The path to the file.
+
     Returns:
-        The parsed dict from the loaded file.
+        dict: The parsed dict from the loaded file.
     """
     with open(os.path.abspath(file_path), 'r') as rules_file:
         parser = _get_filetype_parser(file_path, 'file')
         return parser(rules_file)
 
-
 def _parse_json_string(data):
-    """Parse the data from a string of json."""
+    """Parse the data from a string of json.
+
+    Args:
+        data (str): String data to parse into json.
+
+    Returns:
+        dict: The json string successfully parsed into a dict.
+
+    Raises:
+        ValueError: If there was an error parsing the data.
+    """
     try:
         return json.loads(data)
     except ValueError as json_error:
@@ -106,15 +123,35 @@ def _parse_json_string(data):
 
 
 def _parse_json_file(data):
-    """Parse the data from a json file."""
+    """Parse the data from a json file.
+
+    Args:
+        data (filepointer): File-like object containing a Json document,
+            to be parsed into json.
+
+    Returns:
+        dict: The file successfully parsed into a dict.
+
+    Raises:
+        ValueError: If there was an error parsing the file.
+    """
     try:
         return json.load(data)
     except ValueError as json_error:
         raise json_error
 
-
 def _parse_yaml(data):
-    """Parse yaml data."""
+    """Parse yaml data.
+
+    Args:
+        data (stream): A yaml data stream to parse.
+
+    Returns:
+        dict: The stream successfully parsed into a dict.
+
+    Raises:
+        YAMLError: If there was an error parsing the stream.
+    """
     try:
         return yaml.safe_load(data)
     except yaml.YAMLError as yaml_error:

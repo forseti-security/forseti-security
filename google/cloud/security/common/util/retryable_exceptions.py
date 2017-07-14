@@ -22,17 +22,13 @@ import urllib2
 import httplib2
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-
-
 RETRYABLE_EXCEPTIONS = (
     httplib.ResponseNotReady,
     httplib.IncompleteRead,
     httplib2.ServerNotFoundError,
     socket.error,
     ssl.SSLError,
-    urllib2.URLError,  # no network connection is included here
+    urllib2.URLError,  # include "no network connection"
 )
 
 
@@ -40,9 +36,9 @@ def is_retryable_exception(e):
     """Whether exception should be retried.
 
     Args:
-        e: Exception object.
+        e (Exception): Exception object.
 
     Returns:
-        True for exceptions to retry.  False otherwise.
+        bool: True for exceptions to retry. False otherwise.
     """
     return isinstance(e, RETRYABLE_EXCEPTIONS)

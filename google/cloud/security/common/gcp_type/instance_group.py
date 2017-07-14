@@ -30,7 +30,7 @@ class InstanceGroup(object):
         """InstanceGroup resource.
 
         Args:
-            kwargs: The object's attributes.
+            **kwargs (dict): The object's attributes.
         """
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')

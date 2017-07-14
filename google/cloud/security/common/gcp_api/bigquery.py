@@ -20,11 +20,8 @@ from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-
-
 LOGGER = log_util.get_logger(__name__)
+
 
 class BigQueryClient(_base_client.BaseClient):
     """BigQuery Client manager."""
@@ -48,8 +45,11 @@ class BigQueryClient(_base_client.BaseClient):
         self.rate_limiter = self.get_rate_limiter()
 
     def get_rate_limiter(self):
-        """Return an appropriate rate limiter."""
+        """Return an appropriate rate limiter.
 
+        Returns:
+            RateLimiter: The rate limiter.
+        """
         return RateLimiter(
             self.global_configs.get('max_bigquery_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
@@ -57,7 +57,8 @@ class BigQueryClient(_base_client.BaseClient):
     def get_bigquery_projectids(self):
         """Request and page through bigquery projectids.
 
-        Returns: A list of project_ids enabled for bigquery.
+        Returns:
+            list: A list of project_ids enabled for bigquery.
 
             ['project-id',
              'project-id',
@@ -85,9 +86,10 @@ class BigQueryClient(_base_client.BaseClient):
         """Return BigQuery datasets stored in the requested project_id.
 
         Args:
-            project_id: String representing the project id.
+            project_id (str): String representing the project id.
 
-        Returns: A list of datasetReference objects for a given project_id.
+        Returns:
+            list: A list of datasetReference objects for a given project_id.
 
             [{'datasetId': 'dataset-id',
               'projectId': 'project-id'},
@@ -112,14 +114,15 @@ class BigQueryClient(_base_client.BaseClient):
         """Return the access portion of the dataset resource object.
 
         Args:
-            project_id: String representing the project id.
-            dataset_id: String representing the dataset id.
+            project_id (str): String representing the project id.
+            dataset_id (str): String representing the dataset id.
 
-        Returns: A list of access lists for a given project_id and dataset_id.
-           [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-            {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-            {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
-            {'role': 'READER', 'specialGroup': 'projectReaders'}]
+        Returns:
+            list: A list of access lists for a given project_id and dataset_id.
+            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
+             {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+             {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+             {'role': 'READER', 'specialGroup': 'projectReaders'}]
         """
         key = 'access'
         bigquery_datasets_api = self.service.datasets()

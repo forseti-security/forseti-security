@@ -33,11 +33,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
     def __init__(self, global_configs, **kwargs):
-        """Init.
+        """Initialize.
 
         Args:
             global_configs (dict): Forseti config.
-            kwargs (dict): The kwargs.
+            **kwargs (dict): The kwargs.
         """
         super(CloudResourceManagerClient, self).__init__(
             global_configs, api_name=self.API_NAME, **kwargs)
@@ -220,7 +220,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
 
         Args:
             resource_name (str): The resource type.
-            kwargs (dict): Extra args.
+            **kwargs (dict): Extra args.
 
         Yields:
             dict: The folders API response.

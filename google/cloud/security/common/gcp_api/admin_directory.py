@@ -36,7 +36,6 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Args:
             global_configs (dict): Global configurations.
         """
-
         super(AdminDirectoryClient, self).__init__(
             global_configs,
             credentials=self._build_credentials(global_configs),
@@ -56,7 +55,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             object: Credentials as built by oauth2client.
 
         Raises:
-            api_errors.ApiExecutionError
+            api_errors.ApiExecutionError: If fails to build credentials.
         """
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
@@ -89,7 +88,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             list: A list of member objects from the API.
 
         Raises:
-            api_errors.ApiExecutionError
+            api_errors.ApiExecutionError: If group member retrieval fails.
         """
         members_api = self.service.members()
         request = members_api.list(
@@ -116,7 +115,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             list: A list of group objects returned from the API.
 
         Raises:
-            api_errors.ApiExecutionError
+            api_errors.ApiExecutionError: If groups retrieval fails.
         """
         groups_api = self.service.groups()
         request = groups_api.list(customer=customer_id)

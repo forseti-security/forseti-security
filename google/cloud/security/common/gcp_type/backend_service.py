@@ -29,7 +29,7 @@ class BackendService(object):
         """BackendService resource.
 
         Args:
-            kwargs: The object's attributes.
+            **kwargs: The object's attributes.
         """
         self.affinity_cookie_ttl_sec = kwargs.get('affinity_cookie_ttl_sec')
         self.backends = kwargs.get('backends')

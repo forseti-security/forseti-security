@@ -15,11 +15,6 @@
 """Errors related to data access."""
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-param-doc
-
-
 class Error(Exception):
     """Base class for errors."""
     pass
@@ -31,6 +26,12 @@ class MySQLError(Error):
     CUSTOM_ERROR_MESSAGE = 'Error with MySQL for {0}:\n{1}'
 
     def __init__(self, resource_name, e):
+        """Initialize.
+
+        Args:
+            resource_name (str): The name of the resource.
+            e (Exception): The exception.
+        """
         super(MySQLError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
 
@@ -46,5 +47,11 @@ class CSVFileError(Exception):
     CUSTOM_ERROR_MESSAGE = 'Unable to create csv file for {0}:\n{1}'
 
     def __init__(self, resource_name, e):
+        """Initialize.
+
+        Args:
+            resource_name (str): The name of the resource.
+            e (Exception): The exception.
+        """
         super(CSVFileError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(resource_name, e.message))

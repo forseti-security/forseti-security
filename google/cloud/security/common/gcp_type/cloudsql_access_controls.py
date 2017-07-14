@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """A CloudSQL ACL Resource."""
 
 
@@ -19,7 +20,7 @@ class CloudSqlAccessControl(object):
 
     def __init__(self, instance_name, authorized_networks, ssl_enabled,
                  project_number=None):
-        """Initialize
+        """Initialize.
 
         Args:
             instance_name (str): CloudSQL instance name
@@ -37,7 +38,7 @@ class CloudSqlAccessControl(object):
         """Return hash of properties.
 
         Returns:
-            hash: returns the hash of the class properties.
+            hash: The hash of the class properties.
         """
         return hash((self.instance_name, self.authorized_networks,
                      self.ssl_enabled, self.project_number))
