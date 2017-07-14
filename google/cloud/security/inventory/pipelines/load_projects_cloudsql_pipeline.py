@@ -28,12 +28,6 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,differing-param-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -54,13 +48,13 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable instances.
 
         Args:
-            cloudsql_instnces_maps: An iterable of instances as per-project
+            cloudsql_instances_map (iterable): Instances as per-project
                 dictionary.
                 Example: {'project_number': 11111,
                           'instances': instances_dict}
 
         Yields:
-            An iterable of instances dictionary.
+            iterable: cloudsql, as a per-cloudsql dictionary.
         """
 
         for instances_map in cloudsql_instances_map:
@@ -174,13 +168,13 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         instances.
 
         Args:
-            cloudsql_instnces_maps: An iterable of instances as per-project
+            cloudsql_instances_map (iterable): instances as per-project
                 dictionary.
                 Example: {'project_number': 11111,
                           'instances': instances_dict}
 
         Yields:
-            An iterable of authorized network dictionary.
+            iterable: authorized network dictionary.
         """
 
         for instances_map in cloudsql_instances_map:
@@ -219,13 +213,13 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable ipAddresses of cloudsql instances.
 
         Args:
-            cloudsql_instances_maps: An iterable of instances as per-project
+            cloudsql_instances_map (iterable): Instances as per-project
                 dictionary.
                 Example: {'project_number': 11111,
                           'instances': instances_dict}
 
         Yields:
-            An iterable of ipAddresses dictionary.
+            iterable: ipAddresses dictionary.
         """
 
         for instances_map in cloudsql_instances_map:
@@ -263,13 +257,13 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         """returns a dictionary of generators for a different types of resources
 
         Args:
-            cloudsql_instnces_maps: An iterable of instances as per-project
+            cloudsql_instances_map (iterable): instances as per-project
                 dictionary.
                 Example: {'project_number': 11111,
                           'instances': instances_dict}
 
         Returns:
-            A dict of iterables as a per resource type
+            dict: iterables as a per resource type
         """
 
         data_dict = {}
@@ -285,11 +279,8 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
     def _retrieve(self):
         """Retrieve the project cloudsql instances from GCP.
 
-        Args:
-            None
-
         Returns:
-            instances_maps: List of instances as per-project dictionary.
+            list: Instances as per-project dictionary.
                 Example: [{project_number: project_number,
                           instances: instances_dict}]
 

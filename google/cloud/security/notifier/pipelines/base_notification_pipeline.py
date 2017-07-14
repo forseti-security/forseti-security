@@ -24,11 +24,6 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,redundant-returns-doc
-
-
 # pylint: disable=too-many-instance-attributes
 class BaseNotificationPipeline(object):
     """Base pipeline to perform notifications"""
@@ -40,15 +35,13 @@ class BaseNotificationPipeline(object):
         """Constructor for the base pipeline.
 
         Args:
-            resource: violation resource name
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            violations: Dictonary of violations
-            global_configs: Dictonary of global configurations
-            notifier_config: Dictionary of notifier configurations.
-            pipeline_config: Dictonary of pipeline confogurations.
-
-        Returns:
-            None
+            resource (str): Violation resource name.
+            cycle_timestamp (str): Snapshot timestamp,
+               formatted as YYYYMMDDTHHMMSSZ.
+            violations (dict): Violations.
+            global_configs (dict): Global configurations.
+            notifier_config (dict): Notifier configurations.
+            pipeline_config (dict): Pipeline configurations.
         """
         self.cycle_timestamp = cycle_timestamp
         self.resource = resource
@@ -70,10 +63,10 @@ class BaseNotificationPipeline(object):
         """Get all violtions.
 
         Args:
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            timestamp (str): String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            Dictonary of violations organized per resource type
+            dict: Violations organized per resource type.
         """
         violations = {
             'violations': self.violation_dao.get_all_violations(
@@ -86,12 +79,20 @@ class BaseNotificationPipeline(object):
 
     @abc.abstractmethod
     def _send(self, **kwargs):
-        """Send notifications."""
+        """Send notifications.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+        """
         pass
 
     @abc.abstractmethod
     def _compose(self, **kwargs):
-        """Compose notifications."""
+        """Compose notifications.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+        """
         pass
 
     @abc.abstractmethod

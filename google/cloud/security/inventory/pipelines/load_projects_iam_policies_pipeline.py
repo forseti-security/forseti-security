@@ -27,11 +27,6 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -45,14 +40,14 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable iam policies.
 
         Args:
-            resource_from_api: An iterable of iam policies as per-project
+            resource_from_api (iterable): IAM policies as per-project
                 dictionary.
                 Example: {'project_number': 11111,
                           'iam_policy': policy}
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
         Yields:
-            An iterable of loadable iam policies, as a per-org dictionary.
+            iterable: Loadable iam policies, as a per-org dictionary.
         """
         for iam_policy_map in resource_from_api:
             iam_policy = iam_policy_map['iam_policy']
@@ -75,11 +70,8 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
     def _retrieve(self):
         """Retrieve the project IAM policies from GCP.
 
-        Args:
-            None
-
         Returns:
-            iam_policy_maps: List of IAM policies as per-org dictionary.
+            list: IAM policies as per-org dictionary.
                 Example: [{project_number: project_number,
                           iam_policy: iam_policy}]
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
