@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """A "key" uniquely identifying a GCP resource.
+
 Keys can be converted to and from URLs.
 """
-
 
 import urlparse
 
@@ -39,8 +39,8 @@ class Key(object):
         should use 'from_args' or 'from_url' instead of calling this directly!
 
         Args:
-            object_kind (str): the kind of resource the key represents
-            object_path (dict): description of the properties that uniquely
+            object_kind (str): The kind of resource the key represents
+            object_path (dict): Description of the properties that uniquely
                                 identify the object
         """
         self._object_kind = object_kind
@@ -67,8 +67,8 @@ class Key(object):
         of project 'foo'.
 
         Args:
-            object_kind (str): the kind of resource the key represents
-            path_component_map (dict): maps components in the URL
+            object_kind (str): The kind of resource the key represents
+            path_component_map (dict): Maps components in the URL
                                        path to object_path keys. In the backend
                                        service example, this would be:
                                          {'projects': 'project_id',
@@ -81,12 +81,12 @@ class Key(object):
                                        responsible for checking that
                                        all required components were
                                        present.
-            url (str): resource URL
+            url (str): Resource URL
             defaults (dict): If non-None, a dictionary specifying default values
                              for object_path keys.
 
         Returns:
-            Key: a Key instance
+            Key: A Key instance
 
         Raises:
             ValueError: If the URL is invalid.
@@ -123,10 +123,10 @@ class Key(object):
         """Retrieves a specific element from the path.
 
         Args:
-            key (str): the component to retrieve
+            key (str): The component to retrieve
 
         Returns:
-            object: the value
+            object: The value
         """
         return self._object_path.get(key)
 
@@ -134,7 +134,7 @@ class Key(object):
         """Compare a Key with another object for sorting purposes.
 
         Args:
-            other (object): the object to compare with
+            other (object): The object to compare with
 
         Returns:
             int: (-1 if self < other, 0 if self == other, 1 if self > other)
@@ -149,7 +149,7 @@ class Key(object):
         """Hashcode for the object.
 
         Returns:
-            int: the hash code
+            int: The hash code
         """
         return hash((self._object_kind, self._object_path_tuple))
 
@@ -157,6 +157,6 @@ class Key(object):
         """Debugging representation of the object.
 
         Returns:
-            str: the debug string
+            str: The debug string
         """
         return 'Key(%r, %r)' % (self._object_kind, self._object_path)

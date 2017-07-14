@@ -18,16 +18,17 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers
 """
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc
-
 
 # pylint: disable=too-many-instance-attributes
 class InstanceGroupManager(object):
     """Represents InstanceGroupManager resource."""
 
     def __init__(self, **kwargs):
-        """InstanceGroupManager resource."""
+        """InstanceGroupManager resource.
+
+        Args:
+            **kwargs (dict): Keyworded variable args.
+        """
         self.base_instance_name = kwargs.get('base_instance_name')
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')

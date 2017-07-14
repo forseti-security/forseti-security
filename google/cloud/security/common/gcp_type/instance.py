@@ -29,7 +29,7 @@ class Instance(object):
         """Instance resource.
 
         Args:
-            kwargs: The object's attributes.
+            **kwargs (dict): The object's attributes.
         """
         self.can_ip_forward = kwargs.get('can_ip_forward')
         self.cpu_platform = kwargs.get('cpu_platform')
