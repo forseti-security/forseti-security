@@ -38,7 +38,9 @@ To specify the location of the configuration file for a module to read and use
 at run-time, use the `--forseti_config` flag. Following is an example for
 Forseti Inventory:
 
-`forseti_inventory --forseti_config path/to/forseti_conf.yaml`
+```
+forseti_inventory --forseti_config path/to/forseti_conf.yaml
+```
 
 If you change a configuration, such as by changing which pipeline or scanner to
 run, you'll need to restart the appropriate module so it picks up the new
