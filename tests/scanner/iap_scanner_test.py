@@ -14,6 +14,7 @@
 
 """IAP scanner test"""
 
+from datetime import datetime
 import json
 import mock
 
@@ -31,7 +32,7 @@ from tests.unittest_utils import ForsetiTestCase
 
 
 
-class ScannerTest(ForsetiTestCase):
+class IapScannerTest(ForsetiTestCase):
 
     def network_port(self, port_number, project='foo', network='default'):
         return iap_scanner.NetworkPort(
@@ -39,7 +40,17 @@ class ScannerTest(ForsetiTestCase):
                                                name=network),
             port=port_number)
 
-    def setUp(self):
+    @mock.patch(
+        'google.cloud.security.scanner.scanners.iap_scanner.iap_rules_engine',
+        autospec=True)
+    def setUp(self, mock_rules_engine):
+        self.fake_utcnow = datetime(
+            year=1900, month=1, day=1, hour=0, minute=0, second=0,
+            microsecond=0)
+
+        self.fake_scanner_configs = {'output_path': '/fake/output/path'}
+        self.scanner = iap_scanner.IapScanner({}, {}, '', '')
+
         self.backend_services = {
             # The main backend service.
             'bs1': backend_service_type.BackendService(
@@ -395,16 +406,16 @@ class ScannerTest(ForsetiTestCase):
             self.data.tags_for_instance_group(self.instance_groups['ig_unmanaged']))
 
     def test_run_scanner(self):
-        scanner = iap_scanner.IapScanner({}, 0)
-        scanner._get_backend_services = lambda: self.backend_services.values()
-        scanner._get_firewall_rules = lambda: self.firewall_rules.values()
-        scanner._get_instances = lambda: self.instances.values()
-        scanner._get_instance_groups = lambda: self.instance_groups.values()
-        scanner._get_instance_group_managers = lambda: self.instance_group_managers.values()
-        scanner._get_instance_templates = lambda: self.instance_templates.values()
+        self.scanner._get_backend_services = lambda: self.backend_services.values()
+        self.scanner._get_firewall_rules = lambda: self.firewall_rules.values()
+        self.scanner._get_instances = lambda: self.instances.values()
+        self.scanner._get_instance_groups = lambda: self.instance_groups.values()
+        self.scanner._get_instance_group_managers = lambda: self.instance_group_managers.values()
+        self.scanner._get_instance_templates = lambda: self.instance_templates.values()
+        self.scanner._output_results = lambda foo, bar: True
 
         iap_resources = dict((resource.backend_service.key, resource)
-                             for resource in scanner.run()[0][0])
+                             for resource in self.scanner._retrieve()[0])
         self.maxDiff = None
         self.assertEquals(set([bs.key for bs in self.backend_services.values()]),
                           set(iap_resources.keys()))

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 global:
-    
+
     # database
     db_host: DB_HOST
     db_user: DB_USER
@@ -26,7 +26,7 @@ global:
     # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-    
+
     email_recipient: EMAIL_RECIPIENT
     email_sender: EMAIL_SENDER
     sendgrid_api_key: SENDGRID_API_KEY
@@ -63,6 +63,8 @@ inventory:
           enabled: true
         - resource: firewall_rules
           enabled: true
+        - resource: folder_iam_policies
+          enabled: true
         - resource: folders
           enabled: true
         - resource: forwarding_rules
@@ -96,3 +98,31 @@ scanner:
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
     output_path: OUTPUT_PATH
+
+    scanners:
+        - name: bigquery
+          enabled: true
+        - name: bucket_acl
+          enabled: true
+        - name: cloudsql_acl
+          enabled: true
+        - name: group
+          enabled: true
+        - name: iam_policy
+          enabled: true
+
+##############################################################################
+
+notifier:
+
+    # For every resource type you can set up a notification pipeline
+    # to send alerts for every violation found
+    resources:
+        - resource: policy_violations
+          should_notify: true
+          pipelines:
+            - name: email_violations_pipeline
+              configuration:
+                sendgrid_api_key: ''
+                sender: ''
+                recipient: ''

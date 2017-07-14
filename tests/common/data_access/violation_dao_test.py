@@ -17,86 +17,12 @@
 from tests.unittest_utils import ForsetiTestCase
 import mock
 import MySQLdb
-import json
 
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao
-from google.cloud.security.common.data_access import violation_map as vm
-from google.cloud.security.common.data_access.sql_queries import load_data
 from google.cloud.security.common.gcp_type import iam_policy as iam
 from google.cloud.security.scanner.audit import rules
-from google.cloud.security.scanner import scanner
-
-def _flatten_violations(violations, flattening_scheme):
-    """Flatten RuleViolations into a dict for each RuleViolation member.
-
-    Args:
-        violations: The RuleViolations to flatten.
-        flattening_scheme: Which flattening scheme to use
-
-    Yield:
-        Iterator of RuleViolations as a dict per member.
-    """
-    for violation in violations:
-        if flattening_scheme == 'policy_violations':
-            for member in violation.members:
-                violation_data = {}
-                violation_data['role'] = violation.role
-                violation_data['member'] = '{}:{}'.format(member.type,
-                                                          member.name)
-                yield {
-                    'resource_id': violation.resource_id,
-                    'resource_type': violation.resource_type,
-                    'rule_index': violation.rule_index,
-                    'rule_name': violation.rule_name,
-                    'violation_type': violation.violation_type,
-                    'violation_data': violation_data
-                }
-        if flattening_scheme == 'buckets_acl_violations':
-            violation_data = {}
-            violation_data['role'] = violation.role
-            violation_data['entity'] = violation.entity
-            violation_data['email'] = violation.email
-            violation_data['domain'] = violation.domain
-            violation_data['bucket'] = violation.bucket
-            yield {
-                'resource_id': violation.resource_id,
-                'resource_type': violation.resource_type,
-                'rule_index': violation.rule_index,
-                'rule_name': violation.rule_name,
-                'violation_type': violation.violation_type,
-                'violation_data': violation_data
-            }
-        if flattening_scheme == 'cloudsql_acl_violations':
-            violation_data = {}
-            violation_data['instance_name'] = violation.instance_name
-            violation_data['authorized_networks'] = violation.authorized_networks
-            violation_data['ssl_enabled'] = violation.ssl_enabled
-            yield {
-                'resource_id': violation.resource_id,
-                'resource_type': violation.resource_type,
-                'rule_index': violation.rule_index,
-                'rule_name': violation.rule_name,
-                'violation_type': violation.violation_type,
-                'violation_data': violation_data
-            }
-        if flattening_scheme == 'bigquery_acl_violations':
-            violation_data = {}
-            violation_data['dataset_id'] = violation.dataset_id
-            violation_data['access_domain'] = violation.domain
-            violation_data['access_user_by_email'] = violation.user_email
-            violation_data['access_special_group'] = violation.special_group
-            violation_data['access_group_by_email'] = violation.group_email
-            violation_data['role'] = violation.role
-            yield {
-                'resource_id': violation.resource_id,
-                'resource_type': violation.resource_type,
-                'rule_index': violation.rule_index,
-                'rule_name': violation.rule_name,
-                'violation_type': violation.violation_type,
-                'violation_data': violation_data
-            }
 
 
 class ViolationDaoTest(ForsetiTestCase):
@@ -134,6 +60,45 @@ class ViolationDaoTest(ForsetiTestCase):
         ]
         long_string = '{"member": "user:%s", "role": "%s"}' % (('d'*300),('c'*300))
 
+        self.fake_flattened_violations = [
+            {
+                'resource_id': '1',
+                'resource_type':
+                    self.fake_violations[0].resource_type,
+                'rule_index': 0,
+                'rule_name': self.fake_violations[0].rule_name,
+                'violation_type': self.fake_violations[0].violation_type,
+                'violation_data': {
+                    'role': self.fake_violations[0].role,
+                    'member': 'user:a@foo.com'
+                }
+            },
+            {
+                'resource_id': '1',
+                'resource_type':
+                    self.fake_violations[0].resource_type,
+                'rule_index': 0,
+                'rule_name': self.fake_violations[0].rule_name,
+                'violation_type': self.fake_violations[0].violation_type,
+                'violation_data': {
+                    'role': self.fake_violations[0].role,
+                    'member': 'user:b@foo.com'
+                }
+            },
+            {
+                'resource_id': '1',
+                'resource_type':
+                    self.fake_violations[1].resource_type,
+                'rule_index': 1,
+                'rule_name': self.fake_violations[1].rule_name,
+                'violation_type': self.fake_violations[1].violation_type,
+                'violation_data': {
+                    'role': self.fake_violations[1].role,
+                    'member': 'user:%s' % ('d'*300)
+                }
+            },
+        ]
+
         self.expected_fake_violations = [
             ('x', '1', 'rule name', 0, 'ADDED',
              '{"member": "user:a@foo.com", "role": "roles/editor"}'),
@@ -141,41 +106,6 @@ class ViolationDaoTest(ForsetiTestCase):
              '{"member": "user:b@foo.com", "role": "roles/editor"}'),
             ('a'*255, '1', 'b'*255, 1, 'REMOVED', long_string),
         ]
-
-    def test_format_violation(self):
-        """Test that a RuleViolation is formatted and flattened properly.
-
-        Setup:
-            Create some rule violations:
-              * With multiple members.
-              * With really long text values for properties.
-
-        Expect:
-            _format_violation() will flatten the violation and truncate the
-            property values accordingly.
-        """
-        resource_name = 'policy_violations'
-        flattened_fake_violations = scanner._flatten_violations(
-                                                          self.fake_violations,
-                                                          resource_name)
-
-        temp_actual = []
-        actual = []
-        for violation in flattened_fake_violations:
-            violation = violation_dao.ViolationDao.Violation(
-                                  resource_type=violation['resource_type'],
-                                  resource_id=violation['resource_id'],
-                                  rule_name=violation['rule_name'],
-                                  rule_index=violation['rule_index'],
-                                  violation_type=violation['violation_type'],
-                                  violation_data=violation['violation_data'])
-            temp = violation_dao._format_violation(violation, 
-                                                   self.resource_name)
-            temp_actual.append(temp)
-
-        for a in temp_actual:
-            actual.append(a.next())
-        self.assertEquals(self.expected_fake_violations, actual)
 
     def test_insert_violations_no_timestamp(self):
         """Test that insert_violations() is properly called.
@@ -203,10 +133,7 @@ class ViolationDaoTest(ForsetiTestCase):
             return_value=self.fake_table_name)
         self.dao.conn = conn_mock
         self.dao.execute_sql_with_commit = commit_mock
-        flattened_fake_violations = scanner._flatten_violations(
-                                                          self.fake_violations,
-                                                          resource_name)
-        self.dao.insert_violations(flattened_fake_violations,
+        self.dao.insert_violations(self.fake_flattened_violations,
                                    self.resource_name)
 
         # Assert snapshot is retrieved because no snapshot timestamp was
@@ -239,10 +166,8 @@ class ViolationDaoTest(ForsetiTestCase):
         self.dao.conn = mock.MagicMock()
         self.dao._create_snapshot_table = mock.MagicMock()
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock()
-        flattened_fake_violations = scanner._flatten_violations(
-                                                          self.fake_violations,
-                                                          self.resource_name)
-        self.dao.insert_violations(flattened_fake_violations,
+        self.dao.insert_violations(
+            self.fake_flattened_violations,
             self.resource_name,
             fake_custom_timestamp)
 
@@ -296,10 +221,8 @@ class ViolationDaoTest(ForsetiTestCase):
         self.dao.execute_sql_with_commit = mock.MagicMock(
             side_effect=insert_violation_side_effect)
         
-        flattened_fake_violations = scanner._flatten_violations(
-                                                          self.fake_violations,
-                                                          resource_name)
-        actual = self.dao.insert_violations(flattened_fake_violations,
+        actual = self.dao.insert_violations(
+            self.fake_flattened_violations,
             self.resource_name)
 
         expected = (2, [self.expected_fake_violations[1]])

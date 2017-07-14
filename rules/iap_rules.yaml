@@ -14,44 +14,23 @@
 
 rules:
   # default rules
-  - name: Allow only IAM members in my domain to be an OrgAdmin
-    mode: whitelist
+  - name: Forbid any IAP bypasses (when IAP is enabled)
     resource:
       - type: organization
         applies_to: self
         resource_ids:
-          - *
+          - '*'
     inherit_from_parents: true
-    bindings:
-      - role: roles/resourcemanager.organizationAdmin
-        members:
-          - user:*@YOURDOMAIN
-          - group:*@YOURDOMAIN
-  - name: Disallow service accounts to be Folder admins
-    mode: whitelist
-    resource:
-      - type: folder
-        applies_to: self
-        resource_ids:
-          - *
-    inherit_from_parents: true
-    bindings:
-      - role: roles/resourcemanager.organizationAdmin
-        members:
-          - user:*@YOURDOMAIN
-          - group:*@YOURDOMAIN
-
+    allowed_alternate_services: ''
+    allowed_direct_access_sources: ''
+    allowed_iap_enabled: '*'
 
   # custom rules
-  - name: sample whitelist
-    mode: whitelist
+  - name: Allow direct access from debug IPs and internal monitoring hosts
     resource:
       - type: organization
         applies_to: self_and_children
         resource_ids:
           - YOUR_ORG_ID
     inherit_from_parents: true
-    bindings:
-      - role: roles/*
-        members:
-          - serviceAccount:*@*.gserviceaccount.com
+    allowed_direct_access_sources: '10.*,monitoring-instance-tag'

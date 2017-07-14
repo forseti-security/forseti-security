@@ -39,6 +39,7 @@ class IapRulesEngineTest(ForsetiTestCase):
 
     def setUp(self):
         """Set up."""
+        self.maxDiff = None
         self.fake_timestamp = '12345'
         self.org789 = Organization('778899', display_name='My org')
         self.project1 = Project(
@@ -123,8 +124,7 @@ class IapRulesEngineTest(ForsetiTestCase):
             {}, test_iap_rules.RULES1, self.fake_timestamp)
         actual_rules = rule_book.resource_rules_map
 
-        rule = ire.Rule('my rule', 0,
-                        '^$', '^$', '^.*$')
+        rule = ire.Rule('my rule', 0, [], [], '^.*$')
         expected_org_rules = ire.ResourceRules(self.org789,
                                                rules=set([rule]),
                                                applies_to='self_and_children')
@@ -139,12 +139,10 @@ class IapRulesEngineTest(ForsetiTestCase):
             (self.project1, 'self'): expected_proj1_rules,
             (self.project2, 'self'): expected_proj2_rules
         }
-        self.maxDiff = None
         self.assertEqual(expected_rules, actual_rules)
 
     def test_no_violations(self):
-        rule = ire.Rule('my rule', 0,
-                        '^$', '^$', '^.*$')
+        rule = ire.Rule('my rule', 0, [], [], '^.*$')
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')
@@ -161,8 +159,7 @@ class IapRulesEngineTest(ForsetiTestCase):
         self.assertEquals([], results)
 
     def test_enabled_violation(self):
-        rule = ire.Rule('my rule', 0,
-                        '^$', '^$', '^True$')
+        rule = ire.Rule('my rule', 0, [], [], '^True')
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')
@@ -191,8 +188,7 @@ class IapRulesEngineTest(ForsetiTestCase):
         self.assertEquals(expected_violations, results)
 
     def test_alternate_service_violation(self):
-        rule = ire.Rule('my rule', 0,
-                        '^$', '^$', '^.*$')
+        rule = ire.Rule('my rule', 0, [], [], '^True')
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')
@@ -224,8 +220,7 @@ class IapRulesEngineTest(ForsetiTestCase):
         self.assertEquals(expected_violations, results)
 
     def test_direct_access_violation(self):
-        rule = ire.Rule('my rule', 0,
-                        '^$', '^$', '^.*$')
+        rule = ire.Rule('my rule', 0, [], [], '^.*')
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')
@@ -256,8 +251,7 @@ class IapRulesEngineTest(ForsetiTestCase):
 
     def test_violations_iap_disabled(self):
         """If IAP is disabled, don't report other violations."""
-        rule = ire.Rule('my rule', 0,
-                        '^$', '^$', '^.*$')
+        rule = ire.Rule('my rule', 0, [], [], '^.*')
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')

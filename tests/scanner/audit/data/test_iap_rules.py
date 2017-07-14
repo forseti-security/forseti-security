@@ -51,8 +51,8 @@ RULES2 = {
                     ]
                 }],
             'inherit_from_parents': False,
-            'allowed_alternate_services': 'other-service',
-            'allowed_direct_access_sources': '10.0.0.0/8',
+            'allowed_alternate_services': ['other-service'],
+            'allowed_direct_access_sources': ['10.0.0.0/8'],
             'allowed_iap_enabled': 'True',
         }, {
             'name': 'my other rule',
@@ -61,7 +61,7 @@ RULES2 = {
                     'applies_to': 'self',
                     'resource_ids': ['my-project-2',]
                 }],
-            'allowed_direct_access_sources': 'web-monitoring',
+            'allowed_direct_access_sources': ['web-monitoring'],
         },
     ]
 }

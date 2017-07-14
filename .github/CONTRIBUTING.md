@@ -9,7 +9,7 @@ Contributions to Forseti must be accompanied by a Contributor License Agreement
 (CLA). The CLA gives us permission to use and redistribute your contributions
 as part of the project. You or your employer retain the copyright to your
 contribution. To see any CLA you currently have on file or sign a new one,
-access [Contributor License Agreements](https://opensource.google.com/docs/cla/)
+access [Contributor License Agreements](https://opensource.google.com/docs/cla/).
 
 In most cases, you only need to submit a CLA once. If you've already submitted
 a CLA for any project, you probably won't need to submit a new CLA.
@@ -95,7 +95,7 @@ To submit a pull request for Forseti, follow the process below:
      - You should write applicable unit tests for your changes, especially for 
        changes involving substantial logic.
      - Learn how to
-       [run the tests](http://forsetisecurity.org/docs/development/#executing-tests).
+       [run the tests](http://forsetisecurity.org/docs/guides/testing#executing-tests).
 
   1. Commit your changes and push them to your development branch:
 

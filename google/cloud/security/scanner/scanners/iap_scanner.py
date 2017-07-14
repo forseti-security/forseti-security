@@ -14,10 +14,13 @@
 
 """Scanner for the Identity-Aware Proxy rules engine."""
 import collections
+import datetime
+import os
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import backend_service_dao
+from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import firewall_rule_dao
 from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.data_access import instance_group_dao
@@ -28,6 +31,7 @@ from google.cloud.security.common.gcp_type import instance as instance_type
 from google.cloud.security.common.gcp_type import instance_template as instance_template_type
 from google.cloud.security.common.gcp_type import network as network_type
 from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.scanner.audit import iap_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 # pylint: enable=line-too-long
 
@@ -345,16 +349,114 @@ class _RunData(object):
 class IapScanner(base_scanner.BaseScanner):
     """Pipeline to IAP-related data from DAO"""
 
-    def __init__(self, global_configs, snapshot_timestamp):
+    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
+                 rules):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
-            snapshot_timestamp (int): The snapshot timestamp
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): The snapshot timestamp.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IapScanner, self).__init__(
-            global_configs, snapshot_timestamp)
-        self.snapshot_timestamp = snapshot_timestamp
+            global_configs, scanner_configs, snapshot_timestamp, rules)
+        self.rules_engine = iap_rules_engine.IapRulesEngine(
+            rules_file_path=self.rules,
+            snapshot_timestamp=self.snapshot_timestamp)
+        self.rules_engine.build_rule_book(self.global_configs)
+
+    @staticmethod
+    def _flatten_violations(violations):
+        """Flatten RuleViolations into a dict for each RuleViolation member.
+
+        Args:
+            violations (list): The RuleViolations to flatten.
+
+        Yields:
+            dict: Iterator of RuleViolations as a dict per member.
+        """
+        for violation in violations:
+            for member in violation.members:
+                violation_data = {}
+                violation_data['alternate_services_violations'] = (
+                    violation.alternate_services_violations)
+                violation_data['direct_access_sources_violations'] = (
+                    violation.direct_access_sources_violations)
+                violation_data['iap_enabled_violation'] = (
+                    violation.iap_enabled_violation)
+                violation_data['resource_name'] = (
+                    violation.resource_name)
+
+                yield {
+                    'resource_id': violation.resource_id,
+                    'resource_type': violation.resource_type,
+                    'rule_index': violation.rule_index,
+                    'rule_name': violation.rule_name,
+                    'violation_type': violation.violation_type,
+                    'violation_data': violation_data
+                }
+
+    def _output_results(self, all_violations, resource_counts):
+        """Output results.
+
+        Args:
+            all_violations (list): A list of violations
+            resource_counts (dict): Resource count map.
+        """
+        resource_name = 'violations'
+
+        all_violations = list(self._flatten_violations(all_violations))
+        violation_errors = self._output_results_to_db(resource_name,
+                                                      all_violations)
+
+        # Write the CSV for all the violations.
+        # TODO: Move this into base class? It's cargo-culted from the IAM
+        # scanner.
+        if self.scanner_configs.get('output_path'):
+            LOGGER.info('Writing violations to csv...')
+            output_csv_name = None
+            with csv_writer.write_csv(
+                resource_name=resource_name,
+                data=all_violations,
+                write_header=True) as csv_file:
+                output_csv_name = csv_file.name
+                LOGGER.info('CSV filename: %s', output_csv_name)
+
+                # Scanner timestamp for output file and email.
+                now_utc = datetime.utcnow()
+
+                output_path = self.scanner_configs.get('output_path')
+                if not output_path.startswith('gs://'):
+                    if not os.path.exists(
+                            self.scanner_configs.get('output_path')):
+                        os.makedirs(output_path)
+                    output_path = os.path.abspath(output_path)
+                self._upload_csv(output_path, now_utc, output_csv_name)
+
+                # Send summary email.
+                # TODO: Untangle this email by looking for the csv content
+                # from the saved copy.
+                if self.global_configs.get('email_recipient') is not None:
+                    payload = {
+                        'email_sender':
+                            self.global_configs.get('email_sender'),
+                        'email_recipient':
+                            self.global_configs.get('email_recipient'),
+                        'sendgrid_api_key':
+                            self.global_configs.get('sendgrid_api_key'),
+                        'output_csv_name': output_csv_name,
+                        'output_filename': self._get_output_filename(now_utc),
+                        'now_utc': now_utc,
+                        'all_violations': all_violations,
+                        'resource_counts': resource_counts,
+                        'violation_errors': violation_errors
+                    }
+                    message = {
+                        'status': 'scanner_done',
+                        'payload': payload
+                    }
+                    notifier.process(message)
 
     def _get_backend_services(self):
         """Retrieves backend services.
@@ -411,8 +513,8 @@ class IapScanner(base_scanner.BaseScanner):
         return instance_template_dao.InstanceTemplateDao(self.global_configs).\
                         get_instance_templates(self.snapshot_timestamp)
 
-    def run(self):
-        """Runs the data collection.
+    def _retrieve(self):
+        """Retrieves the data for the scanner.
 
         Returns:
             list: List of data to pass to the rules engine
@@ -431,15 +533,13 @@ class IapScanner(base_scanner.BaseScanner):
         for backend_service in run_data.backend_services:
             iap_resources.append(run_data.make_iap_resource(backend_service))
 
-        return (iap_resources,), run_data.resource_counts
+        return iap_resources, run_data.resource_counts
 
-    # pylint: disable=arguments-differ
-    def find_violations(self, iap_resources, rules_engine):
+    def _find_violations(self, iap_resources):
         """Find IAP violations.
 
         Args:
             iap_resources (list): IapResource to find violations in
-            rules_engine (IapRulesEngine): Rules engine to run.
 
         Returns:
             list: RuleViolation
@@ -447,6 +547,13 @@ class IapScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding IAP violations...')
         ret = []
         for iap_resource in iap_resources:
-            ret.extend(rules_engine.find_policy_violations(iap_resource))
+            ret.extend(self.rules_engine.find_policy_violations(iap_resource))
         LOGGER.debug('find_violations returning %r', ret)
         return ret
+
+    def run(self):
+        """Runs the data collection."""
+
+        iap_data, resource_counts = self._retrieve()
+        all_violations = self._find_violations(iap_data)
+        self._output_results(all_violations, resource_counts)

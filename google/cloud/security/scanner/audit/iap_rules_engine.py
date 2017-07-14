@@ -142,10 +142,16 @@ class IapRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-            allowed_alternate_services = regex_util.escape_and_globify(
-                rule_def.get('allowed_alternate_services', ''))
-            allowed_direct_access_sources = regex_util.escape_and_globify(
-                rule_def.get('allowed_direct_access_sources', ''))
+            allowed_alternate_services = [
+                regex_util.escape_and_globify(glob)
+                for glob in rule_def.get(
+                    'allowed_alternate_services', '').split(',')
+                if glob]
+            allowed_direct_access_sources = [
+                regex_util.escape_and_globify(glob)
+                for glob in rule_def.get(
+                    'allowed_direct_access_sources', '').split(',')
+                if glob]
             allowed_iap_enabled = regex_util.escape_and_globify(
                 rule_def.get('allowed_iap_enabled', '*'))
 
@@ -409,13 +415,13 @@ class Rule(object):
                      iap_resource.iap_enabled,
                      self.allowed_alternate_services,
                      iap_resource.alternate_services)
-        if (iap_resource.iap_enabled and
-                self.allowed_alternate_services != '^.+$'):
-            alternate_services_regex = re.compile(
-                self.allowed_alternate_services)
+        if iap_resource.iap_enabled:
+            alternate_services_regexes = [
+                re.compile(regex) for regex in self.allowed_alternate_services]
             alternate_services_violations = [
                 service for service in iap_resource.alternate_services
-                if not alternate_services_regex.match(service.name)
+                if not [regex for regex in alternate_services_regexes
+                        if regex.match(service.name)]
             ]
         else:
             alternate_services_violations = []
@@ -426,13 +432,14 @@ class Rule(object):
                      iap_resource.iap_enabled,
                      self.allowed_direct_access_sources,
                      iap_resource.direct_access_sources)
-        if (iap_resource.iap_enabled and
-                self.allowed_direct_access_sources != '^.+$'):
-            sources_regex = re.compile(
-                self.allowed_direct_access_sources)
+        if iap_resource.iap_enabled:
+            sources_regexes = [
+                re.compile(regex)
+                for regex in self.allowed_direct_access_sources]
             direct_sources_violations = [
                 source for source in iap_resource.direct_access_sources
-                if not sources_regex.match(source)
+                if not [regex for regex in sources_regexes
+                        if regex.match(source)]
             ]
         else:
             direct_sources_violations = []

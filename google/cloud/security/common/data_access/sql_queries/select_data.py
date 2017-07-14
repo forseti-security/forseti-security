@@ -166,6 +166,11 @@ SELECT_POLICY_VIOLATIONS = """
     WHERE violation_type in ('ADDED', 'REMOVED');
 """
 
+SELECT_IAP_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'IAP_VIOLATION';
+"""
+
 SELECT_BIGQUERY_ACL_VIOLATIONS = """
     SELECT * FROM violations_{0}
     WHERE violation_type = 'BIGQUERY_VIOLATION';

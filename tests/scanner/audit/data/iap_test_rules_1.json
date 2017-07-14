@@ -2,7 +2,6 @@
     "rules": [
         {
             "name": "sample IAP rule",
-            "backend_service_name": "*",
             "allowed_alternate_services": "",
             "allowed_direct_access_sources": "",
             "allowed_iap_enabled": "True",
