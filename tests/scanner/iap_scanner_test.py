@@ -26,10 +26,23 @@ from google.cloud.security.common.gcp_type import instance_group as instance_gro
 from google.cloud.security.common.gcp_type import instance_group_manager as instance_group_manager_type
 from google.cloud.security.common.gcp_type import instance as instance_type
 from google.cloud.security.common.gcp_type import instance_template as instance_template_type
+from google.cloud.security.common.gcp_type import project as project_type
 from google.cloud.security.common.gcp_type import network as network_type
 from google.cloud.security.scanner.scanners import iap_scanner
 from tests.unittest_utils import ForsetiTestCase
+from tests.unittest_utils import get_datafile_path
 
+
+class FakeProjectDao(object):
+
+    def get_project(self, project_id, snapshot_timestamp=0):
+        return project_type.Project(project_id=project_id)
+
+
+class FakeOrgDao(object):
+
+    def find_ancestors(self, resource_id, snapshot_timestamp=0):
+        return []
 
 
 class IapScannerTest(ForsetiTestCase):
@@ -40,16 +53,39 @@ class IapScannerTest(ForsetiTestCase):
                                                name=network),
             port=port_number)
 
-    @mock.patch(
-        'google.cloud.security.scanner.scanners.iap_scanner.iap_rules_engine',
-        autospec=True)
-    def setUp(self, mock_rules_engine):
+    def tearDown(self):
+        self.org_patcher.stop()
+        self.project_patcher.stop()
+
+    def setUp(self):
         self.fake_utcnow = datetime(
             year=1900, month=1, day=1, hour=0, minute=0, second=0,
             microsecond=0)
 
-        self.fake_scanner_configs = {'output_path': '/fake/output/path'}
-        self.scanner = iap_scanner.IapScanner({}, {}, '', '')
+        # patch the daos
+        self.org_patcher = mock.patch(
+            'google.cloud.security.common.data_access.'
+            'org_resource_rel_dao.OrgResourceRelDao')
+        self.mock_org_rel_dao = self.org_patcher.start()
+        self.mock_org_rel_dao.return_value = FakeOrgDao()
+
+        self.project_patcher = mock.patch(
+            'google.cloud.security.common.data_access.'
+            'project_dao.ProjectDao')
+        self.mock_project_dao = self.project_patcher.start()
+        self.mock_project_dao.return_value = FakeProjectDao()
+
+        self.fake_scanner_configs = {'output_path': 'gs://fake/output/path'}
+        self.scanner = iap_scanner.IapScanner(
+            {}, {}, '',
+            get_datafile_path(__file__, 'iap_scanner_test_data.yaml'))
+        self.scanner.scanner_configs = self.fake_scanner_configs
+        self.scanner._get_backend_services = lambda: self.backend_services.values()
+        self.scanner._get_firewall_rules = lambda: self.firewall_rules.values()
+        self.scanner._get_instances = lambda: self.instances.values()
+        self.scanner._get_instance_groups = lambda: self.instance_groups.values()
+        self.scanner._get_instance_group_managers = lambda: self.instance_group_managers.values()
+        self.scanner._get_instance_templates = lambda: self.instance_templates.values()
 
         self.backend_services = {
             # The main backend service.
@@ -405,15 +441,7 @@ class IapScannerTest(ForsetiTestCase):
             set(),
             self.data.tags_for_instance_group(self.instance_groups['ig_unmanaged']))
 
-    def test_run_scanner(self):
-        self.scanner._get_backend_services = lambda: self.backend_services.values()
-        self.scanner._get_firewall_rules = lambda: self.firewall_rules.values()
-        self.scanner._get_instances = lambda: self.instances.values()
-        self.scanner._get_instance_groups = lambda: self.instance_groups.values()
-        self.scanner._get_instance_group_managers = lambda: self.instance_group_managers.values()
-        self.scanner._get_instance_templates = lambda: self.instance_templates.values()
-        self.scanner._output_results = lambda foo, bar: True
-
+    def test_retrieve_resources(self):
         iap_resources = dict((resource.backend_service.key, resource)
                              for resource in self.scanner._retrieve()[0])
         self.maxDiff = None
@@ -439,6 +467,108 @@ class IapScannerTest(ForsetiTestCase):
                 iap_enabled=True,
             ),
             iap_resources[self.backend_services['bs1'].key])
+
+    @mock.patch(
+        'google.cloud.security.scanner.scanners.iap_scanner.datetime',
+        autospec=True)
+    @mock.patch(
+        'google.cloud.security.scanner.scanners.iap_scanner.notifier',
+        autospec=True)
+    @mock.patch.object(
+        iap_scanner.IapScanner,
+        '_upload_csv', autospec=True)
+    @mock.patch.object(
+        iap_scanner.csv_writer,
+        'write_csv', autospec=True)
+    @mock.patch.object(
+        iap_scanner.IapScanner,
+        '_output_results_to_db', autospec=True)
+    def test_run_scanner(self, mock_output_results, mock_csv_writer,
+                         mock_upload_csv, mock_notifier, mock_datetime):
+        mock_datetime.utcnow = mock.MagicMock()
+        mock_datetime.utcnow.return_value = self.fake_utcnow
+
+        fake_csv_name = 'fake.csv'
+        fake_csv_file = type(
+            mock_csv_writer.return_value.__enter__.return_value)
+        fake_csv_file.name = fake_csv_name
+
+        self.scanner.run()
+        self.assertEquals(1, mock_output_results.call_count)
+        mock_upload_csv.assert_called_once_with(
+            self.scanner,
+            self.fake_scanner_configs.get('output_path'),
+            self.fake_utcnow,
+            fake_csv_name)
+        mock_csv_writer.assert_called_once_with(
+            data=[{'resource_id': None,
+                   'rule_name': 'test',
+                   'rule_index': 0,
+                   'violation_data': {
+                       'iap_enabled_violation': 'True',
+                       'resource_name': 'bs1_different_port',
+                       'alternate_services_violations': '',
+                       'direct_access_sources_violations': ''},
+                   'violation_type': 'IAP_VIOLATION',
+                   'resource_type': 'backend_service'},
+                  {'resource_id': None,
+                   'rule_name': 'test',
+                   'rule_index': 0,
+                   'violation_data': {
+                       'iap_enabled_violation': 'True',
+                       'resource_name': 'bs1_different_network',
+                       'alternate_services_violations': '',
+                       'direct_access_sources_violations': ''},
+                   'violation_type': 'IAP_VIOLATION',
+                   'resource_type': 'backend_service'},
+                  {'resource_id': None,
+                   'rule_name': 'test',
+                   'rule_index': 0,
+                   'violation_data': {
+                       'iap_enabled_violation': 'False',
+                       'resource_name': 'bs1',
+                       'alternate_services_violations': (
+                           'foo/bs1_same_backend, foo/bs1_same_instance'),
+                       'direct_access_sources_violations': (
+                           '10.0.2.0/24, '
+                           'applies_8080, '
+                           'applies_all, '
+                           'tag_match')},
+                   'violation_type': 'IAP_VIOLATION',
+                   'resource_type': 'backend_service'},
+                  {'resource_id': None,
+                   'rule_name': 'test',
+                   'rule_index': 0,
+                   'violation_data': {
+                       'iap_enabled_violation': 'True',
+                       'resource_name': 'bs1_different_instance',
+                       'alternate_services_violations': '',
+                       'direct_access_sources_violations': ''},
+                   'violation_type': 'IAP_VIOLATION',
+                   'resource_type': 'backend_service'},
+                  {'resource_id': None,
+                   'rule_name': 'test',
+                   'rule_index': 0,
+                   'violation_data': {
+                       'iap_enabled_violation': 'True',
+                       'resource_name': 'bs1_same_backend',
+                       'alternate_services_violations': '',
+                       'direct_access_sources_violations': ''},
+                   'violation_type': 'IAP_VIOLATION',
+                   'resource_type': 'backend_service'},
+                  {'resource_id': None,
+                   'rule_name': 'test',
+                   'rule_index': 0,
+                   'violation_data': {
+                       'iap_enabled_violation': 'True',
+                       'resource_name': 'bs1_same_instance',
+                       'alternate_services_violations': '',
+                       'direct_access_sources_violations': ''},
+                   'violation_type': 'IAP_VIOLATION',
+                   'resource_type': 'backend_service'}],
+            resource_name='violations',
+            write_header=True)
+        self.assertEquals(0, mock_notifier.process.call_count)
 
 
 if __name__ == '__main__':

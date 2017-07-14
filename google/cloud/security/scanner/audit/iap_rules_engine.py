@@ -61,8 +61,7 @@ class IapRulesEngine(bre.BaseRulesEngine):
             self._load_rule_definitions(),
             snapshot_timestamp=self.snapshot_timestamp)
 
-    # pylint: disable=arguments-differ
-    def find_policy_violations(self, iap_resource, force_rebuild=False):
+    def find_violations(self, iap_resource):
         """Determine whether IAP-related settings violate rules.
 
         Args:
@@ -72,7 +71,7 @@ class IapRulesEngine(bre.BaseRulesEngine):
         Returns:
             list: RuleViolation
         """
-        if self.rule_book is None or force_rebuild:
+        if self.rule_book is None:
             self.build_rule_book()
         return self.rule_book.find_violations(iap_resource)
     # pylint: enable=arguments-differ
@@ -105,8 +104,7 @@ class IapRuleBook(bre.BaseRuleBook):
         else:
             self.rule_defs = rule_defs
             self.add_rules(rule_defs)
-        if snapshot_timestamp:
-            self.snapshot_timestamp = snapshot_timestamp
+        self.snapshot_timestamp = snapshot_timestamp
         self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
             global_configs)
         self.project_dao = project_dao.ProjectDao(global_configs)
@@ -215,6 +213,7 @@ class IapRuleBook(bre.BaseRuleBook):
         Returns:
             list: RuleViolation
         """
+        LOGGER.debug('Looking for IAP violations: %r', iap_resource)
         violations = []
         resource = iap_resource.backend_service
         resource_ancestors = [resource]
@@ -225,9 +224,12 @@ class IapRuleBook(bre.BaseRuleBook):
         resource_ancestors.extend(
             self.org_res_rel_dao.find_ancestors(
                 project, self.snapshot_timestamp))
+        LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
         for curr_resource in resource_ancestors:
             resource_rules = self.get_resource_rules(curr_resource)
+            LOGGER.debug('Resource rules for %r: %r', curr_resource,
+                         resource_rules)
             # Set to None, because if the direct resource (e.g. project)
             # doesn't have a specific rule, we still should check the
             # ancestry to see if the resource's parents have any rules
@@ -256,6 +258,9 @@ class IapRuleBook(bre.BaseRuleBook):
                     applies_to_children or
                     applies_to_both)
 
+                LOGGER.debug('Does %r apply to resource? %r',
+                             resource_rule,
+                             rule_applies_to_resource)
                 if not rule_applies_to_resource:
                     continue
 

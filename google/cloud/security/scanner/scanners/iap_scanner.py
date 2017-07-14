@@ -378,25 +378,35 @@ class IapScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            for member in violation.members:
-                violation_data = {}
-                violation_data['alternate_services_violations'] = (
-                    violation.alternate_services_violations)
-                violation_data['direct_access_sources_violations'] = (
-                    violation.direct_access_sources_violations)
-                violation_data['iap_enabled_violation'] = (
-                    violation.iap_enabled_violation)
-                violation_data['resource_name'] = (
-                    violation.resource_name)
+          violation_data = {}
 
-                yield {
-                    'resource_id': violation.resource_id,
-                    'resource_type': violation.resource_type,
-                    'rule_index': violation.rule_index,
-                    'rule_name': violation.rule_name,
-                    'violation_type': violation.violation_type,
-                    'violation_data': violation_data
-                }
+          alternate_services = ['%s/%s' % (bs_key.project_id, bs_key.name)
+                                for bs_key
+                                in violation.alternate_services_violations]
+          alternate_services.sort()
+          alternate_services_str = ', '.join(alternate_services)
+
+          direct_access_sources = violation.direct_access_sources_violations
+          direct_access_sources.sort()
+          direct_access_str = ', '.join(direct_access_sources)
+
+          violation_data['alternate_services_violations'] = (
+              alternate_services_str)
+          violation_data['direct_access_sources_violations'] = (
+              direct_access_str)
+          violation_data['iap_enabled_violation'] = (
+              str(violation.iap_enabled_violation))
+          violation_data['resource_name'] = (
+              violation.resource_name)
+
+          yield {
+              'resource_id': violation.resource_id,
+              'resource_type': violation.resource_type,
+              'rule_index': violation.rule_index,
+              'rule_name': violation.rule_name,
+              'violation_type': violation.violation_type,
+              'violation_data': violation_data
+          }
 
     def _output_results(self, all_violations, resource_counts):
         """Output results.
@@ -408,12 +418,15 @@ class IapScanner(base_scanner.BaseScanner):
         resource_name = 'violations'
 
         all_violations = list(self._flatten_violations(all_violations))
+        LOGGER.debug('Writing violations: %r', all_violations)
         violation_errors = self._output_results_to_db(resource_name,
                                                       all_violations)
 
         # Write the CSV for all the violations.
         # TODO: Move this into base class? It's cargo-culted from the IAM
         # scanner.
+        LOGGER.debug('output_path: %r',
+                     self.scanner_configs.get('output_path'))
         if self.scanner_configs.get('output_path'):
             LOGGER.info('Writing violations to csv...')
             output_csv_name = None
@@ -545,16 +558,18 @@ class IapScanner(base_scanner.BaseScanner):
         Returns:
             list: RuleViolation
         """
-        LOGGER.info('Finding IAP violations...')
+        LOGGER.info('Finding IAP violations with %r...',
+                    self.rules_engine)
         ret = []
         for iap_resource in iap_resources:
-            ret.extend(self.rules_engine.find_policy_violations(iap_resource))
+            ret.extend(self.rules_engine.find_violations(iap_resource))
         LOGGER.debug('find_violations returning %r', ret)
         return ret
 
     def run(self):
         """Runs the data collection."""
 
+        LOGGER.debug('In run')
         iap_data, resource_counts = self._retrieve()
         all_violations = self._find_violations(iap_data)
         self._output_results(all_violations, resource_counts)
