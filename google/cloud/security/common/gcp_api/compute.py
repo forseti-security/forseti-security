@@ -160,15 +160,15 @@ class ComputeClient(_base_client.BaseClient):
         """Get the instance groups for a project.
 
         Args:
-            project_id: The project id.
-            zone: The instance group's zone.
-            instance_group_name: The instance group's name.
+            project_id (str): The project id.
+            zone (str): The instance group's zone.
+            instance_group_name (str): The instance group's name.
 
         Return:
-            A list of instance URLs for this instance group.
+            list: instance URLs for this instance group.
 
         Raise:
-            api_errors.ApiExecutionError if API raises an error.
+            api_errors.ApiExecutionError: if API raises an error.
         """
         instance_groups_api = self.service.instanceGroups()
         list_request = instance_groups_api.listInstances(
