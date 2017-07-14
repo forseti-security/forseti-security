@@ -42,7 +42,7 @@ Before you set up and deploy IAM Explain, you'll need the following:
 ## Customizing the deployment template
 
 You can use the provided
-[sample IAM Explain deployment](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/deployment-manager/deploy-explain.yaml.sample)
+[sample IAM Explain deployment](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/deployment-templates/deploy-explain.yaml.sample)
 to customize your deployment. You'll need to point to the SQL instance you want
 to use for IAM Explain. To prepare your IAM Explain template, update the
 following values:
