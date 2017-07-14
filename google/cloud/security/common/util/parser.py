@@ -22,30 +22,27 @@ from google.cloud.security.common.data_access import errors as da_errors
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
 def parse_member_info(member):
-    """Parse out the component info in the member string.
+    """Parse out the components of an IAM policy binding member.
 
     Args:
-        member: String of a member.  Example: user:foo@bar.com
+        member (str): An IAM policy member, of the format
+            "{membertype}:{email address}".
 
     Returns:
-        member_type: String of the member type.
-        member_name: String of the name portion of the member.
-        member_domain: String of the domain of the member.
+        str: The member type.
+        str: The name portion of the member.
+        str: The domain of the member.
     """
     member_type, email = member.split(":", 1)
 
     if '@' in email:
         member_name, member_domain = email.split('@', 1)
     else:
-        # Member then is really something like domain:google.com
+        # Member is really something like domain:google.com
         member_name = ''
         member_domain = email
 
@@ -55,11 +52,11 @@ def format_timestamp(timestamp_str, datetime_formatter):
     """Parse and stringify a timestamp to a specified format.
 
     Args:
-        timestamp_str: A string timestamp.
-        datetime_formatter: A string format.
+        timestamp_str (str): A timestamp.
+        datetime_formatter (str): A format string.
 
     Returns:
-        The formatted stringified timestamp.
+        str: The formatted, stringified timestamp.
     """
     try:
         formatted_timestamp = (
@@ -76,10 +73,10 @@ def json_stringify(obj_to_jsonify):
     """Convert a python object to json string.
 
     Args:
-        obj_to_jsonify: The object to json stringify.
+        obj_to_jsonify (dict): The object to json stringify.
 
     Returns:
-        The json-stringified dict.
+        str: The json-stringified dict.
     """
     try:
         json_str = json.dumps(obj_to_jsonify)

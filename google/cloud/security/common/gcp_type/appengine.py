@@ -19,15 +19,17 @@ See: https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps
 
 from google.cloud.security.common.util import parser
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc
 
 # pylint: disable=too-many-instance-attributes
 class Application(object):
     """Represents Instance resource."""
 
     def __init__(self, **kwargs):
-        """AppEngine Application resource."""
+        """AppEngine Application resource.
+
+        Args:
+            **kwargs (dict): The keyworded variable args.
+        """
         self.project_id = kwargs.get('project_id')
         self.name = kwargs.get('name')
         self.app_id = kwargs.get('app_id')

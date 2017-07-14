@@ -21,11 +21,8 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.util import log_util
 
+
 LOGGER = log_util.get_logger(__name__)
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc, missing-type-doc, missing-return-type-doc
 
 
 class OrganizationDao(dao.Dao):
@@ -35,10 +32,11 @@ class OrganizationDao(dao.Dao):
         """Get organizations from snapshot table.
 
         Args:
-            timestamp: The timestamp of the snapshot.
+            resource_name (str): The resource name.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-            A list of Organizations.
+            list: A list of Organizations.
         """
         query = select_data.ORGANIZATIONS.format(timestamp)
         rows = self.execute_sql_with_fetch(resource_name, query, ())
@@ -55,14 +53,14 @@ class OrganizationDao(dao.Dao):
         """Get an organization from the database snapshot.
 
         Args:
-            org_id: The Organization to retrieve.
-            timestamp: The timestamp of the snapshot.
+            org_id (int): The Organization to retrieve.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-            An Organization from the database snapshot.
+            Organization: An Organization from the database snapshot.
 
         Raises:
-            MySQLError if there was an error getting the organization.
+            MySQLError: If there was an error getting the organization.
         """
         query = select_data.ORGANIZATION_BY_ID.format(timestamp)
         rows = self.execute_sql_with_fetch('organization', query, (org_id,))
@@ -80,11 +78,13 @@ class OrganizationDao(dao.Dao):
         error because we want to return as many organizations as possible.
 
         Args:
-            timestamp: The timestamp of the snapshot.
+            resource_name (str): The resource name.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-            A dict keyed by the organizations
-            (gcp_type.organization.Organization) and their iam policies (dict).
+            dict: A dict that maps organizations
+                (gcp_type.organization.Organization) to their
+                IAM policies (dict).
         """
         org_iam_policies = {}
         query = select_data.ORG_IAM_POLICIES.format(timestamp)

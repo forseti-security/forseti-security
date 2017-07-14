@@ -29,7 +29,7 @@ class InstanceTemplate(object):
         """InstanceTemplate resource.
 
         Args:
-            kwargs: The object's attributes.
+            **kwargs: The object's attributes.
         """
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')

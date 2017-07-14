@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """GCP Resource.
 
 For now, this only represents Organization resources. In the future, we may
@@ -20,11 +21,6 @@ need to separate the classes depending on implementation.
 import abc
 
 from google.cloud.security.common.gcp_type import errors
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
 
 
 class ResourceType(object):
@@ -68,13 +64,13 @@ class ResourceType(object):
         """Verify if the resource type is recognized.
 
         Args:
-            resource_type: The string resource type.
+            resource_type (str): The resource type.
 
         Returns:
-            The resource type if it is recognized in the resource_types.
+            str: The resource type if it is recognized in the resource_types.
 
         Raises:
-            InvalidResourceTypeError if resource type is not recognized.
+            InvalidResourceTypeError: If resource type is not recognized.
         """
         if resource_type not in cls.resource_types:
             raise errors.InvalidResourceTypeError(
@@ -105,13 +101,14 @@ class Resource(object):
         """Initialize.
 
         Args:
-            resource_id: The resource's unique id (string) in GCP.
-            resource_type: The resource type.
-            name: The resource unique name,
-                e.g. "<resource type>/{id}".
-            display_name: The resource display name.
-            parent: The parent Resource object.
-            lifecycle_state: The lifecycle state of the Resource.
+            resource_id (str): The resource's unique id in GCP.
+            resource_type (str): The resource type.
+            name (str): The resource unique name,
+                e.g. "{resource type}/{id}".
+            display_name (str): The resource display name.
+            parent (Resource): The parent Resource object.
+            lifecycle_state (LifecycleState): The lifecycle state of the
+                Resource.
         """
         self._resource_id = str(resource_id)
         self._resource_type = resource_type
@@ -127,51 +124,97 @@ class Resource(object):
         self._lifecycle_state = lifecycle_state
 
     def __eq__(self, other):
-        """Test equality of Resource."""
+        """Test equality of Resource.
+
+        Args:
+            other (object): The other object.
+
+        Returns:
+            bool: Whether the objects are equal.
+        """
         if not isinstance(other, type(self)):
             return NotImplemented
         return (self.id == other.id and
                 self.type == self.type)
 
     def __ne__(self, other):
-        """Test inequality of Resource."""
+        """Test inequality of Resource.
+
+        Args:
+            other (object): The other object.
+
+        Returns:
+            bool: Whether the objects are equal.
+        """
         return not self == other
 
     def __hash__(self):
-        """Create a hash on the resource type and id."""
+        """Create a hash on the resource type and id.
+
+        Returns:
+            hash: The hash of the object.
+        """
         return hash((self.type, self.id))
 
     def __repr__(self):
-        """String representation of the Resource."""
+        """String representation of the Resource.
+
+        Returns:
+            str: The representation.
+        """
         return '{}<id={},parent={}>'.format(
             self.type, self.id, self.parent)
 
     @property
     def id(self):
-        """Resource id."""
+        """Resource id.
+
+        Returns:
+            str: The id.
+        """
         return self._resource_id
 
     @property
     def type(self):
-        """Resource type."""
+        """Resource type.
+
+        Returns:
+            str: The type.
+        """
         return self._resource_type
 
     @property
     def name(self):
-        """GCP name."""
+        """GCP name.
+
+        Returns:
+            str: The name.
+        """
         return self._name
 
     @property
     def display_name(self):
-        """Display name."""
+        """Display name.
+
+        Returns:
+            str: The display name.
+        """
         return self._display_name
 
     @property
     def parent(self):
-        """Resource parent."""
+        """Resource parent.
+
+        Returns:
+            Resource: The parent.
+        """
         return self._parent
 
     @property
     def lifecycle_state(self):
-        """Lifecycle state."""
+        """Lifecycle state.
+
+        Returns:
+            LifecycleState: The LifecycleState.
+        """
         return self._lifecycle_state

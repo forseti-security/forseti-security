@@ -21,11 +21,7 @@ import re
 from google.cloud.security.common.gcp_type import errors
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-
-
+# TODO: use the regex_util
 def _escape_and_globify(pattern_string):
     """Given a pattern string with a glob, create actual regex pattern.
 
@@ -35,10 +31,10 @@ def _escape_and_globify(pattern_string):
     usernames before the "@".)
 
     Args:
-        pattern_string: The pattern string of which to make a regex.
+        pattern_string (str): The pattern string of which to make a regex.
 
     Returns:
-        The pattern string, escaped except for the "*", which is
+        str: The pattern string, escaped except for the "*", which is
         transformed into ".+" (match on one or more characters).
     """
     return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
@@ -48,10 +44,10 @@ def _get_iam_members(members):
     """Get a list of this binding's members as IamPolicyMembers.
 
     Args:
-        members: A list of members (strings).
+        members (list): A list of members (strings).
 
     Returns:
-        A list of IamPolicyMembers.
+        list: A list of IamPolicyMembers.
     """
     return [IamPolicyMember.create_from(m) for m in members]
 
@@ -68,10 +64,10 @@ class IamPolicy(object):
         """Create an IamPolicy object from json representation.
 
         Args:
-            policy_json(dict): The json representing the IAM policy.
+            policy_json (dict): The json representing the IAM policy.
 
         Returns:
-            An IamPolicy.
+            IamPolicy: An IamPolicy.
         """
         policy = cls()
 
@@ -85,24 +81,42 @@ class IamPolicy(object):
         return policy
 
     def __eq__(self, other):
-        """Tests equality of IamPolicy."""
+        """Tests equality of IamPolicy.
+
+        Args:
+            other (object): Object to compare.
+
+        Returns:
+            bool: True if equals, False otherwise.
+        """
         if not isinstance(other, type(self)):
             return NotImplemented
         return self.bindings == other.bindings
 
     def __ne__(self, other):
-        """Tests inequality of IamPolicy."""
+        """Tests inequality of IamPolicy.
+
+        Args:
+            other (object): Object to compare.
+
+        Returns:
+            bool: True if not equals, False otherwise.
+        """
         return not self == other
 
     def __repr__(self):
-        """String representation of IamPolicy."""
+        """String representation of IamPolicy.
+
+        Returns:
+            str: Representation of IamPolicy
+        """
         return 'IamPolicy: <bindings={}>'.format(self.bindings)
 
     def is_empty(self):
         """Tests whether this policy's bindings are empty.
 
         Returns:
-            True if bindings are empty; False otherwise.
+            bool: True if bindings are empty; False otherwise.
         """
         return not bool(self.bindings)
 
@@ -114,8 +128,8 @@ class IamPolicyBinding(object):
         """Initialize.
 
         Args:
-            role_name: The string name of the role.
-            members: The role members of the policy binding.
+            role_name (str): The string name of the role.
+            members (list): The role members of the policy binding.
         """
         if not role_name or not members:
             raise errors.InvalidIamPolicyBindingError(
@@ -127,18 +141,36 @@ class IamPolicyBinding(object):
                                        flags=re.IGNORECASE)
 
     def __eq__(self, other):
-        """Tests equality of IamPolicyBinding."""
+        """Tests equality of IamPolicyBinding.
+
+        Args:
+            other (object): Object to compare.
+
+        Returns:
+            bool: Whether objects are equal.
+        """
         if not isinstance(other, type(self)):
             return NotImplemented
         return (self.role_name == other.role_name and
                 self.members == other.members)
 
     def __ne__(self, other):
-        """Tests inequality of IamPolicyBinding."""
+        """Tests inequality of IamPolicyBinding.
+
+        Args:
+            other (object): Object to compare.
+
+        Returns:
+            bool: Whether objects are not equal.
+        """
         return not self == other
 
     def __repr__(self):
-        """String representation of IamPolicyBinding."""
+        """String representation of IamPolicyBinding.
+
+        Returns:
+            str: The representation of IamPolicyBinding.
+        """
         return 'IamBinding: <role={}, members={}>'.format(
             self.role_name, self.members)
 
@@ -147,10 +179,11 @@ class IamPolicyBinding(object):
         """Create an IamPolicyBinding from a binding dict.
 
         Args:
-            binding: The dict binding (role mapped to members).
+            binding (dict): The binding (role mapped to members).
 
         Returns:
-            A new IamPolicyBinding created with the role and members.
+            IamPolicyBinding: A new IamPolicyBinding created with the
+                role and members.
         """
         if isinstance(binding, type(cls)):
             return binding
@@ -174,8 +207,8 @@ class IamPolicyMember(object):
         """Initialize.
 
         Args:
-            member_type: The string member type (see `member_types`).
-            member_name: The string member name.
+            member_type (str): The string member type (see `member_types`).
+            member_name (str): The string member name.
         """
         if not member_type or not self._member_type_exists(member_type):
             raise errors.InvalidIamPolicyMemberError(
@@ -188,31 +221,67 @@ class IamPolicyMember(object):
                                            flags=re.IGNORECASE)
 
     def __eq__(self, other):
-        """Tests equality of IamPolicyMember."""
+        """Tests equality of IamPolicyMember.
+
+        Args:
+            other (object): The object to compare.
+
+        Returns:
+            bool: Whether the objects are equal.
+        """
         if not isinstance(other, type(self)):
             return NotImplemented
         return (self.type == other.type and
                 self.name == other.name)
 
     def __ne__(self, other):
-        """Tests inequality of IamPolicyMember."""
+        """Tests inequality of IamPolicyMember.
+
+        Args:
+            other (object): The object to compare.
+
+        Returns:
+            bool: Whether the objects are not equal.
+        """
         return not self == other
 
     def __hash__(self):
-        """Hash function for IamPolicyMember."""
+        """Hash function for IamPolicyMember.
+
+        Returns:
+            hash: The hashed object.
+        """
         return hash((self.type, self.name))
 
     def __repr__(self):
-        """String representation of IamPolicyMember."""
+        """String representation of IamPolicyMember.
+
+        Returns:
+            str: The representation of IamPolicyMember.
+        """
         return '%s:%s' % (self.type, self.name)
 
     def _member_type_exists(self, member_type):
-        """Determine if the member type exists in valid member types."""
+        """Determine if the member type exists in valid member types.
+
+        Args:
+            member_type (str): Member type.
+
+        Returns:
+            bool: If member type is valid.
+        """
         return member_type in self.member_types
 
     @classmethod
     def create_from(cls, member):
-        """Create an IamPolicyMember from the member identity string."""
+        """Create an IamPolicyMember from the member identity string.
+
+        Args:
+            member (str): The IAM policy binding member.
+
+        Returns:
+            IamPolicyMember: Created from the member string.
+        """
         identity_parts = member.split(':')
         member_name = None
         if len(identity_parts) > 1:
@@ -223,10 +292,10 @@ class IamPolicyMember(object):
         """Determine if another member matches.
 
         Args:
-            other(string): The policy binding member name.
+            other (str): The policy binding member name.
 
         Returns:
-            True if the member matches this member, otherwise False.
+            bool: True if the member matches this member, otherwise False.
         """
         other_member = None
         if isinstance(other, type(self)):

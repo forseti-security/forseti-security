@@ -32,7 +32,7 @@ class BackendService(resource.Resource):
         """BackendService resource.
 
         Args:
-            kwargs: The object's attributes.
+            **kwargs: The object's attributes.
         """
         super(BackendService, self).__init__(
             resource_id=kwargs.get('id'),

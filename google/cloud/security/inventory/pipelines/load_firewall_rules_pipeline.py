@@ -24,11 +24,6 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -44,14 +39,14 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
         GCP firewall api.
 
         Args:
-            resource_from_api: A dict mapping projects with a list of their
-                firewall rules.
+            resource_from_api (dict): A dict mapping projects with a list of
+                their firewall rules.
                 {project_id1: [firewall_rule1a, firewall_rule1b],
                  project_id2: [firewall_rule2a, firewall_rule2b],
                  project_id3: [firewall_rule3a, firewall_rule3b]}
 
         Yields:
-            An iterable of loadable firewall rules as a per-firewall dictionary.
+            iterable: Loadable firewall rules as a per-firewall dictionary.
         """
         for project_id, firewall_rules in resource_from_api.iteritems():
             for firewall_rule in firewall_rules:
@@ -98,10 +93,10 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
         captured.
 
         Returns:
-            A dict mapping projects with a list of their firewall rules.
-            {project_id1: [firewall_rule1a, firewall_rule1b],
-             project_id2: [firewall_rule2a, firewall_rule2b],
-             project_id3: [firewall_rule3a, firewall_rule3b]}
+            dict: A dict mapping projects with a list of their firewall rules.
+                {project_id1: [firewall_rule1a, firewall_rule1b],
+                 project_id2: [firewall_rule2a, firewall_rule2b],
+                 project_id3: [firewall_rule3a, firewall_rule3b]}
         """
         firewall_rules_map = {}
         projects = (proj_dao

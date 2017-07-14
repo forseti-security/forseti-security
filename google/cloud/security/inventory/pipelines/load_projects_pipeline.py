@@ -22,11 +22,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -39,12 +34,12 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable iam policies.
 
         Args:
-            resource_from_api: An iterable of resource manager project list
+            resource_from_api (iterable): Resource manager project list
                 response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
 
         Yields:
-            An iterable of loadable projects, as a per-project dictionary.
+            iterable: Loadable projects, as a per-project dictionary.
         """
         for project in (project for d in resource_from_api\
                         for project in d.get('projects', [])):
@@ -63,8 +58,8 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         """Retrieve the project resources from GCP.
 
         Returns:
-            An iterable of resource manager project list response.
-            https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
+            iterable: resource manager project list response.
+                https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
         """
         try:
             return self.api_client.get_projects(

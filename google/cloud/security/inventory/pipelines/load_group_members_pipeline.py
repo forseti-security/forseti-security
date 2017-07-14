@@ -23,12 +23,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -42,11 +36,11 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         """Fetch the latest group ids previously stored in Cloud SQL.
 
         Returns:
-             A list of group ids.
+            list: A list of group ids.
 
         Raises:
             inventory_errors.LoadDataPipelineException: An error with loading
-            data has occurred.
+                data has occurred.
         """
         try:
             group_ids = self.dao.select_group_ids(
@@ -61,10 +55,10 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable groups.
 
         Args:
-            resource_from_api: A tuple of (group_object, group_object_members)
+            resource_from_api (tuple): (group_object, group_object_members)
 
         Yields:
-            An iterable of loadable groups as a per-group dictionary.
+            iterable: Loadable groups as a per-group dictionary.
         """
         for (group, group_member) in resource_from_api:
             for member in group_member:
@@ -80,9 +74,12 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
     def _retrieve(self, group_ids):  # pylint: disable=arguments-differ
         """Retrieve the membership for a list of given GSuite groups.
 
+        Args:
+            group_ids (list): Group ids.
+
         Returns:
-            A list of tuples (group_id, group_members) from the Admin SDK, e.g.
-            (string, [])
+            list: (group_id, group_members) from the Admin SDK, e.g.
+                (string, [])
         """
 
         group_members_map = []
@@ -111,11 +108,11 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             """Helper to chunk a list.
 
             Args:
-                seq: A list.
-                size: Integer of the desired chunk size.
+                seq (list): A list.
+                size (int): Integer of the desired chunk size.
 
             Returns:
-                A tuple of the chunked seq.
+                tuple: A tuple of the chunked seq.
             """
             return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 

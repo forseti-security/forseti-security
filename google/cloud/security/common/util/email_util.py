@@ -30,10 +30,7 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,redundant-returns-doc
-
-
+# TODO: remove these
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('email_recipient', None,
@@ -55,7 +52,7 @@ class EmailUtil(object):
         """Initialize the email util.
 
         Args:
-            api_key: String of the sendgrid api key to auth email service.
+            api_key (str): The SendGrid api key to auth email service.
         """
         self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
 
@@ -69,10 +66,10 @@ class EmailUtil(object):
         and the final exception can be gracefully handled upstream.
 
         Args:
-            email: sendgrid mail object
+            email (SendGrid): SendGrid mail object
 
         Returns:
-            urllib2 response object
+            dict: urllib2 response object
         """
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
@@ -81,27 +78,23 @@ class EmailUtil(object):
              attachment=None):
         """Send an email.
 
-        This uses SendGrid.
+        This uses the SendGrid API.
         https://github.com/sendgrid/sendgrid-python
 
         The minimum required info to send email are:
         sender, recipient, subject, and content (the body)
 
         Args:
-            email_sender: String of the email sender.
-            email_recipient: String of the email recipient.
-            email_subject: String of the email subject.
-            email_content: String of the email content (aka, body).
-            content_type: String of the email content type.
-            attachment: A SendGrid Attachment.
-
-        Returns:
-            None.
+            email_sender (str): The email sender.
+            email_recipient (str): The email recipient.
+            email_subject (str): The email subject.
+            email_content (str): The email content (aka, body).
+            content_type (str): The email content type.
+            attachment (Attachment): A SendGrid Attachment.
 
         Raises:
             EmailSendError: An error with sending email has occurred.
         """
-
         if not email_sender or not email_recipient:
             LOGGER.warn('Unable to send email: sender=%s, recipient=%s',
                         email_sender, email_recipient)
@@ -138,12 +131,12 @@ class EmailUtil(object):
         """Fill out an email template with template variables.
 
         Args:
-            template_file: The string location of email template in filesystem.
-            template_vars: The dict of template variables to fill into the
+            template_file (str): The location of email template in filesystem.
+            template_vars (dict): The template variables to fill into the
                 template.
 
         Returns:
-            String of template content rendered with the provided variables.
+            str: The template content, rendered with the provided variables.
         """
         template_searchpath = os.path.abspath(
             os.path.join(os.path.dirname(__file__), '../email_templates'))
@@ -161,14 +154,14 @@ class EmailUtil(object):
         SendGrid attachments file content must be base64 encoded.
 
         Args:
-            file_location: The string path of the file.
-            content_type: The content type string.
-            filename: The string filename of attachment.
-            disposition: Content disposition string, defaults to "attachment".
-            content_id: The content id string.
+            file_location (str): The path of the file.
+            content_type (str): The content type of the attachment.
+            filename (str): The filename of attachment.
+            disposition (str): Content disposition, defaults to "attachment".
+            content_id (str): The content id.
 
         Returns:
-            A SendGrid Attachment.
+            Attachment: A SendGrid Attachment.
         """
         file_content = ''
         with open(file_location, 'rb') as f:

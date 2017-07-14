@@ -24,11 +24,6 @@ from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,differing-param-doc,differing-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -45,10 +40,10 @@ class ProjectDao(dao.Dao):
         match the GCP API fields.
 
         Args:
-            row: The database row to map.
+            row (dict): The database row to map.
 
         Returns:
-            A Project, created from the row.
+            Project: A Project, created from the row.
         """
         return project.Project(
             project_id=row['project_id'],
@@ -64,11 +59,11 @@ class ProjectDao(dao.Dao):
         """Select the project numbers from a projects snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            resource_name (str): The resource name.
+            timestamp (str): The timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-             A list of project numbers.
+             list: A list of project numbers.
 
         Raises:
             MySQLError: An error with MySQL has occurred.
@@ -82,11 +77,11 @@ class ProjectDao(dao.Dao):
         """Get a project from a particular snapshot.
 
         Args:
-            project_id: The id of the project.
-            timestamp: The snapshot timestamp.
+            project_id (str): The id of the project.
+            timestamp (str): The snapshot timestamp.
 
         Returns:
-            A Project, if found.
+            Project: A Project, if found.
         """
         project_query = select_data.PROJECT_BY_ID.format(timestamp)
         rows = self.execute_sql_with_fetch(
@@ -99,11 +94,11 @@ class ProjectDao(dao.Dao):
         """Get a project from a particular snapshot.
 
         Args:
-            project_number: The number of the project.
-            timestamp: The snapshot timestamp.
+            project_number (int): The number of the project.
+            timestamp (str): The snapshot timestamp.
 
         Returns:
-            A Project, if found.
+            Project: A Project, if found.
         """
         project_query = select_data.PROJECT_BY_NUMBER.format(timestamp)
         rows = self.execute_sql_with_fetch(
@@ -116,10 +111,10 @@ class ProjectDao(dao.Dao):
         """Get projects from a particular snapshot.
 
         Args:
-            timestamp: The snapshot timestamp.
+            timestamp (str): The snapshot timestamp.
 
         Returns:
-            A list of Projects.
+            list: A list of Projects.
         """
         projects_query = select_data.PROJECTS.format(timestamp)
         rows = self.execute_sql_with_fetch(
@@ -133,12 +128,12 @@ class ProjectDao(dao.Dao):
         because we want to return as many projects as possible.
 
         Args:
-            resource_name: The resource type.
-            timestamp: The timestamp of the snapshot.
+            resource_name (str): The resource type.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-            A dict containing the projects (gcp_type.project.Project)
-            and their iam policies (dict).
+            dict: A dict containing the projects (gcp_type.project.Project)
+                and their iam policies (dict).
         """
         project_policies = {}
         query = select_data.PROJECT_IAM_POLICIES_RAW.format(
@@ -157,13 +152,12 @@ class ProjectDao(dao.Dao):
         """Select the project raw data from a projects snapshot table.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            project_id (optional): project_id for specific project
-            project_number (optional): project_number for specific project
+            resource_name (str): The resource name.
+            timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            **kwargs (dict): Additional args.
 
         Returns:
-             list of project numbers
+             list: List of project raw data.
         """
         project_id = kwargs.get('project_id')
         project_number = kwargs.get('project_number')

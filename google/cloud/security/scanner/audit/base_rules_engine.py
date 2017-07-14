@@ -24,11 +24,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,missing-raises-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -41,8 +36,10 @@ class BaseRulesEngine(object):
         """Initialize.
 
         Args:
-            rules_file_path: The path of the rules file, either local or GCS.
-            snapshot_timestamp: The snapshot to associate any data lookups.
+            rules_file_path (str): The path of the rules file, either
+                local or GCS.
+            snapshot_timestamp (str): The snapshot to associate any
+                data lookups.
         """
         if not rules_file_path:
             raise audit_errors.InvalidRuleDefinitionError(
@@ -51,14 +48,21 @@ class BaseRulesEngine(object):
         self.snapshot_timestamp = snapshot_timestamp
 
     def build_rule_book(self, global_configs):
-        """Build RuleBook from the rules definition file."""
+        """Build RuleBook from the rules definition file.
+
+        Args:
+            global_configs (dict): The global Forseti configuration.
+
+        Raises:
+            NotImplementedError: The method should be defined in subclass.
+        """
         raise NotImplementedError('Implement in a child class.')
 
     def _load_rule_definitions(self):
         """Load the rule definitions file from GCS or local filesystem.
 
         Returns:
-            The parsed dict from the rule definitions file.
+            dict: The parsed dict from the rule definitions file.
         """
         LOGGER.debug('Loading %r rules from %r', self, self.full_rules_path)
         rules = file_loader.read_and_parse_file(self.full_rules_path)
@@ -77,5 +81,13 @@ class BaseRuleBook(object):
 
     @abc.abstractmethod
     def add_rule(self, rule_def, rule_index):
-        """Add rule to rule book."""
+        """Add rule to rule book.
+
+        Args:
+            rule_def (dict): Add a rule definition to the rule book.
+            rule_index (int): The index of the rule.
+
+        Raises:
+            NotImplementedError: The method should be defined in subclass.
+        """
         raise NotImplementedError('Implement add_rule() in subclass')

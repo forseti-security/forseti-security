@@ -19,16 +19,17 @@ See: https://cloud.google.com/compute/docs/reference/latest/forwardingRules
 
 from google.cloud.security.common.util import parser
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc
-
 
 # pylint: disable=too-many-instance-attributes
 class ForwardingRule(object):
     """Represents ForwardRule resource."""
 
     def __init__(self, **kwargs):
-        """ForwardingRule resource."""
+        """ForwardingRule resource.
+
+        Args:
+            **kwargs (dict): Keyworded variable args.
+        """
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
         self.creation_timestamp = kwargs.get('creation_timestamp')
