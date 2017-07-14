@@ -49,6 +49,8 @@ configuration change.
 
 ### Configuring Inventory
 
+{% include _howto/config_inventory.md %}
+
 #### Setting up batch mode
 
 You can run Forseti Inventory in batch mode to execute multiple inventory
