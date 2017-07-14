@@ -70,4 +70,4 @@ manually.
 
 - Read about [configuring Forseti]({% link _docs/howto/configuring-forseti.md %})
 - Learn about [defining rules]({% link _docs/howto/scanner-rules.md %}).
-- Read about how Scanner outputs [policy violations]({% link _docs/howto/policy-violations.md %}).
+- Read about how Scanner outputs [rule violations]({% link _docs/howto/rule-violations.md %}).
