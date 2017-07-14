@@ -43,3 +43,6 @@ To run Forseti Inventory, execute the command below, providing the configuration
   ```
 
 Forseti Inventory is now set up to run for your specified projects.
+
+## What's next
+- Learn more about [configuring Forseti]({% link _docs/howto/configuring-forseti.md %})
