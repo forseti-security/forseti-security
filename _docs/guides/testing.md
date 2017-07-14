@@ -1,29 +1,20 @@
 ---
-title: Development
-order: 001
-hide:
-  left_sidebar: true
+title: Testing
+order: 003
 ---
 # {{ page.title }}
 
-## Contributing
-
-We welcome your contributions! Before you start, please review our
-[contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
-
-## Testing
-
 This page describes how to run tests on your Forseti contributions.
 
-### Unit tests
+## Executing tests
 
 You can find unit tests in the top-level `tests/` directory. We use [`unittest`](https://docs.python.org/2/library/unittest.html)
 from standard Python to run our tests.
 
-Before you run unit tests, please build the protos if you haven't already.
-Some of the unit tests will fail if they cannot find the required protos.
+Before you run unit tests, build the protos if you haven't already.
+Some of the unit tests will fail if they can't find the required protos.
 
-**The following commands should be run in the _top-level_ directory of Forseti.**
+**Run the following commands in the _top-level_ directory of Forseti.**
 
   ```bash
   python build_protos.py --clean
