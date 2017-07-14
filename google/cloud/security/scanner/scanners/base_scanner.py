@@ -54,34 +54,6 @@ class BaseScanner(object):
         """Runs the pipeline."""
         pass
 
-    @abc.abstractmethod
-    def _retrieve(self, **kwargs):
-        """Runs the pipeline.
-
-        Args:
-            **kwargs: Arbitrary keyword arguments.
-        """
-        pass
-
-    @abc.abstractmethod
-    def _find_violations(self, **kwargs):
-        """Find violations.
-
-
-        Args:
-            **kwargs: Arbitrary keyword arguments.
-        """
-        pass
-
-    @abc.abstractmethod
-    def _output_results(self, **kwargs):
-        """Output results.
-
-        Args:
-            **kwargs: Arbitrary keyword arguments.
-        """
-        pass
-
     def _output_results_to_db(self, resource_name, violations):
         """Output scanner results to DB.
 

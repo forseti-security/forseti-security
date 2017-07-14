@@ -378,35 +378,34 @@ class IapScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-          violation_data = {}
+            alternate_services = ['%s/%s' % (bs_key.project_id, bs_key.name)
+                                  for bs_key
+                                  in violation.alternate_services_violations]
+            alternate_services.sort()
+            alternate_services_str = ', '.join(alternate_services)
 
-          alternate_services = ['%s/%s' % (bs_key.project_id, bs_key.name)
-                                for bs_key
-                                in violation.alternate_services_violations]
-          alternate_services.sort()
-          alternate_services_str = ', '.join(alternate_services)
+            direct_access_sources = violation.direct_access_sources_violations
+            direct_access_sources.sort()
+            direct_access_str = ', '.join(direct_access_sources)
 
-          direct_access_sources = violation.direct_access_sources_violations
-          direct_access_sources.sort()
-          direct_access_str = ', '.join(direct_access_sources)
+            violation_data = {}
+            violation_data['alternate_services_violations'] = (
+                alternate_services_str)
+            violation_data['direct_access_sources_violations'] = (
+                direct_access_str)
+            violation_data['iap_enabled_violation'] = (
+                str(violation.iap_enabled_violation))
+            violation_data['resource_name'] = (
+                violation.resource_name)
 
-          violation_data['alternate_services_violations'] = (
-              alternate_services_str)
-          violation_data['direct_access_sources_violations'] = (
-              direct_access_str)
-          violation_data['iap_enabled_violation'] = (
-              str(violation.iap_enabled_violation))
-          violation_data['resource_name'] = (
-              violation.resource_name)
-
-          yield {
-              'resource_id': violation.resource_id,
-              'resource_type': violation.resource_type,
-              'rule_index': violation.rule_index,
-              'rule_name': violation.rule_name,
-              'violation_type': violation.violation_type,
-              'violation_data': violation_data
-          }
+            yield {
+                'resource_id': violation.resource_id,
+                'resource_type': violation.resource_type,
+                'rule_index': violation.rule_index,
+                'rule_name': violation.rule_name,
+                'violation_type': violation.violation_type,
+                'violation_data': violation_data
+            }
 
     def _output_results(self, all_violations, resource_counts):
         """Output results.

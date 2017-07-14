@@ -15,6 +15,7 @@
 """Rules engine for IAP policies on backend services"""
 from collections import namedtuple
 import re
+import threading
 
 from google.cloud.security.common.data_access import org_resource_rel_dao
 from google.cloud.security.common.data_access import project_dao
@@ -66,7 +67,6 @@ class IapRulesEngine(bre.BaseRulesEngine):
 
         Args:
             iap_resource (IapResource): IAP resource data
-            force_rebuild (bool): whether to rebuild the rulebook
 
         Returns:
             list: RuleViolation
@@ -98,6 +98,7 @@ class IapRuleBook(bre.BaseRuleBook):
             snapshot_timestamp (int): Snapshot timestamp.
         """
         super(IapRuleBook, self).__init__()
+        self._rules_sema = threading.BoundedSemaphore(value=1)
         self.resource_rules_map = {}
         if not rule_defs:
             self.rule_defs = {}
@@ -118,7 +119,7 @@ class IapRuleBook(bre.BaseRuleBook):
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
-    def add_rule(self, rule_def, rule_index):
+    def add_rule(self, rule_def, rule_index):  # pylint: disable=too-many-locals
         """Add a rule to the rule book.
 
         Args:
@@ -126,65 +127,71 @@ class IapRuleBook(bre.BaseRuleBook):
             rule_index (int): index of the rule from the rule definitions,
                               assigned automatically when the rule book is built
         """
-        for resource in rule_def.get('resource'):
-            resource_ids = resource.get('resource_ids')
-            resource_type = None
-            try:
-                resource_type = resource_mod.ResourceType.verify(
-                    resource.get('type'))
-            except resource_errors.InvalidResourceTypeError:
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Missing resource type in rule {}'.format(rule_index))
+        self._rules_sema.acquire()
 
-            if not resource_ids or len(resource_ids) < 1:
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Missing resource ids in rule {}'.format(rule_index))
+        try:
+            for resource in rule_def.get('resource'):
+                resource_ids = resource.get('resource_ids')
+                resource_type = None
+                try:
+                    resource_type = resource_mod.ResourceType.verify(
+                        resource.get('type'))
+                except resource_errors.InvalidResourceTypeError:
+                    raise audit_errors.InvalidRulesSchemaError(
+                        'Missing resource type in rule {}'.format(rule_index))
 
-            allowed_alternate_services = [
-                regex_util.escape_and_globify(glob)
-                for glob in rule_def.get(
-                    'allowed_alternate_services', '').split(',')
-                if glob]
-            allowed_direct_access_sources = [
-                regex_util.escape_and_globify(glob)
-                for glob in rule_def.get(
-                    'allowed_direct_access_sources', '').split(',')
-                if glob]
-            allowed_iap_enabled = regex_util.escape_and_globify(
-                rule_def.get('allowed_iap_enabled', '*'))
+                if not resource_ids or len(resource_ids) < 1:
+                    raise audit_errors.InvalidRulesSchemaError(
+                        'Missing resource ids in rule {}'.format(rule_index))
 
-            # For each resource id associated with the rule, create a
-            # mapping of resource => rules.
-            for resource_id in resource_ids:
-                gcp_resource = resource_util.create_resource(
-                    resource_id=resource_id,
-                    resource_type=resource_type)
+                allowed_alternate_services = [
+                    regex_util.escape_and_globify(glob)
+                    for glob in rule_def.get(
+                        'allowed_alternate_services', '').split(',')
+                    if glob]
+                allowed_direct_access_sources = [
+                    regex_util.escape_and_globify(glob)
+                    for glob in rule_def.get(
+                        'allowed_direct_access_sources', '').split(',')
+                    if glob]
+                allowed_iap_enabled = regex_util.escape_and_globify(
+                    rule_def.get('allowed_iap_enabled', '*'))
 
-                rule = Rule(
-                    rule_name=rule_def.get('name'),
-                    rule_index=rule_index,
-                    allowed_alternate_services=allowed_alternate_services,
-                    allowed_direct_access_sources=allowed_direct_access_sources,
-                    allowed_iap_enabled=allowed_iap_enabled)
+                # For each resource id associated with the rule, create a
+                # mapping of resource => rules.
+                for resource_id in resource_ids:
+                    gcp_resource = resource_util.create_resource(
+                        resource_id=resource_id,
+                        resource_type=resource_type)
 
-                rule_applies_to = resource.get('applies_to')
-                rule_key = (gcp_resource, rule_applies_to)
+                    rule = Rule(
+                        rule_name=rule_def.get('name'),
+                        rule_index=rule_index,
+                        allowed_alternate_services=allowed_alternate_services,
+                        allowed_direct_access_sources=(
+                            allowed_direct_access_sources),
+                        allowed_iap_enabled=allowed_iap_enabled)
 
-                # See if we have a mapping of the resource and rule
-                resource_rules = self.resource_rules_map.get(rule_key)
+                    rule_applies_to = resource.get('applies_to')
+                    rule_key = (gcp_resource, rule_applies_to)
 
-                # If no mapping exists, create it.
-                if not resource_rules:
-                    resource_rules = ResourceRules(
-                        resource=gcp_resource,
-                        applies_to=rule_applies_to,
-                        inherit_from_parents=rule_def.get(
-                            'inherit_from_parents', False))
-                    self.resource_rules_map[rule_key] = resource_rules
+                    # See if we have a mapping of the resource and rule
+                    resource_rules = self.resource_rules_map.get(rule_key)
 
-                # If the rule isn't in the mapping, add it.
-                if rule not in resource_rules.rules:
-                    resource_rules.rules.add(rule)
+                    # If no mapping exists, create it.
+                    if not resource_rules:
+                        resource_rules = ResourceRules(
+                            resource=gcp_resource,
+                            applies_to=rule_applies_to,
+                            inherit_from_parents=rule_def.get(
+                                'inherit_from_parents', False))
+                        self.resource_rules_map[rule_key] = resource_rules
+
+                    # If the rule isn't in the mapping, add it.
+                    if rule not in resource_rules.rules:
+                        resource_rules.rules.add(rule)
+        finally:
+            self._rules_sema.release()
 
     def get_resource_rules(self, resource):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
@@ -227,7 +234,11 @@ class IapRuleBook(bre.BaseRuleBook):
         LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
         for curr_resource in resource_ancestors:
+            wildcard_resource = resource_util.create_resource(
+                resource_id='*', resource_type=curr_resource.type)
             resource_rules = self.get_resource_rules(curr_resource)
+            resource_rules.extend(self.get_resource_rules(wildcard_resource))
+
             LOGGER.debug('Resource rules for %r: %r', curr_resource,
                          resource_rules)
             # Set to None, because if the direct resource (e.g. project)

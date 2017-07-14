@@ -20,11 +20,12 @@ See: https://cloud.google.com/compute/docs/reference/latest/backendServices
 import os
 
 from google.cloud.security.common.gcp_type import key
+from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import parser
 
 
 # pylint: disable=too-many-instance-attributes
-class BackendService(object):
+class BackendService(resource.Resource):
     """Represents BackendService resource."""
 
     def __init__(self, **kwargs):
@@ -33,6 +34,11 @@ class BackendService(object):
         Args:
             kwargs: The object's attributes.
         """
+        super(BackendService, self).__init__(
+            resource_id=kwargs.get('id'),
+            resource_type=resource.ResourceType.BACKEND_SERVICE,
+            name=kwargs.get('name'),
+            display_name=kwargs.get('name'))
         self.affinity_cookie_ttl_sec = kwargs.get('affinity_cookie_ttl_sec')
         self.backends = parser.json_unstringify(kwargs.get('backends'))
         self.cdn_policy = parser.json_unstringify(kwargs.get('cdn_policy'))
@@ -45,7 +51,6 @@ class BackendService(object):
             kwargs.get('health_checks'))
         self.iap = parser.json_unstringify(kwargs.get('iap'))
         self.load_balancing_scheme = kwargs.get('load_balancing_scheme')
-        self.name = kwargs.get('name')
         self.port = kwargs.get('port')
         self.port_name = kwargs.get('port_name')
         self.project_id = kwargs.get('project_id')

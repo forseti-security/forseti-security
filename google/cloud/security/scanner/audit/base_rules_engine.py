@@ -54,17 +54,16 @@ class BaseRulesEngine(object):
         """Build RuleBook from the rules definition file."""
         raise NotImplementedError('Implement in a child class.')
 
-    def find_policy_violations(self, resource, policy, force_rebuild=False):
-        """Determine whether IAM policy violates rules."""
-        raise NotImplementedError('Implement in a child class.')
-
     def _load_rule_definitions(self):
         """Load the rule definitions file from GCS or local filesystem.
 
         Returns:
             The parsed dict from the rule definitions file.
         """
-        return file_loader.read_and_parse_file(self.full_rules_path)
+        LOGGER.debug('Loading %r rules from %r', self, self.full_rules_path)
+        rules = file_loader.read_and_parse_file(self.full_rules_path)
+        LOGGER.debug('Got rules: %r', rules)
+        return rules
 
 class BaseRuleBook(object):
     """Base class for RuleBooks.

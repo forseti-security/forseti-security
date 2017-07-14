@@ -30,8 +30,6 @@ from google.cloud.security.notifier import notifier
 from google.cloud.security.scanner.audit import iam_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
-# pylint: disable=arguments-differ
-
 
 LOGGER = log_util.get_logger(__name__)
 

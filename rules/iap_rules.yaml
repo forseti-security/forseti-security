@@ -17,7 +17,7 @@ rules:
   - name: Forbid any IAP bypasses (when IAP is enabled)
     resource:
       - type: organization
-        applies_to: self
+        applies_to: self_and_children
         resource_ids:
           - '*'
     inherit_from_parents: true
