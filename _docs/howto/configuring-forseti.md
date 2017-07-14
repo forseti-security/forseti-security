@@ -64,9 +64,9 @@ pipelines to in the same run. To specify which pipelines to run:
 When you're finished making changes, run the following command with your
 updated configuration:
 
-````
+```
 forseti_inventory --config_path path/to/forseti_conf.yaml
-````
+```
 
 ### Configuring Scanner
 
@@ -81,6 +81,6 @@ same run. To specify which scanners to run in a batch:
 When you're finished making changes, run the following command with your
 updated configuration:
 
- ````
+ ```
  forseti_scanner --config_path path/to/forseti_conf.yaml
- ````
+ ```
