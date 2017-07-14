@@ -20,11 +20,6 @@ from google.cloud.security.common.util import parser
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -40,7 +35,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
         AppEngine applications for each.
 
         Returns:
-            A dict mapping projects with their AppEngine applications:
+            dict: Mapping projects with their AppEngine applications:
             {project_id: application}
         """
         projects = (
@@ -58,11 +53,11 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
         """Create an iterator of AppEngine applications to load into database.
 
         Args:
-            resource_from_api: A dict of AppEngine applications, keyed by
+            resource_from_api (dict): AppEngine applications, keyed by
                 project id, from GCP API.
 
         Yields:
-            Iterator of AppEngine applications in a dict.
+            iterator: AppEngine applications in a dict.
         """
         for project_id, app in resource_from_api.iteritems():
             yield {'project_id': project_id,

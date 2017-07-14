@@ -36,7 +36,6 @@ class EmailInventorySnapshotSummaryPipeline(bnp.BaseNotificationPipeline):
 
         Args:
             sendgrid_key (str): The SendGrid API key.
-
         """
         self.email_util = EmailUtil(sendgrid_key)
 

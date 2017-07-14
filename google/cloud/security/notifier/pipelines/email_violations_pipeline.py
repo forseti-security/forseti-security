@@ -48,7 +48,6 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
             pipeline_config (dict): Pipeline configurations.
-
         """
         super(EmailViolationsPipeline, self).__init__(resource,
                                                       cycle_timestamp,

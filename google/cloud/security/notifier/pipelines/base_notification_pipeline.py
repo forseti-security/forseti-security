@@ -42,7 +42,6 @@ class BaseNotificationPipeline(object):
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
             pipeline_config (dict): Pipeline configurations.
-
         """
         self.cycle_timestamp = cycle_timestamp
         self.resource = resource

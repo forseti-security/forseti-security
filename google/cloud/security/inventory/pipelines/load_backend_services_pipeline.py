@@ -25,11 +25,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -42,11 +37,11 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
         """Create an iterator of backend services to load into database.
 
         Args:
-            resource_from_api: A dict of forwarding rules, keyed by
+            resource_from_api (dict): Forwarding rules, keyed by
                 project id, from GCP API.
 
         Yields:
-            Iterator of backend service properties in a dict.
+            iterator: backend service properties in a dict.
         """
         for (project_id, backend_services) in resource_from_api.iteritems():
             for backend_service in backend_services:
@@ -90,7 +85,7 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
         compute backend services for each.
 
         Returns:
-            A dict mapping projects with their backend services (list):
+            dict: Mapping projects with their backend services (list):
             {project_id: [backend_services]}
         """
         projects = (proj_dao
