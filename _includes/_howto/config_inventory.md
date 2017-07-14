@@ -11,6 +11,6 @@ You will also need to edit, at a minimum, the following variables in the config 
 When you're finished making changes, run the following command with your
 updated configuration:
 
-````
+```
 forseti_inventory --config_path path/to/forseti_conf.yaml
-````
+```
