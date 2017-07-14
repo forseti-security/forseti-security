@@ -25,24 +25,8 @@ To display Inventory flag options, run the following commands:
   ```
 
 ## Configuring Inventory
-To run Forseti Inventory, you'll need to setup your configuration file. Edit
-the [forseti_conf.yaml sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/configs/forseti_conf.yaml.sample)
-file and save it as **forseti_conf.yaml**.
 
-You will also need to edit, at a minimum, the following variables in the config file:
-
-* db_host
-* db_user
-* db_name
-
-To run Forseti Inventory, execute the command below, providing the configuration file to
-`forseti_inventory`:
-
-  ```bash
-  forseti_inventory --config_path path/to/forseti_conf.yaml
-  ```
-
-Forseti Inventory is now set up to run for your specified projects.
+{% include _howto/config_inventory.md %}
 
 ## What's next
-- Learn more about [configuring Forseti]({% link _docs/howto/configuring-forseti.md %})
+- Learn more about [configuring Forseti]({% link _docs/howto/configuring-forseti.md %}).
