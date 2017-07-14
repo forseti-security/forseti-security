@@ -22,37 +22,40 @@ from google.cloud.security.notifier.pipelines import base_notification_pipeline 
 # pylint: enable=line-too-long
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-param-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
+
+# pylint: disable=arguments-differ
 
 class EmailInventorySnapshotSummaryPipeline(bnp.BaseNotificationPipeline):
     """Email pipeline for inventory snapshot summary."""
 
     # TODO: See if the base pipline init() can be reused.
     def __init__(self, sendgrid_key):  # pylint: disable=super-init-not-called
+        """Initialization.
+
+        Args:
+            sendgrid_key (str): The SendGrid API key.
+
+        """
         self.email_util = EmailUtil(sendgrid_key)
 
-    def _compose(  # pylint: disable=arguments-differ
+    def _compose(
             self, snapshot_time, snapshot_timestamp, status,
             inventory_pipelines):
         """Compose the email content.
 
         Args:
-            snapshot_time: Datetime object of the cycle, in UTC.
-            snapshot_timestamp: String of timestamp,
+            snapshot_time (datetime): Snapshot time, in UTC.
+            snapshot_timestamp (str): Snapshot timestamp,
                 formatted as YYYYMMDDTHHMMSSZ.
-            status: String of the overall status of current snapshot cycle.
-            inventory_pipelines: List of inventory pipelines.
+            status (str): Overall status of current snapshot cycle.
+            inventory_pipelines (list): Inventory pipelines.
 
         Returns:
-            email_subject: String of the email subject.
-            email_content: String of template content rendered with
-                the provided variables.
+            string: Email subject.
+            unicode: Email template content rendered with the provided
+                variables.
         """
         email_subject = 'Inventory Snapshot Complete: {0} {1}'.format(
             snapshot_timestamp, status)
@@ -67,17 +70,18 @@ class EmailInventorySnapshotSummaryPipeline(bnp.BaseNotificationPipeline):
 
         return email_subject, email_content
 
-    def _send(  # pylint: disable=arguments-differ
+    def _send(
             self, email_sender, email_recipient,
             email_subject, email_content, attachment=None):
         """Send a summary email of the scan.
 
         Args:
-            email_sender: String of the sender of the email.
-            email_recipient: String of the recipient of the email.
-            email_subject: String of the email subject.
-            email_content: String of template content rendered with
+            email_sender (str): Sender of the email.
+            email_recipient (str): Recipient of the email.
+            email_subject (str): Email subject.
+            email_content (unicode): Email template content rendered with
                 the provided variables.
+            attachment (attachment): SendGrid attachment object.
         """
         try:
             self.email_util.send(email_sender=email_sender,
@@ -90,19 +94,19 @@ class EmailInventorySnapshotSummaryPipeline(bnp.BaseNotificationPipeline):
             LOGGER.error('Unable to send email that inventory snapshot '
                          'completed.')
 
-    def run(  # pylint: disable=arguments-differ
+    def run(
             self, snapshot_time, snapshot_timestamp, status,
             inventory_pipelines, email_sender, email_recipient):
         """Run the email pipeline
 
         Args:
-            snapshot_time: Datetime object of the cycle, in UTC.
-            snapshot_timestamp: String of timestamp, formatted
+            snapshot_time (datetime): Snapshot time, in UTC.
+            snapshot_timestamp (str): Snapshot timestamp, formatted
                 as YYYYMMDDTHHMMSSZ.
-            status: String of the overall status of current snapshot cycle.
-            inventory_pipelines: List of inventory pipelines.
-            email_sender: String of the sender of the email.
-            email_recipient: String of the recipient of the email.
+            status (str): Overall status of current snapshot cycle.
+            inventory_pipelines (list): Inventory pipelines.
+            email_sender (str): Sender of the email.
+            email_recipient (str): Recipient of the email.
         """
         email_subject, email_content = self._compose(
             snapshot_time, snapshot_timestamp, status, inventory_pipelines)
