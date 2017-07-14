@@ -16,9 +16,10 @@
 
 # pylint: disable=too-many-locals
 
-import argparse
+from argparse import ArgumentParser
 import json
 import os
+import sys
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.security.iam import client as iam_client
@@ -320,14 +321,16 @@ def read_env(var_key, default):
     return os.environ[var_key] if var_key in os.environ else default
 
 
-def define_parent_parser():
+def define_parent_parser(parser_cls):
     """Define the parent parser.
+    Args:
+        parser_cls (type): Class to instantiate parser from.
 
     Returns:
         argparser: The parent parser which has been defined.
     """
 
-    parent_parser = argparse.ArgumentParser()
+    parent_parser = parser_cls()
     parent_parser.add_argument(
         '--endpoint',
         default='localhost:50051',
@@ -343,13 +346,15 @@ def define_parent_parser():
     return parent_parser
 
 
-def create_parser():
+def create_parser(parser_cls):
     """Create argument parser hierarchy.
+    Args:
+        parser_cls (cls): Class to instantiate parser from.
 
     Returns:
         argparser: The argument parser hierarchy which is created.
     """
-    main_parser = define_parent_parser()
+    main_parser = define_parent_parser(parser_cls)
     service_subparsers = main_parser.add_subparsers(
         title="service",
         dest="service")
@@ -591,16 +596,33 @@ SERVICES = {
     }
 
 
-def main():
-    """Main function."""
-    parser = create_parser()
-    config = parser.parse_args()
-    client = iam_client.ClientComposition(config.endpoint)
+def main(args,
+         client=None,
+         outputs=None,
+         parser_cls=ArgumentParser,
+         services=None):
+    """Main function.
+    Args:
+        args (list): Command line arguments without argv[0].
+        client (obj): API client to use.
+        outputs (list): Supported output formats.
+        parser_cls (type): Argument parser type to instantiate.
+        services (list): Supported IAM Explain services.
+    """
+
+    parser = create_parser(parser_cls)
+    config = parser.parse_args(args)
+    if not client:
+        client = iam_client.ClientComposition(config.endpoint)
     client.switch_model(config.use_model)
 
-    output = OUTPUTS[config.out_format]()
-    SERVICES[config.service](client, config, output)
+    if not outputs:
+        outputs = OUTPUTS
+    if not services:
+        services = SERVICES
+    output = outputs[config.out_format]()
+    services[config.service](client, config, output)
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
