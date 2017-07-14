@@ -46,4 +46,4 @@ configuration change.
 
 ## What's next
 
--   Read about [configuring Inventory]({ % link _docs/quickstarts/inventory/#configuring-inventory %}).
+-   Read about [configuring Inventory]({% link _docs/quickstarts/inventory/#configuring-inventory %}).
