@@ -143,12 +143,12 @@ def main(_):
         iter_objects, resource_counts = scanner.run()
 
         # Load violations processing function
-        print 'XXX: About to call find_violations on %r' % rules_engine
+        LOGGER.debug('About to call find_violations on %r', rules_engine)
         all_violations = scanner.find_violations(
             itertools.chain(
                 *iter_objects),
             rules_engine)
-        print 'XXX: Got violations: %r' % all_violations
+        LOGGER.debug('Got violations: %r', all_violations)
 
     # If there are violations, send results.
     flattening_scheme = sm.FLATTENING_MAP[rules_engine_name]
@@ -308,10 +308,11 @@ def _output_results(global_configs, scanner_configs, all_violations,
     flattening_scheme = kwargs.get('flattening_scheme')
     resource_name = sm.RESOURCE_MAP[flattening_scheme]
     (inserted_row_count, violation_errors) = (0, [])
-    print 'XXX: Flattening %r with %r' % (all_violations, flattening_scheme)
+    LOGGER.debug('Flattening %r with %r',
+                 all_violations, flattening_scheme)
     all_violations = list(_flatten_violations(
         all_violations, flattening_scheme))
-    print 'XXX: Post-flatten: %r' % all_violations
+    LOGGER.debug('Post-flatten: %r', all_violations)
     try:
         vdao = violation_dao.ViolationDao(global_configs)
         (inserted_row_count, violation_errors) = vdao.insert_violations(

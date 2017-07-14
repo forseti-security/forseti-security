@@ -1,4 +1,3 @@
-
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,6 @@
 
 """Rules engine for IAP policies on backend services"""
 from collections import namedtuple
-import itertools
 import re
 
 from google.cloud.security.common.data_access import org_resource_rel_dao
@@ -63,7 +61,8 @@ class IapRulesEngine(bre.BaseRulesEngine):
             self._load_rule_definitions(),
             snapshot_timestamp=self.snapshot_timestamp)
 
-    def find_iap_violations(self, iap_resource, force_rebuild=False):
+    # pylint: disable=arguments-differ
+    def find_policy_violations(self, iap_resource, force_rebuild=False):
         """Determine whether IAP-related settings violate rules.
 
         Args:
@@ -76,12 +75,14 @@ class IapRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
         return self.rule_book.find_violations(iap_resource)
+    # pylint: enable=arguments-differ
 
     def add_rules(self, rules):
         """Add rules to the rule book.
 
         Args:
-            rules (list): dicts defining the rules to add"""
+            rules (list): dicts defining the rules to add
+        """
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
@@ -114,7 +115,8 @@ class IapRuleBook(bre.BaseRuleBook):
         """Add rules to the rule book.
 
         Args:
-            rule_defs (list): rule definition property dicts"""
+            rule_defs (list): rule definition property dicts
+        """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
@@ -126,10 +128,7 @@ class IapRuleBook(bre.BaseRuleBook):
             rule_index (int): index of the rule from the rule definitions,
                               assigned automatically when the rule book is built
         """
-
-        resources = rule_def.get('resource')
-
-        for resource in resources:
+        for resource in rule_def.get('resource'):
             resource_ids = resource.get('resource_ids')
             resource_type = None
             try:
@@ -270,7 +269,7 @@ class IapRuleBook(bre.BaseRuleBook):
                 break
             # pylint: enable=compare-to-zero
 
-        print 'XXX: Returning violations: %r' % violations
+        LOGGER.debug('Returning violations: %r', violations)
         return violations
 
 
@@ -287,8 +286,8 @@ class ResourceRules(object):
         Args:
             resource (Resource): The resource to associate with the rule.
             rules (set): rules to associate with the resource.
-            applies_to (RuleAppliesTo): Whether the rule applies to the resource's
-                self, children, or both.
+            applies_to (RuleAppliesTo): Whether the rule applies to the
+                resource's self, children, or both.
             inherit_from_parents (bool): Whether the rule lookup should request
                 the resource's ancestor's rules.
         """
@@ -316,22 +315,15 @@ class ResourceRules(object):
                 violations.append(violation)
         return violations
 
-    def _dispatch_rule_mode_check(self, mode, rule_members=None,
-                                  policy_members=None):
-        """Determine which rule mode method to execute for rule audit.
+    def __eq__(self, other):
+        """Compare == with another object.
 
         Args:
-            rule_members: The list of rule binding members.
-            policy_members: The list of policy binding members.
+            other (ResourceRules): object to compare with
 
         Returns:
-            The result of calling the dispatched method.
+            int: comparison result
         """
-        return self._rule_mode_methods[mode](
-            rule_members=rule_members,
-            policy_members=policy_members)
-
-    def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (self.resource == other.resource and
@@ -340,10 +332,22 @@ class ResourceRules(object):
                 self.inherit_from_parents == other.inherit_from_parents)
 
     def __ne__(self, other):
+        """Compare != with another object.
+
+        Args:
+            other (object): object to compare with
+
+        Returns:
+            int: comparison result
+        """
         return not self == other
 
     def __repr__(self):
-        """String representation of this node."""
+        """String representation of this node.
+
+        Returns:
+            str: debug string
+        """
         return ('IapResourceRules<resource={}, rules={}, '
                 'applies_to={}, inherit_from_parents={}>').format(
                     self.resource, self.rules, self.applies_to,
@@ -368,9 +372,10 @@ class Rule(object):
                 services permitted to expose the same backends as this one.
             allowed_direct_access_sources (str): Regex string describing
                 network origins (IPs and tags) allowed to connect directly
-                to this service's backends, without going through the load balancer.
-            allowed_iap_enabled (str): Regex string describing allowed values for
-                "IAP enabled" setting on this service.
+                to this service's backends, without going through the load
+                balancer.
+            allowed_iap_enabled (str): Regex string describing allowed values
+                for "IAP enabled" setting on this service.
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
@@ -388,6 +393,9 @@ class Rule(object):
         Returns:
             RuleViolation: IAP violations
         """
+        LOGGER.debug('Has enabled violation? %r / %r',
+                     self.allowed_iap_enabled,
+                     iap_resource.iap_enabled)
         if self.allowed_iap_enabled != '^.+$':
             iap_enabled_regex = re.compile(
                 self.allowed_iap_enabled)
@@ -395,7 +403,12 @@ class Rule(object):
                 str(iap_resource.iap_enabled))
         else:
             iap_enabled_violation = False
+        LOGGER.debug('Enabled violation: %r', iap_enabled_violation)
 
+        LOGGER.debug('Has alternate service violation? %r / %r / %r',
+                     iap_resource.iap_enabled,
+                     self.allowed_alternate_services,
+                     iap_resource.alternate_services)
         if (iap_resource.iap_enabled and
                 self.allowed_alternate_services != '^.+$'):
             alternate_services_regex = re.compile(
@@ -406,10 +419,13 @@ class Rule(object):
             ]
         else:
             alternate_services_violations = []
+        LOGGER.debug('Alternate services violations: %r',
+                     alternate_services_violations)
 
-        print 'XXX: Has violation? %r / %r / %r' % (iap_resource.iap_enabled,
-                                                    self.allowed_direct_access_sources,
-                                                    iap_resource.direct_access_sources)
+        LOGGER.debug('Has sources violation? %r / %r / %r',
+                     iap_resource.iap_enabled,
+                     self.allowed_direct_access_sources,
+                     iap_resource.direct_access_sources)
         if (iap_resource.iap_enabled and
                 self.allowed_direct_access_sources != '^.+$'):
             sources_regex = re.compile(
@@ -418,9 +434,9 @@ class Rule(object):
                 source for source in iap_resource.direct_access_sources
                 if not sources_regex.match(source)
             ]
-            print 'XXX: Violation: %r' % direct_sources_violations
         else:
             direct_sources_violations = []
+        LOGGER.debug('Sources violations: %r', direct_sources_violations)
 
         should_raise_violation = (
             alternate_services_violations or
@@ -439,11 +455,14 @@ class Rule(object):
                 iap_enabled_violation=iap_enabled_violation,
                 direct_access_sources_violations=(
                     direct_sources_violations))
-        else:
-            return None
+        return None
 
     def __repr__(self):
-        """String representation of this node."""
+        """String representation of this node.
+
+        Returns:
+            str: debug string
+        """
         return ('IapRule<rule_name={}, rule_index={}, '
                 'allowed_alternate_services={}, '
                 'allowed_direct_access_sources={}, '
@@ -454,7 +473,14 @@ class Rule(object):
                     self.allowed_iap_enabled)
 
     def __eq__(self, other):
-        """Test whether Rule equals other Rule."""
+        """Test whether Rule equals other Rule.
+
+        Args:
+            other (Rule): object to compare to
+
+        Returns:
+            int: comparison result
+        """
         if not isinstance(other, type(self)):
             return NotImplemented
         return (self.rule_name == other.rule_name and
@@ -466,7 +492,14 @@ class Rule(object):
                 self.allowed_iap_enabled == other.allowed_iap_enabled)
 
     def __ne__(self, other):
-        """Test whether Rule is not equal to another Rule."""
+        """Test whether Rule is not equal to another Rule.
+
+        Args:
+            other (object): object to compare to
+
+        Returns:
+            int: comparison result
+        """
         return not self == other
 
     def __hash__(self):
@@ -478,7 +511,7 @@ class Rule(object):
         revisit this hash method when we process multiple rule files.
 
         Returns:
-            The hash of the rule index.
+            int: The hash of the rule index.
         """
         return hash(self.rule_index)
 

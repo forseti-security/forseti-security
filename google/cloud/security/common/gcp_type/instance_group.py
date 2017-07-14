@@ -116,8 +116,8 @@ class Key(key.Key):
                              'zones': 'zone',
                              'instanceGroups': 'name'},
                             url)
-        if (obj.project_id is None or
-                obj.name is None or
+        if (not obj.project_id or
+                not obj.name or
                 not bool(obj.zone) ^ bool(obj.region)):
             raise ValueError('Invalid fields in URL %r' % url)
         return obj

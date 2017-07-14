@@ -14,8 +14,6 @@
 
 """Data access object for InstanceGroup."""
 
-import json
-
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import instance_group

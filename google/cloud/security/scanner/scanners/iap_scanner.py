@@ -187,7 +187,6 @@ class _RunData(object):
                     return True
             return False
 
-
         relevant_rules_by_priority = collections.defaultdict(lambda: [])
         for firewall_rule in self.firewall_rules:
             firewall_network = network_type.Key.from_url(
@@ -285,6 +284,13 @@ class _RunData(object):
                         network_port, tag))
 
         # Don't count the load balancer as a direct access source.
+        # The load balancer egress IPs are documented here:
+        #     https://cloud.google.com/compute/docs/load-balancing/http/
+        # (In theory they can change, but it's not common (since it's
+        # a backwards-incompatible change for HTTP load balancer
+        # customers.) 35.191/16 was recently announced; when Google
+        # added that one, they sent out a mandatory service
+        # announcement a year before the new range was used.)
         direct_access_sources.discard('130.211.0.0/22')
         direct_access_sources.discard('35.191.0.0/16')
 
@@ -432,12 +438,15 @@ class IapScanner(base_scanner.BaseScanner):
         """Find IAP violations.
 
         Args:
-            iap_resouces (list): IapResource to find violations in
+            iap_resources (list): IapResource to find violations in
             rules_engine (IapRulesEngine): Rules engine to run.
+
+        Returns:
+            list: RuleViolation
         """
         LOGGER.info('Finding IAP violations...')
         ret = []
         for iap_resource in iap_resources:
-            ret.extend(rules_engine.find_iap_violations(iap_resource))
-        print 'XXX: find_violations returning %r' % ret
+            ret.extend(rules_engine.find_policy_violations(iap_resource))
+        LOGGER.debug('find_violations returning %r', ret)
         return ret

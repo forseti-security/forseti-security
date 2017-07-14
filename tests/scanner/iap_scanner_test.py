@@ -14,6 +14,7 @@
 
 """IAP scanner test"""
 
+import json
 import mock
 
 import yaml
@@ -44,14 +45,15 @@ class ScannerTest(ForsetiTestCase):
             'bs1': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1',
-                backends=[{'group': ('https://www.googleapis.com/compute/v1/'
-                                     'projects/foo/regions/wl-redqueen1/'
-                                     'instanceGroups/ig_managed')},
-                          {'group': ('https://www.googleapis.com/compute/v1/'
-                                     'projects/foo/regions/wl-redqueen1/'
-                                     'instanceGroups/ig_unmanaged')},
-                ],
-                iap={'enabled': True},
+                backends=json.dumps(
+                    [{'group': ('https://www.googleapis.com/compute/v1/'
+                                'projects/foo/regions/wl-redqueen1/'
+                                'instanceGroups/ig_managed')},
+                     {'group': ('https://www.googleapis.com/compute/v1/'
+                                'projects/foo/regions/wl-redqueen1/'
+                                'instanceGroups/ig_unmanaged')},
+                    ]),
+                iap=json.dumps({'enabled': True}),
                 port=80,
                 port_name='http',
                 ),
@@ -59,48 +61,53 @@ class ScannerTest(ForsetiTestCase):
             'bs1_same_backend': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_same_backend',
-                backends=[{'group': ('https://www.googleapis.com/compute/v1/'
-                                     'projects/foo/regions/wl-redqueen1/'
-                                     'instanceGroups/ig_managed')},
-                ],
+                backends=json.dumps(
+                    [{'group': ('https://www.googleapis.com/compute/v1/'
+                                'projects/foo/regions/wl-redqueen1/'
+                                'instanceGroups/ig_managed')},
+                    ]),
                 port=80,
                 ),
             # A backend service with a different port (so, not an alternate).
             'bs1_different_port': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_different_port',
-                backends=[{'group': ('https://www.googleapis.com/compute/v1/'
-                                     'projects/foo/regions/wl-redqueen1/'
-                                     'instanceGroups/ig_managed')},
-                ],
+                backends=json.dumps(
+                    [{'group': ('https://www.googleapis.com/compute/v1/'
+                                'projects/foo/regions/wl-redqueen1/'
+                                'instanceGroups/ig_managed')},
+                    ]),
                 port=81,
                 ),
             # Various backend services that should or shouldn't be alts.
             'bs1_same_instance': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_same_instance',
-                backends=[{'group': ('https://www.googleapis.com/compute/v1/'
-                                     'projects/foo/regions/wl-redqueen1/'
-                                     'instanceGroups/ig_same_instance')},
-                ],
+                backends=json.dumps(
+                    [{'group': ('https://www.googleapis.com/compute/v1/'
+                                'projects/foo/regions/wl-redqueen1/'
+                                'instanceGroups/ig_same_instance')},
+                    ]),
                 port=80,
                 ),
             'bs1_different_network': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_different_network',
-                backends=[{'group': ('https://www.googleapis.com/compute/v1/'
-                                     'projects/foo/regions/wl-redqueen1/'
-                                     'instanceGroups/ig_different_network')},
-                ],
+                backends=json.dumps(
+                    [{'group': ('https://www.googleapis.com/compute/v1/'
+                                'projects/foo/regions/wl-redqueen1/'
+                                'instanceGroups/ig_different_network')},
+                    ]),
                 port=80,
                 ),
             'bs1_different_instance': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_different_instance',
-                backends=[{'group': ('https://www.googleapis.com/compute/v1/'
-                                     'projects/foo/regions/wl-redqueen1/'
-                                     'instanceGroups/ig_different_instance')},
-                ],
+                backends=json.dumps(
+                    [{'group': ('https://www.googleapis.com/compute/v1/'
+                                'projects/foo/regions/wl-redqueen1/'
+                                'instanceGroups/ig_different_instance')},
+                    ]),
                 port=80,
                 ),
         }
@@ -110,10 +117,10 @@ class ScannerTest(ForsetiTestCase):
                 project_id='foo',
                 firewall_rule_name='proto_mismatch',
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_tags=['proto_mismatch'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_tags=json.dumps(['proto_mismatch']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'udp',
-                }],
+                }]),
             ),
             # Preempted by allow.
             'deny_applies_all_preempted': firewall_rule_type.FirewallRule(
@@ -121,43 +128,43 @@ class ScannerTest(ForsetiTestCase):
                 firewall_rule_name='deny_applies_all_preempted',
                 firewall_rule_priority=60000,
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_ranges=['applies_all'],
-                firewall_rule_denied=[{
+                firewall_rule_source_ranges=json.dumps(['applies_all']),
+                firewall_rule_denied=json.dumps([{
                     'IPProtocol': 'tcp',
-                }],
+                }]),
             ),
             # Applies to all ports, tags.
             'applies_all': firewall_rule_type.FirewallRule(
                 project_id='foo',
                 firewall_rule_name='applies_all',
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_ranges=['10.0.2.0/24'],
-                firewall_rule_source_tags=['applies_all'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_ranges=json.dumps(['10.0.2.0/24']),
+                firewall_rule_source_tags=json.dumps(['applies_all']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'tcp',
-                }],
+                }]),
             ),
             # Applies to only port 8080.
             'applies_8080': firewall_rule_type.FirewallRule(
                 project_id='foo',
                 firewall_rule_name='applies_8080',
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_tags=['applies_8080'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_tags=json.dumps(['applies_8080']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'tcp',
                     'ports': [8080],
-                }],
+                }]),
             ),
             # Applies to a multi-port range.
             'applies_8081_8083': firewall_rule_type.FirewallRule(
                 project_id='foo',
                 firewall_rule_name='applies_8081_8083',
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_tags=['applies_8081_8083'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_tags=json.dumps(['applies_8081_8083']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'tcp',
                     'ports': ['8081-8083'],
-                }],
+                }]),
             ),
             # Doesn't apply because of direction mismatch.
             'direction': firewall_rule_type.FirewallRule(
@@ -165,52 +172,52 @@ class ScannerTest(ForsetiTestCase):
                 firewall_rule_name='direction',
                 firewall_rule_direction='EGRESS',
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_tags=['direction'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_tags=json.dumps(['direction']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'tcp',
-                }],
+                }]),
             ),
             # Doesn't apply because of network mismatch.
             'network': firewall_rule_type.FirewallRule(
                 project_id='foo',
                 firewall_rule_name='network',
                 firewall_rule_network='global/networks/social',
-                firewall_rule_source_tags=['network'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_tags=json.dumps(['network']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'tcp',
-                }],
+                }]),
             ),
             # Doesn't apply because of tags.
             'tag_mismatch': firewall_rule_type.FirewallRule(
                 project_id='foo',
                 firewall_rule_name='tag_mismatch',
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_tags=['tag_mismatch'],
-                firewall_rule_target_tags=['im_gonna_pop_some_tags'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_tags=json.dumps(['tag_mismatch']),
+                firewall_rule_target_tags=json.dumps(['im_gonna_pop_some_tags']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'tcp',
-                }],
+                }]),
             ),
             # Tag-specific rule *does* apply.
             'tag_match': firewall_rule_type.FirewallRule(
                 project_id='foo',
                 firewall_rule_name='tag_match',
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_tags=['tag_match'],
-                firewall_rule_target_tags=['tag_i1'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_tags=json.dumps(['tag_match']),
+                firewall_rule_target_tags=json.dumps(['tag_i1']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'tcp',
-                }],
+                }]),
             ),
             # Preempted by deny rule.
             'preempted': firewall_rule_type.FirewallRule(
                 project_id='foo',
                 firewall_rule_name='preempted',
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_tags=['preempted'],
-                firewall_rule_allowed=[{
+                firewall_rule_source_tags=json.dumps(['preempted']),
+                firewall_rule_allowed=json.dumps([{
                     'IPProtocol': 'tcp',
-                }],
+                }]),
             ),
             # Preempted by deny rule.
             'preempted_deny': firewall_rule_type.FirewallRule(
@@ -218,23 +225,23 @@ class ScannerTest(ForsetiTestCase):
                 firewall_rule_name='preempted_deny',
                 firewall_rule_priority=1,
                 firewall_rule_network='global/networks/default',
-                firewall_rule_source_ranges=['preempted'],
-                firewall_rule_denied=[{
+                firewall_rule_source_ranges=json.dumps(['preempted']),
+                firewall_rule_denied=json.dumps([{
                     'IPProtocol': 'tcp',
-                }],
+                }]),
             ),
         }
         self.instances = {
             'i1': instance_type.Instance(
                 project_id='foo',
                 name='i1',
-                tags=['tag_i1'],
+                tags=json.dumps(['tag_i1']),
                 zone='wl-redqueen1-a',
             ),
             'i2': instance_type.Instance(
                 project_id='foo',
                 name='i2',
-                tags=[],
+                tags=json.dumps([]),
                 zone='wl-redqueen1-a',
             ),
         }
@@ -245,8 +252,9 @@ class ScannerTest(ForsetiTestCase):
                 name='ig_managed',
                 network='global/networks/default',
                 region='wl-redqueen1',
-                instance_urls=[('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/zones/wl-redqueen1-a/instances/i1')],
+                instance_urls=json.dumps(
+                    [('https://www.googleapis.com/compute/v1/'
+                      'projects/foo/zones/wl-redqueen1-a/instances/i1')]),
             ),
             # Unmanaged; overrides port mapping
             'ig_unmanaged': instance_group_type.InstanceGroup(
@@ -254,9 +262,10 @@ class ScannerTest(ForsetiTestCase):
                 name='ig_unmanaged',
                 network='global/networks/default',
                 region='wl-redqueen1',
-                instance_urls=[],
-                named_ports=[{'name': 'foo', 'port': 80},
-                             {'name': 'http', 'port': 8080}],
+                instance_urls=json.dumps([]),
+                named_ports=json.dumps(
+                    [{'name': 'foo', 'port': 80},
+                     {'name': 'http', 'port': 8080}]),
             ),
             # Unmanaged; same instance as ig_managed
             'ig_same_instance': instance_group_type.InstanceGroup(
@@ -264,8 +273,9 @@ class ScannerTest(ForsetiTestCase):
                 name='ig_same_instance',
                 network='global/networks/default',
                 region='wl-redqueen1',
-                instance_urls=[('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/zones/wl-redqueen1-a/instances/i1')],
+                instance_urls=json.dumps(
+                    [('https://www.googleapis.com/compute/v1/'
+                      'projects/foo/zones/wl-redqueen1-a/instances/i1')]),
             ),
             # Unmanaged; different network than ig_managed
             'ig_different_network': instance_group_type.InstanceGroup(
@@ -273,8 +283,9 @@ class ScannerTest(ForsetiTestCase):
                 name='ig_different_network',
                 network='global/networks/nondefault',
                 region='wl-redqueen1',
-                instance_urls=[('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/zones/wl-redqueen1-a/instances/i1')],
+                instance_urls=json.dumps(
+                    [('https://www.googleapis.com/compute/v1/'
+                      'projects/foo/zones/wl-redqueen1-a/instances/i1')]),
             ),
             # Unmanaged; different instance than ig_managed
             'ig_different_instance': instance_group_type.InstanceGroup(
@@ -282,8 +293,9 @@ class ScannerTest(ForsetiTestCase):
                 name='ig5',
                 network='global/networks/default',
                 region='wl-redqueen1',
-                instance_urls=[('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/zones/wl-redqueen1-a/instances/i2')],
+                instance_urls=json.dumps(
+                    [('https://www.googleapis.com/compute/v1/'
+                      'projects/foo/zones/wl-redqueen1-a/instances/i2')]),
             ),
         }
         self.instance_group_managers = {
@@ -301,9 +313,9 @@ class ScannerTest(ForsetiTestCase):
             'it1': instance_template_type.InstanceTemplate(
                 project_id='foo',
                 name='it1',
-                properties={
+                properties=json.dumps({
                     'tags': {'items': ['tag_it1']},
-                },
+                }),
             ),
         }
         self.data = iap_scanner._RunData(self.backend_services.values(),
@@ -391,14 +403,14 @@ class ScannerTest(ForsetiTestCase):
         scanner._get_instance_group_managers = lambda: self.instance_group_managers.values()
         scanner._get_instance_templates = lambda: self.instance_templates.values()
 
-        iap_resources = dict((resource.backend_service_name, resource)
-                             for resource in scanner.run())
-        self.assertEquals(self.backend_services.keys(),
-                          iap_resources.keys())
+        iap_resources = dict((resource.backend_service.key, resource)
+                             for resource in scanner.run()[0][0])
+        self.maxDiff = None
+        self.assertEquals(set([bs.key for bs in self.backend_services.values()]),
+                          set(iap_resources.keys()))
         self.assertEquals(
             iap_scanner.IapResource(
-                backend_service_name='bs1',
-                backend_service_project='foo',
+                backend_service=self.backend_services['bs1'],
                 alternate_services=set([
                     backend_service_type.Key.from_args(
                         project_id='foo',
@@ -411,10 +423,11 @@ class ScannerTest(ForsetiTestCase):
                 ]),
                 direct_access_sources=set(['10.0.2.0/24',
                                            'tag_match',
-                                           'applies_all']),
+                                           'applies_all',
+                                           'applies_8080']),
                 iap_enabled=True,
             ),
-            iap_resources['bs1'])
+            iap_resources[self.backend_services['bs1'].key])
 
 
 if __name__ == '__main__':

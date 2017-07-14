@@ -22,6 +22,7 @@ import yaml
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
+from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type import backend_service
 from google.cloud.security.common.gcp_type.organization import Organization
 from google.cloud.security.common.gcp_type.project import Project
@@ -47,13 +48,22 @@ class IapRulesEngineTest(ForsetiTestCase):
         self.project2 = Project('my-project-2', 12346,
             display_name='My project 2')
 
-        # patch the organization resource relation dao
-        self.patcher = mock.patch('google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
-        self.mock_org_rel_dao = self.patcher.start()
+        # patch the daos
+        self.org_patcher = mock.patch(
+            'google.cloud.security.common.data_access.'
+            'org_resource_rel_dao.OrgResourceRelDao')
+        self.mock_org_rel_dao = self.org_patcher.start()
         self.mock_org_rel_dao.return_value = None
 
+        self.project_patcher = mock.patch(
+            'google.cloud.security.common.data_access.'
+            'project_dao.ProjectDao')
+        self.mock_project_dao = self.project_patcher.start()
+        self.mock_project_dao.return_value = None
+
     def tearDown(self):
-        self.patcher.stop()
+        self.org_patcher.stop()
+        self.project_patcher.stop()
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
@@ -138,13 +148,15 @@ class IapRulesEngineTest(ForsetiTestCase):
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')
+        service = backend_service.BackendService(
+            project_id=self.project1.id,
+            name='bs1')
         iap_resource = iap_scanner.IapResource(
-            backend_service_name='bs1',
-            backend_service_project=self.project1.id,
+            backend_service=service,
             alternate_services=set(),
             direct_access_sources=set(),
             iap_enabled=True)
-        results = list(resource_rule.find_mismatches(self.project1,
+        results = list(resource_rule.find_mismatches(service,
                                                      iap_resource))
         self.assertEquals([], results)
 
@@ -154,18 +166,21 @@ class IapRulesEngineTest(ForsetiTestCase):
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')
+        service = backend_service.BackendService(
+            project_id=self.project1.id,
+            name='bs1')
         iap_resource = iap_scanner.IapResource(
-            backend_service_name='bs1',
-            backend_service_project=self.project1.id,
+            backend_service=service,
             alternate_services=set(),
             direct_access_sources=set(),
             iap_enabled=False)
-        results = list(resource_rule.find_mismatches(self.project1,
+        results = list(resource_rule.find_mismatches(service,
                                                      iap_resource))
         expected_violations = [
             ire.RuleViolation(
-                resource_type='project',
-                resource_id=self.project1.id,
+                resource_type='backend_service',
+                resource_name='bs1',
+                resource_id=service.resource_id,
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 violation_type='IAP_VIOLATION',
@@ -181,21 +196,24 @@ class IapRulesEngineTest(ForsetiTestCase):
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')
+        service = backend_service.BackendService(
+            project_id=self.project1.id,
+            name='bs1')
         alternate_service = backend_service.Key.from_args(
             project_id=self.project1.id,
             name='bs2')
         iap_resource = iap_scanner.IapResource(
-            backend_service_name='bs1',
-            backend_service_project=self.project1.id,
+            backend_service=service,
             alternate_services=set([alternate_service]),
             direct_access_sources=set(),
             iap_enabled=True)
-        results = list(resource_rule.find_mismatches(self.project1,
+        results = list(resource_rule.find_mismatches(service,
                                                      iap_resource))
         expected_violations = [
             ire.RuleViolation(
-                resource_type='project',
-                resource_id=self.project1.id,
+                resource_type='backend_service',
+                resource_name='bs1',
+                resource_id=service.resource_id,
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 violation_type='IAP_VIOLATION',
@@ -212,18 +230,21 @@ class IapRulesEngineTest(ForsetiTestCase):
                                           rules=set([rule]),
                                           applies_to='self_and_children')
         direct_source = 'some-tag'
+        service = backend_service.BackendService(
+            project_id=self.project1.id,
+            name='bs1')
         iap_resource = iap_scanner.IapResource(
-            backend_service_name='bs1',
-            backend_service_project=self.project1.id,
+            backend_service=service,
             alternate_services=set(),
             direct_access_sources=set([direct_source]),
             iap_enabled=True)
-        results = list(resource_rule.find_mismatches(self.project1,
+        results = list(resource_rule.find_mismatches(service,
                                                      iap_resource))
         expected_violations = [
             ire.RuleViolation(
-                resource_type='project',
-                resource_id=self.project1.id,
+                resource_type='backend_service',
+                resource_name='bs1',
+                resource_id=service.resource_id,
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 violation_type='IAP_VIOLATION',
@@ -240,16 +261,18 @@ class IapRulesEngineTest(ForsetiTestCase):
         resource_rule = ire.ResourceRules(self.org789,
                                           rules=set([rule]),
                                           applies_to='self_and_children')
+        service = backend_service.BackendService(
+            project_id=self.project1.id,
+            name='bs1')
         alternate_service = backend_service.Key.from_args(
             project_id=self.project1.id,
             name='bs2')
         iap_resource = iap_scanner.IapResource(
-            backend_service_name='bs1',
-            backend_service_project=self.project1.id,
+            backend_service=service,
             alternate_services=set([alternate_service]),
             direct_access_sources=set(['some-tag']),
             iap_enabled=False)
-        results = list(resource_rule.find_mismatches(self.project1,
+        results = list(resource_rule.find_mismatches(service,
                                                      iap_resource))
         expected_violations = []
         self.assertEquals(expected_violations, results)

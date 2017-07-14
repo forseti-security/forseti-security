@@ -106,7 +106,7 @@ class Key(key.Key):
                              'zones': 'zone',
                              'instances': 'name'},
                             url)
-        if obj.project_id is None or obj.zone is None or obj.name is None:
+        if not obj.project_id or not obj.zone or not obj.name:
             raise ValueError('Missing fields in URL %r' % url)
         return obj
 

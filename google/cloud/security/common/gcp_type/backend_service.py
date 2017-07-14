@@ -110,7 +110,7 @@ class Key(key.Key):
              'regions': 'region',
              'backendServices': 'name'},
             url)
-        if obj.project_id is None or obj.name is None:
+        if not obj.project_id or not obj.name:
             raise ValueError('Missing fields in URL %r' % url)
         return obj
 
