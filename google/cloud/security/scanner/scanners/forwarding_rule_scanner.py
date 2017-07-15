@@ -16,11 +16,9 @@
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import forwarding_rules_dao
 from google.cloud.security.scanner.audit import forwarding_rule_rules_engine
-from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
 
 LOGGER = log_util.get_logger(__name__)
-
 
 class ForwardingRuleScanner(base_scanner.BaseScanner):
     """Pipeline for forwarding rules from dao"""
@@ -40,9 +38,10 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             snapshot_timestamp,
             rules)
 
-        self.rules_engine = forwarding_rule_rules_engine.ForwardingRuleRulesEngine(
-            rules_file_path=self.rules,
-            snapshot_timestamp=self.snapshot_timestamp)
+        self.rules_engine = forwarding_rule_rules_engine.\
+            ForwardingRuleRulesEngine(
+                rules_file_path=self.rules,
+                snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
 
@@ -80,6 +79,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
                 'violation_data': violation_data,
             }
 
+    # pylint: disable=arguments-differ
     def _output_results(self, all_violations):
         """Output results.
 
@@ -91,8 +91,13 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(resource_name, all_violations)
 
+    # pylint: disable=arguments-differ
+    def _retrieve(self):
+        """Runs the data collection.
 
-    def _retrieve (self):
+        Returns:
+            list: forwarding rule list.
+        """
         forwarding_rules = forwarding_rules_dao \
             .ForwardingRulesDao(self.global_configs) \
             .get_forwarding_rules(self.snapshot_timestamp)
@@ -111,7 +116,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding Forwading Rule violations...')
 
-        for forwarding_rule in list(forwarding_rules):
+        for forwarding_rule in forwarding_rules:
             LOGGER.debug('%s', forwarding_rule)
             violations = self.rules_engine.find_policy_violations(
                 forwarding_rule)

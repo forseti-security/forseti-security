@@ -27,11 +27,6 @@ class ForwardingRule(object):
     """
 
     def __init__(self, **kwargs):
-        """ForwardingRule resource.
-
-        Args:
-            **kwargs (dict): Keyworded variable args.
-        """
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
         self.creation_timestamp = kwargs.get('creation_timestamp')
