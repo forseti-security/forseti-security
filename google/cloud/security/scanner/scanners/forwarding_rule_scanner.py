@@ -22,6 +22,7 @@ LOGGER = log_util.get_logger(__name__)
 
 class ForwardingRuleScanner(base_scanner.BaseScanner):
     """Pipeline for forwarding rules from dao"""
+
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
         """Initialization.
@@ -114,7 +115,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             list: A list of forwarding rule violations
         """
         all_violations = []
-        LOGGER.info('Finding Forwading Rule violations...')
+        LOGGER.info('Finding Forwarding Rule Violations...')
 
         for forwarding_rule in forwarding_rules:
             LOGGER.debug('%s', forwarding_rule)

@@ -1,4 +1,3 @@
-
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +22,7 @@ from google.cloud.security.scanner.audit import errors as audit_errors
 
 
 LOGGER = log_util.get_logger(__name__)
+
 
 class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
     """Rules engine for forwarding rules"""
@@ -74,25 +74,25 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
         resource_rules = self.rule_book.get_resource_rules()
-        matched = False
+
+        # If your fwd rule matches at least 1 rule in rulebook return None
+        # else your fwd rule violates the rulebook and will return a violation
         for rule in resource_rules:
-            matched = rule.find_match(forwarding_rule) or matched
-            if matched:
+            if rule.find_match(forwarding_rule):
                 return None
 
-        if not matched:
-            return self.RuleViolation(
-                violation_type='FORWARDING_RULE_VIOLATION',
-                load_balancing_scheme=forwarding_rule. \
-                    load_balancing_scheme,
-                target=forwarding_rule.target,
-                port_range=forwarding_rule.port_range,
-                port=forwarding_rule.ports,
-                ip_protocol=forwarding_rule.ip_protocol,
-                ip_address=forwarding_rule.ip_address,
-                resource_id=forwarding_rule.resource_id,
-                rule_index=len(resource_rules),
-                resource_type=ResourceType.FORWARDING_RULE)
+        return self.RuleViolation(
+            violation_type='FORWARDING_RULE_VIOLATION',
+            load_balancing_scheme=forwarding_rule. \
+                load_balancing_scheme,
+            target=forwarding_rule.target,
+            port_range=forwarding_rule.port_range,
+            port=forwarding_rule.ports,
+            ip_protocol=forwarding_rule.ip_protocol,
+            ip_address=forwarding_rule.ip_address,
+            resource_id=forwarding_rule.resource_id,
+            rule_index=len(resource_rules),
+            resource_type=ResourceType.FORWARDING_RULE)
 
     def add_rules(self, rules):
         """Add rules to the rule book.
@@ -137,12 +137,11 @@ class ForwardingRuleRulesBook(bre.BaseRuleBook):
             rule_def (dict): A dictionary containing rule definition
                 properties.
             rule_index (int): The index of the rule from the rule definitions.
-            Assigned automatically when the rule book is built.
+                Assigned automatically when the rule book is built.
 
         Raises:
             InvalidRulesSchemaError: if rule has format error
         """
-
         target = rule_def.get('target')
         mode = rule_def.get('mode')
         load_balancing_scheme = rule_def.get('load_balancing_scheme')
@@ -172,17 +171,12 @@ class ForwardingRuleRulesBook(bre.BaseRuleBook):
             self.resource_rules_map[rule_index] = rule
 
     def get_resource_rules(self):
-        """Get all the resource rules for (resource, RuleAppliesTo.*).
+        """Get all the resource_rules as a list from the resource_rules_map
 
         Returns:
             list: A list of ResourceRules.
         """
-        resource_rules = []
-        for resource_rule in self.resource_rules_map:
-            resource_rules.append(self.resource_rules_map[resource_rule])
-
-        return resource_rules
-
+        return list(self.resource_rules_map.values())
 
 class Rule(object):
     """Rule properties from the rule definition file.
@@ -208,7 +202,7 @@ class Rule(object):
             forwarding_rule (ForwardingRule): forwarding rule resource
 
         Returns:
-            bool: bool if the forwarding rule matched at least 1 rule in the
+            bool: true if the forwarding rule matched at least 1 rule in the
                 rulebook
         """
         ip_matched = forwarding_rule.ip_address == self.rules['ip_address']
