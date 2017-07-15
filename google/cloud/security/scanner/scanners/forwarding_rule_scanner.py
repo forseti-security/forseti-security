@@ -116,7 +116,6 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         """
         all_violations = []
         LOGGER.info('Finding Forwarding Rule Violations...')
-
         for forwarding_rule in forwarding_rules:
             LOGGER.debug('%s', forwarding_rule)
             violations = self.rules_engine.find_policy_violations(
