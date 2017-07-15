@@ -1,4 +1,3 @@
-#
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +20,7 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
-
 LOGGER = log_util.get_logger(__name__)
-
 
 class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
     """Rules engine for forwarding rules"""
