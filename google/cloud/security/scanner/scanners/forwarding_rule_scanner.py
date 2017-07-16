@@ -18,7 +18,9 @@ from google.cloud.security.common.data_access import forwarding_rules_dao
 from google.cloud.security.scanner.audit import forwarding_rule_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
+
 LOGGER = log_util.get_logger(__name__)
+
 
 class ForwardingRuleScanner(base_scanner.BaseScanner):
     """Pipeline for forwarding rules from dao"""
@@ -44,7 +46,6 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
                 rules_file_path=self.rules,
                 snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
-
 
     def run(self):
         forwarding_rules = self._retrieve()
