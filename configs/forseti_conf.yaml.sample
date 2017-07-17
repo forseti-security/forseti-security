@@ -99,6 +99,13 @@ scanner:
     # gs://bucket-name/path/for/output
     output_path: OUTPUT_PATH
 
+    # Rules path (do not include filename).
+    # If GCS location, the format of the path should be:
+    # gs://bucket-name/path/for/rules_path
+    # if no rules_path is specified, rules are
+    # searched in /path/to/forseti_security/rules/
+    # rules_path: RULES_PATH
+
     scanners:
         - name: bigquery
           enabled: true
