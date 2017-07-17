@@ -40,9 +40,15 @@ class ModelCreatorClient:
                                                full_to_type_name(full_resource_name),
                                                policy)
 
+    def commit(self):
+        self.session.commit()
+        self.data_access.denorm_group_in_group(self.session)
+        self.session.commit()
+
 class ModelCreator:
     def __init__(self, model, client):
         self._install_model(model, client)
+        client.commit()
 
     def _install_model(self, model, client):
         self._install_resources(model['resources'], client.playground)

@@ -251,3 +251,86 @@ EXPLAIN_GRANTED_1 = {
                 },
             },
     }
+
+GROUP_IN_GROUP_TESTING_1 = {
+        'resources': {
+            },
+        'memberships': {
+                'group/g1': {},
+                'group/g2': {
+                        'group/g2g1': {},
+                    },
+                'group/g3': {
+                        'group/g1': {},
+                        'group/g2': {},
+                    },
+                'group/g4': {
+                        'group/g1': {},
+                        'group/g3': {},
+                    },
+                'group/g5': {
+                        'group/g4': {},
+                    },
+                'group/g6': {
+                        'group/g5': {},
+                    },
+                'group/g7': {
+                        'group/g6': {},
+                        'group/g5': {},
+                    },
+            },
+        'roles': {
+            },
+        'bindings': {
+            },
+    }
+
+ACCESS_BY_PERMISSIONS_1 = {
+        'resources': {
+            'r/res1': {
+                'r/res2': {
+                    },
+                'r/res3': {
+                        'r/res4': {},
+                    },
+                },
+            },
+        'memberships': {
+                'user/u1': {},
+                'user/u2': {},
+                'group/g1': {
+                        'user/u3': {},
+                    },
+                'group/g2': {
+                        'user/u3': {},
+                        'group/g3': {},
+                    },
+                'group/g3': {
+                        'group/g3g1': {
+                                'user/u3': {},
+                                'user/u4': {},
+                            },
+                    },
+            },
+        'roles': {
+            'viewer': ['read', 'list', 'readonly'],
+            'writer': ['read', 'list', 'write', 'writeonly'],
+            'admin': ['read', 'list', 'write', 'delete'],
+            },
+        'bindings': {
+            'r/res1': {
+                    'viewer': ['group/g1'],
+                    'admin': ['user/u1'],
+                },
+            'r/res2': {
+                    'viewer': ['group/g1'],
+                },
+            'r/res3': {
+                    'viewer': ['group/g1','group/g3'],
+                    'writer': ['group/g3'],
+                },
+            'r/res4': {
+                    'admin': ['group/g2'],
+                },
+            },
+    }
