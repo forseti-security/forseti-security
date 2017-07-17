@@ -20,7 +20,7 @@ import mock
 import unittest
 import yaml
 
-from tests.unittest_utils import ForestiTestCase
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import base_rules_engine as bre
