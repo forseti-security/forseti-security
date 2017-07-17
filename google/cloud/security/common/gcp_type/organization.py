@@ -19,10 +19,6 @@ See: https://cloud.google.com/resource-manager/reference/rest/v1/organizations
 from google.cloud.security.common.gcp_type import resource
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-
-
 class OrgLifecycleState(resource.LifecycleState):
     """Organization lifecycle state."""
 
@@ -43,10 +39,12 @@ class Organization(resource.Resource):
         """Initialize.
 
         Args:
-            organization_id: The organization id.
-            name: The organization's unique GCP name, i.e. "organizations/{id}".
-            display_name: The organization's display name.
-            lifecycle_state: The lifecycle state of the organization.
+            organization_id (int): The organization id.
+            name (str): The organization's unique GCP name, with the
+                format "organizations/{id}".
+            display_name (str): The organization's display name.
+            lifecycle_state (LifecycleState): The lifecycle state of the
+                organization.
         """
         super(Organization, self).__init__(
             resource_id=organization_id,

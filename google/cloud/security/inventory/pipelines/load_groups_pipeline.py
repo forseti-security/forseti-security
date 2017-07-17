@@ -22,12 +22,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -40,10 +34,10 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable groups.
 
         Args:
-            A list of group objects from the Admin SDK.
+            resource_from_api (list): Group objects from the Admin SDK.
 
         Yields:
-            An iterable of loadable groups as a per-group dictionary.
+            iterable: Loadable groups as a per-group dictionary.
         """
         for group in resource_from_api:
             yield {'group_id': group.get('id'),
@@ -56,7 +50,7 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
         """Retrieve the groups from GSuite.
 
         Returns:
-            A list of group list objects from the Admin SDK.
+            list: Group list objects from the Admin SDK.
 
         Raises:
             LoadDataPipelineException: An error with loading data has occurred.

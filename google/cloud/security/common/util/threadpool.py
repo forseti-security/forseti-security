@@ -19,15 +19,15 @@ from threading import Thread
 from threading import Lock
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-
-
 class Worker(Thread):
     """Thread executing callables from queue."""
 
     def __init__(self, queue):
+        """Initalize.
+
+        Args:
+            queue (Queue): A queue.
+        """
         Thread.__init__(self)
         self.queue = queue
         self.daemon = True
@@ -35,6 +35,7 @@ class Worker(Thread):
 
     # pylint: disable=broad-except
     def run(self):
+        """Run the worker."""
         while True:
             func, args, kargs, result = self.queue.get()
             try:
@@ -50,21 +51,29 @@ class Result(object):
     """Used to communicate job result values and exceptions."""
 
     def __init__(self):
+        """Initialize."""
         self.lock = Lock()
         self.lock.acquire()
         self.value = Exception()
         self.raised = False
 
     def put(self, value, raised):
-        """Worker puts value or exception into result."""
+        """Worker puts value or exception into result.
 
+        Args:
+            value (object): A value or exception.
+            raised (bool): Whether exception was raised.
+        """
         self.value = value
         self.raised = raised
         self.lock.release()
 
     def get(self):
-        """Get value after worker has completed."""
+        """Get value after worker has completed.
 
+        Returns:
+            object: The value.
+        """
         self.lock.acquire()
         try:
             if self.raised:
@@ -78,19 +87,31 @@ class ThreadPool(object):
     """ThreadPool consumes tasks via queue."""
 
     def __init__(self, num_workers):
+        """Initialize.
+
+        Args:
+            num_workers (int): The number of workers.
+        """
         self.queue = Queue(num_workers)
         self.workers = []
         for _ in range(num_workers):
             self.workers.append(Worker(self.queue))
 
     def add_func(self, func, *args, **kargs):
-        """Add a callable to the queue"""
+        """Add a callable to the queue.
 
+        Args:
+            func (function): A callable.
+            *args (list): Non-keyworded variable args.
+            **kargs (dict): Keyworded variable args.
+
+        Returns:
+            Result: The result.
+        """
         result = Result()
         self.queue.put((func, args, kargs, result))
         return result
 
     def join(self):
         """Returns after completion of all pending callables."""
-
         self.queue.join()

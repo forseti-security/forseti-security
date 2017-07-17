@@ -17,10 +17,8 @@
 from datetime import datetime
 import itertools
 import os
-import shutil
 import sys
 
-from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.data_access import folder_dao
@@ -32,17 +30,12 @@ from google.cloud.security.notifier import notifier
 from google.cloud.security.scanner.audit import iam_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
-# pylint: disable=arguments-differ
-
 
 LOGGER = log_util.get_logger(__name__)
 
 
 class IamPolicyScanner(base_scanner.BaseScanner):
     """Scanner for IAM data."""
-
-    SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
-    OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
@@ -63,48 +56,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
-
-    # TODO: Move this to the base class if need to be used by other modules.
-    def _get_output_filename(self, now_utc):
-        """Create the output filename.
-
-        Args:
-            now_utc (datetime): The datetime now in UTC. Generated at the top
-                level to be consistent across the scan.
-
-        Returns:
-            str: The output filename for the csv, formatted with the
-                now_utc timestamp.
-        """
-        output_timestamp = now_utc.strftime(self.OUTPUT_TIMESTAMP_FMT)
-        output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
-        return output_filename
-
-    # TODO: Move this to the base class if need to be used by other modules.
-    def _upload_csv(self, output_path, now_utc, csv_name):
-        """Upload CSV to Cloud Storage.
-
-        Args:
-            output_path (str): The output path for the csv.
-            now_utc (datetime): The UTC timestamp of "now".
-            csv_name (str): The csv_name.
-        """
-        output_filename = self._get_output_filename(now_utc)
-
-        # If output path was specified, copy the csv temp file either to
-        # a local file or upload it to Google Cloud Storage.
-        full_output_path = os.path.join(output_path, output_filename)
-        LOGGER.info('Output path: %s', full_output_path)
-
-        if output_path.startswith('gs://'):
-            # An output path for GCS must be the full
-            # `gs://bucket-name/path/for/output`
-            storage_client = storage.StorageClient()
-            storage_client.put_text_file(
-                csv_name, full_output_path)
-        else:
-            # Otherwise, just copy it to the output path.
-            shutil.copy(csv_name, full_output_path)
 
     @staticmethod
     def _flatten_violations(violations):
@@ -145,6 +96,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                                                       all_violations)
 
         # Write the CSV for all the violations.
+        # TODO: Move this into the base class? The IAP scanner version of this
+        # is a wholesale copy.
         if self.scanner_configs.get('output_path'):
             LOGGER.info('Writing violations to csv...')
             output_csv_name = None

@@ -25,11 +25,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -42,11 +37,11 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
         """Create an iterator of instance groups to load into database.
 
         Args:
-            resource_from_api: A dict of instance groups, keyed by
+            resource_from_api (dict): Instance groups, keyed by
                 project id, from GCP API.
 
         Yields:
-            Iterator of instance group properties in a dict.
+            iterator: Instance group properties in a dict.
         """
         for (project_id, instance_groups) in resource_from_api.iteritems():
             for instance_group in instance_groups:
@@ -57,6 +52,8 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
                            self.MYSQL_DATETIME_FORMAT),
                        'name': instance_group.get('name'),
                        'description': instance_group.get('description'),
+                       'instance_urls': parser.json_stringify(
+                           instance_group.get('instance_urls', [])),
                        'named_ports': parser.json_stringify(
                            instance_group.get('namedPorts', [])),
                        'network': instance_group.get('network'),
@@ -74,8 +71,8 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
         compute instance groups for each.
 
         Returns:
-            A dict mapping projects with their instance groups (list):
-            {project_id: [instance groups]}
+            dict: Mapping projects with their instance groups (list):
+                {project_id: [instance groups]}
         """
         projects = (proj_dao
                     .ProjectDao(self.global_configs)

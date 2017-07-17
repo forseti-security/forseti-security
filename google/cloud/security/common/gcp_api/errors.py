@@ -15,11 +15,6 @@
 """API errors."""
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-param-doc
-
-
 class Error(Exception):
     """Base Error class."""
 
@@ -29,8 +24,13 @@ class ApiExecutionError(Error):
 
     CUSTOM_ERROR_MESSAGE = 'GCP API Error: unable to get {0} from GCP:\n{1}'
 
-
     def __init__(self, resource_name, e):
+        """Initialize.
+
+        Args:
+            resource_name (str): The resource name.
+            e (Exception): The exception.
+        """
         super(ApiExecutionError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
 
@@ -42,6 +42,12 @@ class ApiNotEnabledError(Error):
                             '{0}:\n{1}')
 
     def __init__(self, error_url, e):
+        """Initialize.
+
+        Args:
+            error_url (str): The error url.
+            e (Exception): The exception.
+        """
         super(ApiNotEnabledError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
 

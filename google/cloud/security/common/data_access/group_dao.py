@@ -21,12 +21,9 @@ from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 MY_CUSTOMER = 'my_customer'
+
 
 class GroupDao(dao.Dao):
     """Data access object (DAO) for Groups."""
@@ -35,11 +32,11 @@ class GroupDao(dao.Dao):
         """Get all the groups.
 
         Args:
-            resource_name: String of the resource name.
-            timestamp: The timestamp of the snapshot.
+            resource_name (str): The resource name.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-             A tuple of the groups as dict.
+             tuple: A tuple with group data as dict.
         """
         sql = select_data.GROUPS.format(timestamp)
         return self.execute_sql_with_fetch(resource_name, sql, None)
@@ -48,12 +45,12 @@ class GroupDao(dao.Dao):
         """Get the group_id for the specified group_email.
 
         Args:
-            resource_name: String of the resource name.
-            group_email: String of the group email.
-            timestamp: The timestamp of the snapshot.
+            resource_name (str): The resource name.
+            group_email (str): The group email.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-             String of the group id.
+             str: String of the group id.
         """
         sql = select_data.GROUP_ID.format(timestamp)
         result = self.execute_sql_with_fetch(resource_name, sql, (group_email,))
@@ -63,14 +60,15 @@ class GroupDao(dao.Dao):
         """Get the members of a group.
 
         Args:
-            resource_name: String of the resource name.
-            group_id: String of the group id.
-            timestamp: The timestamp of the snapshot.
+            resource_name (str): The resource name.
+            group_id (str): The group id.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-             A tuple of group members in dict format.
+             tuple: A tuple of group members in dict format.
+
              ({'group_id': '00lnxb',
-               'member_email': 'foo@mygbiz.com',
+               'member_email': 'foo@company.com',
                'member_id': '11111',
                'member_role': 'OWNER',
                'member_type': 'USER'}, ...)
@@ -82,13 +80,14 @@ class GroupDao(dao.Dao):
         """Get all the recursive members of a group.
 
         Args:
-            group_email: String of the group email.
-            timestamp: The timestamp of the snapshot.
+            group_email (str): The group email.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-             A list of group members in dict format.
+             list: A list of group members in dict format.
+
              [{'group_id': '00lnxb',
-               'member_email': 'foo@mygbiz.com',
+               'member_email': 'foo@company.com',
                'member_id': '11111',
                'member_role': 'OWNER',
                'member_type': 'USER'}, ...]

@@ -19,5 +19,6 @@ RESOURCE_MAP = {
     'buckets_acl_violations': 'violations',
     'cloudsql_acl_violations': 'violations',
     'groups_violations': 'groups_violations',
-    'policy_violations': 'violations'
+    'policy_violations': 'violations',
+    'iap_violations': 'violations',
 }

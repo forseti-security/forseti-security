@@ -40,7 +40,7 @@ class BucketAccessControls(object):
         """Return hash of properties.
 
         Returns:
-            hash: returns the hash of the class properties.
+            hash: The hash of the class properties.
         """
         return hash((self.bucket, self.entity, self.email, self.domain,
                      self.role, self.project_number))

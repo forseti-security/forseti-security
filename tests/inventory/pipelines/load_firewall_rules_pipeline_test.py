@@ -16,6 +16,7 @@
 
 from tests.unittest_utils import ForsetiTestCase
 import mock
+import MySQLdb
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import project_dao
@@ -55,8 +56,11 @@ class LoadFirewallRulesTest(ForsetiTestCase):
                 loadable_firewall_rule)
             counter +=1
 
-    def test_can_retrieve_firewall_rules_from_gcp(self):
-        self.pipeline.dao.get_projects.return_value = [
+    @mock.patch.object(MySQLdb, 'connect')
+    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    def test_can_retrieve_firewall_rules_from_gcp(
+            self, mock_get_projects, mock_conn):
+        mock_get_projects.return_value = [
             mock.MagicMock(id='foo11111'), mock.MagicMock(id='foo22222')]
 
         self.pipeline.api_client.get_firewall_rules.side_effect = (

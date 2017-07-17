@@ -94,6 +94,17 @@ ORG_IAM_POLICIES = """
     FROM raw_org_iam_policies_{0}
 """
 
+FIREWALL_RULES = """
+    SELECT id, project_id, firewall_rule_create_time, firewall_rule_name,
+    firewall_rule_description, firewall_rule_kind, firewall_rule_network,
+    firewall_rule_priority, firewall_rule_direction,
+    firewall_rule_source_ranges, firewall_rule_destination_ranges,
+    firewall_rule_source_tags, firewall_rule_target_tags,
+    firewall_rule_allowed, firewall_rule_denied
+    FROM firewall_rules_{0}
+    ORDER BY firewall_rule_name
+"""
+
 FOLDERS = """
     SELECT folder_id, name, display_name, lifecycle_state, create_time,
     parent_type, parent_id
@@ -155,6 +166,11 @@ SELECT_POLICY_VIOLATIONS = """
     WHERE violation_type in ('ADDED', 'REMOVED');
 """
 
+SELECT_IAP_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'IAP_VIOLATION';
+"""
+
 SELECT_BIGQUERY_ACL_VIOLATIONS = """
     SELECT * FROM violations_{0}
     WHERE violation_type = 'BIGQUERY_VIOLATION';
@@ -206,7 +222,7 @@ INSTANCES = """
 
 INSTANCE_GROUPS = """
     SELECT id, project_id, creation_timestamp, name, description,
-    named_ports, network, region, size, subnetwork, zone
+    instance_urls, named_ports, network, region, size, subnetwork, zone
     FROM instance_groups_{0}
 """
 

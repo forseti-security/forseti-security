@@ -11,15 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """BigQuery ACL Resource."""
 
 
 # pylint: disable=too-few-public-methods
 class BigqueryAccessControls(object):
     """BigQuery ACL Resource."""
+
     def __init__(self, dataset_id, special_group, user_email, domain,
                  group_email, role, project_id=None):
-        """Initialize
+        """Initialize.
 
         Args:
             dataset_id (str): BigQuery dataset_id
@@ -42,7 +44,7 @@ class BigqueryAccessControls(object):
         """Return hash of properties.
 
         Returns:
-            hash: returns the hash of the class properties.
+            hash: The hash of the class properties.
         """
         return hash((self.dataset_id, self.special_group, self.user_email,
                      self.domain, self.group_email, self.role,

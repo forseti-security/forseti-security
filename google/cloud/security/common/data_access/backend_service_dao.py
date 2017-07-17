@@ -21,10 +21,6 @@ from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -35,13 +31,10 @@ class BackendServiceDao(dao.Dao):
         """Get backend services from a particular snapshot.
 
         Args:
-            timestamp: The snapshot timestamp.
+            timestamp (str): The snapshot timestamp.
 
         Returns:
-            A list of BackendService.
-
-        Raises:
-            MySQLError if a MySQL error occurs.
+            list: A list of BackendService.
         """
         query = select_data.BACKEND_SERVICES.format(timestamp)
         rows = self.execute_sql_with_fetch(

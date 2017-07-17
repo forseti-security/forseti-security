@@ -339,6 +339,7 @@ CREATE_INSTANCE_GROUPS_TABLE = """
         `project_id` varchar(255) DEFAULT NULL,
         `creation_timestamp` datetime DEFAULT NULL,
         `description` varchar(512) DEFAULT NULL,
+        `instance_urls` json DEFAULT NULL,
         `name` varchar(255) DEFAULT NULL,
         `named_ports` json DEFAULT NULL,
         `network` varchar(255) DEFAULT NULL,
@@ -486,6 +487,7 @@ CREATE_VIOLATIONS_TABLE = """
         `rule_index` int DEFAULT NULL,
         `violation_type` enum('UNSPECIFIED','ADDED','REMOVED',
                               'BIGQUERY_VIOLATION', 'BUCKET_VIOLATION',
+                              'IAP_VIOLATION',
                               'CLOUD_SQL_VIOLATION') NOT NULL,
         `violation_data` json DEFAULT NULL,
         PRIMARY KEY (`id`)
