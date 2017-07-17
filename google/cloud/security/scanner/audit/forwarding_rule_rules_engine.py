@@ -56,7 +56,6 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = ForwardingRuleRulesBook(self._load_rule_definitions())
 
-    # pylint: disable=arguments-differ
     def find_policy_violations(self, forwarding_rule,
                                force_rebuild=False):
         """Determine whether forwarding rule violates rules.

@@ -81,7 +81,6 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
                 'violation_data': violation_data,
             }
 
-    # pylint: disable=arguments-differ
     def _output_results(self, all_violations):
         """Output results.
 
@@ -93,7 +92,6 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(resource_name, all_violations)
 
-    # pylint: disable=arguments-differ
     def _retrieve(self):
         """Runs the data collection.
 
@@ -105,7 +103,6 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             .get_forwarding_rules(self.snapshot_timestamp)
         return forwarding_rules
 
-    # pylint: disable=arguments-differ
     def _find_violations(self, forwarding_rules):
         """Find violations in forwarding rules.
 

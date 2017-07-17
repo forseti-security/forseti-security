@@ -31,9 +31,9 @@ REQUIREMENTS_MAP = {
          'class_name': 'CloudSqlAclScanner',
          'rules_filename': 'cloudsql_rules.yaml'},
     'forwarding_rule':
-         {'module_name': 'forwarding_rule_scanner',
-          'class_name': 'ForwardingRuleScanner',
-          'rules_filename': 'forwarding_rules.yaml'},
+        {'module_name': 'forwarding_rule_scanner',
+         'class_name': 'ForwardingRuleScanner',
+         'rules_filename': 'forwarding_rules.yaml'},
     'group':
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
