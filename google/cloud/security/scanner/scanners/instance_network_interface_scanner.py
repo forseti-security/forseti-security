@@ -20,6 +20,8 @@ from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
+from google.cloud.security.scanner.audit import instance_network_interface_rules_engine
+
 # pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
@@ -28,16 +30,57 @@ LOGGER = log_util.get_logger(__name__)
 class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     """Pipeline to network enforcer from DAO."""
 
-    def __init__(self, global_configs, snapshot_timestamp):
+    def __init__(self, global_configs, scanner_configs, snapshot_timestamp, rules):
         """Initialization.
 
-        Args:
-            snapshot_timestamp: The snapshot timestamp
+         Args:
+            global_configs (dict): Global configurations.
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         super(InstanceNetworkInterfaceScanner, self).__init__(
             global_configs,
-            snapshot_timestamp)
-        self.snapshot_timestamp = snapshot_timestamp
+            scanner_configs,
+            snapshot_timestamp,
+            rules)
+        self.rules_engine = instance_network_interface_rules_engine.InstanceNetworkInterfaceRulesEngine(
+            rules_file_path=self.rules,
+            snapshot_timestamp=self.snapshot_timestamp)
+        print(self.rules_engine)
+        self.rules_engine.build_rule_book(self.global_configs)
+
+    @staticmethod
+    def _flatten_violations(violations):
+        """Flatten RuleViolations into a dict for each RuleViolation member.
+        Args:
+            violations (list): The RuleViolations to flatten.
+        Yields:
+            dict: Iterator of RuleViolations as a dict per member.
+        """
+        for violation in violations:
+            violation_data = {}
+            violation_data['project'] = violation.project
+            violation_data['network'] = violation.network
+            violation_data['ip'] = violation.ip
+            yield {
+                'resource_id': "resource_id",
+                'resource_type': violation.resource_type,
+                'rule_index': violation.rule_index,
+                'rule_name': violation.rule_name,
+                'violation_type': violation.violation_type,
+                'violation_data': violation_data
+            }
+
+    def _output_results(self, all_violations):
+        """Output results.
+        Args:
+            all_violations (list): All violations
+        """
+        resource_name = 'violations'
+
+        all_violations = self._flatten_violations(all_violations)
+        self._output_results_to_db(resource_name, all_violations)
 
     def get_instance_networks_interfaces(self):
         """Get network info from a particular snapshot.
@@ -86,20 +129,20 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
 
         return resource_counts
 
-    def run(self):
+    def _retrieve(self):
         """Run the data collection."""
         enforced_networks_data = []
-        project_policies = {}
+        #project_policies = {}
         instance_network_interfaces = self.get_instance_networks_interfaces()
-        enforced_networks_data.append(instance_network_interfaces)
-        enforced_networks_data.append(project_policies)
+        #enforced_networks_data.append(instance_network_interfaces)
+        #enforced_networks_data.append(project_policies)
 
-        resource_counts = self._get_resource_count(project_policies,
-                                                   instance_network_interfaces)
+        #resource_counts = self._get_resource_count(project_policies,
+        #                                           instance_network_interfaces)
 
-        return enforced_networks_data, resource_counts
+        return instance_network_interfaces #enforced_networks_data #, resource_counts
 
-    def find_violations(self, enforced_networks_data, rules_engine):
+    def _find_violations(self, enforced_networks_data):
         """Find violations in the policies.
 
         Args:
@@ -114,9 +157,14 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding enforced networks violations...')
         for instance_network_interface in enforced_networks_data:
             LOGGER.debug('%s', instance_network_interface)
-            violations = rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_policy_violations(
                 instance_network_interface)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
 
+    def run(self):
+        """Runs the data collection."""
+        instance_network_interface_data = self._retrieve()
+        all_violations = self._find_violations(instance_network_interface_data)
+        self._output_results(all_violations)

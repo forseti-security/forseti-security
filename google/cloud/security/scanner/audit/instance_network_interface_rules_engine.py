@@ -189,15 +189,14 @@ class Rule(object):
         is_external_network = instance_network_interface.access_configs \
             is not None
         if not self.rules['whitelist'].get(project):
-            if is_external_network:
-                yield self.RuleViolation(
-                    resource_type='instance',
-                    rule_name=self.rule_name,
-                    rule_index=self.rule_index,
-                    violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
-                    project=project,
-                    network=network,
-                    ip=None)
+            yield self.RuleViolation(
+                resource_type='instance',
+                rule_name=self.rule_name,
+                rule_index=self.rule_index,
+                violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
+                project=project,
+                network=network,
+                ip='None')
         elif network not in self.rules['whitelist'].get(project) and \
                 is_external_network:
             yield self.RuleViolation(
