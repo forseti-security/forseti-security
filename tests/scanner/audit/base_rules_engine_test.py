@@ -15,6 +15,7 @@
 """Test BaseRulesEngine and associated modules."""
 
 import mock
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.scanner.audit import base_rules_engine as bre

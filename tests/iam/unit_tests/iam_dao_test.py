@@ -19,6 +19,7 @@ import uuid
 import os
 from collections import defaultdict
 from sqlalchemy.orm.exc import NoResultFound
+import unittest
 
 from google.cloud.security.iam.utils import full_to_type_name
 from google.cloud.security.iam.dao import ModelManager, session_creator, create_engine
@@ -30,9 +31,11 @@ from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPA
     ACCESS_BY_PERMISSIONS_1
 from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
 
+
 def create_test_engine():
     tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
     return create_engine('sqlite:///{}'.format(tmpfile)), tmpfile
+
 
 class DaoTest(ForsetiTestCase):
     """General data abstraction layer use case tests."""
@@ -145,7 +148,7 @@ class DaoTest(ForsetiTestCase):
                 'group/t5' : ['group/t4'],
                 'user/t6' : ['group/t5','group/t4'],
             }
-        
+
         checks = {
                 'user/t1' : ['group/g1'],
                 'user/t2' : ['group/g2', 'group/g3'],
@@ -367,8 +370,6 @@ class DaoTest(ForsetiTestCase):
         self.assertRaises(Exception, callable)
         callable = lambda: data_access.explain_granted(session, 'user/u3', 'r/res1', None, 'delete')
         self.assertRaises(Exception, callable)
-
- 
 
         check_1 = {
             'parameters' : ('user/u3', 'r/res4', None, 'read'),
@@ -951,7 +952,7 @@ class DaoTest(ForsetiTestCase):
         self.assertTrue(1 == len(data_access.get_member(session, 'group/g1')))
         self.assertTrue(1 == len(data_access.get_member(session, 'group/g2')))
         self.assertTrue(1 == len(data_access.get_member(session, 'group/g3')))
-        
+
         # Check names as well
         self.assertEquals('group/g1', data_access.get_member(session, 'group/g1')[0].name)
         self.assertEquals('user/u1', data_access.get_member(session, 'user/u1')[0].name)
@@ -1122,3 +1123,7 @@ class DaoTest(ForsetiTestCase):
         self.assertEqual(set(expand('r/res8')),
                          set([u'r/res8']),
                          'Expecting expansion of res8 to comprise only res8')
+
+
+if __name__ == '__main__':
+    unittest.main()

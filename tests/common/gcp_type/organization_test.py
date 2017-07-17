@@ -15,6 +15,7 @@
 """Tests the Organization resource."""
 
 import mock
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client

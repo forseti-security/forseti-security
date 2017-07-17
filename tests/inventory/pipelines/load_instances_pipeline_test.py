@@ -14,11 +14,12 @@
 
 """Tests the load_instances_pipeline."""
 
-from google.apputils import basetest
 import mock
 import MySQLdb
+import unittest
 
 # pylint: disable=line-too-long
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.data_access import project_dao
@@ -37,7 +38,7 @@ def _set_count(*args, **kwargs):
     """Set the pipeline count."""
 
 
-class LoadInstancesPipelineTest(basetest.TestCase):
+class LoadInstancesPipelineTest(ForsetiTestCase):
     """Tests for the load_instances_pipeline."""
 
     def setUp(self):
@@ -165,3 +166,7 @@ class LoadInstancesPipelineTest(basetest.TestCase):
             self.pipeline.RESOURCE_NAME,
             fake_instances.EXPECTED_LOADABLE_INSTANCES)
         self.assertEquals(expected_args, called_args)
+
+
+if __name__ == '__main__':
+      unittest.main()

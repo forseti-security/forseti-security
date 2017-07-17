@@ -16,6 +16,7 @@
 
 import mock
 import httplib2
+import unittest
 
 from googleapiclient.errors import HttpError
 
@@ -24,6 +25,7 @@ from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import _base_client as _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from tests.common.gcp_api.test_data import fake_bigquery as fbq
+
 
 class BigqueryTestCase(ForsetiTestCase):
     """Test the Bigquery API Client."""
@@ -151,6 +153,7 @@ class BigqueryTestCase(ForsetiTestCase):
         return_value = self.bq_api_client.get_dataset_access('','')
 
         self.assertListEqual(return_value, fbq.DATASETS_GET_EXPECTED)
+
 
 if __name__ == '__main__':
     unittest.main()
