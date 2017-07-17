@@ -117,6 +117,8 @@ scanner:
           enabled: true
         - name: iam_policy
           enabled: true
+        - name: forwarding_rule
+          enabled: true
 
 ##############################################################################
 

@@ -12,14 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Map for mapping rules engine to scanner class"""
-
-RESOURCE_MAP = {
-    'bigquery_acl_violations': 'violations',
-    'buckets_acl_violations': 'violations',
-    'cloudsql_acl_violations': 'violations',
-    'forwarding_rule_violations' : 'violations',
-    'groups_violations': 'groups_violations',
-    'policy_violations': 'violations',
-    'iap_violations': 'violations',
-}
+rules:
+  - name: Rule Name Example
+    target: Forwarding Rule Target Example
+    mode: whitelist
+    load_balancing_scheme: EXTERNAL
+    ip_address: "198.51.100.46"
