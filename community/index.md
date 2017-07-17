@@ -10,8 +10,8 @@ our contributors for their commitment to making it better.
 
 **Contribute**
 
-If you'd like to contribute to the code-base take a look at how to
-[contribute](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md)
+If you'd like to contribute to Forseti, please refer to our
+[contribution guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
 
 **Announcements**
 

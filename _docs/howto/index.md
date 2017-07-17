@@ -5,7 +5,7 @@ hide:
   right_sidebar: true
 ---
 
-Follow a howto on deploying Forseti Security.
+How to deploy Forseti Security.
 
 - [Deploying Forseti on Google Cloud Platform]({% link _docs/howto/gcp-deployment.md %})
 - [Deploying Forseti in a Local Environment]({% link _docs/howto/local-deployment.md %})

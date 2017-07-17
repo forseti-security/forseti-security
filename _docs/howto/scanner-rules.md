@@ -1,6 +1,6 @@
 ---
 title: Defining Rules for Forseti Scanner
-order: 8
+order: 9
 ---
 #  {{ page.title }}
 

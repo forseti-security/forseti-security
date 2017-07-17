@@ -42,7 +42,7 @@ Before you set up and deploy IAM Explain, you'll need the following:
 ## Customizing the deployment template
 
 You can use the provided
-[sample IAM Explain deployment](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/deployment-manager/deploy-explain.yaml.sample)
+[sample IAM Explain deployment](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/deployment-templates/deploy-explain.yaml.sample)
 to customize your deployment. You'll need to point to the SQL instance you want
 to use for IAM Explain. To prepare your IAM Explain template, update the
 following values:
@@ -103,7 +103,7 @@ together with a Forseti deployment, use one of the following methods:
 ## Running the client
 
 The IAM Explain client uses hierarchical command parsing. At the top level,
-commands divide into "explain" and "playground".
+commands divide into "explainer" and "playground".
 
 ### Setting up an explain model
 
@@ -114,13 +114,13 @@ methods:
   - Importing a Forseti model:
   
       ```bash
-      $ forseti_iam explain create_model forseti
+      $ forseti_iam explainer create_model forseti
       ```
 
   - Creating an empty model:
 
       ```bash
-      $ forseti_iam explain create_model empty
+      $ forseti_iam explainer create_model empty
       ```
 
 ### Using an explain model
