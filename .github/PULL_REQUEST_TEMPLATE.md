@@ -9,4 +9,4 @@ Here's a handy checklist to ensure your PR goes smoothly.
 still pass
 - [ ] Running `pylint --rcfile=pylintrc` passes.
 
-These guidelines and more can be found in our [contributing guidelines](.github/CONTRIBUTING.md).
+These guidelines and more can be found in our [contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
