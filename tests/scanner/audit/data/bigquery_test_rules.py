@@ -12,21 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Wrapper for Billing API client."""
+"""BigQuery rules to use in the unit tests."""
 
-from google.cloud.security.common.gcp_api import _base_client
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-param-doc
-
-
-class CloudBillingClient(_base_client.BaseClient):
-    """Billing Client."""
-
-    API_NAME = 'cloudbilling'
-
-    def __init__(self, credentials=None):
-        super(CloudBillingClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+RULES1 = {
+    'rules': [{
+            'name': 'my rule',
+            'dataset_id': '*',
+            'special_group': '*',
+            'user_email': '*',
+            'domain': '*',
+            'group_email': '*',
+            'role': 'OWNER',
+            'resource': [{
+                    'type': 'organization',
+                    'resource_ids': ['123456789012']
+                }],
+        }]
+}

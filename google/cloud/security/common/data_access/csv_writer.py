@@ -22,11 +22,6 @@ import tempfile
 from google.cloud.security.common.data_access.errors import CSVFileError
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,redundant-returns-doc
-# pylint: disable=missing-raises-doc,missing-yield-doc,missing-yield-type-doc
-
-
 APPENGINE_SERVICES_FIELDNAMES = [
     'project_id',
     'name',
@@ -95,19 +90,6 @@ BUCKETS_ACL_FIELDNAMES = [
     'raw_bucket_acl'
 ]
 
-BUCKETS_ACL_VIOLATIONS = [
-    'resource_type',
-    'resource_id',
-    'rule_name',
-    'rule_index',
-    'violation_type',
-    'role',
-    'entity',
-    'email',
-    'domain',
-    'bucket'
-]
-
 # TODO: Add pydoc to describe the mapping of the custom field naming
 # to the field names in the resource objects.
 # https://cloud.google.com/storage/docs/json_api/v1/buckets#resource
@@ -123,17 +105,6 @@ BUCKETS_FIELDNAMES = [
     'bucket_selflink',
     'bucket_lifecycle_raw',
     'raw_bucket'
-]
-
-CLOUDSQL_ACL_VIOLATIONS = [
-    'resource_type',
-    'resource_id',
-    'rule_name',
-    'rule_index',
-    'violation_type',
-    'instance_name',
-    'authorized_networks',
-    'ssl_enabled',
 ]
 
 CLOUDSQL_INSTANCES_FIELDNAMES = [
@@ -227,6 +198,14 @@ FIREWALL_RULES_FIELDNAMES = [
     'raw_firewall_rule'
 ]
 
+FOLDER_IAM_POLICIES_FIELDNAMES = [
+    'folder_id',
+    'role',
+    'member_type',
+    'member_name',
+    'member_domain'
+]
+
 FOLDERS_FIELDNAMES = [
     'folder_id',
     'name',
@@ -236,6 +215,11 @@ FOLDERS_FIELDNAMES = [
     'parent_id',
     'raw_folder',
     'create_time',
+]
+
+RAW_FOLDER_IAM_POLICIES_FIELDNAMES = [
+    'folder_id',
+    'iam_policy'
 ]
 
 FORWARDING_RULES_FIELDNAMES = [
@@ -348,7 +332,6 @@ ORG_IAM_POLICIES_FIELDNAMES = [
     'member_domain'
 ]
 
-
 ORGANIZATIONS_FIELDNAMES = [
     'org_id',
     'name',
@@ -358,15 +341,13 @@ ORGANIZATIONS_FIELDNAMES = [
     'creation_time',
 ]
 
-
-POLICY_VIOLATION_FIELDNAMES = [
+VIOLATION_FIELDNAMES = [
     'resource_id',
     'resource_type',
     'rule_index',
     'rule_name',
     'violation_type',
-    'role',
-    'member'
+    'violation_data'
 ]
 
 PROJECT_IAM_POLICIES_FIELDNAMES = [
@@ -405,33 +386,45 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
 
 CSV_FIELDNAME_MAP = {
     'appengine': APPENGINE_SERVICES_FIELDNAMES,
+
     'backend_services': BACKEND_SERVICES_FIELDNAMES,
+
     'bigquery_datasets': BIGQUERY_DATASET_FIELDNAMES,
+
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
-    'buckets_acl_violations': BUCKETS_ACL_VIOLATIONS,
-    'cloudsql_acl_violations': CLOUDSQL_ACL_VIOLATIONS,
+    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
+
     'cloudsql_instances': CLOUDSQL_INSTANCES_FIELDNAMES,
     'cloudsql_ipaddresses': CLOUDSQL_IPADDRESSES_FIELDNAMES,
     'cloudsql_ipconfiguration_authorizednetworks': \
         CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES,
+
     'firewall_rules': FIREWALL_RULES_FIELDNAMES,
+
+    'folder_iam_policies': FOLDER_IAM_POLICIES_FIELDNAMES,
     'folders': FOLDERS_FIELDNAMES,
+    'raw_folder_iam_policies': RAW_FOLDER_IAM_POLICIES_FIELDNAMES,
+
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
+
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
+
     'instances': INSTANCES_FIELDNAMES,
     'instance_groups': INSTANCE_GROUPS_FIELDNAMES,
     'instance_templates': INSTANCE_TEMPLATES_FIELDNAMES,
     'instance_group_managers': INSTANCE_GROUP_MANAGERS_FIELDNAMES,
+
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,
-    'policy_violations': POLICY_VIOLATION_FIELDNAMES,
+    'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAMES,
+
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
-    'raw_buckets': RAW_BUCKETS_FIELDNAMES,
-    'raw_org_iam_policies': RAW_ORG_IAM_POLICIES_FIELDNAMES,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
+
+    'violations': VIOLATION_FIELDNAMES,
 }
 
 
@@ -440,12 +433,15 @@ def write_csv(resource_name, data, write_header=False):
     """Start the csv writing flow.
 
     Args:
-        resource_name: String of the resource name.
-        data: An iterable of data to be written to csv.
-        write_header: If True, write the header in the csv file.
+        resource_name (str): The resource name.
+        data (iterable): An iterable of data to be written to csv.
+        write_header (bool): If True, write the header in the csv file.
 
-    Returns:
-       The CSV temporary file.
+    Yields:
+       object: The CSV temporary file pointer.
+
+    Raises:
+        CSVFileError: If there was an error writing the CSV file.
     """
     csv_file = tempfile.NamedTemporaryFile(delete=False)
     try:

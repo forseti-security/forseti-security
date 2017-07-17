@@ -24,10 +24,6 @@ from google.cloud.security.common.util import errors
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-
-
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
 METADATA_SERVER_CONN_TIMEOUT = 2
 REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
@@ -38,10 +34,13 @@ LOGGER = log_util.get_logger(__name__)
 
 
 def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
-    """Returns a simple HTTP client to the GCP metadata server.
+    """Get an HTTP client to the GCP metadata server.
 
     Args:
-        hostname: a String with a qualified hostname.
+        hostname (str): A qualified hostname.
+
+    Returns:
+        HttpClient: A simple HTTP client to the GCP metadata server.
     """
     return httplib.HTTPConnection(hostname,
                                   timeout=METADATA_SERVER_CONN_TIMEOUT)
@@ -50,12 +49,12 @@ def _issue_http_request(path, method, headers):
     """Perform a request on a specified httplib connection object.
 
     Args:
-        method: A string representing the http request method.
-        path: A string representing the path on the server.
-        headers: A dictionary reprsenting key-value pairs of headers.
+        method (str): The http request method.
+        path (str): The path on the server.
+        headers (dict): A key-value pairs of headers.
 
     Returns:
-        The httplib.HTTPResponse object.
+        httplib.HTTPResponse: The HTTP response object.
 
     Raises:
         MetadataServerHttpError: When we can't reach the requested host.
@@ -76,7 +75,7 @@ def can_reach_metadata_server():
     """Determine if we can reach the metadata server.
 
     Returns:
-        True if metadata server can be reached, False otherwise.
+        bool: True if metadata server can be reached, False otherwise.
     """
     path = '/computeMetadata/v1/instance/id'
     response = None
@@ -93,10 +92,10 @@ def get_value_for_attribute(attribute):
     """For a given key return the value.
 
     Args:
-        attribute: a String representing the key.
+        attribute (str): Some metadata key.
 
     Returns:
-        The value of the requested key, if key isn't present then None.
+        str: The value of the requested key, if key isn't present then None.
     """
     path = '/computeMetadata/v1/instance/attributes/%s' % attribute
     try:

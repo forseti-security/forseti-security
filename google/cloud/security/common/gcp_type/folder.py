@@ -14,12 +14,7 @@
 
 """A Folder Resource."""
 
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_type import resource
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
 
 
 class FolderLifecycleState(resource.LifecycleState):
@@ -42,11 +37,11 @@ class Folder(resource.Resource):
         """Initialize.
 
         Args:
-            folder_id: The string folder id.
-            name: The folder unique GCP name, i.e. "folders/{id}".
-            display_name: The folder display name.
-            parent: The parent Resource.
-            lifecycle_state: The folder's lifecycle state.
+            folder_id (str): The folder id number.
+            name (str): The folder unique GCP name, i.e. "folders/{id}".
+            display_name (str): The folder display name.
+            parent (Resource): The parent Resource.
+            lifecycle_state (LifecycleState): The folder's lifecycle state.
         """
         super(Folder, self).__init__(
             resource_id=folder_id,
@@ -55,14 +50,3 @@ class Folder(resource.Resource):
             display_name=display_name,
             parent=parent,
             lifecycle_state=lifecycle_state)
-
-    def exists(self):
-        """Verify that the folder exists.
-
-        Returns:
-            True if we can get the folder from GCP, otherwise False.
-        """
-        crm_client = crm.CloudResourceManagerClient()
-        folder = crm_client.get_folder(self.id)
-
-        return folder is not None

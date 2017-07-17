@@ -23,9 +23,6 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc, missing-return-type-doc
-
 class InstanceGroupManagerDao(dao.Dao):
     """InstanceGroupManager DAO."""
 
@@ -33,13 +30,13 @@ class InstanceGroupManagerDao(dao.Dao):
         """Get instance group managers from a particular snapshot.
 
         Args:
-            timestamp: The snapshot timestamp.
+            timestamp (str): The snapshot timestamp.
 
         Returns:
-            A list of InstanceGroupManager.
+            list: A list of InstanceGroupManager.
 
         Raises:
-            MySQLError if a MySQL error occurs.
+            MySQLError: If a MySQL error occurs.
         """
         query = select_data.INSTANCE_GROUP_MANAGERS.format(timestamp)
         rows = self.execute_sql_with_fetch(

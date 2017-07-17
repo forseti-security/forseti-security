@@ -22,6 +22,7 @@ import yaml
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
+from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
 from google.cloud.security.common.gcp_type.organization import Organization
@@ -48,6 +49,13 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.project2 = Project('my-project-2', 12346,
             display_name='My project 2')
 
+        self.folder1 = folder.Folder(
+            '333', display_name='Folder 1', parent=self.org789)
+        self.project3 = Project(
+            'my-project-3', 12347,
+            display_name='My project 3',
+            parent=self.folder1)
+
         # patch the organization resource relation dao
         self.patcher = mock.patch('google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
         self.mock_org_rel_dao = self.patcher.start()
@@ -60,14 +68,14 @@ class IamRulesEngineTest(ForsetiTestCase):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
-        rules_engine.build_rule_book()
+        rules_engine.build_rule_book({})
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_from_local_json_file_works(self):
         """Test that a RuleBook is built correctly with a json file."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.json')
         rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
-        rules_engine.build_rule_book()
+        rules_engine.build_rule_book({})
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     @mock.patch.object(file_loader,
@@ -98,7 +106,7 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         mock_load_rules_from_gcs.return_value = file_content
 
-        rules_engine.build_rule_book()
+        rules_engine.build_rule_book({})
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_no_resource_type_fails(self):
@@ -106,11 +114,12 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_2.yaml')
         rules_engine = ire.IamRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
-            rules_engine.build_rule_book()
+            rules_engine.build_rule_book({})
 
     def test_add_single_rule_builds_correct_map(self):
         """Test that adding a single rule builds the correct map."""
-        rule_book = ire.IamRuleBook(test_rules.RULES1, self.fake_timestamp)
+        rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES1, self.fake_timestamp)
         actual_rules = rule_book.resource_rules_map
 
         # expected
@@ -320,7 +329,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES1, self.fake_timestamp)
+            {}, test_rules.RULES1, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -378,7 +387,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES1, self.fake_timestamp)
+            {}, test_rules.RULES1, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -417,7 +426,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
-        rules_engine.rule_book = ire.IamRuleBook({}, self.fake_timestamp)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, snapshot_timestamp=self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -453,7 +463,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES1, self.fake_timestamp)
+            {}, test_rules.RULES1, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -484,7 +494,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path, self.fake_timestamp)
         # TODO: mock the rules local path to return RULES2
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES2, self.fake_timestamp)
+            {}, test_rules.RULES2, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789], []])
@@ -572,7 +582,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES1, self.fake_timestamp)
+            {}, test_rules.RULES1, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[]])
@@ -613,7 +623,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES3, self.fake_timestamp)
+            {}, test_rules.RULES3, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[], [self.org789]])
@@ -709,7 +719,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES4, self.fake_timestamp)
+            {}, test_rules.RULES4, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[], [self.org789]])
@@ -794,7 +804,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES5, self.fake_timestamp)
+            {}, test_rules.RULES5, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -844,7 +854,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES6, self.fake_timestamp)
+            {}, test_rules.RULES6, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -904,7 +914,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules5 = copy.deepcopy(test_rules.RULES5)
         rules5['rules'][1]['inherit_from_parents'] = True
-        rules_engine.rule_book = ire.IamRuleBook(rules5, self.fake_timestamp)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, rules5, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -966,7 +977,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules5 = copy.deepcopy(test_rules.RULES5)
         rules5['rules'][0]['resource'][0]['applies_to'] = 'self'
-        rules_engine.rule_book = ire.IamRuleBook(rules5, self.fake_timestamp)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, rules5, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -1009,7 +1021,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules6 = copy.deepcopy(test_rules.RULES6)
         rules6['rules'][0]['resource'][0]['applies_to'] = 'self'
-        rules_engine.rule_book = ire.IamRuleBook(rules6, self.fake_timestamp)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, rules6, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[], [self.org789]])
@@ -1080,7 +1093,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
-            test_rules.RULES6, self.fake_timestamp)
+            {}, test_rules.RULES6, self.fake_timestamp)
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
@@ -1120,6 +1133,210 @@ class IamRulesEngineTest(ForsetiTestCase):
                 members=tuple(expected_outstanding_proj['roles/owner'])),
         ])
 
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_wildcard_resource_rules_work(self):
+        """Test whitelisted wildcard resources.
+
+        Setup:
+            * Create a RulesEngine with RULES8 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find 1 rule violation.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES8, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                        'user:someone@notcompany.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = set(
+            rules_engine.find_policy_violations(self.project1, project_policy)
+        )
+
+        # expected
+        expected_outstanding_proj = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:someone@notcompany.com')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='org whitelist',
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding_proj['roles/owner'])),
+        ])
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_wildcard_resources_with_project_whitelist(self):
+        """Test whitelisted wildcard resources.
+
+        Setup:
+            * Create a RulesEngine with RULES9 rule set.
+            * Create policy.
+
+        Expected result:
+            * Find 2 rule violations:
+               - A policy binding that violates the org whitelist.
+               - A policy binding that violates the org whitelist, even though
+                 the project whitelist allows it.
+        """
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES9, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        # have to return 2 [self.org789] because the find_ancestors() call is
+        # called twice, once for each find_violations().
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789], [self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                        'user:someone@notcompany.com',
+                        'user:person@contract-company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:person@contract-company.com',
+                    ]
+                },
+            ]
+        }
+
+        actual_violations = set(
+            rules_engine.find_policy_violations(self.project1, project_policy)
+        )
+
+        # expected
+        # someone@notcompany.com not in any whitelists
+        # person@contract-company.com is allowed by the project whitelist
+        # but we still alert due to the org whitelist.
+        expected_outstanding_proj = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:someone@notcompany.com'),
+                IamPolicyMember.create_from('user:person@contract-company.com'),
+            ],
+            'roles/editor': [
+                IamPolicyMember.create_from('user:person@contract-company.com')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='org whitelist',
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding_proj['roles/owner'])),
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='org whitelist',
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][1]['role'],
+                members=tuple(expected_outstanding_proj['roles/editor'])),
+        ])
+
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_folder_rule_whitelist(self):
+        """Test a simple folder whitelist rule."""
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.FOLDER_RULES1, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789], [self.folder1, self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
+        # one violation for folder because of organization 778899
+        # one violation for project because of project3's parent
+        folder_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:someone@other.com',
+                    ]
+                }
+            ]
+        }
+
+        project_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = set(itertools.chain(
+                rules_engine.find_policy_violations(
+                    self.folder1, folder_policy),
+                rules_engine.find_policy_violations(
+                    self.project3, project_policy)
+            )
+        )
+
+        # expected
+        expected_outstanding = {
+            'roles/editor': [
+                IamPolicyMember.create_from('user:someone@other.com')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='folder rule 1',
+                resource_id=self.folder1.id,
+                resource_type=self.folder1.type,
+                violation_type='ADDED',
+                role=project_policy['bindings'][0]['role'],
+                members=tuple(expected_outstanding['roles/editor'])),
+        ])
         self.assertItemsEqual(expected_violations, actual_violations)
 
 

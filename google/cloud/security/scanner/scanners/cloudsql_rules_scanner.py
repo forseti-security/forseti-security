@@ -13,62 +13,110 @@
 # limitations under the License.
 
 """Scanner for the CloudSQL acls rules engine."""
+
+import itertools
+
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import cloudsql_dao
-from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
+from google.cloud.security.scanner.audit import cloudsql_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,differing-param-doc
-
+# pylint: disable=arguments-differ
 
 LOGGER = log_util.get_logger(__name__)
 
 
 class CloudSqlAclScanner(base_scanner.BaseScanner):
-    """Pipeline to CloudSQL acls data from DAO"""
-    def __init__(self, snapshot_timestamp):
+    """Scanner for CloudSQL acls,"""
+
+    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
+                 rules):
         """Initialization.
 
         Args:
-            snapshot_timestamp: The snapshot timestamp
+            global_configs (dict): Global configurations.
+            scanner_configs (dict): Scanner configurations.
+            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            rules (str): Fully-qualified path and filename of the rules file.
         """
         super(CloudSqlAclScanner, self).__init__(
-            snapshot_timestamp)
-        self.snapshot_timestamp = snapshot_timestamp
+            global_configs,
+            scanner_configs,
+            snapshot_timestamp,
+            rules)
+        self.rules_engine = cloudsql_rules_engine.CloudSqlRulesEngine(
+            rules_file_path=self.rules,
+            snapshot_timestamp=self.snapshot_timestamp)
+        self.rules_engine.build_rule_book(self.global_configs)
 
-    def _get_project_policies(self):
-        """Get projects from data source.
+    @staticmethod
+    def _flatten_violations(violations):
+        """Flatten RuleViolations into a dict for each RuleViolation member.
+
+        Args:
+            violations (list): The RuleViolations to flatten.
+
+        Yields:
+            dict: Iterator of RuleViolations as a dict per member.
         """
-        project_policies = {}
-        project_policies = (
-            project_dao.ProjectDao().get_project_policies('projects',
-                                                          self.\
-                                                          snapshot_timestamp))
-        return project_policies
+        for violation in violations:
+            violation_data = {}
+            violation_data['instance_name'] = violation.instance_name
+            violation_data['authorized_networks'] =\
+                                                  violation.authorized_networks
+            violation_data['ssl_enabled'] = violation.ssl_enabled
+            yield {
+                'resource_id': violation.resource_id,
+                'resource_type': violation.resource_type,
+                'rule_index': violation.rule_index,
+                'rule_name': violation.rule_name,
+                'violation_type': violation.violation_type,
+                'violation_data': violation_data
+            }
 
-    def _get_cloudsql_acls(self):
-        """Get CloudSQL acls from data source.
+    def _output_results(self, all_violations):
+        """Output results.
+
+        Args:
+            all_violations (list): A list of violations.
         """
-        cloudsql_acls = {}
-        cloudsql_acls = cloudsql_dao.CloudsqlDao().\
-                        get_cloudsql_acls('cloudsql_instances',
-                                          self.snapshot_timestamp)
+        resource_name = 'violations'
 
-        return cloudsql_acls
+        all_violations = self._flatten_violations(all_violations)
+        self._output_results_to_db(resource_name, all_violations)
+
+    def _find_violations(self, cloudsql_data):
+        """Find violations in the policies.
+
+        Args:
+            cloudsql_data (list): CloudSQL data to find violations in
+
+        Returns:
+            list: A list of CloudSQL violations
+        """
+        cloudsql_data = itertools.chain(*cloudsql_data)
+
+        all_violations = []
+        LOGGER.info('Finding CloudSQL acl violations...')
+
+        for (cloudsql, cloudsql_acl) in cloudsql_data:
+            LOGGER.debug('%s => %s', cloudsql, cloudsql_acl)
+            violations = self.rules_engine.find_policy_violations(
+                cloudsql_acl)
+            LOGGER.debug(violations)
+            all_violations.extend(violations)
+        return all_violations
 
     @staticmethod
     def _get_resource_count(project_policies, cloudsql_acls):
         """Get resource count for org and project policies.
 
         Args:
-            org_policies: organization policies from inventory.
-            project_policies: project policies from inventory.
+            project_policies (list): project_policies policies from inventory.
+            cloudsql_acls (list): CloudSql ACLs from inventory.
         Returns:
-            Resource count map
+            dict: Resource count map
         """
         resource_counts = {
             ResourceType.PROJECT: len(project_policies),
@@ -77,38 +125,36 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
 
         return resource_counts
 
-    def run(self):
-        """Runs the data collection."""
+    def _get_cloudsql_acls(self):
+        """Get CloudSQL acls from data source.
+
+        Returns:
+            list: List of CloudSql acls.
+        """
+        cloudsql_acls = {}
+        cloudsql_acls = (cloudsql_dao
+                         .CloudsqlDao(self.global_configs)
+                         .get_cloudsql_acls('cloudsql_instances',
+                                            self.snapshot_timestamp))
+
+        return cloudsql_acls
+
+    def _retrieve(self):
+        """Retrieves the data for scanner.
+
+        Returns:
+            list: CloudSQL ACL data.
+        """
         cloudsql_acls_data = []
         project_policies = {}
         cloudsql_acls = self._get_cloudsql_acls()
         cloudsql_acls_data.append(cloudsql_acls.iteritems())
         cloudsql_acls_data.append(project_policies.iteritems())
 
-        resource_counts = self._get_resource_count(project_policies,
-                                                   cloudsql_acls)
+        return cloudsql_acls_data
 
-        return cloudsql_acls_data, resource_counts
-
-    # pylint: disable=arguments-differ
-    def find_violations(self, cloudsql_data, rules_engine):
-        """Find violations in the policies.
-
-        Args:
-            cloudsql_data: CloudSQL data to find violations in
-            rules_engine: The rules engine to run.
-
-        Returns:
-            A list of violations
-        """
-
-        all_violations = []
-        LOGGER.info('Finding CloudSQL acl violations...')
-
-        for (cloudsql, cloudsql_acl) in cloudsql_data:
-            LOGGER.debug('%s => %s', cloudsql, cloudsql_acl)
-            violations = rules_engine.find_policy_violations(
-                cloudsql_acl)
-            LOGGER.debug(violations)
-            all_violations.extend(violations)
-        return all_violations
+    def run(self):
+        """Runs the data collection."""
+        cloudsql_acls_data = self._retrieve()
+        all_violations = self._find_violations(cloudsql_acls_data)
+        self._output_results(all_violations)

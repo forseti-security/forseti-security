@@ -24,11 +24,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 # pylint: enable=line-too-long
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,redundant-returns-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -41,20 +36,17 @@ class BasePipeline(object):
 
     MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-    def __init__(self, cycle_timestamp, configs, api_client, dao):
+    def __init__(self, cycle_timestamp, global_configs, api_client, dao):
         """Constructor for the base pipeline.
 
         Args:
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            configs: Dictionary of configurations.
-            api_client: API client object.
-            dao: Data access object.
-
-        Returns:
-            None
+            cycle_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            global_configs (dict): Global configurations.
+            api_client (API): Forseti API client object.
+            dao (dao): Forseti data access object.
         """
         self.cycle_timestamp = cycle_timestamp
-        self.configs = configs
+        self.global_configs = global_configs
         self.api_client = api_client
         self.dao = dao
         self.count = None
@@ -71,12 +63,23 @@ class BasePipeline(object):
 
     @abc.abstractmethod
     def _transform(self, resource_from_api):
-        """Transform api resource data into loadable format."""
+        """Transform api resource data into loadable format.
+
+        Args:
+            resource_from_api (dict): Resources from API responses.
+        """
         pass
 
     @staticmethod
     def _to_bool(value):
-        """Transforms a value into a database boolean (or None)."""
+        """Transforms a value into a database boolean (or None).
+
+        Args:
+            value (anything): Value to be transformed.
+
+        Returns:
+            int or None: database boolean
+        """
         # pylint: disable=no-else-return
         if value is None:
             return None
@@ -87,7 +90,14 @@ class BasePipeline(object):
 
     @staticmethod
     def _to_int(value):
-        """Transforms a value into a database integer (or None)."""
+        """Transforms a value into a database integer (or None).
+
+        Args:
+            value (anything): Value to be transformed.
+
+        Returns:
+            int or None: database integer
+        """
         # pylint: disable=no-else-return
         # TODO: Investigate adding a try around this and simplifying.
         if value is None:
@@ -101,11 +111,8 @@ class BasePipeline(object):
         """ Loads data into Forseti storage.
 
         Args:
-            resource_name: String of the resource name.
-            data: An iterable or a list of data to be uploaded.
-
-        Returns:
-            None
+            resource_name (str): Resource name.
+            data (iterable or list): Data to be uploaded.
 
         Raises:
             LoadDataPipelineError: An error with loading data has occurred.

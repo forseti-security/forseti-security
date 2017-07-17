@@ -12,32 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: Move all these flags to the config file.
-
 """Loads requested data into inventory.
 
 Usage:
   $ forseti_inventory \\
-      --config_path (required) \\
-      --groups_service_account_key_file <path to file> (optional)\\
-      --domain_super_admin_email <user@domain.com> (optional) \\
-      --db_host <Cloud SQL database hostname/IP> (required) \\
-      --db_user <Cloud SQL database user> (required) \\
-      --db_name <Cloud SQL database name (required)> \\
-      --max_crm_api_calls_per_100_seconds <default: 400> (optional) \\
-      --max_admin_api_calls_per_day <default: 150000> (optional) \\
-      --max_bigquery_api_calls_per_day <default: 17000> (optional) \\
-      --sendgrid_api_key <API key to auth SendGrid email service> (optional) \\
-      --email_sender <email address of the email sender> (optional) \\
-      --email_recipient <email address of the email recipient> (optional) \\
-      --loglevel <debug|info|warning|error>
+      --forseti_config (optional)
 
 To see all the dependent flags:
   $ forseti_inventory --helpfull
 
 """
 from datetime import datetime
-import logging
 import sys
 
 import gflags as flags
@@ -62,6 +47,7 @@ from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import api_map
 from google.cloud.security.inventory import errors as inventory_errors
@@ -73,32 +59,20 @@ from google.cloud.security.notifier import notifier
 
 FLAGS = flags.FLAGS
 
-LOGLEVELS = {
-    'debug': logging.DEBUG,
-    'info' : logging.INFO,
-    'warning' : logging.WARN,
-    'error' : logging.ERROR,
-}
-flags.DEFINE_enum('loglevel', 'info', LOGLEVELS.keys(), 'Loglevel.')
-
 flags.DEFINE_boolean('list_resources', False,
-                     'List valid resources for --config_path.')
+                     'List valid resources for inventory.')
 
-# These flags are for the admin.py module.
-flags.DEFINE_string('config_path', None,
-                    'Path to the inventory config file.')
-
-flags.DEFINE_string('domain_super_admin_email', None,
-                    'An email address of a super-admin in the GSuite domain. '
-                    'REQUIRED: if inventory_groups is enabled.')
-flags.DEFINE_string('groups_service_account_key_file', None,
-                    'The key file with credentials for the service account. '
-                    'REQUIRED: If inventory_groups is enabled and '
-                    'runnning locally.')
-flags.DEFINE_integer('max_admin_api_calls_per_day', 150000,
-                     'Admin SDK queries per day.')
-flags.DEFINE_string('max_results_admin_api', 500,
-                    'maxResult param for the Admin SDK list() method')
+# Hack to make the test pass due to duplicate flag error here
+# and scanner, enforcer.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string(
+        'forseti_config',
+        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        'Fully qualified path and filename of the Forseti config file.')
+except flags.DuplicateFlagError:
+    pass
 
 
 # YYYYMMDDTHHMMSSZ, e.g. 20170130T192053Z
@@ -134,8 +108,6 @@ def _create_snapshot_cycles_table(inventory_dao):
 
     Args:
         inventory_dao (data_access.Dao): Data access object.
-
-    Returns:
     """
     try:
         sql = snapshot_cycles_sql.CREATE_TABLE
@@ -188,9 +160,10 @@ def _run_pipelines(pipelines):
     run_statuses = []
     for pipeline in pipelines:
         try:
-            LOGGER.debug('Running pipeline %s', pipeline.__class__.__name__)
+            LOGGER.info('Running pipeline %s', pipeline.__class__.__name__)
             pipeline.run()
             pipeline.status = 'SUCCESS'
+            LOGGER.info('Finished running %s', pipeline.__class__.__name__)
         except (api_errors.ApiInitializationError,
                 inventory_errors.LoadDataPipelineError) as e:
             LOGGER.error('Encountered error loading data.\n%s', e)
@@ -206,8 +179,6 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
         inventory_dao (dao.Dao): Data access object.
         cycle_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status (str): The current cycle's status.
-
-    Returns:
     """
     complete_time = datetime.utcnow()
 
@@ -223,43 +194,40 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     LOGGER.info('Inventory load cycle completed with %s: %s',
                 status, cycle_timestamp)
 
-def _configure_logging(loglevel):
-    """Configures the loglevel for all loggers.
-
-    Args:
-        loglevel (str): The loglevel to set.
-
-    Returns:
-    """
-    level = LOGLEVELS.setdefault(loglevel, 'info')
-    log_util.set_logger_level(level)
-
-def _create_dao_map():
+def _create_dao_map(global_configs):
     """Create a map of DAOs.
 
-    These will be re-usable so that the db connection can apply across
+    These will be reusable so that the db connection can apply across
     different pipelines.
+
+    Args:
+        global_configs (dict): Global configurations.
 
     Returns:
         dict: Dictionary of DAOs.
     """
     try:
         return {
-            'appengine_dao': appengine_dao.AppEngineDao(),
-            'backend_service_dao': backend_service_dao.BackendServiceDao(),
-            'bucket_dao': bucket_dao.BucketDao(),
-            'cloudsql_dao': cloudsql_dao.CloudsqlDao(),
-            'dao': dao.Dao(),
-            'folder_dao': folder_dao.FolderDao(),
-            'forwarding_rules_dao': forwarding_rules_dao.ForwardingRulesDao(),
-            'instance_dao': instance_dao.InstanceDao(),
-            'instance_group_dao': instance_group_dao.InstanceGroupDao(),
+            'appengine_dao': appengine_dao.AppEngineDao(global_configs),
+            'backend_service_dao':
+                backend_service_dao.BackendServiceDao(global_configs),
+            'bucket_dao': bucket_dao.BucketDao(global_configs),
+            'cloudsql_dao': cloudsql_dao.CloudsqlDao(global_configs),
+            'dao': dao.Dao(global_configs),
+            'folder_dao': folder_dao.FolderDao(global_configs),
+            'forwarding_rules_dao':
+                forwarding_rules_dao.ForwardingRulesDao(global_configs),
+            'instance_dao': instance_dao.InstanceDao(global_configs),
+            'instance_group_dao':
+                instance_group_dao.InstanceGroupDao(global_configs),
             'instance_group_manager_dao':
-                instance_group_manager_dao.InstanceGroupManagerDao(),
+                instance_group_manager_dao.InstanceGroupManagerDao(
+                    global_configs),
             'instance_template_dao':
-                instance_template_dao.InstanceTemplateDao(),
-            'organization_dao': organization_dao.OrganizationDao(),
-            'project_dao': project_dao.ProjectDao(),
+                instance_template_dao.InstanceTemplateDao(global_configs),
+            'organization_dao': organization_dao.OrganizationDao(
+                global_configs),
+            'project_dao': project_dao.ProjectDao(global_configs),
         }
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error to creating DAO map.\n%s', e)
@@ -270,8 +238,6 @@ def main(_):
 
     Args:
         _ (list): args that aren't used
-
-    Returns:
     """
     del _
     inventory_flags = FLAGS.FlagValuesDict()
@@ -280,22 +246,30 @@ def main(_):
         inventory_util.list_resource_pipelines()
         sys.exit()
 
-    _configure_logging(inventory_flags.get('loglevel'))
-
-    config_path = inventory_flags.get('config_path')
-
-    if config_path is None:
-        LOGGER.error('Path to pipeline config needs to be specified.')
+    forseti_config = inventory_flags.get('forseti_config')
+    if forseti_config is None:
+        LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
 
-    dao_map = _create_dao_map()
+    try:
+        configs = file_loader.read_and_parse_file(forseti_config)
+    except IOError:
+        LOGGER.error('Unable to open Forseti Security config file. '
+                     'Please check your path and filename and try again.')
+        sys.exit()
+    global_configs = configs.get('global')
+    inventory_configs = configs.get('inventory')
+
+    log_util.set_logger_level_from_config(inventory_configs.get('loglevel'))
+
+    dao_map = _create_dao_map(global_configs)
 
     cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
 
     pipeline_builder = builder.PipelineBuilder(
         cycle_timestamp,
-        config_path,
-        flags,
+        inventory_configs,
+        global_configs,
         api_map.API_MAP,
         dao_map)
     pipelines = pipeline_builder.build()
@@ -312,11 +286,11 @@ def main(_):
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
 
-    if inventory_flags.get('email_recipient') is not None:
+    if global_configs.get('email_recipient') is not None:
         payload = {
-            'email_sender': inventory_flags.get('email_sender'),
-            'email_recipient': inventory_flags.get('email_recipient'),
-            'sendgrid_api_key': inventory_flags.get('sendgrid_api_key'),
+            'email_sender': global_configs.get('email_sender'),
+            'email_recipient': global_configs.get('email_recipient'),
+            'sendgrid_api_key': global_configs.get('sendgrid_api_key'),
             'cycle_time': cycle_time,
             'cycle_timestamp': cycle_timestamp,
             'snapshot_cycle_status': snapshot_cycle_status,

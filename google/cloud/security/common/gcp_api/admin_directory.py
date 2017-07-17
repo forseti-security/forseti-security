@@ -14,16 +14,11 @@
 
 """Wrapper for Admin Directory  API client."""
 
-import gflags as flags
-
 from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
-
-
-FLAGS = flags.FLAGS
 
 
 class AdminDirectoryClient(_base_client.BaseClient):
@@ -35,38 +30,43 @@ class AdminDirectoryClient(_base_client.BaseClient):
         'https://www.googleapis.com/auth/admin.directory.group.readonly'
     ])
 
-    def __init__(self):
+    def __init__(self, global_configs):
         """Initialize.
 
-        Returns:
+        Args:
+            global_configs (dict): Global configurations.
         """
         super(AdminDirectoryClient, self).__init__(
-            credentials=self._build_credentials(),
+            global_configs,
+            credentials=self._build_credentials(global_configs),
             api_name=self.API_NAME)
 
         self.rate_limiter = RateLimiter(
-            FLAGS.max_admin_api_calls_per_day,
+            self.global_configs.get('max_admin_api_calls_per_day'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
-    def _build_credentials(self):
+    def _build_credentials(self, global_configs):
         """Build credentials required for accessing the directory API.
+
+        Args:
+            global_configs (dict): Global configurations.
 
         Returns:
             object: Credentials as built by oauth2client.
 
         Raises:
-            api_errors.ApiExecutionError
+            api_errors.ApiExecutionError: If fails to build credentials.
         """
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                FLAGS.groups_service_account_key_file,
+                global_configs.get('groups_service_account_key_file'),
                 scopes=self.REQUIRED_SCOPES)
         except (ValueError, KeyError, TypeError, IOError) as e:
             raise api_errors.ApiExecutionError(
                 'Error building admin api credential: %s', e)
 
         return credentials.create_delegated(
-            FLAGS.domain_super_admin_email)
+            global_configs.get('domain_super_admin_email'))
 
     def get_rate_limiter(self):
         """Return an appriopriate rate limiter.
@@ -74,8 +74,9 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Returns:
             object: The rate limiter.
         """
-        return RateLimiter(FLAGS.max_admin_api_calls_per_day,
-                           self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
+        return RateLimiter(
+            self.global_configs.get('max_admin_api_calls_per_day'),
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_group_members(self, group_key):
         """Get all the members for specified groups.
@@ -87,11 +88,12 @@ class AdminDirectoryClient(_base_client.BaseClient):
             list: A list of member objects from the API.
 
         Raises:
-            api_errors.ApiExecutionError
+            api_errors.ApiExecutionError: If group member retrieval fails.
         """
         members_api = self.service.members()
-        request = members_api.list(groupKey=group_key,
-                                   maxResults=FLAGS.max_results_admin_api)
+        request = members_api.list(
+            groupKey=group_key,
+            maxResults=self.global_configs.get('max_results_admin_api'))
 
         paged_results = self._build_paged_result(
             request, members_api, self.rate_limiter)
@@ -113,7 +115,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             list: A list of group objects returned from the API.
 
         Raises:
-            api_errors.ApiExecutionError
+            api_errors.ApiExecutionError: If groups retrieval fails.
         """
         groups_api = self.service.groups()
         request = groups_api.list(customer=customer_id)

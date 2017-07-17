@@ -14,10 +14,6 @@
 """A Bucket ACL Resource."""
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-
-
 class BucketAccessControls(object):
     """Bucket ACL Resource.
     """
@@ -26,12 +22,12 @@ class BucketAccessControls(object):
         """Initialize
 
         Args:
-            bucket: GCS bucket
-            entity: GCS entity
-            email: email
-            domain: domain
-            role: GCS role
-            project_number: the project number
+            bucket (str): GCS bucket
+            entity (str): GCS entity
+            email (str): email
+            domain (str): domain
+            role (str): GCS role
+            project_number (int): the project number
         """
         self.bucket = bucket
         self.entity = entity
@@ -41,6 +37,10 @@ class BucketAccessControls(object):
         self.project_number = project_number
 
     def __hash__(self):
-        """Return hash of properties."""
+        """Return hash of properties.
+
+        Returns:
+            hash: The hash of the class properties.
+        """
         return hash((self.bucket, self.entity, self.email, self.domain,
                      self.role, self.project_number))

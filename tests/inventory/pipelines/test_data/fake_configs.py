@@ -19,7 +19,6 @@ FAKE_CONFIGS = {
     'inventory_groups': True,
     'groups_service_account_key_file': '/foo/path',
     'domain_super_admin_email': 'admin@foo.com',
-    'organization_id': '66666',
     'max_crm_api_calls_per_100_seconds': 10000000,
     'db_name': 'forseti_security',
     'db_user': 'sqlproxy',

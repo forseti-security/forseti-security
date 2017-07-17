@@ -24,6 +24,7 @@ Usage:
 
 import importlib
 import inspect
+import sys
 import gflags as flags
 
 # pylint: disable=line-too-long
@@ -49,6 +50,18 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('timestamp', None, 'Snapshot timestamp')
 flags.DEFINE_string('config', None, 'Config file to use', short_name='c')
 
+# Hack to make the test pass due to duplicate flag error here
+# and inventory_loader.
+# TODO: Find a way to remove this try/except, possibly dividing the tests
+# into different test suites.
+try:
+    flags.DEFINE_string(
+        'forseti_config',
+        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        'Fully qualified path and filename of the Forseti config file.')
+except flags.DuplicateFlagError:
+    pass
+
 LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
@@ -72,13 +85,15 @@ def find_pipelines(pipeline_name):
                and issubclass(obj, BaseNotificationPipeline) \
                and obj is not BaseNotificationPipeline:
                 return obj
-    except ImportError:
+    except ImportError, e:
+        LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
         return None
 
-def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
+def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 
     Args:
+        global_configs (dict): Global configurations.
         statuses (tuple): Snapshot statues.
 
     Returns:
@@ -87,7 +102,8 @@ def _get_timestamp(statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     latest_timestamp = None
     try:
-        latest_timestamp = dao.Dao().get_latest_snapshot_timestamp(statuses)
+        current_dao = dao.Dao(global_configs)
+        latest_timestamp = current_dao.get_latest_snapshot_timestamp(statuses)
     except db_errors.MySQLError as err:
         LOGGER.error('Error getting latest snapshot timestamp: %s', err)
 
@@ -140,25 +156,34 @@ def main(_):
         Args:
             _ (obj): Result of the last expression evaluated in the interpreter.
     """
-    if FLAGS.timestamp is not None:
-        timestamp = FLAGS.timestamp
-    else:
-        timestamp = _get_timestamp()
+    notifier_flags = FLAGS.FlagValuesDict()
 
-    if FLAGS.config is None:
-        LOGGER.error('You must specify a notification pipeline')
-        exit()
+    forseti_config = notifier_flags.get('forseti_config')
 
-    notifier_configs = FLAGS.FlagValuesDict()
-    configs = file_loader.read_and_parse_file(FLAGS.config)
+    if forseti_config is None:
+        LOGGER.error('Path to Forseti Security config needs to be specified.')
+        sys.exit()
+
+    try:
+        configs = file_loader.read_and_parse_file(forseti_config)
+    except IOError:
+        LOGGER.error('Unable to open Forseti Security config file. '
+                     'Please check your path and filename and try again.')
+        sys.exit()
+    global_configs = configs.get('global')
+    notifier_configs = configs.get('notifier')
+
+    timestamp = notifier_configs.get('timestamp')
+    if timestamp is None:
+        timestamp = _get_timestamp(global_configs)
 
     # get violations
-    v_dao = violation_dao.ViolationDao()
+    v_dao = violation_dao.ViolationDao(global_configs)
     violations = {}
     for resource in RESOURCE_MAP:
         try:
             violations[resource] = v_dao.get_all_violations(
-                timestamp, RESOURCE_MAP[resource])
+                timestamp, resource)
         except db_errors.MySQLError, e:
             # even if an error is raised we still want to continue execution
             # this is because if we don't have violations the Mysql table
@@ -171,7 +196,7 @@ def main(_):
 
     # build notification pipelines
     pipelines = []
-    for resource in configs['resources']:
+    for resource in notifier_configs['resources']:
         if violations.get(resource['resource']) is None:
             LOGGER.error('The resource name \'%s\' is invalid, skipping',
                          resource['resource'])
@@ -185,6 +210,7 @@ def main(_):
             pipelines.append(chosen_pipeline(resource['resource'],
                                              timestamp,
                                              violations[resource['resource']],
+                                             global_configs,
                                              notifier_configs,
                                              pipeline['configuration']))
 

@@ -1,4 +1,3 @@
-
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,37 +21,12 @@ import re
 from google.cloud.security.common.gcp_type import cloudsql_access_controls as csql_acls
 # pylint: enable=line-too-long
 from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util.regex_util import escape_and_globify
 from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import errors as audit_errors
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc,redundant-returns-doc
-
-
 LOGGER = log_util.get_logger(__name__)
-
-
-# TODO: move this to utils since it's used in more that one engine
-def escape_and_globify(pattern_string):
-    """Given a pattern string with a glob, create actual regex pattern.
-
-    To require > 0 length glob, change the "*" to ".+". This is to handle
-    strings like "*@company.com". (THe actual regex would probably be
-    ".*@company.com", except that we don't want to match zero-length
-    usernames before the "@".)
-
-    Args:
-        pattern_string: The pattern string of which to make a regex.
-
-    Returns:
-    The pattern string, escaped except for the "*", which is
-    transformed into ".+" (match on one or more characters).
-    """
-
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
 
 
 class CloudSqlRulesEngine(bre.BaseRulesEngine):
@@ -62,20 +36,38 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         """Initialize.
 
         Args:
-            rules_file_path: file location of rules
+            rules_file_path (str): file location of rules
+            snapshot_timestamp (str): snapshot timestamp. Defaults to None.
+                If set, this will be the snapshot timestamp
+                used in the engine.
         """
         super(CloudSqlRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
-    def build_rule_book(self):
-        """Build CloudSQLRuleBook from the rules definition file."""
+    def build_rule_book(self, global_configs=None):
+        """Build CloudSQLRuleBook from the rules definition file.
+
+        Args:
+            global_configs (dict): Global configurations.
+        """
         self.rule_book = CloudSqlRuleBook(self._load_rule_definitions())
 
+    # TODO: The naming is confusing and needs to be fixed in all scanners.
     # pylint: disable=arguments-differ
     def find_policy_violations(self, cloudsql_acls,
                                force_rebuild=False):
-        """Determine whether CloudSQL acls violates rules."""
+        """Determine whether CloudSQL acls violates rules.
+
+        Args:
+            cloudsql_acls (CloudsqlAccessControls): Object containing
+                ACL data
+            force_rebuild (bool): If True, rebuilds the rule book. This will
+                reload the rules definition file and add the rules to the book.
+
+        Returns:
+             generator: A generator of rule violations.
+        """
         violations = itertools.chain()
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
@@ -88,7 +80,11 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         return violations
 
     def add_rules(self, rules):
-        """Add rules to the rule book."""
+        """Add rules to the rule book.
+
+        Args:
+            rules (dict): rule definitions dictionary
+        """
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
@@ -100,7 +96,7 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
         """Initialization.
 
         Args:
-            rule_defs: rule definitons
+            rule_defs (dict): rule definitons
         """
         super(CloudSqlRuleBook, self).__init__()
         self.resource_rules_map = {}
@@ -111,7 +107,11 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
 
     def add_rules(self, rule_defs):
-        """Add rules to the rule book"""
+        """Add rules to the rule book
+
+        Args:
+            rule_defs (dict): rule definitions dictionary
+        """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
@@ -119,11 +119,11 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
         """Add a rule to the rule book.
 
         Args:
-            rule_def: A dictionary containing rule definition properties.
-            rule_index: The index of the rule from the rule definitions.
-            Assigned automatically when the rule book is built.
+            rule_def (dict): A dictionary containing rule definition
+                properties.
+            rule_index (int): The index of the rule from the rule definitions.
+                Assigned automatically when the rule book is built.
         """
-
         resources = rule_def.get('resource')
 
         for resource in resources:
@@ -160,7 +160,7 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
 
         Returns:
-            A list of ResourceRules.
+            list: A list of ResourceRules.
         """
         resource_rules = []
 
@@ -172,60 +172,60 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
 
 class Rule(object):
     """Rule properties from the rule definition file.
-    Also finds violations.
+       Also finds violations.
     """
 
     def __init__(self, rule_name, rule_index, rules):
         """Initialize.
 
         Args:
-            rule_name: Name of the loaded rule
-            rule_index: The index of the rule from the rule definitions
-            rules: The rules from the file
+            rule_name (str): Name of the loaded rule
+            rule_index (int): The index of the rule from the rule definitions
+            rules (dict): The rules from the file
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.rules = rules
 
+    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, cloudsql_acl):
         """Find CloudSQL policy acl violations in the rule book.
 
         Args:
-            cloudsql_acl: CloudSQL ACL resource
+            cloudsql_acl (CloudsqlAccessControls): CloudSQL ACL resource
 
-        Returns:
-            tuple: A RuleViolation named tuple
+        Yields:
+            namedtuple: Returns RuleViolation named tuple
         """
         filter_list = []
-        if self.rules.instance_name != '^.+$':
-            instance_name_bool = re.match(self.rules.instance_name,
-                                          cloudsql_acl.instance_name)
-        else:
-            instance_name_bool = True
+        is_instance_name_violated = True
+        is_authorized_networks_violated = True
+        is_ssl_enabled_violated = True
 
-        if self.rules.authorized_networks != '^.+$':
-            authorized_networks_regex = re.compile(self.rules.\
-                                                   authorized_networks)
-            filter_list = [
-                net for net in cloudsql_acl.authorized_networks if\
-                authorized_networks_regex.match(net)
-            ]
+        is_instance_name_violated = re.match(self.rules.instance_name,
+                                             cloudsql_acl.instance_name)
 
-            authorized_networks_bool = bool(filter_list)
-        else:
-            authorized_networks_bool = True
+        authorized_networks_regex = re.compile(self.rules.authorized_networks)
+        filter_list = [
+            net for net in cloudsql_acl.authorized_networks if\
+            authorized_networks_regex.match(net)
+        ]
 
-        ssl_enabled_bool = (self.rules.ssl_enabled == cloudsql_acl.ssl_enabled)
+        is_authorized_networks_violated = bool(filter_list)
+
+        is_ssl_enabled_violated = (self.rules.ssl_enabled ==\
+                                   cloudsql_acl.ssl_enabled)
 
         should_raise_violation = (
-            (instance_name_bool is not None and instance_name_bool) and\
-            (authorized_networks_bool is not None and\
-             authorized_networks_bool) and
-            (ssl_enabled_bool is not None and ssl_enabled_bool))
+            (is_instance_name_violated is not None and
+             is_instance_name_violated) and
+            (is_authorized_networks_violated is not None and
+             is_authorized_networks_violated) and
+            (is_ssl_enabled_violated is not None and is_ssl_enabled_violated))
 
         if should_raise_violation:
             yield self.RuleViolation(
-                resource_type='project',
+                resource_type='cloudsql',
                 resource_id=cloudsql_acl.project_number,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,

@@ -29,22 +29,17 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
 def _attach_user_agent(request):
-    """Append our UA to the headers of an googelapiclient request object.
+    """Append custom Forseti user agent to googleapiclient request headers.
 
-        Args:
-            request: A googlapiclient request object
+    Args:
+        request (HttpRequest): A googlapiclient request object
 
-        Returns:
-            A modified googleapiclient request object.
+    Returns:
+        HttpRequest: A modified googleapiclient request object.
     """
     user_agent = request.headers['user-agent']
     request.headers['user-agent'] = user_agent + ', %s/%s ' % (
@@ -57,7 +52,8 @@ def _attach_user_agent(request):
 class BaseClient(object):
     """Base client for a specified GCP API and credentials."""
 
-    def __init__(self, credentials=None, api_name=None, **kwargs):
+    def __init__(self, global_configs, credentials=None, api_name=None,
+                 **kwargs):
         """Thin client wrapper over the Google Discovery API.
 
         The intent for this class is to define the Google APIs expected by
@@ -65,11 +61,14 @@ class BaseClient(object):
         be stable and could cause unknown issues in Forseti.
 
         Args:
-            credentials: Google credentials for auth-ing to the API.
-            api_name: The API name to wrap. More details here:
+            global_configs (dict): Global configurations.
+            credentials (Credentials): Google credentials for auth-ing
+                to the API.
+            api_name (str): The API name to wrap. More details here:
                 https://developers.google.com/api-client-library/python/apis/
-            kwargs: Additional args such as version.
+            **kwargs (dict): Additional args such as version.
         """
+        self.global_configs = global_configs
         if not credentials:
             credentials = GoogleCredentials.get_application_default()
         self._credentials = credentials
@@ -102,6 +101,11 @@ class BaseClient(object):
                                        cache_discovery=should_cache_discovery)
 
     def __repr__(self):
+        """The object representation.
+
+        Returns:
+            str: The object representation.
+        """
         return 'API: name=%s, version=%s' % (self.name, self.version)
 
     @staticmethod
@@ -114,17 +118,17 @@ class BaseClient(object):
         """Executes requests in a rate-limited way.
 
         Args:
-            request: GCP API client request object.
-            rate_limiter: An instance of RateLimiter to use.  Will be None
-                for api without any rate limits.
+            request (HttpRequest): GCP API client request object.
+            rate_limiter (RateLimiter): An instance of RateLimiter to use.
+                Will be None for APIs without any rate limits.
 
         Returns:
-            API response object.
+            HttpResponse: API response object.
 
         Raises:
-            When the retry is exceeded, exception will be thrown.  This
-            exception is not wrapped by the retry library, and will be handled
-            upstream.
+            HttpError: When the retry is exceeded, exception will be thrown.
+                This exception is not wrapped by the retry library, and will
+                be handled upstream.
         """
         request = _attach_user_agent(request)
         try:
@@ -168,19 +172,20 @@ class BaseClient(object):
         Use of this method requires the API having a .list_next() method.
 
         Args:
-            request: GCP API client request object.
-            api_stub: The API stub used to build the request.
-            rate_limiter: An instance of RateLimiter to use.  Will be None
-                for api without any rate limits.
-            next_stub: The API stub used to get the next page of results.
+            request (HttpRequest): GCP API client request object.
+            api_stub (object): The API stub used to build the request.
+            rate_limiter (RateLimiter): An instance of RateLimiter to use.
+                Will be None for APIs without any rate limits.
+            next_stub (object): The API stub used to get the next page
+                of results.
 
         Returns:
-            A list of paged API response objects.
+            list: A list of paged API response objects.
             [{page 1 results}, {page 2 results}, {page 3 results}, ...]
 
         Raises:
-            api_errors.ApiExecutionError when there is no list_next() method
-            on the api_stub.
+            api_errors.ApiExecutionError: When there is no list_next() method
+                on the api_stub.
         """
         if next_stub is None:
             if not hasattr(api_stub, 'list_next'):
@@ -241,13 +246,13 @@ class BaseClient(object):
         all $items across all of the groups.
 
         Args:
-        page_results : A list of paged API response objects.
-            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
-        item_key: The name of the key within the inner "items" lists
-            containing the objects of interest.
+            paged_results (list): A list of paged API response objects.
+                [{page 1 results}, {page 2 results}, {page 3 results}, ...]
+            item_key (str): The name of the key within the inner "items" lists
+                containing the objects of interest.
 
-        Return:
-          A list of items.
+        Returns:
+            list: A list of items.
         """
         items = []
         for page in paged_results:
@@ -267,13 +272,13 @@ class BaseClient(object):
         that to a simple list of items.
 
         Args:
-            paged_results : A list of paged API response objects.
+            paged_results (list): A list of paged API response objects.
                 [{page 1 results}, {page 2 results}, {page 3 results}, ...]
-            item_key: The name of the key within the inner "items" lists
+            item_key (str): The name of the key within the inner "items" lists
                 containing the objects of interest.
 
-        Return:
-            A list of GCE resources.
+        Returns:
+            list: A list of items.
         """
         results = []
         for page in paged_results:

@@ -14,22 +14,11 @@
 
 """Wrapper for AppEngine API client."""
 
-import gflags as flags
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from googleapiclient.errors import HttpError
 
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-
-
-FLAGS = flags.FLAGS
-
-flags.DEFINE_integer('max_appengine_api_calls_per_second', 20,
-                     'AppEngine API calls per seconds.')
 
 class AppEngineClient(_base_client.BaseClient):
     """AppEngine Client.
@@ -39,17 +28,37 @@ class AppEngineClient(_base_client.BaseClient):
 
     API_NAME = 'appengine'
 
-    def __init__(self, credentials=None, version=None):
+    # TODO: Remove pylint disable.
+    # pylint: disable=invalid-name
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 1
+    # pylint: enable=invalid-name
+
+    def __init__(self, global_configs, credentials=None, version=None):
+        """Initialize.
+
+        Args:
+            global_configs (dict): Global configurations.
+            credentials (GoogleCredentials): Google credentials.
+            version (str): The version.
+        """
         super(AppEngineClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME, version=version)
+            global_configs,
+            credentials=credentials,
+            api_name=self.API_NAME,
+            version=version)
+
         self.rate_limiter = RateLimiter(
-            FLAGS.max_appengine_api_calls_per_second, 1)
+            self.global_configs.get('max_appengine_api_calls_per_second'),
+            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_app(self, project_id):
         """Gets information about an application.
 
         Args:
-            project_id: The id of the project.
+            project_id (str): The id of the project.
+
+        Returns:
+            dict: The response of retrieving the AppEngine app.
         """
         apps = self.service.apps()
         app = None

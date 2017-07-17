@@ -14,27 +14,31 @@
 
 """Provides violations map"""
 
+# pylint: disable=line-too-long
 from google.cloud.security.common.data_access import violation_format as vf
 from google.cloud.security.common.data_access.sql_queries import load_data
-from google.cloud.security.common.data_access.sql_queries import select_data
+from google.cloud.security.common.data_access.sql_queries import select_data as sd
+# pylint: enable=line-too-long
 
 VIOLATION_MAP = {
-    'violations': vf.format_policy_violation,
-    'buckets_acl_violations': vf.format_buckets_acl_violation,
-    'cloudsql_acl_violations': vf.format_cloudsql_acl_violation,
+    'violations': vf.format_violation,
+    'buckets_acl_violations': vf.format_violation,
+    'cloudsql_acl_violations': vf.format_violation,
     'groups_violations': vf.format_groups_violation,
 }
 
 VIOLATION_INSERT_MAP = {
     'violations': load_data.INSERT_VIOLATION.format,
-    'buckets_acl_violations': load_data.INSERT_BUCKETS_ACL_VIOLATION.format,
-    'cloudsql_acl_violations': load_data.INSERT_CLOUDSQL_ACL_VIOLATION.format,
+    'bigquery_acl_violations': load_data.INSERT_VIOLATION.format,
+    'buckets_acl_violations': load_data.INSERT_VIOLATION.format,
+    'cloudsql_acl_violations': load_data.INSERT_VIOLATION.format,
     'groups_violations': load_data.INSERT_GROUPS_VIOLATION.format
 }
 
 VIOLATION_SELECT_MAP = {
-    'violations': select_data.SELECT_VIOLATIONS.format,
-    'buckets_acl_violations': select_data.SELECT_BUCKETS_ACL_VIOLATIONS.format,
-    'cloudsql_acl_violations': select_data.SELECT_CLOUDSQL_ACL_VIOLATION.format,
-    'groups_violations': select_data.SELECT_GROUPS_VIOLATIONS.format,
+    'bigquery_acl_violations': sd.SELECT_BIGQUERY_ACL_VIOLATIONS.format,
+    'buckets_acl_violations': sd.SELECT_BUCKETS_ACL_VIOLATIONS.format,
+    'cloudsql_acl_violations': sd.SELECT_CLOUDSQL_VIOLATIONS.format,
+    'groups_violations': sd.SELECT_GROUPS_VIOLATIONS.format,
+    'policy_violations': sd.SELECT_POLICY_VIOLATIONS.format,
 }

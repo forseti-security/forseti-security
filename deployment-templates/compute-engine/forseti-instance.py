@@ -42,100 +42,27 @@ cd forseti-security-{}
         '$(ref.cloudsql-instance.name)')
 
     SCANNER_BUCKET = context.properties['scanner-bucket']
-    DATABASE_NAME = context.properties['database-name']
-    SHOULD_INVENTORY_GROUPS = bool(context.properties['inventory-groups'])
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
+    FORSETI_CONFIG = context.properties['forseti-config']
 
     inventory_command = (
-        '/usr/local/bin/forseti_inventory --db_name {} '
+        '/usr/local/bin/forseti_inventory --forseti_config {} '
             .format(
-                DATABASE_NAME,
+                FORSETI_CONFIG,
             )
-        )
-
-    scanner_command = '/usr/local/bin/forseti_scanner --rules {} --output_path {} --db_name {} '.format(
-        'gs://{}/rules/rules.yaml'.format(SCANNER_BUCKET),
-        'gs://{}/scanner_violations'.format(SCANNER_BUCKET),
-        DATABASE_NAME,
     )
 
-    if USE_BRANCH:
-        inventory_command = (inventory_command + ' --config_path {} '
-                .format('$USER_HOME/config/inventory_conf.yaml')
+    scanner_command = (
+        ('/usr/local/bin/forseti_scanner --forseti_config {} ')
+            .format(
+                FORSETI_CONFIG,
             )
+    )
 
-        # TODO: temporary hack; remove --engine_name flag when we run scanner
-        # totally in batch with the other rule engines
-        scanner_command = (scanner_command + ' --engine_name {} '
-                .format('IamRulesEngine')
-            )
-
-        # TODO: remove this little hack when we update the release...
-        NEW_FORSETI_CONFIG = """
-# Copy the default inventory config to a more permanent directory
-mkdir -p $USER_HOME/config
-cp samples/inventory/inventory_conf.yaml $USER_HOME/config/inventory_conf.yaml
-
+    NEW_BUILD_PROTOS = """
 # Build protos separately.
 python build_protos.py --clean
 """
-        OLD_BUILD_PROTOS = ''
-    else:
-        inventory_command = (
-            inventory_command + ' --organization_id {} '
-                .format(ORGANIZATION_ID)
-            )
-
-        scanner_command = (
-            scanner_command + ' --organization_id {} '
-                .format(ORGANIZATION_ID)
-            )
-
-        NEW_FORSETI_CONFIG = ''
-        OLD_BUILD_PROTOS = """
-# Install protoc
-wget https://github.com/google/protobuf/releases/download/v3.3.0/protoc-3.3.0-linux-x86_64.zip
-unzip protoc-3.3.0-linux-x86_64.zip
-cp bin/protoc /usr/local/bin/protoc
-"""
-
-    # Extend the commands, based on whether email is required.
-    SENDGRID_API_KEY = context.properties.get('sendgrid-api-key')
-    EMAIL_SENDER = context.properties.get('email-sender')
-    EMAIL_RECIPIENT = context.properties.get('email-recipient')
-    if EMAIL_RECIPIENT:
-        email_flags = '--sendgrid_api_key {} --email_sender {} --email_recipient {}'.format(
-            SENDGRID_API_KEY,
-            EMAIL_SENDER,
-            EMAIL_RECIPIENT,
-        )
-        inventory_command = inventory_command + email_flags
-        scanner_command = scanner_command + email_flags
-
-    # Extend the commands, based on whether inventory-groups is set.
-    if SHOULD_INVENTORY_GROUPS:
-        GROUPS_DOMAIN_SUPER_ADMIN_EMAIL = context.properties[
-            'groups-domain-super-admin-email']
-        GROUPS_SERVICE_ACCOUNT_KEY_FILE = context.properties[
-            'groups-service-account-key-file']
-
-        # TODO: remove this in a future version
-        OLD_SHOULD_INV_GROUPS_FLAG = '--inventory_groups'
-
-        if USE_BRANCH:
-            OLD_SHOULD_INV_GROUPS_FLAG = ''
-
-        inventory_groups_flags = (
-            ' {} '
-            '--domain_super_admin_email {} '
-            '--groups_service_account_key_file {} '
-                .format(
-                    OLD_SHOULD_INV_GROUPS_FLAG,
-                    GROUPS_DOMAIN_SUPER_ADMIN_EMAIL,
-                    GROUPS_SERVICE_ACCOUNT_KEY_FILE,
-                )
-            )
-        inventory_command = inventory_command + inventory_groups_flags
 
     resources = []
 
@@ -215,44 +142,18 @@ fi
 
 $USER_HOME/cloud_sql_proxy -instances={}=tcp:{} &
 
-# Check if rules.yaml exists
-RULES_FILE=$(gsutil ls gs://{}/rules/rules.yaml)
-if [ $? -eq 1 ]; then
-        cd $USER_HOME
-        read -d '' RULES_YAML << EOF
-rules:
-  - name: sample whitelist
-    mode: whitelist
-    resource:
-      - type: organization
-        applies_to: self_and_children
-        resource_ids:
-          - {}
-    inherit_from_parents: true
-    bindings:
-      - role: roles/*
-        members:
-          - serviceAccount:*@*.gserviceaccount.com
-EOF
-        echo "$RULES_YAML" > $USER_HOME/rules.yaml
-        gsutil cp $USER_HOME/rules.yaml gs://{}/rules/rules.yaml
-fi
-
 # Install Forseti Security
 cd $USER_HOME
 rm -rf forseti-*
 rm -rf run_forseti.sh
 pip install --upgrade pip
 pip install --upgrade setuptools
-pip install grpcio grpcio-tools
-
-{}
+pip install grpcio grpcio-tools google-apputils
 
 # Download Forseti src; see DOWNLOAD_FORSETI
 {}
-# Prevent namespace clash
-pip uninstall --yes protobuf
 
+# Build protos
 {}
 
 python setup.py install
@@ -260,6 +161,12 @@ python setup.py install
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
+
+if [ ! -f {} ]; then
+    echo Forseti conf not found, exiting.
+    exit 1
+fi
+
 # inventory command
 {}
 # scanner command
@@ -278,21 +185,15 @@ chmod +x $USER_HOME/run_forseti.sh
     CLOUDSQL_CONN_STRING,
     context.properties['db-port'],
 
-    # rules.yaml
-    SCANNER_BUCKET,
-    ORGANIZATION_ID,
-    SCANNER_BUCKET,
-
-    # old style build protobufs
-    OLD_BUILD_PROTOS,
-
     # install forseti
     DOWNLOAD_FORSETI,
 
-    # copy Forseti config file
-    NEW_FORSETI_CONFIG,
+    # new style build protos
+    NEW_BUILD_PROTOS,
 
     # run_forseti.sh
+    FORSETI_CONFIG,
+
     # - forseti_inventory
     inventory_command,
 
@@ -303,5 +204,4 @@ chmod +x $USER_HOME/run_forseti.sh
             }
         }
     })
-
     return {'resources': resources}

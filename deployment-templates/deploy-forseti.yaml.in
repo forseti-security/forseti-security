@@ -15,13 +15,13 @@
 # The toplevel deployment script for Forseti Security.
 
 imports:
-- path: inventory/cloudsql-instance.py
+- path: cloudsql/cloudsql-instance.py
   name: cloudsql-instance.py
-- path: inventory/cloudsql-database.py
+- path: cloudsql/cloudsql-database.py
   name: cloudsql-database.py
 - path: storage/bucket.py
   name: bucket.py
-- path: forseti-instance.py
+- path: compute-engine/forseti-instance.py
   name: forseti-instance.py
 
 resources:

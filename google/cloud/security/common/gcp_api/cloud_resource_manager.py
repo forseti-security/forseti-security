@@ -14,7 +14,6 @@
 
 """Wrapper for Resource Manager API client."""
 
-import gflags as flags
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
@@ -23,19 +22,6 @@ from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,redundant-returns-doc
-# pylint: disable=missing-param-doc,missing-yield-doc,missing-yield-type-doc
-
-
-FLAGS = flags.FLAGS
-
-flags.DEFINE_integer('max_crm_api_calls_per_100_seconds', 400,
-                     'Cloud Resource Manager read queries per 100 seconds.')
-
-flags.DEFINE_integer('max_crm_api_writes_per_100_seconds', 1000,
-                     'Cloud Resource Manager write requests per 100 seconds.')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -46,24 +32,30 @@ class CloudResourceManagerClient(_base_client.BaseClient):
     API_NAME = 'cloudresourcemanager'
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
-    def __init__(self, **kwargs):
+    def __init__(self, global_configs, **kwargs):
+        """Initialize.
+
+        Args:
+            global_configs (dict): Forseti config.
+            **kwargs (dict): The kwargs.
+        """
         super(CloudResourceManagerClient, self).__init__(
-            api_name=self.API_NAME, **kwargs)
+            global_configs, api_name=self.API_NAME, **kwargs)
 
         # TODO: we will need multiple rate limiters when we need to invoke
         # the CRM write API for enforcement.
         self.rate_limiter = RateLimiter(
-            FLAGS.max_crm_api_calls_per_100_seconds,
+            self.global_configs.get('max_crm_api_calls_per_100_seconds'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def get_project(self, project_id):
         """Get all the projects from organization.
 
         Args:
-            project_id: The string project id.
+            project_id (str): The project id (not project number).
 
         Returns:
-            The project response object.
+            dict: The project response object.
 
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
@@ -81,11 +73,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """Get all the projects this application has access to.
 
         Args:
-            resource_name: String of the resource's type.
-            filterargs: Extra project filter args.
+            resource_name (str): The resource type.
+            filterargs (dict): Extra project filter args.
 
         Yields:
-            An iterable of the projects.list() response.
+            dict: The projects.list() response.
             https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
 
         Raises:
@@ -115,11 +107,12 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """Get all the iam policies of given project numbers.
 
         Args:
-            resource_name: String of the resource's name.
-            project_identifier: Either the project number or the project id.
+            resource_name (str): The resource type.
+            project_identifier (str): Either the project number or the
+                project id.
 
         Returns:
-            IAM policies of the project.
+            list: IAM policies of the project.
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
         """
         projects_api = self.service.projects()
@@ -135,10 +128,10 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """Get organization by org_name.
 
         Args:
-            org_name: The string org name with format "organizations/$ORG_ID"
+            org_name (str): The org name with format "organizations/$ORG_ID"
 
         Returns:
-            The org response object if found, otherwise False.
+            dict: The org response object if found, otherwise False.
         """
         organizations_api = self.service.organizations()
 
@@ -153,11 +146,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """Get organizations that this application has access to.
 
         Args:
-            resource_name: String of the resource's type.
+            resource_name (str): The resource type.
 
         Yields:
-            An iterator of the response from the organizations API, which
-            contains is paginated and contains a list of organizations.
+            dict: An iterator of the response from the organizations API,
+                which is paginated and contains a list of organizations.
         """
         organizations_api = self.service.organizations()
         next_page_token = None
@@ -180,11 +173,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """Get all the iam policies of an org.
 
         Args:
-            resource_name: String of the resource's name.
-            org_id: Integer of the org id.
+            resource_name (str): The resource type.
+            org_id (int): The org id number.
 
         Returns:
-            Organization IAM policy for given org_id.
+            dict: Organization IAM policy for given org_id.
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
         Raises:
@@ -204,10 +197,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """Get a folder.
 
         Args:
-            folder_name: The unique folder name, i.e. "folders/{folderId}".
+            folder_name (str): The unique folder name, with the format
+                "folders/{folderId}".
 
         Returns:
-            The folder API response.
+            dict: The folder API response.
 
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
@@ -225,11 +219,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """Find all folders Forseti can access.
 
         Args:
-            kwargs: Extra args.
-            resource_name: The resource name. TODO: why include this?
+            resource_name (str): The resource type.
+            **kwargs (dict): Extra args.
 
-        Returns:
-            The folders API response.
+        Yields:
+            dict: The folders API response.
 
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
@@ -252,5 +246,28 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 next_page_token = response.get('nextPageToken')
                 if not next_page_token:
                     break
+        except (HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_name, e)
+
+    def get_folder_iam_policies(self, resource_name, folder_id):
+        """Get all the iam policies of an folder.
+
+        Args:
+            resource_name (str): The resource name (type).
+            folder_id (int): The folder id.
+
+        Returns:
+            dict: Folder IAM policy for given folder_id.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        folders_api = self.service.folders()
+        resource_id = 'folders/%s' % folder_id
+        try:
+            request = folders_api.getIamPolicy(
+                resource=resource_id, body={})
+            return {'folder_id': folder_id,
+                    'iam_policy': self._execute(request, self.rate_limiter)}
         except (HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)

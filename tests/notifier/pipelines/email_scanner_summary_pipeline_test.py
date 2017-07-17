@@ -13,9 +13,12 @@
 # limitations under the License.
 """Tests the email scanner summary pipeline."""
 
+import mock
+
 from google.cloud.security.common.gcp_type import iam_policy
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline
+from google.cloud.security.scanner.scanners import iam_rules_scanner
 from google.cloud.security.scanner.audit import rules as audit_rules
 from tests.unittest_utils import ForsetiTestCase
 
@@ -23,7 +26,9 @@ from tests.unittest_utils import ForsetiTestCase
 class EmailScannerSummaryPipelineTest(ForsetiTestCase):
     """Tests for the email_scanner_summary_pipeline."""
     
-    def test_can_compose_scanner_summary(self):
+    @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
+            autospec=True)
+    def test_can_compose_scanner_summary(self, mock_rules_engine):
         """Test that the scan summary is built correctly."""
         email_pipeline = (
             email_scanner_summary_pipeline.EmailScannerSummaryPipeline(
@@ -32,7 +37,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
         members = [iam_policy.IamPolicyMember.create_from(u)
             for u in ['user:a@b.c', 'group:g@h.i', 'serviceAccount:x@y.z']
         ]
-        all_violations = [
+        unflattened_violations = [
             audit_rules.RuleViolation(
                 resource_type='organization',
                 resource_id='abc111',
@@ -50,6 +55,10 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
                 role='role2',
                 members=tuple(members)),
         ]
+
+        scanner = iam_rules_scanner.IamPolicyScanner({}, {}, '', '')
+
+        all_violations = scanner._flatten_violations(unflattened_violations)
         total_resources = {
             resource.ResourceType.ORGANIZATION: 1,
             resource.ResourceType.PROJECT: 1,

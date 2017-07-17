@@ -24,11 +24,6 @@ from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -43,10 +38,10 @@ class FolderDao(dao.Dao):
         TODO: Make this go away when we start using an ORM.
 
         Args:
-            row: The database row to map to the Folder object.
+            row (dict): The database row to map to the Folder object.
 
         Returns:
-            A Folder from the database row.
+            Folder: A Folder from the database row.
         """
         return gcp_folder.Folder(
             folder_id=row.get('folder_id'),
@@ -62,10 +57,11 @@ class FolderDao(dao.Dao):
         """Get folders from snapshot table.
 
         Args:
-            timestamp: The timestamp of the snapshot.
+            resource_name (str): The resource type.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-            A list of Folders.
+            list: A list of Folders.
         """
         # TODO: remove this when we stop passing resource_name as an arg.
         del resource_name
@@ -78,11 +74,11 @@ class FolderDao(dao.Dao):
         """Get an folder from the database snapshot.
 
         Args:
-            folder_id: The Folder to retrieve.
-            timestamp: The timestamp of the snapshot.
+            folder_id (str): The id of the folder to retrieve.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-            A Folder from the database snapshot.
+            Folder: A Folder from the database snapshot.
         """
         query = select_data.FOLDER_BY_ID.format(timestamp)
         rows = self.execute_sql_with_fetch(
@@ -98,10 +94,11 @@ class FolderDao(dao.Dao):
         error because we want to return as many folders as possible.
 
         Args:
-            timestamp: The timestamp of the snapshot.
+            resource_name (str): The resource type.
+            timestamp (str): The timestamp of the snapshot.
 
         Returns:
-            A dict keyed by the folders
+            dict: A dict keyed by the folders
             (gcp_type.folder.Folder) and their iam policies (dict).
         """
         folder_iam_policies = {}

@@ -24,11 +24,6 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,redundant-returns-doc
-
-
 # pylint: disable=too-many-instance-attributes
 class BaseNotificationPipeline(object):
     """Base pipeline to perform notifications"""
@@ -36,30 +31,30 @@ class BaseNotificationPipeline(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, resource, cycle_timestamp,
-                 violations, notifier_config, pipeline_config):
+                 violations, global_configs, notifier_config, pipeline_config):
         """Constructor for the base pipeline.
 
         Args:
-            resource: violation resource name
-            cycle_timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            violations: Dictonary of violations
-            notifier_config: Dictionary of notifier configurations.
-            pipeline_config: Dictonary of pipeline confogurations.
-
-        Returns:
-            None
+            resource (str): Violation resource name.
+            cycle_timestamp (str): Snapshot timestamp,
+               formatted as YYYYMMDDTHHMMSSZ.
+            violations (dict): Violations.
+            global_configs (dict): Global configurations.
+            notifier_config (dict): Notifier configurations.
+            pipeline_config (dict): Pipeline configurations.
         """
         self.cycle_timestamp = cycle_timestamp
         self.resource = resource
+        self.global_configs = global_configs
         self.notifier_config = notifier_config
         self.pipeline_config = pipeline_config
         # TODO: import api_client
         # self.api_client = api_client
 
         # Initializing DAOs
-        self.dao = dao.Dao()
-        self.project_dao = project_dao.ProjectDao()
-        self.violation_dao = violation_dao.ViolationDao()
+        self.dao = dao.Dao(global_configs)
+        self.project_dao = project_dao.ProjectDao(global_configs)
+        self.violation_dao = violation_dao.ViolationDao(global_configs)
 
         # Get violations
         self.violations = violations
@@ -68,10 +63,10 @@ class BaseNotificationPipeline(object):
         """Get all violtions.
 
         Args:
-            timestamp: String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            timestamp (str): String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
-            Dictonary of violations organized per resource type
+            dict: Violations organized per resource type.
         """
         violations = {
             'violations': self.violation_dao.get_all_violations(
@@ -84,12 +79,20 @@ class BaseNotificationPipeline(object):
 
     @abc.abstractmethod
     def _send(self, **kwargs):
-        """Send notifications."""
+        """Send notifications.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+        """
         pass
 
     @abc.abstractmethod
     def _compose(self, **kwargs):
-        """Compose notifications."""
+        """Compose notifications.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+        """
         pass
 
     @abc.abstractmethod

@@ -21,8 +21,6 @@ import MySQLdb
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao
-from google.cloud.security.common.data_access import violation_map as vm
-from google.cloud.security.common.data_access.sql_queries import load_data
 from google.cloud.security.common.gcp_type import iam_policy as iam
 from google.cloud.security.scanner.audit import rules
 
@@ -50,44 +48,64 @@ class ViolationDaoTest(ForsetiTestCase):
                     for m in ['user:a@foo.com', 'user:b@foo.com']],
             ),
             rules.RuleViolation(
-                resource_type='%sb' % ('a'*300),
+                resource_type='%se' % ('a'*300),
                 resource_id='1',
-                rule_name='%sd' % ('c'*300),
+                rule_name='%sh' % ('b'*300),
                 rule_index=1,
                 violation_type='REMOVED',
-                role='%s' % ('e'*300),
+                role='%s' % ('c'*300),
                 members=[iam.IamPolicyMember.create_from(
-                    'user:%sh' % ('g'*300))],
+                    'user:%s' % ('d'*300))],
             ),
+        ]
+        long_string = '{"member": "user:%s", "role": "%s"}' % (('d'*300),('c'*300))
+
+        self.fake_flattened_violations = [
+            {
+                'resource_id': '1',
+                'resource_type':
+                    self.fake_violations[0].resource_type,
+                'rule_index': 0,
+                'rule_name': self.fake_violations[0].rule_name,
+                'violation_type': self.fake_violations[0].violation_type,
+                'violation_data': {
+                    'role': self.fake_violations[0].role,
+                    'member': 'user:a@foo.com'
+                }
+            },
+            {
+                'resource_id': '1',
+                'resource_type':
+                    self.fake_violations[0].resource_type,
+                'rule_index': 0,
+                'rule_name': self.fake_violations[0].rule_name,
+                'violation_type': self.fake_violations[0].violation_type,
+                'violation_data': {
+                    'role': self.fake_violations[0].role,
+                    'member': 'user:b@foo.com'
+                }
+            },
+            {
+                'resource_id': '1',
+                'resource_type':
+                    self.fake_violations[1].resource_type,
+                'rule_index': 1,
+                'rule_name': self.fake_violations[1].rule_name,
+                'violation_type': self.fake_violations[1].violation_type,
+                'violation_data': {
+                    'role': self.fake_violations[1].role,
+                    'member': 'user:%s' % ('d'*300)
+                }
+            },
         ]
 
         self.expected_fake_violations = [
             ('x', '1', 'rule name', 0, 'ADDED',
-             'roles/editor', 'user:a@foo.com'),
+             '{"member": "user:a@foo.com", "role": "roles/editor"}'),
             ('x', '1', 'rule name', 0, 'ADDED',
-             'roles/editor', 'user:b@foo.com'),
-            ('a'*255, '1', 'c'*255, 1, 'REMOVED',
-             'e'*255, ('user:%s' % ('g'*300))[:255]),
+             '{"member": "user:b@foo.com", "role": "roles/editor"}'),
+            ('a'*255, '1', 'b'*255, 1, 'REMOVED', long_string),
         ]
-
-    def test_format_violation(self):
-        """Test that a RuleViolation is formatted and flattened properly.
-
-        Setup:
-            Create some rule violations:
-              * With multiple members.
-              * With really long text values for properties.
-
-        Expect:
-            _format_violation() will flatten the violation and truncate the
-            property values accordingly.
-        """
-
-        resource_name = 'violations'
-        actual = [f for v in self.fake_violations
-                    for f in violation_dao._format_violation(v, resource_name)]
-
-        self.assertEquals(self.expected_fake_violations, actual)
 
     def test_insert_violations_no_timestamp(self):
         """Test that insert_violations() is properly called.
@@ -105,7 +123,7 @@ class ViolationDaoTest(ForsetiTestCase):
             * Assert that conn.commit() is called 3x.
               was called == # of formatted/flattened RuleViolations).
         """
-
+        resource_name = 'policy_violations'
         conn_mock = mock.MagicMock()
         commit_mock = mock.MagicMock()
 
@@ -115,8 +133,8 @@ class ViolationDaoTest(ForsetiTestCase):
             return_value=self.fake_table_name)
         self.dao.conn = conn_mock
         self.dao.execute_sql_with_commit = commit_mock
-
-        self.dao.insert_violations(self.fake_violations,self.resource_name)
+        self.dao.insert_violations(self.fake_flattened_violations,
+                                   self.resource_name)
 
         # Assert snapshot is retrieved because no snapshot timestamp was
         # provided to the method call.
@@ -144,12 +162,12 @@ class ViolationDaoTest(ForsetiTestCase):
             * Assert that get_latest_snapshot_timestamp() doesn't get called.
             * Assert that _create_snapshot_table() gets called once.
         """
-
         fake_custom_timestamp = '11111'
         self.dao.conn = mock.MagicMock()
         self.dao._create_snapshot_table = mock.MagicMock()
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock()
-        self.dao.insert_violations(self.fake_violations,
+        self.dao.insert_violations(
+            self.fake_flattened_violations,
             self.resource_name,
             fake_custom_timestamp)
 
@@ -163,7 +181,6 @@ class ViolationDaoTest(ForsetiTestCase):
         Expect:
             Raise MySQLError when create_snapshot_table() raises an error.
         """
-
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
             return_value=self.fake_snapshot_timestamp)
         self.dao._create_snapshot_table = mock.MagicMock(
@@ -187,7 +204,7 @@ class ViolationDaoTest(ForsetiTestCase):
               of errors.
             * Return a tuple of (num_violations-1, [violation])
         """
-
+        resource_name = 'policy_violations'
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
             return_value=self.fake_snapshot_timestamp)
         self.dao._create_snapshot_table = mock.MagicMock(
@@ -203,9 +220,11 @@ class ViolationDaoTest(ForsetiTestCase):
 
         self.dao.execute_sql_with_commit = mock.MagicMock(
             side_effect=insert_violation_side_effect)
-
-        actual = self.dao.insert_violations(self.fake_violations,
+        
+        actual = self.dao.insert_violations(
+            self.fake_flattened_violations,
             self.resource_name)
+
         expected = (2, [self.expected_fake_violations[1]])
 
         self.assertEqual(expected, actual)

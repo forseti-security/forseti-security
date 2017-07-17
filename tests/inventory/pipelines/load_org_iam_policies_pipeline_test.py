@@ -14,7 +14,6 @@
 
 """Tests the load_org_iam_policies_pipeline."""
 
-
 from tests.unittest_utils import ForsetiTestCase
 import mock
 import MySQLdb
@@ -38,13 +37,14 @@ class LoadOrgIamPoliciesPipelineTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
         self.cycle_timestamp = '20001225T120000Z'
-        self.configs = fake_configs.FAKE_CONFIGS
+        self.global_configs = fake_configs.FAKE_CONFIGS
         self.mock_crm = mock.create_autospec(crm.CloudResourceManagerClient)
         self.mock_dao = mock.create_autospec(org_dao.OrganizationDao)
+        self.fake_id = '666666'
         self.pipeline = (
             load_org_iam_policies_pipeline.LoadOrgIamPoliciesPipeline(
                 self.cycle_timestamp,
-                self.configs,
+                self.global_configs,
                 self.mock_crm,
                 self.mock_dao))
 
@@ -61,13 +61,14 @@ class LoadOrgIamPoliciesPipelineTest(ForsetiTestCase):
         """Test that api is called to retrieve org policies."""
 
         self.mock_dao.get_organizations.return_value = [
-            organization.Organization(self.pipeline.configs['organization_id'])]
+            organization.Organization(
+                self.fake_id)]
 
         self.pipeline._retrieve()
 
         self.pipeline.api_client.get_org_iam_policies.assert_called_once_with(
             self.pipeline.RESOURCE_NAME,
-            self.pipeline.configs['organization_id'])
+            self.fake_id)
 
     def test_retrieve_error_raised_when_db_error(self):
         """Test that LoadDataPipelineError is raised when database error."""
@@ -81,7 +82,8 @@ class LoadOrgIamPoliciesPipelineTest(ForsetiTestCase):
     def test_retrieve_error_logged_when_api_error(self):
         """Test that LOGGER.error() is called when there is an API error."""
         self.mock_dao.get_organizations.return_value = [
-            organization.Organization(self.pipeline.configs['organization_id'])]
+            organization.Organization(
+                self.fake_id)]
         self.pipeline.api_client.get_org_iam_policies.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
         load_org_iam_policies_pipeline.LOGGER = mock.MagicMock()

@@ -12,21 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Wrapper for IAM API client."""
-
-from google.cloud.security.common.gcp_api import _base_client
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-# pylint: disable=missing-param-doc
-
-
-class IamClient(_base_client.BaseClient):
-    """IAM Client."""
-
-    API_NAME = 'iam'
-
-    def __init__(self, credentials=None):
-        super(IamClient, self).__init__(
-            credentials=credentials, api_name=self.API_NAME)
+rules:
+  - name: BigQuery test rule
+    dataset_id: '*'
+    special_group: '*'
+    user_email: '*'
+    domain: '*'
+    group_email: '*'
+    role: 'READER'
+    resource:
+      - type: organization
+        resource_ids:
+          - 123456789012

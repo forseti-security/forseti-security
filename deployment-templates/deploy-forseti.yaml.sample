@@ -17,13 +17,13 @@
 
 # Change these import paths as necessary to suit your environment.
 imports:
-- path: ../../deployment-templates/inventory/cloudsql-instance.py
+- path: cloudsql/cloudsql-instance.py
   name: cloudsql-instance.py
-- path: ../../deployment-templates/inventory/cloudsql-database.py
+- path: cloudsql/cloudsql-database.py
   name: cloudsql-database.py
-- path: ../../deployment-templates/storage/bucket.py
+- path: storage/bucket.py
   name: bucket.py
-- path: ../../deployment-templates/forseti-instance.py
+- path: compute-engine/forseti-instance.py
   name: forseti-instance.py
 
 resources:
@@ -84,13 +84,5 @@ resources:
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
 
-    # Remove or comment out the email properties if you do not want Forseti to
-    # send email notifications.
-    sendgrid-api-key: SENDGRID_API_KEY
-    email-sender: NOTIFICATION_SENDER_EMAIL
-    email-recipient: NOTIFICATION_RECIPIENT_EMAIL
-
-    # Flags for Inventory to collect GSuite Google Groups information.
-    inventory-groups: true
-    groups-domain-super-admin-email: GSUITE_SUPER_ADMIN_EMAIL
-    groups-service-account-key-file: "/home/ubuntu/service-account-key.json"
+    # Fully-qualified path and name of the Forseti Security config file.
+    forseti-config: FORSETI_CONFIG

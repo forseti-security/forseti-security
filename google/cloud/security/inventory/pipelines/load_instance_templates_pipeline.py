@@ -25,11 +25,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -42,11 +37,11 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
         """Create an iterator of instance templates to load into database.
 
         Args:
-            resource_from_api: A dict of instance templates, keyed by
+            resource_from_api (dict): Instance templates, keyed by
                 project id, from GCP API.
 
         Yields:
-            Iterator of instance template properties in a dict.
+            iterator: instance template properties in a dict.
         """
         for (project_id, instance_templates) in resource_from_api.iteritems():
             for instance_template in instance_templates:
@@ -69,10 +64,12 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
         compute instance templates for each.
 
         Returns:
-            A dict mapping projects with their instance templates (list):
-            {project_id: [instance templates]}
+            dict: Mapping projects with their instance templates (list):
+                {project_id: [instance templates]}
         """
-        projects = proj_dao.ProjectDao().get_projects(self.cycle_timestamp)
+        projects = (proj_dao
+                    .ProjectDao(self.global_configs)
+                    .get_projects(self.cycle_timestamp))
         instance_templates = {}
         for project in projects:
             try:
