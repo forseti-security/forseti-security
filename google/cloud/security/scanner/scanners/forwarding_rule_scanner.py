@@ -110,7 +110,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         """Find violations in forwarding rules.
 
         Args:
-            forwarding_rules(list): Forwarding rule to find violations in
+            forwarding_rules (list): Forwarding rule to find violations in
 
          Returns:
             list: A list of forwarding rule violations
