@@ -17,7 +17,7 @@
 import mock
 import unittest
 
-from google.cloud.security.tests.unittest_utils import ForsetiTestCase
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.inventory import api_map
 from google.cloud.security.inventory import pipeline_builder

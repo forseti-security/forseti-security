@@ -155,8 +155,8 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
             fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP)
         self.assertEquals(expected_args, called_args)
 
+        mock_get_loaded_count.assert_called_once
+
 
 if __name__ == '__main__':
     unittest.main()
-
-        mock_get_loaded_count.assert_called_once
