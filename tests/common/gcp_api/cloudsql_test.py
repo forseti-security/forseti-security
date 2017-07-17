@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the Storage client."""
+"""Tests the CloudSQL API client."""
 
 import mock
+import unittest
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import cloudsql
@@ -26,7 +27,7 @@ from tests.common.gcp_type.test_data import fake_cloudsql
 from pprint import pprint as pp
 
 
-class CloudsqlTest(basetest.TestCase):
+class CloudsqlTest(ForsetiTestCase):
     """Test the StorageClient."""
 
     @mock.patch('google.cloud.security.common.gcp_api._base_client.discovery')
@@ -49,11 +50,11 @@ class CloudsqlTest(basetest.TestCase):
 
         self.sql_api_client.get_instances = mock.MagicMock(
             return_value=fake_cloudsql_response)
-        
+
         result = [self.sql_api_client.get_instances(project_number)]
 
         self.assertEquals(expected_cloudsql, result)
 
 
 if __name__ == '__main__':
-    basetest.main()
+    unittest.main()

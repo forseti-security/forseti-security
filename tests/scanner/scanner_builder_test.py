@@ -14,9 +14,10 @@
 
 """Tests the pipeline builder."""
 
-from google.apputils import basetest
 import mock
+import unittest
 
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.scanner import scanner_builder
 from tests.scanner.test_data import fake_runnable_scanners
 
@@ -29,7 +30,7 @@ FAKE_GLOBAL_CONFIGS = {
 }
 
 
-class ScannerBuilderTest(basetest.TestCase):
+class ScannerBuilderTest(ForsetiTestCase):
     """Tests for the scanner builder."""
 
     @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
@@ -49,7 +50,7 @@ class ScannerBuilderTest(basetest.TestCase):
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_ENABLED,
             FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-        
+
         self.assertEquals(4, len(runnable_pipelines))
 
         expected_pipelines = ['BigqueryScanner', 'BucketsAclScanner',
@@ -62,7 +63,7 @@ class ScannerBuilderTest(basetest.TestCase):
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_DISABLED,
             FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-        
+
         self.assertEquals(0, len(runnable_pipelines))
 
     @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
@@ -72,7 +73,7 @@ class ScannerBuilderTest(basetest.TestCase):
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ONE_ENABLED,
             FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-        
+
         self.assertEquals(1, len(runnable_pipelines))
         expected_pipelines = ['IamPolicyScanner']
         for pipeline in runnable_pipelines:

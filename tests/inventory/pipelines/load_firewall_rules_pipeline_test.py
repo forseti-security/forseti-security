@@ -17,6 +17,7 @@
 from tests.unittest_utils import ForsetiTestCase
 import mock
 import MySQLdb
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import project_dao
@@ -94,3 +95,7 @@ class LoadFirewallRulesTest(ForsetiTestCase):
         mock_transform.assert_called_once
         mock_load.assert_called_once
         mock_get_loaded_count.assert_called_once
+
+
+if __name__ == '__main__':
+      unittest.main()

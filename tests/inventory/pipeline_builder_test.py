@@ -14,9 +14,10 @@
 
 """Tests the pipeline builder."""
 
-from google.apputils import basetest
 import mock
+import unittest
 
+from google.cloud.security.tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.inventory import api_map
 from google.cloud.security.inventory import pipeline_builder
@@ -26,7 +27,7 @@ from tests.inventory.test_data import fake_runnable_pipelines
 BASE_PATH = 'tests/inventory/test_data/'
 FAKE_TIMESTAMP = '20001225T121212Z'
 
-class PipelineBuilderTest(basetest.TestCase):
+class PipelineBuilderTest(ForsetiTestCase):
     """Tests for the load pipeline builder test.
 
     The test data has this structure.
@@ -69,7 +70,7 @@ class PipelineBuilderTest(basetest.TestCase):
             'inventory_all_enabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
-        
+
         self.assertEqual(
             len(fake_runnable_pipelines.ALL_ENABLED),
             len(actual_runnable_pipelines))
@@ -82,7 +83,7 @@ class PipelineBuilderTest(basetest.TestCase):
             'inventory_all_disabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
-        
+
         self.assertEqual(
             len(fake_runnable_pipelines.ALL_DISABLED),
             len(actual_runnable_pipelines))
@@ -96,7 +97,7 @@ class PipelineBuilderTest(basetest.TestCase):
             'inventory_one_resource_is_enabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
-        
+
         self.assertEqual(
             len(fake_runnable_pipelines.ONE_RESOURCE_IS_ENABLED),
             len(actual_runnable_pipelines))
@@ -110,7 +111,7 @@ class PipelineBuilderTest(basetest.TestCase):
             'inventory_two_resources_are_enabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
-        
+
         self.assertEqual(
             len(fake_runnable_pipelines.TWO_RESOURCES_ARE_ENABLED),
             len(actual_runnable_pipelines))
@@ -124,7 +125,7 @@ class PipelineBuilderTest(basetest.TestCase):
             'inventory_three_resources_are_enabled_group_members.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
-        
+
         self.assertEqual(
             len(fake_runnable_pipelines
                     .THREE_RESOURCES_ARE_ENABLED_GROUP_MEMBERS),
@@ -139,7 +140,7 @@ class PipelineBuilderTest(basetest.TestCase):
             'inventory_three_resources_are_enabled_groups.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
-        
+
         self.assertEqual(
             len(fake_runnable_pipelines.THREE_RESOURCES_ARE_ENABLED_GROUPS),
             len(actual_runnable_pipelines))
@@ -152,7 +153,7 @@ class PipelineBuilderTest(basetest.TestCase):
             'inventory_core_resources_are_enabled.yaml')
 
         actual_runnable_pipelines = my_pipeline_builder.build()
-        
+
         self.assertEqual(
             len(fake_runnable_pipelines.CORE_RESOURCES_ARE_ENABLED),
             len(actual_runnable_pipelines))
@@ -165,7 +166,7 @@ class PipelineBuilderTest(basetest.TestCase):
             FAKE_TIMESTAMP, 'foo_path', mock.MagicMock(),
             api_map.API_MAP, mock.MagicMock())
         my_pipeline_builder.initialized_api_map = {'foo': 'bar'}
-        
+
         self.assertEquals('bar', my_pipeline_builder._get_api('foo'))
 
     @mock.patch('google.cloud.security.common.gcp_api.admin_directory.AdminDirectoryClient')
@@ -175,7 +176,7 @@ class PipelineBuilderTest(basetest.TestCase):
             api_map.API_MAP, mock.MagicMock())
 
         admin_api = my_pipeline_builder._get_api('admin_api')
-        
+
         self.assertEquals(
             1, len(my_pipeline_builder.initialized_api_map.keys()))
         self.assertTrue('admin_api' in my_pipeline_builder.initialized_api_map)
@@ -189,10 +190,14 @@ class PipelineBuilderTest(basetest.TestCase):
         my_pipeline_builder.initialized_api_map = {'foo': 'bar'}
 
         admin_api = my_pipeline_builder._get_api('admin_api')
-        
+
         self.assertEquals(
             2, len(my_pipeline_builder.initialized_api_map.keys()))
         self.assertTrue('foo' in my_pipeline_builder.initialized_api_map)
         self.assertEquals('bar', my_pipeline_builder.initialized_api_map['foo'])
         self.assertTrue('admin_api' in my_pipeline_builder.initialized_api_map)
         self.assertTrue('AdminDirectoryClient()'in str(admin_api))
+
+
+if __name__ == '__main__':
+    unittest.main()
