@@ -17,6 +17,8 @@
 See: https://cloud.google.com/compute/docs/reference/latest/forwardingRules
 """
 
+from google.cloud.security.common.util import parser
+
 
 # pylint: disable=too-many-instance-attributes
 class ForwardingRule(object):
@@ -37,7 +39,7 @@ class ForwardingRule(object):
         self.ip_address = kwargs.get('ip_address')
         self.ip_protocol = kwargs.get('ip_protocol')
         self.port_range = kwargs.get('port_range')
-        self.ports = kwargs.get('ports')
+        self.ports = parser.json_unstringify(kwargs.get('ports'))
         self.target = kwargs.get('target')
         self.self_link = kwargs.get('self_link')
         self.load_balancing_scheme = kwargs.get('load_balancing_scheme')

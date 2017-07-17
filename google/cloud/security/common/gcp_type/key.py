@@ -45,6 +45,14 @@ class Key(object):
         """
         self._object_kind = object_kind
         self._object_path = dict(object_path)
+
+        # Turn all None into empty string. Otherwise it's too easy for
+        # two keys to compare as unequal because one has zone=None while
+        # the other has zone='', the two are semantically equivalent.
+        for (key, val) in self._object_path.iteritems():
+            if val is None:
+                self._object_path[key] = ''
+
         self._object_path_tuple = tuple(self._object_path.items())
 
     @classmethod
