@@ -19,9 +19,9 @@ info:
   version: 1.0
 
 required:
-- region
+- location
 
 properties:
-  region:
+  location:
     type: string
-    description: The region in which to create a GCS bucket.
+    description: The location in which to create a GCS bucket.

@@ -27,7 +27,6 @@ required:
 - service-account-scopes
 - scanner-bucket
 - database-name
-- forseti-config
 - src-path
 - cloudsqlproxy-os-arch
 - db-port
@@ -66,10 +65,6 @@ properties:
     type: string
     default: forseti_security
     description: The Forseti database name.
-
-  forseti-config:
-    type: string
-    description: The path for the Forseti config on the GCE instance.
 
   src-path:
     type: string
