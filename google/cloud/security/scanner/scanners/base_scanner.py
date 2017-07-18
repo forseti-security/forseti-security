@@ -32,6 +32,7 @@ class BaseScanner(object):
     __metaclass__ = abc.ABCMeta
 
     OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
+    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
