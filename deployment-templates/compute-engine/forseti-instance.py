@@ -114,18 +114,18 @@ python build_protos.py --clean
 exec > /tmp/deployment.log
 exec 2>&1
 
-# Ubuntu update
+# Ubuntu update.
 sudo apt-get update -y
 sudo apt-get upgrade -y
 
-# Forseti setup
+# Forseti setup.
 sudo apt-get install -y git unzip
 # Forseti dependencies
 sudo apt-get install -y libmysqlclient-dev python-pip python-dev
 
 USER_HOME=/home/ubuntu
 
-# Install fluentd if necessary
+# Install fluentd if necessary.
 FLUENTD=$(ls /usr/sbin/google-fluentd)
 if [ -z "$FLUENTD" ]; then
       cd $USER_HOME
@@ -133,7 +133,7 @@ if [ -z "$FLUENTD" ]; then
       bash install-logging-agent.sh
 fi
 
-# Check whether Cloud SQL proxy is installed
+# Check whether Cloud SQL proxy is installed.
 CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
 if [ -z "$CLOUD_SQL_PROXY" ]; then
         cd $USER_HOME
@@ -144,26 +144,26 @@ fi
 
 $USER_HOME/cloud_sql_proxy -instances={}=tcp:{} &
 
-# Install Forseti Security
+# Install Forseti Security.
 cd $USER_HOME
 rm -rf *forseti*
 pip install --upgrade pip
 pip install --upgrade setuptools
 pip install grpcio grpcio-tools google-apputils
 
-# Download Forseti src; see DOWNLOAD_FORSETI
+# Download Forseti src; see DOWNLOAD_FORSETI.
 {}
 
-# Build protos
+# Build protos.
 {}
 
 python setup.py install
 
-# Create the startup run script
+# Create the startup run script.
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
 
-# Put the config files in place
+# Put the config files in place.
 gsutil cp gs://{}/configs/forseti_conf.yaml {}
 gsutil cp -r gs://{}/rules {}/
 
@@ -184,25 +184,25 @@ chmod +x $USER_HOME/run_forseti.sh
 
 (echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
 """.format(
-    # cloud_sql_proxy
+    # cloud_sql_proxy properties.
     context.properties['cloudsqlproxy-os-arch'],
     context.properties['cloudsqlproxy-os-arch'],
     CLOUDSQL_CONN_STRING,
     context.properties['db-port'],
 
-    # install forseti
+    # Install Forseti.
     DOWNLOAD_FORSETI,
 
-    # new style build protos
+    # New style build protos.
     NEW_BUILD_PROTOS,
 
-    # download the Forseti conf and rules
+    # Download the Forseti conf and rules.
     SCANNER_BUCKET,
     FORSETI_CONF,
     SCANNER_BUCKET,
     FORSETI_HOME,
 
-    # run_forseti.sh
+    # Run run_forseti.sh.
     FORSETI_CONF,
 
     # - forseti_inventory

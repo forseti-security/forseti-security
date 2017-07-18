@@ -51,18 +51,18 @@ class ForsetiGcpSetup(object):
 
     PROJECT_ID_REGEX = re.compile(r'^[a-z][a-z0-9-]{6,30}$')
     REQUIRED_APIS = [
+        {'name': 'Admin SDK',
+         'service': 'admin.googleapis.com'},
         {'name': 'Cloud SQL',
          'service': 'sql-component.googleapis.com'},
         {'name': 'Cloud SQL Admin',
          'service': 'sqladmin.googleapis.com'},
         {'name': 'Cloud Resource Manager',
          'service': 'cloudresourcemanager.googleapis.com'},
-        {'name': 'Admin SDK',
-         'service': 'admin.googleapis.com'},
-        {'name': 'Deployment Manager',
-         'service': 'deploymentmanager.googleapis.com'},
         {'name': 'Compute Engine',
          'service': 'compute-component.googleapis.com'},
+        {'name': 'Deployment Manager',
+         'service': 'deploymentmanager.googleapis.com'},
     ]
 
     ORG_IAM_ROLES = [
@@ -687,7 +687,7 @@ class ForsetiGcpSetup(object):
         """Ask user to name their Cloud SQL instance."""
         self._print_banner('Setup Cloud SQL name')
         instance_name = raw_input(
-            'Enter a prefix for the Forseti Cloud SQL instance '
+            'Enter a name for the Forseti Cloud SQL instance '
             '(press [enter] to use the default: {}) '.format(
                 self.DEFAULT_CLOUDSQL_INSTANCE_NAME))\
             .strip().lower()
