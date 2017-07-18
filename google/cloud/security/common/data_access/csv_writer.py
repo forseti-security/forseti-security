@@ -286,6 +286,7 @@ INSTANCE_GROUPS_FIELDNAMES = [
     'project_id',
     'creation_timestamp',
     'description',
+    'instance_urls',
     'name',
     'named_ports',
     'network',

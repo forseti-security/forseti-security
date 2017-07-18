@@ -68,7 +68,7 @@ class Key(key.Key):
                              'networks': 'name'},
                             url,
                             defaults={'project_id': project_id})
-        if obj.name is None or obj.project_id is None:
+        if not obj.name or not obj.project_id:
             raise ValueError('Missing fields in URL %r' % url)
         return obj
 

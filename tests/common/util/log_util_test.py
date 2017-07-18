@@ -14,9 +14,11 @@
 
 """Tests the Logging utility."""
 import logging
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import log_util
+
 
 class LogUtilTest(ForsetiTestCase):
     """Test the Logging utility."""
@@ -30,7 +32,7 @@ class LogUtilTest(ForsetiTestCase):
         self.assertEqual(previous_logger.level, logging.ERROR, 'Level should have changed to ERROR')
         log_util.set_logger_level(logging.INFO)
         self.assertEqual(previous_logger.level, logging.INFO, 'Level should have changed back to INFO')
-    
+
     def test_set_logger_level_changes_future_loggers(self):
         """Test if loggers instantiated after set_logger_level will be affected."""
 
@@ -54,6 +56,7 @@ class LogUtilTest(ForsetiTestCase):
         log_util.set_logger_level_from_config('junk')
         self.assertEqual(previous_logger.level, logging.DEBUG,
             'Level should have remained DEBUG')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -83,3 +83,17 @@ def json_stringify(obj_to_jsonify):
     except da_errors.Error:
         json_str = None
     return json_str
+
+
+def json_unstringify(json_to_objify):
+    """Convert a json string to a python object.
+
+    Args:
+        json_to_objify (str): The json string.
+
+    Returns:
+        object: The un-stringified object.
+    """
+    if not json_to_objify:
+        return None
+    return json.loads(json_to_objify)

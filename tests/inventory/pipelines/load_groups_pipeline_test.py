@@ -18,6 +18,7 @@ import json
 
 from tests.unittest_utils import ForsetiTestCase
 import mock
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import dao
@@ -105,3 +106,7 @@ class LoadGroupsPipelineTest(ForsetiTestCase):
             fake_groups.EXPECTED_LOADABLE_GROUPS)
 
         mock_get_loaded_count.assert_called_once
+
+
+if __name__ == '__main__':
+      unittest.main()

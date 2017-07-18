@@ -18,6 +18,7 @@ import json
 
 from tests.unittest_utils import ForsetiTestCase
 import mock
+import unittest
 
 from MySQLdb import DataError
 

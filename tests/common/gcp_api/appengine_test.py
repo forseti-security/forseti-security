@@ -15,6 +15,7 @@
 """Tests the AppEngine client."""
 
 import mock
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
@@ -44,3 +45,7 @@ class AppEngineTest(ForsetiTestCase):
 
         self.assertTrue(self.client.service.apps.called)
         apps.get.assert_called_with(appsId='aaaaa')
+
+
+if __name__ == '__main__':
+    unittest.main()

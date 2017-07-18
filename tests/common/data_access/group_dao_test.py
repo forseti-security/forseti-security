@@ -16,6 +16,7 @@
 
 from tests.unittest_utils import ForsetiTestCase
 import mock
+import unittest
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors
@@ -62,10 +63,10 @@ class GroupDaoTest(ForsetiTestCase):
         mock_get_group_id.return_value = '999999'
         mock_get_group_members.side_effect = (
             fake_data.GET_GROUP_MEMBERS_SIDE_EFFECT)
-        
+
         all_members = self.dao.get_recursive_members_of_group(
             self.fake_group_email, self.fake_timestamp)
-        
+
         self.assert_(fake_data.EXPECTED_ALL_MEMBERS, all_members)
 
 

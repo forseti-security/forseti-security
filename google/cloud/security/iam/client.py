@@ -155,6 +155,33 @@ class ExplainClient(IAMClient):
         return self.stub.GetAccessByMembers(request, metadata=self.metadata())
 
     @require_model
+    def query_access_by_permissions(self,
+                                    role_name,
+                                    permission_name,
+                                    expand_groups=False,
+                                    expand_resources=False):
+        """List (resource, member) tuples satisfying the authorization
+
+        Args:
+            role_name (str): Role name to query for.
+            permission_name (str): Permission name to query for.
+            expand_groups (bool): Whether or not to expand groups.
+            epxand_resources (bool) Whether or not to expand resources.
+
+        Returns:
+            object: Generator yielding access tuples.
+        """
+
+        request = explain_pb2.GetAccessByPermissionsRequest(
+            role_name=role_name,
+            permission_name=permission_name,
+            expand_groups=expand_groups,
+            expand_resources=expand_resources)
+        return self.stub.GetAccessByPermissions(
+            request,
+            metadata=self.metadata())
+
+    @require_model
     def query_permissions_by_roles(self, role_names=None, role_prefixes=None):
         """List all the permissions per given roles."""
 

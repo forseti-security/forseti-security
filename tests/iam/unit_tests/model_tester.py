@@ -1,4 +1,16 @@
-
+# Copyright 2017 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """Installing test models against a session."""
 
 from collections import defaultdict
@@ -40,9 +52,15 @@ class ModelCreatorClient:
                                                full_to_type_name(full_resource_name),
                                                policy)
 
+    def commit(self):
+        self.session.commit()
+        self.data_access.denorm_group_in_group(self.session)
+        self.session.commit()
+
 class ModelCreator:
     def __init__(self, model, client):
         self._install_model(model, client)
+        client.commit()
 
     def _install_model(self, model, client):
         self._install_resources(model['resources'], client.playground)

@@ -36,9 +36,11 @@ from sqlalchemy import Table
 from sqlalchemy import DateTime
 from sqlalchemy import or_
 from sqlalchemy import and_
+from sqlalchemy import not_
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import select
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
@@ -46,9 +48,11 @@ from google.cloud.security.iam.utils import mutual_exclusive
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc
+# pylint: disable=missing-yield-type-doc,too-many-branches
 
 POOL_RECYCLE_SECONDS = 300
+PER_YIELD = 1024
+
 
 def generate_model_handle():
     """Generate random model handle."""
@@ -76,6 +80,7 @@ class Model(MODEL_BASE):
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
     message = Column(Text())
+    warnings = Column(Text())
 
     def kick_watchdog(self, session):
         """Used during import to notify the import is still progressing."""
@@ -84,19 +89,41 @@ class Model(MODEL_BASE):
         session.add(self)
         session.commit()
 
-    def set_inprogress(self, session):
-        """Set state to 'in progress'."""
+    def add_warning(self, session, warning):
+        """Add a warning to the model.
 
-        self.state = "INPROGRESS"
+        Args:
+            warning (str): Warning message
+        """
+
+        warning_message = '{}\n'.format(warning)
+        if not self.warnings:
+            self.warnings = warning_message
+        else:
+            self.warnings += warning_message
         session.add(self)
         session.commit()
 
-    def set_done(self, session, message=""):
-        """Indicate a finished import."""
+    def set_inprogress(self, session):
+        """Set state to 'in progress'."""
 
-        self.state = "DONE"
-        self.message = message
         session.add(self)
+        self.state = "INPROGRESS"
+        session.commit()
+
+    def set_done(self, session, message=''):
+        """Indicate a finished import.
+            Args:
+                session (object): Database session
+                message (str): Success message or ''
+        """
+
+        session.add(self)
+        if self.warnings:
+            self.state = "PARTIAL_SUCCESS"
+        else:
+            self.state = "SUCCESS"
+        self.message = message
         session.commit()
 
     def set_error(self, session, message):
@@ -128,6 +155,7 @@ def define_model(model_name, dbengine, model_seed):
 
     base = declarative_base()
 
+    denormed_group_in_group = '{}_group_in_group'.format(model_name)
     bindings_tablename = '{}_bindings'.format(model_name)
     roles_tablename = '{}_roles'.format(model_name)
     permissions_tablename = '{}_permissions'.format(model_name)
@@ -212,14 +240,14 @@ def define_model(model_name, dbengine, model_seed):
         parents = relationship(
             'Member',
             secondary=group_members,
-            primaryjoin=name == group_members.c.group_name,
-            secondaryjoin=name == group_members.c.members_name)
+            primaryjoin=name == group_members.c.members_name,
+            secondaryjoin=name == group_members.c.group_name)
 
         children = relationship(
             'Member',
             secondary=group_members,
-            primaryjoin=name == group_members.c.members_name,
-            secondaryjoin=name == group_members.c.group_name)
+            primaryjoin=name == group_members.c.group_name,
+            secondaryjoin=name == group_members.c.members_name)
 
         bindings = relationship('Binding',
                                 secondary=binding_members,
@@ -229,6 +257,19 @@ def define_model(model_name, dbengine, model_seed):
             """String representation."""
             return "<Member(name='{}', type='{}')>".format(
                 self.name, self.type)
+
+    class GroupInGroup(base):
+        """Row for a group-in-group membership."""
+
+        __tablename__ = denormed_group_in_group
+        parent = Column(String(256), primary_key=True)
+        member = Column(String(256), primary_key=True)
+
+        def __repr__(self):
+            """String representation."""
+            return "<GroupInGroup(parent='{}', member='{}')>".format(
+                self.parent,
+                self.member)
 
     class Binding(base):
         """Row for a binding between resource, roles and members."""
@@ -285,6 +326,7 @@ def define_model(model_name, dbengine, model_seed):
     class ModelAccess(object):
         """Data model facade, implement main API against database."""
 
+        TBL_GROUP_IN_GROUP = GroupInGroup
         TBL_BINDING = Binding
         TBL_MEMBER = Member
         TBL_PERMISSION = Permission
@@ -305,6 +347,82 @@ def define_model(model_name, dbengine, model_seed):
             Role.__table__.drop(engine)
             Member.__table__.drop(engine)
             Resource.__table__.drop(engine)
+
+        @classmethod
+        def denorm_group_in_group(cls, session):
+            """Denormalize group-in-group relation.
+
+            Args:
+                session (object): Database session to use.
+            Returns:
+                int: Number of iterations.
+            """
+
+            def get_dialect(session):
+                """Return the active SqlAlchemy dialect."""
+                return session.bind.dialect.name
+
+            if get_dialect(session) != 'sqlite':
+                # Lock tables for denormalization
+                locked_tables = [GroupInGroup.__tablename__,
+                                 group_members.name]
+                lock_stmts = ['{} WRITE'.format(tbl) for tbl in locked_tables]
+                session.execute('LOCK TABLES {}'.format(
+                    ', '.join(lock_stmts)))
+
+            try:
+                # Remove all existing rows in the denormalization
+                session.execute(GroupInGroup.__table__.delete())
+
+                # Select member relation into GroupInGroup
+                qry = (
+                    GroupInGroup.__table__.insert()
+                    .from_select(
+                        ['parent', 'member'],
+                        group_members.select()
+                        .where(
+                            group_members.c.group_name.startswith('group/')
+                            )
+                        .where(
+                            group_members.c.members_name.startswith('group/')
+                            )
+                        )
+                    )
+
+                session.execute(qry)
+
+                tbl1 = aliased(GroupInGroup.__table__)
+                tbl2 = aliased(GroupInGroup.__table__)
+
+                iterations = 0
+                rows_affected = True
+                while rows_affected:
+                    # Join membership on its own to find transitive
+                    expansion = tbl1.join(tbl2, tbl1.c.member == tbl2.c.parent)
+                    stmt = (
+                        select([tbl1.c.parent, tbl2.c.member])
+                        .select_from(expansion))
+
+                    # Exclude duplicates, only insert new relations
+                    stmt = stmt.except_(select([tbl1.c.parent, tbl1.c.member]))
+
+                    # Execute the query and insert into the table
+                    qry = (
+                        GroupInGroup.__table__.insert()
+                        .from_select(
+                            ['parent', 'member'],
+                            stmt))
+
+                    rows_affected = bool(session.execute(qry).rowcount)
+                    iterations += 1
+            except Exception:
+                session.rollback()
+                raise
+            finally:
+                if get_dialect(session) != 'sqlite':
+                    session.execute('UNLOCK TABLES')
+                session.commit()
+            return iterations
 
         @classmethod
         def explain_granted(cls, session, member_name, resource_type_name,
@@ -471,6 +589,87 @@ def define_model(model_name, dbengine, model_seed):
                     for binding in bindings]
 
         @classmethod
+        def query_access_by_permission(cls,
+                                       session,
+                                       role_name=None,
+                                       permission_name=None,
+                                       expand_groups=False,
+                                       expand_resources=False):
+            """Return all the (Principal, Resource) combinations allowing
+            satisfying access via the specified permission.
+
+            Args:
+                session (object): Database session.
+                permission_name (str): Permission name to query for.
+                expand_groups (bool): Whether or not to expand groups.
+                expand_resources (bool): Whether or not to expand resources.
+
+            Yields:
+                A generator of access tuples.
+
+            Raises:
+                ValueError: If neither role nor permission is set.
+            """
+
+            if role_name:
+                role_names = [role_name]
+            elif permission_name:
+                role_names = [p.name for p in
+                              cls.get_roles_by_permission_names(
+                                  session,
+                                  [permission_name])]
+            else:
+                raise ValueError('Either role or permission must be set')
+
+            if expand_resources:
+                expanded_resources = aliased(Resource)
+                qry = (
+                    session.query(expanded_resources, Binding, Member)
+                    .filter(binding_members.c.bindings_id == Binding.id)
+                    .filter(binding_members.c.members_name == Member.name)
+                    .filter(expanded_resources.full_name.startswith(
+                        Resource.full_name))
+                    .filter(Resource.type_name == Binding.resource_type_name)
+                    .filter(Binding.role_name.in_(role_names)))
+            else:
+                qry = (
+                    session.query(Resource, Binding, Member)
+                    .filter(binding_members.c.bindings_id == Binding.id)
+                    .filter(binding_members.c.members_name == Member.name)
+                    .filter(Resource.type_name == Binding.resource_type_name)
+                    .filter(Binding.role_name.in_(role_names)))
+
+            qry = qry.order_by(Resource.name.asc(), Binding.role_name.asc())
+
+            if expand_groups:
+                to_expand = set([m.name for _, _, m in
+                                 qry.yield_per(PER_YIELD)])
+                expansion = cls.expand_members_map(session,
+                                                   to_expand,
+                                                   show_group_members=False,
+                                                   member_contain_self=True)
+
+            qry = qry.distinct()
+
+            cur_resource = None
+            cur_role = None
+            cur_members = set()
+            for resource, binding, member in qry.yield_per(PER_YIELD):
+                if cur_resource != resource.type_name:
+                    if cur_resource is not None:
+                        yield cur_role, cur_resource, cur_members
+                    cur_resource = resource.type_name
+                    cur_role = binding.role_name
+                    cur_members = set()
+                if expand_groups:
+                    for member_name in expansion[member.name]:
+                        cur_members.add(member_name)
+                else:
+                    cur_members.add(member.name)
+            if cur_resource is not None:
+                yield cur_role, cur_resource, cur_members
+
+        @classmethod
         def query_access_by_resource(cls, session, resource_type_name,
                                      permission_names, expand_groups=False):
             """Return members who have access to the given resource."""
@@ -517,7 +716,7 @@ def define_model(model_name, dbengine, model_seed):
             return qry.all()
 
         @classmethod
-        def denormalize(cls, session, per_yield=1024):
+        def denormalize(cls, session):
             """Denormalize the model into access triples."""
 
             qry = (session.query(Binding)
@@ -525,7 +724,7 @@ def define_model(model_name, dbengine, model_seed):
                    .join(Member))
 
             members = set()
-            for binding in qry.yield_per(per_yield):
+            for binding in qry.yield_per(PER_YIELD):
                 for member in binding.members:
                     members.add(member.name)
 
@@ -534,11 +733,12 @@ def define_model(model_name, dbengine, model_seed):
 
             qry = (session.query(Role, Permission)
                    .join(role_permissions)
-                   .filter(Role.name == role_permissions.c.roles_name)
+                   .filter(
+                       Role.name == role_permissions.c.roles_name)
                    .filter(
                        Permission.name == role_permissions.c.permissions_name))
 
-            for role, permission in qry.yield_per(per_yield):
+            for role, permission in qry.yield_per(PER_YIELD):
                 role_permissions_map[role.name].add(permission.name)
 
             for binding, member in (
@@ -546,7 +746,7 @@ def define_model(model_name, dbengine, model_seed):
                     .join(binding_members)
                     .filter(binding_members.c.bindings_id == Binding.id)
                     .filter(binding_members.c.members_name == Member.name)
-                    .yield_per(per_yield)):
+                    .yield_per(PER_YIELD)):
 
                 resource_type_name = binding.resource_type_name
                 resource_mapping = cls.expand_resources_by_type_names(
@@ -718,31 +918,39 @@ def define_model(model_name, dbengine, model_seed):
             session.commit()
 
         @classmethod
-        def add_group_member(cls, session, member_type_name,
-                             parent_type_names):
+        def add_group_member(cls,
+                             session,
+                             member_type_name,
+                             parent_type_names,
+                             denorm=False):
             """Add member, optionally with parent relationship."""
 
-            cls.add_member(session, member_type_name, parent_type_names)
+            cls.add_member(session,
+                           member_type_name,
+                           parent_type_names,
+                           denorm)
             session.commit()
 
         @classmethod
         def del_group_member(cls, session, member_type_name, parent_type_name,
-                             only_delete_relationship):
+                             only_delete_relationship, denorm=False):
             """Delete member."""
 
             if only_delete_relationship:
                 group_members_delete = group_members.delete(
-                    and_(group_members.c.group_name == member_type_name,
-                         group_members.c.members_name == parent_type_name))
+                    and_(group_members.c.members_name == member_type_name,
+                         group_members.c.group_name == parent_type_name))
                 session.execute(group_members_delete)
             else:
                 (session.query(Member)
                  .filter(Member.name == member_type_name)
                  .delete())
                 group_members_delete = group_members.delete(
-                    group_members.c.group_name == member_type_name)
+                    group_members.c.members_name == member_type_name)
                 session.execute(group_members_delete)
             session.commit()
+            if denorm:
+                cls.denorm_group_in_group(session)
 
         @classmethod
         def list_group_members(cls, session, member_name_prefix):
@@ -883,7 +1091,11 @@ def define_model(model_name, dbengine, model_seed):
             return binding
 
         @classmethod
-        def add_member(cls, session, type_name, parent_type_names=None):
+        def add_member(cls,
+                       session,
+                       type_name,
+                       parent_type_names=None,
+                       denorm=False):
             """Add a member to the model."""
 
             if not parent_type_names:
@@ -901,6 +1113,9 @@ def define_model(model_name, dbengine, model_seed):
                             type=res_type,
                             parents=parents)
             session.add(member)
+            session.commit()
+            if denorm and res_type == 'group' and parents:
+                cls.denorm_group_in_group(session)
             return member
 
         @classmethod
@@ -1007,58 +1222,77 @@ def define_model(model_name, dbengine, model_seed):
             return member_set
 
         @classmethod
-        def expand_members_map(cls, session, member_names):
-            """Expand group membership keyed by member."""
+        def expand_members_map(cls,
+                               session,
+                               member_names,
+                               show_group_members=True,
+                               member_contain_self=True):
+            """Expand group membership keyed by member.
 
-            members = session.query(Member).filter(
-                Member.name.in_(member_names)).all()
+            Args:
+                member_names (set): Member names to expand
+                show_group_members (bool): Whether to include subgroups
+                member_contain_self (bool): Whether to include a parent
+                                            as its own member
+            Returns:
+                dict: <Member, set(Children).
+            """
 
-            member_map = collections.defaultdict(set)
-            for member in members:
-                member_map[member.name] = set()
+            def separate_groups(member_names):
+                """Separate groups and other members in two lists."""
+                groups = []
+                others = []
+                for name in member_names:
+                    if name.startswith('group/'):
+                        groups.append(name)
+                    else:
+                        others.append(name)
+                return groups, others
 
-            def is_group(member):
-                """Returns true iff the member is a group."""
-                return member.type == 'group'
+            group_names, other_names = separate_groups(member_names)
 
-            all_member_set = set([m.name for m in members])
-            new_member_set = set([m.name for m in members if is_group(m)])
+            t_ging = GroupInGroup.__table__
+            t_members = group_members
 
-            while new_member_set:
-                to_query_set = new_member_set
-                new_member_set = set()
+            transitive_membership = (
+                # This resolves groups to its transitive non-group members
+                select([t_ging.c.parent, t_members.c.members_name])
+                .select_from(
+                    t_ging.join(t_members,
+                                t_ging.c.member == t_members.c.group_name))
+                ).where(t_ging.c.parent.in_(group_names))
+            if not show_group_members:
+                transitive_membership = transitive_membership.where(
+                    not_(t_members.c.members_name.startswith('group/')))
+            qry = session.query(transitive_membership)
 
-                qry = (session.query(group_members)
-                       .filter(group_members.c.members_name.in_(to_query_set)))
-                for member, parent in qry.all():
+            direct_membership = (
+                select([t_members.c.group_name, t_members.c.members_name])
+                .where(t_members.c.group_name.in_(group_names)))
+            if not show_group_members:
+                direct_membership = direct_membership.where(
+                    not_(t_members.c.members_name.startswith('group/')))
+            qry = qry.union(direct_membership)
 
-                    member_map[parent].add(member)
+            if show_group_members:
+                # Show groups as members of other groups
+                group_in_groups = (
+                    select([t_ging.c.parent, t_ging.c.member])
+                    .where(t_ging.c.parent.in_(group_names))
+                    )
+                qry = qry.union(group_in_groups)
 
-                    if (member.startswith('group/') and
-                            member not in all_member_set):
-                        new_member_set.add(member)
+            # Build the result dict
+            result = collections.defaultdict(set)
+            for parent, child in qry.yield_per(PER_YIELD):
+                result[parent].add(child)
+            for parent in other_names:
+                result[parent] = set()
 
-                    all_member_set.add(parent)
-                    all_member_set.add(member)
-
-            def denormalize_membership(parent_name, member_map,
-                                       cur_member_set):
-                """Parent->members map to Parent->transitive members."""
-                cur_member_set.add(parent_name)
-                if parent_name not in member_map:
-                    return set()
-                members_to_add = (member_map[parent_name]
-                                  .difference(cur_member_set))
-                for member in members_to_add:
-                    cur_member_set.add(member)
-                    new_members = denormalize_membership(member,
-                                                         member_map,
-                                                         cur_member_set)
-                    cur_member_set = cur_member_set.union(new_members)
-                return cur_member_set
-
-            result = {m: denormalize_membership(m, member_map, set())
-                      for m in member_names}
+            # Add each parent as its own member
+            if member_contain_self:
+                for name in member_names:
+                    result[name].add(name)
             return result
 
         @classmethod

@@ -18,8 +18,8 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceTemplates
 """
 
-
 from google.cloud.security.common.gcp_type import key
+from google.cloud.security.common.util import parser
 
 
 class InstanceTemplate(object):
@@ -34,7 +34,8 @@ class InstanceTemplate(object):
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
         self.name = kwargs.get('name')
-        self.properties = kwargs.get('properties')
+        self.project_id = kwargs.get('project_id')
+        self.properties = parser.json_unstringify(kwargs.get('properties'))
         self.resource_id = kwargs.get('id')
         self.project_id = kwargs.get('project_id')
 
@@ -86,7 +87,7 @@ class Key(key.Key):
                             {'projects': 'project_id',
                              'instanceTemplates': 'name'},
                             url)
-        if obj.project_id is None or obj.name is None:
+        if not obj.project_id or not obj.name:
             raise ValueError('Missing fields in URL %r' % url)
         return obj
 
