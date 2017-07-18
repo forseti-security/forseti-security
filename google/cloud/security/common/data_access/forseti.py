@@ -63,10 +63,13 @@ class Snapshot(BASE):
         return """<Snapshot(id='{}', version='{}', timestamp='{}')>""".format(
             self.id, self.schema_version, self.cycle_timestamp)
 
-def create_table_names(timestamp):
+
+def create_table_names(timestamp, schema_version):
     """Forseti tables are namespaced via snapshot timestamp.
        This function generates the appropriate classes to
        abstract the access to a single snapshot."""
+
+    schema_number = float(schema_version)
 
     if timestamp in TABLE_CACHE:
         return TABLE_CACHE[timestamp]
@@ -254,6 +257,33 @@ def create_table_names(timestamp):
                 self.name,
                 self.display_name)
 
+    if schema_number >= 2.0:
+        class FolderPolicy(BASE):
+            """Represents a GCP folder policy row under the organization."""
+
+            __tablename__ = 'raw_folder_iam_policies_%s' % timestamp
+
+            id = Column(BigInteger(), primary_key=True)
+            folder_id = Column(BigInteger())
+            iam_policy = Column(Text)
+
+            def __repr__(self):
+                """String representation."""
+
+                return """<Policy(id='{}', type='{}', name='{}'>""".format(
+                    self.id, 'folder', self.folder_id)
+
+            def get_resource_reference(self):
+                """Return a reference to the resource in the form (type, id).
+                """
+
+                return 'folder', self.folder_id
+
+            def get_policy(self):
+                """Return the corresponding IAM policy."""
+
+                return self.iam_policy
+
     class CloudSqlInstances(BASE):
         """Represents a Cloud SQL instance."""
 
@@ -344,6 +374,10 @@ def create_table_names(timestamp):
                 self.id,
                 self.name)
 
+    supported_policies = [OrganizationPolicy, ProjectPolicy]
+    if schema_number >= 2.0:
+        supported_policies.append(FolderPolicy)
+
     result = (Organization,
               Folders,
               [('projects', Project),
@@ -353,7 +387,7 @@ def create_table_names(timestamp):
                ('instancegroups', InstanceGroups),
                ('bigquerydatasets', BigqueryDatasets),
                ('backendservices', BackendServices)],
-              [OrganizationPolicy, ProjectPolicy],
+              supported_policies,
               [GroupMembers, Groups])
     TABLE_CACHE[timestamp] = result
     return result
@@ -362,7 +396,7 @@ def create_table_names(timestamp):
 class Importer(object):
     """Forseti data importer to iterate the inventory and policies."""
 
-    SUPPORTED_SCHEMA = '1.0'
+    SUPPORTED_SCHEMAS = ['1.0', '2.0']
 
     def __init__(self, db_connect_string):
         engine = create_engine(db_connect_string, pool_recycle=3600)
@@ -396,7 +430,7 @@ class Importer(object):
         return (
             self.session.query(Snapshot)
             .filter(Snapshot.status == SnapshotState.SUCCESS)
-            .filter(Snapshot.schema_version == self.SUPPORTED_SCHEMA)
+            .filter(Snapshot.schema_version.in_(self.SUPPORTED_SCHEMAS))
             .order_by(Snapshot.start_time.desc())
             .first())
 
@@ -406,7 +440,8 @@ class Importer(object):
         snapshot = self._get_latest_snapshot()
 
         organization, folders, tables, policies, group_membership = \
-            create_table_names(snapshot.cycle_timestamp)
+            create_table_names(snapshot.cycle_timestamp,
+                               snapshot.schema_version)
 
         # Organizations
         self._table_exists_or_raise(organization)
