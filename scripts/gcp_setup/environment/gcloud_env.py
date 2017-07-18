@@ -59,7 +59,10 @@ class ForsetiGcpSetup(object):
         {'name': 'Admin SDK',
          'service': 'admin.googleapis.com'},
         {'name': 'Deployment Manager',
-         'service': 'deploymentmanager.googleapis.com'}]
+         'service': 'deploymentmanager.googleapis.com'},
+        {'name': 'Compute Engine',
+         'service': 'compute-component.googleapis.com'},
+         ]
 
     ORG_IAM_ROLES = [
         'roles/browser',
@@ -132,6 +135,8 @@ class ForsetiGcpSetup(object):
         self.config_name = None
         self.auth_account = None
         self.organization_id = None
+        self.unassigned_roles = []
+
         self.project_id = None
         self.gcp_service_account = None
         self.gsuite_service_account = None
@@ -613,6 +618,7 @@ class ForsetiGcpSetup(object):
             _, err = proc.communicate()
             if proc.returncode:
                 print(err)
+                self.unassigned_roles.append(role)
             else:
                 print('Done.')
 
@@ -880,8 +886,8 @@ class ForsetiGcpSetup(object):
                 '{}) Follow instructions on how to link the service account '
                 'to GSuite:\n\n'
                 '    '
-                'PLACEHOLDER FOR LINK ON HOW TO ENABLE SERVICE ACCT FOR '
-                'GSUITE\n\n')
+                'http://forsetisecurity.org/docs/howto/gsuite-group-collection'
+                '\n\n')
 
             if self.gsuite_svc_acct_key_location:
                 instructions.append(
@@ -898,4 +904,16 @@ class ForsetiGcpSetup(object):
                   'Manager, you can check out the details in the Cloud '
                   'Console:\n\n'
                   '    https://console.cloud.google.com/deployments?'
-                  'project={}\n'.format(self.project_id))
+                  'project={}\n\n'.format(self.project_id))
+
+        if self.unassigned_roles:
+            print('Some required IAM roles could not be assigned. '
+                  'Please ask your Organization Admin to run these commands '
+                  'to assign the roles:\n\n')
+            for role in self.unassigned_roles:
+                print('gcloud organizations add-iam-policy-binding {} '
+                      '--member=serviceAccount:{} --role={}\n'.format(
+                          self.organization_id,
+                          self.gcp_service_account,
+                          role))
+            print('\n\n')

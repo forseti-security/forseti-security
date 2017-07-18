@@ -18,7 +18,6 @@ def GenerateConfig(context):
     """Generate configuration."""
 
     USE_BRANCH = context.properties.get('branch-name')
-    ORGANIZATION_ID = context.properties['organization-id']
 
     if USE_BRANCH:
         DOWNLOAD_FORSETI = """
@@ -27,6 +26,7 @@ cd forseti-security
         """.format(
             context.properties['src-path'],
             context.properties['branch-name'])
+        FORSETI_HOME = '$USER_HOME/forseti-security'
     else:
         DOWNLOAD_FORSETI = """
 wget -qO- {}/archive/v{}.tar.gz | tar xvz
@@ -35,6 +35,8 @@ cd forseti-security-{}
             context.properties['src-path'],
             context.properties['release-version'],
             context.properties['release-version'])
+        FORSETI_HOME = '$USER_HOME/forseti-security-{}'.format(
+            context-properties['release-version'])
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
@@ -43,19 +45,19 @@ cd forseti-security-{}
 
     SCANNER_BUCKET = context.properties['scanner-bucket']
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    FORSETI_CONFIG = context.properties['forseti-config']
+    FORSETI_CONF = FORSETI_HOME + '/configs/forseti_conf.yaml'
 
     inventory_command = (
         '/usr/local/bin/forseti_inventory --forseti_config {} '
             .format(
-                FORSETI_CONFIG,
+                FORSETI_CONF,
             )
     )
 
     scanner_command = (
         ('/usr/local/bin/forseti_scanner --forseti_config {} ')
             .format(
-                FORSETI_CONFIG,
+                FORSETI_CONF,
             )
     )
 
@@ -144,8 +146,7 @@ $USER_HOME/cloud_sql_proxy -instances={}=tcp:{} &
 
 # Install Forseti Security
 cd $USER_HOME
-rm -rf forseti-*
-rm -rf run_forseti.sh
+rm -rf *forseti*
 pip install --upgrade pip
 pip install --upgrade setuptools
 pip install grpcio grpcio-tools google-apputils
@@ -157,6 +158,10 @@ pip install grpcio grpcio-tools google-apputils
 {}
 
 python setup.py install
+
+# Put the config files in place
+gsutil cp gs://{}/configs/forseti_conf.yaml {}
+gsutil cp -r gs://{}/rules {}/
 
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
@@ -191,8 +196,14 @@ chmod +x $USER_HOME/run_forseti.sh
     # new style build protos
     NEW_BUILD_PROTOS,
 
+    # download the Forseti conf and rules
+    SCANNER_BUCKET,
+    FORSETI_CONF,
+    SCANNER_BUCKET,
+    FORSETI_HOME,
+
     # run_forseti.sh
-    FORSETI_CONFIG,
+    FORSETI_CONF,
 
     # - forseti_inventory
     inventory_command,

@@ -13,6 +13,9 @@
 # limitations under the License.
 
 # The toplevel deployment script for Forseti Security.
+# This is a template file that gets read into the Forseti Prereqs Wizard,
+# so don't use this directly for your deployment template unless you know
+# what you're doing.
 
 imports:
 - path: cloudsql/cloudsql-instance.py
@@ -39,7 +42,7 @@ resources:
 - name: {SCANNER_BUCKET}
   type: bucket.py
   properties:
-    region: {BUCKET_REGION}
+    location: {BUCKET_REGION}
 
 # Compute Engine
 - name: forseti-instance
@@ -56,7 +59,6 @@ resources:
       - https://www.googleapis.com/auth/cloud-platform
     scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
-    organization-id: {ORGANIZATION_ID_NUMBER}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
@@ -80,14 +82,3 @@ resources:
     # Cloud SQL
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
-
-    # Remove or comment out the email properties if you do not want Forseti to
-    # send email notifications.
-    sendgrid-api-key: {SENDGRID_API_KEY}
-    email-sender: {NOTIFICATION_SENDER_EMAIL}
-    email-recipient: {NOTIFICATION_RECIPIENT_EMAIL}
-
-    # Flags for Inventory to collect GSuite Google Groups information.
-    inventory-groups: {SHOULD_INVENTORY_GROUPS}
-    groups-domain-super-admin-email: {GSUITE_SUPER_ADMIN_EMAIL}
-    groups-service-account-key-file: "/home/ubuntu/service-account-key.json"

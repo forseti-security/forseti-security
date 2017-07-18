@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-info:
-  title: Bucket template
-  author: Forseti Security Team
-  description: Creates a bucket.
-  version: 1.0
-
-required:
-- location
-
-properties:
-  location:
-    type: string
-    description: The location in which to create a GCS bucket.
+# The BigQuery scanner rules are blacklists.
+rules:
+  - name: sample BigQuery rule to search for public datasets
+    dataset_id: '*'
+    special_group: '*'
+    user_email: '*'
+    domain: '*'
+    group_email: '*'
+    role: 'allAuthenticatedUsers'
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
