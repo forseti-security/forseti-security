@@ -69,7 +69,10 @@ configuration:
       - `roles/resourcemanager.folderAdmin`
       - `roles/storage.admin`
   1. Enter a name for your bucket and Cloud SQL instance.
-  1. Optionally create the bucket and a Cloud SQL instance.
+  1. Setup wizard will create a Deployment Manager template based on your input
+  as well as ask whether you want to create the deployment.
+  1. Optionally create the bucket and a Cloud SQL instance. Only do this if you 
+  do not plan to create a deployment via Deployment Manager.
   1. If you set up a service account to retrieve GSuite groups, follow the
   post-setup instructions to access your project in the Cloud Platform Console
   and **Enable domain-wide-delegation**.
