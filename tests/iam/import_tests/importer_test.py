@@ -15,6 +15,7 @@
 """ Unit Tests: Importer for IAM Explain. """
 
 import os
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.iam.dao import create_engine
@@ -103,3 +104,8 @@ class ImporterTest(ForsetiTestCase):
 
         error_msg = 'Did you enable Forseti group collection?'
         self.assertTrue(error_msg in model.message)
+
+
+if __name__ == '__main__':
+    unittest.main()
+

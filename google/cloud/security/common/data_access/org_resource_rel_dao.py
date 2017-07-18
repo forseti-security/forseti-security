@@ -20,10 +20,6 @@ from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type import resource
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-
-
 class OrgResourceRelDao(object):
     """DAO for organization resource entity relationships."""
 
@@ -53,11 +49,12 @@ class OrgResourceRelDao(object):
         """Find ancestors of a particular resource.
 
         Args:
-            org_resource: A Resource.
-            snapshot_timestamp: The timestamp to use for data lookup.
+            org_resource (Resource): A Resource.
+            snapshot_timestamp (str): The timestamp to use for data lookup.
 
         Returns:
-            A list of ancestors, starting with the closest ancestor.
+            list: A list of Resource ancestors, starting with the
+                closest (lowest-level) ancestor.
         """
         # TODO: handle case where snapshot is None
 

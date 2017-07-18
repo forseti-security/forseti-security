@@ -17,13 +17,16 @@
 from tests.unittest_utils import ForsetiTestCase
 import uuid
 import os
+import unittest
 
 from google.cloud.security.iam.dao import ModelManager, session_creator, create_engine
 from google.cloud.security.common.util.threadpool import ThreadPool
 
+
 def create_test_engine():
     tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
     return create_engine('sqlite:///{}'.format(tmpfile)), tmpfile
+
 
 class ModelManagerTest(ForsetiTestCase):
     """Test for dao.ModelManager create/delete/list."""
@@ -88,3 +91,8 @@ class ModelManagerTest(ForsetiTestCase):
         thread_pool.join()
         self.assertTrue(len(self.model_manager.models()) == 0,
                         'Expecting no models to stick around')
+
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -16,7 +16,7 @@
 
 from tests.unittest_utils import ForsetiTestCase
 import mock
-
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
@@ -78,7 +78,7 @@ class LoadProjectsPipelineTest(ForsetiTestCase):
         '_get_loaded_count')
     @mock.patch.object(
         load_projects_pipeline.LoadProjectsPipeline,
-        '_load')    
+        '_load')
     @mock.patch.object(
         load_projects_pipeline.LoadProjectsPipeline,
         '_transform')
@@ -100,5 +100,9 @@ class LoadProjectsPipelineTest(ForsetiTestCase):
         mock_load.assert_called_once_with(
             self.pipeline.RESOURCE_NAME,
             fake_projects.EXPECTED_LOADABLE_PROJECTS)
-        
+
         mock_get_loaded_count.assert_called_once
+
+
+if __name__ == '__main__':
+      unittest.main()

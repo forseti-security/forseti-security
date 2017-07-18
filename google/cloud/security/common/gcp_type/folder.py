@@ -17,10 +17,6 @@
 from google.cloud.security.common.gcp_type import resource
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc
-
-
 class FolderLifecycleState(resource.LifecycleState):
     """Represents the Folder's LifecycleState."""
     pass
@@ -41,11 +37,11 @@ class Folder(resource.Resource):
         """Initialize.
 
         Args:
-            folder_id: The string folder id.
-            name: The folder unique GCP name, i.e. "folders/{id}".
-            display_name: The folder display name.
-            parent: The parent Resource.
-            lifecycle_state: The folder's lifecycle state.
+            folder_id (str): The folder id number.
+            name (str): The folder unique GCP name, i.e. "folders/{id}".
+            display_name (str): The folder display name.
+            parent (Resource): The parent Resource.
+            lifecycle_state (LifecycleState): The folder's lifecycle state.
         """
         super(Folder, self).__init__(
             resource_id=folder_id,

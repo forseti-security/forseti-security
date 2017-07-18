@@ -16,6 +16,7 @@
 
 from tests.unittest_utils import ForsetiTestCase
 import mock
+import unittest
 
 from google.cloud.security.common.data_access import csv_writer
 
@@ -44,7 +45,7 @@ class CsvWriterTest(ForsetiTestCase):
         self.assertEquals(2, mock_os.remove.call_count)
         called_args, called_kwargs = mock_os.remove.call_args_list[1]
         self.assertEquals(csv_filename, called_args[0])
-        
-        
+
+
 if __name__ == '__main__':
     unittest.main()

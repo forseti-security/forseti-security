@@ -16,6 +16,7 @@
 from datetime import datetime
 
 import mock
+import unittest
 
 from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
 from tests.unittest_utils import ForsetiTestCase
@@ -23,7 +24,7 @@ from tests.unittest_utils import ForsetiTestCase
 
 class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
     """Tests for the email_inventory_snapshot_summary_pipeline."""
-    
+
     def test_can_compose_subject_and_content(self):
         email_pipeline = (
             email_inventory_snapshot_summary_pipeline
@@ -51,7 +52,7 @@ class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
             mock_inventory_pipeline1,
             mock_inventory_pipeline2,
             mock_inventory_pipeline3]
-        
+
         email_subject, email_content = email_pipeline._compose(
             snapshot_time, snapshot_timestamp, status,
             mock_inventory_pipelines)
@@ -87,4 +88,8 @@ class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
             '</tr>\n        \n    </table>\n</body>\n</html>')
 
         self.assertEquals(expected_subject, email_subject)
-        self.assertEquals(expected_content, email_content)        
+        self.assertEquals(expected_content, email_content)
+
+
+if __name__ == '__main__':
+    unittest.main()

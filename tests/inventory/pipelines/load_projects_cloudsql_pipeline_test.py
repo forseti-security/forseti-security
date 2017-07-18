@@ -14,11 +14,11 @@
 
 """Tests the load_projects_cloudsql_pipeline."""
 
-
-from google.apputils import basetest
 import mock
+import unittest
 
 # pylint: disable=line-too-long
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.gcp_api import errors as api_errors
@@ -34,14 +34,13 @@ from pprint import pprint
 
 
 # pylint: enable=line-too-long
-class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
+class LoadProjectsCloudsqlPipelineTest(ForsetiTestCase):
     """Tests for the load_projects_cloudsql_pipeline."""
 
     FAKE_PROJECT_NUMBERS = ['11111']
 
     def setUp(self):
         """Set up."""
-
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = fake_configs.FAKE_CONFIGS
         self.mock_cloudsql = mock.create_autospec(cloudsql.CloudsqlClient)
@@ -52,7 +51,7 @@ class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
                 self.configs,
                 self.mock_cloudsql,
                 self.mock_dao))
-    
+
     def test_can_transform_cloudsql(self):
         """Test that cloudsql instances can be tranformed."""
         self.maxDiff = None
@@ -75,7 +74,7 @@ class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
         self.assertEquals(
              fake_cloudsql.EXPECTED_LOADED_AUTHORIZEDNETWORKS,
              actual_authorizednetworks)
-    
+
     def test_api_is_called_to_retrieve_cloudsql(self):
         """Test that api is called to retrive cloudsql instances."""
 
@@ -84,7 +83,7 @@ class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
         self.pipeline._retrieve()
 
         self.pipeline.dao.get_project_numbers.assert_called_once_with(
-            self.pipeline.PROJECTS_RESOURCE_NAME, 
+            self.pipeline.PROJECTS_RESOURCE_NAME,
             self.pipeline.cycle_timestamp)
 
         self.pipeline.api_client.get_instances.assert_called_once_with(
@@ -184,3 +183,7 @@ class LoadProjectsCloudsqlPipelineTest(basetest.TestCase):
         self.assertEquals(expected_subtransform_calls, subtransform_calls)
 
         mock_get_loaded_count.assert_called_once
+
+
+if __name__ == '__main__':
+    unittest.main()

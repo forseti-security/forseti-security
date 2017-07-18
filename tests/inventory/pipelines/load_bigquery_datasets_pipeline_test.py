@@ -14,9 +14,9 @@
 
 """Tests the load_bigquery_datasets_pipeline."""
 
-
 from tests.unittest_utils import ForsetiTestCase
 import mock
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import project_dao
@@ -206,3 +206,7 @@ class LoadBigqueryDatasetsPipelineTest(ForsetiTestCase):
             fbq.EXPECTED_TRANSFORM)
 
         mock_get_loaded_count.assert_called_once()
+
+
+if __name__ == '__main__':
+      unittest.main()

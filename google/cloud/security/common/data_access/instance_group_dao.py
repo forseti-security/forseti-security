@@ -21,10 +21,6 @@ from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -35,13 +31,13 @@ class InstanceGroupDao(dao.Dao):
         """Get instance groups from a particular snapshot.
 
         Args:
-            timestamp: The snapshot timestamp.
+            timestamp (str): The snapshot timestamp.
 
         Returns:
-            A list of InstanceGroup.
+            list: A list of InstanceGroup.
 
         Raises:
-            MySQLError if a MySQL error occurs.
+            MySQLError: If a MySQL error occurs.
         """
         query = select_data.INSTANCE_GROUPS.format(timestamp)
         rows = self.execute_sql_with_fetch(

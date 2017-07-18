@@ -17,6 +17,7 @@
 import shlex
 import mock
 import os
+import unittest
 from copy import copy
 from argparse import ArgumentParser
 
@@ -81,3 +82,8 @@ class ImporterTest(ForsetiTestCase):
                 self.fail('Argument parser failed on {}, {}'.format(
                     commandline,
                     e.message))
+
+
+if __name__ == '__main__':
+    unittest.main()
+

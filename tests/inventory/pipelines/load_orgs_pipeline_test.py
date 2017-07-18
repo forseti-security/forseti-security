@@ -17,6 +17,7 @@
 from tests.unittest_utils import ForsetiTestCase
 import json
 import mock
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
@@ -29,11 +30,13 @@ from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_orgs
 # pylint: enable=line-too-long
 
+
 def _setup_raw_orgs():
     fakes = [o for res in fake_orgs.FAKE_ORGS \
         for o in res.get('organizations', [])]
     for (i, o) in enumerate(fake_orgs.EXPECTED_LOADABLE_ORGS):
         fake_orgs.EXPECTED_LOADABLE_ORGS[i]['raw_org'] = json.dumps(fakes[i])
+
 
 class LoadOrgsPipelineTest(ForsetiTestCase):
     """Tests for the load_orgs_pipeline."""
@@ -84,7 +87,7 @@ class LoadOrgsPipelineTest(ForsetiTestCase):
         '_get_loaded_count')
     @mock.patch.object(
         load_orgs_pipeline.LoadOrgsPipeline,
-        '_load')    
+        '_load')
     @mock.patch.object(
         load_orgs_pipeline.LoadOrgsPipeline,
         '_transform')
@@ -106,5 +109,9 @@ class LoadOrgsPipelineTest(ForsetiTestCase):
         mock_load.assert_called_once_with(
             self.pipeline.RESOURCE_NAME,
             fake_orgs.EXPECTED_LOADABLE_ORGS)
-        
+
         mock_get_loaded_count.assert_called_once
+
+
+if __name__ == '__main__':
+      unittest.main()

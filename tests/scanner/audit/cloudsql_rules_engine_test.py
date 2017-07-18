@@ -17,9 +17,10 @@
 import copy
 import itertools
 import mock
+import unittest
 import yaml
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import base_rules_engine as bre
@@ -29,7 +30,7 @@ from tests.unittest_utils import get_datafile_path
 
 
 # TODO: Define more tests
-class CloudSqlRulesEngineTest(basetest.TestCase):
+class CloudSqlRulesEngineTest(ForsetiTestCase):
     """Tests for the CloudSqlRulesEngine."""
 
     def setUp(self):
@@ -41,7 +42,7 @@ class CloudSqlRulesEngineTest(basetest.TestCase):
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__,
-        	'cloudsql_test_rules_1.yaml')
+            'cloudsql_test_rules_1.yaml')
         rules_engine = cre.CloudSqlRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
@@ -80,7 +81,11 @@ class CloudSqlRulesEngineTest(basetest.TestCase):
     def test_build_rule_book_no_resource_type_fails(self):
         """Test that a rule without a resource cannot be created."""
         rules_local_path = get_datafile_path(__file__,
-        	'cloudsql_test_rules_2.yaml')
+            'cloudsql_test_rules_2.yaml')
         rules_engine = cre.CloudSqlRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -25,11 +25,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -42,11 +37,11 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
         """Create an iterator of instance group managers to load into database.
 
         Args:
-            resource_from_api: A dict of instance group managers, keyed by
+            resource_from_api (dict): Instance group managers, keyed by
                 project id, from GCP API.
 
         Yields:
-            Iterator of instance group manager properties in a dict.
+            iterator: instance group manager properties in a dict.
         """
         for (project_id, igms) in resource_from_api.iteritems():
             for igm in igms:
@@ -79,8 +74,8 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
         compute instance group managers for each.
 
         Returns:
-            A dict mapping projects with their instance group managers (list):
-            {project_id: [instance group managers]}
+            dict: Mapping projects with their instance group managers (list):
+                {project_id: [instance group managers]}
         """
         projects = (proj_dao
                     .ProjectDao(self.global_configs)

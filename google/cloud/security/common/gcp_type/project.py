@@ -20,10 +20,6 @@ See: https://cloud.google.com/resource-manager/reference/rest/v1/projects
 from google.cloud.security.common.gcp_type import resource
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-
-
 class ProjectLifecycleState(resource.LifecycleState):
     """Project lifecycle state."""
 
@@ -46,12 +42,13 @@ class Project(resource.Resource):
         """Initialize.
 
         Args:
-            project_id: The project string id.
-            project_number: The project number.
-            name: The full unique GCP name, i.e. "projects/{projectId}".
-            display_name: The display name.
-            parent: The parent Resource.
-            lifecycle_state: The project's lifecycle state.
+            project_id (str): The project "named" id.
+            project_number (int): The project number.
+            name (str): The full unique GCP name, with the format
+                "projects/{projectId}".
+            display_name (str): The display name.
+            parent (Resource): The parent Resource.
+            lifecycle_state (LifecycleState): The project's lifecycle state.
         """
         super(Project, self).__init__(
             resource_id=project_id,
@@ -63,5 +60,9 @@ class Project(resource.Resource):
         self.project_number = project_number
 
     def get_project_number(self):
-        """Returns the project number."""
+        """Returns the project number.
+
+        Returns:
+            int: The project number.
+        """
         return self.project_number

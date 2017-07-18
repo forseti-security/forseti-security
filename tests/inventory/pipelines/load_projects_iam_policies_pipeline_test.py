@@ -14,10 +14,10 @@
 
 """Tests the load_projects_iam_policies_pipeline."""
 
-
 from tests.unittest_utils import ForsetiTestCase
 import mock
 import ratelimiter
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
@@ -52,7 +52,7 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
 
     def test_can_transform_project_iam_policies(self):
         """Test that project iam policies can be tranformed."""
-        
+
         loadable_iam_policies = list(self.pipeline._transform(
             fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP))
         self.assertEquals(
@@ -65,23 +65,23 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
         self.pipeline.dao.get_project_numbers.return_value = (
             self.FAKE_PROJECT_NUMBERS)
         self.pipeline._retrieve()
-        
+
         self.pipeline.dao.get_project_numbers.assert_called_once_with(
             self.pipeline.RESOURCE_NAME, self.pipeline.cycle_timestamp)
 
         self.assertEquals(
-            2, self.pipeline.api_client.get_project_iam_policies.call_count)        
+            2, self.pipeline.api_client.get_project_iam_policies.call_count)
         called_args, called_kwargs = (
             self.pipeline.api_client.get_project_iam_policies.call_args_list[0])
         expected_args = (self.pipeline.RESOURCE_NAME,
                          self.FAKE_PROJECT_NUMBERS[0])
-        self.assertEquals(expected_args, called_args)        
+        self.assertEquals(expected_args, called_args)
 
         called_args, called_kwargs = (
             self.pipeline.api_client.get_project_iam_policies.call_args_list[1])
         expected_args = (self.pipeline.RESOURCE_NAME,
                          self.FAKE_PROJECT_NUMBERS[1])
-        self.assertEquals(expected_args, called_args)        
+        self.assertEquals(expected_args, called_args)
 
     def test_dao_error_is_handled_when_retrieving(self):
         """Test that exceptions are handled when retrieving."""
@@ -94,7 +94,7 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
 
     def test_api_error_is_handled_when_retrieving(self):
         """Test that exceptions are handled when retrieving.
-        
+
         We don't want to fail the pipeline when any one project's policies
         can not be retrieved.  We just want to log the error, and continue
         with the other projects.
@@ -153,6 +153,10 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
         expected_args = (
             self.pipeline.RAW_RESOURCE_NAME,
             fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP)
-        self.assertEquals(expected_args, called_args)         
+        self.assertEquals(expected_args, called_args)
 
         mock_get_loaded_count.assert_called_once
+
+
+if __name__ == '__main__':
+    unittest.main()
