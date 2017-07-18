@@ -890,7 +890,7 @@ class ForsetiGcpSetup(object):
                   'project={}\n\n'.format(self.project_id))
         else:
             print('Your generated Deployment Manager template can be '
-                  'found here:\n\n    {}'.format(self.deploy_tpl_path))
+                  'found here:\n\n    {}\n'.format(self.deploy_tpl_path))
             print('Please fill out your forseti_conf.yaml and rules files '
                   'if you have not already done so, then after creating your '
                   'deployment, copy the files from the root directory of '
