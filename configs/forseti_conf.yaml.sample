@@ -113,11 +113,13 @@ scanner:
           enabled: true
         - name: cloudsql_acl
           enabled: true
+        - name: forwarding_rule
+          enabled: true
         - name: group
           enabled: true
         - name: iam_policy
           enabled: true
-        - name: forwarding_rule
+        - name: iap
           enabled: true
 
 ##############################################################################
