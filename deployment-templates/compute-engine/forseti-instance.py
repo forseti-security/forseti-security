@@ -159,13 +159,13 @@ pip install grpcio grpcio-tools google-apputils
 
 python setup.py install
 
-# Put the config files in place
-gsutil cp gs://{}/configs/forseti_conf.yaml {}
-gsutil cp -r gs://{}/rules {}/
-
 # Create the startup run script
 read -d '' RUN_FORSETI << EOF
 #!/bin/bash
+
+# Put the config files in place
+gsutil cp gs://{}/configs/forseti_conf.yaml {}
+gsutil cp -r gs://{}/rules {}/
 
 if [ ! -f {} ]; then
     echo Forseti conf not found, exiting.
