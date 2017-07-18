@@ -14,11 +14,12 @@
 
 """Tests the load_appengine_pipeline."""
 
-from google.apputils import basetest
 import mock
 import MySQLdb
+import unittest
 
 # pylint: disable=line-too-long
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import appengine_dao
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import project_dao
@@ -32,7 +33,8 @@ from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
 
-class LoadAppenginePipelineTest(basetest.TestCase):
+
+class LoadAppenginePipelineTest(ForsetiTestCase):
     """Tests for the load_appengine_pipeline."""
 
     def setUp(self):
@@ -126,3 +128,7 @@ class LoadAppenginePipelineTest(basetest.TestCase):
             self.pipeline.RESOURCE_NAME,
             fake_appengine_applications.EXPECTED_LOADABLE_APPLICATIONS)
         self.assertEquals(expected_args, called_args)
+
+
+if __name__ == '__main__':
+      unittest.main()

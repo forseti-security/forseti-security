@@ -18,8 +18,10 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceGroups
 """
 
+import os
 
 from google.cloud.security.common.gcp_type import key
+from google.cloud.security.common.util import parser
 
 
 # pylint: disable=too-many-instance-attributes
@@ -34,10 +36,14 @@ class InstanceGroup(object):
         """
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
+        self.instance_urls = parser.json_unstringify(
+            kwargs.get('instance_urls'))
         self.name = kwargs.get('name')
-        self.named_ports = kwargs.get('named_ports')
+        self.named_ports = parser.json_unstringify(kwargs.get('named_ports'))
         self.network = kwargs.get('network')
+        self.project_id = kwargs.get('project_id')
         self.region = kwargs.get('region')
+        self.resource_id = kwargs.get('id')
         self.size = kwargs.get('size')
         self.subnetwork = kwargs.get('subnetwork')
         self.zone = kwargs.get('zone')
@@ -81,6 +87,10 @@ class Key(key.Key):
         """
         if not bool(region) ^ bool(zone):
             raise ValueError('Key must specify one of either region or zone')
+        if region:
+            region = os.path.basename(region)
+        if zone:
+            zone = os.path.basename(zone)
         return Key(KEY_OBJECT_KIND, {
             'project_id': project_id,
             'region': region,
@@ -106,8 +116,8 @@ class Key(key.Key):
                              'zones': 'zone',
                              'instanceGroups': 'name'},
                             url)
-        if (obj.project_id is None or
-                obj.name is None or
+        if (not obj.project_id or
+                not obj.name or
                 not bool(obj.zone) ^ bool(obj.region)):
             raise ValueError('Invalid fields in URL %r' % url)
         return obj

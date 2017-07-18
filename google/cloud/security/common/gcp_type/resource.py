@@ -36,6 +36,7 @@ class ResourceType(object):
 
     # Compute engine
     BACKEND_SERVICE = 'backend_service'
+    FIREWALL_RULE = 'firewall_rule'
     FORWARDING_RULE = 'forwarding_rule'
     INSTANCE = 'instance'
     INSTANCE_GROUP = 'instance_group'

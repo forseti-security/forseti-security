@@ -15,12 +15,14 @@
 """Tests the Storage client."""
 
 import mock
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import storage
 from tests.common.gcp_type.test_data import fake_buckets
+
 
 class StorageTest(ForsetiTestCase):
     """Test the StorageClient."""
@@ -61,7 +63,7 @@ class StorageTest(ForsetiTestCase):
 
         self.gcs_api_client.get_buckets = mock.MagicMock(
             return_value=fake_buckets_response)
-        
+
         result = list(self.gcs_api_client.get_buckets(project_number))
         self.assertEquals(expected_buckets, [fake_buckets_response])
 
@@ -77,7 +79,7 @@ class StorageTest(ForsetiTestCase):
 
         self.gcs_api_client.get_buckets = mock.MagicMock(
             return_value=fake_bucket_acls_response)
-        
+
         result = list(self.gcs_api_client.get_bucket_acls(bucket_name))
         self.assertEquals(expected_bucket_acls, [fake_bucket_acls_response])
 

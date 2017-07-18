@@ -18,6 +18,7 @@ import httplib
 import json
 import mock
 import socket
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import metadata_server

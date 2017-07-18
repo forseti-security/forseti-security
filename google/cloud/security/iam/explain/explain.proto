@@ -19,6 +19,8 @@ package explain;
 service Explain {
   rpc Ping(PingRequest) returns (PingReply) {}
 
+  rpc GetAccessByPermissions(GetAccessByPermissionsRequest) returns (stream Access) {}
+
   rpc GetAccessByResources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
 
   rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
@@ -126,6 +128,7 @@ message Model {
 	string name = 2;
 	string status = 3;
 	string message = 4;
+	string warnings = 5;
 }
 
 message GetPermissionsByRolesRequest {
@@ -139,6 +142,23 @@ message GetPermissionsByRolesReply {
     repeated string permissions = 2;
   }
   repeated PermissionsByRole permissionsbyroles = 1;
+}
+
+message GetAccessByPermissionsRequest {
+  string role_name = 1;
+  string permission_name = 2;
+  bool expand_groups = 3;
+  bool expand_resources = 4;
+}
+
+message Access {
+  repeated string members = 1;
+  string resource = 2;
+  string role = 3;
+}
+
+message GetAccessByPermissionsReply {
+  repeated Access accesses = 1;
 }
 
 message GetAccessByResourcesRequest {

@@ -52,6 +52,8 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
                            self.MYSQL_DATETIME_FORMAT),
                        'name': instance_group.get('name'),
                        'description': instance_group.get('description'),
+                       'instance_urls': parser.json_stringify(
+                           instance_group.get('instance_urls', [])),
                        'named_ports': parser.json_stringify(
                            instance_group.get('namedPorts', [])),
                        'network': instance_group.get('network'),

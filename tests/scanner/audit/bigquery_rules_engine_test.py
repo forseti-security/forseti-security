@@ -17,6 +17,7 @@
 import copy
 import itertools
 import mock
+import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
@@ -60,7 +61,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__,
-        	'bigquery_test_rules_1.yaml')
+            'bigquery_test_rules_1.yaml')
         rules_engine = bqe.BigqueryRulesEngine(
                            rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
@@ -100,7 +101,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
     def test_build_rule_book_no_resource_type_fails(self):
         """Test that a rule without a resource cannot be created."""
         rules_local_path = get_datafile_path(__file__,
-        	'bigquery_test_rules_2.yaml')
+            'bigquery_test_rules_2.yaml')
         rules_engine = bqe.BigqueryRulesEngine(
                            rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
@@ -109,7 +110,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
     def test_find_violations_with_no_violations(self):
         """Test that a rule for a given rule there are no violations."""
         rules_local_path = get_datafile_path(
-            __file__, 
+            __file__,
             'bigquery_test_rules_3.yaml')
         rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
         rules_engine.build_rule_book()
@@ -123,7 +124,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
     def test_find_violations_with_violations(self):
         """Test that a rule for a given rule there are violations."""
         rules_local_path = get_datafile_path(
-            __file__, 
+            __file__,
             'bigquery_test_rules_4.yaml')
         rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
         rules_engine.build_rule_book()
@@ -135,3 +136,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         self.assertEqual(
             fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,
             actual_violations_list)
+
+
+if __name__ == '__main__':
+    unittest.main()

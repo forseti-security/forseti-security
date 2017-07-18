@@ -17,6 +17,8 @@
 See: https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps
 """
 
+from google.cloud.security.common.util import parser
+
 
 # pylint: disable=too-many-instance-attributes
 class Application(object):
@@ -31,7 +33,8 @@ class Application(object):
         self.project_id = kwargs.get('project_id')
         self.name = kwargs.get('name')
         self.app_id = kwargs.get('app_id')
-        self.dispatch_rules = kwargs.get('dispatch_rules')
+        self.dispatch_rules = parser.json_unstringify(
+            kwargs.get('dispatch_rules'))
         self.auth_domain = kwargs.get('auth_domain')
         self.location_id = kwargs.get('location_id')
         self.code_bucket = kwargs.get('code_bucket')
@@ -39,6 +42,6 @@ class Application(object):
         self.serving_status = kwargs.get('serving_status')
         self.default_hostname = kwargs.get('default_hostname')
         self.default_bucket = kwargs.get('default_bucket')
-        self.iap = kwargs.get('iap')
+        self.iap = parser.json_unstringify(kwargs.get('iap'))
         self.gcr_domain = kwargs.get('gcr_domain')
         self.raw_application = kwargs.get('raw_application')
