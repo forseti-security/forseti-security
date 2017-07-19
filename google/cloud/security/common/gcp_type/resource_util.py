@@ -14,6 +14,7 @@
 
 """Util for generic operations for Resources."""
 
+from google.cloud.security.common.gcp_type import backend_service
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization as org
 from google.cloud.security.common.gcp_type import project
@@ -32,6 +33,10 @@ _RESOURCE_TYPE_MAP = {
     resource.ResourceType.PROJECT: {
         'class': project.Project,
         'plural': 'Projects',
+    },
+    resource.ResourceType.BACKEND_SERVICE: {
+        'class': backend_service.BackendService,
+        'plural': 'Backend Services',
     },
 }
 
