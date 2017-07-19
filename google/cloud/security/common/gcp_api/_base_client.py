@@ -41,8 +41,11 @@ def _attach_user_agent(request):
     Returns:
         HttpRequest: A modified googleapiclient request object.
     """
-    user_agent = request.headers['user-agent']
-    request.headers['user-agent'] = user_agent + ', %s/%s ' % (
+    user_agent = request.headers.get('user-agent', '')
+    if not user_agent or user_agent.contains(forseti_security.__package_name__):
+        return request
+
+    request.headers['user-agent'] = user_agent + ', %s/%s' % (
         forseti_security.__package_name__,
         forseti_security.__version__)
 
