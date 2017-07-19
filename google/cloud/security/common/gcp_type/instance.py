@@ -63,7 +63,11 @@ class Instance(object):
         return Key.from_args(self.project_id, self.zone, self.name)
 
     def create_network_interfaces(self):
-        """Return a list of network_interface objects."""
+        """Return a list of network_interface objects.
+
+        Returns:
+            List: list of InstanceNetworkInterface objects
+        """
         network_interfaces = json.loads(self.network_interfaces)
         return [InstanceNetworkInterface(**ni) for ni in network_interfaces]
 
@@ -162,18 +166,44 @@ class InstanceNetworkInterface(object):
         self.alias_ip_ranges = kwargs.get('aliasIpRanges')
 
     def __repr__(self):
+        """Repr
+
+        Returns:
+            string: a string for a InstanceNetworkInterface
+        """
         return 'kind: %s Network: %s subnetwork: %s network_ip %s name %s' \
             'access_configs %s alias_ip_ranges %s' % (
                 self.kind, self.network, self.subnetwork, self.network_ip,
                 self.name, self.access_configs, self.alias_ip_ranges)
 
     def __hash__(self):
+        """hash
+
+        Returns:
+            hash: of InstanceNetworkInterface
+        """
         return hash(self.__repr__())
 
     def __ne__(self, other):
-        return (not self.__eq__(other))
+        """Ne
+
+        Args:
+            other (InstanceNetworkInterface): other InstanceNetworkInterface
+
+        Return:
+            bool: if not equal
+        """
+        return not self.__eq__(other)
 
     def __eq__(self, other):
+        """Eq
+
+        Args:
+            other (InstanceNetworkInterface) : other InstanceNetworkInterface
+
+        Return:
+            bool: if is equal
+        """
         if isinstance(self, InstanceNetworkInterface):
             return ((self.kind == other.kind) and
                     (self.network == other.network) and

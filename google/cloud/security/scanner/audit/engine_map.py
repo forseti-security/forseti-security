@@ -29,7 +29,7 @@ ENGINE_TO_DATA_MAP = {
     'BigqueryRulesEngine': BigqueryRulesEngine,
     'BucketsRulesEngine': BucketsRulesEngine,
     'CloudSqlRulesEngine': CloudSqlRulesEngine,
-    'InstanceNetworkInterfaceRulesEngine': InstanceNetworkInterfaceRulesEngine
+    'InstanceNetworkInterfaceRulesEngine': InstanceNetworkInterfaceRulesEngine,
     'ForwardingRuleRulesEngine': ForwardingRuleRulesEngine,
     'IamRulesEngine': IamRulesEngine,
     'IapRulesEngine': IapRulesEngine,

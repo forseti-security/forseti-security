@@ -43,7 +43,7 @@ class ResourceType(object):
     INSTANCE_GROUP_MANAGER = 'instance_group_manager'
     INSTANCE_TEMPLATE = 'instance_template'
     INSTANCE_NETWORK_INTERFACE = 'instance_network_interface'
-    
+
     # Data storage
     BIGQUERY_ACL = 'bigquery_datasets'
     BUCKETS_ACL = 'buckets_acl'
