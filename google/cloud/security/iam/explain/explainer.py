@@ -91,6 +91,32 @@ class Explainer(object):
             self.config.run_in_background(doImport)
             return model_manager.model(model_handle, expunge=True)
 
+    def GetAccessByPermissions(self, model_name, role_name, permission_name,
+                               expand_groups, expand_resources):
+        """Returns access tuples satisfying the permission or role.
+
+        Args:
+            model_name (str): Model to operate on.
+            role_name (str): Role name to query for.
+            permission_name (str): Permission name to query for.
+            expand_groups (bool): Whether to expand groups in policies.
+            expand_resources (bool): Whether to expand resources.
+
+        Yields:
+            Generator for access tuples.
+        """
+
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            for role, resource, members in (
+                    data_access.query_access_by_permission(session,
+                                                           role_name,
+                                                           permission_name,
+                                                           expand_groups,
+                                                           expand_resources)):
+                yield role, resource, members
+
     def GetAccessByMembers(self, model_name, member_name, permission_names,
                            expand_resources):
         """Returns access to resources for the provided member."""

@@ -14,9 +14,9 @@
 
 """Tests the base pipeline."""
 
-
 from tests.unittest_utils import ForsetiTestCase
 import mock
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import dao
@@ -35,7 +35,7 @@ from tests.inventory.pipelines.test_data import fake_projects
 
 class BasePipelineTest(ForsetiTestCase):
     """Tests for the base pipeline.
-    
+
     Because base pipeline is an abstract class, there is no way to instantiate
     it for testing directly.  So, will test it by a pipeline that implements it.
     """
@@ -65,7 +65,7 @@ class BasePipelineTest(ForsetiTestCase):
         self.pipeline.dao.load_data.assert_called_once_with(
             resource_name,
             self.pipeline.cycle_timestamp,
-            fake_projects.EXPECTED_LOADABLE_PROJECTS)       
+            fake_projects.EXPECTED_LOADABLE_PROJECTS)
 
     def test_load_errors_are_handled(self):
         """Test that errors are handled when loading."""
@@ -96,3 +96,7 @@ class BasePipelineTest(ForsetiTestCase):
         self.pipeline._get_loaded_count()
         self.assertEquals(1, base_pipeline.LOGGER.error.call_count)
         self.assertIsNone(self.pipeline.count)
+
+
+if __name__ == '__main__':
+    unittest.main()

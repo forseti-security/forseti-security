@@ -1,0 +1,20 @@
+{
+    "rules": [
+        {
+            "name": "sample IAP rule",
+            "allowed_alternate_services": "",
+            "allowed_direct_access_sources": "",
+            "allowed_iap_enabled": "True",
+            "resource": [
+                {
+                    "type": "project",
+                    "applies_to": "self",
+                    "resource_ids": [
+                        "my-project-123",
+                        "my-project-125"
+                    ]
+                }
+            ]
+        }
+    ]
+}

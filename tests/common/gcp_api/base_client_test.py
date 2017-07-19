@@ -17,6 +17,7 @@
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 import mock
+import unittest
 
 from apiclient import discovery
 from tests.unittest_utils import ForsetiTestCase

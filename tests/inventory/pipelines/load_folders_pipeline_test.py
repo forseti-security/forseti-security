@@ -17,6 +17,7 @@
 from tests.unittest_utils import ForsetiTestCase
 import json
 import mock
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
@@ -29,12 +30,14 @@ from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_folders
 # pylint: enable=line-too-long
 
+
 def _setup_raw_folders():
     fakes = [o for res in fake_folders.FAKE_FOLDERS \
         for o in res.get('folders', [])]
     for (i, o) in enumerate(fake_folders.EXPECTED_LOADABLE_FOLDERS):
         fake_folders.EXPECTED_LOADABLE_FOLDERS[i]['raw_folder'] = \
             json.dumps(fakes[i])
+
 
 class LoadFoldersPipelineTest(ForsetiTestCase):
     """Tests for the load_folders_pipeline."""
@@ -85,7 +88,7 @@ class LoadFoldersPipelineTest(ForsetiTestCase):
         '_get_loaded_count')
     @mock.patch.object(
         load_folders_pipeline.LoadFoldersPipeline,
-        '_load')    
+        '_load')
     @mock.patch.object(
         load_folders_pipeline.LoadFoldersPipeline,
         '_transform')
@@ -107,5 +110,9 @@ class LoadFoldersPipelineTest(ForsetiTestCase):
         mock_load.assert_called_once_with(
             self.pipeline.RESOURCE_NAME,
             fake_folders.EXPECTED_LOADABLE_FOLDERS)
-        
+
         mock_get_loaded_count.assert_called_once
+
+
+if __name__ == '__main__':
+      unittest.main()

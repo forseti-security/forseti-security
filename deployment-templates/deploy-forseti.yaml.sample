@@ -41,7 +41,7 @@ resources:
 - name: SCANNER_BUCKET
   type: bucket.py
   properties:
-    region: us
+    location: us
 
 # Compute Engine
 - name: forseti-instance
@@ -58,7 +58,6 @@ resources:
       - https://www.googleapis.com/auth/cloud-platform
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
-    organization-id: ORGANIZATION_ID_NUMBER
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
@@ -83,6 +82,3 @@ resources:
     # Cloud SQL
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
-
-    # Fully-qualified path and name of the Forseti Security config file.
-    forseti-config: FORSETI_CONFIG

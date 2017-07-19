@@ -37,6 +37,7 @@ from google.cloud.security.common.data_access import cloudsql_dao
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import firewall_rule_dao
 from google.cloud.security.common.data_access import folder_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao
 from google.cloud.security.common.data_access import instance_dao
@@ -214,6 +215,8 @@ def _create_dao_map(global_configs):
             'bucket_dao': bucket_dao.BucketDao(global_configs),
             'cloudsql_dao': cloudsql_dao.CloudsqlDao(global_configs),
             'dao': dao.Dao(global_configs),
+            'firewall_rule_dao':
+                firewall_rule_dao.FirewallRuleDao(global_configs),
             'folder_dao': folder_dao.FolderDao(global_configs),
             'forwarding_rules_dao':
                 forwarding_rules_dao.ForwardingRulesDao(global_configs),

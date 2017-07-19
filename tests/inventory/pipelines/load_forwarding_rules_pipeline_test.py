@@ -17,6 +17,7 @@
 from tests.unittest_utils import ForsetiTestCase
 import mock
 import MySQLdb
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
@@ -164,3 +165,7 @@ class LoadForwardingRulesPipelineTest(ForsetiTestCase):
             self.pipeline.RESOURCE_NAME,
             fake_forwarding_rules.EXPECTED_LOADABLE_FWD_RULES)
         self.assertEquals(expected_args, called_args)
+
+
+if __name__ == '__main__':
+    unittest.main()

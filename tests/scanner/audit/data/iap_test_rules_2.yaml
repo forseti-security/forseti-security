@@ -1,0 +1,8 @@
+rules:
+  - name: sample IAP rule to require IAP for all resources
+    allowed_alternate_services: ''
+    allowed_direct_access_sources: ''
+    allowed_iap_enabled: 'True'
+    resource:
+      - type: organization
+          - 1234567890

@@ -29,7 +29,6 @@ LOGGER = log_util.get_logger(__name__)
 MY_CUSTOMER = 'my_customer'
 
 
-# pylint: disable=arguments-differ
 class GroupsScanner(base_scanner.BaseScanner):
     """Scanner for IAM data."""
 
