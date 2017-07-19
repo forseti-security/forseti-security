@@ -13,8 +13,7 @@ How to deploy Forseti Security.
 
 Enable or change features about Forseti Security.
 
-- [Enabling Email Notification]({% link _docs/howto/email-notification.md %})
+- [Enabling Email Notifications]({% link _docs/howto/email-notification.md %})
 - [Enabling GSuite Google Groups Collection]({% link _docs/howto/gsuite-group-collection.md %})
 - [Collecting and Storing New Data in Forseti Inventory]({% link _docs/howto/inventory-new-data.md %})
 - [Defining Rules for Forseti Scanner]({% link _docs/howto/scanner-rules.md %})
-
