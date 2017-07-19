@@ -4,7 +4,7 @@ order: 001
 hide:
   right_sidebar: true
 ---
-**[Start here]({% link _docs/quickstarts/forseti-security/ %})** by
+**[Start here]({% link _docs/quickstarts/forseti-security/index.md %})** by
 setting up Forseti Security to improve the security of your Google Cloud
 Platform environments.
 
