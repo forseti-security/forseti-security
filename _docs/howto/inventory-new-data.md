@@ -1,5 +1,5 @@
 ---
-title: Collection and Storing New Data in Forseti Inventory
+title: Collecting and Storing New Data in Forseti Inventory
 order: 6
 ---
 #  {{ page.title }}
