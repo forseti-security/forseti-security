@@ -369,17 +369,18 @@ def define_model(model_name, dbengine, model_seed):
             if get_dialect(session) != 'sqlite':
                 # Lock tables for denormalization
                 # including aliases 1-3
-                locked_tables = [GroupInGroup.__tablename__,
-                                 '{} as {}'.format(
-                                     GroupInGroup.__tablename__,
-                                     tbl1.name),
-                                 '{} as {}'.format(
-                                     GroupInGroup.__tablename__,
-                                     tbl2.name),
-                                 '{} as {}'.format(
-                                     GroupInGroup.__tablename__,
-                                     tbl3.name),
-                                 group_members.name]
+                locked_tables = [
+                    '`{}`'.format(GroupInGroup.__tablename__),
+                    '`{}` as {}'.format(
+                        GroupInGroup.__tablename__,
+                        tbl1.name),
+                    '`{}` as {}'.format(
+                        GroupInGroup.__tablename__,
+                        tbl2.name),
+                    '`{}` as {}'.format(
+                        GroupInGroup.__tablename__,
+                        tbl3.name),
+                    group_members.name]
                 lock_stmts = ['{} WRITE'.format(tbl) for tbl in locked_tables]
                 query = 'LOCK TABLES {}'.format(', '.join(lock_stmts))
                 session.execute(query)
