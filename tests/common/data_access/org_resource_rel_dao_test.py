@@ -16,6 +16,7 @@
 
 from tests.unittest_utils import ForsetiTestCase
 import mock
+import unittest
 
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import folder_dao

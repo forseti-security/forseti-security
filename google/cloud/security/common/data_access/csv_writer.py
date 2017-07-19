@@ -21,11 +21,6 @@ import tempfile
 from google.cloud.security.common.data_access.errors import CSVFileError
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,redundant-returns-doc
-# pylint: disable=missing-raises-doc,missing-yield-doc,missing-yield-type-doc
-
-
 APPENGINE_SERVICES_FIELDNAMES = [
     'project_id',
     'name',
@@ -290,6 +285,7 @@ INSTANCE_GROUPS_FIELDNAMES = [
     'project_id',
     'creation_timestamp',
     'description',
+    'instance_urls',
     'name',
     'named_ports',
     'network',
@@ -336,7 +332,6 @@ ORG_IAM_POLICIES_FIELDNAMES = [
     'member_domain'
 ]
 
-
 ORGANIZATIONS_FIELDNAMES = [
     'org_id',
     'name',
@@ -345,7 +340,6 @@ ORGANIZATIONS_FIELDNAMES = [
     'raw_org',
     'creation_time',
 ]
-
 
 VIOLATION_FIELDNAMES = [
     'resource_id',
@@ -439,12 +433,15 @@ def write_csv(resource_name, data, write_header=False):
     """Start the csv writing flow.
 
     Args:
-        resource_name: String of the resource name.
-        data: An iterable of data to be written to csv.
-        write_header: If True, write the header in the csv file.
+        resource_name (str): The resource name.
+        data (iterable): An iterable of data to be written to csv.
+        write_header (bool): If True, write the header in the csv file.
 
-    Returns:
-       The CSV temporary file.
+    Yields:
+       object: The CSV temporary file pointer.
+
+    Raises:
+        CSVFileError: If there was an error writing the CSV file.
     """
     csv_file = tempfile.NamedTemporaryFile(delete=False)
     try:

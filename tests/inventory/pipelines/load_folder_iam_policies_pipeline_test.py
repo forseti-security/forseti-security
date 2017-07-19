@@ -17,6 +17,7 @@
 from tests.unittest_utils import ForsetiTestCase
 import mock
 import MySQLdb
+import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
@@ -50,7 +51,7 @@ class LoadFolderIamPoliciesPipelineTest(ForsetiTestCase):
 
     def test_can_transform_folder_iam_policies(self):
         """Test that folder iam policies can be transformed."""
-        
+
         loadable_iam_policies = self.pipeline._transform(
             fake_iam_policies.FAKE_FOLDER_IAM_POLICY_MAP)
         self.assertEquals(fake_iam_policies.EXPECTED_LOADABLE_FOLDER_IAM_POLICY,
@@ -95,7 +96,7 @@ class LoadFolderIamPoliciesPipelineTest(ForsetiTestCase):
         '_get_loaded_count')
     @mock.patch.object(
         load_folder_iam_policies_pipeline.LoadFolderIamPoliciesPipeline,
-        '_load')    
+        '_load')
     @mock.patch.object(
         load_folder_iam_policies_pipeline.LoadFolderIamPoliciesPipeline,
         '_transform')
@@ -128,6 +129,10 @@ class LoadFolderIamPoliciesPipelineTest(ForsetiTestCase):
         expected_args = (
             self.pipeline.RAW_RESOURCE_NAME,
             fake_iam_policies.FAKE_FOLDER_IAM_POLICY_MAP)
-        self.assertEquals(expected_args, called_args)         
-        
+        self.assertEquals(expected_args, called_args)
+
         mock_get_loaded_count.assert_called_once
+
+
+if __name__ == '__main__':
+      unittest.main()

@@ -15,9 +15,12 @@
 """Base scanner."""
 
 import abc
+import os
+import shutil
 
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.data_access import violation_dao
+from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util import log_util
 
 
@@ -27,6 +30,9 @@ LOGGER = log_util.get_logger(__name__)
 class BaseScanner(object):
     """This is a base class skeleton for scanners."""
     __metaclass__ = abc.ABCMeta
+
+    OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
+    SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
@@ -46,34 +52,6 @@ class BaseScanner(object):
     @abc.abstractmethod
     def run(self):
         """Runs the pipeline."""
-        pass
-
-    @abc.abstractmethod
-    def _retrieve(self, **kwargs):
-        """Runs the pipeline.
-
-        Args:
-            **kwargs: Arbitrary keyword arguments.
-        """
-        pass
-
-    @abc.abstractmethod
-    def _find_violations(self, **kwargs):
-        """Find violations.
-
-
-        Args:
-            **kwargs: Arbitrary keyword arguments.
-        """
-        pass
-
-    @abc.abstractmethod
-    def _output_results(self, **kwargs):
-        """Output results.
-
-        Args:
-            **kwargs: Arbitrary keyword arguments.
-        """
         pass
 
     def _output_results_to_db(self, resource_name, violations):
@@ -102,3 +80,43 @@ class BaseScanner(object):
                      inserted_row_count, len(violation_errors))
 
         return violation_errors
+
+    def _get_output_filename(self, now_utc):
+        """Create the output filename.
+
+        Args:
+            now_utc (datetime): The datetime now in UTC. Generated at the top
+                level to be consistent across the scan.
+
+        Returns:
+            str: The output filename for the csv, formatted with the
+                now_utc timestamp.
+        """
+        output_timestamp = now_utc.strftime(self.OUTPUT_TIMESTAMP_FMT)
+        output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
+        return output_filename
+
+    def _upload_csv(self, output_path, now_utc, csv_name):
+        """Upload CSV to Cloud Storage.
+
+        Args:
+            output_path (str): The output path for the csv.
+            now_utc (datetime): The UTC timestamp of "now".
+            csv_name (str): The csv_name.
+        """
+        output_filename = self._get_output_filename(now_utc)
+
+        # If output path was specified, copy the csv temp file either to
+        # a local file or upload it to Google Cloud Storage.
+        full_output_path = os.path.join(output_path, output_filename)
+        LOGGER.info('Output path: %s', full_output_path)
+
+        if output_path.startswith('gs://'):
+            # An output path for GCS must be the full
+            # `gs://bucket-name/path/for/output`
+            storage_client = storage.StorageClient()
+            storage_client.put_text_file(
+                csv_name, full_output_path)
+        else:
+            # Otherwise, just copy it to the output path.
+            shutil.copy(csv_name, full_output_path)

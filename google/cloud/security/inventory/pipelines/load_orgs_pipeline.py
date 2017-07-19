@@ -21,10 +21,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-yield-type-doc,missing-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -37,13 +33,13 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable organizations.
 
         Args:
-            resource_from_api: An iterable of resource manager org search
+            resource_from_api (iterable): Resource manager org search
                 response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations#Organization
 
         Yields:
-            An iterable of loadable orgs, each org as a dict.
+            iterable: Loadable orgs, each org as a dict.
         """
         for org in (o for d in resource_from_api for o in d.get(
                 'organizations', [])):
@@ -65,8 +61,8 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         """Retrieve the organizations resources from GCP.
 
         Returns:
-            An iterable of resource manager org search response.
-            https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
+            iterable: resource manager org search response.
+                https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
         """
         try:
             return self.api_client.get_organizations(

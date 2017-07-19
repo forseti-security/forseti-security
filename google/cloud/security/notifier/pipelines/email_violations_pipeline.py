@@ -26,11 +26,6 @@ from google.cloud.security.notifier.pipelines import base_notification_pipeline 
 # pylint: enable=line-too-long
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=missing-param-doc,differing-param-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 TEMP_DIR = '/tmp'
@@ -43,6 +38,17 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
 
     def __init__(self, resource, cycle_timestamp,
                  violations, global_configs, notifier_config, pipeline_config):
+        """Initialization.
+
+        Args:
+            resource (str): Violation resource name.
+            cycle_timestamp (str): Snapshot timestamp,
+               formatted as YYYYMMDDTHHMMSSZ.
+            violations (dict): Violations.
+            global_configs (dict): Global configurations.
+            notifier_config (dict): Notifier configurations.
+            pipeline_config (dict): Pipeline configurations.
+        """
         super(EmailViolationsPipeline, self).__init__(resource,
                                                       cycle_timestamp,
                                                       violations,
@@ -55,7 +61,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """Create the output filename.
 
         Returns:
-            The output filename for the violations json.
+            str: The output filename for the violations json.
         """
         now_utc = datetime.utcnow()
         output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
@@ -68,7 +74,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """Write the attachment to a temp file.
 
         Returns:
-            The output filename for the violations json just written.
+            str: The output filename for the violations json just written.
         """
         # Make attachment
         output_file_name = self._get_output_filename()
@@ -81,7 +87,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """Create the attachment object.
 
         Returns:
-            The attachment object.
+            attachment: SendGrid attachment object.
         """
         output_file_name = self._write_temp_attachment()
         attachment = self.mail_util.create_attachment(
@@ -98,7 +104,9 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """Create the email content.
 
         Returns:
-            A tuple containing the email subject and the content
+            str: Email subject.
+            unicode: Email template content rendered with
+                the provided variables.
         """
         timestamp = datetime.strptime(
             self.cycle_timestamp, '%Y%m%dT%H%M%SZ')
@@ -117,8 +125,11 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
     def _compose(self, **kwargs):
         """Compose the email pipeline map
 
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+
         Returns:
-            Returns a map with subject, content, attachemnt
+            dict: A map of the email with subject, content, attachemnt
         """
         email_map = {}
 
@@ -133,9 +144,10 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """Send a summary email of the scan.
 
         Args:
-            subject: Email subject
-            conetent: Email content
-            attachment: Attachment object
+            **kwargs: Arbitrary keyword arguments.
+                subject: Email subject
+                conetent: Email content
+                attachment: Attachment object
         """
         notification_map = kwargs.get('notification')
         subject = notification_map['subject']

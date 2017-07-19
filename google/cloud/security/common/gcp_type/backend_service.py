@@ -17,31 +17,40 @@
 See: https://cloud.google.com/compute/docs/reference/latest/backendServices
 """
 
+import os
 
 from google.cloud.security.common.gcp_type import key
+from google.cloud.security.common.gcp_type import resource
+from google.cloud.security.common.util import parser
 
 
 # pylint: disable=too-many-instance-attributes
-class BackendService(object):
+class BackendService(resource.Resource):
     """Represents BackendService resource."""
 
     def __init__(self, **kwargs):
         """BackendService resource.
 
         Args:
-            kwargs: The object's attributes.
+            **kwargs: The object's attributes.
         """
+        super(BackendService, self).__init__(
+            resource_id=kwargs.get('id'),
+            resource_type=resource.ResourceType.BACKEND_SERVICE,
+            name=kwargs.get('name'),
+            display_name=kwargs.get('name'))
         self.affinity_cookie_ttl_sec = kwargs.get('affinity_cookie_ttl_sec')
-        self.backends = kwargs.get('backends')
-        self.cdn_policy = kwargs.get('cdn_policy')
-        self.connection_draining = kwargs.get('connection_draining')
+        self.backends = parser.json_unstringify(kwargs.get('backends'))
+        self.cdn_policy = parser.json_unstringify(kwargs.get('cdn_policy'))
+        self.connection_draining = parser.json_unstringify(
+            kwargs.get('connection_draining'))
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
         self.enable_cdn = kwargs.get('enable_cdn')
-        self.health_checks = kwargs.get('health_checks')
-        self.iap = kwargs.get('iap')
+        self.health_checks = parser.json_unstringify(
+            kwargs.get('health_checks'))
+        self.iap = parser.json_unstringify(kwargs.get('iap'))
         self.load_balancing_scheme = kwargs.get('load_balancing_scheme')
-        self.name = kwargs.get('name')
         self.port = kwargs.get('port')
         self.port_name = kwargs.get('port_name')
         self.project_id = kwargs.get('project_id')
@@ -80,6 +89,8 @@ class Key(key.Key):
         Returns:
             Key: the key
         """
+        if region:
+            region = os.path.basename(region)
         return Key(KEY_OBJECT_KIND, {
             'project_id': project_id,
             'name': name,
@@ -104,7 +115,7 @@ class Key(key.Key):
              'regions': 'region',
              'backendServices': 'name'},
             url)
-        if obj.project_id is None or obj.name is None:
+        if not obj.project_id or not obj.name:
             raise ValueError('Missing fields in URL %r' % url)
         return obj
 

@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the Storage client."""
-
+"""Tests the Cloud Resource Manager API client."""
 
 from googleapiclient.errors import HttpError
 from httplib2 import HttpLib2Error
 import mock
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import _base_client

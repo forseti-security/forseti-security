@@ -17,6 +17,7 @@
 from tests.unittest_utils import ForsetiTestCase
 import mock
 import MySQLdb
+import unittest
 
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
@@ -177,7 +178,7 @@ class ViolationDaoTest(ForsetiTestCase):
 
     def test_insert_violations_raises_error_on_create(self):
         """Test raises MySQLError when getting a create table error.
-        
+
         Expect:
             Raise MySQLError when create_snapshot_table() raises an error.
         """
@@ -198,7 +199,7 @@ class ViolationDaoTest(ForsetiTestCase):
                 * self.dao.get_latest_snapshot_timestamp
                 * self.dao._create_snapshot_table
             * Create side effect for one violation to raise an error.
-        
+
         Expect:
             * Log MySQLError when table insert error occurs and return list
               of errors.
@@ -220,7 +221,7 @@ class ViolationDaoTest(ForsetiTestCase):
 
         self.dao.execute_sql_with_commit = mock.MagicMock(
             side_effect=insert_violation_side_effect)
-        
+
         actual = self.dao.insert_violations(
             self.fake_flattened_violations,
             self.resource_name)

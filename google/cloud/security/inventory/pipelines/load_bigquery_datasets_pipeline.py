@@ -21,12 +21,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-# pylint: disable=missing-yield-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -40,10 +34,12 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
     def _retrieve_bigquery_projectids(self):
         """Retrieve a list of bigquery projectids.
 
-        Returns: A list of project ids.
+        Returns:
+            list: Project ids.
 
-        Raises: inventory_errors.LoadDataPipelineError when we encounter an
-        error in the underlying bigquery API.
+        Raises:
+            inventory_errors.LoadDataPipelineError when we encounter an
+                error in the underlying bigquery API.
         """
         try:
             return self.api_client.get_bigquery_projectids()
@@ -54,13 +50,19 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
         """Retrieve the bigquery dataset resources from GCP.
 
         Args:
-            project_id: A project id.
-            dataset_id: A dataset id.
+            project_id (str): A project id.
+            dataset_id (str): A dataset id.
 
-        Returns: See bigquery.get_dataset_access().
+        Returns:
+            list: Access lists for a given project_id and dataset_id.
+                [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
+                 {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+                 {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+                 {'role': 'READER', 'specialGroup': 'projectReaders'}]
 
-        Raises: inventory_errors.LoadDataPipelineError when we encounter an
-        error in the underlying bigquery API.
+        Raises:
+            inventory_errors.LoadDataPipelineError when we encounter an
+                error in the underlying bigquery API.
         """
         try:
             return self.api_client.get_dataset_access(project_id, dataset_id)
@@ -71,17 +73,18 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
         """Retrieve the bigquery datasets for all requested project ids.
 
         Args:
-            project_ids: A list of project ids.
+            project_ids (list): Project ids.
 
         Returns:
-            A list of objects like:
+            list: A list of objects like:
                 [[{'datasetId': 'test', 'projectId': 'bq-test'},
                  {'datasetId': 'test', 'projectId': 'bq-test'}],
                 [{'datasetId': 'test', 'projectId': 'bq-test'},
                  {'datasetId': 'test', 'projectId': 'bq-test'}]]
 
-        Raises: inventory_errors.LoadDataPipelineError when we encounter an
-            error in the underlying bigquery API.
+        Raises:
+            inventory_errors.LoadDataPipelineError when we encounter an
+                error in the underlying bigquery API.
         """
         dataset_project_map = []
         for project_id in project_ids:
@@ -99,15 +102,15 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
         """Iteriate through projects and their datasets to get ACLs.
 
         Args:
-            dataset_project_map: A list of projects and their datasets.
-            See the output of _retrieve_dataset_project_map().
+            dataset_project_map (list): A list of projects and their datasets.
+                See the output of _retrieve_dataset_project_map().
 
         Returns:
-            A list of tuples in the form of:
-            [(project_id,
-              dataset_id,
-              {dataset_access_object}),
-            ...]
+            list: A list of tuples in the form of:
+                [(project_id,
+                  dataset_id,
+                  {dataset_access_object}),
+                ...]
         """
         dataset_project_access_map = []
         for map_item in dataset_project_map:
@@ -128,11 +131,11 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable groups.
 
         Args:
-            A list of tuples in the form of:
+            resource_from_api (list): A list of tuples in the form of:
                 [(project_id, dataset_id, {dataset_access_object}),...]
 
         Yields:
-            An iterable of project_id, dataset_id, and access detail.
+            iterable: An iterable of project_id, dataset_id, and access detail.
         """
         for (project_id, dataset_id, access) in resource_from_api:
             for acl in access:
@@ -156,12 +159,10 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
     def _retrieve(self):
         """Retrieve dataset access lists.
 
-        Args:
-            A list of project ids.
-
         Returns:
-            A bigquery dataset access map. See _retrieve_dataset_access_map() or
-            None if there are no bigquery projects.
+            bigquery_dataset: A bigquery dataset access map.
+                See _retrieve_dataset_access_map() or
+                None if there are no bigquery projects.
         """
         project_ids = self._retrieve_bigquery_projectids()
 

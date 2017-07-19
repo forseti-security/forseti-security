@@ -18,22 +18,19 @@ from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access.sql_queries import load_data
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-return-type-doc
-
-
 FIELDNAME_MAP = csv_writer.CSV_FIELDNAME_MAP
+
 
 def provide_load_data_sql(resource_name, csv_filename, snapshot_table_name):
     """Provide the load data sql for projects.
 
     Args:
-        resource_name (str): String of the resource's name.
-        csv_filename (str): String of the csv filename; full path included.
-        snapshot_table_name (str): String of the snapshot table name.
+        resource_name (str): The resource name.
+        csv_filename (str): The csv filename; full path included.
+        snapshot_table_name (str): The snapshot table name.
 
     Returns:
-        String of the load data sql statement for projects.
+        str: The load data sql statement for projects.
     """
     fieldname = FIELDNAME_MAP[resource_name]
     return load_data.LOAD_DATA.format(
