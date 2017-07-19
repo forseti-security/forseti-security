@@ -41,6 +41,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
+from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
@@ -1272,6 +1273,7 @@ def define_model(model_name, dbengine, model_seed):
                         others.append(name)
                 return groups, others
 
+            selectables = []
             group_names, other_names = separate_groups(member_names)
 
             t_ging = GroupInGroup.__table__
@@ -1287,7 +1289,9 @@ def define_model(model_name, dbengine, model_seed):
             if not show_group_members:
                 transitive_membership = transitive_membership.where(
                     not_(t_members.c.members_name.startswith('group/')))
-            qry = session.query(transitive_membership)
+
+            selectables.append(
+                transitive_membership.alias('transitive_membership'))
 
             direct_membership = (
                 select([t_members.c.group_name, t_members.c.members_name])
@@ -1295,7 +1299,9 @@ def define_model(model_name, dbengine, model_seed):
             if not show_group_members:
                 direct_membership = direct_membership.where(
                     not_(t_members.c.members_name.startswith('group/')))
-            qry = qry.union(direct_membership)
+
+            selectables.append(
+                direct_membership.alias('direct_membership'))
 
             if show_group_members:
                 # Show groups as members of other groups
@@ -1303,11 +1309,15 @@ def define_model(model_name, dbengine, model_seed):
                     select([t_ging.c.parent, t_ging.c.member])
                     .where(t_ging.c.parent.in_(group_names))
                     )
-                qry = qry.union(group_in_groups)
+                selectables.append(
+                    group_in_groups.alias('group_in_groups'))
+
+            # Union all the queries
+            qry = union(*selectables)
 
             # Build the result dict
             result = collections.defaultdict(set)
-            for parent, child in qry.yield_per(PER_YIELD):
+            for parent, child in session.execute(qry):
                 result[parent].add(child)
             for parent in other_names:
                 result[parent] = set()
