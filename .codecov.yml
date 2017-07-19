@@ -11,4 +11,4 @@ coverage:
         enabled: yes
         threshold: 1%
 comment:
-  behavior: new
+  behavior: default
