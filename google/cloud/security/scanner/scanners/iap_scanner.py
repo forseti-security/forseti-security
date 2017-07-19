@@ -174,7 +174,7 @@ class _RunData(object):
                 bool: whether the entry is relevant to the source being
                       evaluated
             """
-            if firewall_entry.get('IPProtocol') not in (6, '6', 'tcp'):
+            if firewall_entry.get('IPProtocol') not in (None, 6, '6', 'tcp', 'all'):
                 return False
             if not firewall_entry.get('ports'):
                 return True
