@@ -33,8 +33,25 @@ configuration:
 
   1. Start the setup process:
   
+     _Default: runs master branch_
+     
       ```bash
       $ python setup_forseti.py
+      ```
+      
+      _Run a certain branch:_
+      
+      ```bash
+      $ python setup_forseti.py --branch develop
+      ```
+      
+      If you downloaded a certain release of Forseti, you can specify the release version.
+      Setup wizard is not available prior to v1.1.0.
+      
+      _e.g. Deploy v1.1.0:_
+      
+      ```bash
+      $ python setup_forseti.py --version v1.1.0
       ```
 
   1. Follow the prompts to download and install the
