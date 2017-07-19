@@ -123,8 +123,8 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
                                                 ('foo3_project', 333)])}}
             email_sender (str): The sender of the email.
             email_recipient (str): The recipient of the email.
-            email_description (str): A brief description of the type of
-                scan, to be included in the email subject.
+            email_description (str): Brief scan description to include in the
+                subject of the email, e.g. 'Policy Scan'.
         """
         # Render the email template with values.
         scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
@@ -169,8 +169,8 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
             violation_errors (iterable): Iterable of violation errors.
             email_sender (str): The sender of the email.
             email_recipient (str): The recipient of the email.
-            email_description (str): A brief description of the type of
-                scan, to be included in the email subject.
+            email_description (str): Brief scan description to include in the
+                subject of the email, e.g. 'Policy Scan'.
         """
         total_violations, resource_summaries = self._compose(
             all_violations, total_resources)
