@@ -26,7 +26,7 @@ service account just for this functionality:
     1.  Specify the `domain-wide client-id` you noted above.
     1.  Specify the scope
         ```
-        https://www.googleapis.com/auth/admin.directory.group.readonly`
+        https://www.googleapis.com/auth/admin.directory.group.readonly
         ```
 
 ## Enabling GSuite Google Groups collection
