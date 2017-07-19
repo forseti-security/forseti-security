@@ -18,25 +18,22 @@ def GenerateConfig(context):
     """Generate configuration."""
 
     USE_BRANCH = context.properties.get('branch-name')
+    FORSETI_HOME = '$USER_HOME/forseti-security'
 
     if USE_BRANCH:
         DOWNLOAD_FORSETI = """
 git clone {}.git --branch {} --single-branch forseti-security
-cd forseti-security
         """.format(
             context.properties['src-path'],
             context.properties['branch-name'])
-        FORSETI_HOME = '$USER_HOME/forseti-security'
     else:
         DOWNLOAD_FORSETI = """
 wget -qO- {}/archive/v{}.tar.gz | tar xvz
-cd forseti-security-{}
+mv forseti-security-{} forseti-security
         """.format(
             context.properties['src-path'],
             context.properties['release-version'],
             context.properties['release-version'])
-        FORSETI_HOME = '$USER_HOME/forseti-security-{}'.format(
-            context-properties['release-version'])
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
@@ -153,6 +150,7 @@ pip install grpcio grpcio-tools google-apputils
 
 # Download Forseti src; see DOWNLOAD_FORSETI.
 {}
+cd forseti-security
 
 # Build protos.
 {}

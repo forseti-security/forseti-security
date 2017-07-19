@@ -76,7 +76,7 @@ class ForsetiGcpSetup(object):
 
     SERVICE_ACCT_FMT = '{}@{}.iam.gserviceaccount.com'
 
-    DEFAULT_BUCKET_FORMAT = 'gs://{}-forseti'
+    DEFAULT_BUCKET_FORMAT = 'gs://{}'
     GCS_LS_ERROR_REGEX = re.compile(r'^(.*Exception): (\d{3})', re.MULTILINE)
     BUCKET_REGIONS = [
         {'desc': 'Asia Pacific', 'region': 'Multi-Region', 'value': 'asia'},
@@ -150,6 +150,13 @@ class ForsetiGcpSetup(object):
         self.cloudsql_region = None
         self.created_deployment = False
         self.deploy_tpl_path = None
+        self.forseti_conf_path = None
+
+        self.sendgrid_api_key = '""'
+        self.notification_sender_email = '""'
+        self.notification_recipient_email = '""'
+        self.gcp_gsuite_key_path = '""'
+        self.gsuite_super_admin_email = '""'
 
     def __repr__(self):
         """String representation of this instance.
@@ -176,7 +183,11 @@ class ForsetiGcpSetup(object):
         self.setup_bucket_name()
         self.setup_cloudsql_name()
         self.setup_cloudsql_user()
+
         self.generate_deployment_templates()
+        self.generate_forseti_conf()
+        self.create_deployment()
+
         if not self.created_deployment:
             self.create_data_storage()
         self.post_install_instructions()
@@ -744,6 +755,7 @@ class ForsetiGcpSetup(object):
         """Generate deployment templates."""
         self._print_banner('Generate Deployment Manager templates')
 
+        # Deployment template in file
         deploy_tpl_path = os.path.abspath(
             os.path.join(
                 self.ROOT_DIR_PATH,
@@ -754,12 +766,6 @@ class ForsetiGcpSetup(object):
                 self.ROOT_DIR_PATH,
                 'deployment-templates',
                 'deploy-forseti-{}.yaml'.format(os.getpid())))
-        rules_dir = os.path.abspath(
-            os.path.join(
-                self.ROOT_DIR_PATH, 'rules'))
-        forseti_conf = os.path.abspath(
-            os.path.join(
-                self.ROOT_DIR_PATH, 'configs', 'forseti_conf.yaml'))
 
         # Determine which branch or release of Forseti to deploy
         if self.version:
@@ -780,6 +786,7 @@ class ForsetiGcpSetup(object):
             'BRANCH_OR_RELEASE': branch_or_release,
         }
 
+        # Create Deployment template with values filled in.
         with open(deploy_tpl_path, 'r') as in_tmpl:
             tmpl_contents = in_tmpl.read()
             out_contents = tmpl_contents.format(**deploy_values)
@@ -790,21 +797,99 @@ class ForsetiGcpSetup(object):
         print('\nCreated a deployment template:\n    %s\n' %
               self.deploy_tpl_path)
 
+    def generate_forseti_conf(self):
+        """Generate Forseti conf file."""
+        # Create a forseti_conf_dm.yaml config file with values filled in.
+        # forseti_conf.yaml in file
+        forseti_conf_in = os.path.abspath(
+            os.path.join(
+                self.ROOT_DIR_PATH, 'configs', 'forseti_conf.yaml.in'))
+        forseti_conf_gen = os.path.abspath(
+            os.path.join(
+                self.ROOT_DIR_PATH, 'configs', 'forseti_conf_dm.yaml'))
+
+        # Ask for SendGrid API Key
+        sendgrid_api_key = raw_input(
+            'What is your SendGrid API key? (press [enter] to '
+            'leave blank) ').strip()
+        if sendgrid_api_key:
+            self.sendgrid_api_key = sendgrid_api_key
+
+        # Ask for notification sender email
+        notification_sender_email = raw_input(
+            'What is the sender email address for your notifications? '
+            '(press [enter] to leave blank) ').strip()
+        if notification_sender_email:
+            self.notification_sender_email = notification_sender_email
+
+        # Ask for notification recipient email
+        notification_recipient_email = raw_input(
+            'At what email address do you want to receive notifications? '
+            '(press [enter] to leave blank) ').strip()
+        if notification_recipient_email:
+            self.notification_recipient_email = notification_recipient_email
+
+        # Ask for GSuite super admin email
+        gsuite_super_admin_email = raw_input(
+            'What is your GSuite super admin\'s email? '
+            '(press [enter] to leave blank) ').strip()
+        if gsuite_super_admin_email:
+            self.gsuite_super_admin_email = gsuite_super_admin_email
+
+        if self.gsuite_svc_acct_key_location:
+            self.gcp_gsuite_key_path = (
+                '/home/ubuntu/{}'.format(
+                    os.path.basename(self.gsuite_svc_acct_key_location)))
+
+        conf_values = {
+            'GROUPS_SERVICE_ACCOUNT_KEY_FILE': self.gcp_gsuite_key_path,
+            'DOMAIN_SUPER_ADMIN_EMAIL': self.gsuite_super_admin_email,
+            'EMAIL_RECIPIENT': self.notification_recipient_email,
+            'EMAIL_SENDER': self.notification_sender_email,
+            'SENDGRID_API_KEY': self.sendgrid_api_key,
+            'SCANNER_BUCKET': self.rules_bucket_name[len('gs://'):],
+            'ENABLE_GROUP_SCANNER': bool(self.gsuite_service_account),
+        }
+
+        with open(forseti_conf_in, 'r') as in_tmpl:
+            tmpl_contents = in_tmpl.read()
+            out_contents = tmpl_contents.format(**conf_values)
+            with open(forseti_conf_gen, 'w') as out_tmpl:
+                out_tmpl.write(out_contents)
+                self.forseti_conf_path = forseti_conf_gen
+
+        print('\nCreated forseti_conf_dm.yaml config file:\n    %s\n' %
+              self.forseti_conf_path)
+
+    def create_deployment(self):
+        """Create the GCP deployment."""
         deploy_choice = raw_input('Create a GCP deployment? '
                                   '(y/N) ').strip().lower()
         if deploy_choice == 'y':
             self.created_deployment = True
+            deployment_name = 'forseti-security-{}'.format(os.getpid())
             _ = subprocess.call(
                 ['gcloud', 'deployment-manager', 'deployments', 'create',
-                 'forseti-security-{}'.format(os.getpid()),
+                 deployment_name,
                  '--config={}'.format(self.deploy_tpl_path)])
             time.sleep(2)
             _ = subprocess.call(
-                ['gsutil', 'cp', forseti_conf,
+                ['gsutil', 'cp', self.forseti_conf_path,
                  '{}/configs/forseti_conf.yaml'.format(self.rules_bucket_name)])
+            rules_dir = os.path.abspath(
+                os.path.join(
+                    self.ROOT_DIR_PATH, 'rules'))
             _ = subprocess.call(
                 ['gsutil', 'cp', '-r', rules_dir,
                  '{}'.format(self.rules_bucket_name)])
+            if self.gsuite_svc_acct_key_location:
+                time.sleep(2)
+                instance_name = '{}-vm'.format(deployment_name)
+                _ = subprocess.call(
+                    ['gcloud', 'compute', 'copy-files',
+                     self.gsuite_svc_acct_key_location,
+                     'ubuntu@{}:{}'.format(
+                         instance_name, self.gcp_gsuite_key_path)])
 
     def create_data_storage(self):
         """Create Cloud SQL instance and Cloud Storage bucket. (optional)"""
@@ -852,8 +937,8 @@ class ForsetiGcpSetup(object):
                 '  e) Click "Save".\n\n'
                 %
                 (self.project_id,
+                 self.project_id,
                  self.organization_id,
-                 self.gsuite_service_account,
                  self.gsuite_service_account))
 
             if not self.gsuite_svc_acct_key_location:
@@ -891,11 +976,11 @@ class ForsetiGcpSetup(object):
         else:
             print('Your generated Deployment Manager template can be '
                   'found here:\n\n    {}\n'.format(self.deploy_tpl_path))
-            print('Please fill out your forseti_conf.yaml and rules files '
-                  'if you have not already done so, then after creating your '
-                  'deployment, copy the files from the root directory of '
-                  'forseti-security, e.g.\n\n'
-                  '    gsutil cp configs/forseti_conf.yaml '
+            print('A forseti_conf_dm.yaml file has been generated. '
+                  'After creating your deployment, copy the following files '
+                  'from the root directory of forseti-security to '
+                  'your Forseti bucket:\n\n'
+                  '    gsutil cp configs/forseti_conf_dm.yaml '
                   '{}/configs/forseti_conf.yaml\n'
                   '    gsutil cp -r rules {}\n\n'.format(
                       self.rules_bucket_name,
