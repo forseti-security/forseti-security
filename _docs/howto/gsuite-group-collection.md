@@ -23,11 +23,12 @@ service account just for this functionality:
     the **super admin** role in admin.google.com to complete these steps:
     1.  Go to admin.google.com and access
         [advanced settings](https://admin.google.com/ManageOauthClients).
-    1.  Specify the `domain-wide client-id` you noted above.
-    1.  Specify the scope
+    1.  Specify the `domain-wide client-id` you noted above in the 'Client Name' field.
+    1.  Specify the following scope in the 'One or More API Scopes' field.
         ```
         https://www.googleapis.com/auth/admin.directory.group.readonly
         ```
+    1. Click Authorize
 
 ## Enabling GSuite Google Groups collection
 
