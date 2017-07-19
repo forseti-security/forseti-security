@@ -148,7 +148,7 @@ def process(message):
             payload.get('violation_errors'),
             payload.get('email_sender'),
             payload.get('email_recipient'),
-            paylout.get('email_description'))
+            payload.get('email_description'))
         return
 
 def main(_):
