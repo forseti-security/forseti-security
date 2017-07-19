@@ -22,36 +22,44 @@ configuration:
   1. To download the setup wizard, run:
   
       ```bash
-      $ git clone https://github.com/GoogleCloudPlatform/forseti-security
+      git clone https://github.com/GoogleCloudPlatform/forseti-security
+      ```
+      
+      If you want to deploy a particular release:
+      
+      ```
+      git checkout <release version>
       ```
 
   1. Navigate to the setup wizard directory:
   
       ```bash
-      $ cd forseti-security/scripts/gcp_setup
+      cd forseti-security/scripts/gcp_setup
       ```
 
   1. Start the setup process:
   
-     _Default: runs master branch_
-     
-      ```bash
-      $ python setup_forseti.py
-      ```
-      
-      _Run a certain branch:_
-      
-      ```bash
-      $ python setup_forseti.py --branch develop
-      ```
-      
-      If you downloaded a certain release of Forseti, you can specify the release version.
+      If you downloaded a certain release of Forseti, specify the release version
+      to the setup wizard.
+
       Setup wizard is not available prior to v1.1.0.
       
       _e.g. Deploy v1.1.0:_
       
       ```bash
-      $ python setup_forseti.py --version v1.1.0
+      python setup_forseti.py --version v1.1.0
+      ```
+  
+     _Default: runs master branch_
+     
+      ```bash
+      python setup_forseti.py
+      ```
+      
+      _Run a certain branch:_
+      
+      ```bash
+      python setup_forseti.py --branch develop
       ```
 
   1. Follow the prompts to download and install the
