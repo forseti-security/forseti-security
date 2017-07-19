@@ -145,7 +145,7 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
             content_id='Scanner Violations'
         )
         scanner_subject = '{} Complete - {} violation(s) found'.format(
-            total_violations, email_description)
+            email_description, total_violations)
         self.email_util.send(
             email_sender=email_sender,
             email_recipient=email_recipient,
