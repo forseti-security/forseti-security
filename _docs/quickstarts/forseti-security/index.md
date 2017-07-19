@@ -42,12 +42,12 @@ configuration:
       If you downloaded a certain release of Forseti, specify the release version
       to the setup wizard.
 
-      Setup wizard is not available prior to v1.1.0.
+      Setup wizard is not available prior to 1.1.0.
       
-      _e.g. Deploy v1.1.0:_
+      _e.g. Deploy 1.1.0:_
       
       ```bash
-      python setup_forseti.py --version v1.1.0
+      python setup_forseti.py --version 1.1.0
       ```
   
      _Default: runs master branch_
