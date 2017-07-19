@@ -1,6 +1,6 @@
 ---
 title: Enabling GSuite Google Groups Collection
-order: 5
+order: 6
 ---
 #  {{ page.title }}
 
