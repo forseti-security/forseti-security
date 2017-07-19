@@ -11,16 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Util for generic operations for Resources."""
 
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization as org
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
 
 
 _RESOURCE_TYPE_MAP = {
@@ -42,12 +39,13 @@ def create_resource(resource_id, resource_type, **kwargs):
     """Factory to create a certain kind of Resource.
 
     Args:
-        resource_id: The resource id.
-        resource_type: The resource type.
-        kwargs: Extra args.
+        resource_id (str): The resource id.
+        resource_type (str): The resource type.
+        **kwargs (dict): Extra args.
 
     Returns:
-        The new Resource based on the type, if supported, otherwise None.
+        Resource: The new Resource based on the type, if supported,
+            otherwise None.
     """
     if resource_type not in _RESOURCE_TYPE_MAP:
         return None
@@ -59,10 +57,10 @@ def pluralize(resource_type):
     """Determine the pluralized form of the resource type.
 
     Args:
-        resource_type: The resource type for which to get its plural form.
+        resource_type (str): The resource type for which to get its plural form.
 
     Returns:
-        The string pluralized version of the resource type, if supported,
+        str: The pluralized version of the resource type, if supported,
         otherwise None.
     """
     if resource_type not in _RESOURCE_TYPE_MAP:
@@ -74,11 +72,11 @@ def type_from_name(resource_name):
     """Determine resource type from resource name.
 
     Args:
-        resource_name: The unique resoure name, in the form of
-            <resource_type>/<resource_id>.
+        resource_name (str): The unique resoure name, with the format
+            "{resource_type}/{resource_id}".
 
     Returns:
-        The resource type, if it exists, otherwise None.
+        str: The resource type, if it exists, otherwise None.
     """
     if not resource_name:
         return None

@@ -19,8 +19,9 @@ import copy
 import json
 import httplib2
 import mock
+import unittest
 
-import testing_constants as constants
+from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.security.enforcer import enforcer_log_pb2

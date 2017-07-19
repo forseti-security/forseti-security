@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Scanner runner script test."""
 
 from datetime import datetime
 import mock
+import unittest
 
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization
@@ -84,7 +84,7 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         mock_dao.FolderDao({}).get_folder_iam_policies.return_value = (
             fake_folder_policies)
-        policies = self.scanner._get_folder_iam_policies() 
+        policies = self.scanner._get_folder_iam_policies()
         self.assertEqual(fake_folder_policies, policies)
 
     @mock.patch(
@@ -146,7 +146,7 @@ class IamRulesScannerTest(ForsetiTestCase):
             self.fake_scanner_configs.get('output_path'))
         mock_datetime.utcnow = mock.MagicMock()
         mock_datetime.utcnow.return_value = self.fake_utcnow
-        
+
         fake_csv_name = 'fake.csv'
         fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
         fake_csv_file.name = fake_csv_name
@@ -194,7 +194,7 @@ class IamRulesScannerTest(ForsetiTestCase):
             self.fake_scanner_configs.get('output_path'))
         mock_datetime.utcnow = mock.MagicMock()
         mock_datetime.utcnow.return_value = self.fake_utcnow
-        
+
         fake_csv_name = 'fake.csv'
         fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
         fake_csv_file.name = fake_csv_name
@@ -204,7 +204,7 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.scanner.global_configs = fake_global_configs
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._output_results(None, '88888')
-        
+
         self.assertEquals(1, mock_flatten_violations.call_count)
         self.assertEquals(1, mock_output_results_to_db.call_count)
         self.assertEquals(1, mock_write_csv.call_count)

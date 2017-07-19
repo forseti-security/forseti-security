@@ -20,11 +20,6 @@ from google.cloud.security.common.gcp_api import _base_client
 from googleapiclient.errors import HttpError
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-
-
 class AppEngineClient(_base_client.BaseClient):
     """AppEngine Client.
 
@@ -43,6 +38,8 @@ class AppEngineClient(_base_client.BaseClient):
 
         Args:
             global_configs (dict): Global configurations.
+            credentials (GoogleCredentials): Google credentials.
+            version (str): The version.
         """
         super(AppEngineClient, self).__init__(
             global_configs,
@@ -58,7 +55,10 @@ class AppEngineClient(_base_client.BaseClient):
         """Gets information about an application.
 
         Args:
-            project_id: The id of the project.
+            project_id (str): The id of the project.
+
+        Returns:
+            dict: The response of retrieving the AppEngine app.
         """
         apps = self.service.apps()
         app = None

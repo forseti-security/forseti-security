@@ -22,7 +22,6 @@ from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.audit import cloudsql_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
-# pylint: disable=arguments-differ
 
 LOGGER = log_util.get_logger(__name__)
 

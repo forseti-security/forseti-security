@@ -21,10 +21,6 @@ from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -35,13 +31,13 @@ class InstanceTemplateDao(dao.Dao):
         """Get instance templates from a particular snapshot.
 
         Args:
-            timestamp: The snapshot timestamp.
+            timestamp (str): The snapshot timestamp.
 
         Returns:
-            A list of InstanceTemplate.
+            list: A list of InstanceTemplate.
 
         Raises:
-            MySQLError if a MySQL error occurs.
+            MySQLError: If a MySQL error occurs.
         """
         query = select_data.INSTANCE_TEMPLATES.format(timestamp)
         rows = self.execute_sql_with_fetch(

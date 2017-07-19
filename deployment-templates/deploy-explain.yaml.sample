@@ -1,0 +1,41 @@
+# Copyright 2017 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# The toplevel deployment script for Forseti Security.
+# Be sure to edit this file and its templates to suit your environment.
+
+imports:
+- path: compute-engine/explain-instance.py
+  name: explain-instance.py
+
+resources:
+
+# Explain
+- name: explain-instance
+  type: explain-instance.py
+  properties:
+    # Must be in the form instance-name:region:database-name
+    # Full name can be found in the cloud console
+    instance-type: n1-standard-2
+    zone: us-central1-c
+    sql-instance: CLOUDSQL_DATABASE_INSTANCE
+    database-name-explain: EXPLAIN_DATABASE_NAME
+    database-name-forseti: FORSETI_DATABASE_NAME
+    service-account: YOUR_SERVICE_ACCOUNT
+    # Use the "branch-name" property to deploy a specify a branch of Forseti
+    # on GCP.
+    # Use either branch-name or release-version.
+    branch-name: "explain-pre-release"
+    #release-version: "1.0.2"
+    src-path: https://github.com/GoogleCloudPlatform/forseti-security

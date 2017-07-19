@@ -18,6 +18,7 @@ from datetime import datetime
 
 import mock
 import MySQLdb
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import dao

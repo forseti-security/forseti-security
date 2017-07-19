@@ -54,7 +54,6 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         self.rule_book = BucketsRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    # pylint: disable=arguments-differ
     def find_policy_violations(self, buckets_acls,
                                force_rebuild=False):
         """Determine whether bucket acls violates rules.
@@ -226,7 +225,7 @@ class Rule(object):
 
         if should_raise_violation:
             yield self.RuleViolation(
-                resource_type='project',
+                resource_type='bucket',
                 resource_id=bucket_acl.project_number,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,

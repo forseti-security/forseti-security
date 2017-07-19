@@ -17,19 +17,20 @@
 import importlib
 import inspect
 import pkgutil
+import unittest
 
-from google.apputils import basetest
+from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.security.inventory import pipeline_requirements_map
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-class PipelineRequirementsMapTest(basetest.TestCase):
+class PipelineRequirementsMapTest(ForsetiTestCase):
     """Tests for the pipeline requirements map test."""
 
     def _get_all_pipeline_module_names(self):
         """Get all the name of the modules that are pipelines.
-        
+
         Returns: List of valid pipeline module names.
         """
         pipeline_path = 'google/cloud/security/inventory/pipelines'
@@ -41,7 +42,7 @@ class PipelineRequirementsMapTest(basetest.TestCase):
                         module_name))
                 for filename in dir(module):
                     obj = getattr(module, filename)
-        
+
                     if (inspect.isclass(obj) and
                         issubclass(obj, base_pipeline.BasePipeline) and
                         obj is not base_pipeline.BasePipeline):
@@ -53,7 +54,7 @@ class PipelineRequirementsMapTest(basetest.TestCase):
 
     def _get_all_mapped_module_names(self):
         """Get all the name of the pipeline modules that have been mapped.
-        
+
         Returns: List of mapped pipeline module names.
         """
         mapped_module_names = []
@@ -65,5 +66,9 @@ class PipelineRequirementsMapTest(basetest.TestCase):
     def testInventoryPipelinesAndRequirementsMapAreInSync(self):
         mapped_module_names = self._get_all_mapped_module_names()
         pipeline_module_names = self._get_all_pipeline_module_names()
-        
+
         self.assertItemsEqual(mapped_module_names, pipeline_module_names)
+
+
+if __name__ == '__main__':
+      unittest.main()

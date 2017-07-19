@@ -27,7 +27,20 @@ from google.cloud.security.iam.explain.importer import roles as roledef
 
 class ResourceCache(dict):
     """Resource cache."""
-    pass
+    def __setitem__(self, key, value):
+        """Overriding to assert the keys does not exist previously.
+
+            Args:
+                key (object): Key into the dict.
+                value (object): Value to set.
+
+            Raises:
+                Exception: If the key already exists in the dict.
+        """
+
+        if key in self:
+            raise Exception('Key should not exist: {}'.format(key))
+        super(ResourceCache, self).__setitem__(key, value)
 
 
 class MemberCache(dict):
@@ -142,6 +155,7 @@ class EmptyImporter(object):
     def run(self):
         """Runs the import."""
 
+        self.model.set_done(self.session)
         self.session.commit()
 
 
@@ -311,6 +325,8 @@ class ForsetiImporter(object):
                 display_name=forseti_project.project_name,
                 parent=obj))
         self.resource_cache[project.type_name] = (project, full_project_name)
+        self.resource_cache[forseti_project.project_id] = (
+            project, full_project_name)
         return project
 
     def _convert_bucket(self, forseti_bucket):
@@ -335,6 +351,124 @@ class ForsetiImporter(object):
                 type='bucket',
                 parent=parent))
         return bucket
+
+    def _convert_instance(self, forseti_instance):
+        """Creates a db object from a Forseti gce instance.
+
+        Args:
+            forseti_instance (object): Forseti DB object for a gce instance.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+
+        instance_name = 'instance/{}#{}'.format(
+            forseti_instance.project_id,
+            forseti_instance.name)
+        parent, full_parent_name = self.resource_cache[
+            forseti_instance.project_id]
+
+        full_instance_name = '{}/{}'.format(full_parent_name, instance_name)
+        instance = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_instance_name,
+                type_name=instance_name,
+                name=forseti_instance.name,
+                type='instance',
+                parent=parent))
+        return instance
+
+    def _convert_instance_group(self, forseti_instance_group):
+        """Creates a db object from a Forseti GCE instance group.
+
+        Args:
+            forseti_instance_group (object): Forseti DB object for a gce
+            instance.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+
+        instance_group_name = '{}#{}'.format(
+            forseti_instance_group.project_id,
+            forseti_instance_group.name)
+        instance_group_type_name = 'instancegroup/{}'.format(
+            instance_group_name)
+        parent, full_parent_name = self.resource_cache[
+            forseti_instance_group.project_id]
+
+        full_instance_name = '{}/{}'.format(
+            full_parent_name, instance_group_type_name)
+
+        instance = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_instance_name,
+                type_name=instance_group_type_name,
+                name=instance_group_name,
+                type='instancegroup',
+                parent=parent))
+        return instance
+
+    def _convert_bigquery_dataset(self, forseti_bigquery_dataset):
+        """Creates a db object from a Forseti Bigquery dataset.
+
+        Args:
+            forseti_bigquery_dataset (object): Forseti DB object for a gce
+            instance.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+        bigquery_dataset_name = '{}#{}'.format(
+            forseti_bigquery_dataset.project_id,
+            forseti_bigquery_dataset.dataset_id)
+        bigquery_dataset_type_name = 'bigquerydataset/{}'.format(
+            bigquery_dataset_name)
+        parent, full_parent_name = self.resource_cache[
+            forseti_bigquery_dataset.project_id]
+
+        full_instance_name = '{}/{}'.format(
+            full_parent_name, bigquery_dataset_type_name)
+
+        instance = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_instance_name,
+                type_name=bigquery_dataset_type_name,
+                name=bigquery_dataset_name,
+                type='bigquerydataset',
+                parent=parent))
+        return instance
+
+    def _convert_backend_service(self, forseti_backend_service):
+        """Creates a db object from a Forseti backend service.
+
+        Args:
+            forseti_backend_service (object): Forseti DB object for a gce
+            backend service.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+
+        backend_service_name = '{}#{}'.format(
+            forseti_backend_service.project_id,
+            forseti_backend_service.name)
+        backend_service_type_name = 'backendservice/{}'.format(
+            backend_service_name)
+        parent, full_parent_name = self.resource_cache[
+            forseti_backend_service.project_id]
+
+        full_instance_name = '{}/{}'.format(
+            full_parent_name, forseti_backend_service)
+
+        instance = self.session.merge(
+            self.dao.TBL_RESOURCE(
+                full_name=full_instance_name,
+                type_name=backend_service_type_name,
+                name=backend_service_name,
+                type='backendservice',
+                parent=parent))
+        return instance
 
     def _convert_cloudsqlinstance(self, forseti_cloudsqlinstance):
         """Creates a db sql instance from a Forseti sql instance.
@@ -362,6 +496,55 @@ class ForsetiImporter(object):
                 parent=parent))
         return sqlinst
 
+    def _convert_binding(self, res_type, res_id, binding):
+        """Converts a policy binding into the respective db model.
+
+        Args:
+            res_type (str): Type of the bound resource
+            res_id (str): Id of the bound resource
+            binding (dict): role:members dictionary
+        """
+        members = []
+        for member in binding.iter_members():
+            members.append(self.session.merge(
+                self.dao.TBL_MEMBER(
+                    name='{}/{}'.format(member.get_type(),
+                                        member.get_name()),
+                    member_name=member.get_name(),
+                    type=member.get_type())))
+
+        try:
+            role = (
+                self.session.query(self.dao.TBL_ROLE)
+                .filter(self.dao.TBL_ROLE.name == binding.get_role())
+                .one())
+        except Exception:  # pylint: disable=broad-except
+            try:
+                permission_names = self._get_permissions_for_role(
+                    binding.get_role())
+            except KeyError as err:
+                self.model.add_warning(self.session, str(err))
+                permission_names = []
+
+            permissions = (
+                [self.session.merge(self.dao.TBL_PERMISSION(name=p))
+                 for p in permission_names])
+            role = self.dao.TBL_ROLE(name=binding.get_role(),
+                                     permissions=permissions)
+            for permission in permissions:
+                self.session.add(permission)
+            self.session.add(role)
+
+        res_type_name = '{}/{}'.format(res_type, res_id)
+        resource = (
+            self.session.query(self.dao.TBL_RESOURCE)
+            .filter(self.dao.TBL_RESOURCE.type_name == res_type_name)
+            .one())
+        self.session.add(
+            self.dao.TBL_BINDING(resource=resource,
+                                 role=role,
+                                 members=members))
+
     def _convert_policy(self, forseti_policy):
         """Creates a db object from a Forseti policy.
 
@@ -372,38 +555,7 @@ class ForsetiImporter(object):
         res_type, res_id = forseti_policy.get_resource_reference()
         policy = Policy(forseti_policy)
         for binding in policy.iter_bindings():
-            members = []
-            for member in binding.iter_members():
-                members.append(self.session.merge(
-                    self.dao.TBL_MEMBER(
-                        name='{}/{}'.format(member.get_type(),
-                                            member.get_name()),
-                        member_name=member.get_name(),
-                        type=member.get_type())))
-
-            try:
-                role = self.session.query(self.dao.TBL_ROLE).filter(
-                    self.dao.TBL_ROLE.name == binding.get_role()).one()
-            except Exception:  # pylint: disable=broad-except
-                permissions = (
-                    [self.session.merge(self.dao.TBL_PERMISSION(name=p))
-                     for p in self._get_permissions_for_role(
-                         binding.get_role())])
-                role = self.dao.TBL_ROLE(name=binding.get_role(),
-                                         permissions=permissions)
-                for permission in permissions:
-                    self.session.add(permission)
-                self.session.add(role)
-
-            res_type_name = '{}/{}'.format(res_type, res_id)
-            resource = (
-                self.session.query(self.dao.TBL_RESOURCE)
-                .filter(self.dao.TBL_RESOURCE.type_name == res_type_name)
-                .one())
-            self.session.add(
-                self.dao.TBL_BINDING(resource=resource,
-                                     role=role,
-                                     members=members))
+            self._convert_binding(res_type, res_id, binding)
 
     def _convert_membership(self, forseti_membership):
         """Creates a db membership from a Forseti membership.
@@ -446,15 +598,23 @@ class ForsetiImporter(object):
                                 type='group',
                                 member_name=forseti_group))
 
-    def _get_permissions_for_role(self, rolename):
+    def _get_permissions_for_role(self, role_type_name):
         """Returns permissions defined for that role name.
         Args:
-            rolename (str): role name to get permissiosn for.
+            role_type_name (str): role name in format roles/name to get
+                                  the respective permissions for.
         Returns:
             set: Set of permissions containing the role.
+
+        Raises:
+            KeyError: If the role could not be found.
         """
 
-        return self.curated_roles[rolename]
+        role_name = role_type_name.split('/', 1)[-1]
+        if role_name not in self.curated_roles:
+            warning = 'Permissions for role not found: {}'.format(role_name)
+            raise KeyError(warning)
+        return self.curated_roles[role_name]
 
     def run(self):
         """Runs the import.
@@ -477,6 +637,10 @@ class ForsetiImporter(object):
                 'cloudsqlinstances': self._convert_cloudsqlinstance,
                 'group': self._convert_group,
                 'membership': self._convert_membership,
+                'instances': self._convert_instance,
+                'instancegroups': self._convert_instance_group,
+                'bigquerydatasets': self._convert_bigquery_dataset,
+                'backendservices': self._convert_backend_service,
                 }
 
             item_counter = 0

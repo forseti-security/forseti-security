@@ -30,6 +30,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'cloudsql_rules_scanner',
          'class_name': 'CloudSqlAclScanner',
          'rules_filename': 'cloudsql_rules.yaml'},
+    'forwarding_rule':
+        {'module_name': 'forwarding_rule_scanner',
+         'class_name': 'ForwardingRuleScanner',
+         'rules_filename': 'forwarding_rules.yaml'},
     'group':
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
@@ -42,4 +46,8 @@ REQUIREMENTS_MAP = {
         {'module_name': 'instance_network_interface_scanner',
          'class_name': 'InstanceNetworkInterfaceScanner',
          'rules_filename': 'instance_network_interface_rules.yaml'},
+    'iap':
+        {'module_name': 'iap_scanner',
+         'class_name': 'IapScanner',
+         'rules_filename': 'iap_rules.yaml'},
 }

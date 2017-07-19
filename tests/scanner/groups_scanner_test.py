@@ -18,6 +18,7 @@ import pickle
 import mock
 
 import anytree
+import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
@@ -77,7 +78,7 @@ class GroupsScannerTest(ForsetiTestCase):
         root = scanner._build_group_tree('')
 
         self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
-                          self._render_ascii(root, 'member_email'))        
+                          self._render_ascii(root, 'member_email'))
 
     @mock.patch('google.cloud.security.scanner.scanners.groups_scanner.group_dao.GroupDao', spec=True)
     def test_apply_rule(self, mock_dao):
@@ -90,7 +91,7 @@ class GroupsScannerTest(ForsetiTestCase):
         root_with_rules = scanner._apply_all_rules(root, rules)
 
         self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
-                          self._render_ascii(root_with_rules, 'member_email'))        
+                          self._render_ascii(root_with_rules, 'member_email'))
         self.assertEquals(fake_data.EXPECTED_RULES_IN_TREE,
                           self._render_ascii(root_with_rules, 'rules'))
 
@@ -99,7 +100,7 @@ class GroupsScannerTest(ForsetiTestCase):
         root = self._pickle_load('expected_root_with_rules.pickle')
         scanner = groups_scanner.GroupsScanner({}, {}, '', '')
         all_violations = scanner._find_violations(root)
-        
+
         self.assertEquals(3, len(all_violations))
         for violation in all_violations:
             self.assertEquals('christy@gmail.com', violation.member_email)

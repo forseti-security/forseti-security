@@ -63,10 +63,13 @@ class Snapshot(BASE):
         return """<Snapshot(id='{}', version='{}', timestamp='{}')>""".format(
             self.id, self.schema_version, self.cycle_timestamp)
 
-def create_table_names(timestamp):
+
+def create_table_names(timestamp, schema_version):
     """Forseti tables are namespaced via snapshot timestamp.
        This function generates the appropriate classes to
        abstract the access to a single snapshot."""
+
+    schema_number = float(schema_version)
 
     if timestamp in TABLE_CACHE:
         return TABLE_CACHE[timestamp]
@@ -254,6 +257,33 @@ def create_table_names(timestamp):
                 self.name,
                 self.display_name)
 
+    if schema_number >= 2.0:
+        class FolderPolicy(BASE):
+            """Represents a GCP folder policy row under the organization."""
+
+            __tablename__ = 'raw_folder_iam_policies_%s' % timestamp
+
+            id = Column(BigInteger(), primary_key=True)
+            folder_id = Column(BigInteger())
+            iam_policy = Column(Text)
+
+            def __repr__(self):
+                """String representation."""
+
+                return """<Policy(id='{}', type='{}', name='{}'>""".format(
+                    self.id, 'folder', self.folder_id)
+
+            def get_resource_reference(self):
+                """Return a reference to the resource in the form (type, id).
+                """
+
+                return 'folder', self.folder_id
+
+            def get_policy(self):
+                """Return the corresponding IAM policy."""
+
+                return self.iam_policy
+
     class CloudSqlInstances(BASE):
         """Represents a Cloud SQL instance."""
 
@@ -271,12 +301,93 @@ def create_table_names(timestamp):
                 self.id,
                 self.name)
 
+    class Instances(BASE):
+        """Represents a Cloud GCE instance."""
+
+        __tablename__ = 'instances_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_id = Column(String(255))
+        name = Column(String(255))
+        service_accounts = Column(Text())
+        raw_instance = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Instance(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.name)
+
+    class InstanceGroups(BASE):
+        """Represents a Cloud GCE instance group."""
+
+        __tablename__ = 'instance_groups_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_id = Column(String(255))
+        name = Column(String(255))
+        raw_instance_group = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Instance Group(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.name)
+
+    class BigqueryDatasets(BASE):
+        """Represents a Cloud Bigquery dataset."""
+
+        __tablename__ = 'bigquery_datasets_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_id = Column(String(255))
+        dataset_id = Column(String(255))
+        raw_access_map = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Bigquery Dataset(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.dataset_id)
+
+    class BackendServices(BASE):
+        """Represents a Cloud Backend Service."""
+
+        __tablename__ = 'backend_services_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_id = Column(String(255))
+        name = Column(String(255))
+        raw_backend_service = Column(Text())
+
+        def __repr__(self):
+            """String representation."""
+
+            fmt_s = "<Bigquery Dataset(id='{}', name='{}'>"
+            return fmt_s.format(
+                self.id,
+                self.name)
+
+    supported_policies = [OrganizationPolicy, ProjectPolicy]
+    if schema_number >= 2.0:
+        supported_policies.append(FolderPolicy)
+
     result = (Organization,
               Folders,
               [('projects', Project),
                ('buckets', Bucket),
-               ('cloudsqlinstances', CloudSqlInstances)],
-              [OrganizationPolicy, ProjectPolicy],
+               ('cloudsqlinstances', CloudSqlInstances),
+               ('instances', Instances),
+               ('instancegroups', InstanceGroups),
+               ('bigquerydatasets', BigqueryDatasets),
+               ('backendservices', BackendServices)],
+              supported_policies,
               [GroupMembers, Groups])
     TABLE_CACHE[timestamp] = result
     return result
@@ -285,30 +396,60 @@ def create_table_names(timestamp):
 class Importer(object):
     """Forseti data importer to iterate the inventory and policies."""
 
+    SUPPORTED_SCHEMAS = ['1.0', '2.0']
+
     def __init__(self, db_connect_string):
         engine = create_engine(db_connect_string, pool_recycle=3600)
         BASE.metadata.create_all(engine)
         session = sessionmaker(bind=engine)
         self.session = session()
-        self._get_latest_snapshot()
+        self.engine = engine
+
+    def _table_exists_or_raise(self, table, context_msg=None):
+        """Raises exception if table does not exists.
+            Args:
+                table (object): Table to check for existence
+                context_msg (str): Additional information
+            Raises:
+                Exception: Indicate that the table does not exist
+        """
+
+        table_name = table.__tablename__
+        if not self.engine.has_table(table_name):
+            msg = 'Table not found: {}'.format(table_name)
+            if context_msg:
+                msg = '{}, hint: {}'.format(msg, context_msg)
+            raise Exception(msg)
 
     def _get_latest_snapshot(self):
-        """Find the latest snapshot from the database."""
+        """Find the latest snapshot from the database.
+            Returns:
+                object: Forseti snapshot description table.
+        """
 
-        self.snapshot = self.session.query(Snapshot).\
-            filter(Snapshot.status == SnapshotState.SUCCESS).\
-            order_by(Snapshot.start_time.desc()).first()
+        return (
+            self.session.query(Snapshot)
+            .filter(Snapshot.status == SnapshotState.SUCCESS)
+            .filter(Snapshot.schema_version.in_(self.SUPPORTED_SCHEMAS))
+            .order_by(Snapshot.start_time.desc())
+            .first())
 
     def __iter__(self):
         """Main interface to get the data, returns assets and then policies."""
 
-        organization, folders, tables, policies, group_membership = \
-            create_table_names(self.snapshot.cycle_timestamp)
+        snapshot = self._get_latest_snapshot()
 
+        organization, folders, tables, policies, group_membership = \
+            create_table_names(snapshot.cycle_timestamp,
+                               snapshot.schema_version)
+
+        # Organizations
+        self._table_exists_or_raise(organization)
         forseti_org = self.session.query(organization).one()
         yield "organizations", forseti_org
 
         # Folders
+        self._table_exists_or_raise(folders)
         folder_set = (
             self.session.query(folders)
             .filter(folders.parent_type == 'organization')
@@ -330,7 +471,11 @@ class Importer(object):
             for item in self.session.query(table).yield_per(PER_YIELD):
                 yield res_type, item
 
+        # Groups and membership
         membership, groups = group_membership
+        hint = 'Did you enable Forseti group collection?'
+        self._table_exists_or_raise(membership, hint)
+        self._table_exists_or_raise(groups, hint)
         query_groups = (
             self.session.query(groups)
             .with_entities(literal_column("'GROUP'"), groups.group_email))
@@ -357,5 +502,6 @@ class Importer(object):
             member_groups.append(group)
 
         for policy_table in policies:
+            self._table_exists_or_raise(policy_table)
             for policy in self.session.query(policy_table).all():
                 yield 'policy', policy

@@ -53,7 +53,6 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         self.rule_book = BigqueryRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    # pylint: disable=arguments-differ
     def find_policy_violations(self, bq_datasets,
                                force_rebuild=False):
         """Determine whether Big Query datasets violate rules.
@@ -248,7 +247,7 @@ class Rule(object):
 
         if should_raise_violation:
             yield self.RuleViolation(
-                resource_type='project',
+                resource_type='bigquery_dataset',
                 resource_id=bigquery_acl.project_id,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,

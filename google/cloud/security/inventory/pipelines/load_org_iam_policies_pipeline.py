@@ -24,10 +24,6 @@ from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-yield-type-doc,missing-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -41,14 +37,14 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable iam policies.
 
         Args:
-            resource_from_api: An iterable of iam policies as per-org
+            resource_from_api (iterable): IAM policies as per-org
                 dictionary.
                 Example: [{'org_id': '11111',
                           'iam_policy': policy}]
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
 
         Yields:
-            An iterable of loadable iam policies, as a per-org dictionary.
+            iterable: Loadable iam policies, as a per-org dictionary.
         """
         for org_policy_map in resource_from_api:
             iam_policy = org_policy_map['iam_policy']
@@ -71,7 +67,7 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
         """Retrieve the org IAM policies from GCP.
 
         Returns:
-            iam_policies: List of IAM policies as per-org dictionary.
+            list: IAM policies as per-org dictionary.
                 Example: [{'org_id': org_id,
                            'iam_policy': iam_policy}]
                 https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy

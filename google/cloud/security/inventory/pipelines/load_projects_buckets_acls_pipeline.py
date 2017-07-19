@@ -25,10 +25,6 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 # pylint: enable=line-too-long
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-yield-type-doc,missing-type-doc
-
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -42,13 +38,13 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable bucket acls.
 
         Args:
-            resource_from_api: An iterable of bucket acls as per-bucket
+            resource_from_api (iterable): Bucket acls as per-bucket
                 dictionary.
                 Example: {'bucket_name': 'example_bucket_name.appspot.com',
                           'acl': bucket_acls_json}
 
         Yields:
-            An iterable of bucket acls, as a per-bucket dictionary.
+            iterable: bucket acls, as a per-bucket dictionary.
         """
         for buckets_acls_map in resource_from_api:
             acls = buckets_acls_map['acl']
@@ -74,11 +70,8 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
     def _retrieve(self):
         """Retrieve the project buckets acls from GCP.
 
-        Args:
-            None
-
         Returns:
-            buckets_acl_maps: List of bucket acls as per-bucket dictionary.
+            list: Bucket acls as per-bucket dictionary.
                 Example: [{bucket_name: 'bucket name',
                           acl: bucket_acls_json}]
 

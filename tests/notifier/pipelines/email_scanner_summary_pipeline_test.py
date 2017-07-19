@@ -14,6 +14,7 @@
 """Tests the email scanner summary pipeline."""
 
 import mock
+import unittest
 
 from google.cloud.security.common.gcp_type import iam_policy
 from google.cloud.security.common.gcp_type import resource
@@ -25,7 +26,7 @@ from tests.unittest_utils import ForsetiTestCase
 
 class EmailScannerSummaryPipelineTest(ForsetiTestCase):
     """Tests for the email_scanner_summary_pipeline."""
-    
+
     @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
             autospec=True)
     def test_can_compose_scanner_summary(self, mock_rules_engine):
@@ -88,3 +89,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
         expected = (expected_totals, expected_summaries)
 
         self.assertEqual(expected, actual)
+
+
+if __name__ == '__main__':
+    unittest.main()
