@@ -12,6 +12,8 @@ quickly with Forseti Security for Google Cloud Platform (GCP) projects.
 To complete this quickstart, you will need:
 
   - A GCP organization for which you want to deploy Forseti.
+  - Org Admin IAM role in order for the script to assign the Forseti 
+  service account roles on the _organization_.
 
 ## Setting up Forseti Security
 
