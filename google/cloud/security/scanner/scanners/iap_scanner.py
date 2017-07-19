@@ -350,6 +350,8 @@ class _RunData(object):
 class IapScanner(base_scanner.BaseScanner):
     """Pipeline to IAP-related data from DAO"""
 
+    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iap.{}.csv'
+
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
         """Initialization.
