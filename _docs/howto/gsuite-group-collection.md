@@ -32,7 +32,7 @@ service account just for this functionality:
 ## Enabling GSuite Google Groups collection
 
 After you create a service account above, edit the following variables in your
-version of `deploy-forseti.yaml`:
+version of `forseti_conf.yaml`:
 
 -   `groups-domain-super-admin-email`: Use of the Admin API requires delegation
     (impersonation). Enter an email address of a Super Admin in the GSuite
@@ -52,17 +52,13 @@ domain-wide-delegation key created for the groups-only service account.
 
 After you
 [create a deployment]({% link _docs/quickstarts/forseti-security/index.md %}), run the
-following commands to complete deployment of GSuite Google Groups collection.
+following command to copy your GSuite key to your Forseti instance.
 
   ```bash
-  $ gcloud compute copy-files PATH_TO_DOWNLOAD_KEY \
-      YOUR_USER@YOUR_INSTANCE_NAME:/tmp/service-account-key.json
-
-  $ gcloud compute ssh YOUR_USER@YOUR_INSTANCE_NAME
-
-  $ YOUR_INSTANCE_NAME>: sudo mv /tmp/service-account-key.json THE_PATH_YOU_SPECIFIED_IN_DEPLOY_FORSETI.yaml
+  $ gcloud compute copy-files path/to/service-account-key.json \
+      ubuntu@YOUR_INSTANCE_NAME:/home/ubuntu/service-account-key.json
   ```
 
 Note the remote destination of where you put the key on the VM instance. It
-should match what you specified in your deploy-forseti.yaml for the
+should match what you specified in your forseti_conf.yaml for the
 `groups-service-account-key-file` property.
