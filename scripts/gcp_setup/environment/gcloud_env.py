@@ -148,7 +148,7 @@ class ForsetiGcpSetup(object):
         self.cloudsql_instance = None
         self.cloudsql_user = None
         self.cloudsql_region = None
-        self.created_deployment = False
+        self.deployment_name = False
         self.deploy_tpl_path = None
         self.forseti_conf_path = None
 
@@ -188,7 +188,7 @@ class ForsetiGcpSetup(object):
         self.generate_forseti_conf()
         self.create_deployment()
 
-        if not self.created_deployment:
+        if not self.deployment_name:
             self.create_data_storage()
         self.post_install_instructions()
 
@@ -866,11 +866,10 @@ class ForsetiGcpSetup(object):
         deploy_choice = raw_input('Create a GCP deployment? '
                                   '(y/N) ').strip().lower()
         if deploy_choice == 'y':
-            self.created_deployment = True
-            deployment_name = 'forseti-security-{}'.format(os.getpid())
+            self.deployment_name = 'forseti-security-{}'.format(os.getpid())
             _ = subprocess.call(
                 ['gcloud', 'deployment-manager', 'deployments', 'create',
-                 deployment_name,
+                 self.deployment_name,
                  '--config={}'.format(self.deploy_tpl_path)])
             time.sleep(2)
             _ = subprocess.call(
@@ -882,14 +881,6 @@ class ForsetiGcpSetup(object):
             _ = subprocess.call(
                 ['gsutil', 'cp', '-r', rules_dir,
                  '{}'.format(self.rules_bucket_name)])
-            if self.gsuite_svc_acct_key_location:
-                time.sleep(2)
-                instance_name = '{}-vm'.format(deployment_name)
-                _ = subprocess.call(
-                    ['gcloud', 'compute', 'copy-files',
-                     self.gsuite_svc_acct_key_location,
-                     'ubuntu@{}:{}'.format(
-                         instance_name, self.gcp_gsuite_key_path)])
 
     def create_data_storage(self):
         """Create Cloud SQL instance and Cloud Storage bucket. (optional)"""
@@ -967,12 +958,19 @@ class ForsetiGcpSetup(object):
             for (i, instr_text) in enumerate(instructions):
                 print(instr_text.format(i+1))
 
-        if self.created_deployment:
-            print('Since you chose to create a deployment via Deployment '
-                  'Manager, you can check out the details in the Cloud '
-                  'Console:\n\n'
+        if self.deployment_name:
+            print('You can check out the details of your deployment in the '
+                  'Cloud Console:\n\n'
                   '    https://console.cloud.google.com/deployments?'
                   'project={}\n\n'.format(self.project_id))
+
+            if self.gsuite_service_account:
+                print('Since you are using a GSuite service account, after you '
+                      'download the json key, copy it to your Forseti instance '
+                      'with the following command:\n\n'
+                      '    gcloud compute copy-files <keyfile name> '
+                      'ubuntu@{}-vm:/home/ubuntu/gsuite_key.json\n\n'.format(
+                          self.deployment_name))
         else:
             print('Your generated Deployment Manager template can be '
                   'found here:\n\n    {}\n'.format(self.deploy_tpl_path))

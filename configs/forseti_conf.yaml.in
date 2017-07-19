@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This is an input file that is used by the Forseti prerequisites setup
+# wizard to generate an actual forseti_conf.yaml. It's better to work off
+# the forseti_conf.yaml.sample than this one if you are editing the config
+# by hand.
+
 global:
 
     # database
