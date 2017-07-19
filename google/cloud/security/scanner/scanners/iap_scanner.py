@@ -249,7 +249,7 @@ class _RunData(object):
             instance = self.find_instance_by_url(instance_url)
             if not instance:
                 continue
-            tags.update(instance.tags)
+            tags.update(instance.tags.get('items', []))
 
         # If it's a managed instance group, also get tags from the
         # instance template.
