@@ -101,7 +101,7 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
     def _send(  # pylint: disable=arguments-differ
             self, csv_name, output_filename, now_utc, violation_errors,
             total_violations, resource_summaries, email_sender,
-            email_recipient):
+            email_recipient, email_description):
         """Send a summary email of the scan.
 
         Args:
@@ -123,6 +123,8 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
                                                 ('foo3_project', 333)])}}
             email_sender (str): The sender of the email.
             email_recipient (str): The recipient of the email.
+            email_description (str): Brief scan description to include in the
+                subject of the email, e.g. 'Policy Scan'.
         """
         # Render the email template with values.
         scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
@@ -142,8 +144,8 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
             disposition='attachment',
             content_id='Scanner Violations'
         )
-        scanner_subject = 'Policy Scan Complete - {} violation(s) found'.format(
-            total_violations)
+        scanner_subject = '{} Complete - {} violation(s) found'.format(
+            email_description, total_violations)
         self.email_util.send(
             email_sender=email_sender,
             email_recipient=email_recipient,
@@ -154,7 +156,8 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
 
     def run(  # pylint: disable=arguments-differ
             self, csv_name, output_filename, now_utc, all_violations,
-            total_resources, violation_errors, email_sender, email_recipient):
+            total_resources, violation_errors, email_sender, email_recipient,
+            email_description):
         """Run the email pipeline
 
         Args:
@@ -166,10 +169,12 @@ class EmailScannerSummaryPipeline(bnp.BaseNotificationPipeline):
             violation_errors (iterable): Iterable of violation errors.
             email_sender (str): The sender of the email.
             email_recipient (str): The recipient of the email.
+            email_description (str): Brief scan description to include in the
+                subject of the email, e.g. 'Policy Scan'.
         """
         total_violations, resource_summaries = self._compose(
             all_violations, total_resources)
 
         self._send(csv_name, output_filename, now_utc, violation_errors,
                    total_violations, resource_summaries, email_sender,
-                   email_recipient)
+                   email_recipient, email_description)
