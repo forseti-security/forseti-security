@@ -1,6 +1,6 @@
 ---
 title: Collecting and Storing New Data in Forseti Inventory
-order: 6
+order: 7
 ---
 #  {{ page.title }}
 
