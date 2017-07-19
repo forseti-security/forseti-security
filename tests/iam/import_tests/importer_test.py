@@ -15,6 +15,7 @@
 """ Unit Tests: Importer for IAM Explain. """
 
 import os
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.iam.dao import create_engine
@@ -46,7 +47,36 @@ def get_db_file_path(db_name):
 class ImporterTest(ForsetiTestCase):
     """Test importer based on database dump."""
 
-    def test_status_done(self):
+    def test_status_done_folder(self):
+        """Test if the status of the import is 'done'."""
+
+        EXPLAIN_CONNECT = 'sqlite:///:memory:'
+        FORSETI_CONNECT = 'sqlite:///{}'.format(
+            get_db_file_path('forseti_2_folder_policies.db'))
+
+        self.service_config = ServiceConfig(EXPLAIN_CONNECT,
+                                            FORSETI_CONNECT)
+        self.source = 'FORSETI'
+        self.model_manager = self.service_config.model_manager
+        self.model_name = self.model_manager.create(name=self.source)
+
+        scoped_session, data_access = self.model_manager.get(self.model_name)
+        with scoped_session as session:
+
+            importer_cls = importer.by_source(self.source)
+            import_runner = importer_cls(
+                session,
+                self.model_manager.model(self.model_name, expunge=False),
+                data_access,
+                self.service_config)
+            import_runner.run()
+
+        model = self.model_manager.model(self.model_name)
+        self.assertEqual(model.state,
+                         'PARTIAL_SUCCESS',
+                         'Model state should be set to PARTIAL_SUCCESS')
+
+    def test_status_done_basic(self):
         """Test if the status of the import is 'done'."""
 
         EXPLAIN_CONNECT = 'sqlite:///:memory:'
@@ -71,4 +101,40 @@ class ImporterTest(ForsetiTestCase):
             import_runner.run()
 
         model = self.model_manager.model(self.model_name)
-        self.assertEqual(model.state, 'DONE', 'Model state should be DONE')
+        self.assertEqual(model.state,
+                         'PARTIAL_SUCCESS',
+                         'Model state should be set to PARTIAL_SUCCESS')
+
+    def test_missing_group_collection(self):
+        """Test if a missing group membership table is handled"""
+        EXPLAIN_CONNECT = 'sqlite:///:memory:'
+        FORSETI_CONNECT = 'sqlite:///{}'.format(
+            get_db_file_path('forseti_1_missing_groups.db'))
+
+        self.service_config = ServiceConfig(EXPLAIN_CONNECT,
+                                            FORSETI_CONNECT)
+        self.source = 'FORSETI'
+        self.model_manager = self.service_config.model_manager
+        self.model_name = self.model_manager.create(name=self.source)
+
+        scoped_session, data_access = self.model_manager.get(self.model_name)
+        with scoped_session as session:
+
+            importer_cls = importer.by_source(self.source)
+            import_runner = importer_cls(
+                session,
+                self.model_manager.model(self.model_name, expunge=False),
+                data_access,
+                self.service_config)
+            import_runner.run()
+
+        model = self.model_manager.model(self.model_name)
+        self.assertEqual(model.state, 'BROKEN', 'Model state should be BROKEN')
+
+        error_msg = 'Did you enable Forseti group collection?'
+        self.assertTrue(error_msg in model.message)
+
+
+if __name__ == '__main__':
+    unittest.main()
+

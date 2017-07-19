@@ -247,7 +247,7 @@ class Rule(object):
 
         if should_raise_violation:
             yield self.RuleViolation(
-                resource_type='project',
+                resource_type='bigquery_dataset',
                 resource_id=bigquery_acl.project_id,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,

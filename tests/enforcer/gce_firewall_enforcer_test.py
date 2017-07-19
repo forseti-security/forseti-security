@@ -19,8 +19,9 @@ import copy
 import json
 import threading
 import mock
+import unittest
 
-import testing_constants as constants
+from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.security.enforcer import gce_firewall_enforcer as fe

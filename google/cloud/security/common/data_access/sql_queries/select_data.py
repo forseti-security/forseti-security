@@ -185,6 +185,11 @@ SELECT_CLOUDSQL_VIOLATIONS = """
     WHERE violation_type = 'CLOUD_SQL_VIOLATION';
 """
 
+SELECT_FORWARDING_RULE_VIOLATION = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'FORWARDING_RULE_VIOLATION';
+"""
+
 SELECT_GROUPS_VIOLATIONS = """
     SELECT * FROM groups_violations_{0};
 """

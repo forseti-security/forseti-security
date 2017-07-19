@@ -17,6 +17,7 @@
 import copy
 import itertools
 import mock
+import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
@@ -41,7 +42,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__,
-        	'buckets_test_rules_1.yaml')
+            'buckets_test_rules_1.yaml')
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
@@ -80,7 +81,11 @@ class BucketsRulesEngineTest(ForsetiTestCase):
     def test_build_rule_book_no_resource_type_fails(self):
         """Test that a rule without a resource cannot be created."""
         rules_local_path = get_datafile_path(__file__,
-        	'buckets_test_rules_2.yaml')
+            'buckets_test_rules_2.yaml')
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
+
+
+if __name__ == '__main__':
+    unittest.main()

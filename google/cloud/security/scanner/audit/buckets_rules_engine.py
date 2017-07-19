@@ -225,7 +225,7 @@ class Rule(object):
 
         if should_raise_violation:
             yield self.RuleViolation(
-                resource_type='project',
+                resource_type='bucket',
                 resource_id=bucket_acl.project_number,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,

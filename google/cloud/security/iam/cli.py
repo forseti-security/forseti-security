@@ -14,10 +14,12 @@
 
 """ IAM Explain CLI. """
 
-#pylint: disable=too-many-locals
+# pylint: disable=too-many-locals
 
-import argparse
+from argparse import ArgumentParser
+import json
 import os
+import sys
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.security.iam import client as iam_client
@@ -238,6 +240,7 @@ def define_explainer_parser(parent):
         help='List permissions by role(s)')
     perms_by_roles_parser.add_argument(
         '--roles',
+        nargs='*',
         default=[],
         help='Role names')
     perms_by_roles_parser.add_argument(
@@ -262,6 +265,30 @@ def define_explainer_parser(parent):
         type=bool,
         default=False,
         help='Expand the resource hierarchy')
+
+    query_access_by_authz = action_subparser.add_parser(
+        'access_by_authz',
+        help='List access by role or permission')
+    query_access_by_authz.add_argument(
+        '--permission',
+        default=None,
+        nargs='?',
+        help='Permission to query')
+    query_access_by_authz.add_argument(
+        '--role',
+        default=None,
+        nargs='?',
+        help='Role to query')
+    query_access_by_authz.add_argument(
+        '--expand_groups',
+        type=bool,
+        default=False,
+        help='Expand groups to their members')
+    query_access_by_authz.add_argument(
+        '--expand_resources',
+        type=bool,
+        default=False,
+        help='Expand resources to their children')
 
     query_access_by_resource = action_subparser.add_parser(
         'access_by_resource',
@@ -294,14 +321,16 @@ def read_env(var_key, default):
     return os.environ[var_key] if var_key in os.environ else default
 
 
-def define_parent_parser():
+def define_parent_parser(parser_cls):
     """Define the parent parser.
+    Args:
+        parser_cls (type): Class to instantiate parser from.
 
     Returns:
         argparser: The parent parser which has been defined.
     """
 
-    parent_parser = argparse.ArgumentParser()
+    parent_parser = parser_cls()
     parent_parser.add_argument(
         '--endpoint',
         default='localhost:50051',
@@ -317,13 +346,15 @@ def define_parent_parser():
     return parent_parser
 
 
-def create_parser():
+def create_parser(parser_cls):
     """Create argument parser hierarchy.
+    Args:
+        parser_cls (cls): Class to instantiate parser from.
 
     Returns:
         argparser: The argument parser hierarchy which is created.
     """
-    main_parser = define_parent_parser()
+    main_parser = define_parent_parser(parser_cls)
     service_subparsers = main_parser.add_subparsers(
         title="service",
         dest="service")
@@ -433,6 +464,16 @@ def run_explainer(client, config, output):
                                                   config.expand_groups)
         output.write(result)
 
+    def do_query_access_by_authz():
+        """Query access by role or permission"""
+        for access in (
+                client.query_access_by_permissions(config.role,
+                                                   config.permission,
+                                                   config.expand_groups,
+                                                   config.expand_resources)):
+
+            output.write(access)
+
     actions = {
         'list_models': do_list_models,
         'delete_model': do_delete_model,
@@ -442,7 +483,8 @@ def run_explainer(client, config, output):
         'why_denied': do_why_not_granted,
         'list_permissions': do_list_permissions,
         'access_by_member': do_query_access_by_member,
-        'access_by_resource': do_query_access_by_resource}
+        'access_by_resource': do_query_access_by_resource,
+        'access_by_authz': do_query_access_by_authz}
 
     actions[config.action]()
 
@@ -523,7 +565,7 @@ def run_playground(client, config, output):
     def do_set_policy():
         """Set access"""
         result = client.set_iam_policy(config.resource,
-                                       config.policy)
+                                       json.loads(config.policy))
         output.write(result)
 
     actions = {
@@ -554,16 +596,33 @@ SERVICES = {
     }
 
 
-def main():
-    """Main function."""
-    parser = create_parser()
-    config = parser.parse_args()
-    client = iam_client.ClientComposition(config.endpoint)
+def main(args,
+         client=None,
+         outputs=None,
+         parser_cls=ArgumentParser,
+         services=None):
+    """Main function.
+    Args:
+        args (list): Command line arguments without argv[0].
+        client (obj): API client to use.
+        outputs (list): Supported output formats.
+        parser_cls (type): Argument parser type to instantiate.
+        services (list): Supported IAM Explain services.
+    """
+
+    parser = create_parser(parser_cls)
+    config = parser.parse_args(args)
+    if not client:
+        client = iam_client.ClientComposition(config.endpoint)
     client.switch_model(config.use_model)
 
-    output = OUTPUTS[config.out_format]()
-    SERVICES[config.service](client, config, output)
+    if not outputs:
+        outputs = OUTPUTS
+    if not services:
+        services = SERVICES
+    output = outputs[config.out_format]()
+    services[config.service](client, config, output)
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

@@ -16,6 +16,7 @@
 from datetime import datetime
 
 import mock
+import unittest
 import MySQLdb
 
 from tests.unittest_utils import ForsetiTestCase
@@ -178,6 +179,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         actual = scanner._get_timestamp(self.FAKE_global_configs)
         self.assertEqual(1, scanner.LOGGER.error.call_count)
         self.assertIsNone(actual)
+
 
 if __name__ == '__main__':
     unittest.main()

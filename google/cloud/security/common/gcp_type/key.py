@@ -53,7 +53,7 @@ class Key(object):
             if val is None:
                 self._object_path[key] = ''
 
-        self._object_path_tuple = tuple(self._object_path.items())
+        self._object_path_tuple = tuple(sorted(self._object_path.items()))
 
     @classmethod
     def _from_url(cls, object_kind, path_component_map, url, defaults=None):
