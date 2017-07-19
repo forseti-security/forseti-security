@@ -586,6 +586,7 @@ class ForsetiGcpSetup(object):
         self.gsuite_svc_acct_key_location = os.path.abspath(
             os.path.join(
                 os.path.dirname(__file__),
+                '..',
                 'gsuite_key.json'))
 
     def _set_service_account(self, which_svc_acct, svc_acct):
