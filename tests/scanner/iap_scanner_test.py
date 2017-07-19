@@ -283,7 +283,7 @@ class IapScannerTest(ForsetiTestCase):
             'i1': instance_type.Instance(
                 project_id='foo',
                 name='i1',
-                tags=json.dumps(['tag_i1']),
+                tags=json.dumps({'items': ['tag_i1']}),
                 zone='wl-redqueen1-a',
             ),
             'i2': instance_type.Instance(
