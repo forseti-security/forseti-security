@@ -17,7 +17,7 @@
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
-from apiclient import errors
+from googleapiclient import errors
 
 
 class AppEngineClient(_base_client.BaseClient):

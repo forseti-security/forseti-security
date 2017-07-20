@@ -14,7 +14,7 @@
 
 """Wrapper for Resource Manager API client."""
 
-from apiclient import errors
+from googleapiclient import errors
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
 

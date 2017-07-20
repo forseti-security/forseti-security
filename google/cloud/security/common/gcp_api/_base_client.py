@@ -17,12 +17,9 @@
 import json
 import httplib2
 
-import apiclient
-from apiclient import discovery
-# Support older versions of apiclient without cache support
-SUPPORT_DISCOVERY_CACHE = (apiclient.__version__ >= '1.4.2')
-
-from apiclient import errors
+import googleapiclient
+from googleapiclient import discovery
+from googleapiclient import errors
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
@@ -32,18 +29,20 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
+# Support older versions of apiclient without cache support
+SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 
 LOGGER = log_util.get_logger(__name__)
 
 
 def _attach_user_agent(request):
-    """Append custom Forseti user agent to apiclient request headers.
+    """Append custom Forseti user agent to googleapiclient request headers.
 
     Args:
         request (HttpRequest): A googlapiclient request object
 
     Returns:
-        HttpRequest: A modified apiclient request object.
+        HttpRequest: A modified googleapiclient request object.
     """
     user_agent = request.headers.get('user-agent', '')
     if not user_agent or forseti_security.__package_name__ in user_agent:
