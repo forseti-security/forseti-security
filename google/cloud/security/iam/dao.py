@@ -347,6 +347,7 @@ def define_model(model_name, dbengine, model_seed):
             Role.__table__.drop(engine)
             Member.__table__.drop(engine)
             Resource.__table__.drop(engine)
+            GroupInGroup.__table__.drop(engine)
 
         @classmethod
         def denorm_group_in_group(cls, session):
