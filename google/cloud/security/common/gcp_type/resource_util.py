@@ -14,6 +14,7 @@
 
 """Util for generic operations for Resources."""
 
+from google.cloud.security.common.gcp_type import backend_service
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization as org
 from google.cloud.security.common.gcp_type import project
@@ -24,14 +25,22 @@ _RESOURCE_TYPE_MAP = {
     resource.ResourceType.ORGANIZATION: {
         'class': org.Organization,
         'plural': 'Organizations',
+        'can_create_resource': True,
     },
     resource.ResourceType.FOLDER: {
         'class': folder.Folder,
         'plural': 'Folders',
+        'can_create_resource': True,
     },
     resource.ResourceType.PROJECT: {
         'class': project.Project,
         'plural': 'Projects',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.BACKEND_SERVICE: {
+        'class': backend_service.BackendService,
+        'plural': 'Backend Services',
+        'can_create_resource': False,
     },
 }
 
@@ -49,8 +58,11 @@ def create_resource(resource_id, resource_type, **kwargs):
     """
     if resource_type not in _RESOURCE_TYPE_MAP:
         return None
+    resource_type = _RESOURCE_TYPE_MAP[resource_type]
+    if not resource_type.get('can_create_resource'):
+        return None
 
-    return _RESOURCE_TYPE_MAP.get(resource_type).get('class')(
+    return resource_type.get('class')(
         resource_id, **kwargs)
 
 def pluralize(resource_type):
