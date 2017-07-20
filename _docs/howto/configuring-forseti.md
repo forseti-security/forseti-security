@@ -76,6 +76,11 @@ same run. To specify which scanners to run in a batch:
 
 1.  Open `forseti-security/configs/forseti_conf.yaml`.
 1.  Navigate to the `scanner: scanners` section.
+1.  Forseti Scanner can save outputs to CSV files. To specify an output
+location,  specify the `output_path` location (either on the local filesystem
+or in GCS) where you want to save the CSV
+1.  Specify the path of the rule files (either on the local filesystem
+or in GCS).
 1.  Edit the `enabled` flag for the appropriate scanners. Set the flag to `true`
     to enable a scanner, or `false` to disable the scanner.
 
