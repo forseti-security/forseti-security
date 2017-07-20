@@ -20,7 +20,7 @@ from ratelimiter import RateLimiter
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
-from apiclient.errors import HttpError
+from apiclient import errors
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -73,6 +73,6 @@ class CloudsqlClient(_base_client.BaseClient):
             instances_request = instances_api.list(project=project_id)
             instances = self._execute(instances_request, self.rate_limiter)
             return instances
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError('instances', e)

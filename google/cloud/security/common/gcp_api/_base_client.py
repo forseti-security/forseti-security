@@ -22,7 +22,7 @@ from apiclient import discovery
 # Support older versions of apiclient without cache support
 SUPPORT_DISCOVERY_CACHE = (apiclient.__version__ >= '1.4.2')
 
-from apiclient.errors import HttpError
+from apiclient import errors
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
@@ -144,7 +144,7 @@ class BaseClient(object):
                 with rate_limiter:
                     return request.execute()
             return request.execute()
-        except HttpError as e:
+        except errors.HttpError as e:
             if (e.resp.status == 403 and
                     e.resp.get('content-type', '').startswith(
                         'application/json')):
@@ -213,7 +213,7 @@ class BaseClient(object):
                 # not be any resources. So, just swallow the error:
                 # we're done!
                 break
-            except (HttpError, httplib2.HttpLib2Error) as e:
+            except (errors.HttpError, httplib2.HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)
 
         return results
