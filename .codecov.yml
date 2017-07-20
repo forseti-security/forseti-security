@@ -11,6 +11,6 @@ coverage:
         enabled: yes
         threshold: 1%
 comment:
-  layout: "diff, files"
+  layout: "header, diff, tree, changes"
   behavior: default
   require_changes: yes
