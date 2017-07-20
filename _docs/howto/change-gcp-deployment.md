@@ -1,6 +1,6 @@
 ---
 title: Changing a Deployment
-order: 2 
+order: 5
 ---
 #  {{ page.title }}
 

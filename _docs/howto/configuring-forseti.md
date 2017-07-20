@@ -1,6 +1,6 @@
 ---
 title: Configuring Forseti
-order: 8
+order: 9
 ---
 
 # {{ page.title }}
