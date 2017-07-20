@@ -7,7 +7,7 @@ interested in isn't listed, please open an issue or contribute!
 {: .table .table-striped}
 | Resource                                | Inventory     | Scanner       | Enforcer      |
 | --------------------------------------- | ------------- | ------------- | ------------- |
-| [App Engine Apps](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps) | In Progress | TODO | TODO |
+| [App Engine Apps](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps) | Done | TODO | TODO |
 | [BigQuery](https://cloud.google.com/bigquery/docs/reference/rest/v2/) | Done | In Progress | TODO |
 | [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) | Done | Done | TODO |
 | [BucketAccessControls](https://cloud.google.com/storage/docs/json_api/v1/bucketAccessControls#resource) | Done | Done | TODO |
