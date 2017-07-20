@@ -19,7 +19,7 @@ import httplib2
 
 from apiclient import discovery
 try:
-    from apiclient.discovery import discovery_cache
+    from apiclient import discovery_cache
     SUPPORT_DISCOVERY_CACHE = True
 except ImportError:
     # Support older versions of apiclient without cache support
