@@ -161,13 +161,13 @@ class BaseClient(object):
                 # exception to indicate it to callers. Otherwise, propagate
                 # the initial exception.
                 error_details = json.loads(e.content)
-                errors = error_details.get('error', {}).get('errors', [])
+                all_errors = error_details.get('error', {}).get('errors', [])
                 api_disabled_errors = [
-                    error for error in errors
+                    error for error in all_errors
                     if (error.get('domain') == 'usageLimits'
                         and error.get('reason') == 'accessNotConfigured')]
                 if (api_disabled_errors and
-                        len(api_disabled_errors) == len(errors)):
+                        len(api_disabled_errors) == len(all_errors)):
                     raise api_errors.ApiNotEnabledError(
                         api_disabled_errors[0].get('extendedHelp', ''),
                         e)
