@@ -18,7 +18,14 @@ import json
 import httplib2
 
 from apiclient import discovery
-from googleapiclient.errors import HttpError
+try:
+    from apiclient.discovery import discovery_cache
+    SUPPORT_DISCOVERY_CACHE = True
+except ImportError:
+    # Support older versions of apiclient without cache support
+    SUPPORT_DISCOVERY_CACHE = False
+
+from apiclient.errors import HttpError
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
@@ -33,13 +40,13 @@ LOGGER = log_util.get_logger(__name__)
 
 
 def _attach_user_agent(request):
-    """Append custom Forseti user agent to googleapiclient request headers.
+    """Append custom Forseti user agent to apiclient request headers.
 
     Args:
         request (HttpRequest): A googlapiclient request object
 
     Returns:
-        HttpRequest: A modified googleapiclient request object.
+        HttpRequest: A modified apiclient request object.
     """
     user_agent = request.headers.get('user-agent', '')
     if not user_agent or forseti_security.__package_name__ in user_agent:
@@ -96,12 +103,13 @@ class BaseClient(object):
                         'in Forseti, proceed at your own risk.',
                         api_name, version)
 
-        should_cache_discovery = kwargs.get('cache_discovery')
+        discovery_kwargs = {'credentials' = self._credentials}
+        if SUPPORT_DISCOVERY_CACHE:
+            discover_kwargs['cache_discover'] = kwargs.get('cache_discovery')
 
         self.service = discovery.build(self.name,
                                        self.version,
-                                       credentials=self._credentials,
-                                       cache_discovery=should_cache_discovery)
+                                       **discovery_kwargs)
 
     def __repr__(self):
         """The object representation.
