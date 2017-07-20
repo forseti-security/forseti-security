@@ -100,7 +100,7 @@ class BaseClient(object):
                         'in Forseti, proceed at your own risk.',
                         api_name, version)
 
-        discovery_kwargs = {'credentials' = self._credentials}
+        discovery_kwargs = {'credentials': self._credentials}
         if SUPPORT_DISCOVERY_CACHE:
             discover_kwargs['cache_discover'] = kwargs.get('cache_discovery')
 
