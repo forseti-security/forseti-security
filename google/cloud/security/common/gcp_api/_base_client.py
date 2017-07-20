@@ -17,13 +17,10 @@
 import json
 import httplib2
 
+import apiclient
 from apiclient import discovery
-try:
-    from apiclient import discovery_cache
-    SUPPORT_DISCOVERY_CACHE = True
-except ImportError:
-    # Support older versions of apiclient without cache support
-    SUPPORT_DISCOVERY_CACHE = False
+# Support older versions of apiclient without cache support
+SUPPORT_DISCOVERY_CACHE = (apiclient.__version__ >= '1.4.2')
 
 from apiclient.errors import HttpError
 from oauth2client.client import GoogleCredentials
