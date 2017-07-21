@@ -52,6 +52,8 @@ class BucketDao(project_dao.ProjectDao):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
+        # TODO: fix this not to use .format() for string-replacing
+        # the project id.
         buckets_sql = select_data.BUCKETS_BY_PROJECT_ID.format(
             timestamp,
             project_number)
@@ -94,3 +96,19 @@ class BucketDao(project_dao.ProjectDao):
                 OperationalError, ProgrammingError) as e:
             LOGGER.error(errors.MySQLError(resource_name, e))
         return bucket_acls
+
+    def get_raw_buckets(self, resource_name, timestamp):
+        """Select the bucket and its raw json.
+
+        Args:
+            resource_name (str): The resource type name.
+            timestamp (str): The snapshot timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            list: List of dict mapping buckets to their raw json.
+        """
+        buckets_sql = select_data.RAW_BUCKETS.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource_name, buckets_sql, None)
+        return rows

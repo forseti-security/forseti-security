@@ -154,6 +154,10 @@ BUCKETS = """
     FROM buckets_{0};
 """
 
+RAW_BUCKETS = """
+    SELECT bucket_id, raw_bucket FROM buckets_{0}
+"""
+
 BUCKETS_BY_PROJECT_ID = """
     SELECT bucket_name
     FROM buckets_{0}

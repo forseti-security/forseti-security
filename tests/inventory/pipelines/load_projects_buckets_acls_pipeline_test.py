@@ -61,51 +61,17 @@ class LoadProjectsBucketsAclsPipelineTest(ForsetiTestCase):
             fake_buckets.EXPECTED_LOADABLE_BUCKET_ACLS,
             loadable_buckets)
 
-    def test_api_is_called_to_retrieve_bucket_acls(self):
-        """Test that api is called to retrive bucket acls."""
-
-        self.pipeline.dao.get_project_numbers.return_value = (
-            self.FAKE_PROJECT_NUMBERS)
-        self.pipeline.dao.get_buckets_by_project_number.return_value = (
-            self.FAKE_BUCKETS)
-        self.pipeline._retrieve()
-
-        self.pipeline.dao.get_project_numbers.assert_called_once_with(
-            self.pipeline.PROJECTS_RESOURCE_NAME,
-            self.pipeline.cycle_timestamp)
-
-        self.pipeline.dao.get_buckets_by_project_number.assert_called_once_with(
-            self.pipeline.RESOURCE_NAME,
-            self.pipeline.cycle_timestamp,
-            self.FAKE_PROJECT_NUMBERS[0])
-
-        self.pipeline.api_client.get_bucket_acls.assert_called_once_with(
-            self.FAKE_BUCKETS[0])
-
+    def test_retrieve_bucket_acls(self):
+        """Test that bucket acls can be retrieved."""
+        mock_get_raw_buckets = mock.MagicMock()
+        self.mock_dao.get_raw_buckets = mock_get_raw_buckets
+        mock_get_raw_buckets.return_value = fake_buckets.FAKE_RAW_BUCKET_ROW
+        bucket_acls = self.pipeline._retrieve()
+        mock_get_raw_buckets.assert_called_once_with(
+            'buckets', self.cycle_timestamp)
         self.assertEquals(
-            1, self.pipeline.api_client.get_bucket_acls.call_count)
-
-    def test_api_error_is_handled_when_retrieving(self):
-        """Test that exceptions are handled when retrieving.
-
-        We don't want to fail the pipeline when any one project's bucket acls
-    can not be retrieved.  We just want to log the error, and continue
-    with the other projects.
-        """
-        load_projects_buckets_acls_pipeline.LOGGER = (
-            mock.create_autospec(log_util).get_logger('foo'))
-        self.pipeline.dao.get_project_numbers.return_value = (
-            self.FAKE_PROJECT_NUMBERS)
-        self.pipeline.dao.get_buckets_by_project_number.return_value = (
-            self.FAKE_BUCKETS)
-        self.pipeline.api_client.get_bucket_acls.side_effect = (
-            api_errors.ApiExecutionError('error error', mock.MagicMock()))
-
-        self.pipeline._retrieve()
-
-        self.assertEquals(
-            1,
-            load_projects_buckets_acls_pipeline.LOGGER.error.call_count)
+            fake_buckets.EXPECTED_RAW_BUCKET_JSON,
+            bucket_acls)
 
     @mock.patch.object(
         load_projects_buckets_acls_pipeline.LoadProjectsBucketsAclsPipeline,

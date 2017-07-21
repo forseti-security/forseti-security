@@ -142,7 +142,8 @@ class StorageClient(_base_client.BaseClient):
         """
         buckets_api = self.service.buckets()
         try:
-            buckets_request = buckets_api.list(project=project_id)
+            buckets_request = buckets_api.list(project=project_id,
+                                               projection='full')
             buckets = buckets_request.execute()
             return buckets
         except (HttpError, HttpLib2Error) as e:
