@@ -87,17 +87,17 @@ best practices see the [Forseti Security Best Practices Guide]({% link _docs/gui
       
       **Project level bindings**
       ```bash
-      $ gcloud organizations add-iam-policy-binding FORSETI_PROJECT_ID \
+      $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/storage.objectViewer
       ```
       ```bash
-      $ gcloud organizations add-iam-policy-binding FORSETI_PROJECT_ID \
+      $ gcloud rpojects add-iam-policy-binding FORSETI_PROJECT_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/storage.objectCreator
       ```
       ```bash
-      $ gcloud organizations add-iam-policy-binding FORSETI_PROJECT_ID \
+      $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/cloudsql.client
       ```

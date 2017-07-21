@@ -12,7 +12,8 @@ scenarios for which it's best to use separate service accounts:
  * **Forseti Security Service Account** (required): Used by all core modules of
 the program to provide basic inventory, scanning, and enforcement actions.
  * **GSuite Groups Inventory Service Account** (optional): Used to inventory
-GSuite Groups and their members.
+GSuite Groups and their members. Forseti IAM explain requires this to be
+enabled.
  * **IAM Explain Service Account** (optional): Used to provide
 IAM explain functionality.
 
@@ -68,8 +69,8 @@ Forseti Security needs the following roles for `forseti_inventory` and/or
 {% include _global/required-roles.md %}
 
 ### Forseti Security GSuite Groups Inventory Service Account
-To inventory GSuite Groups and their members, Forseti Security needs access to
-the service account and its GSuite Client ID. The only permission it needs is
-read-access on the Groups service.
+To inventory GSuite Groups and their members, Forseti Security uses a service
+account enabled for GSuite Domain Wide Delegation. The only permission this
+service account needs is read-access on the Groups and Group Members services.
 
  * `https://www.googleapis.com/auth/admin.directory.group.readonly`
