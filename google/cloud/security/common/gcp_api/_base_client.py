@@ -101,7 +101,7 @@ class BaseClient(object):
 
         discovery_kwargs = {'credentials': self._credentials}
         if SUPPORT_DISCOVERY_CACHE:
-            discovery_kwargs['cache_discover'] = kwargs.get('cache_discovery')
+            discovery_kwargs['cache_discovery'] = kwargs.get('cache_discovery')
 
         self.service = discovery.build(self.name,
                                        self.version,
