@@ -16,14 +16,13 @@
 
 import StringIO
 
+from googleapiclient import errors
+from googleapiclient import http
 from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
-from googleapiclient import http
-from googleapiclient.errors import HttpError
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -113,7 +112,7 @@ class StorageClient(_base_client.BaseClient):
                 _, done = downloader.next_chunk()
             file_content = out_stream.getvalue()
             out_stream.close()
-        except http.HttpError as http_error:
+        except errors.HttpError as http_error:
             LOGGER.error('Unable to download file: %s', http_error)
             raise http_error
         return file_content
@@ -145,7 +144,7 @@ class StorageClient(_base_client.BaseClient):
             buckets_request = buckets_api.list(project=project_id)
             buckets = buckets_request.execute()
             return buckets
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
             # TODO: pass in "buckets" as resource_name variable
             raise api_errors.ApiExecutionError('buckets', e)
@@ -167,7 +166,7 @@ class StorageClient(_base_client.BaseClient):
         bucket_acl_request = bucket_access_controls_api.list(bucket=bucket_name)
         try:
             return bucket_acl_request.execute()
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
             # TODO: pass in "buckets" as resource_name variable
             raise api_errors.ApiExecutionError('buckets', e)
