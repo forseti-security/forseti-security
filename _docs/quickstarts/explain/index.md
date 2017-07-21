@@ -114,13 +114,13 @@ methods:
   - Importing a Forseti model:
   
       ```bash
-      $ forseti_iam explainer create_model forseti
+      $ forseti_iam explainer create_model forseti <name>
       ```
 
   - Creating an empty model:
 
       ```bash
-      $ forseti_iam explainer create_model empty
+      $ forseti_iam explainer create_model empty <name>
       ```
 
 ### Using an explain model
