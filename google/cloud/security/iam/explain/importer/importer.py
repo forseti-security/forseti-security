@@ -20,6 +20,7 @@ import json
 from StringIO import StringIO
 from time import time
 import traceback
+import datetime
 
 from google.cloud.security.common.data_access import forseti
 from google.cloud.security.iam.explain.importer import roles as roledef
@@ -243,6 +244,14 @@ class ForsetiImporter(object):
         self.dao = dao
         self.curated_roles = load_roles()
 
+    def _timezone_helper(self, str):
+        _time = datetime.datetime.strptime(str[0:23],'%Y-%m-%dT%H:%M:%S.%f')
+        if str[23]=='+':
+            _time-=datetime.timedelta(hours=int(str[24:26]),minutes=int(str[27:29]))
+        elif str[23]=='-':
+            _time+=datetime.timedelta(hours=int(str[24:26]),minutes=int(str[27:29]))
+        return _time
+
     def _convert_organization(self, forseti_org):
         """Creates a db object from a Forseti organization.
 
@@ -254,12 +263,17 @@ class ForsetiImporter(object):
         """
 
         org_name = 'organization/{}'.format(forseti_org.org_id)
+        org_parsed = json.loads(forseti_org.raw_org)
+
         org = self.dao.TBL_RESOURCE(
             full_name=org_name,
             type_name=org_name,
             name=forseti_org.org_id,
             type='organization',
-            parent=None)
+            parent=None,
+            create_time=datetime.datetime.strptime(org_parsed['creationTime'],
+                '%Y-%m-%dT%H:%M:%S.%fZ'),
+            raw_data=forseti_org.raw_org)
         self.resource_cache['organization'] = (org, org_name)
         self.resource_cache[org_name] = (org, org_name)
         return org
@@ -286,6 +300,8 @@ class ForsetiImporter(object):
         folder_type_name = 'folder/{}'.format(
             forseti_folder.folder_id)
 
+        folder_parsed = json.loads(forseti_folder.raw_folder)
+
         folder = self.dao.TBL_RESOURCE(
             full_name=full_folder_name,
             type_name=folder_type_name,
@@ -293,7 +309,9 @@ class ForsetiImporter(object):
             type='folder',
             parent=obj,
             display_name=forseti_folder.display_name,
-            )
+            create_time=datetime.datetime.strptime(folder_parsed['createTime'],
+                '%Y-%m-%dT%H:%M:%S.%fZ'),
+            raw_data=forseti_folder.raw_folder)
 
         self.resource_cache[folder.type_name] = folder, full_folder_name
         return self.session.merge(folder)
@@ -316,6 +334,8 @@ class ForsetiImporter(object):
         project_name = 'project/{}'.format(forseti_project.project_number)
         full_project_name = '{}/project/{}'.format(
             full_res_name, forseti_project.project_number)
+        project_parsed = json.loads(forseti_project.raw_project)
+
         project = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_project_name,
@@ -323,7 +343,11 @@ class ForsetiImporter(object):
                 name=forseti_project.project_number,
                 type='project',
                 display_name=forseti_project.project_name,
-                parent=obj))
+                parent=obj,
+                create_time=datetime.datetime.strptime(
+                    project_parsed['createTime'],'%Y-%m-%dT%H:%M:%S.%fZ'),
+                raw_data=forseti_project.raw_project))
+
         self.resource_cache[project.type_name] = (project, full_project_name)
         self.resource_cache[forseti_project.project_id] = (
             project, full_project_name)
@@ -343,13 +367,19 @@ class ForsetiImporter(object):
         project_name = 'project/{}'.format(forseti_bucket.project_number)
         parent, full_parent_name = self.resource_cache[project_name]
         full_bucket_name = '{}/{}'.format(full_parent_name, bucket_name)
+        bucket_parsed = json.loads(forseti_bucket.raw_bucket)
+
         bucket = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_bucket_name,
                 type_name=bucket_name,
                 name=forseti_bucket.bucket_id,
                 type='bucket',
-                parent=parent))
+                parent=parent,
+                self_link=bucket_parsed['selfLink'],
+                create_time=datetime.datetime.strptime(
+                    bucket_parsed['timeCreated'],'%Y-%m-%dT%H:%M:%S.%fZ'),
+                raw_data=forseti_bucket.raw_bucket))
         return bucket
 
     def _convert_instance(self, forseti_instance):
@@ -369,13 +399,19 @@ class ForsetiImporter(object):
             forseti_instance.project_id]
 
         full_instance_name = '{}/{}'.format(full_parent_name, instance_name)
+        instance_parsed = json.loads(forseti_instance.raw_instance)
+
         instance = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
                 type_name=instance_name,
                 name=forseti_instance.name,
                 type='instance',
-                parent=parent))
+                parent=parent,
+                self_link=instance_parsed['selfLink'],
+                create_time=self._timezone_helper(
+                    instance_parsed['creationTimestamp']),
+                raw_data=forseti_instance.raw_instance))
         return instance
 
     def _convert_instance_group(self, forseti_instance_group):
@@ -400,13 +436,20 @@ class ForsetiImporter(object):
         full_instance_name = '{}/{}'.format(
             full_parent_name, instance_group_type_name)
 
+        instance_group_parsed = json.loads(
+            forseti_instance_group.raw_instance_group)
+
         instance = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
                 type_name=instance_group_type_name,
                 name=instance_group_name,
                 type='instancegroup',
-                parent=parent))
+                parent=parent,
+                self_link=instance_group_parsed['selfLink'],
+                create_time=self._timezone_helper(
+                    instance_group_parsed['creationTimestamp']),
+                raw_data=forseti_instance_group.raw_instance_group))
         return instance
 
     def _convert_bigquery_dataset(self, forseti_bigquery_dataset):
@@ -430,13 +473,17 @@ class ForsetiImporter(object):
         full_instance_name = '{}/{}'.format(
             full_parent_name, bigquery_dataset_type_name)
 
+        bigquery_dataset_parsed = json.loads(
+            forseti_bigquery_dataset.raw_access_map)
+
         instance = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
                 type_name=bigquery_dataset_type_name,
                 name=bigquery_dataset_name,
                 type='bigquerydataset',
-                parent=parent))
+                parent=parent,
+                raw_data=forseti_bigquery_dataset.raw_access_map))
         return instance
 
     def _convert_backend_service(self, forseti_backend_service):
@@ -461,13 +508,20 @@ class ForsetiImporter(object):
         full_instance_name = '{}/{}'.format(
             full_parent_name, forseti_backend_service)
 
+        backend_service_parsed = json.loads(
+            forseti_backend_service.raw_backend_service)
+
         instance = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
                 type_name=backend_service_type_name,
                 name=backend_service_name,
                 type='backendservice',
-                parent=parent))
+                parent=parent,
+                self_link=backend_service_parsed['selfLink'],
+                create_time=self._timezone_helper(
+                    backend_service_parsed['creationTimestamp']),
+                raw_data=forseti_backend_service.raw_backend_service))
         return instance
 
     def _convert_cloudsqlinstance(self, forseti_cloudsqlinstance):
@@ -487,13 +541,18 @@ class ForsetiImporter(object):
             forseti_cloudsqlinstance.project_number)
         parent, full_parent_name = self.resource_cache[project_name]
         full_sqlinst_name = '{}/{}'.format(full_parent_name, sqlinst_name)
+        cloudsqlinstance_parsed = json.loads(
+            forseti_cloudsqlinstance.raw_cloudsql_instance)
+
         sqlinst = self.session.merge(
             self.dao.TBL_RESOURCE(
                 full_name=full_sqlinst_name,
                 type_name=sqlinst_name,
                 name=forseti_cloudsqlinstance.name,
                 type='cloudsqlinstance',
-                parent=parent))
+                parent=parent,
+                self_link=cloudsqlinstance_parsed['selfLink'],
+                raw_data=forseti_cloudsqlinstance.raw_cloudsql_instance))
         return sqlinst
 
     def _convert_binding(self, res_type, res_id, binding):
