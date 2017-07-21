@@ -78,7 +78,7 @@ file based on your input.
     return to the command-line.
   1. Next, the setup wizard automatically enables required APIs:
   
-  {% include _global/required-apis.md %}
+  {% include _global/required_apis.md %}
   
   1. Create a new service account or enter an existing service account for
   accessing GCP.

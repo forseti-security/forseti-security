@@ -14,7 +14,7 @@ enable required APIs:
   1. Enable the required APIs by running `gcloud beta service-management enable`
   for each of the following API paths:
   
-  {% include _global/required-apis.md %}
+  {% include _global/required_apis.md %}
 
 ### Creating service accounts
 
@@ -24,9 +24,12 @@ modules. It's best to create your Forseti service accounts under a new GCP
 project. You'll be able to use the service accounts in other projects and
 easily control the number of users who have Editor or Owner roles.
 
+**For a detailed explanation of how Forseti Security uses Service Accounts,
+including your options and best practices, see the
+[Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %}).**
+
 To create a service account for Forseti Inventory, Scanner, and Enforcer,
-follow the steps below. For a detailed explanation including your options and
-best practices see the [Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %}).
+follow the steps below.
 
   1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
@@ -65,6 +68,10 @@ best practices see the [Forseti Security Best Practices Guide]({% link _docs/gui
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/cloudsql.viewer
       ```
+      
+      **It should be noted that binding at any other level than the Organization
+      limits `forseti_enforcer`.**
+      
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
