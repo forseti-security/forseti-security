@@ -607,17 +607,17 @@ class ForsetiGcpSetup(object):
         """Grant the following IAM roles to GCP service account.
 
         Org:
-        Project Browser
-        Network Viewer
-        Security Reviewer
         AppEngine App Viewer
-        Service Management Quota Viewer
         Cloud SQL Viewer
+        Network Viewer
+        Project Browser
+        Security Reviewer
+        Service Management Quota Viewer
 
         Project:
+        Cloud SQL Client
         Storage Object Viewer
         Storage Object Creator
-        Cloud SQL Client
         """
         self._print_banner('Assigning roles to the GCP service account')
         if not self.organization_id:
