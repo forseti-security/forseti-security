@@ -74,6 +74,16 @@ best practices see the [Forseti Security Best Practices Guide]({% link _docs/gui
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/cloudsql.viewer
       ```
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/cloudsql.viewer
+      ```
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/compute.securityAdmin
+      ```
       
       **Project level bindings**
       ```bash
