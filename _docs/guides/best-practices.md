@@ -37,7 +37,7 @@ limited to GSuite Groups if the machine is compromised.
 
 If you [enable]{% link _docs/howto/gsuite-group-collection.md %})
 GSuite Group inventory and create a service account, a good name
-for the service account would be `forseti-security-gsuite-dwd`.
+for the service account would be `forseti-security-gsuite-groups`.
 
 ### Forseti Explain Service Account
 You can use the Forseti Security Service account for IAM Explain. However,
