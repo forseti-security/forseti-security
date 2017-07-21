@@ -37,8 +37,8 @@ To set up Cloud SQL for Forseti, follow the steps below:
     1.  Add or modify other database details as you wish.
     1.  When you're finished setting up the database, click **Create**.
 1.  [Create a new user](https://cloud.google.com/sql/docs/mysql/create-manage-users#creating)
-    , such as `forseti_user`, with [read/write
-    privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges)
+    , such as `forseti_user`,
+    with [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges)
     for Forseti to access the database. Don't set a password for the new user.
     This will allow Cloud SQL Proxy to handle authentication to your instance.
 1.  [Create a new database](https://cloud.google.com/sql/docs/mysql/create-manage-databases#creating_a_database)
