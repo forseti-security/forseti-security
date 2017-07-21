@@ -24,7 +24,7 @@ violations.
 
 Setting up Enforcer to automatically correct policy discrepancies.
 
-**[IAM Explain]({% link _docs/quickstarts/explain/index.md %})**
+**[Explain]({% link _docs/quickstarts/explain/index.md %})**
 
 Setting up IAM Explain to help you understand, test, and develop Cloud Identity
 and Access Management (Cloud IAM) policies.

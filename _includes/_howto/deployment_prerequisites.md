@@ -26,7 +26,7 @@ easily control the number of users who have Editor or Owner roles.
 
 To create a service account for Forseti Inventory, Scanner, and Enforcer,
 follow the steps below. For a detailed explanation including your options and
-best practices see the [Forseti Security Best Practices Guide]({% link _docs/guides/forseti-security-best-practices.md %}).
+best practices see the [Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %}).
 
   1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
