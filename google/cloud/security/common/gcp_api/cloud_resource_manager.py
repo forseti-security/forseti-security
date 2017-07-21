@@ -14,7 +14,7 @@
 
 """Wrapper for Resource Manager API client."""
 
-from googleapiclient.errors import HttpError
+from googleapiclient import errors
 from httplib2 import HttpLib2Error
 from ratelimiter import RateLimiter
 
@@ -66,7 +66,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             request = projects_api.get(projectId=project_id)
             response = self._execute(request, self.rate_limiter)
             return response
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
     def get_projects(self, resource_name, **filterargs):
@@ -100,7 +100,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 request = projects_api.list_next(
                     previous_request=request,
                     previous_response=response)
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_project_iam_policies(self, resource_name, project_identifier):
@@ -121,7 +121,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             request = projects_api.getIamPolicy(
                 resource=project_identifier, body={})
             return self._execute(request, self.rate_limiter)
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_organization(self, org_name):
@@ -139,7 +139,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             request = organizations_api.get(name=org_name)
             response = self._execute(request, self.rate_limiter)
             return response
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(org_name, e)
 
     def get_organizations(self, resource_name):
@@ -166,7 +166,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 next_page_token = response.get('nextPageToken')
                 if not next_page_token:
                     break
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_org_iam_policies(self, resource_name, org_id):
@@ -190,7 +190,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 resource=resource_id, body={})
             return {'org_id': org_id,
                     'iam_policy': self._execute(request, self.rate_limiter)}
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_folder(self, folder_name):
@@ -212,7 +212,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             request = folders_api.get(name=folder_name)
             response = self._execute(request, self.rate_limiter)
             return response
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(folder_name, e)
 
     def get_folders(self, resource_name, **kwargs):
@@ -246,7 +246,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 next_page_token = response.get('nextPageToken')
                 if not next_page_token:
                     break
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_folder_iam_policies(self, resource_name, folder_id):
@@ -269,5 +269,5 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                 resource=resource_id, body={})
             return {'folder_id': folder_id,
                     'iam_policy': self._execute(request, self.rate_limiter)}
-        except (HttpError, HttpLib2Error) as e:
+        except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
