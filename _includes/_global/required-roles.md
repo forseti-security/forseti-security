@@ -15,7 +15,7 @@
 
 **Granted on the project where Forseti Security is deployed**
 
- `forseti_inventory` and `forseti_scanner` require:
+ `forseti_inventory`, `forseti_scanner`, and `forseti_enforcer` require:
 
  * `roles/storage.objectViewer`
  * `roles/storage.objectCreator`

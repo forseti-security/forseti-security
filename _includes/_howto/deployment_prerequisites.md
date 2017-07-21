@@ -30,16 +30,7 @@ best practices see the [Forseti Security Best Practices Guide]({% link _docs/gui
 
   1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
-  1. Create and download the json key to your local environment.
-  1. Set an environment variable to configure the Application Default
-  Credentials to reference the key by running
-  
-      ```bash
-      $ export GOOGLE_APPLICATION_CREDENTIALS=SERVICE_ACCOUNT_KEY_PATH
-      ``` 
-          
-  where `SERVICE_ACCOUNT_KEY_PATH` is the path to the json service account key
-  you just downloaded.
+  1. Create a key
   1. Grant the required Cloud IAM roles to the service account by running the
   following:
   
@@ -68,11 +59,6 @@ best practices see the [Forseti Security Best Practices Guide]({% link _docs/gui
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/servicemanagement.quotaViewer
-      ```
-      ```bash
-      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/cloudsql.viewer
       ```
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
