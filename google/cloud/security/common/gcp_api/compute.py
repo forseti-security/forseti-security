@@ -280,34 +280,3 @@ class ComputeClient(_base_client.BaseClient):
 
         return self._flatten_aggregated_list_results(
             paged_results, 'instanceGroupManagers')
-
-    def get_regional_instance_groups(self, project_id):
-        """Get the regional instance groups for a project.
-
-        Args:
-            project_id (str): The project id.
-
-        Return:
-            list: A list of regional instance groups for this project.
-
-        Raise:
-            api_errors.ApiExecutionError: If API raises an error.
-        """
-        instance_groups_api = self.service.regionInstanceGroups()
-        list_request = instance_groups_api.aggregatedList(
-            project=project_id)
-        list_next_request = instance_groups_api.aggregatedList_next
-
-        paged_results = self._build_paged_result(
-            list_request, instance_groups_api, self.rate_limiter,
-            next_stub=list_next_request)
-
-        instance_groups = self._flatten_aggregated_list_results(
-            paged_results, 'instanceGroups')
-        for instance_group in instance_groups:
-            instance_group['instance_urls'] = self.get_instance_group_instances(
-                project_id,
-                # Turn a zone URL into a zone name
-                os.path.basename(instance_group.get('zone')),
-                instance_group.get('name'))
-        return instance_groups
