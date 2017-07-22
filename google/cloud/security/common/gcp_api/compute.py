@@ -171,8 +171,9 @@ class ComputeClient(_base_client.BaseClient):
         Return:
             list: instance URLs for this instance group.
 
-        Raise:
+        Raises:
             api_errors.ApiExecutionError: if API raises an error.
+            ValueError: invalid combination of parameters
         """
         if not bool(zone) ^ bool(region):
             raise ValueError('One and only one of zone and region must be '
