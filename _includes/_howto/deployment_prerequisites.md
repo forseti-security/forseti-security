@@ -69,7 +69,7 @@ follow the steps below.
       --role=roles/cloudsql.viewer
       ```
       
-      **It should be noted that binding at any other level than the Organization
+      **Note that binding at any other level than the Organization
       limits `forseti_enforcer`.**
       
       ```bash

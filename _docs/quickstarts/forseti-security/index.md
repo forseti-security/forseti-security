@@ -85,8 +85,7 @@ file based on your input.
   1. Optionally create a new service account or enter an existing service
   account for getting GSuite groups.
   1. Next, the setup wizard automatically assigns the required roles to the GCP service
-  account. The [Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %})
-  has more detail on the required roles.
+  account. For details about the required roles, see [Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %})
   1. Enter a name for your bucket and Cloud SQL instance.
   1. Setup wizard will create a Deployment Manager template based on your input
   as well as ask whether you want to create the deployment.

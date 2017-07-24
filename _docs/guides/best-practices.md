@@ -6,7 +6,7 @@ order: 004
 
 ## Service Accounts
 When you use multiple service accounts with your Forseti Security deployments,
-you fulfill the security best practice of least privilege. Following are the
+you fulfill the security best practice of privilege separation. Following are the
 scenarios for which it's best to use separate service accounts:
 
  * **[Forseti Security Service Account](#forseti-security-service-account)**
@@ -42,8 +42,8 @@ for the service account would be `forseti-security-gsuite-groups`.
 ### Forseti Explain Service Account
 You can use the Forseti Security Service account for IAM Explain. However,
 since the `explain` service is an interactive tool and runs on its own GCE
-instance, it's best to apply least privilege by creating a separate service
-account for IAM Explain.
+instance, it's best to apply privilege separation principles by creating a
+separate service account for IAM Explain.
 
 If you enable IAM Explain and create a service account, a good name for the
 service account would be `forseti-security-iam-explain`.
