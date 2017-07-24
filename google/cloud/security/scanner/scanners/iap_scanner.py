@@ -174,7 +174,8 @@ class _RunData(object):
                 bool: whether the entry is relevant to the source being
                       evaluated
             """
-            if firewall_entry.get('IPProtocol') not in (6, '6', 'tcp'):
+            if firewall_entry.get('IPProtocol') not in (
+                    None, 6, '6', 'tcp', 'all'):
                 return False
             if not firewall_entry.get('ports'):
                 return True
@@ -248,7 +249,7 @@ class _RunData(object):
             instance = self.find_instance_by_url(instance_url)
             if not instance:
                 continue
-            tags.update(instance.tags)
+            tags.update(instance.tags.get('items', []))
 
         # If it's a managed instance group, also get tags from the
         # instance template.
@@ -349,6 +350,8 @@ class _RunData(object):
 
 class IapScanner(base_scanner.BaseScanner):
     """Pipeline to IAP-related data from DAO"""
+
+    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iap.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
@@ -452,6 +455,7 @@ class IapScanner(base_scanner.BaseScanner):
                 # from the saved copy.
                 if self.global_configs.get('email_recipient') is not None:
                     payload = {
+                        'email_description': 'IAP Scan',
                         'email_sender':
                             self.global_configs.get('email_sender'),
                         'email_recipient':

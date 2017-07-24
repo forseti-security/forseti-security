@@ -17,7 +17,7 @@
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
-from googleapiclient.errors import HttpError
+from googleapiclient import errors
 
 
 class AppEngineClient(_base_client.BaseClient):
@@ -65,7 +65,7 @@ class AppEngineClient(_base_client.BaseClient):
         request = apps.get(appsId=project_id)
         try:
             app = self._execute(request, self.rate_limiter)
-        except HttpError as e:
+        except errors.HttpError as e:
             resp = e.resp
             if resp.status == '404':
                 # TODO: handle error more gracefully

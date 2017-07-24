@@ -12,24 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This is an input file that is used by the Forseti prerequisites setup
+# wizard to generate an actual forseti_conf.yaml. It's better to work off
+# the forseti_conf.yaml.sample than this one if you are editing the config
+# by hand.
+
 global:
 
     # database
-    db_host: DB_HOST
-    db_user: DB_USER
-    db_name: DB_NAME
+    db_host: 127.0.0.1
+    db_user: root
+    db_name: forseti_security
 
     # gsuite
-    groups_service_account_key_file: GROUPS_SERVICE_ACCOUNT_KEY_FILE
-    domain_super_admin_email: DOMAIN_SUPER_ADMIN_EMAIL
+    groups_service_account_key_file: {GROUPS_SERVICE_ACCOUNT_KEY_FILE}
+    domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
 
     # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
 
-    email_recipient: EMAIL_RECIPIENT
-    email_sender: EMAIL_SENDER
-    sendgrid_api_key: SENDGRID_API_KEY
+    email_recipient: {EMAIL_RECIPIENT}
+    email_sender: {EMAIL_SENDER}
+    sendgrid_api_key: {SENDGRID_API_KEY}
 
     # quota
     # The pre-populated values are the defaults from GCP.
@@ -97,14 +102,14 @@ scanner:
     # Output path (do not include filename).
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
-    output_path: OUTPUT_PATH
+    output_path: gs://{SCANNER_BUCKET}/scanner_violations
 
     # Rules path (do not include filename).
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/rules_path
     # if no rules_path is specified, rules are
     # searched in /path/to/forseti_security/rules/
-    # rules_path: RULES_PATH
+    rules_path: /home/ubuntu/forseti-security/rules
 
     scanners:
         - name: bigquery
@@ -116,7 +121,7 @@ scanner:
         - name: forwarding_rule
           enabled: true
         - name: group
-          enabled: true
+          enabled: {ENABLE_GROUP_SCANNER}
         - name: iam_policy
           enabled: true
         - name: iap
@@ -134,6 +139,6 @@ notifier:
           pipelines:
             - name: email_violations_pipeline
               configuration:
-                sendgrid_api_key: ''
-                sender: ''
-                recipient: ''
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}

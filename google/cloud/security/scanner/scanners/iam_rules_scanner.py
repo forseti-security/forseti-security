@@ -37,6 +37,8 @@ LOGGER = log_util.get_logger(__name__)
 class IamPolicyScanner(base_scanner.BaseScanner):
     """Scanner for IAM data."""
 
+    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iam.{}.csv'
+
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
         """Initialization.
@@ -124,6 +126,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 # from the saved copy.
                 if self.global_configs.get('email_recipient') is not None:
                     payload = {
+                        'email_description': 'Policy Scan',
                         'email_sender':
                             self.global_configs.get('email_sender'),
                         'email_recipient':

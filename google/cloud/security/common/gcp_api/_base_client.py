@@ -17,8 +17,9 @@
 import json
 import httplib2
 
-from apiclient import discovery
-from googleapiclient.errors import HttpError
+import googleapiclient
+from googleapiclient import discovery
+from googleapiclient import errors
 from oauth2client.client import GoogleCredentials
 from retrying import retry
 
@@ -28,6 +29,8 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
+# Support older versions of apiclient without cache support
+SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -41,8 +44,11 @@ def _attach_user_agent(request):
     Returns:
         HttpRequest: A modified googleapiclient request object.
     """
-    user_agent = request.headers['user-agent']
-    request.headers['user-agent'] = user_agent + ', %s/%s ' % (
+    user_agent = request.headers.get('user-agent', '')
+    if not user_agent or forseti_security.__package_name__ in user_agent:
+        return request
+
+    request.headers['user-agent'] = user_agent + ', %s/%s' % (
         forseti_security.__package_name__,
         forseti_security.__version__)
 
@@ -93,12 +99,13 @@ class BaseClient(object):
                         'in Forseti, proceed at your own risk.',
                         api_name, version)
 
-        should_cache_discovery = kwargs.get('cache_discovery')
+        discovery_kwargs = {'credentials': self._credentials}
+        if SUPPORT_DISCOVERY_CACHE:
+            discovery_kwargs['cache_discovery'] = kwargs.get('cache_discovery')
 
         self.service = discovery.build(self.name,
                                        self.version,
-                                       credentials=self._credentials,
-                                       cache_discovery=should_cache_discovery)
+                                       **discovery_kwargs)
 
     def __repr__(self):
         """The object representation.
@@ -136,7 +143,7 @@ class BaseClient(object):
                 with rate_limiter:
                     return request.execute()
             return request.execute()
-        except HttpError as e:
+        except errors.HttpError as e:
             if (e.resp.status == 403 and
                     e.resp.get('content-type', '').startswith(
                         'application/json')):
@@ -153,13 +160,13 @@ class BaseClient(object):
                 # exception to indicate it to callers. Otherwise, propagate
                 # the initial exception.
                 error_details = json.loads(e.content)
-                errors = error_details.get('error', {}).get('errors', [])
+                all_errors = error_details.get('error', {}).get('errors', [])
                 api_disabled_errors = [
-                    error for error in errors
+                    error for error in all_errors
                     if (error.get('domain') == 'usageLimits'
                         and error.get('reason') == 'accessNotConfigured')]
                 if (api_disabled_errors and
-                        len(api_disabled_errors) == len(errors)):
+                        len(api_disabled_errors) == len(all_errors)):
                     raise api_errors.ApiNotEnabledError(
                         api_disabled_errors[0].get('extendedHelp', ''),
                         e)
@@ -205,7 +212,7 @@ class BaseClient(object):
                 # not be any resources. So, just swallow the error:
                 # we're done!
                 break
-            except (HttpError, httplib2.HttpLib2Error) as e:
+            except (errors.HttpError, httplib2.HttpLib2Error) as e:
                 raise api_errors.ApiExecutionError(api_stub, e)
 
         return results
