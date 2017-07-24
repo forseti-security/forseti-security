@@ -466,12 +466,12 @@ class ForsetiGcpSetup(object):
         svc_acct_actions = [
             {'usage': 'accessing GCP.',
              'acct': 'gcp_service_account',
-             'default_name': 'forseti-gcp'},
+             'default_name': 'forseti-security'},
             {'usage': ('getting GSuite groups. This should be a different '
                        'service account from the one you are using for '
                        'accessing GCP.'),
              'acct': 'gsuite_service_account',
-             'default_name': 'forseti-gsuite',
+             'default_name': 'forseti-security-gsuite',
              'skippable': True},
         ]
         for action in svc_acct_actions:
@@ -929,10 +929,8 @@ class ForsetiGcpSetup(object):
         """
         self._print_banner('Post-setup instructions')
 
-        print('Congratulations! You\'ve completed the Forseti prerequisite '
-              'setup.\n')
-
         if self.gsuite_service_account:
+            print('Here are your next steps:\n')
             print('It looks like you created a service account for retrieving '
                   'GSuite groups.\n'
                   'There are just a few more steps to enable the groups '
