@@ -77,24 +77,15 @@ file based on your input.
       * If billing isn't enabled, follow the prompts to enable billing, then
     return to the command-line.
   1. Next, the setup wizard automatically enables required APIs:
-      - Admin SDK API
-      - Cloud SQL API
-      - Cloud SQL Admin API
-      - Cloud Resource Manager API
-      - Compute Engine API
-      - Deployment Manager API
+  
+  {% include _global/required_apis.md %}
+  
   1. Create a new service account or enter an existing service account for
   accessing GCP.
   1. Optionally create a new service account or enter an existing service
   account for getting GSuite groups.
-  1. Next, the setup wizard automatically assigns roles to the GCP service
-  account:
-      - `roles/browser`
-      - `roles/compute.networkAdmin`
-      - `roles/editor`
-      - `roles/iam.securityReviewer`
-      - `roles/resourcemanager.folderAdmin`
-      - `roles/storage.admin`
+  1. Next, the setup wizard automatically assigns the required roles to the GCP service
+  account. For details about the required roles, see [Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %})
   1. Enter a name for your bucket and Cloud SQL instance.
   1. Setup wizard will create a Deployment Manager template based on your input
   as well as ask whether you want to create the deployment.

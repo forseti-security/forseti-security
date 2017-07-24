@@ -13,11 +13,8 @@ enable required APIs:
       account.
   1. Enable the required APIs by running `gcloud beta service-management enable`
   for each of the following API paths:
-      - **Cloud SQL API:** `sql-component.googleapis.com`
-      - **Cloud SQL Admin API:** `sqladmin.googleapis.com`
-      - **Cloud Resource Manager API:** `cloudresourcemanager.googleapis.com`
-      - **Admin SDK API:** `admin.googleapis.com`
-      - **Deployment Manager API:** `deploymentmanager.googleapis.com`
+  
+  {% include _global/required_apis.md %}
 
 ### Creating service accounts
 
@@ -27,22 +24,20 @@ modules. It's best to create your Forseti service accounts under a new GCP
 project. You'll be able to use the service accounts in other projects and
 easily control the number of users who have Editor or Owner roles.
 
-To create a service account for Forseti Inventory, Scanner, and Enforcer, follow the steps below:
+**For a detailed explanation of how Forseti Security uses service accounts,
+including your options and best practices, see the
+[Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %}).**
+
+To create a service account for Forseti Inventory, Scanner, and Enforcer,
+follow the steps below.
 
   1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
-  1. Create and download the json key to your local environment.
-  1. Set an environment variable to configure the Application Default
-  Credentials to reference the key by running
-  
-      ```bash
-      $ export GOOGLE_APPLICATION_CREDENTIALS=SERVICE_ACCOUNT_KEY_PATH
-      ``` 
-          
-  where `SERVICE_ACCOUNT_KEY_PATH` is the path to the json service account key you just downloaded.
+  1. Create a key
   1. Grant the required Cloud IAM roles to the service account by running the
   following:
-
+  
+      **Organization level bindings**
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
@@ -51,12 +46,7 @@ To create a service account for Forseti Inventory, Scanner, and Enforcer, follow
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/compute.networkAdmin
-      ```
-      ```bash
-      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/editor
+      --role=roles/compute.networkViewer
       ```
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
@@ -66,10 +56,41 @@ To create a service account for Forseti Inventory, Scanner, and Enforcer, follow
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/resourcemanager.folderAdmin
+      --role=roles/appengine.appViewer
       ```
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
-      --role=roles/storage.admin
+      --role=roles/servicemanagement.quotaViewer
+      ```
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/cloudsql.viewer
+      ```
+      
+      **Note that binding at any other level than the Organization
+      limits `forseti_enforcer`.**
+      
+      ```bash
+      $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/compute.securityAdmin
+      ```
+      
+      **Project level bindings**
+      ```bash
+      $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/storage.objectViewer
+      ```
+      ```bash
+      $ gcloud rpojects add-iam-policy-binding FORSETI_PROJECT_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/storage.objectCreator
+      ```
+      ```bash
+      $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
+      --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
+      --role=roles/cloudsql.client
       ```
