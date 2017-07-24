@@ -122,8 +122,15 @@ def main(_):
 
     # TODO: Make resilient by letting the batch continue to run even if one
     # scanner errors out.
+    # TODO: fix the bare except
+    # pylint: disable=bare-except
     for scanner in runnable_scanners:
-        scanner.run()
+        try:
+            scanner.run()
+        except:
+            LOGGER.error('Error running scanner: %s',
+                         scanner.__class__.__name__, exc_info=True)
+    # pylint: enable=bare-except
 
     LOGGER.info('Scan complete!')
 
