@@ -67,8 +67,7 @@ class LoadProjectsBucketsAclsPipelineTest(ForsetiTestCase):
         self.mock_dao.get_raw_buckets = mock_get_raw_buckets
         mock_get_raw_buckets.return_value = fake_buckets.FAKE_RAW_BUCKET_ROW
         bucket_acls = self.pipeline._retrieve()
-        mock_get_raw_buckets.assert_called_once_with(
-            'buckets', self.cycle_timestamp)
+        mock_get_raw_buckets.assert_called_once_with(self.cycle_timestamp)
         self.assertEquals(
             fake_buckets.EXPECTED_RAW_BUCKET_JSON,
             bucket_acls)

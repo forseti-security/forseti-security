@@ -80,8 +80,7 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
 
         # Get the projects for which we will retrieve the buckets.
         try:
-            raw_buckets = self.dao.get_raw_buckets(
-                'buckets', self.cycle_timestamp)
+            raw_buckets = self.dao.get_raw_buckets(self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 

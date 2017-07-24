@@ -36,6 +36,8 @@ LOGGER = log_util.get_logger(__name__)
 class BucketDao(project_dao.ProjectDao):
     """Data access object (DAO) for Organizations."""
 
+    RESOURCE_RAW_BUCKETS = 'raw_buckets'
+
     def get_buckets_by_project_number(self, resource_name,
                                       timestamp, project_number):
         """Select the buckets for project from a buckets snapshot table.
@@ -97,11 +99,10 @@ class BucketDao(project_dao.ProjectDao):
             LOGGER.error(errors.MySQLError(resource_name, e))
         return bucket_acls
 
-    def get_raw_buckets(self, resource_name, timestamp):
+    def get_raw_buckets(self, timestamp):
         """Select the bucket and its raw json.
 
         Args:
-            resource_name (str): The resource type name.
             timestamp (str): The snapshot timestamp, formatted as
                 YYYYMMDDTHHMMSSZ.
 
@@ -110,5 +111,5 @@ class BucketDao(project_dao.ProjectDao):
         """
         buckets_sql = select_data.RAW_BUCKETS.format(timestamp)
         rows = self.execute_sql_with_fetch(
-            resource_name, buckets_sql, None)
+            self.RESOURCE_RAW_BUCKETS, buckets_sql, None)
         return rows

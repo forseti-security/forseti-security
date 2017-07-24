@@ -84,8 +84,7 @@ class BucketDaoTest(ForsetiTestCase):
         self.fetch_mock.return_value = fake_return
 
         fake_query = select_data.RAW_BUCKETS.format(self.fake_timestamp)
-        actual = self.bucket_dao.get_raw_buckets(
-            self.resource_name, self.fake_timestamp)
+        actual = self.bucket_dao.get_raw_buckets(self.fake_timestamp)
 
         self.assertEquals(fake_return, actual)
 
