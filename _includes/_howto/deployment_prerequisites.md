@@ -24,7 +24,7 @@ modules. It's best to create your Forseti service accounts under a new GCP
 project. You'll be able to use the service accounts in other projects and
 easily control the number of users who have Editor or Owner roles.
 
-**For a detailed explanation of how Forseti Security uses Service Accounts,
+**For a detailed explanation of how Forseti Security uses service accounts,
 including your options and best practices, see the
 [Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %}).**
 
