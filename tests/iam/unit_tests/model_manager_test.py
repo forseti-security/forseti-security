@@ -22,8 +22,6 @@ import unittest
 from google.cloud.security.iam.dao import ModelManager, session_creator, create_engine
 from google.cloud.security.common.util.threadpool import ThreadPool
 
-from sqlalchemy import MetaData
-
 
 def create_test_engine():
     tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
@@ -35,7 +33,6 @@ class ModelManagerTest(ForsetiTestCase):
 
     def setUp(self):
         self.engine, self.dbfile = create_test_engine()
-        self.metadata=MetaData(self.engine, reflect=True)
         self.model_manager = ModelManager(self.engine)
 
     def tearDown(self):
@@ -43,28 +40,20 @@ class ModelManagerTest(ForsetiTestCase):
 
     def test_create_get_delete_one_model(self):
         """Start with no models, create one, delete it again."""
-        self.assertEqual(0, len(self.model_manager.models()),
+        self.assertEquals(0, len(self.model_manager.models()),
                           'Expecting no models to exist')
-        self.assertEqual(1,len(self.metadata.tables),
-                          'Expecting only model table')
         handle = self.model_manager.create(name='test_model')
         self.assertEqual([handle],
                          [m.handle for m in self.model_manager.models()],
                          'Expecting the created model to be listed')
-        self.assertEqual(10,len(self.metadata.tables),
-                          'Expecting the created 9 tables')
         self.model_manager.delete(handle)
         self.assertEqual(0, len(self.model_manager.models()),
                          'Expecting no models to exist after deletion')
-        self.assertEqual(1, len(self.metadata.tables),
-                         'Expecting only model table remain')
 
     def test_create_get_delete_multiple_models(self):
         """Start with no models, create multiple, delete them again."""
         self.assertEqual(0, len(self.model_manager.models()),
                          'Expecting no models to exist')
-        self.assertEqual(1,len(self.metadata.tables),
-                         'Expecting only model table')
         handles = []
         num_models = 32
         for i in range(num_models):
@@ -75,14 +64,11 @@ class ModelManagerTest(ForsetiTestCase):
                          'Expecting the created models to be listed')
 
         self.assertEqual(len(handles), num_models)
-        self.assertEqual(len(self.metadata_tables), num_models*9+1)
 
         for i in range(num_models):
             self.model_manager.delete(handles[i])
         self.assertEqual(0, len(self.model_manager.models()),
                          'Expecting no models to exist after deletion')
-        self.assertEqual(1,len(self.metadata.tables),
-                         'Expecting only model table')
 
     def test_concurrent_access(self):
         """
