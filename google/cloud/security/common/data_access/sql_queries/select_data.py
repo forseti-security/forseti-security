@@ -159,9 +159,14 @@ RAW_BUCKETS = """
 """
 
 BUCKETS_BY_PROJECT_ID = """
-    SELECT bucket_name
+    SELECT bucket_id
     FROM buckets_{0}
     WHERE project_number = {1};
+"""
+
+SELECT_STORAGE_OBJECTS = """
+    SELECT project_number, bucket_id, object_name, raw
+    FROM storage_objects_{0};
 """
 
 # TODO: reduce these sql to a generic statement

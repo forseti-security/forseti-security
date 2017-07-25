@@ -115,6 +115,38 @@ CREATE_BUCKETS_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_BUCKET_IAM_POLICIES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,
+        `bucket_id` varchar(255) DEFAULT NULL,
+        `raw` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_STORAGE_OBJECTS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,
+        `bucket_id` varchar(255) DEFAULT NULL,
+        `object_name` varchar(255) DEFAULT NULL,
+        `raw` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_STORAGE_OBJECT_POLICIES = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_number` bigint(20) NOT NULL,
+        `bucket_id` varchar(255) DEFAULT NULL,
+        `object_name` varchar(255) DEFAULT NULL,
+        `raw` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_CLOUDSQL_INSTANCES_TABLE = """
     CREATE TABLE {0} (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
