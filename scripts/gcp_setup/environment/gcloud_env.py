@@ -72,6 +72,7 @@ class ForsetiGcpSetup(object):
         'roles/appengine.appViewer',
         'roles/servicemanagement.quotaViewer',
         'roles/cloudsql.viewer',
+        'roles/compute.securityAdmin',
     ]
 
     PROJECT_IAM_ROLES = [
@@ -613,6 +614,7 @@ class ForsetiGcpSetup(object):
         Project Browser
         Security Reviewer
         Service Management Quota Viewer
+        Security Admin
 
         Project:
         Cloud SQL Client
