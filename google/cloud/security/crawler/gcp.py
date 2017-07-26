@@ -56,8 +56,7 @@ class TestApiClient(ApiClient):
                             },
                     ]
             }
-        for item in data[orgid]:
-            yield item
+        return self._iter_generic(orgid, data)
 
     def _iter_folders(self, orgid):
         data = {
@@ -70,29 +69,37 @@ class TestApiClient(ApiClient):
                             },
                     ]
             }
-        for item in data[orgid]:
-            yield item
+        return self._iter_generic(orgid, data)
 
     def _iter_buckets(self, projectid):
         data = {
             }
-        for item in data:
-            yield item
+        return self._iter_generic(projectid, data)
 
     def _iter_objects(self, bucketid):
         data = {
             }
-        for item in data:
-            yield item
+        return self._iter_generic(bucketid, data)
 
     def _iter_projects_by_folder(self, folderid):
         data = {
+                'folder-1': [
+                        {
+                            'id': 'folder-1/project-1',
+                            },
+                    ]
             }
-        for item in data:
-            yield item
+        return self._iter_generic(folderid, data)
 
     def _iter_folders_by_folder(self, folderid):
         data = {
             }
-        for item in data:
-            yield item
+        return self._iter_generic(folderid, data)
+
+    def _iter_generic(self, key, data):
+        try:
+            for item in data[key]:
+                yield item
+        except KeyError:
+            for item in []:
+                yield item
