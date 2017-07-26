@@ -16,8 +16,83 @@
 
 
 class ApiClient(object):
-    pass
+    def fetch_organization(self, orgid):
+        raise NotImplementedError()
+
+    def _iter_projects(self, orgid):
+        raise NotImplementedError()
+
+    def _iter_folders(self, orgid):
+        raise NotImplementedError()
+
+    def _iter_buckets(self, projectid):
+        raise NotImplementedError()
+
+    def _iter_projects_by_folder(self, folderid):
+        raise NotImplementedError()
+
+    def _iter_folders_by_folder(self, folderid):
+        raise NotImplementedError()
 
 
 class TestApiClient(ApiClient):
-    pass
+
+    def fetch_organization(self, orgid):
+        data = {
+                'fuubar': {
+                        'id': 'fuubar',
+                    }
+            }
+        return data[orgid]
+
+    def _iter_projects(self, orgid):
+        data = {
+                'fuubar': [
+                        {
+                            'id': 'project-1',
+                            },
+                        {
+                            'id': 'project-2',
+                            },
+                    ]
+            }
+        for item in data[orgid]:
+            yield item
+
+    def _iter_folders(self, orgid):
+        data = {
+                'fuubar': [
+                        {
+                            'id': 'folder-1',
+                            },
+                        {
+                            'id': 'folder-2',
+                            },
+                    ]
+            }
+        for item in data[orgid]:
+            yield item
+
+    def _iter_buckets(self, projectid):
+        data = {
+            }
+        for item in data:
+            yield item
+
+    def _iter_objects(self, bucketid):
+        data = {
+            }
+        for item in data:
+            yield item
+
+    def _iter_projects_by_folder(self, folderid):
+        data = {
+            }
+        for item in data:
+            yield item
+
+    def _iter_folders_by_folder(self, folderid):
+        data = {
+            }
+        for item in data:
+            yield item

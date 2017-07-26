@@ -37,10 +37,12 @@ class Resource(object):
         self._stack = None
 
     def key(self):
-        raise NotImplementedError()
+        return self._data['id']
 
     def accept(self, visitor, stack=[]):
         self._stack = stack
+        self._visitor = visitor
+        self._retrieve_meta()
         visitor.visit(self)
         for child in self._iter_children():
             child.accept(visitor, stack+[self])
@@ -48,42 +50,82 @@ class Resource(object):
     def _iter_children(self):
         raise NotImplementedError()
 
+    def _retrieve_meta(self):
+        if self._visitor.should_retrieve_iam_policy():
+            self._retrieve_iam_policy()
+        if self._visitor.should_retrieve_gcs_policy():
+            self._retrieve_gcs_policy()
+
     def _retrieve_iam_policy(self):
         raise NotImplementedError()
 
     def _retrieve_gcs_policy(self):
         raise NotImplementedError()
 
-    def _stack(self):
+    def stack(self):
         if self._stack is None:
             raise Exception('Stack not initialized yet')
         return self._stack
 
+    def visitor(self):
+        if self._visitor is None:
+            raise Exception('Visitor not initialized yet')
+        return self._visitor
+
 
 class Organization(Resource):
     @classmethod
-    def fetch(cls, resource_key):
-        raise NotImplementedError('not *yet* implemented')
+    def fetch(cls, client, resource_key):
+        data = client.fetch_organization(resource_key)
+        return FACTORIES['organization'].create_new(data)
 
     def _iter_children(self):
-        raise NotImplementedError('not *yet* implemented')
+        for child in self._iter_folders():
+            yield child
+        for child in self._iter_projects():
+            yield child
 
     def _iter_projects(self):
-        raise NotImplementedError('not *yet* implemented')
+        visitor = self.visitor()
+        gcp = visitor.get_client()
+        for project_data in gcp._iter_projects(orgid=self._data['id']):
+            yield FACTORIES['project'].create_new(project_data)
 
     def _iter_folders(self):
-        raise NotImplementedError('not *yet* implemented')
-
-    def retrieve_meta(self):
-        raise NotImplementedError('not *yet* implemented')
+        visitor = self.visitor()
+        gcp = visitor.get_client()
+        for folder_data in gcp._iter_folders(orgid=self._data['id']):
+            yield FACTORIES['folder'].create_new(folder_data)
 
 
 class Folder(Resource):
-    pass
+    def _iter_children(self):
+        for child in self._iter_folders():
+            yield child
+        for child in self._iter_projects():
+            yield child
+
+    def _iter_projects(self):
+        visitor = self.visitor()
+        gcp = visitor.get_client()
+        for project_data in gcp._iter_projects_by_folder(folderid=self._data['id']):
+            yield FACTORIES['project'].create_new(project_data)
+
+    def _iter_folders(self):
+        visitor = self.visitor()
+        gcp = visitor.get_client()
+        for folder_data in gcp._iter_folders_by_folder(folderid=self._data['id']):
+            yield FACTORIES['folder'].create_new(folder_data)
 
 
 class Project(Resource):
-    pass
+    def _iter_children(self):
+        for child in self._iter_buckets():
+            yield child
+
+    def _iter_buckets(self):
+        for child in []:
+            yield child
 
 
 class Bucket(Resource):
@@ -94,7 +136,7 @@ class GcsObject(Resource):
     pass
 
 
-RESOURCES = {
+FACTORIES = {
 
         'organization': ResourceFactory({
                 'dependsOn': [],
@@ -127,6 +169,7 @@ RESOURCES = {
                 'isLeaf': False,
                 'cls': Bucket,
             }),
+
         'object': ResourceFactory({
                 'dependsOn': ['bucket'],
                 'hasIamPolicy': True,
