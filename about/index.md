@@ -6,7 +6,7 @@ title: About
 Forseti Security is a community-driven collection of open source tools to
 improve the security of your Google Cloud Platform (GCP) environments.
 
-[Get Started]({% link _docs/quickstarts/forseti-security/index.md %}) with
+**[Get Started]({% link _docs/quickstarts/forseti-security/index.md %})** with
 Forseti Security.
 
 ## Forseti Security
