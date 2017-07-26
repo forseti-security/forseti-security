@@ -14,6 +14,8 @@
 
 """ Crawler implementation. """
 
+import json
+
 
 class ResourceFactory(object):
     def __init__(self, attributes):
@@ -72,6 +74,10 @@ class Resource(object):
             raise Exception('Visitor not initialized yet')
         return self._visitor
 
+    def __repr__(self):
+        return '{}<{}>'.format(
+            self.__class__.__name__,
+            json.dumps(self._data))
 
 class Organization(Resource):
     @classmethod
