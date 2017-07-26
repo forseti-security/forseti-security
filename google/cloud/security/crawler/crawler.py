@@ -26,6 +26,7 @@ class CrawlerConfig(dict):
         self.storage = storage
         self.progresser = progresser
         self.variables = variables
+        self.client = api_client
 
 
 class Crawler(object):
@@ -34,26 +35,40 @@ class Crawler(object):
 
     def run(self, resource):
         resource.accept(self)
+        return self.config.progresser
 
     def visit(self, resource):
         storage = self.config.storage
+        progresser = self.config.progresser
         try:
             storage.write(resource)
         except Exception as e:
-            progresser.on_error(e)
+            raise
+            #progresser.on_error(e)
+        else:
+            progresser.on_new_object(resource)
 
-        progresser = self.config.progresser
-        progresser.on_new_object(resource)
+    def should_retrieve_iam_policy(self):
+        return False
+
+    def should_retrieve_gcs_policy(self):
+        return False
+
+    def get_client(self):
+        return self.config.client
 
 
 if __name__ == '__main__':
+
     orgid = 'fuubar'
 
-    client = gcp.ApiClient()
+    client = gcp.TestApiClient()
+    resource = resources.Organization.fetch(client, orgid)
+
     mem = storage.Memory()
     progresser = progress.CliProgresser()
-    config = CrawlerConfig(mem, progresser)
+    config = CrawlerConfig(mem, progresser, client)
 
     crawler = Crawler(config)
-    progresser = crawler.run(resources.Organization(orgid))
+    progresser = crawler.run(resource)
     progresser.print_stats()
