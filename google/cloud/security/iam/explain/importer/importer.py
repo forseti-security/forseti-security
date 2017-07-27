@@ -728,6 +728,8 @@ class ForsetiImporter(object):
                     self.model.kick_watchdog(self.session)
                     last_watchdog_kick = time()
 
+            self.dao.denorm_group_in_group(self.session)
+
         except Exception:  # pylint: disable=broad-except
             buf = StringIO()
             traceback.print_exc(file=buf)
