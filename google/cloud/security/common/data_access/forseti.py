@@ -247,7 +247,8 @@ def create_table_names(timestamp, schema_version):
         lifecycle_state = Column(String(255))
         parent_type = Column(String(255))
         parent_id = Column(Text())
-        raw_folder = Column(Text())
+        if schema_number >= 2.0:
+            raw_folder = Column(Text())
 
         def __repr__(self):
             """String representation."""
@@ -293,7 +294,8 @@ def create_table_names(timestamp, schema_version):
         id = Column(BigInteger(), primary_key=True)
         project_number = Column(BigInteger())
         name = Column(String(255))
-        raw_cloudsql_instance = Column(Text())
+        if schema_number >= 2.0:
+            raw_cloudsql_instance = Column(Text())
 
         def __repr__(self):
             """String representation."""

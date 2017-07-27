@@ -203,7 +203,7 @@ def define_model(model_name, dbengine, model_seed):
         type = Column(String(64))
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256))
-	self_link = Column(String(1024))
+        self_link = Column(String(1024))
         create_time = Column(DateTime)
         raw_data = Column(Text())
 
