@@ -14,7 +14,7 @@
 
 """ Database abstraction objects for IAM Explain. """
 
-# pylint: disable=too-many-lines,singleton-comparison
+# pylint: disable=too-many-lines
 
 import datetime
 import os
@@ -41,7 +41,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
-from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
@@ -204,6 +203,9 @@ def define_model(model_name, dbengine, model_seed):
         type = Column(String(64))
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256))
+        self_link = Column(String(1024))
+        create_time = Column(DateTime)
+        raw_data = Column(Text())
 
         parent_type_name = Column(
             String(128),
@@ -348,6 +350,7 @@ def define_model(model_name, dbengine, model_seed):
             Role.__table__.drop(engine)
             Member.__table__.drop(engine)
             Resource.__table__.drop(engine)
+            GroupInGroup.__table__.drop(engine)
 
         @classmethod
         def denorm_group_in_group(cls, session):
@@ -359,32 +362,18 @@ def define_model(model_name, dbengine, model_seed):
                 int: Number of iterations.
             """
 
-            tbl1 = aliased(GroupInGroup.__table__, name='alias1')
-            tbl2 = aliased(GroupInGroup.__table__, name='alias2')
-            tbl3 = aliased(GroupInGroup.__table__, name='alias3')
-
             def get_dialect(session):
                 """Return the active SqlAlchemy dialect."""
                 return session.bind.dialect.name
 
             if get_dialect(session) != 'sqlite':
                 # Lock tables for denormalization
-                # including aliases 1-3
-                locked_tables = [
-                    '`{}`'.format(GroupInGroup.__tablename__),
-                    '`{}` as {}'.format(
-                        GroupInGroup.__tablename__,
-                        tbl1.name),
-                    '`{}` as {}'.format(
-                        GroupInGroup.__tablename__,
-                        tbl2.name),
-                    '`{}` as {}'.format(
-                        GroupInGroup.__tablename__,
-                        tbl3.name),
-                    group_members.name]
+                locked_tables = [GroupInGroup.__tablename__,
+                                 group_members.name]
                 lock_stmts = ['{} WRITE'.format(tbl) for tbl in locked_tables]
-                query = 'LOCK TABLES {}'.format(', '.join(lock_stmts))
-                session.execute(query)
+                session.execute('LOCK TABLES {}'.format(
+                    ', '.join(lock_stmts)))
+
             try:
                 # Remove all existing rows in the denormalization
                 session.execute(GroupInGroup.__table__.delete())
@@ -406,29 +395,20 @@ def define_model(model_name, dbengine, model_seed):
 
                 session.execute(qry)
 
+                tbl1 = aliased(GroupInGroup.__table__)
+                tbl2 = aliased(GroupInGroup.__table__)
+
                 iterations = 0
                 rows_affected = True
                 while rows_affected:
-
                     # Join membership on its own to find transitive
                     expansion = tbl1.join(tbl2, tbl1.c.member == tbl2.c.parent)
-
-                    # Left outjoin to find the entries that
-                    # are already in the table to prevent
-                    # inserting already existing entries
-                    expansion = expansion.outerjoin(
-                        tbl3,
-                        and_(tbl1.c.parent == tbl3.c.parent,
-                             tbl2.c.member == tbl3.c.member))
-
-                    # Select only such elements that are not
-                    # already in the table, indicated as NULL
-                    # values through the outer-left-join
                     stmt = (
                         select([tbl1.c.parent, tbl2.c.member])
-                        .select_from(expansion)
-                        .where(tbl3.c.parent == None)
-                        .distinct())
+                        .select_from(expansion))
+
+                    # Exclude duplicates, only insert new relations
+                    stmt = stmt.except_(select([tbl1.c.parent, tbl1.c.member]))
 
                     # Execute the query and insert into the table
                     qry = (
@@ -1273,7 +1253,6 @@ def define_model(model_name, dbengine, model_seed):
                         others.append(name)
                 return groups, others
 
-            selectables = []
             group_names, other_names = separate_groups(member_names)
 
             t_ging = GroupInGroup.__table__
@@ -1289,9 +1268,7 @@ def define_model(model_name, dbengine, model_seed):
             if not show_group_members:
                 transitive_membership = transitive_membership.where(
                     not_(t_members.c.members_name.startswith('group/')))
-
-            selectables.append(
-                transitive_membership.alias('transitive_membership'))
+            qry = session.query(transitive_membership)
 
             direct_membership = (
                 select([t_members.c.group_name, t_members.c.members_name])
@@ -1299,9 +1276,7 @@ def define_model(model_name, dbengine, model_seed):
             if not show_group_members:
                 direct_membership = direct_membership.where(
                     not_(t_members.c.members_name.startswith('group/')))
-
-            selectables.append(
-                direct_membership.alias('direct_membership'))
+            qry = qry.union(direct_membership)
 
             if show_group_members:
                 # Show groups as members of other groups
@@ -1309,15 +1284,11 @@ def define_model(model_name, dbengine, model_seed):
                     select([t_ging.c.parent, t_ging.c.member])
                     .where(t_ging.c.parent.in_(group_names))
                     )
-                selectables.append(
-                    group_in_groups.alias('group_in_groups'))
-
-            # Union all the queries
-            qry = union(*selectables)
+                qry = qry.union(group_in_groups)
 
             # Build the result dict
             result = collections.defaultdict(set)
-            for parent, child in session.execute(qry):
+            for parent, child in qry.yield_per(PER_YIELD):
                 result[parent].add(child)
             for parent in other_names:
                 result[parent] = set()

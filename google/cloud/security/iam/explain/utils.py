@@ -13,3 +13,34 @@
 # limitations under the License.
 
 """ Explain utilities """
+import datetime
+
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
+
+def _unified_time(time_str):
+    """ Return utc time, dealing with or without time zone info"""
+    if not time_str:
+        parsed_time = None
+    elif len(time_str) == 20:
+        parsed_time = datetime.datetime.strptime(time_str,
+                                                 '%Y-%m-%dT%H:%M:%SZ')
+    elif len(time_str) == 24:
+        parsed_time = datetime.datetime.strptime(time_str,
+                                                 '%Y-%m-%dT%H:%M:%S.%fZ')
+    elif len(time_str) == 29:
+        parsed_time = datetime.datetime.strptime(time_str[0:23],
+                                                 '%Y-%m-%dT%H:%M:%S.%f')
+        if time_str[23] == '+':
+            parsed_time -= datetime.timedelta(hours=int(time_str[24:26]),
+                                              minutes=int(time_str[27:29]))
+        elif time_str[23] == '-':
+            parsed_time += datetime.timedelta(hours=int(time_str[24:26]),
+                                              minutes=int(time_str[27:29]))
+    else:
+        raise Exception('The time format is different: '+time_str)
+    return parsed_time
+
+def _json_escape(json_str):
+    """ To deal with potential \n escape in the json string"""
+    return json_str.replace('\\\n', '\\n').replace('\n', '\\n')
