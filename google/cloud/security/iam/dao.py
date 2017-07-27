@@ -204,6 +204,9 @@ def define_model(model_name, dbengine, model_seed):
         type = Column(String(64))
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256))
+        self_link = Column(String(1024))
+        create_time = Column(DateTime)
+        raw_data = Column(Text())
 
         parent_type_name = Column(
             String(128),
@@ -348,6 +351,7 @@ def define_model(model_name, dbengine, model_seed):
             Role.__table__.drop(engine)
             Member.__table__.drop(engine)
             Resource.__table__.drop(engine)
+            GroupInGroup.__table__.drop(engine)
 
         @classmethod
         def denorm_group_in_group(cls, session):
