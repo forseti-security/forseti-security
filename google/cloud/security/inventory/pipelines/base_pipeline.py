@@ -54,6 +54,7 @@ class BasePipeline(object):
     @abc.abstractmethod
     def run(self):
         """Runs the pipeline."""
+        # TODO: should this raise an error?
         pass
 
     @abc.abstractmethod
