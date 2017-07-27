@@ -74,7 +74,8 @@ class ImporterTest(ForsetiTestCase):
         model = self.model_manager.model(self.model_name)
         self.assertEqual(model.state,
                          'PARTIAL_SUCCESS',
-                         'Model state should be set to PARTIAL_SUCCESS')
+                         'Model state should be set to PARTIAL_SUCCESS, but: '
+                         +str(model.state)+' with message:'+model.message)
 
     def test_status_done_basic(self):
         """Test if the status of the import is 'done'."""
@@ -103,7 +104,8 @@ class ImporterTest(ForsetiTestCase):
         model = self.model_manager.model(self.model_name)
         self.assertEqual(model.state,
                          'PARTIAL_SUCCESS',
-                         'Model state should be set to PARTIAL_SUCCESS')
+                         'Model state should be set to PARTIAL_SUCCESS, but: '
+                         +str(model.state)+' with message:'+model.message)
 
     def test_missing_group_collection(self):
         """Test if a missing group membership table is handled"""
@@ -129,10 +131,12 @@ class ImporterTest(ForsetiTestCase):
             import_runner.run()
 
         model = self.model_manager.model(self.model_name)
-        self.assertEqual(model.state, 'BROKEN', 'Model state should be BROKEN')
+        self.assertEqual(model.state, 'BROKEN',
+                         'Model state should be BROKEN')
 
         error_msg = 'Did you enable Forseti group collection?'
-        self.assertTrue(error_msg in model.message)
+        self.assertTrue(error_msg in model.message, ', but: '+str(model.state)
+                        +' with message:'+model.message)
 
 
 if __name__ == '__main__':
