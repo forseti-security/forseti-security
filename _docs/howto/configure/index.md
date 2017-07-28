@@ -1,5 +1,5 @@
 ---
-title: Enable or Change Forseti Security features
+title: Configure Forseti Security Features
 order: 101
 ---
 # {{ page.title }}
