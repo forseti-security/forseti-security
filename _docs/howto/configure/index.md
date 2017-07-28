@@ -4,7 +4,7 @@ order: 101
 ---
 # {{ page.title }}
 
-Learn how to enable or change features about Forseti Security.
+Learn how to enable or change features of Forseti Security.
 
 - [Enabling Email Notifications]({% link _docs/howto/configure/email-notification.md %})
 - [Enabling GSuite Google Groups Collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
