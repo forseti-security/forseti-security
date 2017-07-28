@@ -44,9 +44,6 @@ the following variables:
     in the template.
   - `YOUR_SERVICE_ACCOUNT`: The service account you created to read GCP
   resource data.
-  - `YOUR_ORG_ID`: Your organization ID number. You can find it in the
-  Organization Cloud IAM settings or ask your Organization Administrator for
-  help.
 
 By default, the deployment template retrieves the latest stable branch to set
 `release version` and `src-path`. To get a different release archive, change

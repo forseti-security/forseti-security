@@ -1,5 +1,5 @@
 ---
-title: Contributing to Forseti
+title: Contributing
 order: 002
 ---
 
