@@ -184,12 +184,10 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             ApiExecutionError: An error has occurred when executing the API.
         """
         organizations_api = self.service.organizations()
-        resource_id = 'organizations/%s' % org_id
         try:
             request = organizations_api.getIamPolicy(
-                resource=resource_id, body={})
-            return {'org_id': org_id,
-                    'iam_policy': self._execute(request, self.rate_limiter)}
+                resource=org_id, body={})
+            return self._execute(request, self.rate_limiter)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -271,3 +269,9 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                     'iam_policy': self._execute(request, self.rate_limiter)}
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
+
+    def folders(self):
+        return self.service.folders()
+
+    def projects(self):
+        return self.service.projects()

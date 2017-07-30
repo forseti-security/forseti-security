@@ -252,3 +252,9 @@ class StorageClient(_base_client.BaseClient):
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_id, e))
             raise api_errors.ApiExecutionError('buckets', e)
+
+    def buckets(self):
+        return self.service.buckets()
+
+    def objects(self):
+        return self.service.objects()
