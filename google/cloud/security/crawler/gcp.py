@@ -21,6 +21,7 @@ from google.cloud.security.common.gcp_api import cloud_resource_manager
 from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import compute
 from google.cloud.security.common.gcp_api import errors
+from google.cloud.security.common.gcp_api import iam
 from google.cloud.security.common.gcp_api import storage
 
 
@@ -57,6 +58,7 @@ class ApiClientImpl(ApiClient):
         self.cloudsql = cloudsql.CloudsqlClient(config)
         self.compute = compute.ComputeClient(config)
         self.storage = storage.StorageClient(config)
+        self.iam = iam.IAMClient(config)
 
     def fetch_organization(self, orgid):
         return self.crm.get_organization(orgid)
@@ -102,6 +104,22 @@ class ApiClientImpl(ApiClient):
         result = self.compute.get_firewall_rules(projectid)
         for rule in result:
             yield rule
+
+    def iter_serviceaccounts(self, projectid):
+        for serviceaccount in self.iam.get_serviceaccounts(projectid):
+            yield serviceaccount
+
+    def iter_project_roles(self, projectid):
+        for role in self.iam.get_project_roles(projectid):
+            yield role
+
+    def iter_organization_roles(self, orgid):
+        for role in self.iam.get_organization_roles(orgid):
+            yield role
+
+    def iter_curated_roles(self, orgid):
+        for role in self.iam.get_curated_roles(orgid):
+            yield role
 
     def get_organization_iam_policy(self, orgid):
         return self.crm.get_org_iam_policies(orgid, orgid)

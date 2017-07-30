@@ -196,9 +196,19 @@ class Firewall(Resource):
     pass
 
 
+class Role(Resource):
+    def key(self):
+        return self['name']
+
+
 class CloudSqlInstance(Resource):
     def key(self):
         return self['name']
+
+
+class ServiceAccount(Resource):
+    def key(self):
+        return self['uniqueId']
 
 
 class ResourceIterator(object):
@@ -279,13 +289,45 @@ class CloudSqlIterator(ResourceIterator):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)
 
 
+class ServiceAccountIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_serviceaccounts(projectid=self.resource['projectId']):
+                yield FACTORIES['serviceaccount'].create_new(data)
+
+
+class ProjectRoleIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_project_roles(projectid=self.resource['projectId']):
+                yield FACTORIES['role'].create_new(data)
+
+
+class OrganizationRoleIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        for data in gcp.iter_organization_roles(orgid=self.resource.key()):
+            yield FACTORIES['role'].create_new(data)
+
+
+class OrganizationCuratedRoleIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        for data in gcp.iter_curated_roles(orgid=self.resource.key()):
+            yield FACTORIES['role'].create_new(data)
+
+
 FACTORIES = {
 
         'organization': ResourceFactory({
                 'dependsOn': [],
                 'cls': Organization,
-                'contains': [ProjectIterator,
-                             FolderIterator
+                'contains': [#FolderIterator,
+                             #OrganizationRoleIterator,
+                             #OrganizationCuratedRoleIterator,
+                             ProjectIterator,
                              ],
             }),
 
@@ -303,7 +345,9 @@ FACTORIES = {
                              #DataSetIterator,
                              #InstanceIterator,
                              #FirewallIterator,
-                             CloudSqlIterator
+                             #CloudSqlIterator,
+                             #ServiceAccountIterator,
+                             #ProjectRoleIterator,
                              ],
             }),
 
@@ -347,6 +391,18 @@ FACTORIES = {
         'cloudsqlinstance': ResourceFactory({
                 'dependsOn': ['project'],
                 'cls': CloudSqlInstance,
+                'contains': [],
+            }),
+
+        'serviceaccount': ResourceFactory({
+                'dependsOn': ['project'],
+                'cls': ServiceAccount,
+                'contains': [],
+            }),
+
+        'role': ResourceFactory({
+                'dependsOn': ['project'],
+                'cls': Role,
                 'contains': [],
             }),
 
