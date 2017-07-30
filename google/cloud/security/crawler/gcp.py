@@ -14,92 +14,84 @@
 
 """ Crawler implementation. """
 
+from google.cloud.security.common.gcp_api import admin_directory
+from google.cloud.security.common.gcp_api import appengine
+from google.cloud.security.common.gcp_api import bigquery
+from google.cloud.security.common.gcp_api import cloud_resource_manager
+from google.cloud.security.common.gcp_api import cloudsql
+from google.cloud.security.common.gcp_api import compute
+from google.cloud.security.common.gcp_api import errors
+from google.cloud.security.common.gcp_api import storage
+
 
 class ApiClient(object):
     def fetch_organization(self, orgid):
         raise NotImplementedError()
 
-    def _iter_projects(self, orgid):
+    def iter_projects(self, orgid):
         raise NotImplementedError()
 
-    def _iter_folders(self, orgid):
+    def iter_folders(self, orgid):
         raise NotImplementedError()
 
-    def _iter_buckets(self, projectid):
+    def iter_buckets(self, projectid):
         raise NotImplementedError()
 
-    def _iter_projects_by_folder(self, folderid):
+    def iter_objects(self, bucket_id):
         raise NotImplementedError()
 
-    def _iter_folders_by_folder(self, folderid):
+    def get_organization_iam_policy(self, orgid):
+        raise NotImplementedError()
+
+    def get_project_iam_policy(self, projectid):
         raise NotImplementedError()
 
 
-class TestApiClient(ApiClient):
+class ApiClientImpl(ApiClient):
+
+    def __init__(self, config):
+        self.ad = admin_directory.AdminDirectoryClient(config)
+        self.appengine = appengine.AppEngineClient(config)
+        self.bigquery = bigquery.BigQueryClient(config)
+        self.crm = cloud_resource_manager.CloudResourceManagerClient(config)
+        self.cloudsql = cloudsql.CloudsqlClient(config)
+        self.compute = compute.ComputeClient(config)
+        self.storage = storage.StorageClient(config)
 
     def fetch_organization(self, orgid):
-        data = {
-                'fuubar': {
-                        'id': 'fuubar',
-                    }
-            }
-        return data[orgid]
+        return self.crm.get_organization(orgid)
 
-    def _iter_projects(self, orgid):
-        data = {
-                'fuubar': [
-                        {
-                            'id': 'project-1',
-                            },
-                        {
-                            'id': 'project-2',
-                            },
-                    ]
-            }
-        return self._iter_generic(orgid, data)
+    def iter_projects(self, orgid):
+        for page in self.crm.get_projects(orgid):
+            for project in page['projects']:
+                yield project
 
-    def _iter_folders(self, orgid):
-        data = {
-                'fuubar': [
-                        {
-                            'id': 'folder-1',
-                            },
-                        {
-                            'id': 'folder-2',
-                            },
-                    ]
-            }
-        return self._iter_generic(orgid, data)
+    def iter_folders(self, orgid):
+        return self.crm.get_folders(orgid)
 
-    def _iter_buckets(self, projectid):
-        data = {
-            }
-        return self._iter_generic(projectid, data)
+    def iter_buckets(self, projectid):
+        response = self.storage.get_buckets(projectid)
+        if 'items' not in response:
+            return
+            yield
 
-    def _iter_objects(self, bucketid):
-        data = {
-            }
-        return self._iter_generic(bucketid, data)
+        for bucket in response['items']:
+            yield bucket
 
-    def _iter_projects_by_folder(self, folderid):
-        data = {
-                'folder-1': [
-                        {
-                            'id': 'folder-1/project-1',
-                            },
-                    ]
-            }
-        return self._iter_generic(folderid, data)
+    def iter_datasets(self, projectid):
+        return self.bigquery.get_datasets_for_projectid(projectid)
 
-    def _iter_folders_by_folder(self, folderid):
-        data = {
-            }
-        return self._iter_generic(folderid, data)
+    def get_organization_iam_policy(self, orgid):
+        return self.crm.get_org_iam_policies(orgid, orgid)
 
-    def _iter_generic(self, key, data):
-        try:
-            for item in data[key]:
-                yield item
-        except KeyError:
-            for item in []:
-                yield item
+    def get_project_iam_policy(self, projectid):
+        return self.crm.get_project_iam_policies(projectid, projectid)
+
+    def get_bucket_iam_policy(self, bucketid):
+        return None
+
+    def get_bucket_gcs_policy(self, bucketid):
+        return self.storage.get_bucket_acls(bucketid)
+
+    def get_dataset_dataset_policy(self, projectid, datasetid):
+        return self.bigquery.get_dataset_access(projectid, datasetid)

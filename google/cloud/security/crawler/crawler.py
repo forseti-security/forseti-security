@@ -14,7 +14,6 @@
 
 """ Crawler implementation. """
 
-
 from google.cloud.security.crawler import progress
 from google.cloud.security.crawler import storage
 from google.cloud.security.crawler import resources
@@ -30,29 +29,36 @@ class CrawlerConfig(dict):
 
 
 class Crawler(object):
+
     def __init__(self, config):
         self.config = config
 
     def run(self, resource):
-        resource.accept(self)
+        try:
+            resource.accept(self)
+        finally:
+            pass
         return self.config.progresser
 
     def visit(self, resource):
         storage = self.config.storage
         progresser = self.config.progresser
         try:
+            resource.getIamPolicy(self.get_client())
+            resource.getGCSPolicy(self.get_client())
+            resource.getDatasetPolicy(self.get_client())
+            resource.getCloudSQLPolicy(self.get_client())
+            resource.getOrgPolicy(self.get_client())
+
             storage.write(resource)
         except Exception as e:
+            progresser.on_error(e)
             raise
-            #progresser.on_error(e)
         else:
             progresser.on_new_object(resource)
 
-    def should_retrieve_iam_policy(self):
-        return False
-
-    def should_retrieve_gcs_policy(self):
-        return False
+    def dispatch(self, resource_visit):
+        resource_visit()
 
     def get_client(self):
         return self.config.client
@@ -60,9 +66,18 @@ class Crawler(object):
 
 if __name__ == '__main__':
 
-    orgid = 'fuubar'
+    client_config = {
+            'groups_service_account_key_file': '',
+            'max_admin_api_calls_per_day': 150000,
+            'max_appengine_api_calls_per_second': 20,
+            'max_bigquery_api_calls_per_100_seconds': 17000,
+            'max_crm_api_calls_per_100_seconds': 400,
+            'max_sqladmin_api_calls_per_100_seconds': 100,
+            'max_compute_api_calls_per_second': 20,
+        }
+    orgid = 'organizations/660570133860'
 
-    client = gcp.TestApiClient()
+    client = gcp.ApiClientImpl(client_config)
     resource = resources.Organization.fetch(client, orgid)
 
     mem = storage.Memory()

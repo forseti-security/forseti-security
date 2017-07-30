@@ -170,3 +170,9 @@ class StorageClient(_base_client.BaseClient):
             LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
             # TODO: pass in "buckets" as resource_name variable
             raise api_errors.ApiExecutionError('buckets', e)
+
+    def buckets(self):
+        return self.service.buckets()
+
+    def objects(self):
+        return self.service.objects()

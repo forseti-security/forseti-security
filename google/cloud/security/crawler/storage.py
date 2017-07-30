@@ -14,22 +14,53 @@
 
 """ Crawler implementation. """
 
+from collections import defaultdict
+
 
 class Storage(object):
+
+    def open(self):
+        raise NotImplementedError()
+
     def write(self, resource):
         raise NotImplementedError()
 
     def read(self, resource_key):
         raise NotImplementedError()
 
+    def error(self, exception):
+        raise NotImplementedError()
+
+    def warning(self, exception):
+        raise NotImplementedError()
+
+    def close(self):
+        raise NotImplementedError()
+
 
 class Memory(Storage):
+    HANDLE = 0
+
     def __init__(self):
         super(Memory, self).__init__()
         self.mem = {}
+
+    def open(self):
+        handle = self.HANDLE
+        self.HANDLE += 1
+        return handle
 
     def write(self, resource):
         self.mem[resource.key()] = resource
 
     def read(self, resource_key):
         return self.mem[resource_key]
+
+    def error(self, exception):
+        pass
+
+    def warning(self, exception):
+        pass
+
+    def close(self):
+        pass
