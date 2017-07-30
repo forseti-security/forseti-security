@@ -191,6 +191,15 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
+    def get_org_org_policies(self, org_id):
+        organizations_api = self.service.organizations()
+        try:
+            request = organizations_api.getOrgPolicy(
+                resource=org_id, body={})
+            return self._execute(request, self.rate_limiter)
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(org_id, e)
+
     def get_folder(self, folder_name):
         """Get a folder.
 

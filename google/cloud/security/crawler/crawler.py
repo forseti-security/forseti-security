@@ -44,11 +44,11 @@ class Crawler(object):
         storage = self.config.storage
         progresser = self.config.progresser
         try:
+
             resource.getIamPolicy(self.get_client())
             resource.getGCSPolicy(self.get_client())
             resource.getDatasetPolicy(self.get_client())
             resource.getCloudSQLPolicy(self.get_client())
-            resource.getOrgPolicy(self.get_client())
 
             storage.write(resource)
         except Exception as e:
@@ -67,7 +67,7 @@ class Crawler(object):
 if __name__ == '__main__':
 
     client_config = {
-            'groups_service_account_key_file': '',
+            'groups_service_account_key_file': '/Users/fmatenaar/deployments/forseti/groups.json',
             'max_admin_api_calls_per_day': 150000,
             'max_appengine_api_calls_per_second': 20,
             'max_bigquery_api_calls_per_100_seconds': 17000,
