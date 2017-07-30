@@ -14,8 +14,6 @@
 
 """ Crawler implementation. """
 
-from collections import defaultdict
-
 
 class Storage(object):
 

@@ -48,10 +48,10 @@ class ResourceKey(object):
 
 
 class Resource(object):
-    def __init__(self, data, contains=None, isLeaf=False, **kwargs):
+    def __init__(self, data, contains=None, **kwargs):
         self._data = data
         self._stack = None
-        self._leaf = isLeaf
+        self._leaf = len(contains) == 0
         self._contains = [] if contains is None else contains
 
     def is_leaf(self):
@@ -98,9 +98,6 @@ class Resource(object):
         return None
 
     def getGCSPolicy(self, client):
-        return None
-
-    def getOrgPolicy(self, client):
         return None
 
     def getCloudSQLPolicy(self, client):
@@ -187,6 +184,23 @@ class DataSet(Resource):
         return self['datasetId']
 
 
+class AppEngineApp(Resource):
+    pass
+
+
+class Instance(Resource):
+    pass
+
+
+class Firewall(Resource):
+    pass
+
+
+class CloudSqlInstance(Resource):
+    def key(self):
+        return self['name']
+
+
 class ResourceIterator(object):
     def __init__(self, resource, client):
         self.resource = resource
@@ -232,48 +246,108 @@ class DataSetIterator(ResourceIterator):
             for data in gcp.iter_datasets(projectid=int(self.resource['projectNumber'])):
                 yield FACTORIES['dataset'].create_new(data)
 
+
+class AppEngineAppIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_appengineapps(projectid=int(self.resource['projectNumber'])):
+                yield FACTORIES['appengineapp'].create_new(data)
+
+
+class InstanceIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_computeinstances(projectid=self.resource['projectId']):
+                yield FACTORIES['instance'].create_new(data)
+
+
+class FirewallIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_computefirewalls(projectid=self.resource['projectId']):
+                yield FACTORIES['firewall'].create_new(data)
+
+
+class CloudSqlIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_cloudsqlinstances(projectid=self.resource['projectId']):
+                yield FACTORIES['cloudsqlinstance'].create_new(data)
+
+
 FACTORIES = {
 
         'organization': ResourceFactory({
                 'dependsOn': [],
-                'isLeaf': False,
                 'cls': Organization,
-                'contains': [ProjectIterator],
+                'contains': [ProjectIterator,
+                             FolderIterator
+                             ],
             }),
 
         'folder': ResourceFactory({
                 'dependsOn': ['organization'],
-                'isLeaf': False,
                 'cls': Folder,
                 'contains': [],
             }),
 
         'project': ResourceFactory({
                 'dependsOn': ['organization', 'folder'],
-                'isLeaf': False,
                 'cls': Project,
-                'contains': [BucketIterator, DataSetIterator],
+                'contains': [#AppEngineAppIterator,
+                             #BucketIterator,
+                             #DataSetIterator,
+                             #InstanceIterator,
+                             #FirewallIterator,
+                             CloudSqlIterator
+                             ],
             }),
 
         'bucket': ResourceFactory({
                 'dependsOn': ['project'],
-                'isLeaf': False,
                 'cls': Bucket,
-                'contains': [],
+                'contains': [
+                             ],
             }),
 
         'object': ResourceFactory({
                 'dependsOn': ['bucket'],
-                'isLeaf': True,
                 'cls': GcsObject,
                 'contains': [],
             }),
 
         'dataset': ResourceFactory({
                 'dependsOn': ['project'],
-                'isLeaf': True,
                 'cls': DataSet,
                 'contains': [],
-            })
+            }),
+
+        'appengineapp': ResourceFactory({
+                'dependsOn': ['project'],
+                'cls': AppEngineApp,
+                'contains': [],
+            }),
+
+        'instance': ResourceFactory({
+                'dependsOn': ['project'],
+                'cls': Instance,
+                'contains': [],
+            }),
+
+        'firewall': ResourceFactory({
+                'dependsOn': ['project'],
+                'cls': Firewall,
+                'contains': [],
+            }),
+
+        'cloudsqlinstance': ResourceFactory({
+                'dependsOn': ['project'],
+                'cls': CloudSqlInstance,
+                'contains': [],
+            }),
 
     }

@@ -81,6 +81,28 @@ class ApiClientImpl(ApiClient):
     def iter_datasets(self, projectid):
         return self.bigquery.get_datasets_for_projectid(projectid)
 
+    def iter_appengineapps(self, projectid):
+        return
+        yield
+
+    def iter_cloudsqlinstances(self, projectid):
+        result = self.cloudsql.get_instances(projectid)
+        if 'items' not in result:
+            return
+            yield
+        for item in result['items']:
+            yield item
+
+    def iter_computeinstances(self, projectid):
+        result = self.compute.get_instances(projectid)
+        for instance in result:
+            yield instance
+
+    def iter_computefirewalls(self, projectid):
+        result = self.compute.get_firewall_rules(projectid)
+        for rule in result:
+            yield rule
+
     def get_organization_iam_policy(self, orgid):
         return self.crm.get_org_iam_policies(orgid, orgid)
 
