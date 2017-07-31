@@ -91,4 +91,4 @@ updated configuration:
  
  Some scanners are dependent on specific Inventory pipelines. To learn about
  the available scanners and dependencies, see
- [Scanner descriptions and dependencies]({% link _docs/quickstarts/scanner/descriptions.md %}).
+ [Scanner specifications]({% link _docs/quickstarts/scanner/descriptions.md %}).
