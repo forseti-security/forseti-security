@@ -324,7 +324,7 @@ FACTORIES = {
                 'dependsOn': [],
                 'cls': Organization,
                 'contains': [#FolderIterator,
-                             #OrganizationRoleIterator,
+                             OrganizationRoleIterator,
                              OrganizationCuratedRoleIterator,
                              ProjectIterator,
                              ],
@@ -346,7 +346,7 @@ FACTORIES = {
                              #FirewallIterator,
                              #CloudSqlIterator,
                              #ServiceAccountIterator,
-                             #ProjectRoleIterator,
+                             ProjectRoleIterator,
                              ],
             }),
 
