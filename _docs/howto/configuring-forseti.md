@@ -46,8 +46,6 @@ If you change a configuration, such as by changing which pipeline or scanner to
 run, you'll need to restart the appropriate module so it picks up the new
 configuration change.
 
-
-
 ### Configuring Inventory
 
 {% include _howto/config_inventory.md %}
@@ -90,3 +88,7 @@ updated configuration:
  ```
  forseti_scanner --config_path path/to/forseti_conf.yaml
  ```
+ 
+ Some scanners are dependent on specific Inventory pipelines. To learn about
+ the available scanners and dependencies, see
+ [Scanner descriptions and dependencies]({% link _docs/quickstarts/scanner/descriptions.md %}).
