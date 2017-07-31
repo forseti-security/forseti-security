@@ -1,6 +1,6 @@
 ---
-title: Configure Forseti Security Features
-order: 101
+title: Configure Features
+order: 201
 ---
 # {{ page.title }}
 
