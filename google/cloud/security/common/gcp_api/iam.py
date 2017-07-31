@@ -130,5 +130,29 @@ class IAMClient(_base_client.BaseClient):
             next_token = result['nextPageToken']
 
     def get_curated_roles(self, orgid):
-        for x in []:
-            yield x
+        endpoint = self.service.roles().list
+        org_name = ''
+
+        next_token = ''
+        while True:
+            api_call = endpoint(parent=org_name,
+                                pageToken=next_token)
+            try:
+                result = api_call.execute()
+            except (errors.HttpError, HttpLib2Error) as e:
+                LOGGER.error(api_errors.ApiExecutionError(orgid, e))
+                # TODO: pass in "buckets" as resource_name variable
+                raise api_errors.ApiExecutionError('roles', e)
+
+            # Does the result have any objects listed?
+            if 'roles' not in result:
+                break
+
+            # Yield objects
+            for item in result['roles']:
+                yield item
+
+            # Are we finished?
+            if 'nextPageToken' not in result:
+                break
+            next_token = result['nextPageToken']
