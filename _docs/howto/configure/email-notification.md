@@ -1,6 +1,6 @@
 ---
 title: Enabling Email Notifications
-order: 102
+order: 202
 ---
 #  {{ page.title }}
 
