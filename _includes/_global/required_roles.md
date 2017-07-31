@@ -19,6 +19,7 @@
 
  * `roles/storage.objectViewer`
  * `roles/storage.objectCreator`
+ * `roles/logging.logWriter`
  
  `forseti_inventory`, `forseti_scanner`, and `forseti_iam` require:
  
