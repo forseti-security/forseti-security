@@ -74,6 +74,7 @@ if __name__ == '__main__':
             'max_crm_api_calls_per_100_seconds': 400,
             'max_sqladmin_api_calls_per_100_seconds': 100,
             'max_compute_api_calls_per_second': 20,
+            'max_iam_api_calls_per_second': 20,
         }
     orgid = 'organizations/660570133860'
 

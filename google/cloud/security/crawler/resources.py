@@ -318,6 +318,7 @@ class OrganizationCuratedRoleIterator(ResourceIterator):
         for data in gcp.iter_curated_roles(orgid=self.resource.key()):
             yield FACTORIES['role'].create_new(data)
 
+
 FACTORIES = {
 
         'organization': ResourceFactory({

@@ -17,6 +17,7 @@
 
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
+from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api import errors as api_errors
@@ -41,7 +42,10 @@ class IAMClient(_base_client.BaseClient):
 
         super(IAMClient, self).__init__(
             global_configs, credentials=credentials, api_name=self.API_NAME)
-        # Storage API has unlimited rate.
+
+        self.rate_limiter = RateLimiter(
+            self.global_configs.get('max_iam_api_calls_per_second'),
+            1)
 
     def get_serviceaccounts(self, project_id):
         endpoint = self.service.projects().serviceAccounts().list
