@@ -41,4 +41,4 @@ manually.
 
 - Read about [configuring Forseti]({% link _docs/howto/configure/configuring-forseti.md %})
 - Learn about [defining rules]({% link _docs/howto/configure/scanner-rules.md %}).
-- Read about how Scanner outputs [rule violations]({% link _docs/howto/configure/rule-violations.md %}).
+- Read about how Scanner outputs [policy violations]({% link _docs/quickstarts/scanner/policy-violations.md %}).
