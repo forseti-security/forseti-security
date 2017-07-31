@@ -8,12 +8,12 @@ order: 102
 This page describes the Forseti scanners that are available, how they work, and
 why they're important. You can configure Scanner to execute multiple scanners in
 the same run. Learn about [configuring
-Scanner]({% link _docs/howto/configure/configuring-forseti %}#configuring-scanner.md).
+Scanner]({% link _docs/howto/configure/configuring-forseti.md %}#configuring-scanner).
 
 Each scanner depends on one or more Forseti Inventory pipelines that must be set
 to `enabled: true` in your `forseti_conf.yaml` file. Learn more about
 [configuring
-Inventory]({% link _docs/howto/configure/configuring-forseti %}#configuring-inventory.md).
+Inventory]({% link _docs/howto/configure/configuring-forseti.md %}#configuring-inventory).
 
 ## bigquery scanner
 
