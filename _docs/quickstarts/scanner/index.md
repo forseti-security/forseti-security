@@ -17,7 +17,7 @@ Engine vulnerability scanning. Learn more about
 ## Scanners
 
 Forseti Scanner can run multiple scanners at a time. To configure which scanners
-to run, see [Configuring Forseti page: Configuring Scanner]({% link _docs/howto/configuring-forseti.md %}).
+to run, see [Configuring Forseti page: Configuring Scanner]({% link _docs/howto/configure/configuring-forseti.md %}).
 
 ## Running Forseti Scanner
 
@@ -39,6 +39,6 @@ manually.
 
 ## What's next
 
-- Read about [configuring Forseti]({% link _docs/howto/configuring-forseti.md %})
-- Learn about [defining rules]({% link _docs/howto/scanner-rules.md %}).
-- Read about how Scanner outputs [rule violations]({% link _docs/howto/rule-violations.md %}).
+- Read about [configuring Forseti]({% link _docs/howto/configure/configuring-forseti.md %})
+- Learn about [defining rules]({% link _docs/howto/configure/scanner-rules.md %}).
+- Read about how Scanner outputs [rule violations]({% link _docs/howto/configure/rule-violations.md %}).
