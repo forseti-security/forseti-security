@@ -89,4 +89,6 @@ updated configuration:
  forseti_scanner --config_path path/to/forseti_conf.yaml
  ```
  
- Read about [Scanner descriptions and dependencies]({% link _docs/quickstarts/scanner/descriptions.md %}).
+ Some scanners are dependent on specific Inventory pipelines. To learn about
+ the available scanners and dependencies, see
+ [Scanner descriptions and dependencies]({% link _docs/quickstarts/scanner/descriptions.md %}).
