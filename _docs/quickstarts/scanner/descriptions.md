@@ -1,5 +1,5 @@
 ---
-title: Scanner Descriptions and Dependencies
+title: Scanner Specifications
 order: 102
 ---
 
@@ -8,12 +8,12 @@ order: 102
 This page describes the Forseti scanners that are available, how they work, and
 why they're important. You can configure Scanner to execute multiple scanners in
 the same run. Learn about [configuring
-Scanner]({% link _docs/howto/configure/configuring-forseti#configuring-scanner %}).
+Scanner]({% link _docs/howto/configure/configuring-forseti %}#configuring-scanner.md).
 
 Each scanner depends on one or more Forseti Inventory pipelines that must be set
 to `enabled: true` in your `forseti_conf.yaml` file. Learn more about
 [configuring
-Inventory]({% link _docs/howto/configure/configuring-forseti#configuring-inventory %}).
+Inventory]({% link _docs/howto/configure/configuring-forseti %}#configuring-inventory.md).
 
 ## bigquery scanner
 
@@ -27,7 +27,7 @@ rule file.
 
 The bigquery scanner depends on the following Forseti Inventory pipelines:
 
--   `load_bigquery_datasets_pipeline`
+- `load_bigquery_datasets_pipeline`
 
 ## bucket scanner
 
@@ -40,8 +40,8 @@ bucket_rules.yaml rule file.
 
 The bucket scanner depends on the following Forseti Inventory pipelines:
 
--   `load_projects_buckets_pipeline`
--   `load_projects_buckets_acls_pipeline`
+- `load_projects_buckets_pipeline`
+- `load_projects_buckets_acls_pipeline`
 
 ## cloudsql scanner
 
@@ -56,7 +56,7 @@ rule file.
 
 The cloudsql scanner depends on the following Forseti Inventory pipelines:
 
--   `load_projects_cloudsql_pipeline`
+- `load_projects_cloudsql_pipeline`
 
 ## load balancer forwarding rule scanner
 
@@ -72,7 +72,7 @@ rule file.
 The load balancer forwarding rule scanner depends on the following Forseti
 Inventory pipelines:
 
--   `load_forwarding_rules_pipeline`
+- `load_forwarding_rules_pipeline`
 
 ## group scanner
 
@@ -86,8 +86,8 @@ rule file.
 
 The group scanner depends on the following Forseti Inventory pipelines:
 
--   `load_groups_pipeline`
--   `load_group_members_pipeline`
+- `load_groups_pipeline`
+- `load_group_members_pipeline`
 
 ## IAM scanner
 
@@ -95,9 +95,9 @@ Cloud Identity and Access Management (Cloud IAM) policies directly grant access
 on Google Cloud Platform. To ensure only authorized members and permissions are
 granted in Cloud IAM policies, IAM scanner supports the following:
 
--   Whitelist, blacklist, and required modes;
--   Define whether the scope of the rule inherits from parents or just self;
--   Access to specific organization, folder, or project resource types.
+- Whitelist, blacklist, and required modes.
+- Define whether the scope of the rule inherits from parents or just self.
+- Access to specific organization, folder, or project resource types.
 
 For examples of how to define scanner rules for IAM policies, see the
 [iam_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/iam_rules.yaml)
@@ -105,12 +105,12 @@ rule file.
 
 IAM scanner depends on the following Forseti Inventory pipelines:
 
--   `load_orgs_pipeline`
--   `load_org_iam_policies_pipeline`
--   `load_folders_pipeline`
--   `load_folder_iam_policies_pipeline`
--   `load_projects_pipeline`
--   `load_projects_iam_policies_pipeline`
+- `load_orgs_pipeline`
+- `load_org_iam_policies_pipeline`
+- `load_folders_pipeline`
+- `load_folder_iam_policies_pipeline`
+- `load_projects_pipeline`
+- `load_projects_iam_policies_pipeline`
 
 ## IAP scanner
 
@@ -126,9 +126,9 @@ rule file.
 
 IAP scanner depends on the following Forseti Inventory pipelines:
 
--   `load_backend_services_pipeline`
--   `load_firewall_rules_pipeline`
--   `load_instance_group_managers_pipeline`
--   `load_instance_groups_pipeline`
--   `load_instance_templates_pipeline`
--   `load_instances_pipeline`
+- `load_backend_services_pipeline`
+- `load_firewall_rules_pipeline`
+- `load_instance_group_managers_pipeline`
+- `load_instance_groups_pipeline`
+- `load_instance_templates_pipeline`
+- `load_instances_pipeline`
