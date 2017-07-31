@@ -8,12 +8,12 @@ order: 102
 This page describes the Forseti scanners that are available, how they work, and
 why they're important. You can configure Scanner to execute multiple scanners in
 the same run. Learn about [configuring
-Scanner]({% link _docs/howto/configure/configuring-forseti %}#configuring-scanner).
+Scanner]({% link _docs/howto/configure/configuring-forseti %}#configuring-scanner.md).
 
 Each scanner depends on one or more Forseti Inventory pipelines that must be set
 to `enabled: true` in your `forseti_conf.yaml` file. Learn more about
 [configuring
-Inventory]({% link _docs/howto/configure/configuring-forseti %}#configuring-inventory).
+Inventory]({% link _docs/howto/configure/configuring-forseti %}#configuring-inventory.md).
 
 ## bigquery scanner
 
@@ -95,8 +95,8 @@ Cloud Identity and Access Management (Cloud IAM) policies directly grant access
 on Google Cloud Platform. To ensure only authorized members and permissions are
 granted in Cloud IAM policies, IAM scanner supports the following:
 
-- Whitelist, blacklist, and required modes;
-- Define whether the scope of the rule inherits from parents or just self;
+- Whitelist, blacklist, and required modes.
+- Define whether the scope of the rule inherits from parents or just self.
 - Access to specific organization, folder, or project resource types.
 
 For examples of how to define scanner rules for IAM policies, see the
