@@ -1,5 +1,5 @@
 ---
-title: Deploy Forseti Security
+title: Deploy
 order: 101
 ---
 # {{ page.title }}
