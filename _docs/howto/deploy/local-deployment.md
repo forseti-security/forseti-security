@@ -1,5 +1,5 @@
 ---
-title: Deploying Forseti in a Local Environment
+title: Local Deployment
 order: 103
 ---
 #  {{ page.title }}
