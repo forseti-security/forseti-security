@@ -1,5 +1,5 @@
 ---
-title: Google Cloud Platform
+title: GCP Deployment
 order: 102
 ---
 #  {{ page.title }}
