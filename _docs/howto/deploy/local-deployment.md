@@ -1,5 +1,5 @@
 ---
-title: Locally
+title: Local Deployment
 order: 103
 ---
 #  {{ page.title }}
