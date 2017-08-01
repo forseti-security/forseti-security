@@ -99,13 +99,17 @@ class BaseClient(object):
                         'in Forseti, proceed at your own risk.',
                         api_name, version)
 
-        discovery_kwargs = {'credentials': self._credentials}
+        self.discovery_kwargs = {'credentials': self._credentials}
         if SUPPORT_DISCOVERY_CACHE:
-            discovery_kwargs['cache_discovery'] = kwargs.get('cache_discovery')
+            self.discovery_kwargs['cache_discovery'] = kwargs.get('cache_discovery')
 
-        self.service = discovery.build(self.name,
-                                       self.version,
-                                       **discovery_kwargs)
+        self.service = self.get_service(self.name, self.version)
+
+    def get_service(self, api_name, api_version):
+        return discovery.build(api_name,
+                               api_version,
+                               **self.discovery_kwargs)
+
 
     def __repr__(self):
         """The object representation.

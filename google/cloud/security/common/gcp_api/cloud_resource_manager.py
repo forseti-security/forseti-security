@@ -41,6 +41,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         """
         super(CloudResourceManagerClient, self).__init__(
             global_configs, api_name=self.API_NAME, **kwargs)
+        self.service_v2 = self.get_service(self.API_NAME, 'v2')
 
         # TODO: we will need multiple rate limiters when we need to invoke
         # the CRM write API for enforcement.
@@ -235,9 +236,8 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        folders_api = self.service.folders()
+        folders_api = self.service_v2.folders()
         next_page_token = None
-
         lifecycle_state_filter = kwargs.get('lifecycle_state')
 
         try:
@@ -256,11 +256,10 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
-    def get_folder_iam_policies(self, resource_name, folder_id):
+    def get_folder_iam_policies(self, folder_id):
         """Get all the iam policies of an folder.
 
         Args:
-            resource_name (str): The resource name (type).
             folder_id (int): The folder id.
 
         Returns:
@@ -269,15 +268,15 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        folders_api = self.service.folders()
-        resource_id = 'folders/%s' % folder_id
+        folders_api = self.service_v2.folders()
+        resource_id = folder_id
         try:
             request = folders_api.getIamPolicy(
                 resource=resource_id, body={})
             return {'folder_id': folder_id,
                     'iam_policy': self._execute(request, self.rate_limiter)}
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError('folder', e)
 
     def folders(self):
         return self.service.folders()

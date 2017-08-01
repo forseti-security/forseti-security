@@ -69,7 +69,12 @@ class ApiClientImpl(ApiClient):
                 yield project
 
     def iter_folders(self, orgid):
-        return self.crm.get_folders(orgid)
+        for response in self.crm.get_folders(orgid):
+            if 'folders' not in response:
+                return
+                yield
+            for folder in response['folders']:
+                yield folder
 
     def iter_buckets(self, projectid):
         response = self.storage.get_buckets(projectid)
@@ -79,6 +84,9 @@ class ApiClientImpl(ApiClient):
 
         for bucket in response['items']:
             yield bucket
+
+    def iter_objects(self, bucket_id):
+        return self.storage.get_objects(bucket_name=bucket_id)
 
     def iter_datasets(self, projectid):
         return self.bigquery.get_datasets_for_projectid(projectid)
@@ -121,17 +129,31 @@ class ApiClientImpl(ApiClient):
         for role in self.iam.get_curated_roles(orgid):
             yield role
 
+    def get_folder_iam_policy(self, folderid):
+        return self.crm.get_folder_iam_policies(folderid)
+
     def get_organization_iam_policy(self, orgid):
         return self.crm.get_org_iam_policies(orgid, orgid)
 
     def get_project_iam_policy(self, projectid):
         return self.crm.get_project_iam_policies(projectid, projectid)
 
+    def get_bucket_gcs_policy(self, bucketid):
+        return self.storage.get_bucket_acls(bucketid)
+
     def get_bucket_iam_policy(self, bucketid):
         return None
 
-    def get_bucket_gcs_policy(self, bucketid):
-        return self.storage.get_bucket_acls(bucketid)
+    def get_object_gcs_policy(self, bucket_name, object_name):
+        result = self.storage.get_object_acls(bucket_name, object_name)
+        if 'items' not in result:
+            return
+            yield
+        for item in result['items']:
+            yield item
+
+    def get_object_iam_policy(self, bucket_name, object_name):
+        return self.storage.get_object_iam_policy(bucket_name, object_name)
 
     def get_dataset_dataset_policy(self, projectid, datasetid):
         return self.bigquery.get_dataset_access(projectid, datasetid)

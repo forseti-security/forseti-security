@@ -154,6 +154,33 @@ class StorageClient(_base_client.BaseClient):
             # TODO: pass in "buckets" as resource_name variable
             raise api_errors.ApiExecutionError('buckets', e)
 
+    def get_object_acls(self, bucket_name, object_name):
+        """Gets acls for GCS objects.
+
+        Args:
+            bucket_name (str): The name of the bucket.
+            object_name (str): The name of the object.
+
+        Returns:
+            dict: ACL json for bucket
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP ClodSQL API fails
+        """
+
+        bucket_access_controls_api = self.service.objectAccessControls()
+        bucket_acl_request = bucket_access_controls_api.list(
+            bucket=bucket_name, object=object_name)
+
+        try:
+            return bucket_acl_request.execute()
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
+            # TODO: pass in "buckets" as resource_name variable
+            raise api_errors.ApiExecutionError('buckets', e)
+
+
     def get_bucket_acls(self, bucket_name):
         """Gets acls for GCS bucket.
 
@@ -215,7 +242,7 @@ class StorageClient(_base_client.BaseClient):
                 break
             next_token = result['nextPageToken']
 
-    def get_object_iam_policy(self, bucket_id, object_name):
+    def get_object_iam_policy(self, bucket_name, object_name):
         """Returns the IAM policy attached to a GCS objects.
 
         Args:
@@ -226,8 +253,7 @@ class StorageClient(_base_client.BaseClient):
         """
 
         api = self.service.objects()
-        api_call = api.getIamPolicy(bucket=bucket_id, object=object_name)
-
+        api_call = api.getIamPolicy(bucket=bucket_name, object=object_name)
         try:
             return api_call.execute()
         except (errors.HttpError, HttpLib2Error) as e:

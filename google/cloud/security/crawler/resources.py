@@ -137,8 +137,11 @@ class Organization(Resource):
 
 
 class Folder(Resource):
+    def key(self):
+        return self['name']
+
     def getIamPolicy(self, client):
-        raise NotImplementedError()
+        return client.get_folder_iam_policy(self.key())
 
 
 class Project(Resource):
@@ -167,11 +170,11 @@ class Bucket(Resource):
 class GcsObject(Resource):
     @cached('iam_policy')
     def getIamPolicy(self, client):
-        return client.get_object_iam_policy(self.key())
+        return client.get_object_iam_policy(self.parent()['name'], self['name'])
 
     @cached('gcs_policy')
     def getGCSPolicy(self, client):
-        return client.get_object_gcs_policy(self.key())
+        return client.get_object_gcs_policy(self.parent()['name'], self['name'])
 
 
 class DataSet(Resource):
@@ -324,7 +327,7 @@ FACTORIES = {
         'organization': ResourceFactory({
                 'dependsOn': [],
                 'cls': Organization,
-                'contains': [#FolderIterator,
+                'contains': [FolderIterator,
                              OrganizationRoleIterator,
                              OrganizationCuratedRoleIterator,
                              ProjectIterator,
@@ -341,12 +344,12 @@ FACTORIES = {
                 'dependsOn': ['organization', 'folder'],
                 'cls': Project,
                 'contains': [#AppEngineAppIterator,
-                             #BucketIterator,
-                             #DataSetIterator,
-                             #InstanceIterator,
-                             #FirewallIterator,
-                             #CloudSqlIterator,
-                             #ServiceAccountIterator,
+                             BucketIterator,
+                             DataSetIterator,
+                             InstanceIterator,
+                             FirewallIterator,
+                             CloudSqlIterator,
+                             ServiceAccountIterator,
                              ProjectRoleIterator,
                              ],
             }),
@@ -354,7 +357,7 @@ FACTORIES = {
         'bucket': ResourceFactory({
                 'dependsOn': ['project'],
                 'cls': Bucket,
-                'contains': [
+                'contains': [ObjectIterator
                              ],
             }),
 
