@@ -1,5 +1,5 @@
 ---
-title: Deploy on Google Cloud Platform
+title: Google Cloud Platform
 order: 102
 ---
 #  {{ page.title }}
