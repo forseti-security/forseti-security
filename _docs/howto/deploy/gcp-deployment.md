@@ -1,5 +1,5 @@
 ---
-title: Deploying Forseti on Google Cloud Platform
+title: Deploy on Google Cloud Platform
 order: 102
 ---
 #  {{ page.title }}
