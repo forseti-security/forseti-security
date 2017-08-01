@@ -28,9 +28,9 @@ To run Forseti Scanner, follow the process below:
 
   1. Run the scanners:
 
-          ```bash
-          $ forseti_scanner --forseti_config <path to forseti_conf.yaml>
-          ```
+  ```bash
+  $ forseti_scanner --forseti_config <path to forseti_conf.yaml>
+  ```
 
 If you're developing a new feature or bug fix, you can run Forseti Scanner
 using [`./dev_scanner.sh`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/samples/scanner/dev_scanner.sh.sample).
