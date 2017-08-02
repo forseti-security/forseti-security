@@ -114,8 +114,3 @@ Coming soon.
 
 Coming soon.
 
-## What's next
-
--   Learn more about
-    [Cloud IAM Policy](https://cloud.google.com/iam/reference/rest/v1/Policy)
-    including user types.
