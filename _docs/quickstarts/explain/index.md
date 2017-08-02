@@ -47,12 +47,13 @@ to customize your deployment. You'll need to point to the SQL instance you want
 to use for IAM Explain. To prepare your IAM Explain template, update the
 following values:
 
-  - `EXPLAIN_DATABASE_INSTANCE_NAME`: the Cloud SQL instance that hosts the
+  - `CLOUDSQL_DATABASE_INSTANCE`: the Cloud SQL instance that hosts the
   IAM Explain database, in the form of `{project}:{region}:{instance-name}`.
+  - `EXPLAIN_DATABASE_INSTANCE_NAME`: the Cloud SQL database name where IAM Explain
+  data is stored. (Can be the same as `FORSETI_DATABASE_INSTANCE_NAME`.)
     - This may be the same value as `FORSETI_DATABASE_INSTANCE_NAME`.
-  - `FORSETI_DATABASE_INSTANCE_NAME`: the Cloud SQL instance that hosts the
-  Forseti database, in the form of `{project}:{region}:{instance-name}`.
-    - This may be the same value as `EXPLAIN_DATABASE_INSTANCE_NAME`.
+  - `FORSETI_DATABASE_INSTANCE_NAME`: the Cloud SQL database name where Forseti
+  data is stored. (Can be the same as `FORSETI_DATABASE_INSTANCE_NAME`.)
   - `YOUR_SERVICE_ACCOUNT`: the service account you created for IAM Explain,
   or the shared Forseti service account.
   - `src-path, release-version`: the path and release version of IAM Explain
