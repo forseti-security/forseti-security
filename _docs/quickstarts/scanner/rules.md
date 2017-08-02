@@ -35,23 +35,23 @@ rules:
           ...
 ```
 
-- **rules**: a sequence of rules.
-- **mode**: a string of one of the following values:
-  - **whitelist**: allow the members defined.
-  - **blacklist**: block the members defined
-  - **required**: defined members with the specified roles must be found in
+- **rules**: A sequence of rules.
+- **mode**: A string of one of the following values:
+  - **whitelist**: Allow the members defined.
+  - **blacklist**: Block the members defined.
+  - **required**: Defined members with the specified roles must be found in
     policy.
-- **resource_type**: a string of one of the following values:
+- **resource_type**: A string of one of the following values:
   - **organization**
-  - **folder** (coming soon)
+  - **folder**
   - **project**
-- **applies_to**: a string of one of the following values:
-  - **self**: the rule only applies to the specified resource
-  - **children**: the rule only applies to the child resources of the
+- **applies_to**: A string of one of the following values:
+  - **self**: The rule only applies to the specified resource
+  - **children**: The rule only applies to the child resources of the
     specified resource.
-  - **self_and_children**: the rule applies to the specified resource and its
+  - **self_and_children**: The rule applies to the specified resource and its
     child resources.
-- **inherit_from_parents**: a true or false boolean that defines whether a
+- **inherit_from_parents**: A boolean that defines whether a
   specified resource inherits ancestor rules.
 - **bindings**: The [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to 
   audit. 
