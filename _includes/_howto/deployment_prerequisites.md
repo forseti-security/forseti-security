@@ -33,7 +33,6 @@ Scanner, and Enforcer, follow the steps below.
 
   1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
-  1. Create a key
   1. Grant the required Cloud IAM roles to the service account by running the
   following:
   
