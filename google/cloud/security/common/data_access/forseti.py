@@ -169,6 +169,32 @@ def create_table_names(timestamp, schema_version):
             return """<Bucket(id='{}', name='{}', location='{}')>""".format(
                 self.bucket_id, self.bucket_name, self.bucket_location)
 
+    class BucketPolicy(BASE):
+        """Represents a GCP bucket policy row."""
+
+        __tablename__ = 'raw_bucket_iam_policies_%s' % timestamp
+
+        id = Column(BigInteger(), primary_key=True)
+        project_number = Column(BigInteger())
+        bucket_id = Column(BigInteger())
+        iam_policy = Column(Text)
+
+        def __repr__(self):
+            """String representation."""
+
+            return """<Policy(id='{}', type='{}', name='{}'>""".format(
+                self.id, "bucket", self.org_id)
+
+        def get_resource_reference(self):
+            """Return a reference to the resource in the form (type, id)"""
+
+            return 'bucket', self.bucket_id
+
+        def get_policy(self):
+            """Return the corresponding IAM policy."""
+
+            return self.iam_policy
+
     class Organization(BASE):
         """Represents a GCP organization."""
 
@@ -396,7 +422,7 @@ def create_table_names(timestamp, schema_version):
 class Importer(object):
     """Forseti data importer to iterate the inventory and policies."""
 
-    SUPPORTED_SCHEMAS = ['1.0', '2.0']
+    SUPPORTED_SCHEMAS = ['1.0', '2.0', '3.0']
 
     def __init__(self, db_connect_string):
         engine = create_engine(db_connect_string, pool_recycle=3600)

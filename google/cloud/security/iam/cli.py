@@ -156,6 +156,79 @@ def define_playground_parser(parent):
         'resource',
         help='Resource to get policy for')
 
+def define_gcs_parser(parent):
+    """Define the gcs service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+    service_parser = parent.add_parser('gcs', help='gcs explain service')
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    query_access_by_member = action_subparser.add_parser(
+        'access_by_member',
+        help='List access by member and permissions')
+    query_access_by_member.add_argument(
+        'member',
+        help='Member to query')
+    query_access_by_member.add_argument(
+        'permissions',
+        default=[],
+        nargs='*',
+        help='Permissions to query for')
+    query_access_by_member.add_argument(
+        '--expand_resources',
+        type=bool,
+        default=False,
+        help='Expand the resource hierarchy')
+
+    query_access_by_authz = action_subparser.add_parser(
+        'access_by_authz',
+        help='List access by role or permission')
+    query_access_by_authz.add_argument(
+        '--permission',
+        default=None,
+        nargs='?',
+        help='Permission to query')
+    query_access_by_authz.add_argument(
+        '--role',
+        default=None,
+        nargs='?',
+        help='Role to query')
+    query_access_by_authz.add_argument(
+        '--expand_groups',
+        type=bool,
+        default=False,
+        help='Expand groups to their members')
+    query_access_by_authz.add_argument(
+        '--expand_resources',
+        type=bool,
+        default=False,
+        help='Expand resources to their children')
+
+    query_access_by_resource = action_subparser.add_parser(
+        'access_by_resource',
+        help='List access by member and permissions')
+    query_access_by_resource.add_argument(
+        'resource',
+        help='Resource to query')
+    query_access_by_resource.add_argument(
+        'permissions',
+        default=[],
+        nargs='*',
+        help='Permissions to query for')
+    query_access_by_resource.add_argument(
+        '--expand_groups',
+        type=bool,
+        default=False,
+        help='Expand groups to their members')
+
+    _ = action_subparser.add_parser(
+        'denormalize',
+        help='Denormalize a model')
+
 
 def define_explainer_parser(parent):
     """Define the explainer service parser.
@@ -360,6 +433,7 @@ def create_parser(parser_cls):
         dest="service")
     define_explainer_parser(service_subparsers)
     define_playground_parser(service_subparsers)
+    define_gcs_parser(service_subparsers)
     return main_parser
 
 
