@@ -22,10 +22,12 @@ import grpc
 from google.cloud.security.iam.dao import ModelManager, create_engine
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
+from google.cloud.security.iam.gcs.service import GrpcGcsFactory
 
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
     'playground': GrpcPlaygrounderFactory,
+    'gcs': GrpcGcsFactory,
 }
 
 

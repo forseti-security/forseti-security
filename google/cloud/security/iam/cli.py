@@ -489,6 +489,53 @@ def run_explainer(client, config, output):
     actions[config.action]()
 
 
+def run_gcs(client, config, output):
+    """Run gcs commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+    """
+
+    client = client.gcs
+
+    def do_denormalize():
+        """Denormalize a model."""
+        for access in client.denormalize():
+            output.write(access)
+
+    def do_query_access_by_member():
+        """Query access by member and permissions"""
+        result = client.query_access_by_members(config.member,
+                                                config.permissions,
+                                                config.expand_resources)
+        output.write(result)
+
+    def do_query_access_by_resource():
+        """Query access by resource and permissions"""
+        result = client.query_access_by_resources(config.resource,
+                                                  config.permissions,
+                                                  config.expand_groups)
+        output.write(result)
+
+    def do_query_access_by_authz():
+        """Query access by role or permission"""
+        for access in (
+                client.query_access_by_permissions(config.role,
+                                                   config.permission,
+                                                   config.expand_groups,
+                                                   config.expand_resources)):
+            output.write(access)
+
+    actions = {
+        'denormalize': do_denormalize,
+        'access_by_member': do_query_access_by_member,
+        'access_by_resource': do_query_access_by_resource,
+        'access_by_authz': do_query_access_by_authz}
+
+    actions[config.action]()
+
+
 def run_playground(client, config, output):
     """Run playground commands.
         Args:
@@ -593,6 +640,7 @@ OUTPUTS = {
 SERVICES = {
     'explainer': run_explainer,
     'playground': run_playground,
+    'gcs': run_gcs,
     }
 
 
