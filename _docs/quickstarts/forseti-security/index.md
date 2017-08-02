@@ -1,5 +1,5 @@
 ---
-title: Forseti Security
+title: Setup
 order: 002
 ---
 # {{ page.title }}
