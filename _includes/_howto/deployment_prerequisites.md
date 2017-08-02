@@ -28,8 +28,8 @@ easily control the number of users who have Editor or Owner roles.
 including your options and best practices, see the
 [Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %}).**
 
-To create a service account for Forseti Inventory, Scanner, and Enforcer,
-follow the steps below.
+To create and grant roles to a service account for Forseti Inventory, 
+Scanner, and Enforcer, follow the steps below.
 
   1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
@@ -38,6 +38,9 @@ follow the steps below.
   following:
   
       **Organization level bindings**
+      
+      You MUST either be Organization Admin or Security Admin on the organization IAM policy.
+      
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
@@ -79,6 +82,7 @@ follow the steps below.
       ```
       
       **Project level bindings**
+      
       ```bash
       $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
