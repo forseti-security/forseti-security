@@ -142,9 +142,9 @@ created from the Deployment Manager script. You can ssh into the GCE instance
 and watch the /tmp/deployment.log to watch the progress.
 
 To ssh to your GCE instance, you can either use `gcloud compute ssh` ([official docs](https://cloud.google.com/sdk/gcloud/reference/compute/ssh)) or go to the GCE 
-instance details page from Google Cloud Console > Compute Engine, then click "SSH". 
-If a window doesn't pop up right away (or gets blocked), try clicking the SSH 
-button again.
+instance details page from Google Cloud Console > Compute Engine, then click the 
+"SSH" button for your instance. If a window doesn't pop up right away (or gets blocked), 
+try clicking the SSH button again.
 
 Once you're logged into the GCE instance, you can "tail" the deployment log 
 (use CTRL-C to exit):
