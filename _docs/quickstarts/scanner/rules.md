@@ -53,14 +53,16 @@ rules:
     child resources.
 - **inherit_from_parents**: a true or false boolean that defines whether a
   specified resource inherits ancestor rules.
-- **role_name**: a
-  [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam) such as
-  **roles/editor** or **roles/viewer**.
-  - You can also use wildcards, such as **roles/***. Refer to samples or the
-    unit tests directory for examples.
-- **members**: a list of Cloud IAM members, such as **username@company.com**. You
-  can also use wildcards, such as **serviceAccount:@.gserviceaccount.com** (any
-  service accounts).
+- **bindings**: The [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to 
+  audit. 
+  - **role_name**: A
+    [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam) such as
+    "roles/editor" or "roles/viewer".
+    - You can also use wildcards, such as **roles/***. Refer to the starter rules or the
+      unit tests directory for examples.
+  - **members**: a list of Cloud IAM members. You can also use wildcards, 
+    such as `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
+    `user:*@company.com` (anyone with an identity at company.com).
 
 ## Google Groups rules
 
