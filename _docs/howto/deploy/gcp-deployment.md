@@ -126,14 +126,12 @@ Customize your Forseti rules by following [this guide](http://forsetisecurity.or
 After editing your forseti_conf.yaml, copy it to your GCS `SCANNER_BUCKET`:
 
 ```
-cd configs
-gsutil cp forseti_conf.yaml gs://YOUR_SCANNER_BUCKET/configs/forseti_conf.yaml
+gsutil cp configs/forseti_conf.yaml gs://YOUR_SCANNER_BUCKET/configs/forseti_conf.yaml
 ```
 
 Next, copy your rules directory to the GCS `SCANNER_BUCKET`:
 
 ```
-cd forseti-security
 gsutil cp -r rules gs://YOUR_SCANNER_BUCKET/
 ```
 
