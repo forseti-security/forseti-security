@@ -5,7 +5,7 @@ order: 206
 
 # {{ page.title }}
 
-This page describes how to set up Forseti configurations. Forseti configurations
+This page describes how to configure Forseti once it's set up. Forseti configurations
 are global and module-specific settings such as the following:
 
 -   `global`: configurations that are used by multiple modules such as database
@@ -19,8 +19,7 @@ are global and module-specific settings such as the following:
 
 Configurations are centrally maintained in
 forseti-security/configs/forseti_conf.yaml file that's organized into
-module-specific sections. A single central file makes it easy to find and
-maintain all the configurations.
+module-specific sections.
 
 ## Setting up configurations
 
@@ -34,7 +33,7 @@ versions of this file to support running different forseti instances.
 -   `forseti_conf_john.yaml`
 -   `forseti_conf_jane.yaml`
 
-To specify the location of the configuration file for a module to read and use
+To specify the location of the configuration file for Forseti to read and use
 at run-time, use the `--forseti_config` flag. Following is an example for
 Forseti Inventory:
 
