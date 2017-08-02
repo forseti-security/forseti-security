@@ -51,9 +51,8 @@ following values:
   IAM Explain database, in the form of `{project}:{region}:{instance-name}`.
   - `EXPLAIN_DATABASE_INSTANCE_NAME`: the Cloud SQL database name where IAM Explain
   data is stored. (Can be the same as `FORSETI_DATABASE_INSTANCE_NAME`.)
-    - This may be the same value as `FORSETI_DATABASE_INSTANCE_NAME`.
   - `FORSETI_DATABASE_INSTANCE_NAME`: the Cloud SQL database name where Forseti
-  data is stored. (Can be the same as `FORSETI_DATABASE_INSTANCE_NAME`.)
+  data is stored. (Can be the same as `EXPLAIN_DATABASE_INSTANCE_NAME`.)
   - `YOUR_SERVICE_ACCOUNT`: the service account you created for IAM Explain,
   or the shared Forseti service account.
   - `src-path, release-version`: the path and release version of IAM Explain
