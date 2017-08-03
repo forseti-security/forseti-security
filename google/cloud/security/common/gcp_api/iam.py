@@ -31,7 +31,7 @@ class IAMClient(_base_client.BaseClient):
 
     API_NAME = 'iam'
 
-    def __init__(self, global_configs=None, credentials=None):
+    def __init__(self, global_configs, credentials=None, version=None):
         """Initialize.
 
         Args:
@@ -41,13 +41,13 @@ class IAMClient(_base_client.BaseClient):
         """
 
         super(IAMClient, self).__init__(
-            global_configs, credentials=credentials, api_name=self.API_NAME)
+            global_configs, credentials=credentials, api_name=self.API_NAME, version=version)
 
         self.rate_limiter = RateLimiter(
             self.global_configs.get('max_iam_api_calls_per_second'),
             1)
 
-    def get_serviceaccounts(self, project_id):
+    def get_service_accounts(self, project_id):
         endpoint = self.service.projects().serviceAccounts().list
         project_name = 'projects/{}'.format(project_id)
 
@@ -75,6 +75,16 @@ class IAMClient(_base_client.BaseClient):
             if 'nextPageToken' not in result:
                 break
             next_token = result['nextPageToken']
+
+    def get_service_account_keys(self, service_account_name):
+        endpoint = self.service.projects().serviceAccounts().keys().list
+        api_call = endpoint(name=service_account_name)
+        try:
+            result = api_call.execute()
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error(api_errors.ApiExecutionError(service_account_name, e))
+            raise api_errors.ApiExecutionError('serviceAccountKeys', e)
+        return result
 
     def get_project_roles(self, project_id):
         endpoint = self.service.projects().roles().list

@@ -277,3 +277,8 @@ APPENGINE_APPS = """
     default_hostname, default_bucket, iap, gcr_domain, raw_application
     FROM appengine_{0}
 """
+
+SERVICE_ACCOUNTS = """
+    SELECT project_id, name, email, oauth2_client_id, account_keys, raw_service_account
+    FROM service_accounts_{0}
+"""

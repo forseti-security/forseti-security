@@ -96,6 +96,9 @@ CREATE_TABLE_MAP = {
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
 
+    # IAM
+    'service_accounts': create_tables.CREATE_SERVICE_ACCOUNTS_TABLE,
+
     # rule violations
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
 }
