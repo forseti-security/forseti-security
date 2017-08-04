@@ -23,6 +23,7 @@ service account just for this functionality:
             to display on the consent screen, then click **Create**. To change the product name or add
             details to the consent screen later, edit your
             [OAuth consent screen](https://console.developers.google.com/apis/credentials/consent) settings.
+            
             <img src="../../images/howto/create-service-account.png" alt="create service account window with product name field highlighted">
         1.  Click **Create**.
     1.  To create and download a JSON key for the service account:
