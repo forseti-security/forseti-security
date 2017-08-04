@@ -1,5 +1,5 @@
 ---
-title: Setup
+title: Installation
 order: 002
 ---
 # {{ page.title }}
