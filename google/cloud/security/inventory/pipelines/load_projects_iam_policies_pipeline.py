@@ -97,6 +97,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                                   'iam_policy': iam_policy}
                 iam_policy_maps.append(iam_policy_map)
             except api_errors.ApiExecutionError as e:
+                self.has_error_to_retrieve_api_data = True
                 LOGGER.error(
                     'Unable to get IAM policies for project %s:\n%s',
                     project_number, e)

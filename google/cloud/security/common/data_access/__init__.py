@@ -22,7 +22,7 @@
 
 # pylint: disable=invalid-name
 # TODO: Look at improving the naming so we don't have need the pylint disable.
-db_schema_version = '2.0'
+db_schema_version = '2.0.1'
 
 # Change log
 # Version 1.0:
@@ -35,5 +35,8 @@ db_schema_version = '2.0'
 #   * Added table folder_iam_policies
 #   * Added table raw_folder_iam_policies
 #
-# Version x.y:
+# Version 2.0.1:
+#   * Added has_all_data column in snapshot_cycles table.
+#
+# Version x.y.z:
 #   * ...

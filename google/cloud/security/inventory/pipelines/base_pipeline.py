@@ -50,6 +50,7 @@ class BasePipeline(object):
         self.api_client = api_client
         self.dao = dao
         self.count = None
+        self.has_error_to_retrieve_api_data = False
 
     @abc.abstractmethod
     def run(self):
