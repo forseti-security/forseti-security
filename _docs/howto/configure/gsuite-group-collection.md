@@ -4,35 +4,44 @@ order: 203
 ---
 #  {{ page.title }}
 
-This page describes how to enable the collection of GSuite Google Groups for
+This page describes how to enable the collection of G Suite Google Groups for
 processing by Forseti Scanner and Enforcer.
 
-## Enable Domain-Wide Delegation in GSuite
+## Enable Domain-Wide Delegation in G Suite
 
-To enable collection of GSuite Google Groups, follow the steps below to create a
+To enable collection of G Suite Google Groups, follow the steps below to create a
 service account just for this functionality:
 
-1.  Create a service account to inventory GSuite Google Groups:
-    1.  Go to your
-        [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts) and
-        create a new service account.
-    1.  Click the "dot" menu on the service account row, then click "Edit". 
-        Check "Enable domain-wide delegation", then click "Save".
-    1.  Create and download the JSON key to your local environment.
-    1.  On the service account row, you should now see a "View Client ID" link. Click it.
-        Copy the "Client ID" value, which will be a large number.
-1.  Enable the service account in your GSuite admin control panel. You must have
+1.  Create a service account to inventory G Suite Google Groups:
+    1.  Go to
+        [Cloud Platform Console Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
+        and click **Create service account**.
+    1.  On the **Create service account** dialog that appears, set up your service account:
+        1.  Enter a service account name.
+        1.  Select the **Enable G Suite Domain-wide Delegation** checkbox.
+        1.  Click **Create**.
+    1.  To create and download a JSON key for the service account:
+        1.  Click **More** on the service account row, then click **Create key**.
+        <img src="../../images/howto/create-key.png" alt="more menu with create key highlighted">
+        1.  On the **Create private key** dialog that appears, select **JSON**, then click **Create**.
+        1.  In the **Save File** window that appears, save the file to a local directory.
+    1.  On the service account row, click **View Client ID**.
+    1.  On the **Client ID for Service account client** panel that appears,
+    copy the **Client ID** value, which will be a large number.
+    <img src="../../images/howto/client-id.png" alt="service account panel with client ID highlighted">
+1.  Enable the service account in your G Suite admin control panel. You must have
     the **super admin** role in admin.google.com to complete these steps:
-    1.  Go to admin.google.com, click the "Security" section, and expand
-        [Advanced Settings](https://admin.google.com/ManageOauthClients).
-    1.  Paste the **Client ID** you copied above in the "Client Name" field.
-    1.  Paste following scope in the "One or More API Scopes" field.
+    1.  Go to your Google Admin [Manage API client access](https://admin.google.com/ManageOauthClients)
+    Security settings.
+    1.  In the **Client Name** box, paste the **Client ID** you copied above.
+    1.  In the **One or More API Scopes** box, paste the following scope:
         ```
         https://www.googleapis.com/auth/admin.directory.group.readonly
         ```
-    1. Click Authorize.
+    1. Click **Authorize**.
+    <img src="../../images/howto/admin-security.png" alt="manage api client access in Google Admin Security settings">
 
-## Enabling Forseti's GSuite Google Groups collection
+## Enabling Forseti's G Suite Google Groups collection
 
 After you create a service account above, edit the following variables in your
 version of `forseti_conf.yaml`:
@@ -43,14 +52,14 @@ version of `forseti_conf.yaml`:
 -   `groups-service-account-key-file`: Forseti Inventory uses this path to
     locate the key file which you downloaded earlier.
 
-## Deploying to GCP with GSuite Google Groups collection
+## Deploying to GCP with G Suite Google Groups collection
 
 If you
 [created a deployment]({% link _docs/quickstarts/forseti-security/index.md %})
-on GCP, run the following command to copy your GSuite key to your Forseti instance.
+on GCP, run the following command to copy your G Suite key to your Forseti instance:
 
-  ```bash
-  $ gcloud compute copy-files path/to/service-account-key.json \
+  ```
+  gcloud compute copy-files path/to/service-account-key.json \
       ubuntu@YOUR_INSTANCE_NAME:/home/ubuntu/gsuite_key.json
   ```
 
