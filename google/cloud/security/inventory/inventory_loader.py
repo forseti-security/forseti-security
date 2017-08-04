@@ -162,7 +162,7 @@ def _run_pipelines(pipelines):
     Returns:
         list: a list of booleans whether each pipeline successfully
             completed or not.
-        list: a list of booleans whether each pipeline has successfully
+        list: a list of booleans whether each pipeline successfully
             retrieved all the data from the api or not.
     """
     # TODO: Define these status codes programmatically.
@@ -190,7 +190,7 @@ def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status,
     Args:
         inventory_dao (dao.Dao): Data access object.
         cycle_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
-        status (str): The current cycle's run status.
+        status (str): The current cycle's status.
         has_all_data (bool): The current cycle's api data status.
     """
     complete_time = datetime.utcnow()
