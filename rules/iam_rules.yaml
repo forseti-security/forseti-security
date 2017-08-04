@@ -28,7 +28,7 @@ rules:
           - user:*@YOURDOMAIN
           - group:*@YOURDOMAIN
   - name: Disallow service accounts to be Folder admins
-    mode: whitelist
+    mode: blacklist
     resource:
       - type: folder
         applies_to: self
@@ -38,8 +38,7 @@ rules:
     bindings:
       - role: roles/resourcemanager.folderAdmin
         members:
-          - user:*@YOURDOMAIN
-          - group:*@YOURDOMAIN
+          - serviceAccount:*@*.gserviceaccount.com
 
 
   # custom rules
