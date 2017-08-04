@@ -116,7 +116,7 @@ class ViolationDaoTest(ForsetiTestCase):
               * self.dao.conn
               * self.dao.conn.commit
               * self.dao.get_latest_snapshot_timestamp
-              * self.dao._create_snapshot_table
+              * self.dao.create_snapshot_table
 
         Expect:
             * Assert that get_latest_snapshot_timestamp() gets called.
@@ -130,7 +130,7 @@ class ViolationDaoTest(ForsetiTestCase):
 
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
             return_value = self.fake_snapshot_timestamp)
-        self.dao._create_snapshot_table = mock.MagicMock(
+        self.dao.create_snapshot_table = mock.MagicMock(
             return_value=self.fake_table_name)
         self.dao.conn = conn_mock
         self.dao.execute_sql_with_commit = commit_mock

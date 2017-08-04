@@ -121,7 +121,7 @@ class Dao(_db_connector.DbConnector):
         """
         return object_class(**row)
 
-    def _create_snapshot_table(self, resource_name, timestamp):
+    def create_snapshot_table(self, resource_name, timestamp):
         """Creates a snapshot table.
 
         Args:
@@ -190,7 +190,7 @@ class Dao(_db_connector.DbConnector):
         """
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
-                snapshot_table_name = self._get_snapshot_table(
+                snapshot_table_name = self._create_snapshot_table_name(
                     resource_name, timestamp)
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
                     resource_name, csv_file.name, snapshot_table_name)
