@@ -144,6 +144,12 @@ def _start_snapshot_cycle(inventory_dao):
         LOGGER.error('Unable to insert new snapshot cycle: %s', e)
         sys.exit()
 
+    # Ensure all the tables are created, to support client usage & joins,
+    # which expect the tables to exist even if empty.
+    for resource_name in dao.CREATE_TABLE_MAP:
+        inventory_dao.create_snapshot_table(resource_name, cycle_timestamp)
+    LOGGER.debug('All tables created.')
+
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
 
