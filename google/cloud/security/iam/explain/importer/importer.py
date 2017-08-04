@@ -496,7 +496,7 @@ class ForsetiImporter(object):
                 parent=parent))
         return sqlinst
 
-    def _convert_binding(self, res_type, res_id, binding):
+    def _convert_binding(self, res_type, res_id, binding, binding_type):
         """Converts a policy binding into the respective db model.
 
         Args:
@@ -545,7 +545,7 @@ class ForsetiImporter(object):
                                  role=role,
                                  members=members))
 
-    def _convert_policy(self, forseti_policy):
+    def _convert_iam_policy(self, forseti_policy):
         """Creates a db object from a Forseti policy.
 
         Args:
@@ -555,7 +555,25 @@ class ForsetiImporter(object):
         res_type, res_id = forseti_policy.get_resource_reference()
         policy = Policy(forseti_policy)
         for binding in policy.iter_bindings():
-            self._convert_binding(res_type, res_id, binding)
+            self._convert_binding(res_type,
+                                  res_id,
+                                  binding,
+                                  self.dao.TBL_BINDING)
+
+    def _convert_gcs_policy(self, forseti_gcs_policy):
+        """Creates a db object from a Forseti gcs policy.
+
+        Args:
+            forseti_gcs_policy (object): Forseti DB object for a gcs policy.
+        """
+
+        res_type, res_id = forseti_gcs_policy.get_resource_reference()
+        policy = Policy(forseti_gcs_policy)
+        for binding in policy.iter_bindings():
+            self._convert_binding(res_type,
+                                  res_id,
+                                  binding,
+                                  self.dao.TBL_GCS_BINDING)
 
     def _convert_membership(self, forseti_membership):
         """Creates a db membership from a Forseti membership.
@@ -650,7 +668,9 @@ class ForsetiImporter(object):
                 if res_type in actions:
                     self.session.add(actions[res_type](obj))
                 elif res_type == 'policy':
-                    self._convert_policy(obj)
+                    self._convert_iam_policy(obj)
+                elif res_type == 'gcs_policy':
+                    self._convert_gcs_policy(obj)
                 elif res_type == 'customer':
                     # TODO: investigate how we
                     # don't see this in the first place

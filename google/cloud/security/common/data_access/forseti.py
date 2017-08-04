@@ -36,6 +36,7 @@ BASE = declarative_base()
 TABLE_CACHE = {}
 PER_YIELD = 1024
 
+
 # pylint: disable=too-many-locals
 class SnapshotState(object):
     """Possible states for Forseti snapshots."""
@@ -64,12 +65,10 @@ class Snapshot(BASE):
             self.id, self.schema_version, self.cycle_timestamp)
 
 
-def create_table_names(timestamp, schema_version):
+def create_table_names(timestamp, schema_number):
     """Forseti tables are namespaced via snapshot timestamp.
        This function generates the appropriate classes to
        abstract the access to a single snapshot."""
-
-    schema_number = float(schema_version)
 
     if timestamp in TABLE_CACHE:
         return TABLE_CACHE[timestamp]
@@ -169,31 +168,32 @@ def create_table_names(timestamp, schema_version):
             return """<Bucket(id='{}', name='{}', location='{}')>""".format(
                 self.bucket_id, self.bucket_name, self.bucket_location)
 
-    class BucketPolicy(BASE):
-        """Represents a GCP bucket policy row."""
+    if schema_number >= 3.0:
+        class BucketPolicy(BASE):
+            """Represents a GCP bucket policy row."""
 
-        __tablename__ = 'raw_bucket_iam_policies_%s' % timestamp
+            __tablename__ = 'raw_bucket_iam_policies_%s' % timestamp
 
-        id = Column(BigInteger(), primary_key=True)
-        project_number = Column(BigInteger())
-        bucket_id = Column(BigInteger())
-        iam_policy = Column(Text)
+            id = Column(BigInteger(), primary_key=True)
+            project_number = Column(BigInteger())
+            bucket_id = Column(BigInteger())
+            iam_policy = Column(Text)
 
-        def __repr__(self):
-            """String representation."""
+            def __repr__(self):
+                """String representation."""
 
-            return """<Policy(id='{}', type='{}', name='{}'>""".format(
-                self.id, "bucket", self.org_id)
+                return """<Policy(id='{}', type='{}', name='{}'>""".format(
+                    self.id, "bucket", self.org_id)
 
-        def get_resource_reference(self):
-            """Return a reference to the resource in the form (type, id)"""
+            def get_resource_reference(self):
+                """Return a reference to the resource in the form (type, id)"""
 
-            return 'bucket', self.bucket_id
+                return 'bucket', self.bucket_id
 
-        def get_policy(self):
-            """Return the corresponding IAM policy."""
+            def get_policy(self):
+                """Return the corresponding IAM policy."""
 
-            return self.iam_policy
+                return self.iam_policy
 
     class Organization(BASE):
         """Represents a GCP organization."""
@@ -400,20 +400,63 @@ def create_table_names(timestamp, schema_version):
                 self.id,
                 self.name)
 
-    supported_policies = [OrganizationPolicy, ProjectPolicy]
+    if schema_number >= 3.0:
+        class StorageObject(BASE):
+            pass
+
+        class StorageObjectPolicy(BASE):
+            """Represents a GCP storage object policy row."""
+
+            __tablename__ = 'raw_bucket_iam_policies_%s' % timestamp
+
+            id = Column(BigInteger(), primary_key=True)
+            project_number = Column(BigInteger())
+            bucket_id = Column(BigInteger())
+            iam_policy = Column(Text)
+
+            def __repr__(self):
+                """String representation."""
+
+                return """<Policy(id='{}', type='{}', name='{}'>""".format(
+                    self.id, "bucket", self.org_id)
+
+            def get_resource_reference(self):
+                """Return a reference to the resource in the form (type, id)"""
+
+                return 'bucket', self.bucket_id
+
+            def get_policy(self):
+                """Return the corresponding IAM policy."""
+
+                return self.iam_policy
+
+    supported_iam_policies = [OrganizationPolicy, ProjectPolicy]
     if schema_number >= 2.0:
-        supported_policies.append(FolderPolicy)
+        supported_iam_policies.append(FolderPolicy)
+    if schema_number >= 3.0:
+        supported_iam_policies.append(BucketPolicy)
+
+    supported_gcs_policies = []
+    if schema_number >= 3.0:
+        supported_gcs_policies.append(BucketPolicy)
+        supported_gcs_policies.append(StorageObjectPolicy)
+
+    supported_resources = [
+        ('projects', Project),
+        ('buckets', Bucket),
+        ('cloudsqlinstances', CloudSqlInstances),
+        ('instances', Instances),
+        ('instancegroups', InstanceGroups),
+        ('bigquerydatasets', BigqueryDatasets),
+        ('backendservices', BackendServices)]
+    if schema_number >= 3.0:
+        supported_resources.append(('objects', StorageObject))
 
     result = (Organization,
               Folders,
-              [('projects', Project),
-               ('buckets', Bucket),
-               ('cloudsqlinstances', CloudSqlInstances),
-               ('instances', Instances),
-               ('instancegroups', InstanceGroups),
-               ('bigquerydatasets', BigqueryDatasets),
-               ('backendservices', BackendServices)],
-              supported_policies,
+              supported_resources,
+              supported_iam_policies,
+              supported_gcs_policies,
               [GroupMembers, Groups])
     TABLE_CACHE[timestamp] = result
     return result
@@ -465,9 +508,12 @@ class Importer(object):
 
         snapshot = self._get_latest_snapshot()
 
-        organization, folders, tables, policies, group_membership = \
+        schema_number = float(snapshot.schema_version)
+
+        organization, folders, tables, iam_policies,\
+        gcs_policies, group_membership = \
             create_table_names(snapshot.cycle_timestamp,
-                               snapshot.schema_version)
+                               schema_number)
 
         # Organizations
         self._table_exists_or_raise(organization)
@@ -527,7 +573,12 @@ class Importer(object):
             cur_member = member
             member_groups.append(group)
 
-        for policy_table in policies:
+        for policy_table in iam_policies:
             self._table_exists_or_raise(policy_table)
             for policy in self.session.query(policy_table).all():
                 yield 'policy', policy
+
+        for policy_table in gcs_policies:
+            self._table_exists_or_raise(policy_table)
+            for policy in self.session.query(policy_table).all():
+                yield 'gcs_policy', policy

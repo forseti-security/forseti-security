@@ -158,6 +158,7 @@ def define_model(model_name, dbengine, model_seed):
 
     denormed_group_in_group = '{}_group_in_group'.format(model_name)
     bindings_tablename = '{}_bindings'.format(model_name)
+    gcs_bindings_tablename = '{}_gcs_bindings'.format(model_name)
     roles_tablename = '{}_roles'.format(model_name)
     permissions_tablename = '{}_permissions'.format(model_name)
     members_tablename = '{}_members'.format(model_name)
@@ -179,6 +180,17 @@ def define_model(model_name, dbengine, model_seed):
                             Column(
                                 'bindings_id', ForeignKey(
                                     '{}.id'.format(bindings_tablename)),
+                                primary_key=True),
+                            Column(
+                                'members_name', ForeignKey(
+                                    '{}.name'.format(members_tablename)),
+                                primary_key=True), )
+
+    gcs_binding_members = Table('{}_gcs_binding_members'.format(model_name),
+                            base.metadata,
+                            Column(
+                                'bindings_id', ForeignKey(
+                                    '{}.id'.format(gcs_bindings_tablename)),
                                 primary_key=True),
                             Column(
                                 'members_name', ForeignKey(
@@ -254,6 +266,10 @@ def define_model(model_name, dbengine, model_seed):
                                 secondary=binding_members,
                                 back_populates='members')
 
+        gcs_bindings = relationship('GcsBinding',
+                                    secondary=gcs_binding_members,
+                                    back_populates='members')
+
         def __repr__(self):
             """String representation."""
             return "<Member(name='{}', type='{}')>".format(
@@ -273,7 +289,7 @@ def define_model(model_name, dbengine, model_seed):
                 self.member)
 
     class Binding(base):
-        """Row for a binding between resource, roles and members."""
+        """Row for a IAM binding between resource, role and member."""
 
         __tablename__ = bindings_tablename
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
@@ -292,7 +308,34 @@ def define_model(model_name, dbengine, model_seed):
                                back_populates='bindings')
 
         def __repr__(self):
-            fmt_s = "<Binding(id='{}', role='{}', resource='{}' members='{}')>"
+            fmt_s = "<IAM Binding(id='{}', role='{}', resource='{}' members='{}')>"
+            return fmt_s.format(
+                self.id,
+                self.role_name,
+                self.resource_type_name,
+                self.members)
+
+    class GcsBinding(base):
+        """Row for a gcs binding between resource, role and member."""
+
+        __tablename__ = gcs_bindings_tablename
+        id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
+                    primary_key=True)
+
+        resource_type_name = Column(String(128), ForeignKey(
+            '{}.type_name'.format(resources_tablename)))
+        role_name = Column(String(128), ForeignKey(
+            '{}.name'.format(roles_tablename)))
+
+        resource = relationship('Resource', remote_side=[resource_type_name])
+        role = relationship('Role', remote_side=[role_name])
+
+        members = relationship('Member',
+                               secondary=gcs_binding_members,
+                               back_populates='gcs_bindings')
+
+        def __repr__(self):
+            fmt_s = "<GCS Binding(id='{}', role='{}', resource='{}', members='{}')>"
             return fmt_s.format(
                 self.id,
                 self.role_name,
@@ -329,6 +372,7 @@ def define_model(model_name, dbengine, model_seed):
 
         TBL_GROUP_IN_GROUP = GroupInGroup
         TBL_BINDING = Binding
+        TBL_GCS_BINDING = GcsBinding
         TBL_MEMBER = Member
         TBL_PERMISSION = Permission
         TBL_ROLE = Role

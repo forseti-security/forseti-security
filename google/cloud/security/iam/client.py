@@ -18,11 +18,11 @@ import binascii
 import os
 import grpc
 
-from google.cloud.security.iam.explain import explain_pb2
-from google.cloud.security.iam.explain import explain_pb2_grpc
-from google.cloud.security.iam.playground import playground_pb2_grpc
-from google.cloud.security.iam.playground import playground_pb2
-from google.cloud.security.iam.gcs import gcs_pb2_grpc
+from google.cloud.security.iam import explain_pb2
+from google.cloud.security.iam import explain_pb2_grpc
+from google.cloud.security.iam import playground_pb2_grpc
+from google.cloud.security.iam import playground_pb2
+from google.cloud.security.iam import gcs_pb2_grpc
 from google.cloud.security.iam import iam_pb2
 
 from google.cloud.security.iam.utils import oneof
@@ -303,7 +303,7 @@ class PlaygroundClient(IAMClient):
 
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(
-            playground_pb2.PingRequest(
+            iam_pb2.PingRequest(
                 data=data)).data == data
 
     @require_model

@@ -20,8 +20,8 @@ from concurrent import futures
 import grpc
 
 from google.cloud.security.iam import iam_pb2
-from google.cloud.security.iam.explain import explain_pb2
-from google.cloud.security.iam.explain import explain_pb2_grpc
+from google.cloud.security.iam import explain_pb2
+from google.cloud.security.iam import explain_pb2_grpc
 from google.cloud.security.iam.explain import explainer
 from google.cloud.security.iam.dao import session_creator
 
