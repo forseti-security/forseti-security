@@ -120,7 +120,7 @@ class ViolationDaoTest(ForsetiTestCase):
 
         Expect:
             * Assert that get_latest_snapshot_timestamp() gets called.
-            * Assert that _create_snapshot_table() gets called.
+            * Assert that create_snapshot_table() gets called.
             * Assert that conn.commit() is called 3x.
               was called == # of formatted/flattened RuleViolations).
         """
@@ -143,7 +143,7 @@ class ViolationDaoTest(ForsetiTestCase):
             ('PARTIAL_SUCCESS', 'SUCCESS'))
 
         # Assert that the snapshot table was created.
-        self.dao._create_snapshot_table.assert_called_once_with(
+        self.dao.create_snapshot_table.assert_called_once_with(
             self.resource_name, self.fake_snapshot_timestamp)
 
         # Assert that conn.commit() was called.
@@ -155,17 +155,17 @@ class ViolationDaoTest(ForsetiTestCase):
         Setup:
             * Create fake custom timestamp.
             * Create mocks:
-                * self.dao._create_snapshot_table
+                * self.dao.create_snapshot_table
                 * self.dao.get_latest_snapshot_timestamp
                 * self.dao.conn
 
         Expect:
             * Assert that get_latest_snapshot_timestamp() doesn't get called.
-            * Assert that _create_snapshot_table() gets called once.
+            * Assert that create_snapshot_table() gets called once.
         """
         fake_custom_timestamp = '11111'
         self.dao.conn = mock.MagicMock()
-        self.dao._create_snapshot_table = mock.MagicMock()
+        self.dao.create_snapshot_table = mock.MagicMock()
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock()
         self.dao.insert_violations(
             self.fake_flattened_violations,
@@ -173,7 +173,7 @@ class ViolationDaoTest(ForsetiTestCase):
             fake_custom_timestamp)
 
         self.dao.get_latest_snapshot_timestamp.assert_not_called()
-        self.dao._create_snapshot_table.assert_called_once_with(
+        self.dao.create_snapshot_table.assert_called_once_with(
             self.resource_name, fake_custom_timestamp)
 
     def test_insert_violations_raises_error_on_create(self):
@@ -184,7 +184,7 @@ class ViolationDaoTest(ForsetiTestCase):
         """
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
             return_value=self.fake_snapshot_timestamp)
-        self.dao._create_snapshot_table = mock.MagicMock(
+        self.dao.create_snapshot_table = mock.MagicMock(
             side_effect=MySQLdb.DataError)
 
         with self.assertRaises(errors.MySQLError):
@@ -197,7 +197,7 @@ class ViolationDaoTest(ForsetiTestCase):
             * Create mocks:
                 * self.dao.conn
                 * self.dao.get_latest_snapshot_timestamp
-                * self.dao._create_snapshot_table
+                * self.dao.create_snapshot_table
             * Create side effect for one violation to raise an error.
 
         Expect:
@@ -208,7 +208,7 @@ class ViolationDaoTest(ForsetiTestCase):
         resource_name = 'policy_violations'
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock(
             return_value=self.fake_snapshot_timestamp)
-        self.dao._create_snapshot_table = mock.MagicMock(
+        self.dao.create_snapshot_table = mock.MagicMock(
             return_value=self.fake_table_name)
         violation_dao.LOGGER = mock.MagicMock()
 
