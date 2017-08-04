@@ -232,7 +232,8 @@ def _create_dao_map(global_configs):
             'organization_dao': organization_dao.OrganizationDao(
                 global_configs),
             'project_dao': project_dao.ProjectDao(global_configs),
-            'service_account_dao': service_account_dao.ServiceAccountDao(global_configs),
+            'service_account_dao':
+                service_account_dao.ServiceAccountDao(global_configs),
         }
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error to creating DAO map.\n%s', e)

@@ -38,16 +38,28 @@ class IAMClient(_base_client.BaseClient):
             global_configs (dict): Global configurations.
             credentials (GoogleCredentials): Google credentials for auth-ing
                 to the API.
+            version (str): The version.
         """
 
         super(IAMClient, self).__init__(
-            global_configs, credentials=credentials, api_name=self.API_NAME, version=version)
+            global_configs,
+            credentials=credentials,
+            api_name=self.API_NAME,
+            version=version)
 
         self.rate_limiter = RateLimiter(
             self.global_configs.get('max_iam_api_calls_per_second'),
             1)
 
     def get_service_accounts(self, project_id):
+        """Get Service Accounts associated with a project.
+
+        Args:
+            project_id (str): The project ID to get Service Accounts for.
+
+        Yields:
+            dict: Service account associated with the project.
+        """
         endpoint = self.service.projects().serviceAccounts().list
         project_name = 'projects/{}'.format(project_id)
 
@@ -77,6 +89,15 @@ class IAMClient(_base_client.BaseClient):
             next_token = result['nextPageToken']
 
     def get_service_account_keys(self, service_account_name):
+        """Get keys associated with the given Service Account.
+
+        Args:
+            service_account_name (str): Name of the Service Account for which
+                to get keys.
+
+        Returns:
+            list: List with a dict for each key associated with the account.
+        """
         endpoint = self.service.projects().serviceAccounts().keys().list
         api_call = endpoint(name=service_account_name)
         try:

@@ -46,8 +46,9 @@ class LoadServiceAccountsPipeline(base_pipeline.BasePipeline):
             if service_accounts:
                 service_accounts = list(service_accounts)
                 for service_account in service_accounts:
-                    service_account['keys'] = (self.api_client
-                        .get_service_account_keys(service_account['name'])['keys'])
+                    service_account['keys'] = (
+                        self.api_client.get_service_account_keys(
+                            service_account['name'])['keys'])
                 service_accounts_per_project[project.id] = service_accounts
         return service_accounts_per_project
 
@@ -61,7 +62,6 @@ class LoadServiceAccountsPipeline(base_pipeline.BasePipeline):
         Yields:
             iterator: Service Accounts in a dict.
         """
-        foo = {}
         for project_id, service_accounts in resource_from_api.iteritems():
             for service_account in service_accounts:
                 yield {

@@ -37,7 +37,9 @@ class ServiceAccountDao(dao.Dao):
             list: A list of Service Accounts.
         """
         query = select_data.SERVICE_ACCOUNTS.format(timestamp)
-        rows = self.execute_sql_with_fetch(resource.ResourceType.SERVICE_ACCOUNT,
-                                           query, ())
+        rows = self.execute_sql_with_fetch(
+            resource.ResourceType.SERVICE_ACCOUNT,
+            query,
+            ())
         return [self.map_row_to_object(service_account.ServiceAccount, row)
                 for row in rows]
