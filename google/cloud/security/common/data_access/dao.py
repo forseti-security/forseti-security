@@ -165,7 +165,7 @@ class Dao(_db_connector.DbConnector):
             str: String of the created snapshot table.
         """
         try:
-            snapshot_table_name = self._create_snapshot_table(
+            snapshot_table_name = self.create_snapshot_table(
                 resource_name, timestamp)
         except OperationalError:
             # TODO: find a better way to handle this. I want this method
