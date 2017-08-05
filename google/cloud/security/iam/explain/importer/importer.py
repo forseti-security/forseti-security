@@ -222,6 +222,29 @@ def load_roles():
     return curated_roles
 
 
+class ResourceBuffer(object):
+    def __init__(self, session, size=1024):
+        self.session = session
+        self.buffer = []
+        self.size = size
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.flush()
+
+    def flush(self):
+        self.session.add_all(self.buffer)
+        self.session.flush()
+        self.buffer = []
+
+    def add(self, obj):
+        self.buffer.append(obj)
+        if len(self.buffer) >= self.size:
+            self.flush()
+
+
 class ForsetiImporter(object):
     """Imports data from Forseti."""
 
@@ -296,7 +319,7 @@ class ForsetiImporter(object):
             )
 
         self.resource_cache[folder.type_name] = folder, full_folder_name
-        return self.session.merge(folder)
+        return folder
 
     def _convert_project(self, forseti_project):
         """Creates a db object from a Forseti project.
@@ -316,7 +339,7 @@ class ForsetiImporter(object):
         project_name = 'project/{}'.format(forseti_project.project_number)
         full_project_name = '{}/project/{}'.format(
             full_res_name, forseti_project.project_number)
-        project = self.session.merge(
+        project = (
             self.dao.TBL_RESOURCE(
                 full_name=full_project_name,
                 type_name=project_name,
@@ -343,7 +366,7 @@ class ForsetiImporter(object):
         project_name = 'project/{}'.format(forseti_bucket.project_number)
         parent, full_parent_name = self.resource_cache[project_name]
         full_bucket_name = '{}/{}'.format(full_parent_name, bucket_name)
-        bucket = self.session.merge(
+        bucket = (
             self.dao.TBL_RESOURCE(
                 full_name=full_bucket_name,
                 type_name=bucket_name,
@@ -351,6 +374,33 @@ class ForsetiImporter(object):
                 type='bucket',
                 parent=parent))
         return bucket
+
+    def _convert_storage_object(self, forseti_object):
+        """Creates a db object from a Forseti bucket.
+
+        Args:
+            forseti_bucket (object): Forseti DB object for a bucket.
+
+        Returns:
+            object: dao Resource() table object.
+        """
+
+        object_name = 'object/{}'.format(forseti_object['id'])
+        bucket_name = 'bucket/{}'.format(forseti_object.bucket_id)
+        project_name = 'project/{}'.format(forseti_object.project_number)
+        parent, full_parent_name = self.resource_cache[project_name]
+        full_object_name = '{}/{}/{}'.format(full_parent_name,
+                                             bucket_name,
+                                             object_name)
+
+        obj = (
+            self.dao.TBL_RESOURCE(
+                full_name=full_object_name,
+                type_name=object_name,
+                name=forseti_object['name'],
+                type='object',
+                parent=parent))
+        return obj
 
     def _convert_instance(self, forseti_instance):
         """Creates a db object from a Forseti gce instance.
@@ -369,7 +419,7 @@ class ForsetiImporter(object):
             forseti_instance.project_id]
 
         full_instance_name = '{}/{}'.format(full_parent_name, instance_name)
-        instance = self.session.merge(
+        instance = (
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
                 type_name=instance_name,
@@ -400,7 +450,7 @@ class ForsetiImporter(object):
         full_instance_name = '{}/{}'.format(
             full_parent_name, instance_group_type_name)
 
-        instance = self.session.merge(
+        instance = (
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
                 type_name=instance_group_type_name,
@@ -430,7 +480,7 @@ class ForsetiImporter(object):
         full_instance_name = '{}/{}'.format(
             full_parent_name, bigquery_dataset_type_name)
 
-        instance = self.session.merge(
+        instance = (
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
                 type_name=bigquery_dataset_type_name,
@@ -461,7 +511,7 @@ class ForsetiImporter(object):
         full_instance_name = '{}/{}'.format(
             full_parent_name, forseti_backend_service)
 
-        instance = self.session.merge(
+        instance = (
             self.dao.TBL_RESOURCE(
                 full_name=full_instance_name,
                 type_name=backend_service_type_name,
@@ -487,7 +537,7 @@ class ForsetiImporter(object):
             forseti_cloudsqlinstance.project_number)
         parent, full_parent_name = self.resource_cache[project_name]
         full_sqlinst_name = '{}/{}'.format(full_parent_name, sqlinst_name)
-        sqlinst = self.session.merge(
+        sqlinst = (
             self.dao.TBL_RESOURCE(
                 full_name=full_sqlinst_name,
                 type_name=sqlinst_name,
@@ -587,7 +637,7 @@ class ForsetiImporter(object):
 
         member, groups = forseti_membership
 
-        groups = [self.session.merge(
+        groups = [(
             self.dao.TBL_MEMBER(name='group/{}'.format(group.group_email),
                                 type='group',
                                 member_name=group.group_email))
@@ -595,11 +645,12 @@ class ForsetiImporter(object):
 
         member_type = member.member_type.lower()
         member_name = member.member_email
-        return self.session.merge(self.dao.TBL_MEMBER(
-            name='{}/{}'.format(member_type, member_name),
-            type=member_type,
-            member_name=member_name,
-            parents=groups))
+        return (
+            self.dao.TBL_MEMBER(
+                name='{}/{}'.format(member_type, member_name),
+                type=member_type,
+                member_name=member_name,
+                parents=groups))
 
     def _convert_group(self, forseti_group):
         """Creates a db group from a Forseti group.
@@ -611,7 +662,7 @@ class ForsetiImporter(object):
             object: dao Member() table object.
         """
 
-        return self.session.merge(
+        return (
             self.dao.TBL_MEMBER(name='group/{}'.format(forseti_group),
                                 type='group',
                                 member_name=forseti_group))
@@ -659,29 +710,33 @@ class ForsetiImporter(object):
                 'instancegroups': self._convert_instance_group,
                 'bigquerydatasets': self._convert_bigquery_dataset,
                 'backendservices': self._convert_backend_service,
+                'objects': self._convert_storage_object,
                 }
 
             item_counter = 0
             last_watchdog_kick = time()
-            for res_type, obj in self.forseti_importer:
-                item_counter += 1
-                if res_type in actions:
-                    self.session.add(actions[res_type](obj))
-                elif res_type == 'policy':
-                    self._convert_iam_policy(obj)
-                elif res_type == 'gcs_policy':
-                    self._convert_gcs_policy(obj)
-                elif res_type == 'customer':
-                    # TODO: investigate how we
-                    # don't see this in the first place
-                    pass
-                else:
-                    raise NotImplementedError(res_type)
 
-                # kick watchdog about every ten seconds
-                if time() - last_watchdog_kick > 10.0:
-                    self.model.kick_watchdog(self.session)
-                    last_watchdog_kick = time()
+            with ResourceBuffer(self.session) as buf:
+                for res_type, obj in self.forseti_importer:
+                    print 'type: {}, object: {}'.format(res_type, obj)
+                    item_counter += 1
+                    if res_type in actions:
+                        buf.add(actions[res_type](obj))
+                    elif res_type == 'policy':
+                        self._convert_iam_policy(obj)
+                    elif res_type == 'gcs_policy':
+                        self._convert_gcs_policy(obj)
+                    elif res_type == 'customer':
+                        # TODO: investigate how we
+                        # don't see this in the first place
+                        pass
+                    else:
+                        raise NotImplementedError(res_type)
+
+                    # kick watchdog about every ten seconds
+                    if time() - last_watchdog_kick > 10.0:
+                        self.model.kick_watchdog(self.session)
+                        last_watchdog_kick = time()
 
             self.dao.denorm_group_in_group(self.session)
 
