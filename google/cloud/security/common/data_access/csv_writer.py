@@ -418,7 +418,7 @@ CSV_FIELDNAME_MAP = {
     'raw_buckets': RAW_BUCKETS_FIELDNAMES,
 
     'storage_objects': STORAGE_OBJECTS_FIELDNAMES,
-    'raw_storage_object_iam_policies': STORAGE_OBJECTS_POLICIES_FIELDNAMES,
+    'raw_object_iam_policies': STORAGE_OBJECTS_POLICIES_FIELDNAMES,
 
     'cloudsql_instances': CLOUDSQL_INSTANCES_FIELDNAMES,
     'cloudsql_ipaddresses': CLOUDSQL_IPADDRESSES_FIELDNAMES,

@@ -17,7 +17,7 @@
 from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
-from googleapiclient import errors
+from google.cloud.security.common.gcp_api import errors
 
 
 class AppEngineClient(_base_client.BaseClient):
@@ -41,6 +41,7 @@ class AppEngineClient(_base_client.BaseClient):
             credentials (GoogleCredentials): Google credentials.
             version (str): The version.
         """
+
         super(AppEngineClient, self).__init__(
             global_configs,
             credentials=credentials,
@@ -60,19 +61,12 @@ class AppEngineClient(_base_client.BaseClient):
         Returns:
             dict: The response of retrieving the AppEngine app.
         """
+
         apps = self.service.apps()
         app = None
         request = apps.get(appsId=project_id)
         try:
             app = self._execute(request, self.rate_limiter)
-        except errors.HttpError as e:
-            resp = e.resp
-            if resp.status == '404':
-                # TODO: handle error more gracefully
-                # application not found
-                pass
-            if resp.status == '403':
-                # Operation not allowed
-                # This has been handled by the BaseClient._execute
-                pass
+        except errors.Error as e:
+            return None
         return app

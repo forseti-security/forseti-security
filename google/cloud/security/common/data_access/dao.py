@@ -48,9 +48,9 @@ CREATE_TABLE_MAP = {
     'buckets': create_tables.CREATE_BUCKETS_TABLE,
     'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
     'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
-    'bucket_iam_policies': create_tables.CREATE_BUCKET_IAM_POLICIES_TABLE,
+    'raw_bucket_iam_policies': create_tables.CREATE_BUCKET_IAM_POLICIES_TABLE,
     'storage_objects': create_tables.CREATE_STORAGE_OBJECTS_TABLE,
-    'storage_object_iam_policies': create_tables.CREATE_STORAGE_OBJECT_POLICIES,
+    'raw_object_iam_policies': create_tables.CREATE_STORAGE_OBJECT_POLICIES,
 
     # cloudsql
     'cloudsql_instances': create_tables.CREATE_CLOUDSQL_INSTANCES_TABLE,

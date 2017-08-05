@@ -235,9 +235,10 @@ class ResourceBuffer(object):
         self.flush()
 
     def flush(self):
-        self.session.add_all(self.buffer)
-        self.session.flush()
-        self.buffer = []
+        if self.buffer:
+            self.session.add_all(self.buffer)
+            self.session.flush()
+            self.buffer = []
 
     def add(self, obj):
         self.buffer.append(obj)
@@ -722,8 +723,12 @@ class ForsetiImporter(object):
                     item_counter += 1
                     if res_type in actions:
                         buf.add(actions[res_type](obj))
-                    elif res_type == 'policy':
+                    else:
+                        buf.flush()
+                    if res_type == 'policy':
+                        print 'converting policy'
                         self._convert_iam_policy(obj)
+                        print 'policy converted'
                     elif res_type == 'gcs_policy':
                         self._convert_gcs_policy(obj)
                     elif res_type == 'customer':

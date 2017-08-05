@@ -14,6 +14,8 @@
 
 """ Forseti Database Objects. """
 
+import json
+
 from sqlalchemy import create_engine
 from sqlalchemy import Column
 from sqlalchemy import String
@@ -177,7 +179,7 @@ def create_table_names(timestamp, schema_number):
             id = Column(BigInteger(), primary_key=True)
             project_number = Column(BigInteger())
             bucket_id = Column(BigInteger())
-            iam_policy = Column(Text)
+            raw = Column(Text)
 
             def __repr__(self):
                 """String representation."""
@@ -193,7 +195,7 @@ def create_table_names(timestamp, schema_number):
             def get_policy(self):
                 """Return the corresponding IAM policy."""
 
-                return self.iam_policy
+                return self.raw
 
     class Organization(BASE):
         """Represents a GCP organization."""
@@ -402,17 +404,36 @@ def create_table_names(timestamp, schema_number):
 
     if schema_number >= 3.0:
         class StorageObject(BASE):
-            pass
+            """Represents a GCP storage object row."""
+
+            __tablename__ = 'storage_objects_%s' % timestamp
+
+            id = Column(BigInteger(), primary_key=True)
+            project_number = Column(BigInteger())
+            bucket_id = Column(Text)
+            object_name = Column(Text)
+            raw = Column(Text)
+
+            def __getitem__(self, key):
+                return json.loads(self.raw)[key]
+
+            def __repr__(self):
+                """String representation."""
+
+                fmt_s = "<Storage Object(id='{}', name='{}'>"
+                return fmt_s.format(
+                    self.id,
+                    self.object_name)
 
         class StorageObjectPolicy(BASE):
             """Represents a GCP storage object policy row."""
 
-            __tablename__ = 'raw_bucket_iam_policies_%s' % timestamp
+            __tablename__ = 'raw_object_iam_policies_%s' % timestamp
 
             id = Column(BigInteger(), primary_key=True)
             project_number = Column(BigInteger())
             bucket_id = Column(BigInteger())
-            iam_policy = Column(Text)
+            raw = Column(Text)
 
             def __repr__(self):
                 """String representation."""
@@ -428,7 +449,7 @@ def create_table_names(timestamp, schema_number):
             def get_policy(self):
                 """Return the corresponding IAM policy."""
 
-                return self.iam_policy
+                return self.raw
 
     supported_iam_policies = [OrganizationPolicy, ProjectPolicy]
     if schema_number >= 2.0:

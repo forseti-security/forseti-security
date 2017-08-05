@@ -32,7 +32,7 @@ LOGGER = log_util.get_logger(__name__)
 class LoadStorageObjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
     """Pipeline to load project bucket's objects data into Inventory."""
 
-    RESOURCE_NAME = 'storage_object_iam_policies'
+    RESOURCE_NAME = 'raw_object_iam_policies'
     RAW_RESOURCE_NAME = 'raw'
 
     def _transform(self):
