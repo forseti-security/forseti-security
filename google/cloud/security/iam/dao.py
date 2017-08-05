@@ -45,7 +45,7 @@ from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
-
+from google.cloud.security.iam.explain.filters import TimeFilter
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
@@ -577,6 +577,7 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def query_access_by_member(cls, session, member_name, permission_names,
                                    expand_resources=False,
+                                   explain_filter=TimeFilter(),
                                    reverse_expand_members=True):
             """Return the set of resources the member has access to."""
 
@@ -597,6 +598,8 @@ def define_model(model_name, dbengine, model_seed):
                 .join(Member)
                 .filter(Binding.role_name.in_([r.name for r in roles]))
                 .filter(Member.name.in_(member_names)))
+
+            qry = explain_filter(cls, qry)
 
             bindings = qry.yield_per(1024)
             if not expand_resources:

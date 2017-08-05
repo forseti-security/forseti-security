@@ -118,14 +118,15 @@ class Explainer(object):
                 yield role, resource, members
 
     def GetAccessByMembers(self, model_name, member_name, permission_names,
-                           expand_resources):
+                           expand_resources, explain_filter):
         """Returns access to resources for the provided member."""
 
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             for role, resources in data_access.query_access_by_member(
-                    session, member_name, permission_names, expand_resources):
+                    session, member_name, permission_names, expand_resources,
+                    explain_filter):
                 yield role, resources
 
     def GetPermissionsByRoles(self, model_name, role_names, role_prefixes):

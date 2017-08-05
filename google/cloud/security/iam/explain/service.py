@@ -23,6 +23,7 @@ from google.cloud.security.iam.explain import explain_pb2
 from google.cloud.security.iam.explain import explain_pb2_grpc
 from google.cloud.security.iam.explain import explainer
 from google.cloud.security.iam.dao import session_creator
+from google.cloud.security.iam.explain.filters import TimeFilter
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -163,13 +164,14 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """Returns resources which can be accessed by the specified members."""
 
         model_name = self._get_handle(context)
+        explain_filter = TimeFilter(request.explain_filter)
+        result = self.explainer.GetAccessByMembers(model_name,
+                                                   request.member_name,
+                                                   request.permission_names,
+                                                   request.expand_resources,
+                                                   explain_filter)
         accesses = []
-        for role, resources in\
-            self.explainer.GetAccessByMembers(model_name,
-                                              request.member_name,
-                                              request.permission_names,
-                                              request.expand_resources):
-
+        for role, resources in result:
             access = explain_pb2.GetAccessByMembersReply.Access(
                 role=role, resources=resources, member=request.member_name)
             accesses.append(access)

@@ -19,9 +19,11 @@ import os
 import grpc
 
 from google.cloud.security.iam.explain import explain_pb2_grpc, explain_pb2
+from google.cloud.security.iam.explain import filters_pb2
 from google.cloud.security.iam.playground import playground_pb2_grpc
 from google.cloud.security.iam.playground import playground_pb2
 from google.cloud.security.iam.utils import oneof
+
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -145,13 +147,30 @@ class ExplainClient(IAMClient):
 
     @require_model
     def query_access_by_members(self, member_name, permission_names,
-                                expand_resources=False):
+                                expand_resources=False,
+                                start_from='',
+                                end_at='',
+                                list_untimed_resources=False):
         """List resources to which a set of members has access to."""
+        try:
+            explain_filter = filters_pb2.TimeFilter()
+            explain_filter.has_start_from = bool(start_from)
+            explain_filter.has_end_at = bool(end_at)
+            if start_from:
+                explain_filter.start_from.FromJsonString(start_from)
+            if end_at:
+                explain_filter.end_at.FromJsonString(end_at)
+            explain_filter.list_untimed_resources = list_untimed_resources
+        except ValueError:
+            raise ValueError("""Incorrect data format,
+            should be YYYY-mm-ddTHH:MM:SS.fZ, 
+            for example: 2017-07-31T15:45:34.397Z""")
 
         request = explain_pb2.GetAccessByMembersRequest(
             member_name=member_name,
             permission_names=permission_names,
-            expand_resources=expand_resources)
+            expand_resources=expand_resources,
+            explain_filter=explain_filter)
         return self.stub.GetAccessByMembers(request, metadata=self.metadata())
 
     @require_model
