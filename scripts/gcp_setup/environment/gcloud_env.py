@@ -53,12 +53,12 @@ class ForsetiGcpSetup(object):
     REQUIRED_APIS = [
         {'name': 'Admin SDK',
          'service': 'admin.googleapis.com'},
+        {'name': 'Cloud Resource Manager',
+         'service': 'cloudresourcemanager.googleapis.com'},
         {'name': 'Cloud SQL',
          'service': 'sql-component.googleapis.com'},
         {'name': 'Cloud SQL Admin',
          'service': 'sqladmin.googleapis.com'},
-        {'name': 'Cloud Resource Manager',
-         'service': 'cloudresourcemanager.googleapis.com'},
         {'name': 'Compute Engine',
          'service': 'compute-component.googleapis.com'},
         {'name': 'Deployment Manager',
@@ -67,11 +67,18 @@ class ForsetiGcpSetup(object):
 
     ORG_IAM_ROLES = [
         'roles/browser',
-        'roles/compute.networkAdmin',
-        'roles/editor',
+        'roles/compute.networkViewer',
         'roles/iam.securityReviewer',
-        'roles/resourcemanager.folderAdmin',
-        'roles/storage.admin',
+        'roles/appengine.appViewer',
+        'roles/servicemanagement.quotaViewer',
+        'roles/cloudsql.viewer',
+        'roles/compute.securityAdmin',
+    ]
+
+    PROJECT_IAM_ROLES = [
+        'roles/storage.objectViewer',
+        'roles/storage.objectCreator',
+        'roles/cloudsql.client'
     ]
 
     SERVICE_ACCT_FMT = '{}@{}.iam.gserviceaccount.com'
@@ -460,12 +467,12 @@ class ForsetiGcpSetup(object):
         svc_acct_actions = [
             {'usage': 'accessing GCP.',
              'acct': 'gcp_service_account',
-             'default_name': 'forseti-gcp'},
+             'default_name': 'forseti-security'},
             {'usage': ('getting GSuite groups. This should be a different '
                        'service account from the one you are using for '
                        'accessing GCP.'),
              'acct': 'gsuite_service_account',
-             'default_name': 'forseti-gsuite',
+             'default_name': 'forseti-security-gsuite',
              'skippable': True},
         ]
         for action in svc_acct_actions:
@@ -585,8 +592,7 @@ class ForsetiGcpSetup(object):
 
         self.gsuite_svc_acct_key_location = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__),
-                '..',
+                os.getcwd(),
                 'gsuite_key.json'))
 
     def _set_service_account(self, which_svc_acct, svc_acct):
@@ -601,36 +607,54 @@ class ForsetiGcpSetup(object):
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
+        Org:
+        AppEngine App Viewer
+        Cloud SQL Viewer
+        Network Viewer
         Project Browser
         Security Reviewer
-        Project Editor
-        Resource Manager Folder Admin
-        Storage Object Admin
-        Compute Network Admin
+        Service Management Quota Viewer
+        Security Admin
+
+        Project:
+        Cloud SQL Client
+        Storage Object Viewer
+        Storage Object Creator
         """
         self._print_banner('Assigning roles to the GCP service account')
         if not self.organization_id:
             return
 
-        for role in self.ORG_IAM_ROLES:
-            iam_role_cmd = [
-                'gcloud',
-                'organizations',
-                'add-iam-policy-binding',
-                self.organization_id,
-                '--member=serviceAccount:%s' % self.gcp_service_account,
-                '--role=%s' % role,
-                ]
-            print('Assigning %s...' % role)
-            proc = subprocess.Popen(iam_role_cmd,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            _, err = proc.communicate()
-            if proc.returncode:
-                print(err)
-                self.unassigned_roles.append(role)
+        roles = {
+            'organizations': self.ORG_IAM_ROLES,
+            'projects': self.PROJECT_IAM_ROLES
+        }
+
+        for (resource_type, roles) in roles.iteritems():
+            if resource_type == 'organizations':
+                resource_id = self.organization_id
             else:
-                print('Done.')
+                resource_id = self.project_id
+
+            for role in roles:
+                iam_role_cmd = [
+                    'gcloud',
+                    resource_type,
+                    'add-iam-policy-binding',
+                    resource_id,
+                    '--member=serviceAccount:%s' % self.gcp_service_account,
+                    '--role=%s' % role,
+                ]
+                print('Assigning %s on %s...' % (role, resource_id))
+                proc = subprocess.Popen(iam_role_cmd,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+                _, err = proc.communicate()
+                if proc.returncode:
+                    print(err)
+                    self.unassigned_roles.append(role)
+                else:
+                    print('Done.')
 
     def setup_bucket_name(self):
         """Ask user to come up with a bucket name for the rules."""
@@ -907,10 +931,8 @@ class ForsetiGcpSetup(object):
         """
         self._print_banner('Post-setup instructions')
 
-        print('Congratulations! You\'ve completed the Forseti prerequisite '
-              'setup.\n')
-
         if self.gsuite_service_account:
+            print('Here are your next steps:\n')
             print('It looks like you created a service account for retrieving '
                   'GSuite groups.\n'
                   'There are just a few more steps to enable the groups '
@@ -969,7 +991,7 @@ class ForsetiGcpSetup(object):
                 print('Since you are using a GSuite service account, after you '
                       'download the json key, copy it to your Forseti instance '
                       'with the following command:\n\n'
-                      '    gcloud compute copy-files <keyfile name> '
+                      '    gcloud compute scp <keyfile name> '
                       'ubuntu@{}-vm:/home/ubuntu/gsuite_key.json\n\n'.format(
                           self.deployment_name))
         else:

@@ -18,7 +18,6 @@ import json
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
@@ -48,9 +47,8 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
         """
         for buckets_acls_map in resource_from_api:
             acls = buckets_acls_map['acl']
-            acls_items = acls.get('items', [])
 
-            for acl_item in acls_items:
+            for acl_item in acls:
                 bucket_acl_json = json.dumps(acl_item)
 
                 yield {
@@ -78,40 +76,28 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
         Raises:
             LoadDataPipelineException: An error with loading data has occurred.
         """
+        buckets_acls = []
+
         # Get the projects for which we will retrieve the buckets.
         try:
-            project_numbers = self.dao.get_project_numbers(
-                self.PROJECTS_RESOURCE_NAME, self.cycle_timestamp)
+            raw_buckets = self.dao.get_raw_buckets(self.cycle_timestamp)
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
-        # Get the buckets for project numbers
-        projects_buckets_maps = []
-        for project_number in project_numbers:
+
+        for result in raw_buckets:
             try:
-                buckets = self.dao.get_buckets_by_project_number(
-                    self.RESOURCE_NAME, self.cycle_timestamp,
-                    project_number)
-                project_buckets_map = {'project_number': project_number,
-                                       'buckets': buckets}
-                projects_buckets_maps.append(project_buckets_map)
-            except data_access_errors.MySQLError as e:
-                raise inventory_errors.LoadDataPipelineError(e)
-        # Retrieve bucket acl data from GCP.
-        buckets_acl_maps = []
-        for project_buckets in projects_buckets_maps:
-            buckets = project_buckets['buckets']
-            for bucket in buckets:
-                try:
-                    bucket_acl = self.api_client.get_bucket_acls(
-                        bucket)
-                    bucket_acl_map = {'bucket_name': bucket,
-                                      'acl': bucket_acl}
-                    buckets_acl_maps.append(bucket_acl_map)
-                except api_errors.ApiExecutionError as e:
-                    LOGGER.error(
-                        'Unable to get buckets acls for bucket %s:\n%s',
-                        bucket, e)
-        return buckets_acl_maps
+                raw_bucket_json = json.loads(result.get('raw_bucket'))
+                bucket_acls = raw_bucket_json.get('acl')
+            except ValueError as err:
+                LOGGER.warn('Invalid json: %s', err)
+                continue
+
+            if bucket_acls:
+                buckets_acls.append({
+                    'bucket_name': result.get('bucket_id'),
+                    'acl': bucket_acls
+                })
+        return buckets_acls
 
     def run(self):
         """Runs the load buckets data pipeline."""
