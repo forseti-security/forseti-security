@@ -14,18 +14,25 @@
 
 """Tests the EnforcedNetworkRulesEngine."""
 
-import copy
-import itertools
 import mock
 import yaml
+import copy
+import unittest
 
+from tests.unittest_utils import ForsetiTestCase
 from google.apputils import basetest
+from google.cloud.security.common.gcp_type import instance
 from google.cloud.security.common.util import file_loader
-from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import base_rules_engine as bre
 from google.cloud.security.scanner.audit import instance_network_interface_rules_engine as ini
-from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
+from tests.scanner.test_data import fake_instance_scanner_data
+
+
+def create_list_of_instence_network_interface_obj_from_data():
+    fake_instance_scanner_list = []
+    for data in fake_instance_scanner_data.INSTANCE_DATA:
+        fake_instance_scanner_list.append(instance.Instance(**data).create_network_interfaces())
+    return fake_instance_scanner_list
 
 
 # TODO: Define more tests
@@ -37,11 +44,6 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
         self.rule_index = 0
         self.ini = ini
         self.ini.LOGGER = mock.MagicMock()
-
-# no longer need this 
-    def setUp(self):
-        """Set up."""
-
         # patch the organization resource relation dao
         self.patcher = mock.patch('google.cloud.security.common.data_access.instance_dao.InstanceDao')
         self.mock_instance_dao = self.patcher.start()
@@ -52,8 +54,7 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
-        rules_local_path = get_datafile_path(__file__,
-        	'instance_network_interface_test_rules_1.yaml')
+        rules_local_path = get_datafile_path(__file__, 'instance_network_interface_test_rules_1.yaml')
         rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
@@ -74,7 +75,7 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
         rules_path = 'input/instance_network_interface_test_rules_1.yaml'
         full_rules_path = 'gs://{}/{}'.format(bucket_name, rules_path)
         rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_file_path=full_rules_path)
-        
+
         # Read in the rules file
         file_content = None
         with open(
@@ -89,4 +90,72 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
 
         rules_engine.build_rule_book()
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
-    
+
+    def test_networks_in_whitelist_and_allowed_projects(self):
+        """Test to make sure violations are created"""
+        rules_local_path = get_datafile_path(
+            __file__,
+            'instance_network_interface_test_rules_2.yaml')
+        rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_ini_data = create_list_of_instence_network_interface_obj_from_data()
+        actual_violations_list = []
+        for instance_network_interface in fake_ini_data:
+            violation = rules_engine.find_policy_violations(instance_network_interface)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
+
+    def test_network_in_allowed_project_but_not_whitelist_with_external_ip(self):        
+        """Test to make sure violations are created where the project 
+        is allowed but not the network is not and there is an external ip"""
+        rules_local_path = get_datafile_path(
+            __file__,
+            'instance_network_interface_test_rules_3.yaml')
+        rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_ini_data = create_list_of_instence_network_interface_obj_from_data()
+        actual_violations_list = []
+        for instance_network_interface in fake_ini_data:
+            violation = rules_engine.find_policy_violations(instance_network_interface)
+            actual_violations_list.extend(violation)
+        self.assertEqual(1, len(actual_violations_list))
+        self.assertEqual('project-1', actual_violations_list[0].project)
+        self.assertEqual('network-1', actual_violations_list[0].network)
+
+    def test_network_in_allowed_project_but_not_whitelist_with_no_external_ip(self):
+        """Test to make sure violations are not created where the project 
+        is allowed but not the network is not and there is not an 
+        external ip"""
+        rules_local_path = get_datafile_path(
+            __file__,
+            'instance_network_interface_test_rules_4.yaml')
+        rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_ini_data = create_list_of_instence_network_interface_obj_from_data()
+        actual_violations_list = []
+        for instance_network_interface in fake_ini_data:
+            violation = rules_engine.find_policy_violations(instance_network_interface)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
+
+    def test_network_not_in_allowed_project(self):
+        """Test to make sure violations are where the project 
+        is not allowed"""
+        rules_local_path = get_datafile_path(
+            __file__,
+            'instance_network_interface_test_rules_5.yaml')
+        rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_ini_data = create_list_of_instence_network_interface_obj_from_data()
+        actual_violations_list = []
+        for instance_network_interface in fake_ini_data:
+            violation = rules_engine.find_policy_violations(instance_network_interface)
+            actual_violations_list.extend(violation)
+        self.assertEqual(1, len(actual_violations_list))
+        self.assertEqual('project-3', actual_violations_list[0].project)
+        self.assertEqual('network-3', actual_violations_list[0].network)
+
+
+
+if __name__ == "__main__":
+    unittest.main()

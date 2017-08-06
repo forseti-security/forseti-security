@@ -24,6 +24,7 @@ from google.cloud.security.scanner.audit import errors as audit_errors
 
 LOGGER = log_util.get_logger(__name__)
 
+
 class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
     """Rules engine for InstanceNetworkInterfaceRules."""
 
@@ -32,6 +33,7 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
 
         Args:
             rules_file_path: file location of rules
+            snapshot_timestamp: timestamp for database.
         """
         super(InstanceNetworkInterfaceRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
@@ -42,10 +44,17 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         self.rule_book = InstanceNetworkInterfaceRuleBook(
             self._load_rule_definitions())
 
-    # pylint: disable=arguments-differ
     def find_policy_violations(self, instance_network_interface,
                                force_rebuild=False):
-        """Determine whether the networks violates rules."""
+        """Determine whether the networks violates rules.
+
+        Args:
+            instance_network_interface: list of instance_network_interface
+            force_rebuild: set to false to not force a rebuiid
+
+        Return:
+            iterator of all violations
+        """
         violations = itertools.chain()
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
@@ -84,7 +93,6 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book."""
-        print(rule_defs)
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
@@ -98,47 +106,56 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
 
         For example, this rule...
 
-            # rules yaml:
+        # rules yaml:
             rules:
-              - project: a rule
-                network: whitelist
-                is_externam
-                whitelist:
-                  - project
-                        - network
+          - name: all networks covered in whitelist
+            project: '*'
+            network: '*'
+            is_external_network: True
+            whitelist:
+              master:
+                - master-1
+              network:
+                - network-1
+                - network-2
+              default:
+                - default-1
 
         ... gets parsed into:
-
-            {
-                'name': 'a rule',
-                'resource': {
-                    'project': '',
-                    'network': self,
-                    'is_external': boolean
+        {
+            "rules": [
+                {
+                    "name": "all networks covered in whitelist",
+                    "project": "*",
+                    "network": "*",
+                    "is_external_network": true,
+                    "whitelist": {
+                        "master": [
+                            "master-1"
+                        ],
+                        "network": [
+                            "network-1",
+                            "network-2"
+                        ],
+                        "default": [
+                            "default-1"
+                        ]
+                    }
                 }
-                whitelist {
-                    'network': ['project'...]
-
-                }
-            }
-
+            ]
+        }
         Args:
             rule_def: A dictionary containing rule definition properties.
             rule_index: The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
-
-        Args:
-            rule_def: A dictionary containing rule definition properties.
-            rule_index: The index of the rule from the rule definitions.
-            Assigned automatically when the rule book is built.
         """
         project = rule_def.get('project')
         network = rule_def.get('network')
         whitelist = rule_def.get('whitelist')
         is_external_network = rule_def.get('is_external_network')
 
-        if (whitelist is None) or (project is None) or (network is None)\
-                or (is_external_network is None):
+        if ((whitelist is None) or (project is None) or (network is None)
+                or (is_external_network is None)):
             raise audit_errors.InvalidRulesSchemaError(
                 'Faulty rule {}'.format(rule_def.get('name')))
 
@@ -175,38 +192,44 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
-    def find_violations(self, instance_network_interface):
+    def find_violations(self, instance_network_interface_list):
         """Raise violation is the ip is not in the whitelist.
 
         Args:
-            instance_network_interface: InstanceNetworkInterface obj
+            instance_network_interface_list: list of InstanceNetworkInterface
+                obj
+
+         Yields:
+            namedtuple: Returns RuleViolation named tuple
         """
-        network_and_project = re.search(
-            'compute\/v1\/projects\/([^\/]*).*networks\/([^\/]*)',
-            instance_network_interface.network)
-        project = network_and_project.group(1)
-        network = network_and_project.group(2)
-        is_external_network = instance_network_interface.access_configs \
-            is not None
-        if not self.rules['whitelist'].get(project):
-            yield self.RuleViolation(
-                resource_type='instance',
-                rule_name=self.rule_name,
-                rule_index=self.rule_index,
-                violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
-                project=project,
-                network=network,
-                ip='None')
-        elif network not in self.rules['whitelist'].get(project) and \
-                is_external_network:
-            yield self.RuleViolation(
-                resource_type='instance',
-                rule_name=self.rule_name,
-                rule_index=self.rule_index,
-                violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
-                project=project,
-                network=network,
-                ip=instance_network_interface.access_configs[0].get('natIP'))
+        for instance_network_interface in instance_network_interface_list:
+            network_and_project = re.search(
+                r'compute/v1/projects/([^/]*).*networks/([^/]*)',
+                instance_network_interface.network)
+            project = network_and_project.group(1)
+            network = network_and_project.group(2)
+            is_external_network = (instance_network_interface.access_configs
+                                   is not None)
+            if not self.rules['whitelist'].get(project):
+                yield self.RuleViolation(
+                    resource_type='instance',
+                    rule_name=self.rule_name,
+                    rule_index=self.rule_index,
+                    violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
+                    project=project,
+                    network=network,
+                    ip=None)
+            elif (network not in self.rules['whitelist'].get(project) and
+                  is_external_network):
+                yield self.RuleViolation(
+                    resource_type='instance',
+                    rule_name=self.rule_name,
+                    rule_index=self.rule_index,
+                    violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
+                    project=project,
+                    network=network,
+                    ip=instance_network_interface
+                    .access_configs[0].get('natIP'))
 
     # Rule violation.
     # resource_type: string
@@ -217,6 +240,6 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'rule_name',
-                                'rule_index', 'violation_type', 'project',
-                                'network', 'ip'])
+                                   ['resource_type', 'rule_name',
+                                    'rule_index', 'violation_type', 'project',
+                                    'network', 'ip'])

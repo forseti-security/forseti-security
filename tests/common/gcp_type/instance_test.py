@@ -14,9 +14,9 @@
 
 """Test the Instance."""
 
+from tests.common.gcp_type.test_data import fake_instance
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_type import instance
-from tests.common.gcp_type.test_data import fake_instance
 
 
 class InstanceTest(ForsetiTestCase):
@@ -24,30 +24,51 @@ class InstanceTest(ForsetiTestCase):
 
     def test_network_interface_creation(self):
         """Test that network_interface creation is correct."""
-        network_interfaces = instance.Instance(
-            **fake_instance.FAKE_INSTANCE_RESPONSE_1)\
-            .create_network_interfaces()
+        network_interfaces = (instance.Instance(
+            **fake_instance.FAKE_INSTANCE_RESPONSE_1)
+                              .create_network_interfaces())
 
         self.assertEqual(len(network_interfaces), 1)
-        nw = network_interfaces[0]
-        self.assertEqual('compute#networkInterface', nw.kind)
-        self.assertEqual('nic0', nw.name)
+        network_interface = network_interfaces[0]
+        self.assertEqual('compute#networkInterface', network_interface.kind)
+        self.assertEqual('nic0', network_interface.name)
         self.assertEqual('https://www.googleapis.com/compute/v1/projects/'
-                         'project-1/global/networks/network-1', nw.network)
-        self.assertEqual('000.000.000.000', nw.network_ip)
+                         'project-1/global/networks/network-1',
+                         network_interface.network)
+        self.assertEqual('000.000.000.000', network_interface.network_ip)
         self.assertEqual('https://www.googleapis.com/compute/v1/projects'
-                         '/project-1/regions/datacenter/subnetworks/subnetwork-1',
-                         nw.subnetwork)
+                         '/project-1/regions/datacenter'
+                         '/subnetworks/subnetwork-1',
+                         network_interface.subnetwork)
         self.assertEqual([{u'kind': u'compute#accessConfig',
-                         u'type': u'ONE_TO_ONE_NAT', u'name': u'External NAT',
-                          u'natIP': u'000.000.000.001'}], nw.access_configs)
+                           u'type': u'ONE_TO_ONE_NAT', u'name': u'External NAT',
+                           u'natIP': u'000.000.000.001'}],
+                         network_interface.access_configs)
 
-    def test_recognizes_two_network_interfaces(self):
+    def test_recognize_two_network_interfaces(self):
         """Test that it recognizes two network_interfaces."""
-        network_interfaces = instance.Instance(
-            **fake_instance.FAKE_INSTANCE_RESPONSE_2) \
-            .create_network_interfaces()
+        network_interfaces = (instance.Instance(
+            **fake_instance.FAKE_INSTANCE_RESPONSE_2)
+                              .create_network_interfaces())
         self.assertEqual(len(network_interfaces), 2)
+
+    def test_legacy_networks(self):
+        """ Test legacy networks without a subnet works."""
+        network_interfaces = (instance.Instance(
+            **fake_instance.FAKE_INSTANCE_RESPONSE_LEGACY)
+                              .create_network_interfaces())
+        self.assertEqual(len(network_interfaces), 1)
+        network_interface = network_interfaces[0]
+        self.assertEqual('compute#networkInterface', network_interface.kind)
+        self.assertEqual('nic0', network_interface.name)
+        self.assertEqual('https://www.googleapis.com/compute/v1/projects/'
+                         'project-1/global/networks/network-1',
+                         network_interface.network)
+        self.assertEqual('000.000.000.000', network_interface.network_ip)
+        self.assertEqual([{u'kind': u'compute#accessConfig',
+                           u'type': u'ONE_TO_ONE_NAT', u'name': u'External NAT',
+                           u'natIP': u'000.000.000.001'}],
+                         network_interface.access_configs)
 
 if __name__ == '__main__':
     unittest.main()

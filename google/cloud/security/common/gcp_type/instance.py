@@ -68,8 +68,7 @@ class Instance(object):
         Returns:
             List: list of InstanceNetworkInterface objects
         """
-        network_interfaces = json.loads(self.network_interfaces)
-        return [InstanceNetworkInterface(**ni) for ni in network_interfaces]
+        return [InstanceNetworkInterface(**ni) for ni in self.network_interfaces]
 
 
 KEY_OBJECT_KIND = 'Instance'
@@ -191,7 +190,7 @@ class InstanceNetworkInterface(object):
             other (InstanceNetworkInterface): other InstanceNetworkInterface
 
         Return:
-            bool: if not equal
+            bool: True if not equal
         """
         return not self.__eq__(other)
 
@@ -202,7 +201,7 @@ class InstanceNetworkInterface(object):
             other (InstanceNetworkInterface) : other InstanceNetworkInterface
 
         Return:
-            bool: if is equal
+            bool: True if is equal
         """
         if isinstance(self, InstanceNetworkInterface):
             return ((self.kind == other.kind) and

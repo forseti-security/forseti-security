@@ -21,7 +21,6 @@ from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
 from google.cloud.security.scanner.audit import instance_network_interface_rules_engine
-
 # pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
@@ -53,8 +52,10 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     @staticmethod
     def _flatten_violations(violations):
         """Flatten RuleViolations into a dict for each RuleViolation member.
+
         Args:
             violations (list): The RuleViolations to flatten.
+
         Yields:
             dict: Iterator of RuleViolations as a dict per member.
         """
@@ -64,7 +65,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             violation_data['network'] = violation.network
             violation_data['ip'] = violation.ip
             yield {
-                'resource_id': "resource_id",
+                'resource_id': 'instance_network_interface',
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
@@ -74,6 +75,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
 
     def _output_results(self, all_violations):
         """Output results.
+
         Args:
             all_violations (list): All violations
         """
@@ -106,9 +108,11 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         """Get projects from data source."""
         project_policies = {}
         project_policies = (
-            project_dao.ProjectDao().get_project_policies('projects',
-                                                          self.
-                                                          snapshot_timestamp))
+            project_dao
+            .ProjectDao()
+            .get_project_policies('projects',
+                                   self.
+                                   snapshot_timestamp))
         return project_policies
 
     @staticmethod
@@ -119,6 +123,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             project_policies: dict containing the projects
                 (gcp_type.project.Project) and their iam policies (dict).
             instance_network_interfaces: list of network_interface objects. 
+
         Returns:
             Resource count map
         """
@@ -132,26 +137,19 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     def _retrieve(self):
         """Run the data collection."""
         enforced_networks_data = []
-        #project_policies = {}
         instance_network_interfaces = self.get_instance_networks_interfaces()
-        #enforced_networks_data.append(instance_network_interfaces)
-        #enforced_networks_data.append(project_policies)
-
-        #resource_counts = self._get_resource_count(project_policies,
-        #                                           instance_network_interfaces)
-
-        return instance_network_interfaces #enforced_networks_data #, resource_counts
+        return instance_network_interfaces
 
     def _find_violations(self, enforced_networks_data):
         """Find violations in the policies.
 
-        Args:
-            enforced_networks_data: Enforced networks data
-            to find violations in
-            rules_engine: The rules engine to run.
+            Args:
+                enforced_networks_data: Enforced networks data
+                    to find violations in
+                rules_engine: The rules engine to run.
 
-        Returns:
-            A list of violations
+            Returns:
+                A list of violations
         """
         all_violations = []
         LOGGER.info('Finding enforced networks violations...')
@@ -166,5 +164,6 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     def run(self):
         """Runs the data collection."""
         instance_network_interface_data = self._retrieve()
-        all_violations = self._find_violations(instance_network_interface_data)
+        all_violations = (
+            self._find_violations(instance_network_interface_data))
         self._output_results(all_violations)

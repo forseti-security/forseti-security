@@ -14,7 +14,7 @@
 
 from copy import deepcopy
 
-"""Fake cloudsql data."""
+"""Fake instance data."""
 
 FAKE_INSTANCE_RESPONSE_1 = {
     'can_ip_forware': 'boolean',
@@ -55,6 +55,26 @@ FAKE_INSTANCE_RESPONSE_2 = {
     'tags': '{"items": ["one", "two", "three"], "fingerprint": "xxxx"}',
     'zone': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter'
 }
+FAKE_INSTANCE_RESPONSE_LEGACY = {
+    'can_ip_forware': 'boolean',
+    'cpu_platform': 'Intel Ivy Bridge',
+    'creation_timestamp': '1000-00-00T00:00:00.000-00:00',
+    'description': '',
+    'disks': '[{"boot": true, "kind": "compute#attachedDisk", "mode": "READ_WRITE", "type": "PERSISTENT", "index": 0, "source": "https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter/disks/something", "interface": "SCSI", "autoDelete": true, "deviceName": "something-9999"}]',
+    'machine_type': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter/machineTypes/n1-standard-16',
+    'metadata': '{"kind": "compute#metadata", "items": [{"key": "eventName", "value": "RequestTime"}, {"key": "serviceName", "value": "request-1"}, {"key": "subscriptionName", "value": "project.request"}, {"key": "qqqq", "value": "projects/project-1/global/global-1/request"}, {"key": "created-by", "value": "projects/0000/regions/another-datacenter/groups/request"}], "fingerprint": "ZZZZZ"}',
+    'name': 'name-0',
+    'network_interfaces': '[{"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/v1/projects/project-1/global/networks/network-1", "networkIP": "000.000.000.000", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "000.000.000.001"}]}]',
+    'project_id': '2222',
+    'resource_id': '4444',
+    'scheduling': '{"preemptible": false, "automaticRestart": true, "onHostMaintenance": "MIGRATE"}',
+    'service_accounts': '[{"email": "none@developer.gserviceaccount.com", "scopes": ["https://www.googleapis.com/auth/somewhere"]}]',
+    'status': 'RUNNING',
+    'status_message': '',
+    'tags': '{"items": ["one", "two", "three"], "fingerprint": "wwww"}',
+    'zone': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter'
+}
 
 EXPECTED_FAKE_INSTANCE_FROM_API_1 = [deepcopy(FAKE_INSTANCE_RESPONSE_1)]
 EXPECTED_FAKE_INSTANCE_FROM_API_2 = [deepcopy(FAKE_INSTANCE_RESPONSE_2)]
+EXPECTED_FAKE_INSTANCE_FROM_API_LEGACY = [deepcopy(FAKE_INSTANCE_RESPONSE_LEGACY)]
