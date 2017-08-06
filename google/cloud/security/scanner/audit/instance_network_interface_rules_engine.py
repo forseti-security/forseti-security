@@ -81,7 +81,6 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
         Args:
             rule_defs: The parsed dictionary of rules from the YAML
                 definition file.
-            snapshot_timestamp: The snapshot to lookup data.
         """
         super(InstanceNetworkInterfaceRuleBook, self).__init__()
         self.resource_rules_map = {}
@@ -240,6 +239,6 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                                   ['resource_type', 'rule_name',
-                                    'rule_index', 'violation_type', 'project',
-                                    'network', 'ip'])
+                               ['resource_type', 'rule_name',
+                                'rule_index', 'violation_type', 'project',
+                                'network', 'ip'])

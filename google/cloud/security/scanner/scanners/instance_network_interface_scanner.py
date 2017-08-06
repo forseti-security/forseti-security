@@ -29,7 +29,8 @@ LOGGER = log_util.get_logger(__name__)
 class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     """Pipeline to network enforcer from DAO."""
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp, rules):
+    def __init__(self, global_configs, scanner_configs,
+                 snapshot_timestamp, rules):
         """Initialization.
 
          Args:
@@ -43,10 +44,11 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             scanner_configs,
             snapshot_timestamp,
             rules)
-        self.rules_engine = instance_network_interface_rules_engine.InstanceNetworkInterfaceRulesEngine(
-            rules_file_path=self.rules,
-            snapshot_timestamp=self.snapshot_timestamp)
-        print(self.rules_engine)
+        self.rules_engine = (
+            instance_network_interface_rules_engine
+            .InstanceNetworkInterfaceRulesEngine(
+                rules_file_path=self.rules,
+                snapshot_timestamp=self.snapshot_timestamp))
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
@@ -88,7 +90,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         """Get network info from a particular snapshot.
 
            Returns:
-               A list of networks from a particular project
+               list: A list of networks from a particular project
 
            Raises:
                MySQLError if a MySQL error occurs.
@@ -100,8 +102,16 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             network_interfaces += instance.create_network_interfaces()
         return network_interfaces
 
-    def parse_instance_network_instance(self, instance_object):
-        """Create a list of network interface obj."""
+    @staticmethod
+    def parse_instance_network_instance(instance_object):
+        """Create a list of network interface obj.
+
+        Args:
+            instance_object (instance_object): an instance object
+
+        Returns:
+            list: a list of network interface objects
+        """
         return instance_object.create_network_interfaces()
 
     def _get_project_policies(self):
@@ -111,8 +121,8 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             project_dao
             .ProjectDao()
             .get_project_policies('projects',
-                                   self.
-                                   snapshot_timestamp))
+                                  self.
+                                  snapshot_timestamp))
         return project_policies
 
     @staticmethod
@@ -120,12 +130,12 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         """Get resource count for org and project policies.
 
         Args:
-            project_policies: dict containing the projects
+            project_policies (dict): containing the projects
                 (gcp_type.project.Project) and their iam policies (dict).
-            instance_network_interfaces: list of network_interface objects. 
+            instance_network_interfaces (list): of network_interface objects.
 
         Returns:
-            Resource count map
+            dict: Resource count map
         """
         resource_counts = {
             ResourceType.PROJECT: len(project_policies),
@@ -136,20 +146,17 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
 
     def _retrieve(self):
         """Run the data collection."""
-        enforced_networks_data = []
-        instance_network_interfaces = self.get_instance_networks_interfaces()
-        return instance_network_interfaces
+        return self.get_instance_networks_interfaces()
 
     def _find_violations(self, enforced_networks_data):
         """Find violations in the policies.
 
             Args:
-                enforced_networks_data: Enforced networks data
+                enforced_networks_data (list): Enforced networks data
                     to find violations in
-                rules_engine: The rules engine to run.
 
             Returns:
-                A list of violations
+                list: A list of violations
         """
         all_violations = []
         LOGGER.info('Finding enforced networks violations...')

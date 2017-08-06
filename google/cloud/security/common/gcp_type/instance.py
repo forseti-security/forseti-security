@@ -17,7 +17,6 @@
 See: https://cloud.google.com/compute/docs/reference/latest/instances
 """
 
-import json
 import os
 from google.cloud.security.common.gcp_type import key
 from google.cloud.security.common.util import parser
