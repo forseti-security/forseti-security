@@ -66,8 +66,11 @@ class Resource(object):
     def __setitem__(self, key, value):
         self._data[key] = value
 
-    def res_type(self):
+    def type(self):
         raise NotImplementedError()
+
+    def data(self):
+        return self._data
 
     def parent(self):
         try:

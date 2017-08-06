@@ -35,6 +35,9 @@ class Storage(object):
     def close(self):
         raise NotImplementedError()
 
+    def __iter__(self):
+        raise NotImplementedError()
+
 
 class Memory(Storage):
     HANDLE = 0
@@ -62,3 +65,7 @@ class Memory(Storage):
 
     def close(self):
         pass
+
+    def __iter__(self):
+        for value in self.mem.itervalues():
+            yield value

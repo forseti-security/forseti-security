@@ -14,10 +14,10 @@
 
 """ Crawler implementation. """
 
-from google.cloud.security.crawler import progress
-from google.cloud.security.crawler import storage
-from google.cloud.security.crawler import resources
-from google.cloud.security.crawler import gcp
+from google.cloud.security.inventory2 import progress
+from google.cloud.security.inventory2 import storage
+from google.cloud.security.inventory2 import resources
+from google.cloud.security.inventory2 import gcp
 
 
 class CrawlerConfig(dict):
