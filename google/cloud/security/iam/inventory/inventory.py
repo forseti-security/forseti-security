@@ -12,6 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""IAM Explain data imports."""
+""" Inventory API. """
 
-__import__('pkg_resources').declare_namespace(__name__)
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc
+
+
+# pylint: disable=invalid-name,no-self-use
+class Inventory(object):
+    """Inventory API implementation."""
+
+    def __init__(self, config):
+        self.config = config
