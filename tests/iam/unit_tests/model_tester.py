@@ -14,6 +14,7 @@
 """Installing test models against a session."""
 
 from collections import defaultdict
+from datetime import datetime
 
 from google.cloud.security.iam.utils import full_to_type_name
 
@@ -24,11 +25,13 @@ class ModelCreatorClient:
         self.playground = self
         self.explain = self
 
-    def add_resource(self, resource_type_name, parent_type_name, no_parent):
+    def add_resource(self, resource_type_name, parent_type_name, no_parent,
+                     create_time=None):
         return self.data_access.add_resource_by_name(self.session,
                                                      resource_type_name,
                                                      parent_type_name,
-                                                     no_parent)
+                                                     no_parent,
+                                                     create_time)
 
     def add_member(self, child, parents):
         return self.data_access.add_member(self.session, child, parents)
@@ -70,10 +73,16 @@ class ModelCreator:
 
     def _recursive_install_resources(self, node, model, client, parent):
         """Install resources."""
-
-        client.add_resource(node, parent, parent == '')
+        if ' ' in node:
+            name = node.split(' ')[0]
+            create_time = datetime.strptime(node.split(' ')[1],
+                                            '%Y-%m-%dT%H:%M:%S.%fZ')
+        else:
+            name = node
+            create_time = None
+        client.add_resource(name, parent, parent == '', create_time)
         for root, tree in model.iteritems():
-            self._recursive_install_resources(root, tree, client, node)
+            self._recursive_install_resources(root, tree, client, name)
 
     def _install_resources(self, model_view, client):
         """Install resources."""

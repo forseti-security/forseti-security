@@ -265,6 +265,23 @@ def define_explainer_parser(parent):
         type=bool,
         default=False,
         help='Expand the resource hierarchy')
+    query_access_by_member.add_argument(
+        '--start_from',
+        default='',
+        help="""Created on/after, YYYY-mm-ddTHH:MM:SS.fZ,
+        for example: 2017-07-31T15:45:34.397Z""")
+    query_access_by_member.add_argument(
+        '--end_at',
+        default='',
+        help="""Created on/before, YYYY-mm-ddTHH:MM:SS.fZ,
+        for example: 2017-07-31T15:45:34.397Z""")
+    query_access_by_member.add_argument(
+        '--list_untimed_resources',
+        type=bool,
+        default=False,
+        help="""list resources which has no create time info
+        (Forseti inventories prior to 1.1.0 doesn't have 
+        complete create_time information)""")
 
     query_access_by_authz = action_subparser.add_parser(
         'access_by_authz',
