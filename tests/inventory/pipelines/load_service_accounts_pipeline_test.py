@@ -41,7 +41,8 @@ class LoadServiceAccountsPipelineTest(ForsetiTestCase):
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = fake_configs.FAKE_CONFIGS
         self.mock_iam = mock.create_autospec(iam.IAMClient)
-        self.mock_dao = mock.create_autospec(service_account_dao.ServiceAccountDao)
+        self.mock_dao = mock.create_autospec(
+            service_account_dao.ServiceAccountDao)
         self.pipeline = (
             load_service_accounts_pipeline.LoadServiceAccountsPipeline(
                 self.cycle_timestamp,
@@ -51,8 +52,8 @@ class LoadServiceAccountsPipelineTest(ForsetiTestCase):
         self.project_ids = fake_service_accounts \
             .FAKE_PROJECT_SERVICE_ACCOUNTS_MAP.keys()
         self.projects = [project_dao.ProjectDao.map_row_to_object(p)
-             for p in fake_projects.EXPECTED_LOADABLE_PROJECTS
-             if p['project_id'] in self.project_ids]
+                         for p in fake_projects.EXPECTED_LOADABLE_PROJECTS
+                         if p['project_id'] in self.project_ids]
 
     def test_can_transform_service_accounts(self):
         """Test transform function works."""
