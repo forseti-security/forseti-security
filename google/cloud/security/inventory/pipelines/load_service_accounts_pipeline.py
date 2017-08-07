@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load appengine applications into Inventory."""
+"""Pipeline to load Service Accounts into Inventory."""
 
 import json
 
