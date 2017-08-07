@@ -79,9 +79,17 @@ class LoadServiceAccountsPipelineTest(ForsetiTestCase):
             self, mock_get_projects, mock_conn):
         """Test _retrieve() data is correct."""
         mock_get_projects.return_value = self.projects
-        service_accounts = [fake_service_accounts.FAKE_PROJECT_SERVICE_ACCOUNTS_MAP[p]
-                for p in self.project_ids]
-        service_account_keys = [fake_service_accounts.FAKE_SERVICE_ACCOUNT_KEYS[sa['name']] for sa in service_accounts]
+        service_accounts = []
+        for p in self.project_ids:
+            service_accounts.append(
+                fake_service_accounts.FAKE_PROJECT_SERVICE_ACCOUNTS_MAP[p])
+
+        print "aaaaaaaaaaaaa"
+        print service_accounts
+        service_account_keys = []
+        for s in service_accounts:
+            service_account_keys.append(
+                fake_service_accounts.FAKE_SERVICE_ACCOUNT_KEYS[s[0]['name']])
 
         self.pipeline.api_client.get_service_accounts = mock.MagicMock(
             side_effect=service_accounts)

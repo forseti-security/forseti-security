@@ -34,7 +34,7 @@ FAKE_PROJECT_SERVICE_ACCOUNTS_MAP_WITH_KEYS = {
             'name': 'service-account@example.test',
             'email': 'service-account@example.test',
             'oauth2ClientId': '12345',
-            'account_keys': []
+            'keys': []
         },
     ]
 }
@@ -54,6 +54,6 @@ EXPECTED_LOADABLE_SERVICE_ACCOUNTS = [
         'account_keys': parser.json_stringify(
             FAKE_SERVICE_ACCOUNT_KEYS['service-account@example.test']['keys']),
         'raw_service_account': parser.json_stringify(
-            FAKE_PROJECT_SERVICE_ACCOUNTS_MAP['project1'][0]),
+            FAKE_PROJECT_SERVICE_ACCOUNTS_MAP_WITH_KEYS['project1'][0]),
     }
 ]
