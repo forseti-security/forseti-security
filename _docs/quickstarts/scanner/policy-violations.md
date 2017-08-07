@@ -21,4 +21,7 @@ output_path: OUTPUT_PATH
 All violations are saved to a new violations table in the Cloud SQL database
 by default, for every scanner batch run, using the database configurations that
 are already in place. The violations table name includes the snapshot timestamp
-and you can query the table for each kind of policy violation.
+and you can query the table for each kind of policy violation. Below is an
+example of scanner violation output:
+
+![scanner violation output table](../../images/quickstarts/scanner-output.png)
