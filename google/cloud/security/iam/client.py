@@ -18,9 +18,13 @@ import binascii
 import os
 import grpc
 
-from google.cloud.security.iam.explain import explain_pb2_grpc, explain_pb2
+from google.cloud.security.iam.explain import explain_pb2
+from google.cloud.security.iam.explain import explain_pb2_grpc
 from google.cloud.security.iam.playground import playground_pb2_grpc
 from google.cloud.security.iam.playground import playground_pb2
+from google.cloud.security.iam.inventory import inventory_pb2
+from google.cloud.security.iam.inventory import inventory_pb2_grpc
+
 from google.cloud.security.iam.utils import oneof
 
 
@@ -60,6 +64,47 @@ class IAMClient(object):
         return [('handle', self.config.handle())]
 
 
+class InventoryClient(IAMClient):
+    """Inventory service allows the client to create GCP inventory.
+
+    Inventory provides the following functionality:
+       - Create a new inventory and optionally import it
+       - Manage your inventory using List/Get/Delete
+    """
+
+    def __init__(self, config):
+        super(InventoryClient, self).__init__(config)
+        self.stub = inventory_pb2_grpc.InventoryStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Inventory' service is available by performing a ping.
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(inventory_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    def create(self, background=False, import_as=None):
+        """Creates a new inventory, with an optional import."""
+
+        pass
+
+    def get(self, inventory_id):
+        """Returns all information about a particular inventory."""
+
+        pass
+
+    def delete(self):
+        """Delete an inventory."""
+
+        pass
+
+    def list(self):
+        """Lists all available inventory."""
+
+        pass
+
+
 class ExplainClient(IAMClient):
     """Explain service allows the client to reason about a model.
 
@@ -74,7 +119,8 @@ class ExplainClient(IAMClient):
         self.stub = explain_pb2_grpc.ExplainStub(config['channel'])
 
     def is_available(self):
-        """Checks if the 'Explain' service is available by performing a ping."""
+        """Checks if the 'Explain' service is available by performing a ping.
+        """
 
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
@@ -373,8 +419,9 @@ class ClientComposition(object):
 
         self.explain = ExplainClient(self.config)
         self.playground = PlaygroundClient(self.config)
+        self.inventory = InventoryClient(self.config)
 
-        self.clients = [self.explain, self.playground]
+        self.clients = [self.explain, self.playground, self.inventory]
         if not all([c.is_available() for c in self.clients]):
             raise Exception('gRPC connected but services not registered')
 

@@ -68,7 +68,7 @@ class GrpcInventoryFactory(object):
         """Creates an inventory service and registers it in the server"""
 
         service = GrpcInventory(
-            playgrounder_api=inventory.Inventory(
+            inventory_api=inventory.Inventory(
                 self.config))
         inventory_pb2_grpc.add_InventoryServicer_to_server(service, server)
         return service
