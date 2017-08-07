@@ -24,4 +24,4 @@ are already in place. The violations table name includes the snapshot timestamp
 and you can query the table for each kind of policy violation. Below is an
 example of scanner violation output:
 
-![scanner violation output table](../../images/quickstarts/scanner-output.png)
+![scanner violation output table](/images/docs/quickstarts/scanner-output.png)
