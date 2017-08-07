@@ -599,17 +599,18 @@ def define_model(model_name, dbengine, model_seed):
                 .filter(Binding.role_name.in_([r.name for r in roles]))
                 .filter(Member.name.in_(member_names)))
 
-            qry = explain_filter(cls, qry)
-
-            bindings = qry.yield_per(1024)
             if not expand_resources:
+                filtered_qry = explain_filter(cls, qry)
+                bindings = filtered_qry.yield_per(1024)
                 return [(binding.role_name,
                          [binding.resource_type_name]) for binding in bindings]
 
+            bindings = qry.yield_per(1024)
             r_type_names = [binding.resource_type_name for binding in bindings]
             expansion = cls.expand_resources_by_type_names(
                 session,
-                r_type_names)
+                r_type_names,
+                explain_filter)
 
             res_exp = {k.type_name:
                        [v.type_name for v in values]
@@ -1065,7 +1066,8 @@ def define_model(model_name, dbengine, model_seed):
                                  session,
                                  resource_type_name,
                                  parent_type_name,
-                                 no_require_parent):
+                                 no_require_parent,
+                                 create_time=None):
             """Adds resource specified via full name."""
 
             if not no_require_parent:
@@ -1073,10 +1075,15 @@ def define_model(model_name, dbengine, model_seed):
                     Resource.type_name == parent_type_name).one()
             else:
                 parent = None
-            return cls.add_resource(session, resource_type_name, parent)
+            return cls.add_resource(session, resource_type_name, parent,
+                                    create_time)
 
         @classmethod
-        def add_resource(cls, session, resource_type_name, parent=None):
+        def add_resource(cls,
+                         session,
+                         resource_type_name,
+                         parent=None,
+                         create_time=None):
             """Adds resource by name."""
 
             res_type, res_name = resource_type_name.split('/')
@@ -1091,7 +1098,8 @@ def define_model(model_name, dbengine, model_seed):
                                 type_name=resource_type_name,
                                 name=res_name,
                                 type=res_type,
-                                parent=parent)
+                                parent=parent,
+                                create_time=create_time)
             session.add(resource)
             return resource
 
@@ -1150,7 +1158,8 @@ def define_model(model_name, dbengine, model_seed):
             return member
 
         @classmethod
-        def expand_resources_by_type_names(cls, session, res_type_names):
+        def expand_resources_by_type_names(cls, session, res_type_names,
+                                           explain_filter=None):
             """Expand resources by type/name format.
 
                 Returns: {res_type_name: Expansion(res_type_name), ... }
@@ -1164,15 +1173,20 @@ def define_model(model_name, dbengine, model_seed):
                 expressions.append(and_(
                     res_key.type_name == res_type_name))
 
-            res = (
-                session.query(res_key, res_values)
-                .filter(res_key.type_name.in_(res_type_names))
-                .filter(res_values.full_name.startswith(
-                    res_key.full_name)).yield_per(1024))
+            qry = (session.query(res_key, res_values)
+                   .filter(res_key.type_name.in_(res_type_names))
+                   .filter(res_values.full_name.startswith(
+                       res_key.full_name)))
 
+            res = qry.yield_per(1024)
             mapping = collections.defaultdict(set)
-            for k, value in res:
-                mapping[k].add(value)
+            if explain_filter:
+                for k, value in res:
+                    if explain_filter.is_satisfied(value):
+                        mapping[k].add(value)
+            else:
+                for k, value in res:
+                    mapping[k].add(value)
             return mapping
 
         @classmethod

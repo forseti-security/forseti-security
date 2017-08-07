@@ -28,8 +28,9 @@ from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPA
     MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1, ROLES_PERMISSIONS_TESTING_1,\
     DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2,\
     MEMBER_TESTING_3, EXPLAIN_GRANTED_1, GROUP_IN_GROUP_TESTING_1,\
-    ACCESS_BY_PERMISSIONS_1
+    ACCESS_BY_PERMISSIONS_1, TIME_FILTER_TESTING_1
 from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
+from tests.iam.unit_tests.test_filters import create_time_filter
 
 
 def create_test_engine():
@@ -673,6 +674,63 @@ class DaoTest(ForsetiTestCase):
                 for resource in resources:
                     mapping[role].add(resource)
             self.assertEqual(expected_result, mapping[permissions[0]])
+            
+    def test_query_access_by_member_time_filter(self):
+        """Test the time filter in query_access_by_member."""
+        session_maker, data_access = session_creator('test')
+        session = session_maker()
+        client = ModelCreatorClient(session, data_access)
+        _ = ModelCreator(TIME_FILTER_TESTING_1, client)
+
+        checks = [
+                ('user/u1', [u'a'], True,
+                 create_time_filter('', '', False),
+                 {u'r/res1', u'r/res2', u'r/res3', u'r/res4'}),
+                ('user/u1', [u'a'], True,
+                 create_time_filter('2017-08-03T00:00:00.0Z', '', False),
+                 {u'r/res2', u'r/res3'}),
+                ('user/u1', [u'a'], True,
+                 create_time_filter('', '2017-08-05T00:00:00.0Z', False),
+                 {u'r/res1', u'r/res2'}),
+                ('user/u1', [u'a'], True,
+                 create_time_filter('2017-08-03T00:00:00.0Z',
+                                    '2017-08-05T00:00:00.0Z', False),
+                 {u'r/res2'}),
+                ('user/u1', [u'a'], True,
+                 create_time_filter('2017-08-03T00:00:00.0Z',
+                                    '2017-08-05T00:00:00.0Z', True),
+                 {u'r/res2', u'r/res4'}),
+                ('user/u1', [u'b'], False,
+                 create_time_filter('', '', False),
+                 {u'r/res1', u'r/res2', u'r/res3', u'r/res4'}),
+                ('user/u1', [u'b'], False,
+                 create_time_filter('2017-08-03T00:00:00.0Z', '', False),
+                 {u'r/res2', u'r/res3'}),
+                ('user/u1', [u'b'], False,
+                 create_time_filter('', '2017-08-05T00:00:00.0Z', False),
+                 {u'r/res1', u'r/res2'}),
+                ('user/u1', [u'b'], False,
+                 create_time_filter('2017-08-03T00:00:00.0Z',
+                                    '2017-08-05T00:00:00.0Z', False),
+                 {u'r/res2'}),
+                ('user/u1', [u'b'], False,
+                 create_time_filter('2017-08-03T00:00:00.0Z',
+                                    '2017-08-05T00:00:00.0Z', True),
+                 {u'r/res2', u'r/res4'}),
+            ]
+
+        for user, permissions, expansion, filter, expected_result in checks:
+            result = data_access.query_access_by_member(session,
+                                                        user,
+                                                        permissions,
+                                                        expansion,
+                                                        filter)
+            mapping = defaultdict(set)
+            for role, resources in result:
+                for resource in resources:
+                    mapping[role].add(resource)
+            self.assertEqual(expected_result, mapping[permissions[0]],
+                             'expected: '+str(expected_result)+'\nActual: '+str(mapping[permissions[0]]))
 
     def test_query_access_by_resource(self):
         """Test query_access_by_resource."""
@@ -1123,7 +1181,6 @@ class DaoTest(ForsetiTestCase):
         self.assertEqual(set(expand('r/res8')),
                          set([u'r/res8']),
                          'Expecting expansion of res8 to comprise only res8')
-
 
 if __name__ == '__main__':
     unittest.main()

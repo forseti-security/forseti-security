@@ -346,3 +346,36 @@ ACCESS_BY_PERMISSIONS_1 = {
                 },
             },
     }
+
+TIME_FILTER_TESTING_1 = {
+        'resources': {
+                'r/res1 2017-08-02T00:00:00.0Z': {
+                        'r/res2 2017-08-04T00:00:00.0Z': {
+                                'r/res3 2017-08-06T00:00:00.0Z': {},
+                                'r/res4': {},
+                            },
+                    },
+            },
+        'memberships': {
+                'user/u1': {},
+            },
+        'roles': {
+                'a': ['a'],
+                'b': ['b'],
+            },
+        'bindings': {
+            'r/res1': {
+                    'a': ['user/u1'],
+                    'b': ['user/u1'],
+                },
+            'r/res2': {
+                    'b': ['user/u1'],
+                },
+            'r/res3': {
+                    'b': ['user/u1'],
+                },
+            'r/res4': {
+                    'b': ['user/u1'],
+                },
+            },
+    }
