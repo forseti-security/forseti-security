@@ -67,7 +67,8 @@ class Instance(object):
         Returns:
             List: list of InstanceNetworkInterface objects
         """
-        return [InstanceNetworkInterface(**ni) for ni in self.network_interfaces]
+        return [InstanceNetworkInterface(**ni)
+                for ni in self.network_interfaces]
 
 
 KEY_OBJECT_KIND = 'Instance'
