@@ -66,7 +66,7 @@ Learn more about GCP IAM roles
 Forseti Security needs the following roles for `forseti_inventory` and/or
 `forseti_scanner` purposes.
 
-{% include _global/required_roles.md %}
+{% include docs/required_roles.md %}
 
 ### Service account for GSuite Groups
 To inventory GSuite Groups and their members, Forseti Security uses a service
