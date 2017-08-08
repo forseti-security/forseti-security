@@ -7,7 +7,7 @@ layout: homepage
       <div class="col-md-3">
         <div class="panel panel-primary">
           <div class="panel-heading">
-            <img src="{{ site.baseurl }}/images/site/svg/icons/visibility.svg" class="img-fluid" alt="Forseti Security: Keep track of your environment">
+            <img src="{{ site.baseurl }}/images/site/icons/visibility.svg" class="img-fluid" alt="Forseti Security: Keep track of your environment">
           </div>
           <div class="panel-body">
             <p class="text-primary">Keep track of your environment</p>
@@ -21,7 +21,7 @@ layout: homepage
       <div class="col-md-3">
         <div class="panel panel-primary">
           <div class="panel-heading">
-            <img src="{{ site.baseurl }}/images/site/svg/icons/detect.svg" class="img-fluid" alt="Forseti Security: Monitor your policies"> 
+            <img src="{{ site.baseurl }}/images/site/icons/detect.svg" class="img-fluid" alt="Forseti Security: Monitor your policies"> 
           </div>
           <div class="panel-body">
             <p class="text-primary">Monitor your policies</p>
@@ -35,7 +35,7 @@ layout: homepage
       <div class="col-md-3">
         <div class="panel panel-primary">
           <div class="panel-heading">
-            <img src="{{ site.baseurl }}/images/site/svg/icons/enforce.svg" class="img-fluid" alt="Forseti Security: Provide correction">
+            <img src="{{ site.baseurl }}/images/site/icons/enforce.svg" class="img-fluid" alt="Forseti Security: Provide correction">
           </div>
           <div class="panel-body">
             <p class="text-primary">Provide correction</p>
@@ -49,7 +49,7 @@ layout: homepage
       <div class="col-md-3">
         <div class="panel panel-primary">
           <div class="panel-heading">
-            <img src="{{ site.baseurl }}/images/site/svg/icons/explain.svg" class="img-fluid" alt="Forseti Security: Understand your policies">
+            <img src="{{ site.baseurl }}/images/site/icons/explain.svg" class="img-fluid" alt="Forseti Security: Understand your policies">
           </div>
           <div class="panel-body">
             <p class="text-primary">Understand your policies</p>
