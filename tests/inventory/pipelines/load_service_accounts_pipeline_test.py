@@ -85,8 +85,6 @@ class LoadServiceAccountsPipelineTest(ForsetiTestCase):
             service_accounts.append(
                 fake_service_accounts.FAKE_PROJECT_SERVICE_ACCOUNTS_MAP[p])
 
-        print "aaaaaaaaaaaaa"
-        print service_accounts
         service_account_keys = []
         for s in service_accounts:
             service_account_keys.append(

@@ -46,6 +46,8 @@ class LoadServiceAccountsPipeline(base_pipeline.BasePipeline):
             if service_accounts:
                 service_accounts = list(service_accounts)
                 for service_account in service_accounts:
+                    # TODO: also retrieve associated IAM policies, see:
+                    # https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
                     service_account['keys'] = (
                         self.api_client.get_service_account_keys(
                             service_account['name'])['keys'])

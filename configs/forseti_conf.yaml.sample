@@ -89,6 +89,8 @@ inventory:
           enabled: true
         - resource: projects_iam_policies
           enabled: true
+        - resource: service_accounts
+          enabled: true
 
 ##############################################################################
 

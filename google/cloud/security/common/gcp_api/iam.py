@@ -72,7 +72,6 @@ class IAMClient(_base_client.BaseClient):
                 result = api_call.execute()
             except (errors.HttpError, HttpLib2Error) as e:
                 LOGGER.error(api_errors.ApiExecutionError(project_name, e))
-                # TODO: pass in "buckets" as resource_name variable
                 raise api_errors.ApiExecutionError('serviceAccounts', e)
 
             # Does the result have any objects listed?
