@@ -49,16 +49,16 @@
       }
 
       .github::before {
-        background: url($baseurl + '/images/site/svg/third_party/icon_github.svg') no-repeat center/cover;
+        background: url($baseurl + '/images/site/third_party/icon_github.svg') no-repeat center/cover;
       }
       .twitter::before {
-        background: url($baseurl + '/images/site/svg/third_party/icon_twitter.svg') no-repeat center/cover;
+        background: url($baseurl + '/images/site/third_party/icon_twitter.svg') no-repeat center/cover;
       }
       .stack-overflow::before {
-        background: url($baseurl + '/images/site/svg/third_party/icon_stack_overflow.svg') no-repeat center/cover;
+        background: url($baseurl + '/images/site/third_party/icon_stack_overflow.svg') no-repeat center/cover;
       }
       .youtube::before {
-        background: url($baseurl + '/images/site/svg/third_party/icon_youtube.svg') no-repeat center/cover;
+        background: url($baseurl + '/images/site/third_party/icon_youtube.svg') no-repeat center/cover;
       }
     }
   }
