@@ -170,10 +170,10 @@ class InstanceNetworkInterface(object):
         Returns:
             string: a string for a InstanceNetworkInterface
         """
-        return 'kind: %s Network: %s subnetwork: %s network_ip %s name %s' \
+        return ('kind: %s Network: %s subnetwork: %s network_ip %s name %s'
             'access_configs %s alias_ip_ranges %s' % (
                 self.kind, self.network, self.subnetwork, self.network_ip,
-                self.name, self.access_configs, self.alias_ip_ranges)
+                self.name, self.access_configs, self.alias_ip_ranges))
 
     def __hash__(self):
         """hash
