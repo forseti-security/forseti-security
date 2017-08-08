@@ -77,6 +77,7 @@ class LoadServiceAccountsPipeline(base_pipeline.BasePipeline):
 
     def run(self):
         """Run the pipeline."""
+        # TODO: Add IAM policies.
         service_accounts = self._retrieve()
         loadable_service_accounts = self._transform(service_accounts)
         self._load(self.RESOURCE_NAME, loadable_service_accounts)
