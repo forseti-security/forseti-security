@@ -8,7 +8,7 @@
   <link rel="canoncial" href="{{ page.url | remove:'index.html' | remove:'.html' | absolute_url }}">
 
   <!-- favicon -->
-  <link rel="icon" type="image/png" href="{{ site.baseurl }}/images/trans/6.png" />
+  <link rel="icon" type="image/png" href="{{ site.baseurl }}/images/site/logo/blue-logo-trans.png" />
 
   {% assign meta_title = page.title | default: "Forseti Security" %}
   <meta name="title" content="{{ meta_title }}">
@@ -23,8 +23,6 @@
   {% else %}
     <title>Forseti Security / {{ page.title }}</title>
   {% endif %}
-
-  <!-- TODO: Add Google Analytics -->
 
   {% include layout/base/stylesheets.html %}
 </head>
