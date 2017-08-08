@@ -47,7 +47,7 @@ configuration change.
 
 ### Configuring Inventory
 
-{% include _howto/config_inventory.md %}
+{% include docs/howto/config_inventory.md %}
 
 #### Setting up batch mode
 

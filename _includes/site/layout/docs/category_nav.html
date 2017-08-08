@@ -17,7 +17,7 @@
     on disk.
   {% endcomment %}
 
-  {% include get_docs_for_category.liquid category=page.category %}
+  {% include site/get_docs_for_category.liquid category=page.category %}
  
   {% assign ordered_docs = category_docs | sort:"order" %}
 

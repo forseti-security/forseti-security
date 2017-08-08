@@ -14,7 +14,7 @@ enable required APIs:
   1. Enable the required APIs by running `gcloud beta service-management enable`
   for each of the following API paths:
   
-  {% include _global/required_apis.md %}
+  {% include docs/required_apis.md %}
 
 ### Creating service accounts
 
