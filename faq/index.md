@@ -20,7 +20,7 @@ Here are some frequently asked questions about Forseti Security.
       {% assign outerloop = forloop %}
       {% for q in faq_group.items %}
         {% capture unique_id %}{{ outerloop.index }}-{{ forloop.index }}{% endcapture %}
-        {% include faq/qa_item.html q=q qid=unique_id accordion_id="#accordion" %}
+        {% include site/faq/qa_item.html q=q qid=unique_id accordion_id="#accordion" %}
       {% endfor %}
 
     {% endif %}
