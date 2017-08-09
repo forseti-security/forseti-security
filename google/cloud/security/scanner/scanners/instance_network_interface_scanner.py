@@ -86,6 +86,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(resource_name, all_violations)
 
+    # pylint: disable=invalid-name
     def get_instance_networks_interfaces(self):
         """Get network info from a particular snapshot.
 
@@ -115,7 +116,11 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         return instance_object.create_network_interfaces()
 
     def _get_project_policies(self):
-        """Get projects from data source."""
+        """Get projects from data source.
+
+        Returns:
+            dict: project policies
+        """
         project_policies = {}
         project_policies = (
             project_dao
@@ -145,7 +150,11 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         return resource_counts
 
     def _retrieve(self):
-        """Run the data collection."""
+        """Run the data collection.
+
+        Return:
+           list: instance_networks_interfaces
+        """
         return self.get_instance_networks_interfaces()
 
     def _find_violations(self, enforced_networks_data):

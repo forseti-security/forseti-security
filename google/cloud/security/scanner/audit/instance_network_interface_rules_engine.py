@@ -33,15 +33,19 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         """Initialize.
 
         Args:
-            rules_file_path: file location of rules
-            snapshot_timestamp: timestamp for database.
+            rules_file_path (str): file location of rules
+            snapshot_timestamp (str): timestamp for database.
         """
         super(InstanceNetworkInterfaceRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
-        """Build InstanceNetworkInterfaceRuleBook from rules definition file."""
+        """Build InstanceNetworkInterfaceRuleBook from rules definition file.
+
+        Args:
+            global_configs (dict): Global Configs
+        """
         self.rule_book = InstanceNetworkInterfaceRuleBook(
             self._load_rule_definitions())
 
@@ -50,11 +54,12 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         """Determine whether the networks violates rules.
 
         Args:
-            instance_network_interface: list of instance_network_interface
-            force_rebuild: set to false to not force a rebuiid
+            instance_network_interface (list): list of
+                instance_network_interface
+            force_rebuild (bool): set to false to not force a rebuiid
 
         Return:
-            iterator of all violations
+            list: iterator of all violations
         """
         violations = itertools.chain()
         if self.rule_book is None or force_rebuild:
@@ -68,7 +73,11 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         return violations
 
     def add_rules(self, rules):
-        """Add rules to the rule book."""
+        """Add rules to the rule book.
+
+        Args:
+            rules (dicts): rule definitions
+        """
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
@@ -80,7 +89,7 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
         """Initialize.
 
         Args:
-            rule_defs: The parsed dictionary of rules from the YAML
+            rule_defs (dict): The parsed dictionary of rules from the YAML
                 definition file.
         """
         super(InstanceNetworkInterfaceRuleBook, self).__init__()
@@ -92,7 +101,11 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
 
     def add_rules(self, rule_defs):
-        """Add rules to the rule book."""
+        """Add rules to the rule book.
+
+        Args:
+            rule_defs (dict): rules definitions
+        """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
@@ -144,9 +157,10 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
                 }
             ]
         }
+
         Args:
-            rule_def: A dictionary containing rule definition properties.
-            rule_index: The index of the rule from the rule definitions.
+            rule_def (dict): A dictionary containing rule definition properties.
+            rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
         project = rule_def.get('project')
@@ -173,7 +187,11 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
             self.resource_rules_map[rule_index] = rule
 
     def get_resource_rules(self):
-        """Get all the resource rules."""
+        """Get all the resource rules.
+
+        Return:
+            list: resource_rules_map values
+        """
         return self.resource_rules_map.values()
 
 
@@ -184,9 +202,10 @@ class Rule(object):
         """Initialize.
 
         Args:
-            rule_name: Name of the loaded rule
-            rule_index: The index of the rule from the  definitions
-            rules: The resources associated with the rules like the whitelist
+            rule_name (str): Name of the loaded rule
+            rule_index (int): The index of the rule from the  definitions
+            rules (dict): The resources associated with the rules like
+                the whitelist
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
@@ -196,8 +215,8 @@ class Rule(object):
         """Raise violation is the ip is not in the whitelist.
 
         Args:
-            instance_network_interface_list: list of InstanceNetworkInterface
-                obj
+            instance_network_interface_list (list): list
+                of InstanceNetworkInterface objects
 
          Yields:
             namedtuple: Returns RuleViolation named tuple
