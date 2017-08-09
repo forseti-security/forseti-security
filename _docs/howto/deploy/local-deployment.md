@@ -11,8 +11,9 @@ your Google Cloud Platform (GCP) resources.
 
 To complete this quickstart, you will need:
 
--   A GCP project for Forseti Security with billing enabled.
--   A GCP organization.
+- A GCP organization.
+- A GCP project (in above organization) for Forseti Security with billing enabled.
+- The ability to assign roles on the Organization IAM policy of your organization.
 
 ## Setting up Forseti Security
 
@@ -20,9 +21,10 @@ To complete this quickstart, you will need:
 
 ### Setting up Cloud SQL
 
-Forseti uses Cloud SQL to store data. It connects to the Cloud SQL instance by
-using the Cloud SQL proxy to authenticate to GCP with your Google credentials.
-To set up Cloud SQL for Forseti, follow the steps below:
+Forseti stores data in Cloud SQL. You can connect to the Cloud SQL instance by
+using the Cloud SQL proxy to authenticate to GCP with your Google credentials, 
+instead of opening up network access to your Cloud SQL instance.
+To set up your Cloud SQL instance for Forseti, follow the steps below:
 
 1.  Go to the [Cloud Console SQL page](https://console.cloud.google.com/sql) and
     follow the steps below to create a new instance:
@@ -45,12 +47,16 @@ To set up Cloud SQL for Forseti, follow the steps below:
     , such as `forseti_security`.
 1.  Use the [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
     to proxy your connection to your Cloud SQL instance. Your
-    CLOUD_SQL_INSTANCE_NAME is the **instance connection name** under
-    **Properties** on the Cloud SQL dashboard instance details.
+    INSTANCE_CONNECTION_NAME is the **instance connection name** under
+    **Properties** on the Cloud SQL dashboard instance details, with the format "PROJECTID:REGION:INSTANCENAME".
     
       ```bash
-      $ <path/to/cloud_sql_proxy> -instances=CLOUD_SQL_INSTANCE_NAME=tcp:3306
+      $ <path/to/cloud_sql_proxy> -instances=INSTANCE_CONNECTION_NAME=tcp:3306
       ```
+      
+1. Make a note of your the Cloud SQL user you created (e.g. "forseti_user") as well as 
+   the database name (e.g. "forseti_security" -- this is NOT the name of your Cloud SQL instance). 
+   You will need these for your forseti_conf.yaml later.
 
 ### Installing mysql_config
 
@@ -62,20 +68,21 @@ Following are example commands to install `mysql_config`:
   # Note: If libmysqlclient-dev doesn't install `mysql_config`, then try also installing `mysql_server`.
   $ sudo apt-get install libmysqlclient-dev
 
-  # OSX
+  # OSX, using homebrew
   $ brew install mysql
   ```
 
 ### Creating a virtualenv
 
-Use the commands below to install and create a virtualenv:
+Use the commands (or whatever the equivalent is for your Linux/OS X system) 
+below to install and create a virtualenv:
 
   ```bash
-  # install virtualenv
+  # install virtualenvwrapper
   $ sudo apt-get install python-pip
   $ sudo pip install --upgrade virtualenvwrapper
 
-  # create a virtualnv
+  # create a virtualenv
   $ mkvirtualenv forseti-security
   $ workon forseti-security
   ```
@@ -102,6 +109,7 @@ To build proto files and run the python setup, navigate to your cloned repo and
 use the following command:
 
   ```bash
+  $ python build_protos.py --clean
   $ python setup.py install
   ```
 
