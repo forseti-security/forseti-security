@@ -20,7 +20,7 @@ these modules work together to provide their respective features.
 Takes a snapshot of resources on a recurring cadence, so you always have a
 history of what was in your cloud.
 
-**[Policy Scanner]({% link _docs/quickstarts/scanner/index.md %})**
+**[Scanner]({% link _docs/quickstarts/scanner/index.md %})**
 
 Helps you monitor inventoried GCP resources like Cloud IAM,
 BigQuery datasets, Cloud Storage bucket ACLs, and
@@ -28,10 +28,9 @@ BigQuery datasets, Cloud Storage bucket ACLs, and
 to ensure that role-based access controls are set as you intended, by
 notifying you when specific policies change unexpectedly.
 
-**[Policy Enforcer]({% link _docs/quickstarts/enforcer/index.md %})**
+**[Enforcer]({% link _docs/quickstarts/enforcer/index.md %})**
 
-Works in an automated way to keep your access policies in a known state to
-prevent unsafe changes.
+Keep your access policies in a known state to prevent unsafe changes.
 
 ## Addons 
 
