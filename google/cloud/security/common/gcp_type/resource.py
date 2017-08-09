@@ -34,6 +34,9 @@ class ResourceType(object):
     # Groups
     GROUP = 'group'
 
+    # IAM
+    SERVICE_ACCOUNT = 'service_account'
+
     # Compute engine
     BACKEND_SERVICE = 'backend_service'
     FIREWALL_RULE = 'firewall_rule'

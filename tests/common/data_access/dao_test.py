@@ -58,7 +58,7 @@ class DaoTest(ForsetiTestCase):
         self.dao.conn.cursor.return_value = cursor_mock
         cursor_mock.fetchall.return_value = fetch_mock
 
-        actual_tablename = self.dao._create_snapshot_table(
+        actual_tablename = self.dao.create_snapshot_table(
             self.resource_projects, self.fake_timestamp)
 
         expected_tablename = ('%s_%s' %

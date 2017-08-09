@@ -31,6 +31,9 @@ SUPPORTED_APIS = {
     'compute': {
         'version': 'v1'
     },
+    'iam': {
+        'version': 'v1'
+    },
     'storage': {
         'version': 'v1'
     },

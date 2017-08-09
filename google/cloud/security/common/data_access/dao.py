@@ -96,6 +96,9 @@ CREATE_TABLE_MAP = {
     'raw_project_iam_policies':
         create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
 
+    # IAM
+    'service_accounts': create_tables.CREATE_SERVICE_ACCOUNTS_TABLE,
+
     # rule violations
     'violations': create_tables.CREATE_VIOLATIONS_TABLE,
 }
@@ -121,7 +124,7 @@ class Dao(_db_connector.DbConnector):
         """
         return object_class(**row)
 
-    def _create_snapshot_table(self, resource_name, timestamp):
+    def create_snapshot_table(self, resource_name, timestamp):
         """Creates a snapshot table.
 
         Args:
@@ -165,7 +168,7 @@ class Dao(_db_connector.DbConnector):
             str: String of the created snapshot table.
         """
         try:
-            snapshot_table_name = self._create_snapshot_table(
+            snapshot_table_name = self.create_snapshot_table(
                 resource_name, timestamp)
         except OperationalError:
             # TODO: find a better way to handle this. I want this method
@@ -190,7 +193,7 @@ class Dao(_db_connector.DbConnector):
         """
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
-                snapshot_table_name = self._get_snapshot_table(
+                snapshot_table_name = self._create_snapshot_table_name(
                     resource_name, timestamp)
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
                     resource_name, csv_file.name, snapshot_table_name)
