@@ -42,6 +42,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',
          'rules_filename': 'iam_rules.yaml'},
+    'instance_network_interface':
+        {'module_name': 'instance_network_interface_scanner',
+         'class_name': 'InstanceNetworkInterfaceScanner',
+         'rules_filename': 'instance_network_interface_rules.yaml'},
     'iap':
         {'module_name': 'iap_scanner',
          'class_name': 'IapScanner',
