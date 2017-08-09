@@ -39,6 +39,7 @@ manually.
 
 ## What's next
 
-- Read about [configuring Forseti]({% link _docs/howto/configure/configuring-forseti.md %})
+- Read more about [configuring Scanner]({% link _docs/howto/configure/configuring-forseti.md %}#configuring-scanner).
+- Learn about the [different scanners]({% link _docs/quickstarts/scanner/descriptions.md %}) available in Forseti.
 - Learn about [defining rules]({% link _docs/quickstarts/scanner/rules.md %}).
 - Read about how Scanner outputs [policy violations]({% link _docs/quickstarts/scanner/policy-violations.md %}).
