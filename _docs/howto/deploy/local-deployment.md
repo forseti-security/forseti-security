@@ -47,15 +47,15 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
     e.g. `forseti_security`.
 1.  Use the [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
     to proxy your connection to your Cloud SQL instance. Your
-    INSTANCE_CONNECTION_NAME is the **instance connection name** under
-    **Properties** on the Cloud SQL dashboard instance details, with the format "PROJECTID:REGION:INSTANCENAME".
+    INSTANCE_CONNECTION_NAME is the **Instance Connection Name** under
+    **Properties** on the Cloud SQL dashboard instance details, with the format "PROJECTID:REGION:INSTANCEID".
     
       ```bash
       $ <path/to/cloud_sql_proxy> -instances=INSTANCE_CONNECTION_NAME=tcp:3306
       ```
       
 1. Make a note of your the Cloud SQL user you created (e.g. "forseti_user") as well as 
-   the database name (e.g. "forseti_security" -- this is NOT the name of your Cloud SQL instance). 
+   the database name (e.g. "forseti_security" -- this is NOT the ID of your Cloud SQL instance). 
    You will need these for your forseti_conf.yaml later.
 
 ### Installing mysql_config
