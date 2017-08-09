@@ -36,7 +36,7 @@ objects. The bucket scanner supports a blacklist mode, to ensure unauthorized
 users don't gain access to your GCS bucket.
 
 For examples of how to define scanner rules for your GCS buckets, see the
-bucket_rules.yaml rule file.
+[bucket_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/bucket_rules.yaml) rule file.
 
 The bucket scanner depends on the following Forseti Inventory pipelines:
 
@@ -51,7 +51,7 @@ gain access to your Cloud SQL instances.
 
 For examples of how to define scanner rules for your Cloud SQL instances, see
 the
-[bucket_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/bucket_rules.yaml)
+[cloudsql_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/cloudsql_rules.yaml)
 rule file.
 
 The cloudsql scanner depends on the following Forseti Inventory pipelines:
@@ -136,3 +136,7 @@ IAP scanner depends on the following Forseti Inventory pipelines:
 ## Network Interface scanner
 
 Coming soon.
+
+For examples of how to define scanner rules for network interfaces, see the
+[instance_network_interface_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/instance_network_interface_rules.yaml)
+rule file.
