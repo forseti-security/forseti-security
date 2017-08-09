@@ -24,7 +24,10 @@ to run, see [Configuring Forseti page: Configuring Scanner]({% link _docs/howto/
 To run Forseti Scanner, follow the process below:
 
   1. Activate any virtualenv you're using for your Forseti installation,
-  if applicable.
+     if applicable (e.g. if you're running in a dev environment).
+     
+  1. Run the [inventory data import](http://forsetisecurity.org/docs/quickstarts/inventory/index.html#executing-the-inventory-loader) 
+     first, to make sure you have the most up-to-date data.
 
   1. Run the scanners:
 
