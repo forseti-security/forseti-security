@@ -69,4 +69,10 @@ API_MAP = {
             'class_name': 'StorageClient',
             'version': None
         },
+    'iam_api':
+        {
+            'module_name': 'iam',
+            'class_name': 'IAMClient',
+            'version': None
+        },
 }

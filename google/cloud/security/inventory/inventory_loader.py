@@ -46,6 +46,7 @@ from google.cloud.security.common.data_access import instance_group_manager_dao
 from google.cloud.security.common.data_access import instance_template_dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
+from google.cloud.security.common.data_access import service_account_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import file_loader
@@ -144,6 +145,12 @@ def _start_snapshot_cycle(inventory_dao):
         LOGGER.error('Unable to insert new snapshot cycle: %s', e)
         sys.exit()
 
+    # Ensure all the tables are created, to support client usage & joins,
+    # which expect the tables to exist even if empty.
+    for resource_name in dao.CREATE_TABLE_MAP:
+        inventory_dao.create_snapshot_table(resource_name, cycle_timestamp)
+    LOGGER.debug('All tables created.')
+
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
 
@@ -231,6 +238,8 @@ def _create_dao_map(global_configs):
             'organization_dao': organization_dao.OrganizationDao(
                 global_configs),
             'project_dao': project_dao.ProjectDao(global_configs),
+            'service_account_dao':
+                service_account_dao.ServiceAccountDao(global_configs),
         }
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error to creating DAO map.\n%s', e)
