@@ -222,6 +222,10 @@ def load_roles():
     return curated_roles
 
 
+class InventoryImporter(object):
+    pass
+
+
 class ForsetiImporter(object):
     """Imports data from Forseti."""
 
@@ -689,5 +693,6 @@ def by_source(source):
     return {
         'TEST': TestImporter,
         'FORSETI': ForsetiImporter,
+        'INVENTORY': InventoryImporter,
         'EMPTY': EmptyImporter,
     }[source.upper()]

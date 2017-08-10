@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from build.lib.google.cloud.security.iam.client import ClientComposition
 
 """ IAM Explain server program. """
 
@@ -19,6 +20,7 @@ import time
 from concurrent import futures
 import grpc
 
+from google.cloud.security.iam.client import ClientComposition
 from google.cloud.security.iam import db
 from google.cloud.security.iam.dao import ModelManager, create_engine
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
@@ -40,16 +42,24 @@ class ServiceConfig(object):
     """Helper class to implement dependency injection to IAM Explain services.
     """
 
-    def __init__(self, explain_connect_string, forseti_connect_string):
+    def __init__(self,
+                 explain_connect_string,
+                 forseti_connect_string,
+                 endpoint):
+
         self.thread_pool = ThreadPool()
 
         engine = create_engine(explain_connect_string, pool_recycle=3600)
         self.model_manager = ModelManager(engine)
         self.forseti_connect_string = forseti_connect_string
         self.sessionmaker = db.create_scoped_sessionmaker(engine)
+        self.endpoint = endpoint
 
     def scoped_session(self):
         return self.sessionmaker()
+
+    def client(self):
+        return ClientComposition(self.endpoint)
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""
@@ -67,7 +77,7 @@ def serve(endpoint, services, explain_connect_string, forseti_connect_string,
     if not factories:
         raise Exception("No services to start")
 
-    config = ServiceConfig(explain_connect_string, forseti_connect_string)
+    config = ServiceConfig(explain_connect_string, forseti_connect_string, endpoint)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     for factory in factories:
         factory(config).create_and_register_service(server)

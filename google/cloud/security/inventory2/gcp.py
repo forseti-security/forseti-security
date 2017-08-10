@@ -14,15 +14,15 @@
 
 """ Crawler implementation. """
 
-from google.cloud.security.common.gcp_api import admin_directory
-from google.cloud.security.common.gcp_api import appengine
-from google.cloud.security.common.gcp_api import bigquery
-from google.cloud.security.common.gcp_api import cloud_resource_manager
-from google.cloud.security.common.gcp_api import cloudsql
-from google.cloud.security.common.gcp_api import compute
-from google.cloud.security.common.gcp_api import errors
-from google.cloud.security.common.gcp_api import iam
-from google.cloud.security.common.gcp_api import storage
+from google.cloud.security.common.gcp_api2 import admin_directory
+from google.cloud.security.common.gcp_api2 import appengine
+from google.cloud.security.common.gcp_api2 import bigquery
+from google.cloud.security.common.gcp_api2 import cloud_resource_manager
+from google.cloud.security.common.gcp_api2 import cloudsql
+from google.cloud.security.common.gcp_api2 import compute
+from google.cloud.security.common.gcp_api2 import errors
+from google.cloud.security.common.gcp_api2 import iam
+from google.cloud.security.common.gcp_api2 import storage
 
 
 class ApiClient(object):
