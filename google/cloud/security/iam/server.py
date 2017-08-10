@@ -19,6 +19,7 @@ import time
 from concurrent import futures
 import grpc
 
+from google.cloud.security.iam import db
 from google.cloud.security.iam.dao import ModelManager, create_engine
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
@@ -45,6 +46,10 @@ class ServiceConfig(object):
         engine = create_engine(explain_connect_string, pool_recycle=3600)
         self.model_manager = ModelManager(engine)
         self.forseti_connect_string = forseti_connect_string
+        self.sessionmaker = db.create_scoped_sessionmaker(engine)
+
+    def scoped_session(self):
+        return self.sessionmaker()
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""

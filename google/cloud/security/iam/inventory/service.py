@@ -23,6 +23,19 @@ from google.cloud.security.iam.inventory import inventory
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
+def inventory_pb_from_object(inventory_index):
+    """Convert internal inventory datastructure to protobuf."""
+
+    return inventory_pb2.InventoryIndex(
+        id=inventory_index.get_id(),
+        start_time=inventory_index.get_start_time(),
+        completion_time=inventory_index.get_completion_time(),
+        schema_version=inventory_index.get_schema_version(),
+        count_objects=inventory_index.get_object_count(),
+        status=inventory_index.get_status(),
+        warnings=inventory_index.get_warnings(),
+        errors=inventory_index.get_errors())
+
 
 # pylint: disable=no-self-use
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
@@ -40,22 +53,32 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     def Create(self, request, context):
         """Creates a new inventory."""
 
-        raise NotImplementedError()
+        for progress in self.inventory.Create(request.background,
+                                              request.model_name):
+            yield inventory_pb2.Progress(
+                final_message=progress.message,
+                status=progress.status,
+                objects_found=progress.num_objects,
+                warnings=progress.num_warnings,
+                last_warning=progress.last_warning)
 
     def List(self, request, context):
         """Lists existing inventory."""
 
-        raise NotImplementedError()
+        for inventory_index in self.inventory.List():
+            yield inventory_pb_from_object(inventory_index)
 
     def Get(self, request, context):
         """Gets existing inventory."""
 
-        raise NotImplementedError()
+        inventory_index = self.inventory.Get(request.id)
+        return inventory_pb_from_object(inventory_index)
 
     def Delete(self, request, context):
         """Deletes existing inventory."""
 
-        raise NotImplementedError()
+        inventory_index = self.inventory.Delete(request.id)
+        return inventory_pb_from_object(inventory_index)
 
 
 class GrpcInventoryFactory(object):

@@ -14,6 +14,8 @@
 
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 package inventory;
 
 service Inventory {
@@ -21,7 +23,7 @@ service Inventory {
 
   rpc Create(CreateRequest) returns (stream Progress) {}
 
-  rpc List(ListRequest) returns (ListReply) {}
+  rpc List(ListRequest) returns (stream InventoryIndex) {}
 
   rpc Get(GetRequest) returns (GetReply) {}
 
@@ -38,33 +40,44 @@ message PingReply {
 }
 
 message Progress {
-
+	bool final_message = 1;
+	string status = 2;
+	int32 objects_found = 3;
+	int32 warnings = 4;
+	string last_warning = 5;
 }
 
 message CreateRequest {
-
+	bool background = 1;
+	string model_name = 2;
 }
 
 message ListRequest {
-
 }
 
-message ListReply {
-
+message InventoryIndex {
+	int32 id = 1;
+	google.protobuf.Timestamp start_time = 2;
+	google.protobuf.Timestamp completion_time = 3;
+	int32 schema_version = 4;
+	int32 count_objects = 5;
+	string status = 6;
+	string warnings = 7;
+	string errors = 8;
 }
 
 message GetRequest {
-
+	int32 id = 1;
 }
 
 message GetReply {
-
+	InventoryIndex inventory = 1;
 }
 
 message DeleteRequest {
-
+	int32 id = 1;
 }
 
 message DeleteReply {
-
+	InventoryIndex inventory = 1;
 }

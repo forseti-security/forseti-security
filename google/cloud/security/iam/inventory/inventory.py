@@ -18,6 +18,9 @@
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
+from google.cloud.security.iam.inventory.storage import DataAccess
+from google.cloud.security.common.util.threadpool import ThreadPool
+
 
 # pylint: disable=invalid-name,no-self-use
 class Inventory(object):
@@ -25,3 +28,55 @@ class Inventory(object):
 
     def __init__(self, config):
         self.config = config
+
+    def Create(self, background, model_name):
+        """Create a new inventory,
+
+        Args:
+            background (bool): Run import in background, return immediately
+            model_name (str): Model name to import into
+        """
+
+        with self.config.session() as session:
+            def run_inventory():
+                pass
+            workers = ThreadPool(1)
+            workers.add_func(run_inventory)
+            pass
+
+    def List(self):
+        """List stored inventory.
+
+        Yields:
+            object: Inventory metadata
+        """
+
+        with self.config.session() as session:
+            for item in DataAccess.list(session):
+                yield item
+
+    def Get(self, inventory_id):
+        """Get inventory metadata by id.
+
+        Args:
+            inventory_id (int): Id of the inventory.
+
+        Returns:
+            object: Inventory metadata
+        """
+
+        with self.config.session() as session:
+            return DataAccess.get(session, inventory_id)
+
+    def Delete(self, inventory_id):
+        """Delete an inventory by id.
+
+        Args:
+            inventory_id (int): Id of the inventory.
+
+        Returns:
+            object: Inventory object that was deleted
+        """
+
+        with self.config.session() as session:
+            return DataAccess.delete(session, inventory_id)

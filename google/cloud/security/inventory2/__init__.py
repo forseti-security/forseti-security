@@ -13,3 +13,5 @@
 # limitations under the License.
 
 """Crawler Code."""
+
+__import__('pkg_resources').declare_namespace(__name__)

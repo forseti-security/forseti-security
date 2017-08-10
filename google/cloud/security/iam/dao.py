@@ -45,6 +45,7 @@ from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
+from google.cloud.security.iam import db
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -1466,36 +1467,6 @@ def undefine_model(session_maker, data_access):
     session = session_maker()
     data_access.delete_all(session)
 
-
-class ScopedSession(object):
-    """A scoped session is automatically released."""
-
-    def __init__(self, session, auto_commit=False):
-        self.session = session
-        self.auto_commit = auto_commit
-
-    def __enter__(self):
-        return self.session
-
-    def __exit__(self, exc_type, value, traceback):
-        try:
-            if traceback is None and self.auto_commit:
-                self.session.commit()
-        finally:
-            self.session.close()
-
-
-class ScopedSessionMaker(object):
-    """Wraps session maker to create scoped sessions."""
-
-    def __init__(self, session_maker, auto_commit=False):
-        self.sessionmaker = session_maker
-        self.auto_commit = auto_commit
-
-    def __call__(self, *args):
-        return ScopedSession(self.sessionmaker(*args), self.auto_commit)
-
-
 LOCK = Lock()
 
 
@@ -1515,7 +1486,7 @@ class ModelManager(object):
         """Create a session to read from the models table."""
 
         MODEL_BASE.metadata.create_all(self.engine)
-        return ScopedSessionMaker(
+        return db.ScopedSessionMaker(
             sessionmaker(
                 bind=self.engine),
             auto_commit=True)
@@ -1542,7 +1513,7 @@ class ModelManager(object):
         """Get model data by name."""
 
         session_maker, data_access = self._get(model)
-        return ScopedSession(session_maker()), data_access
+        return db.ScopedSession(session_maker()), data_access
 
     def _get(self, handle):
         """Get model data by name internal."""

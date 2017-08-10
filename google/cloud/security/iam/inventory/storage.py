@@ -51,12 +51,14 @@ class InventoryIndex(BASE):
     __tablename__ = 'inventory_index'
 
     id = Column(Integer(), primary_key=True, autoincrement=True)
-    start_time = Column(Date)
-    complete_time = Column(Date)
-    status = Column(String)
-    schema_version = Column(BigInteger())
+    start_time = Column(Date())
+    complete_time = Column(Date())
+    status = Column(String())
+    schema_version = Column(Integer())
     progress = Column(String(255))
-    counter = Column(Integer)
+    counter = Column(Integer())
+    warnings = Column(Text())
+    errors = Column(Text())
 
     @classmethod
     def _utcnow(self):
@@ -105,13 +107,25 @@ class InventoryIndex(BASE):
         session.flush()
 
 
+class GSuiteMembership(BASE):
+    """Gsuite membership table."""
+
+    __tablename__ = 'gsuite_inventory'
+
+    index = Column(BigInteger(), primary_key=True)
+    member_name = Column(String(1024))
+    parents = Column(Text())
+    other = Column(Text())
+
+
 class Inventory(BASE):
     """Resource inventory table."""
 
-    __tablename__ = 'inventory'
+    __tablename__ = 'gcp_inventory'
 
     index = Column(BigInteger(), primary_key=True)
     resource_key = Column(String(1024), primary_key=True)
+    parent_resource_key = Column(String(1024))
     resource_type = Column(String(1024))
     resource_data = Column(Text())
     iam_policy = Column(Text())
@@ -156,8 +170,24 @@ class BufferedDbWriter(object):
         self.buffer = []
 
 
+class DataAccess(object):
+    """Access to inventory for services."""
+
+    @classmethod
+    def delete(cls, session, inventory_id):
+        pass
+
+    @classmethod
+    def list(cls, session):
+        pass
+
+    @classmethod
+    def get(cls, session, inventory_id):
+        pass
+
+
 class Storage(BaseStorage):
-    """Inventory storage."""
+    """Inventory storage used during creation."""
 
     def __init__(self, db_connect_string, existing_id=None):
         engine = create_engine(db_connect_string, pool_recycle=7200)
