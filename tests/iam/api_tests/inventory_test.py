@@ -75,7 +75,8 @@ class ApiTest(ForsetiTestCase):
 
             for progress in client.inventory.create(background=False,
                                                     import_as=""):
-                print progress
+                continue
+            self.assertTrue(progress.final_message)
 
         self.setup.run(test)
 

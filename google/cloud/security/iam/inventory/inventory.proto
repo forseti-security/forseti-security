@@ -40,12 +40,13 @@ message PingReply {
 }
 
 message Progress {
-	bool final_message = 1;
-	string step = 2;
-	int32 warnings = 3;
-	int32 errors = 4;
-	string last_warning = 5;
-	string last_error = 6;
+	int32 id = 1;
+	bool final_message = 2;
+	string step = 3;
+	int32 warnings = 4;
+	int32 errors = 5;
+	string last_warning = 6;
+	string last_error = 7;
 }
 
 message CreateRequest {

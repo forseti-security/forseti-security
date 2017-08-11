@@ -31,6 +31,7 @@ class Progress(object):
     """Progress state."""
 
     def __init__(self, final_message=False, step=""):
+        self.inventory_id = None
         self.final_message = final_message
         self.step = step
         self.warnings = 0
@@ -90,6 +91,7 @@ class QueueProgresser(Progress):
 def run_inventory(session, progresser):
     gsuite_sa = '/Users/fmatenaar/deployments/forseti/groups.json'
     with Storage(session) as storage:
+        progresser.inventory_id = storage.index.id
         return run_crawler(storage, progresser, gsuite_sa)
 
 

@@ -68,7 +68,7 @@ class InventoryIndex(BASE):
             self.__class__.__name__,
             self.id,
             self.schema_version,
-            self.cycle_timestamp)
+            self.start_time)
 
     @classmethod
     def create(cls):
