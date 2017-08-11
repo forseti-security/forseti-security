@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from build.lib.google.cloud.security.iam.client import ClientComposition
 
 """ IAM Explain server program. """
 
@@ -49,11 +48,14 @@ class ServiceConfig(object):
 
         self.thread_pool = ThreadPool()
 
-        engine = create_engine(explain_connect_string, pool_recycle=3600)
-        self.model_manager = ModelManager(engine)
+        self.engine = create_engine(explain_connect_string, pool_recycle=3600)
+        self.model_manager = ModelManager(self.engine)
         self.forseti_connect_string = forseti_connect_string
-        self.sessionmaker = db.create_scoped_sessionmaker(engine)
+        self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
+
+    def get_engine(self):
+        return self.engine
 
     def scoped_session(self):
         return self.sessionmaker()

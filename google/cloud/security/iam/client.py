@@ -87,22 +87,30 @@ class InventoryClient(IAMClient):
     def create(self, background=False, import_as=None):
         """Creates a new inventory, with an optional import."""
 
-        pass
+        request = inventory_pb2.CreateRequest(
+            background=background,
+            model_name=import_as)
+        return self.stub.Create(request)
 
     def get(self, inventory_id):
         """Returns all information about a particular inventory."""
 
-        pass
+        request = inventory_pb2.GetRequest(
+            id=inventory_id)
+        return self.stub.Get(request)
 
-    def delete(self):
+    def delete(self, inventory_id):
         """Delete an inventory."""
 
-        pass
+        request = inventory_pb2.DeleteRequest(
+            id=inventory_id)
+        return self.stub.Delete(request)
 
     def list(self):
         """Lists all available inventory."""
 
-        pass
+        request = inventory_pb2.ListRequest()
+        return self.stub.List(request)
 
 
 class ExplainClient(IAMClient):

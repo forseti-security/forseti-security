@@ -17,19 +17,19 @@
 
 class Progresser(object):
     def __init__(self):
-        pass
+        raise NotImplementedError()
 
     def on_new_object(self, resource):
-        pass
+        raise NotImplementedError()
 
     def on_warning(self, warning):
-        pass
+        raise NotImplementedError()
 
     def on_error(self, error):
-        pass
+        raise NotImplementedError()
 
-    def print_stats(self):
-        pass
+    def get_summary(self):
+        raise NotImplementedError()
 
 
 class CliProgresser(object):
@@ -48,7 +48,7 @@ class CliProgresser(object):
         print 'error: {}'.format(error)
         self.errors.append(error)
 
-    def print_stats(self):
+    def get_summary(self):
         print 'Errors: {}, Warnings: {}'.format(
             len(self.errors),
             len(self.warnings))

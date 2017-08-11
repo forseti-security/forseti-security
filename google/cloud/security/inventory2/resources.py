@@ -97,16 +97,20 @@ class Resource(object):
                 else:
                     visitor.dispatch(call_accept)
 
-    def getIamPolicy(self, client):
+    @cached('iam_policy')
+    def getIamPolicy(self, client=None):
         return None
 
-    def getGCSPolicy(self, client):
+    @cached('gcs_policy')
+    def getGCSPolicy(self, client=None):
         return None
 
-    def getCloudSQLPolicy(self, client):
+    @cached('sql_policy')
+    def getCloudSQLPolicy(self, client=None):
         return None
 
-    def getDatasetPolicy(self, client):
+    @cached('dataset_policy')
+    def getDatasetPolicy(self, client=None):
         return None
 
     def stack(self):
@@ -132,25 +136,32 @@ class Organization(Resource):
         return FACTORIES['organization'].create_new(data)
 
     @cached('iam_policy')
-    def getIamPolicy(self, client):
+    def getIamPolicy(self, client=None):
         return client.get_organization_iam_policy(self.key())
 
     def key(self):
         return self['name']
+
+    def type(self):
+        return 'organization'
 
 
 class Folder(Resource):
     def key(self):
         return self['name']
 
-    def getIamPolicy(self, client):
+    @cached('iam_policy')
+    def getIamPolicy(self, client=None):
         return client.get_folder_iam_policy(self.key())
+
+    def type(self):
+        return 'folder'
 
 
 class Project(Resource):
 
     @cached('iam_policy')
-    def getIamPolicy(self, client):
+    def getIamPolicy(self, client=None):
         return client.get_project_iam_policy(self.key())
 
     def key(self):
@@ -159,62 +170,86 @@ class Project(Resource):
     def enumerable(self):
         return self['lifecycleState'] not in ['DELETE_REQUESTED']
 
+    def type(self):
+        return 'project'
+
 
 class Bucket(Resource):
     @cached('iam_policy')
-    def getIamPolicy(self, client):
+    def getIamPolicy(self, client=None):
         return client.get_bucket_iam_policy(self.key())
 
     @cached('gcs_policy')
-    def getGCSPolicy(self, client):
+    def getGCSPolicy(self, client=None):
         return client.get_bucket_gcs_policy(self.key())
+
+    def type(self):
+        return 'bucket'
 
 
 class GcsObject(Resource):
     @cached('iam_policy')
-    def getIamPolicy(self, client):
+    def getIamPolicy(self, client=None):
         return client.get_object_iam_policy(self.parent()['name'], self['name'])
 
     @cached('gcs_policy')
-    def getGCSPolicy(self, client):
+    def getGCSPolicy(self, client=None):
         return client.get_object_gcs_policy(self.parent()['name'], self['name'])
+
+    def type(self):
+        return 'storage_object'
 
 
 class DataSet(Resource):
     @cached('dataset_policy')
-    def getDatasetPolicy(self, client):
+    def getDatasetPolicy(self, client=None):
         return client.get_dataset_dataset_policy(self.parent().key(),
                                                  self.key())
 
     def key(self):
         return self['datasetId']
 
+    def type(self):
+        return 'dataset'
+
 
 class AppEngineApp(Resource):
-    pass
+    def type(self):
+        return 'appengineapp'
 
 
 class Instance(Resource):
-    pass
+    def type(self):
+        return 'instance'
 
 
 class Firewall(Resource):
-    pass
+    def type(self):
+        return 'firewall'
 
 
 class Role(Resource):
     def key(self):
         return self['name']
 
+    def type(self):
+        return 'role'
+
 
 class CloudSqlInstance(Resource):
     def key(self):
         return self['name']
 
+    def type(self):
+        return 'cloudsqlinstance'
+
 
 class ServiceAccount(Resource):
     def key(self):
         return self['uniqueId']
+
+    def type(self):
+        return 'serviceaccount'
 
 
 class ResourceIterator(object):
@@ -347,7 +382,7 @@ FACTORIES = {
                 'dependsOn': ['organization', 'folder'],
                 'cls': Project,
                 'contains': [#AppEngineAppIterator,
-                             BucketIterator,
+                             #BucketIterator,
                              DataSetIterator,
                              InstanceIterator,
                              FirewallIterator,

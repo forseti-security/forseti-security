@@ -62,29 +62,3 @@ class Crawler(object):
 
     def get_client(self):
         return self.config.client
-
-
-if __name__ == '__main__':
-
-    client_config = {
-            'groups_service_account_key_file': '/Users/fmatenaar/deployments/forseti/groups.json',
-            'max_admin_api_calls_per_day': 150000,
-            'max_appengine_api_calls_per_second': 20,
-            'max_bigquery_api_calls_per_100_seconds': 17000,
-            'max_crm_api_calls_per_100_seconds': 400,
-            'max_sqladmin_api_calls_per_100_seconds': 100,
-            'max_compute_api_calls_per_second': 20,
-            'max_iam_api_calls_per_second': 20,
-        }
-    orgid = 'organizations/660570133860'
-
-    client = gcp.ApiClientImpl(client_config)
-    resource = resources.Organization.fetch(client, orgid)
-
-    mem = storage.Memory()
-    progresser = progress.CliProgresser()
-    config = CrawlerConfig(mem, progresser, client)
-
-    crawler = Crawler(config)
-    progresser = crawler.run(resource)
-    progresser.print_stats()

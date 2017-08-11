@@ -147,10 +147,8 @@ class ApiClientImpl(ApiClient):
     def get_object_gcs_policy(self, bucket_name, object_name):
         result = self.storage.get_object_acls(bucket_name, object_name)
         if 'items' not in result:
-            return
-            yield
-        for item in result['items']:
-            yield item
+            return []
+        return result['items']
 
     def get_object_iam_policy(self, bucket_name, object_name):
         return self.storage.get_object_iam_policy(bucket_name, object_name)

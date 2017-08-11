@@ -56,11 +56,12 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         for progress in self.inventory.Create(request.background,
                                               request.model_name):
             yield inventory_pb2.Progress(
-                final_message=progress.message,
-                status=progress.status,
-                objects_found=progress.num_objects,
-                warnings=progress.num_warnings,
-                last_warning=progress.last_warning)
+                final_message=progress.final_message,
+                step=progress.step,
+                warnings=progress.warnings,
+                errors=progress.errors,
+                last_warning=progress.last_warning,
+                last_error=progress.last_error)
 
     def List(self, request, context):
         """Lists existing inventory."""

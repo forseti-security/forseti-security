@@ -20,74 +20,81 @@
 
 from Queue import Queue
 
+from google.cloud.security.iam.inventory.storage import Storage
 from google.cloud.security.iam.inventory.storage import DataAccess
+from google.cloud.security.iam.inventory.storage import initialize as init_storage
+from google.cloud.security.iam.inventory.crawler import run_crawler
 from google.cloud.security.inventory2.progress import Progresser as BaseProgresser
-from google.cloud.security.common.util.threadpool import ThreadPool
 
 
-class Progress():
-    def get_id(self):
-        return self.progress_id
+class Progress(object):
+    """Progress state."""
 
-    def get_start_time(self):
-        return self.get_start_time
-
-    def get_completion_time(self):
-        return self.completion_time
-
-    def get_schema_version(self):
-        return self.schema_version
-
-    def get_object_count(self):
-        return self.object_count
-
-    def get_status(self):
-        return self.status
-
-    def get_warnings(self):
-        return self.warnings
-
-    def get_errors(self):
-        return self.errors
+    def __init__(self, final_message=False, step=""):
+        self.final_message = final_message
+        self.step = step
+        self.warnings = 0
+        self.errors = 0
+        self.last_warning = ""
+        self.last_error = ""
 
 
 class NullProgresser(BaseProgresser):
-    pass
+    """No-op progresser."""
+
+    def __init__(self):
+        pass
+
+    def on_new_object(self, resource):
+        pass
+
+    def on_warning(self, warning):
+        pass
+
+    def on_error(self, error):
+        pass
+
+    def get_summary(self):
+        pass
 
 
-class QueueProgresser(BaseProgresser):
-    pass
+class QueueProgresser(Progress):
+    def __init__(self, queue):
+        super(QueueProgresser, self).__init__()
+        self.queue = queue
+
+    def _notify(self):
+        self.queue.put_nowait(self)
+
+    def on_new_object(self, resource):
+        self.step = resource.key()
+        self._notify()
+
+    def on_warning(self, warning):
+        self.last_warning = warning
+        self.warnings += 1
+        self._notify()
+
+    def on_error(self, error):
+        self.last_error = error
+        self.errors += 1
+        self._notify()
+
+    def get_summary(self):
+        self.final_message = True
+        self._notify()
+        self.queue.put(None)
+        return self
 
 
-def run_inventory(sessionmaker, progresser):
-    with sessionmaker() as session:
-        client_config = {
-                'groups_service_account_key_file': '/Users/fmatenaar/deployments/forseti/groups.json',
-                'max_admin_api_calls_per_day': 150000,
-                'max_appengine_api_calls_per_second': 20,
-                'max_bigquery_api_calls_per_100_seconds': 17000,
-                'max_crm_api_calls_per_100_seconds': 400,
-                'max_sqladmin_api_calls_per_100_seconds': 100,
-                'max_compute_api_calls_per_second': 20,
-                'max_iam_api_calls_per_second': 20,
-            }
-        orgid = 'organizations/660570133860'
-
-        client = gcp.ApiClientImpl(client_config)
-        resource = resources.Organization.fetch(client, orgid)
-
-        mem = storage.Memory()
-        progresser = progress.CliProgresser()
-        config = CrawlerConfig(mem, progresser, client)
-
-        crawler = Crawler(config)
-        progresser = crawler.run(resource)
-        progresser.print_stats()
+def run_inventory(session, progresser):
+    gsuite_sa = '/Users/fmatenaar/deployments/forseti/groups.json'
+    with Storage(session) as storage:
+        return run_crawler(storage, progresser, gsuite_sa)
 
 
 def run_import(client, model_name):
-    reply = client.explain('INVENTORY', model_name)
-    return Pro
+    return client.explain('INVENTORY', model_name)
 
 
 # pylint: disable=invalid-name,no-self-use
@@ -96,6 +103,7 @@ class Inventory(object):
 
     def __init__(self, config):
         self.config = config
+        init_storage(self.config.get_engine())
 
     def Create(self, background, model_name):
         """Create a new inventory,
@@ -106,28 +114,29 @@ class Inventory(object):
         """
 
         queue = Queue()
+        if background:
+            progresser = NullProgresser()
+        else:
+            progresser = QueueProgresser(queue)
+
+        def do_work():
+            with self.config.scoped_session() as session:
+                result = run_inventory(session, progresser)
+                if not model_name:
+                    return result
+                else:
+                    return run_import(self.config.client(), model_name)
 
         if background:
-            def do_work():
-                run_inventory(self.config.session, NullProgresser())
-                if model_name:
-                    run_import(self.config.client(), model_name)
-
             self.config.run_in_background(do_work)
-            yield Progress()
+            yield Progress(True, 'Accepted')
 
         else:
-
-            with self.config.session() as session:
-                def do_work():
-                    run_inventory(session, QueueProgresser(queue))
-                    if model_name:
-                        run_import(self.config.client(), model_name)
-
-                result = self.config.run_in_background(do_work)
-                for progress in iter(queue.get, None):
-                    yield progress
-                result.get()
+            result = self.config.run_in_background(do_work)
+            for progress in iter(queue.get, None):
+                yield progress
+            if result:
+                yield result.get()
 
     def List(self):
         """List stored inventory.

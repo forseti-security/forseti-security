@@ -17,7 +17,6 @@
 import datetime
 import json
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy import Text
@@ -25,13 +24,13 @@ from sqlalchemy import BigInteger
 from sqlalchemy import Date
 from sqlalchemy import Integer
 
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.inventory2.storage import Storage as BaseStorage
 
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
+PER_YIELD = 1024
 
 
 class InventoryState(object):
@@ -53,9 +52,9 @@ class InventoryIndex(BASE):
     id = Column(Integer(), primary_key=True, autoincrement=True)
     start_time = Column(Date())
     complete_time = Column(Date())
-    status = Column(String())
+    status = Column(Text())
     schema_version = Column(Integer())
-    progress = Column(String(255))
+    progress = Column(Text())
     counter = Column(Integer())
     warnings = Column(Text())
     errors = Column(Text())
@@ -126,7 +125,7 @@ class Inventory(BASE):
     index = Column(BigInteger(), primary_key=True)
     resource_key = Column(String(1024), primary_key=True)
     parent_resource_key = Column(String(1024))
-    resource_type = Column(String(1024))
+    resource_type = Column(String(256), primary_key=True)
     resource_data = Column(Text())
     iam_policy = Column(Text())
     gcs_policy = Column(Text())
@@ -134,9 +133,11 @@ class Inventory(BASE):
 
     @classmethod
     def from_resource(cls, index, resource):
+        parent = resource.parent()
         return Inventory(
             index=index.id,
             resource_key=resource.key(),
+            parent_resource_key=None if not parent else parent.key(),
             resource_type=resource.type(),
             resource_data=json.dumps(resource.data()),
             iam_policy=json.dumps(resource.getIamPolicy()),
@@ -154,7 +155,7 @@ class Inventory(BASE):
 class BufferedDbWriter(object):
     """Buffered db writing."""
 
-    def __init__(self, session, max_size=1024):
+    def __init__(self, session, max_size=1):
         self.session = session
         self.buffer = []
         self.max_size = max_size
@@ -175,25 +176,66 @@ class DataAccess(object):
 
     @classmethod
     def delete(cls, session, inventory_id):
-        pass
+        """Delete an inventory index entry by id.
+
+        Args:
+            session (object): Database session.
+            inventory_id (int): Id specifying which inventory to delete.
+        """
+
+        try:
+            session.delete(Inventory).filter(
+                Inventory.index == inventory_id)
+            session.delete(GSuiteMembership).filter(
+                GSuiteMembership.index == inventory_id)
+            session.delete(InventoryIndex).filter(
+                InventoryIndex.id == inventory_id)
+        except Exception:
+            session.rollback()
+        else:
+            session.commit()
 
     @classmethod
     def list(cls, session):
-        pass
+        """List all inventory index entries.
+
+        Args:
+            session (object): Database session
+
+        Yields:
+            InventoryIndex: Generates each row
+        """
+
+        for row in session.query(InventoryIndex).yield_per(PER_YIELD):
+            yield row
 
     @classmethod
     def get(cls, session, inventory_id):
-        pass
+        """Get an inventory index entry by id.
+
+        Args:
+            session (object): Database session
+            inventory_id (int): Inventory id
+
+        Returns:
+            InventoryIndex: Entry corresponding the id
+        """
+
+        return (
+            session.query(InventoryIndex)
+            .filter(InventoryIndex.id == inventory_id)
+            .one())
+
+
+def initialize(engine):
+    BASE.metadata.create_all(engine)
 
 
 class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
-    def __init__(self, db_connect_string, existing_id=None):
-        engine = create_engine(db_connect_string, pool_recycle=7200)
-        BASE.metadata.create_all(engine)
-        session = sessionmaker(bind=engine)
-        self.session = session()
+    def __init__(self, session, existing_id=None):
+        self.session = session
         self.opened = False
         self.index = None
         self.buffer = BufferedDbWriter(self.session)

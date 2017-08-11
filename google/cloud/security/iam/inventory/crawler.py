@@ -14,8 +14,6 @@
 
 """ Crawler implementation. """
 
-from google.cloud.security.inventory2 import progress
-from google.cloud.security.inventory2 import storage
 from google.cloud.security.inventory2 import resources
 from google.cloud.security.inventory2 import gcp
 
@@ -64,10 +62,10 @@ class Crawler(object):
         return self.config.client
 
 
-if __name__ == '__main__':
+def run_crawler(storage, progresser, gsuite_sa):
 
     client_config = {
-            'groups_service_account_key_file': '/Users/fmatenaar/deployments/forseti/groups.json',
+            'groups_service_account_key_file': gsuite_sa,
             'max_admin_api_calls_per_day': 150000,
             'max_appengine_api_calls_per_second': 20,
             'max_bigquery_api_calls_per_100_seconds': 17000,
@@ -76,15 +74,13 @@ if __name__ == '__main__':
             'max_compute_api_calls_per_second': 20,
             'max_iam_api_calls_per_second': 20,
         }
+
     orgid = 'organizations/660570133860'
 
     client = gcp.ApiClientImpl(client_config)
     resource = resources.Organization.fetch(client, orgid)
 
-    mem = storage.Memory()
-    progresser = progress.CliProgresser()
-    config = CrawlerConfig(mem, progresser, client)
-
+    config = CrawlerConfig(storage, progresser, client)
     crawler = Crawler(config)
     progresser = crawler.run(resource)
-    progresser.print_stats()
+    return progresser.get_summary()
