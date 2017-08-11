@@ -15,6 +15,7 @@
 """Tests the IAM Explain inventory."""
 
 import unittest
+import time
 
 from google.cloud.security.common.util.threadpool import ThreadPool
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
@@ -77,6 +78,38 @@ class ApiTest(ForsetiTestCase):
                                                     import_as=""):
                 continue
             self.assertTrue(progress.final_message)
+
+            self.assertGreater(len([x for x in client.inventory.list()]),
+                               0,
+                               'Assert list not empty')
+            for inventory_index in client.inventory.list():
+                self.assertTrue(inventory_index.id == progress.id)
+
+            self.assertEqual(inventory_index,
+                             (client.inventory.get(inventory_index.id)
+                              .inventory))
+
+            self.assertEqual(inventory_index,
+                             (client.inventory.delete(inventory_index.id)
+                              .inventory))
+
+            self.assertEqual([], [i for i in client.inventory.list()])
+
+        self.setup.run(test)
+
+    def test_basic_background(self):
+        """Test: Create inventory, foreground & no import."""
+
+        def test(client):
+            """API test callback."""
+
+            for progress in client.inventory.create(background=True,
+                                                    import_as=""):
+                continue
+            self.assertTrue(progress.final_message)
+
+            while not [x for x in client.inventory.list()]:
+                time.sleep(3)
 
             self.assertGreater(len([x for x in client.inventory.list()]),
                                0,

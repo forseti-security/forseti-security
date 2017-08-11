@@ -30,8 +30,8 @@ from google.cloud.security.inventory2.progress import Progresser as BaseProgress
 class Progress(object):
     """Progress state."""
 
-    def __init__(self, final_message=False, step=""):
-        self.inventory_id = -1
+    def __init__(self, final_message=False, step="", inventory_id=-1):
+        self.inventory_id = inventory_id
         self.final_message = final_message
         self.step = step
         self.warnings = 0
@@ -40,32 +40,13 @@ class Progress(object):
         self.last_error = ""
 
 
-class NullProgresser(BaseProgresser):
-    """No-op progresser."""
-
-    def __init__(self):
-        pass
-
-    def on_new_object(self, resource):
-        pass
-
-    def on_warning(self, warning):
-        pass
-
-    def on_error(self, error):
-        pass
-
-    def get_summary(self):
-        pass
-
-
 class QueueProgresser(Progress):
     def __init__(self, queue):
         super(QueueProgresser, self).__init__()
         self.queue = queue
 
     def _notify(self):
-        self.queue.put(self, block=True, timeout=10)
+        self.queue.put_nowait(self)
 
     def on_new_object(self, resource):
         self.step = resource.key()
@@ -88,10 +69,12 @@ class QueueProgresser(Progress):
         return self
 
 
-def run_inventory(session, progresser):
+def run_inventory(queue, session, progresser, background):
     gsuite_sa = '/Users/fmatenaar/deployments/forseti/groups.json'
     with Storage(session) as storage:
         progresser.inventory_id = storage.index.id
+        progresser.final_message = True if background else False
+        queue.put(progresser)
         return run_crawler(storage, progresser, gsuite_sa)
 
 
@@ -116,15 +99,15 @@ class Inventory(object):
         """
 
         queue = Queue()
-        if background:
-            progresser = NullProgresser()
-        else:
-            progresser = QueueProgresser(queue)
+        progresser = QueueProgresser(queue)
 
         def do_work():
             with self.config.scoped_session() as session:
                 try:
-                    result = run_inventory(session, progresser)
+                    result = run_inventory(queue,
+                                           session,
+                                           progresser,
+                                           background)
                     if not model_name:
                         return result
                     else:
@@ -135,7 +118,7 @@ class Inventory(object):
 
         if background:
             self.config.run_in_background(do_work)
-            yield Progress(True, 'Accepted')
+            yield queue.get()
 
         else:
             result = self.config.run_in_background(do_work)
