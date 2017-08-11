@@ -78,6 +78,22 @@ class ApiTest(ForsetiTestCase):
                 continue
             self.assertTrue(progress.final_message)
 
+            self.assertGreater(len([x for x in client.inventory.list()]),
+                               0,
+                               'Assert list not empty')
+            for inventory_index in client.inventory.list():
+                self.assertTrue(inventory_index.id == progress.id)
+
+            self.assertEqual(inventory_index,
+                             (client.inventory.get(inventory_index.id)
+                              .inventory))
+
+            self.assertEqual(inventory_index,
+                             (client.inventory.delete(inventory_index.id)
+                              .inventory))
+
+            self.assertEqual([], [i for i in client.inventory.list()])
+
         self.setup.run(test)
 
 

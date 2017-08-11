@@ -21,7 +21,7 @@ from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import BigInteger
-from sqlalchemy import Date
+from sqlalchemy import DateTime
 from sqlalchemy import Integer
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -50,8 +50,8 @@ class InventoryIndex(BASE):
     __tablename__ = 'inventory_index'
 
     id = Column(Integer(), primary_key=True, autoincrement=True)
-    start_time = Column(Date())
-    complete_time = Column(Date())
+    start_time = Column(DateTime())
+    complete_time = Column(DateTime())
     status = Column(Text())
     schema_version = Column(Integer())
     progress = Column(Text())
@@ -184,16 +184,18 @@ class DataAccess(object):
         """
 
         try:
-            session.delete(Inventory).filter(
-                Inventory.index == inventory_id)
-            session.delete(GSuiteMembership).filter(
-                GSuiteMembership.index == inventory_id)
-            session.delete(InventoryIndex).filter(
-                InventoryIndex.id == inventory_id)
+            result = cls.get(session, inventory_id)
+            session.query(Inventory).filter(
+                Inventory.index == inventory_id).delete()
+            session.query(GSuiteMembership).filter(
+                GSuiteMembership.index == inventory_id).delete()
+            session.query(InventoryIndex).filter(
+                InventoryIndex.id == inventory_id).delete()
+            session.commit()
+            return result
         except Exception:
             session.rollback()
-        else:
-            session.commit()
+            raise
 
     @classmethod
     def list(cls, session):
@@ -207,6 +209,7 @@ class DataAccess(object):
         """
 
         for row in session.query(InventoryIndex).yield_per(PER_YIELD):
+            session.expunge(row)
             yield row
 
     @classmethod
@@ -221,10 +224,12 @@ class DataAccess(object):
             InventoryIndex: Entry corresponding the id
         """
 
-        return (
+        result = (
             session.query(InventoryIndex)
             .filter(InventoryIndex.id == inventory_id)
             .one())
+        session.expunge(result)
+        return result
 
 
 def initialize(engine):
@@ -274,6 +279,7 @@ class Storage(BaseStorage):
             raise Exception('not open')
 
         try:
+            self.index.complete()
             self.session.commit()
         except Exception:
             raise

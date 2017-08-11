@@ -14,6 +14,8 @@
 
 """ Playground gRPC service. """
 
+import google.protobuf.timestamp_pb2 as timestamp
+
 from google.cloud.security.iam.inventory import inventory_pb2
 from google.cloud.security.iam.inventory import inventory_pb2_grpc
 from google.cloud.security.iam.inventory import inventory
@@ -27,14 +29,16 @@ def inventory_pb_from_object(inventory_index):
     """Convert internal inventory datastructure to protobuf."""
 
     return inventory_pb2.InventoryIndex(
-        id=inventory_index.get_id(),
-        start_time=inventory_index.get_start_time(),
-        completion_time=inventory_index.get_completion_time(),
-        schema_version=inventory_index.get_schema_version(),
-        count_objects=inventory_index.get_object_count(),
-        status=inventory_index.get_status(),
-        warnings=inventory_index.get_warnings(),
-        errors=inventory_index.get_errors())
+        id=inventory_index.id,
+        start_time=timestamp.Timestamp().FromDatetime(
+            inventory_index.start_time),
+        complete_time=timestamp.Timestamp().FromDatetime(
+            inventory_index.complete_time),
+        schema_version=inventory_index.schema_version,
+        count_objects=inventory_index.counter,
+        status=inventory_index.status,
+        warnings=inventory_index.warnings,
+        errors=inventory_index.errors)
 
 
 # pylint: disable=no-self-use
@@ -74,13 +78,15 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """Gets existing inventory."""
 
         inventory_index = self.inventory.Get(request.id)
-        return inventory_pb_from_object(inventory_index)
+        return inventory_pb2.GetReply(
+            inventory=inventory_pb_from_object(inventory_index))
 
     def Delete(self, request, context):
         """Deletes existing inventory."""
 
         inventory_index = self.inventory.Delete(request.id)
-        return inventory_pb_from_object(inventory_index)
+        return inventory_pb2.DeleteReply(
+            inventory=inventory_pb_from_object(inventory_index))
 
 
 class GrpcInventoryFactory(object):

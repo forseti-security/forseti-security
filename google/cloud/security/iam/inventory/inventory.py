@@ -31,7 +31,7 @@ class Progress(object):
     """Progress state."""
 
     def __init__(self, final_message=False, step=""):
-        self.inventory_id = None
+        self.inventory_id = -1
         self.final_message = final_message
         self.step = step
         self.warnings = 0
@@ -65,7 +65,7 @@ class QueueProgresser(Progress):
         self.queue = queue
 
     def _notify(self):
-        self.queue.put_nowait(self)
+        self.queue.put(self, block=True, timeout=10)
 
     def on_new_object(self, resource):
         self.step = resource.key()
@@ -123,11 +123,15 @@ class Inventory(object):
 
         def do_work():
             with self.config.scoped_session() as session:
-                result = run_inventory(session, progresser)
-                if not model_name:
-                    return result
-                else:
-                    return run_import(self.config.client(), model_name)
+                try:
+                    result = run_inventory(session, progresser)
+                    if not model_name:
+                        return result
+                    else:
+                        return run_import(self.config.client(), model_name)
+                except Exception as e:
+                    queue.put(e)
+                    queue.put(None)
 
         if background:
             self.config.run_in_background(do_work)
@@ -136,6 +140,8 @@ class Inventory(object):
         else:
             result = self.config.run_in_background(do_work)
             for progress in iter(queue.get, None):
+                if isinstance(progress, Exception):
+                    raise progress
                 yield progress
             if result:
                 yield result.get()
@@ -147,7 +153,7 @@ class Inventory(object):
             object: Inventory metadata
         """
 
-        with self.config.session() as session:
+        with self.config.scoped_session() as session:
             for item in DataAccess.list(session):
                 yield item
 
@@ -161,8 +167,9 @@ class Inventory(object):
             object: Inventory metadata
         """
 
-        with self.config.session() as session:
-            return DataAccess.get(session, inventory_id)
+        with self.config.scoped_session() as session:
+            result = DataAccess.get(session, inventory_id)
+            return result
 
     def Delete(self, inventory_id):
         """Delete an inventory by id.
@@ -174,5 +181,6 @@ class Inventory(object):
             object: Inventory object that was deleted
         """
 
-        with self.config.session() as session:
-            return DataAccess.delete(session, inventory_id)
+        with self.config.scoped_session() as session:
+            result = DataAccess.delete(session, inventory_id)
+            return result

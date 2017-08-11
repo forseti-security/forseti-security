@@ -60,7 +60,7 @@ message ListRequest {
 message InventoryIndex {
 	int32 id = 1;
 	google.protobuf.Timestamp start_time = 2;
-	google.protobuf.Timestamp completion_time = 3;
+	google.protobuf.Timestamp complete_time = 3;
 	int32 schema_version = 4;
 	int32 count_objects = 5;
 	string status = 6;
