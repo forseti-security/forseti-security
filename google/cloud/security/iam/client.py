@@ -127,19 +127,19 @@ class ExplainClient(IAMClient):
         self.stub = explain_pb2_grpc.ExplainStub(config['channel'])
 
     def is_available(self):
-        """Checks if the 'Explain' service is available by performing a ping.
-        """
+        """Checks if the 'Explain' service is available by performing a ping."""
 
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
 
-    def new_model(self, source, name):
+    def new_model(self, source, name, inventory_id=-1):
         """Creates a new model, reply contains the handle."""
 
         return self.stub.CreateModel(
             explain_pb2.CreateModelRequest(
                 type=source,
-                name=name))
+                name=name,
+                id=inventory_id))
 
     def list_models(self):
         """List existing models in the service."""
@@ -433,10 +433,10 @@ class ClientComposition(object):
         if not all([c.is_available() for c in self.clients]):
             raise Exception('gRPC connected but services not registered')
 
-    def new_model(self, source, name):
+    def new_model(self, source, name, inventory_id=-1):
         """Create a new model from the specified source."""
 
-        return self.explain.new_model(source, name)
+        return self.explain.new_model(source, name, inventory_id)
 
     def list_models(self):
         """List existing models."""

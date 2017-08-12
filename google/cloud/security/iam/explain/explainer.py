@@ -70,7 +70,7 @@ class Explainer(object):
                                                            expand_groups)
             return mapping
 
-    def CreateModel(self, source, name):
+    def CreateModel(self, source, name, inventory_id):
         """Creates a model from the import source."""
 
         model_manager = self.config.model_manager
@@ -85,7 +85,8 @@ class Explainer(object):
                     session,
                     model_manager.model(model_handle, expunge=False),
                     data_access,
-                    self.config)
+                    self.config,
+                    inventory=inventory_id)
                 import_runner.run()
 
             self.config.run_in_background(doImport)

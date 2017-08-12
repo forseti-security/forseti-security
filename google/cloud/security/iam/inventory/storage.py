@@ -279,6 +279,7 @@ class Storage(BaseStorage):
             raise Exception('not open')
 
         try:
+            self.buffer.flush()
             self.index.complete()
             self.session.commit()
         except Exception:
@@ -307,7 +308,7 @@ class Storage(BaseStorage):
     def warning(self, message):
         self.index.add_warning(self.session, message)
 
-    def iterinventory(self, type_list=[]):
+    def iter(self, type_list=[]):
         base_query = (
             self.session.query(Inventory)
             .filter(Inventory.index == self.index.id))

@@ -202,7 +202,9 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     def CreateModel(self, request, context):
         """Creates a new model from an import source."""
 
-        model = self.explainer.CreateModel(request.type, request.name)
+        model = self.explainer.CreateModel(request.type,
+                                           request.name,
+                                           request.id)
         reply = explain_pb2.CreateModelReply(model=explain_pb2.Model(
             name=model.name,
             handle=model.handle,

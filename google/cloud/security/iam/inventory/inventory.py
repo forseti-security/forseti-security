@@ -78,8 +78,8 @@ def run_inventory(queue, session, progresser, background):
         return run_crawler(storage, progresser, gsuite_sa)
 
 
-def run_import(client, model_name):
-    return client.explain('INVENTORY', model_name)
+def run_import(client, model_name, inventory_id):
+    return client.explain('INVENTORY', model_name, inventory_id)
 
 
 # pylint: disable=invalid-name,no-self-use
@@ -101,7 +101,7 @@ class Inventory(object):
         queue = Queue()
         progresser = QueueProgresser(queue)
 
-        def do_work():
+        def do_inventory():
             with self.config.scoped_session() as session:
                 try:
                     result = run_inventory(queue,
@@ -111,17 +111,19 @@ class Inventory(object):
                     if not model_name:
                         return result
                     else:
-                        return run_import(self.config.client(), model_name)
+                        return run_import(self.config.client(),
+                                          model_name,
+                                          result.inventory_id)
                 except Exception as e:
                     queue.put(e)
                     queue.put(None)
 
         if background:
-            self.config.run_in_background(do_work)
+            self.config.run_in_background(do_inventory)
             yield queue.get()
 
         else:
-            result = self.config.run_in_background(do_work)
+            result = self.config.run_in_background(do_inventory)
             for progress in iter(queue.get, None):
                 if isinstance(progress, Exception):
                     raise progress

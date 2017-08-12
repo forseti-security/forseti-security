@@ -23,6 +23,7 @@ import traceback
 
 from google.cloud.security.common.data_access import forseti
 from google.cloud.security.iam.explain.importer import roles as roledef
+from google.cloud.security.iam.inventory.storage import Storage as InventoryStorage
 
 
 class ResourceCache(dict):
@@ -139,7 +140,7 @@ class Policy(dict):
 class EmptyImporter(object):
     """Imports an empty model."""
 
-    def __init__(self, session, model, dao, _):
+    def __init__(self, session, model, dao, _, **kwargs):
         """Create an EmptyImporter which creates an empty stub model.
 
         Args:
@@ -148,6 +149,7 @@ class EmptyImporter(object):
             dao (object): Data Access Object from dao.py.
             _ (object): Unused.
         """
+
         self.session = session
         self.model = model
         self.dao = dao
@@ -162,7 +164,7 @@ class EmptyImporter(object):
 class TestImporter(object):
     """Importer for testing purposes. Imports a test scenario."""
 
-    def __init__(self, session, model, dao, _):
+    def __init__(self, session, model, dao, _, **kwargs):
         """Create a TestImporter which creates a constant defined model.
 
         Args:
@@ -223,20 +225,95 @@ def load_roles():
 
 
 class InventoryImporter(object):
-    pass
+    """Imports data from Inventory."""
+
+    def __init__(self,
+                 session,
+                 model,
+                 dao,
+                 service_config,
+                 inventory_id,
+                 **kwargs):
+        """Create a Inventory importer which creates a model from the inventory.
+
+        Args:
+            session (object): Database session.
+            model (str): Model name to create.
+            dao (object): Data Access Object from dao.py
+            service_config (ServiceConfig): Service configuration.
+        """
+
+        self.session = session
+        self.model = model
+        self.dao = dao
+        self.service_config = service_config
+        self.inventory_id = inventory_id
+
+    def run(self):
+        """Runs the import.
+
+        Raises:
+            NotImplementedError: If the importer encounters an unknown
+                                 inventory type.
+        """
+
+        iam_roles_list = [
+            'role',
+            ]
+
+        gcp_type_list = [
+            'organization',
+            'project',
+            'instance',
+            'bucket',
+            ]
+
+        try:
+
+            item_counter = 0
+            with InventoryStorage(self.session,
+                                  self.inventory_id) as inventory:
+
+                for role in inventory.iter(iam_roles_list):
+                    item_counter += 1
+                    self.store_role(role)
+
+                for resource in inventory.iter(gcp_type_list):
+                    item_counter += 1
+                    self.store_resource(resource)
+
+        except Exception:  # pylint: disable=broad-except
+            buf = StringIO()
+            traceback.print_exc(file=buf)
+            buf.seek(0)
+            message = buf.read()
+            self.model.set_error(self.session, message)
+        else:
+            self.model.set_done(self.session, item_counter)
+            self.session.commit()
+
+    def store_resource(self, resource):
+        """Store an inventory resource in the database."""
+
+        pass
+
+    def store_role(self, role):
+        """Store an inventory role in the database."""
+
+        pass
 
 
 class ForsetiImporter(object):
     """Imports data from Forseti."""
 
-    def __init__(self, session, model, dao, service_config):
+    def __init__(self, session, model, dao, service_config, **kwargs):
         """Create a ForsetiImporter which creates a model from the Forseti DB.
 
         Args:
             session (object): Database session.
             model (str): Model name to create.
             dao (object): Data Access Object from dao.py.
-            service_config (ServiceConfig): Service configurator.
+            service_config (ServiceConfig): Service configuration.
         """
         self.session = session
         self.model = model
