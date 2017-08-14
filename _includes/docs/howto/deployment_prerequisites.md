@@ -11,8 +11,8 @@ enable required APIs:
       1. Run `gcloud auth login` and use your Google credentials to authenticate.
       1. Run `gcloud init` and select your Forseti Security project and Google
       account.
-  1. Enable the required APIs by running `gcloud beta service-management enable`
-  for each of the following API paths:
+  1. Enable the required APIs by running `gcloud beta service-management enable <API NAME>`
+  for each of the following APIs:
   
   {% include docs/required_apis.md %}
 
