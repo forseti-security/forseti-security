@@ -25,6 +25,8 @@ imports:
   name: bucket.py
 - path: compute-engine/forseti-instance.py
   name: forseti-instance.py
+- path: iam/service_acct.py
+  name: service_acct.py
 
 resources:
 
@@ -53,7 +55,7 @@ resources:
     instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
-    service-account: GCP_SERVICE_ACCOUNT
+    service-account: $(ref.forseti-gcp-reader.email)
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
     scanner-bucket: SCANNER_BUCKET
@@ -82,3 +84,16 @@ resources:
     # Cloud SQL
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
+
+# Service accounts
+- name: forseti-gcp-reader
+  type: service_acct.py
+  properties:
+    accountId: forseti-gcp-reader
+    displayName: forseti-gcp-reader
+
+- name: forseti-gsuite-reader
+  type: service_acct.py
+  properties:
+    accountId: forseti-gsuite-reader
+    displayName: forseti-gsuite-reader

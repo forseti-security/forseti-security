@@ -24,11 +24,15 @@ from environment import gcloud_env
 def run():
     """Run the steps for the gcloud setup."""
     parser = argparse.ArgumentParser()
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--branch',
-                       help='Which Forseti branch to deploy')
-    group.add_argument('--version',
-                       help='Which Forseti release to deploy')
+    parser.add_argument('--no-cloudshell',
+                        type=bool,
+                        default=False,
+                        help='Bypass Cloud Shell requirement')
+    group = parser.add_argument_group(title='regions')
+    group.add_argument('--gcs-location',
+                       help='The GCS bucket location')
+    group.add_argument('--cloudsql-region',
+                       help='The Cloud SQL region')
 
     args = vars(parser.parse_args())
     forseti_setup = gcloud_env.ForsetiGcpSetup(**args)

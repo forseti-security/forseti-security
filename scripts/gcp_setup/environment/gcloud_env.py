@@ -15,8 +15,6 @@
 """Set up Forseti Security on GCP.
 
 This has been tested with python 2.7.
-
-TODO: Write config options to an output file and give option to read in.
 """
 
 from __future__ import print_function
@@ -24,35 +22,34 @@ from __future__ import print_function
 import datetime
 import json
 import os
-import re
 import subprocess
+import sys
 import time
-
-from distutils import spawn
-
-# pylint: disable=no-self-use
 
 
 def org_id_from_org_name(org_name):
     """Extract the organization id (number) from the organization name.
 
     Args:
-        org_name(str): The name of the organization, formatted as
+        org_name (str): The name of the organization, formatted as
             "organizations/${ORGANIZATION_ID}".
 
     Returns:
-        org_name(str): just the organization_id.
+        str: just the organization_id.
     """
     return org_name[len('organizations/'):]
 
+
+# pylint: disable=no-self-use
 # pylint: disable=too-many-instance-attributes
 class ForsetiGcpSetup(object):
     """Setup the Forseti Security GCP components."""
 
-    PROJECT_ID_REGEX = re.compile(r'^[a-z][a-z0-9-]{6,30}$')
     REQUIRED_APIS = [
         {'name': 'Admin SDK',
          'service': 'admin.googleapis.com'},
+        {'name': 'AppEngine Admin',
+         'service': 'appengine.googleapis.com'},
         {'name': 'Cloud Resource Manager',
          'service': 'cloudresourcemanager.googleapis.com'},
         {'name': 'Cloud SQL',
@@ -60,10 +57,12 @@ class ForsetiGcpSetup(object):
         {'name': 'Cloud SQL Admin',
          'service': 'sqladmin.googleapis.com'},
         {'name': 'Compute Engine',
-         'service': 'compute-component.googleapis.com'},
+         'service': 'compute.googleapis.com'},
         {'name': 'Deployment Manager',
          'service': 'deploymentmanager.googleapis.com'},
     ]
+
+    SERVICE_ACCT_FMT = '{}@{}.iam.gserviceaccount.com'
 
     ORG_IAM_ROLES = [
         'roles/browser',
@@ -81,52 +80,14 @@ class ForsetiGcpSetup(object):
         'roles/cloudsql.client'
     ]
 
-    SERVICE_ACCT_FMT = '{}@{}.iam.gserviceaccount.com'
-
-    DEFAULT_BUCKET_FORMAT = 'gs://{}'
-    GCS_LS_ERROR_REGEX = re.compile(r'^(.*Exception): (\d{3})', re.MULTILINE)
-    BUCKET_REGIONS = [
-        {'desc': 'Asia Pacific', 'region': 'Multi-Region', 'value': 'asia'},
-        {'desc': 'Europe', 'region': 'Multi-Region', 'value': 'eu'},
-        {'desc': 'United States', 'region': 'Multi-Region', 'value': 'us'},
-
-        {'desc': 'Iowa', 'region': 'Americas', 'value': 'us-central1'},
-        {'desc': 'South Carolina', 'region': 'Americas', 'value': 'us-east1'},
-        {'desc': 'Northern Virginia', 'region': 'Americas',
-         'value': 'us-east4'},
-        {'desc': 'Oregon', 'region': 'Americas', 'value': 'us-west1'},
-
-        {'desc': 'Taiwan', 'region': 'Asia-Pacific', 'value': 'asia-east1'},
-        {'desc': 'Tokyo', 'region': 'Asia-Pacific', 'value': 'asia-northeast1'},
-        {'desc': 'Singapore', 'region': 'Asia-Pacific',
-         'value': 'asia-southeast1'},
-
-        {'desc': 'Belgium', 'region': 'Europe', 'value': 'europe-west1'},
-        {'desc': 'London', 'region': 'Europe', 'value': 'europe-west2'},
-    ]
+    DEFAULT_BUCKET_FORMAT = 'gs://{}-data'
 
     DEFAULT_CLOUDSQL_INSTANCE_NAME = 'forseti-security'
-    DEFAULT_CLOUDSQL_USER = 'forseti_user'
     CLOUDSQL_DB_VERSION = 'MYSQL_5_7'
     CLOUDSQL_TIER = 'db-n1-standard-1'
     CLOUDSQL_STORAGE_SIZE_GB = '25'
     CLOUDSQL_STORAGE_TYPE = 'SSD'
-    CLOUDSQL_ERROR_REGEX = re.compile(r'HTTPError (\d{3}):', re.MULTILINE)
-    CLOUDSQL_REGIONS = [
-        {'desc': 'Iowa', 'region': 'Americas', 'value': 'us-central1'},
-        {'desc': 'South Carolina', 'region': 'Americas', 'value': 'us-east1'},
-        {'desc': 'Northern Virginia', 'region': 'Americas',
-         'value': 'us-east4'},
-        {'desc': 'Oregon', 'region': 'Americas', 'value': 'us-west1'},
 
-        {'desc': 'Taiwan', 'region': 'Asia-Pacific', 'value': 'asia-east1'},
-        {'desc': 'Tokyo', 'region': 'Asia-Pacific', 'value': 'asia-northeast1'},
-
-        {'desc': 'Belgium', 'region': 'Europe', 'value': 'europe-west1'},
-        {'desc': 'London', 'region': 'Europe', 'value': 'europe-west2'},
-    ]
-
-    BRANCH_RELEASE_FMT = '{}: "{}"'
     ROOT_DIR_PATH = os.path.dirname(
         os.path.dirname(
             os.path.dirname(
@@ -138,23 +99,24 @@ class ForsetiGcpSetup(object):
         Args:
             kwargs (dict): The kwargs.
         """
-        self.branch = kwargs.get('branch')
-        self.version = kwargs.get('version')
+        self.timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        self.force_no_cloudshell = kwargs.get('no_cloudshell')
 
-        self.config_name = None
-        self.auth_account = None
-        self.organization_id = None
-        self.unassigned_roles = []
-
+        self.authed_user = None
         self.project_id = None
+        self.organization_id = None
+
         self.gcp_service_account = None
         self.gsuite_service_account = None
         self.gsuite_svc_acct_key_location = None
-        self.rules_bucket_name = None
-        self.bucket_region = None
-        self.cloudsql_instance = None
-        self.cloudsql_user = None
-        self.cloudsql_region = None
+
+        self.bucket_name = None
+        self.bucket_region = kwargs.get('gcs_location')
+        self.cloudsql_instance = '{}-{}'.format(
+            self.DEFAULT_CLOUDSQL_INSTANCE_NAME,
+            self.timestamp)
+        self.cloudsql_region = kwargs.get('cloudsql_region')
+
         self.deployment_name = False
         self.deploy_tpl_path = None
         self.forseti_conf_path = None
@@ -163,40 +125,35 @@ class ForsetiGcpSetup(object):
         self.notification_sender_email = '""'
         self.notification_recipient_email = '""'
         self.gcp_gsuite_key_path = '""'
-        self.gsuite_super_admin_email = '""'
-
-    def __repr__(self):
-        """String representation of this instance.
-
-        Returns:
-            str: __repr__
-        """
-        return ('ForsetiGcpSetup:\n'
-                '  Account: {}\n'
-                '  ProjectId: {}\n'
-                .format(self.auth_account,
-                        self.project_id))
 
     def run_setup(self):
         """Run the setup steps."""
-        self.ensure_gcloud_installed()
-        self.auth_login()
-        self.list_organizations()
-        self.create_or_use_project()
-        self.check_billing()
-        self.enable_apis()
-        self.create_service_accounts()
-        self.grant_gcp_svc_acct_roles()
-        self.setup_bucket_name()
-        self.setup_cloudsql_name()
-        self.setup_cloudsql_user()
+        # Pre-flight checks.
+        self.check_cloudshell()
+        self.get_authed_user()
+        self.get_project()
+        self.get_organization()
+        self.has_permissions()
 
+        # Generate names and config.
+        self.enable_apis()
+        self.generate_bucket_name()
         self.generate_deployment_templates()
         self.generate_forseti_conf()
-        self.create_deployment()
 
-        if not self.deployment_name:
-            self.create_data_storage()
+        # Actual deployment.
+        # 1. Create deployment.
+        # 2. If fails, continue to next step.
+        # 3. Otherwise, copy configs (forseti_conf.yaml, rules) to bucket.
+        # 4. Grant service account roles and create and download
+        #    G Suite service account key.
+        # 5. Poll the Forseti VM until it responds, then scp the key.
+        return_code = self.create_deployment()
+        if return_code:
+            self.copy_config_to_bucket()
+            self.grant_gcp_svc_acct_roles()
+            #self.copy_gsuite_key()
+
         self.post_install_instructions()
 
     @staticmethod
@@ -212,369 +169,246 @@ class ForsetiGcpSetup(object):
         print('+-------------------------------------------------------')
         print('')
 
-    def ensure_gcloud_installed(self):
-        """Check whether gcloud tool is installed.
+    @staticmethod
+    def _run_command(cmd_args):
+        """Wrapper to run a command in subprocess.
 
-            Raises:
-                EnvironmentError: When `gcloud` can't be found.
+        Args:
+            cmd_args (str): The list of command arguments.
+
+        Returns:
+            int: The return code. 0 is "ok", anything else is "error".
+            str: Output, if command was successful.
+            err: Error output, if there was an error.
         """
-        self._print_banner('Checking if gcloud is installed')
-        gcloud_cmd = spawn.find_executable('gcloud')
-        if gcloud_cmd:
-            print('gcloud already installed, continue...')
-        else:
-            raise EnvironmentError(
-                'Could not find gcloud. '
-                'Have you installed the Google Cloud SDK?\n'
-                'You can get it here: https://cloud.google.com/sdk/')
-
-    def auth_login(self):
-        """Authenticate with GCP account."""
-        self._print_banner('Auth GCP account')
-        subprocess.call(['gcloud', 'auth', 'login', '--force'])
-        proc = subprocess.Popen(
-            ['gcloud', 'auth', 'list',
-             '--filter=status:ACTIVE', '--format=value(account)'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+        proc = subprocess.Popen(cmd_args,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
         out, err = proc.communicate()
-        if proc.returncode:
+        return proc.returncode, out, err
+
+    def check_cloudshell(self):
+        """Check if running in Cloud Shell."""
+        self._print_banner('Check if using Cloud Shell')
+        if not self.force_no_cloudshell:
+            print('Forseti highly recommends running this wizard within '
+                  'Cloud Shell. If you would like to run the wizard outside '
+                  'Cloud Shell, please be sure to do the following:\n\n'
+                  '1) Create a project.\n'
+                  '2) Enable billing for the project.\n'
+                  '3) Install gcloud and authenticate your account using '
+                  '"gcloud auth login"\n.'
+                  '4) Run this setup again, with the --no-cloudshell flag, '
+                  'i.e.\n\n    python setup_forseti.py --no-cloudshell')
+            sys.exit(1)
+        else:
+            print('Using Cloud Shell, continuing...')
+
+    def get_authed_user(self):
+        """Get the current authed user."""
+        return_code, out, err = self._run_command(
+            ['gcloud', 'auth', 'list', '--format=json'])
+
+        if return_code:
             print(err)
-
-        if out:
-            self.auth_account = out.strip()
-
-    def list_organizations(self):
-        """List the available organizations."""
-        proc = subprocess.Popen(
-            ['gcloud', 'organizations', 'list', '--format=json'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        out, _ = proc.communicate()
-        if out:
+        else:
             try:
-                orgs = json.loads(out)
-                if orgs:
-                    self._choose_organization(orgs)
-            except ValueError:
-                print('Error retrieving organization id')
+                users = json.loads(out)
+                active_users = [u.get('account')
+                                for u in users if u.get('status') == 'ACTIVE']
+                if active_users:
+                    self.authed_user = active_users[0]
+            except ValueError as verr:
+                print(verr)
 
-    def _choose_organization(self, orgs):
-        """Choose from a list of organizations.
+        if not self.authed_user:
+            self._no_authed_user()
+
+    @staticmethod
+    def _no_authed_user():
+        """No authed user, therefore exit."""
+        print('Error getting authed user. You may need to run '
+              '"gcloud auth login". Exiting.')
+        sys.exit(1)
+
+    def get_project(self):
+        """Get the project."""
+        return_code, out, err = self._run_command(
+            ['gcloud', 'config', 'get-value', 'project'])
+        if return_code or not out:
+            print(err)
+            print('You need to have an active project! Exiting.')
+            sys.exit(1)
+        self.project_id = out.strip()
+        self._print_banner('Project id: %s' % self.project_id)
+
+    def get_organization(self):
+        """Infer the organization from the project's parent."""
+        return_code, out, err = self._run_command(
+            ['gcloud', 'projects', 'describe',
+             self.project_id, '--format=json'])
+        if return_code:
+            print(err)
+            print('Error trying to find current organization from '
+                  'project! Exiting.')
+            sys.exit(1)
+
+        try:
+            project = json.loads(out)
+            project_parent = project.get('parent')
+            if not project_parent:
+                self._no_organization()
+            parent_type = project_parent['type']
+            parent_id = project_parent['id']
+        except ValueError:
+            print('Error retrieving organization id')
+            self._no_organization()
+
+        if parent_type == 'folder':
+            self._find_org_from_folder(parent_id)
+        elif parent_type == 'organization':
+            self.organization_id = parent_id
+        else:
+            self._no_organization()
+        if self.organization_id:
+            print('Organization id: %s' % self.organization_id)
+
+    def _no_organization(self):
+        """No organization, so print a message and exit."""
+        print('You need to have an organization set up to use Forseti. '
+              'Refer to the following documentation for more information.\n\n'
+              'https://cloud.google.com/resource-manager/docs/'
+              'creating-managing-organization')
+        sys.exit(1)
+
+    def _find_org_from_folder(self, folder_id):
+        """Find the organization from some folder.
 
         Args:
-            orgs(dict): A dictionary of orgs from gcloud.
+            folder_id (str): The folder id, just a number.
         """
-        if not orgs:
-            self._print_banner('No organizations found. Exiting.')
-
-        self._print_banner('Choose the organization where to deploy Forseti')
-        choice = -1
-        while True:
-            print('Organizations:')
-            for i, org in enumerate(orgs):
-                print('[%s] %s (%s)' %
-                      (i+1,
-                       org['displayName'],
-                       org_id_from_org_name(org['name'])))
-
-            choice = raw_input('Enter your choice: ').strip()
-
+        parent_type = 'folder'
+        while parent_type != 'organizations':
+            return_code, out, err = self._run_command(
+                ['gcloud', 'alpha', 'resource-manager', 'folders',
+                 'describe', folder_id, '--format=json'])
+            if return_code:
+                print(err)
+                self._no_organization()
             try:
-                numeric_choice = int(choice)
-                if numeric_choice > len(orgs) or numeric_choice < 1:
-                    raise ValueError
-                else:
-                    self.organization_id = org_id_from_org_name(
-                        orgs[numeric_choice-1]['name'])
-                    break
-            except ValueError:
-                print('Invalid choice, try again.')
+                folder = json.loads(out)
+                parent_type, parent_id = folder['parent'].split('/')
+            except ValueError as verr:
+                print(verr)
+                self._no_organization()
+        self.organization_id = parent_id
 
-    def create_or_use_project(self):
-        """Create a project or enter the id of a project to use."""
-        project_id = None
-        self._print_banner('Setup Forseti project')
+    def has_permissions(self):
+        """Check if current user is an org admin and project owner.
 
-        while True:
-            project_choice = raw_input(
-                'Which project do you want to use for Forseti Security?\n'
-                '[1] Create new project (recommended)\n'
-                '[2] Existing project\n'
-                'Enter your choice: ').strip()
-            if project_choice == '1':
-                project_id = self._create_project()
-            if project_choice == '2':
-                project_id = self._use_project()
-            if project_id:
-                break
+        User must be an org admin in order to assign a service account roles
+        on the organization IAM policy.
+        """
+        self._print_banner('Check if current user has necessary permissions')
 
-        self._set_project(project_id)
+        if self._is_org_admin() and self._can_modify_project_iam():
+            print('You have the necessary roles to grant roles that Forseti '
+                  'needs. Continuing...')
+        else:
+            print('You do not have the necessary roles to grant roles that '
+                  'Forseti needs. Please have someone who is an Org Admin '
+                  'and either Project Editor or Project Owner for this project '
+                  'to run this setup wizard. Exiting.')
+            sys.exit(1)
 
-    def _create_project(self):
-        """Create the project based on user's input.
-
-        If the `projects create` command succeeds, its exit status will
-        be 0; however, if it fails, its exit status will be 1.
+    def _is_org_admin(self):
+        """Check if current user is an org admin.
 
         Returns:
-            str: The project id or None.
+            bool: Whether current user is Org Admin.
         """
-        while True:
-            project_id = raw_input(
-                '\nEnter a project id (alphanumeric and hyphens): ').strip()
-            if self.PROJECT_ID_REGEX.match(project_id):
-                proj_create_cmd = [
-                    'gcloud', 'projects', 'create', project_id,
-                    '--name=%s' % project_id]
-                if self.organization_id:
-                    proj_create_cmd.append(
-                        '--organization=%s' % self.organization_id)
-                exit_status = subprocess.call(proj_create_cmd)
-                if not exit_status:
-                    return project_id
-        return None
+        is_org_admin = self._has_roles(
+            'organizations',
+            self.organization_id,
+            ['roles/resourcemanager.organizationAdmin'])
 
-    def _use_project(self):
-        """Verify whether use has access to a project by describing it.
+        print('%s is Org Admin? %s' % (self.authed_user, is_org_admin))
+        return is_org_admin
 
-        If the `projects describe` command succeeds, its exit status will
-        be 0; however, if it fails, its exit status will be 1.
+    def _can_modify_project_iam(self):
+        """Check whether user can modify the current project's IAM policy.
+
+        To make it simple, check that user is either Project Editor or Owner.
 
         Returns:
-            str: The project id or None.
+            bool: If user can modify a project.
         """
-        print('\nBe advised! We recommend using a project dedicated to '
-              'running Forseti.\n')
-        while True:
-            project_id = raw_input(
-                '\nEnter a project id or press [enter] to cancel: ').strip()
-            if not project_id:
-                break
-            proc = subprocess.Popen(
-                ['gcloud', 'projects', 'describe',
-                 ('--format=table[box,title="Project"]'
-                  '(name,projectId,projectNumber)'),
-                 project_id],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            _, _ = proc.communicate()
-            if proc.returncode:
-                print('Invalid project id, please try again.')
-            else:
-                return project_id
-        return None
+        can_modify_project = self._has_roles(
+            'projects',
+            self.project_id,
+            ['roles/editor', 'roles/owner'])
 
-    def _set_project(self, project_id):
-        """Save the gcloud configuration for future use.
+        print('%s is either Project Editor or Owner? %s' %
+              (self.authed_user, can_modify_project))
+        return can_modify_project
+
+    def _has_roles(self, resource_type, resource_id, roles):
+        """Check if user has certain roles in a resource.
 
         Args:
-            project_id (str): A string representation of the GCP projectid.
-        """
-        print('\nTrying to activate configuration {}...'.format(project_id))
-        return_val = subprocess.call(
-            ['gcloud', 'config', 'configurations', 'activate', project_id])
-        if return_val:
-            print('Creating a new configuration for {}...'.format(project_id))
-            subprocess.call(
-                ['gcloud', 'config', 'configurations', 'create', project_id])
-            subprocess.call(
-                ['gcloud', 'config', 'set', 'account', self.auth_account])
+            resource_type (str): The resource type.
+            resource_id (str): The resource id.
+            roles (list): The roles to check user's membership in.
 
-        proc = subprocess.Popen(
-            ['gcloud', 'config', 'set', 'project', project_id],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        _, err = proc.communicate()
-        if proc.returncode:
+        Returns:
+            bool: True if has roles, otherwise False.
+        """
+        has_roles = False
+        return_code, out, err = self._run_command(
+            ['gcloud', resource_type, 'get-iam-policy',
+             resource_id, '--format=json'])
+        if return_code:
             print(err)
-        self.project_id = project_id
+        else:
+            try:
+                # Search resource's policy bindings for:
+                # 1) Members who have certain roles.
+                # 2) Whether the current authed user is in the members list.
+                iam_policy = json.loads(out)
+                role_members = []
+                for binding in iam_policy.get('bindings', []):
+                    if binding['role'] in roles:
+                        role_members.extend(binding['members'])
 
-    def check_billing(self):
-        """Check whether billing is enabled.
+                for member in role_members:
+                    if member.find(self.authed_user):
+                        has_roles = True
+                        break
+            except ValueError as verr:
+                print(verr)
+                print('Error reading output of %s.getIamPolicy().' %
+                      resource_type)
 
-            Poll GCP until billing is enabled.
-        """
-        print_instructions = True
-        self._print_banner('Checking whether billing has been enabled')
-        while True:
-            billing_proc = subprocess.Popen(
-                ['gcloud', 'alpha', 'billing',
-                 'accounts', 'projects', 'describe',
-                 self.project_id],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            billing_enabled = subprocess.Popen(
-                ['grep', 'billingEnabled'],
-                stdin=billing_proc.stdout,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            billing_proc.stdout.close()
-            billing_proc.stderr.close()
-            out, _ = billing_enabled.communicate()
-            if out:
-                print('Billing has been enabled for this project, continue...')
-                break
-            else:
-                # Billing has not been enabled, so print instructions
-                # and wait/poll for billing to be enabled in the
-                # account/project. Once user enables billing, the script
-                # will continue.
-                if print_instructions:
-                    print_instructions = self._print_billing_instructions()
-                time.sleep(1)
-
-    def _print_billing_instructions(self):
-        """Print billing instructions."""
-        print(('Before enabling the GCP APIs necessary to run '
-               'Forseti Security, you must enable Billing for '
-               'this project. Go to the following link:\n\n'
-               '    '
-               'https://console.cloud.google.com/'
-               'billing?project={}\n\n'
-               'After you enable billing, setup will continue.\n'
-               'If you think you made a mistake, press Ctrl-C to exit, then '
-               're-run this script to start over.\n'
-               .format(self.project_id)))
+        return has_roles
 
     def enable_apis(self):
         """Enable necessary APIs for Forseti Security.
 
-            1. Cloud SQL
-            2. Cloud SQL Admin
-            3. Cloud Resource Manager
-            4. Admin SDK
-            5. Deployment Manager
+        Technically, this could be done in Deployment Manager, but if you
+        delete the deployment, you'll disable the APIs. This could cause errors
+        if there are resources still in use (e.g. Compute Engine), and then
+        your deployment won't be cleanly deleted.
         """
         self._print_banner('Enabling required APIs')
         for api in self.REQUIRED_APIS:
             print('Enabling the {} API...'.format(api['name']))
-            proc = subprocess.Popen(
+            return_code, _, err = self._run_command(
                 ['gcloud', 'alpha', 'service-management',
-                 'enable', api['service']],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            _, err = proc.communicate()
-            if proc.returncode:
+                 'enable', api['service']])
+            if return_code:
                 print(err)
             else:
                 print('Done.')
-
-    def create_service_accounts(self):
-        """Creates the service accounts that will be used by Forseti."""
-        self._print_banner('Setup service accounts')
-
-        svc_acct_actions = [
-            {'usage': 'accessing GCP.',
-             'acct': 'gcp_service_account',
-             'default_name': 'forseti-security'},
-            {'usage': ('getting GSuite groups. This should be a different '
-                       'service account from the one you are using for '
-                       'accessing GCP.'),
-             'acct': 'gsuite_service_account',
-             'default_name': 'forseti-security-gsuite',
-             'skippable': True},
-        ]
-        for action in svc_acct_actions:
-            skippable = action.get('skippable', False)
-            skip_text = ''
-            if skippable:
-                skip_text = '[3] Skip for now\n'
-            action_text = (
-                'Forseti requires a service account for %s\n'
-                '[1] Use existing service account\n'
-                '[2] Create new service account\n'
-                '%s'
-                'Enter your choice: ' % (action['usage'], skip_text))
-            while True:
-                svc_acct_choice = raw_input(action_text).strip()
-                # Only break the loop when input is valid
-                if svc_acct_choice == '1':
-                    svc_acct = self._use_svc_acct(action['acct'])
-                if svc_acct_choice == '2':
-                    svc_acct = self._create_svc_acct(action['default_name'])
-                if svc_acct_choice == '3' and skippable:
-                    print('Skipping service account creation.')
-                    break
-                if svc_acct:
-                    self._set_service_account(action['acct'], svc_acct)
-                    break
-
-            # After setting the service account property, check if
-            # the GSuite service account key needs to be downloaded.
-            # Only download the key if the service account was created.
-            if svc_acct_choice == '2' and self.gsuite_service_account and \
-               action['acct'] == 'gsuite_service_account':
-                self._download_gsuite_svc_acct_key()
-
-    def _use_svc_acct(self, svc_acct_type):
-        """Use an existing service account.
-
-        Args:
-            svc_acct_type (str): The service account type.
-
-        Returns:
-            str: The user specified service account.
-        """
-        existing_svc_acct = None
-        while True:
-            existing_svc_acct = raw_input(
-                'Enter the full email of the service account '
-                'you want to use or press [enter] to cancel: ').strip().lower()
-
-            if not existing_svc_acct:
-                return None
-
-            if svc_acct_type == 'gsuite_service_account' and \
-               existing_svc_acct == self.gcp_service_account:
-                print('You are already using this service account for GCP. '
-                      'Please choose another, or press [enter] to cancel.')
-                continue
-
-            proc = subprocess.Popen(
-                ['gcloud', 'iam', 'service-accounts', 'describe',
-                 existing_svc_acct],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            _, err = proc.communicate()
-            if proc.returncode:
-                print(err)
-            else:
-                break
-
-        print('\nOk, using existing service account: %s\n' % existing_svc_acct)
-        return existing_svc_acct
-
-    def _create_svc_acct(self, default_name):
-        """Create a service account.
-
-        Args:
-            default_name (str): The default service account name.
-
-        Returns:
-            str: The full name of the service account.
-        """
-        while True:
-            new_svc_acct = raw_input(
-                'Enter the name for your new service account '
-                '(default: %s): ' % default_name).strip().lower()
-            if not new_svc_acct:
-                new_svc_acct = default_name
-            proc = subprocess.Popen(
-                ['gcloud', 'iam', 'service-accounts', 'create', new_svc_acct,
-                 '--display-name=%s' % new_svc_acct],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            _, err = proc.communicate()
-            if proc.returncode:
-                print(err)
-            else:
-                break
-        full_svc_acct = self.SERVICE_ACCT_FMT.format(
-            new_svc_acct, self.project_id)
-
-        print('\nCreated new service account: %s\n' % full_svc_acct)
-        return full_svc_acct
 
     def _download_gsuite_svc_acct_key(self):
         """Download the service account key."""
@@ -595,35 +429,26 @@ class ForsetiGcpSetup(object):
                 os.getcwd(),
                 'gsuite_key.json'))
 
-    def _set_service_account(self, which_svc_acct, svc_acct):
-        """Set the service account.
-
-        Args:
-            which_svc_acct (str): Which service account (GCP/GSuite) to set.
-            svc_acct (str): The service account full name.
-        """
-        setattr(self, which_svc_acct, svc_acct)
-
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
         Org:
-        AppEngine App Viewer
-        Cloud SQL Viewer
-        Network Viewer
-        Project Browser
-        Security Reviewer
-        Service Management Quota Viewer
-        Security Admin
+            AppEngine App Viewer
+            Cloud SQL Viewer
+            Network Viewer
+            Project Browser
+            Security Reviewer
+            Service Management Quota Viewer
+            Security Admin
 
         Project:
-        Cloud SQL Client
-        Storage Object Viewer
-        Storage Object Creator
+            Cloud SQL Client
+            Storage Object Viewer
+            Storage Object Creator
         """
         self._print_banner('Assigning roles to the GCP service account')
         if not self.organization_id:
-            return
+            self._no_organization()
 
         roles = {
             'organizations': self.ORG_IAM_ROLES,
@@ -652,129 +477,14 @@ class ForsetiGcpSetup(object):
                 _, err = proc.communicate()
                 if proc.returncode:
                     print(err)
-                    self.unassigned_roles.append(role)
                 else:
                     print('Done.')
 
-    def setup_bucket_name(self):
-        """Ask user to come up with a bucket name for the rules."""
-        self._print_banner('Setup bucket name')
-        default_bucket = self.DEFAULT_BUCKET_FORMAT.format(self.project_id)
-
-        while True:
-            bucket_name = raw_input(
-                'Enter a bucket name (press [enter] to use '
-                'the default: {}): '.format(default_bucket)).strip().lower()
-            if not bucket_name:
-                bucket_name = default_bucket
-
-            if not bucket_name.startswith('gs://'):
-                bucket_name = 'gs://{}'.format(bucket_name)
-
-            if bucket_name:
-                self.rules_bucket_name = bucket_name
-                break
-
-        print('Choose a region in which to create your bucket:')
-        self.bucket_region = self._choose_region(self.BUCKET_REGIONS)
-
-    def _choose_region(self, regions):
-        """Choose which region to create data storage.
-
-        Args:
-            regions (list): List of regions.
-
-        Returns:
-            str: The region in which to create the data storage.
-        """
-        while True:
-            prev_region = None
-            for (i, region) in enumerate(regions):
-                if region['region'] != prev_region:
-                    print('\nRegion: %s' % region['region'])
-                    print('--------------------------------')
-                prev_region = region['region']
-                print('[%s] %s' % (i+1, region['desc']))
-            input_choice = raw_input(
-                'Enter the number of your choice: ').strip()
-            try:
-                choice = int(input_choice)
-                if choice < 1 or choice > len(regions):
-                    raise ValueError('Invalid input choice')
-                else:
-                    return regions[choice-1]['value']
-            except (TypeError, ValueError):
-                print('Invalid choice, try again')
-
-    def create_bucket(self):
-        """Create the bucket."""
-        print('\nCreating bucket...')
-        proc = subprocess.Popen(
-            ['gsutil', 'mb', '-l', self.bucket_region, self.rules_bucket_name],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        _, err = proc.communicate()
-        if proc.returncode:
-            print(err)
-        else:
-            print('Done.\n')
-
-    def setup_cloudsql_name(self):
-        """Ask user to name their Cloud SQL instance."""
-        self._print_banner('Setup Cloud SQL name')
-        instance_name = raw_input(
-            'Enter a name for the Forseti Cloud SQL instance '
-            '(press [enter] to use the default: {}) '.format(
-                self.DEFAULT_CLOUDSQL_INSTANCE_NAME))\
-            .strip().lower()
-        if not instance_name:
-            instance_name = self.DEFAULT_CLOUDSQL_INSTANCE_NAME
-        timestamp = datetime.datetime.now().strftime('%y%m%d%H%M')
-        self.cloudsql_instance = '{}-{}'.format(instance_name, timestamp)
-
-        print('\nChoose the region in which to host your Cloud SQL:')
-        self.cloudsql_region = self._choose_region(self.CLOUDSQL_REGIONS)
-
-    def setup_cloudsql_user(self):
-        """Ask user to input Cloud SQL user name."""
-        sql_user = raw_input(
-            'Enter the sql user name of your choice '
-            '(press [enter] to use the default: {}) '
-            .format(self.DEFAULT_CLOUDSQL_USER)).strip().lower()
-        if not sql_user:
-            sql_user = self.DEFAULT_CLOUDSQL_USER
-        self.cloudsql_user = sql_user
-
-    def create_cloudsql_instance(self):
-        """Create Cloud SQL instance."""
-        if self.cloudsql_instance:
-            print('Creating Cloud SQL instance... This will take awhile...')
-
-            proc = subprocess.Popen(
-                ['gcloud', 'sql', 'instances', 'create', self.cloudsql_instance,
-                 '--region=%s' % self.cloudsql_region,
-                 '--database-version=%s' % self.CLOUDSQL_DB_VERSION,
-                 '--tier=%s' % self.CLOUDSQL_TIER,
-                 '--storage-size=%s' % self.CLOUDSQL_STORAGE_SIZE_GB,
-                 '--storage-type=%s' % self.CLOUDSQL_STORAGE_TYPE],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            _, err = proc.communicate()
-            if proc.returncode:
-                print(err)
-
-        if self.cloudsql_instance:
-            proc = subprocess.Popen(
-                ['gcloud', 'sql', 'users', 'create',
-                 self.cloudsql_user, 'localhost',
-                 '--instance', self.cloudsql_instance],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            _, err = proc.communicate()
-            if proc.returncode:
-                print(err)
-            else:
-                print('Done.\n')
+    def generate_bucket_name(self):
+        """Generate bucket name for the rules."""
+        self._print_banner('Generate bucket name')
+        self.bucket_name = self.DEFAULT_BUCKET_FORMAT.format(self.project_id)
+        print('Bucket name will be: %s' % self.bucket_name)
 
     def generate_deployment_templates(self):
         """Generate deployment templates."""
@@ -790,25 +500,15 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 self.ROOT_DIR_PATH,
                 'deployment-templates',
-                'deploy-forseti-{}.yaml'.format(os.getpid())))
-
-        # Determine which branch or release of Forseti to deploy
-        if self.version:
-            branch_or_release = self.BRANCH_RELEASE_FMT.format(
-                'release-version', self.version)
-        else:
-            if not self.branch:
-                self.branch = 'master'
-            branch_or_release = self.BRANCH_RELEASE_FMT.format(
-                'branch-name', self.branch)
+                'deploy-forseti-{}.yaml'.format(self.timestamp)))
 
         deploy_values = {
             'CLOUDSQL_REGION': self.cloudsql_region,
             'CLOUDSQL_INSTANCE_NAME': self.cloudsql_instance,
-            'SCANNER_BUCKET': self.rules_bucket_name[len('gs://'):],
+            'SCANNER_BUCKET': self.bucket_name[len('gs://'):],
             'BUCKET_REGION': self.bucket_region,
             'GCP_SERVICE_ACCOUNT': self.gcp_service_account,
-            'BRANCH_OR_RELEASE': branch_or_release,
+            'BRANCH_OR_RELEASE': 'master',
         }
 
         # Create Deployment template with values filled in.
@@ -840,40 +540,21 @@ class ForsetiGcpSetup(object):
         if sendgrid_api_key:
             self.sendgrid_api_key = sendgrid_api_key
 
-        # Ask for notification sender email
-        notification_sender_email = raw_input(
-            'What is the sender email address for your notifications? '
-            '(press [enter] to leave blank) ').strip()
-        if notification_sender_email:
-            self.notification_sender_email = notification_sender_email
+            # Ask for notification sender email
+            self.notification_sender_email = 'forseti-notify@localhost.domain'
 
-        # Ask for notification recipient email
-        notification_recipient_email = raw_input(
-            'At what email address do you want to receive notifications? '
-            '(press [enter] to leave blank) ').strip()
-        if notification_recipient_email:
-            self.notification_recipient_email = notification_recipient_email
-
-        # Ask for GSuite super admin email
-        gsuite_super_admin_email = raw_input(
-            'What is your GSuite super admin\'s email? '
-            '(press [enter] to leave blank) ').strip()
-        if gsuite_super_admin_email:
-            self.gsuite_super_admin_email = gsuite_super_admin_email
-
-        if self.gsuite_svc_acct_key_location:
-            self.gcp_gsuite_key_path = (
-                '/home/ubuntu/{}'.format(
-                    os.path.basename(self.gsuite_svc_acct_key_location)))
+            # Ask for notification recipient email
+            notification_recipient_email = raw_input(
+                'At what email address do you want to receive notifications? '
+                '(press [enter] to leave blank) ').strip()
+            if notification_recipient_email:
+                self.notification_recipient_email = notification_recipient_email
 
         conf_values = {
-            'GROUPS_SERVICE_ACCOUNT_KEY_FILE': self.gcp_gsuite_key_path,
-            'DOMAIN_SUPER_ADMIN_EMAIL': self.gsuite_super_admin_email,
             'EMAIL_RECIPIENT': self.notification_recipient_email,
             'EMAIL_SENDER': self.notification_sender_email,
             'SENDGRID_API_KEY': self.sendgrid_api_key,
-            'SCANNER_BUCKET': self.rules_bucket_name[len('gs://'):],
-            'ENABLE_GROUP_SCANNER': bool(self.gsuite_service_account),
+            'SCANNER_BUCKET': self.bucket_name[len('gs://'):],
         }
 
         with open(forseti_conf_in, 'r') as in_tmpl:
@@ -887,46 +568,63 @@ class ForsetiGcpSetup(object):
               self.forseti_conf_path)
 
     def create_deployment(self):
-        """Create the GCP deployment."""
-        deploy_choice = raw_input('Create a GCP deployment? '
-                                  '(y/N) ').strip().lower()
-        if deploy_choice == 'y':
-            self.deployment_name = 'forseti-security-{}'.format(os.getpid())
-            _ = subprocess.call(
-                ['gcloud', 'deployment-manager', 'deployments', 'create',
-                 self.deployment_name,
-                 '--config={}'.format(self.deploy_tpl_path)])
-            time.sleep(2)
-            _ = subprocess.call(
-                ['gsutil', 'cp', self.forseti_conf_path,
-                 '{}/configs/forseti_conf.yaml'.format(self.rules_bucket_name)])
-            rules_dir = os.path.abspath(
-                os.path.join(
-                    self.ROOT_DIR_PATH, 'rules'))
-            _ = subprocess.call(
-                ['gsutil', 'cp', '-r', rules_dir,
-                 '{}'.format(self.rules_bucket_name)])
+        """Create the GCP deployment.
 
-    def create_data_storage(self):
-        """Create Cloud SQL instance and Cloud Storage bucket. (optional)"""
-        self._print_banner('Create data storage (optional)')
-        print('Be advised! Only do these next 2 steps if you plan to deploy '
-              'locally OR without Deployment Manager!\n')
-        should_create_bucket = raw_input(
-            'Create Cloud Storage bucket now? (y/N) ').strip().lower()
-        if should_create_bucket == 'y':
-            self.create_bucket()
-        should_create_cloudsql = raw_input(
-            'Create Cloud SQL instance now? '
-            'This will take awhile. (y/N) ').strip().lower()
-        if should_create_cloudsql == 'y':
-            self.create_cloudsql_instance()
+        Returns:
+            int: The return code value of running `gcloud` command to create
+                the deployment.
+        """
+        self._print_banner('Create Forseti deployment')
+        self.deployment_name = 'forseti-security-{}'.format(os.getpid())
+        print('Deployment name: %s' % self.deployment_name)
+        return_code, out, err = self._run_command(
+            ['gcloud', 'deployment-manager', 'deployments', 'create',
+             self.deployment_name, '--config={}'.format(self.deploy_tpl_path)])
+        time.sleep(2)
+        if return_code:
+            print(err)
+        else:
+            print(out)
+
+        return return_code
+
+    def copy_config_to_bucket(self):
+        """Copy the config to the created bucket.
+
+        Returns:
+            bool: True if copy config succeeded, otherwise False.
+            bool: True if copy rules succeeded, otherwise False.
+        """
+        copy_config_ok = False
+        copy_rules_ok = False
+
+        return_code, out, err = self._run_command(
+            ['gsutil', 'cp', self.forseti_conf_path,
+             '{}/configs/forseti_conf.yaml'.format(self.bucket_name)])
+        if return_code:
+            print(err)
+        else:
+            print(out)
+            copy_config_ok = True
+
+        rules_dir = os.path.abspath(
+            os.path.join(
+                self.ROOT_DIR_PATH, 'rules'))
+        return_code, out, err = self._run_command(
+            ['gsutil', 'cp', '-r', rules_dir, self.bucket_name])
+        if return_code:
+            print(err)
+        else:
+            print(out)
+            copy_rules_ok = True
+
+        return copy_config_ok, copy_rules_ok
 
     def post_install_instructions(self):
         """Show post-install instructions.
 
-        Print link to go to GSuite service account and enable DWD, if GSuite
-        service account was created.
+        Print link to go to GSuite service account and enable DWD.
+
         Print link for deployment manager dashboard.
         """
         self._print_banner('Post-setup instructions')
@@ -1004,17 +702,5 @@ class ForsetiGcpSetup(object):
                   '    gsutil cp configs/forseti_conf_dm.yaml '
                   '{}/configs/forseti_conf.yaml\n'
                   '    gsutil cp -r rules {}\n\n'.format(
-                      self.rules_bucket_name,
-                      self.rules_bucket_name))
-
-        if self.unassigned_roles:
-            print('Some required IAM roles could not be assigned. '
-                  'Please ask your Organization Admin to run these commands '
-                  'to assign the roles:\n\n')
-            for role in self.unassigned_roles:
-                print('gcloud organizations add-iam-policy-binding {} '
-                      '--member=serviceAccount:{} --role={}\n'.format(
-                          self.organization_id,
-                          self.gcp_service_account,
-                          role))
-            print('\n\n')
+                      self.bucket_name,
+                      self.bucket_name))
