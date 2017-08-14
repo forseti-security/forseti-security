@@ -1,6 +1,6 @@
 ### Enabling APIs
 
-First, you'll install and configure the gcloud command-line tool so you can
+First, install and configure the gcloud command-line tool so you can
 enable required APIs:
 
   1. Download and install the [gcloud command-line tool](https://cloud.google.com/sdk/gcloud/).
