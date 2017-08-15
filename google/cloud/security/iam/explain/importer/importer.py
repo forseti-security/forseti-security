@@ -267,16 +267,21 @@ class InventoryImporter(object):
             'role',
             ]
 
+        autoflush = self.session.autoflush
         try:
-
+            self.session.autoflush = False
             item_counter = 0
+            last_res_type = None
             with InventoryStorage(self.session,
                                   self.inventory_id) as inventory:
 
                 for resource in inventory.iter(gcp_type_list):
-                    print 'Iterating over resource: {}'.format(resource)
                     item_counter += 1
-                    self._store_resource(resource)
+                    last_res_type = self._store_resource(resource,
+                                                         last_res_type)
+
+                self._store_resource(None,
+                                     last_res_type)
 
         except Exception:  # pylint: disable=broad-except
             raise
@@ -289,8 +294,9 @@ class InventoryImporter(object):
             self.model.set_done(item_counter)
         finally:
             self.session.commit()
+            self.session.autoflush = autoflush
 
-    def _store_resource(self, resource):
+    def _store_resource(self, resource, last_res_type=None):
         """Store an inventory resource in the database.
 
         Args:
@@ -298,19 +304,42 @@ class InventoryImporter(object):
         """
 
         handlers = {
-                'organization': self._convert_organization,
-                'folder': self._convert_folder,
-                'project': self._convert_project,
-                'role': self._convert_role,
+                'organization': (None,
+                                 self._convert_organization,
+                                 None),
+                'folder': (None,
+                           self._convert_folder,
+                           None),
+                'project': (None,
+                            self._convert_project,
+                            None),
+                'role': (self._convert_role_pre,
+                         self._convert_role,
+                         self._convert_role_post),
+                None: (None, None, None),
             }
 
-        res_type = resource.get_type()
+        res_type = resource.get_type() if resource else None
         if res_type not in handlers:
             raise Exception('Resource type unsupported: {}'.format(res_type))
             self.model.add_warning(self.session,
                                    'No handler for type "{}"'.format(res_type))
 
-        handlers[res_type](resource)
+        if res_type != last_res_type:
+
+            post = handlers[last_res_type][-1]
+            if post:
+                post()
+
+            pre = handlers[res_type][0]
+            if pre:
+                pre()
+
+        handler = handlers[res_type][1]
+        if handler:
+            handler(resource)
+            return res_type
+        return None
 
     def _convert_folder(self, folder):
         """Convert a folder to a database object.
@@ -319,7 +348,17 @@ class InventoryImporter(object):
             folder (object): Folder to store.
         """
 
-        pass
+        data = folder.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(folder)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                    full_name=full_res_name,
+                    type_name=type_name,
+                    name=folder.get_key(),
+                    type=folder.get_type(),
+                    display_name=data.get('displayName', ''),
+                    parent=parent,
+                ))
 
     def _convert_project(self, project):
         """Convert a project to a database object.
@@ -328,7 +367,31 @@ class InventoryImporter(object):
             project (object): Project to store.
         """
 
-        pass
+        data = project.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(project)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                    full_name=full_res_name,
+                    type_name=type_name,
+                    name=project.get_key(),
+                    type=project.get_type(),
+                    display_name=data.get('name', ''),
+                    parent=parent,
+                ))
+
+    def _convert_role_pre(self):
+        """Executed before roles are handled. Prepares for bulk insert."""
+
+        self.role_cache = {}
+        self.permission_cache = {}
+
+    def _convert_role_post(self):
+        """Executed after all roles were handled. Performs bulk insert."""
+
+        self.session.add_all(self.permission_cache.values())
+        self.session.add_all(self.role_cache.values())
+        del(self.role_cache)
+        del(self.permission_cache)
 
     def _convert_role(self, role):
         """Convert a role to a database object.
@@ -346,29 +409,31 @@ class InventoryImporter(object):
                     data.get('name', '<missing name>')))
         else:
             for perm_name in data['includedPermissions']:
-                db_permissions.append(
-                    self.session.merge(
-                        self.dao.TBL_PERMISSION(
-                            name=perm_name)))
+                if perm_name not in self.permission_cache:
+                    permission = self.dao.TBL_PERMISSION(
+                        name=perm_name)
+                    db_permissions.append(permission)
+                    self.permission_cache[perm_name] = permission
 
-        self.session.add(
-            self.dao.TBL_ROLE(
-                name=data['name'],
-                title=data.get('title', ''),
-                stage=data.get('stage', ''),
-                description=data.get('description', ''),
-                custom=is_custom,
-                permissions=db_permissions))
+        dbrole = self.dao.TBL_ROLE(
+            name=data['name'],
+            title=data.get('title', ''),
+            stage=data.get('stage', ''),
+            description=data.get('description', ''),
+            custom=is_custom,
+            permissions=db_permissions)
+        self.role_cache[data['name']] = dbrole
 
         if is_custom:
+            parent, full_res_name, type_name = self._full_resource_name(role)
             self.session.add(
                 self.dao.TBL_RESOURCE(
-                        full_name='',
-                        type_name='',
-                        name=data['name'],
-                        type='role',
+                        full_name=full_res_name,
+                        type_name=type_name,
+                        name=role.get_key(),
+                        type=role.get_type(),
                         display_name=data.get('title'),
-                        parent='',
+                        parent=parent,
                     ))
 
     def _convert_organization(self, organization):
@@ -390,9 +455,67 @@ class InventoryImporter(object):
             type='organization',
             display_name=display_name,
             parent=None)
-        self.resource_cache['organization'] = (org, org_name)
-        self.resource_cache[org_name] = (org, org_name)
+
+        self._add_to_cache(organization, org)
         self.session.add(org)
+
+    def _add_to_cache(self, resource, dbobj):
+        """Add a resource to the cache for parent lookup.
+
+        Args:
+            resource (object): Resource to put in the cache.
+            dbobj (object): Database object.
+        """
+
+        type_name = self._type_name(resource)
+        self.resource_cache[resource.get_type()] = (dbobj, type_name)
+        self.resource_cache[type_name] = (dbobj, type_name)
+
+    def _get_parent(self, resource):
+        """Return the parent object for a resource from cache.
+
+        Args:
+            resource (object): Resource whose parent to look for.
+        """
+
+        return self.resource_cache[self._parent_type_name(resource)]
+
+    def _type_name(self, resource):
+        """Return the type/name for that resource.
+
+        Args:
+            resource (object): Resource to retrieve type/name for.
+        """
+
+        return '{}/{}'.format(
+            resource.get_type(),
+            resource.get_key())
+
+    def _parent_type_name(self, resource):
+        """Return the type/name for a resource's parent.
+
+        Args:
+            resource (object): Resource whose parent should be returned.
+        """
+
+        return '{}/{}'.format(
+            resource.get_parent_type(),
+            resource.get_parent_key())
+
+    def _full_resource_name(self, resource):
+        """Returns the parent object, full resource name and type name.
+
+        Args:
+            resource (object): Resource whose full resource name and parent should
+            be returned.
+        """
+
+        type_name = self._type_name(resource)
+        parent, full_res_name = self._get_parent(resource)
+        full_resource_name = '{}/{}'.format(
+                                full_res_name,
+                                type_name)
+        return parent, full_resource_name, type_name
 
 
 class ForsetiImporter(object):

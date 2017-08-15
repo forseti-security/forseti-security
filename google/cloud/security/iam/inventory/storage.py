@@ -162,6 +162,9 @@ class Inventory(BASE):
     def get_parent_key(self):
         return self.parent_resource_key
 
+    def get_parent_type(self):
+        return self.parent_resource_type
+
     def get_data(self):
         return json.loads(self.resource_data)
 

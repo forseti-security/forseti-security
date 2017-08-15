@@ -148,7 +148,7 @@ class Organization(Resource):
 
 class Folder(Resource):
     def key(self):
-        return self['name']
+        return self['name'].split('/', 1)[-1]
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
