@@ -45,9 +45,11 @@
         </li>
       {% endif %}
 
+      {% if forloop.index != 1 %}
       <li {% if page.url == doc.url %}class="active"{% endif %}>
         <a href="{{ doc.url | remove:"index.html" | remove:".html" }}">{{ doc.title }}</a>
       </li>
+      {% endif %}
     {% endfor %}
   </ul>
 </div>
