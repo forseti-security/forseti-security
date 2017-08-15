@@ -21,12 +21,12 @@ import argparse
 
 from environment import gcloud_env
 
+
 def run():
     """Run the steps for the gcloud setup."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cloudshell',
-                        type=bool,
-                        default=False,
+                        action='store_true',
                         help='Bypass Cloud Shell requirement')
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
