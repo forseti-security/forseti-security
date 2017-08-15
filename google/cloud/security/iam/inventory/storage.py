@@ -347,10 +347,18 @@ class Storage(BaseStorage):
     def warning(self, message):
         self.index.add_warning(self.session, message)
 
-    def iter(self, type_list=[]):
+    def iter(self,
+             type_list=[],
+             require_iam_policy=False,
+             require_gcs_policy=False):
+
         base_query = (
             self.session.query(Inventory)
             .filter(Inventory.index == self.index.id))
+        if require_iam_policy:
+            base_query = base_query.filter(Inventory.iam_policy != 'null')
+        if require_gcs_policy:
+            base_query = base_query.filter(Inventory.gcs_policy != 'null')
 
         if type_list:
             for res_type in type_list:

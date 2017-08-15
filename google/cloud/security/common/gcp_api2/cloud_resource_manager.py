@@ -273,8 +273,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         try:
             request = folders_api.getIamPolicy(
                 resource=resource_id, body={})
-            return {'folder_id': folder_id,
-                    'iam_policy': self._execute(request, self.rate_limiter)}
+            return self._execute(request, self.rate_limiter)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('folder', e)
 

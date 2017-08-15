@@ -283,6 +283,11 @@ class InventoryImporter(object):
                 self._store_resource(None,
                                      last_res_type)
 
+                self._store_iam_policy_pre()
+                for resource in inventory.iter([], require_iam_policy=True):
+                    self._store_iam_policy(resource)
+                self._store_iam_policy_post()
+
         except Exception:  # pylint: disable=broad-except
             raise
             buf = StringIO()
@@ -295,6 +300,46 @@ class InventoryImporter(object):
         finally:
             self.session.commit()
             self.session.autoflush = autoflush
+
+    def _store_iam_policy_pre(self):
+        """Executed before iam policies are inserted."""
+
+        self.member_cache = {}
+
+    def _store_iam_policy_post(self):
+        """Executed after iam policies are inserted."""
+
+        self.session.add_all(self.member_cache.values())
+
+    def _store_iam_policy(self, resource):
+        """Store the iam policy of the resource.
+
+        Args:
+            resource (object): Object whose policy to store.
+        """
+
+        policy = resource.get_iam_policy()
+
+        # TODO: Remove this once inventory test db is updated.
+        if 'bindings' not in policy:
+            policy = policy['iam_policy']
+        bindings = policy['bindings']
+        for binding in bindings:
+            role = binding['role']
+            for member in binding['members']:
+                if member not in self.member_cache:
+                    m_type, name = member.split(':', 1)
+                    self.member_cache[member] = self.dao.TBL_MEMBER(
+                        name=name,
+                        type=m_type,
+                        member_name=member)
+
+            db_members = [self.member_cache[m] for m in binding['members']]
+            self.session.add(
+                self.dao.TBL_BINDING(
+                    resource_type_name=self._type_name(resource),
+                    role_name=role,
+                    members=db_members))
 
     def _store_resource(self, resource, last_res_type=None):
         """Store an inventory resource in the database.
@@ -390,8 +435,6 @@ class InventoryImporter(object):
 
         self.session.add_all(self.permission_cache.values())
         self.session.add_all(self.role_cache.values())
-        del(self.role_cache)
-        del(self.permission_cache)
 
     def _convert_role(self, role):
         """Convert a role to a database object.
