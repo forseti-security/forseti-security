@@ -265,6 +265,7 @@ class InventoryImporter(object):
             'folder',
             'project',
             'role',
+            'serviceaccount'
             ]
 
         autoflush = self.session.autoflush
@@ -361,6 +362,9 @@ class InventoryImporter(object):
                 'role': (self._convert_role_pre,
                          self._convert_role,
                          self._convert_role_post),
+                'serviceaccount': (None,
+                                   self._convert_serviceaccount,
+                                   None),
                 None: (None, None, None),
             }
 
@@ -385,6 +389,26 @@ class InventoryImporter(object):
             handler(resource)
             return res_type
         return None
+
+    def _convert_serviceaccount(self, sa):
+        """Convert a service account to a database object.
+
+        Args:
+            sa (object): Service account to store.
+        """
+
+        data = sa.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(sa)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                    full_name=full_res_name,
+                    type_name=type_name,
+                    name=sa.get_key(),
+                    type=sa.get_type(),
+                    display_name=data.get('displayName', ''),
+                    email=data.get('email', ''),
+                    parent=parent,
+                ))
 
     def _convert_folder(self, folder):
         """Convert a folder to a database object.
@@ -414,15 +438,16 @@ class InventoryImporter(object):
 
         data = project.get_data()
         parent, full_res_name, type_name = self._full_resource_name(project)
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                    full_name=full_res_name,
-                    type_name=type_name,
-                    name=project.get_key(),
-                    type=project.get_type(),
-                    display_name=data.get('name', ''),
-                    parent=parent,
-                ))
+
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=project.get_key(),
+            type=project.get_type(),
+            display_name=data.get('name', ''),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(project, resource)
 
     def _convert_role_pre(self):
         """Executed before roles are handled. Prepares for bulk insert."""
@@ -486,17 +511,14 @@ class InventoryImporter(object):
             org (object): Organization to store.
         """
 
-        org = organization.get_data()
-        _, org_id = org['name'].split('/', 1)
-        display_name = org['displayName']
-
-        org_name = 'organization/{}'.format(org_id)
+        data = organization.get_data()
+        type_name = self._type_name(organization)
         org = self.dao.TBL_RESOURCE(
-            full_name=org_name,
-            type_name=org_name,
-            name=org_id,
-            type='organization',
-            display_name=display_name,
+            full_name=type_name,
+            type_name=type_name,
+            name=organization.get_key(),
+            type=organization.get_type(),
+            display_name=data.get('displayName', ''),
             parent=None)
 
         self._add_to_cache(organization, org)
@@ -511,7 +533,6 @@ class InventoryImporter(object):
         """
 
         type_name = self._type_name(resource)
-        self.resource_cache[resource.get_type()] = (dbobj, type_name)
         self.resource_cache[type_name] = (dbobj, type_name)
 
     def _get_parent(self, resource):

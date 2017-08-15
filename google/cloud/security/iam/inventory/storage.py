@@ -23,6 +23,7 @@ from sqlalchemy import Text
 from sqlalchemy import BigInteger
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
+from sqlalchemy import and_
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -135,6 +136,8 @@ class Inventory(BASE):
     @classmethod
     def from_resource(cls, index, resource):
         parent = resource.parent()
+        iam_policy = resource.getIamPolicy()
+        gcs_policy = resource.getGCSPolicy()
         return Inventory(
             index=index.id,
             resource_key=resource.key(),
@@ -142,8 +145,8 @@ class Inventory(BASE):
             resource_data=json.dumps(resource.data()),
             parent_resource_key=None if not parent else parent.key(),
             parent_resource_type=None if not parent else parent.type(),
-            iam_policy=json.dumps(resource.getIamPolicy()),
-            gcs_policy=json.dumps(resource.getGCSPolicy()),
+            iam_policy=None if not iam_policy else json.dumps(iam_policy),
+            gcs_policy=None if not gcs_policy else json.dumps(gcs_policy),
             other=None)
 
     def __repr__(self):
@@ -356,9 +359,11 @@ class Storage(BaseStorage):
             self.session.query(Inventory)
             .filter(Inventory.index == self.index.id))
         if require_iam_policy:
-            base_query = base_query.filter(Inventory.iam_policy != 'null')
+            base_query = base_query.filter(and_(Inventory.iam_policy != 'null',
+                                                Inventory.iam_policy != None))
         if require_gcs_policy:
-            base_query = base_query.filter(Inventory.gcs_policy != 'null')
+            base_query = base_query.filter(and_(Inventory.gcs_policy != 'null',
+                                                Inventory.gcs_policy != None))
 
         if type_list:
             for res_type in type_list:

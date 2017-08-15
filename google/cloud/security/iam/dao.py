@@ -190,12 +190,13 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
-        full_name = Column(String(1024))
+        full_name = Column(String(1024), nullable=False)
         type_name = Column(String(256), primary_key=True)
-        name = Column(String(128))
-        type = Column(String(64))
+        name = Column(String(128), nullable=False)
+        type = Column(String(64), nullable=False)
         policy_update_counter = Column(Integer, default=0)
-        display_name = Column(String(256))
+        display_name = Column(String(256), default='')
+        email = Column(String(256), default='')
 
         parent_type_name = Column(
             String(128),
