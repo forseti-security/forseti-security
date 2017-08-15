@@ -124,9 +124,10 @@ class Inventory(BASE):
 
     index = Column(BigInteger(), primary_key=True)
     resource_key = Column(String(1024), primary_key=True)
-    parent_resource_key = Column(String(1024))
     resource_type = Column(String(256), primary_key=True)
     resource_data = Column(Text())
+    parent_resource_key = Column(String(1024))
+    parent_resource_type = Column(String(256))
     iam_policy = Column(Text())
     gcs_policy = Column(Text())
     other = Column(Text())
@@ -137,9 +138,10 @@ class Inventory(BASE):
         return Inventory(
             index=index.id,
             resource_key=resource.key(),
-            parent_resource_key=None if not parent else parent.key(),
             resource_type=resource.type(),
             resource_data=json.dumps(resource.data()),
+            parent_resource_key=None if not parent else parent.key(),
+            parent_resource_type=None if not parent else parent.type(),
             iam_policy=json.dumps(resource.getIamPolicy()),
             gcs_policy=json.dumps(resource.getGCSPolicy()),
             other=None)
@@ -150,6 +152,31 @@ class Inventory(BASE):
             self.index,
             self.resource_key,
             self.resource_type)
+
+    def get_key(self):
+        return self.resource_key
+
+    def get_type(self):
+        return self.resource_type
+
+    def get_parent_key(self):
+        return self.parent_resource_key
+
+    def get_data(self):
+        return json.loads(self.resource_data)
+
+    def get_other(self):
+        return json.loads(self.other)
+
+    def get_iam_policy(self):
+        if not self.iam_policy:
+            return None
+        return json.loads(self.iam_policy)
+
+    def get_gcs_policy(self):
+        if not self.gcs_policy:
+            return None
+        return json.loads(self.gcs_policy)
 
 
 class BufferedDbWriter(object):
@@ -250,6 +277,16 @@ class Storage(BaseStorage):
         if not self.opened:
             raise Exception('Storage is not opened')
 
+    def _create(self):
+        try:
+            index = InventoryIndex.create()
+            self.session.add(index)
+        except Exception:
+            self.session.rollback()
+            raise
+        else:
+            return index
+
     def _open(self, existing_id):
         return (
             self.session.query(InventoryIndex)
@@ -260,19 +297,18 @@ class Storage(BaseStorage):
         if self.opened:
             raise Exception('open called before')
 
-        if existing_id or self._existing_id:
-            self.index = self._open(existing_id)
+        # existing_id in open overrides potential constructor given id
+        existing_id = existing_id if existing_id else self._existing_id
 
-        try:
-            self.index = InventoryIndex.create()
-            self.session.add(self.index)
-        except Exception:
-            self.session.rollback()
-            raise
+        # Should we create a new entry or are we opening an existing one?
+        if existing_id:
+            self.index = self._open(existing_id)
         else:
-            self.opened = True
-            self.session.flush()
-            return self.index.id
+            self.index = self._create()
+
+        self.opened = True
+        self.session.flush()
+        return self.index.id
 
     def close(self):
         if not self.opened:

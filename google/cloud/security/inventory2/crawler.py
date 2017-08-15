@@ -14,11 +14,6 @@
 
 """ Crawler implementation. """
 
-from google.cloud.security.inventory2 import progress
-from google.cloud.security.inventory2 import storage
-from google.cloud.security.inventory2 import resources
-from google.cloud.security.inventory2 import gcp
-
 
 class CrawlerConfig(dict):
     def __init__(self, storage, progresser, api_client, variables={}):

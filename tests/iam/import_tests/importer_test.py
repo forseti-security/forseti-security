@@ -15,7 +15,10 @@
 """ Unit Tests: Importer for IAM Explain. """
 
 import os
+from shutil import copyfile
+import tempfile
 import unittest
+
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.iam.dao import create_engine
@@ -42,6 +45,20 @@ class ServiceConfig(object):
 def get_db_file_path(db_name):
     module_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(module_dir, 'test_data', db_name)
+
+
+def copy_db(path):
+    fd, newpath = tempfile.mkstemp('.db',
+                                   'explain-unittest',
+                                   '/tmp',
+                                   text=False)
+    if fd < 0:
+        raise Exception('copy_db error: fd < 0')
+    try:
+        copyfile(path, newpath)
+        return newpath
+    finally:
+        os.close(fd)
 
 
 class ImporterTest(ForsetiTestCase):
@@ -142,7 +159,7 @@ class ImporterTest(ForsetiTestCase):
 
         FORSETI_CONNECT = ''
         EXPLAIN_CONNECT = 'sqlite:///{}'.format(
-            get_db_file_path('inventory_1_basic.db'))
+            copy_db(get_db_file_path('inventory_1_basic.db')))
 
         self.service_config = ServiceConfig(EXPLAIN_CONNECT,
                                             FORSETI_CONNECT)
@@ -153,12 +170,13 @@ class ImporterTest(ForsetiTestCase):
 
         scoped_session, data_access = self.model_manager.get(self.model_name)
         with scoped_session as session:
-            raise Exception()
 
             importer_cls = importer.by_source(self.source)
             import_runner = importer_cls(
                 session,
-                self.model_manager.model(self.model_name, expunge=False),
+                self.model_manager.model(self.model_name,
+                                         expunge=False,
+                                         session=session),
                 data_access,
                 self.service_config,
                 inventory_id=1)
@@ -167,4 +185,3 @@ class ImporterTest(ForsetiTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

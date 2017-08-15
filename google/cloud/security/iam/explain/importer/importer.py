@@ -241,6 +241,7 @@ class InventoryImporter(object):
             model (str): Model name to create.
             dao (object): Data Access Object from dao.py
             service_config (ServiceConfig): Service configuration.
+            inventory_id (int): Inventory id to import from
         """
 
         self.session = session
@@ -248,6 +249,8 @@ class InventoryImporter(object):
         self.dao = dao
         self.service_config = service_config
         self.inventory_id = inventory_id
+        self.resource_cache = ResourceCache()
+        self.session.add(self.model)
 
     def run(self):
         """Runs the import.
@@ -257,15 +260,11 @@ class InventoryImporter(object):
                                  inventory type.
         """
 
-        iam_roles_list = [
-            'role',
-            ]
-
         gcp_type_list = [
             'organization',
+            'folder',
             'project',
-            'instance',
-            'bucket',
+            'role',
             ]
 
         try:
@@ -274,33 +273,126 @@ class InventoryImporter(object):
             with InventoryStorage(self.session,
                                   self.inventory_id) as inventory:
 
-                for role in inventory.iter(iam_roles_list):
-                    item_counter += 1
-                    self.store_role(role)
-
                 for resource in inventory.iter(gcp_type_list):
+                    print 'Iterating over resource: {}'.format(resource)
                     item_counter += 1
-                    self.store_resource(resource)
+                    self._store_resource(resource)
 
         except Exception:  # pylint: disable=broad-except
+            raise
             buf = StringIO()
             traceback.print_exc(file=buf)
             buf.seek(0)
             message = buf.read()
-            self.model.set_error(self.session, message)
+            self.model.set_error(message)
         else:
-            self.model.set_done(self.session, item_counter)
+            self.model.set_done(item_counter)
+        finally:
             self.session.commit()
 
-    def store_resource(self, resource):
-        """Store an inventory resource in the database."""
+    def _store_resource(self, resource):
+        """Store an inventory resource in the database.
+
+        Args:
+            resource (object): Resource object to convert from.
+        """
+
+        handlers = {
+                'organization': self._convert_organization,
+                'folder': self._convert_folder,
+                'project': self._convert_project,
+                'role': self._convert_role,
+            }
+
+        res_type = resource.get_type()
+        if res_type not in handlers:
+            raise Exception('Resource type unsupported: {}'.format(res_type))
+            self.model.add_warning(self.session,
+                                   'No handler for type "{}"'.format(res_type))
+
+        handlers[res_type](resource)
+
+    def _convert_folder(self, folder):
+        """Convert a folder to a database object.
+
+        Args:
+            folder (object): Folder to store.
+        """
 
         pass
 
-    def store_role(self, role):
-        """Store an inventory role in the database."""
+    def _convert_project(self, project):
+        """Convert a project to a database object.
+
+        Args:
+            project (object): Project to store.
+        """
 
         pass
+
+    def _convert_role(self, role):
+        """Convert a role to a database object.
+
+        Args:
+            role (object): Role to store.
+        """
+
+        data = role.get_data()
+        is_custom = not data['name'].startswith('roles/')
+        db_permissions = []
+        if 'includedPermissions' not in data:
+            self.model.add_warning(
+                'Role missing permissions: {}'.format(
+                    data.get('name', '<missing name>')))
+        else:
+            for perm_name in data['includedPermissions']:
+                db_permissions.append(
+                    self.session.merge(
+                        self.dao.TBL_PERMISSION(
+                            name=perm_name)))
+
+        self.session.add(
+            self.dao.TBL_ROLE(
+                name=data['name'],
+                title=data.get('title', ''),
+                stage=data.get('stage', ''),
+                description=data.get('description', ''),
+                custom=is_custom,
+                permissions=db_permissions))
+
+        if is_custom:
+            self.session.add(
+                self.dao.TBL_RESOURCE(
+                        full_name='',
+                        type_name='',
+                        name=data['name'],
+                        type='role',
+                        display_name=data.get('title'),
+                        parent='',
+                    ))
+
+    def _convert_organization(self, organization):
+        """Convert an organization a database object.
+
+        Args:
+            org (object): Organization to store.
+        """
+
+        org = organization.get_data()
+        _, org_id = org['name'].split('/', 1)
+        display_name = org['displayName']
+
+        org_name = 'organization/{}'.format(org_id)
+        org = self.dao.TBL_RESOURCE(
+            full_name=org_name,
+            type_name=org_name,
+            name=org_id,
+            type='organization',
+            display_name=display_name,
+            parent=None)
+        self.resource_cache['organization'] = (org, org_name)
+        self.resource_cache[org_name] = (org, org_name)
+        self.session.add(org)
 
 
 class ForsetiImporter(object):

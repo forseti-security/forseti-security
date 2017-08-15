@@ -67,7 +67,7 @@ class Resource(object):
         self._data[key] = value
 
     def type(self):
-        raise NotImplementedError()
+        raise NotImplementedError('Class: {}'.format(self.__class__.__name__))
 
     def data(self):
         return self._data
@@ -79,7 +79,7 @@ class Resource(object):
             return None
 
     def key(self):
-        return self['id']
+        raise NotImplementedError('Class: {}'.format(self.__class__.__name__))
 
     def accept(self, visitor, stack=[]):
         self._stack = stack
@@ -137,10 +137,10 @@ class Organization(Resource):
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
-        return client.get_organization_iam_policy(self.key())
+        return client.get_organization_iam_policy(self['name'])
 
     def key(self):
-        return self['name']
+        return self['name'].split('/', 1)[-1]
 
     def type(self):
         return 'organization'
@@ -152,7 +152,7 @@ class Folder(Resource):
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
-        return client.get_folder_iam_policy(self.key())
+        return client.get_folder_iam_policy(self['name'])
 
     def type(self):
         return 'folder'
@@ -162,7 +162,7 @@ class Project(Resource):
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
-        return client.get_project_iam_policy(self.key())
+        return client.get_project_iam_policy(self['projectId'])
 
     def key(self):
         return self['projectId']
@@ -214,16 +214,25 @@ class DataSet(Resource):
 
 
 class AppEngineApp(Resource):
+    def key(self):
+        return self['name']
+
     def type(self):
         return 'appengineapp'
 
 
 class Instance(Resource):
+    def key(self):
+        return self['id']
+
     def type(self):
         return 'instance'
 
 
 class Firewall(Resource):
+    def key(self):
+        return self['id']
+
     def type(self):
         return 'firewall'
 
@@ -264,7 +273,7 @@ class ResourceIterator(object):
 class FolderIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_folders(orgid=self.resource.key()):
+        for data in gcp.iter_folders(orgid=self.resource['name']):
             yield FACTORIES['folder'].create_new(data)
 
 
@@ -279,7 +288,7 @@ class BucketIterator(ResourceIterator):
 class ProjectIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_projects(orgid=self.resource.key()):
+        for data in gcp.iter_projects(orgid=self.resource['name']):
             yield FACTORIES['project'].create_new(data)
 
 
@@ -349,14 +358,14 @@ class ProjectRoleIterator(ResourceIterator):
 class OrganizationRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_organization_roles(orgid=self.resource.key()):
+        for data in gcp.iter_organization_roles(orgid=self.resource['name']):
             yield FACTORIES['role'].create_new(data)
 
 
 class OrganizationCuratedRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_curated_roles(orgid=self.resource.key()):
+        for data in gcp.iter_curated_roles(orgid=self.resource['name']):
             yield FACTORIES['role'].create_new(data)
 
 

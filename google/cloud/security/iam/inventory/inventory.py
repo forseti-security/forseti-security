@@ -19,6 +19,8 @@
 # pylint: disable=missing-param-doc
 
 from Queue import Queue
+import traceback
+from StringIO import StringIO
 
 from google.cloud.security.iam.inventory.storage import Storage
 from google.cloud.security.iam.inventory.storage import DataAccess
@@ -115,6 +117,11 @@ class Inventory(object):
                                           model_name,
                                           result.inventory_id)
                 except Exception as e:
+                    buf = StringIO()
+                    traceback.print_exc(file=buf)
+                    buf.seek(0)
+                    message = buf.read()
+                    print message
                     queue.put(e)
                     queue.put(None)
 
