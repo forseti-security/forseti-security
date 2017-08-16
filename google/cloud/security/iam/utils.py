@@ -66,3 +66,9 @@ def resource_to_type_name(resource):
     """Creates a type/name format from a resource dbo."""
 
     return resource.type_name
+
+
+def get_sql_dialect(session):
+    """Return the active SqlAlchemy dialect."""
+
+    return session.bind.dialect.name

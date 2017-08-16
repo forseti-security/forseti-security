@@ -149,6 +149,9 @@ class Organization(Resource):
     def type(self):
         return 'organization'
 
+    def parent(self):
+        return self
+
 
 class Folder(Resource):
     def key(self):
