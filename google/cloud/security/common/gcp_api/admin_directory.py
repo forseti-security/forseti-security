@@ -42,7 +42,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             api_name=self.API_NAME)
 
         self.rate_limiter = RateLimiter(
-            self.global_configs.get('max_admin_api_calls_per_day'),
+            self.global_configs.get('max_admin_api_calls_per_100_secs'),
             self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
 
     def _build_credentials(self, global_configs):
