@@ -268,6 +268,13 @@ class InventoryImporter(object):
             'serviceaccount'
             ]
 
+        gsuite_type_list = [
+            'gsuite_group',
+            'gsuite_user',
+            'gsuite_user_member',
+            'gsuite_group_member',
+            ]
+
         autoflush = self.session.autoflush
         try:
             self.session.autoflush = False
@@ -286,6 +293,11 @@ class InventoryImporter(object):
                     self._store_iam_policy(resource)
                 self._store_iam_policy_post()
 
+                self._store_gsuite_principal_pre()
+                for resource in inventory.iter(gsuite_type_list):
+                    self._store_gsuite_principal(resource)
+                self._store_gsuite_principal_post()
+
         except Exception:  # pylint: disable=broad-except
             # TODO: Remove 'raises' once Inventory testing is done
             raise
@@ -299,6 +311,32 @@ class InventoryImporter(object):
         finally:
             self.session.commit()
             self.session.autoflush = autoflush
+
+    def _store_gsuite_principal_pre(self):
+        pass
+
+    def _store_gsuite_principal_post(self):
+        pass
+
+    def _store_gsuite_principal(self, principal):
+        """Store a gsuite principal such as a group, user or member.
+
+        Args:
+            principal (object): object to store.
+        """
+
+        gsuite_type = principal.get_type()
+        data = principal.get_type
+        if gsuite_type == 'gsuite_user':
+            pass
+        elif gsuite_type == 'gsuite_group':
+            pass
+        elif gsuite_type == 'gsuite_user_member':
+            pass
+        elif gsuite_type == 'gsuite_group_member':
+            pass
+        else:
+            raise Exception('Unknown gsuite principal: {}'.format(gsuite_type))
 
     def _store_iam_policy_pre(self):
         """Executed before iam policies are inserted."""

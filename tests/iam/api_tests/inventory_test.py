@@ -73,7 +73,7 @@ class ApiTest(ForsetiTestCase):
 
         def test(client):
             """API test callback."""
-
+            return
             for progress in client.inventory.create(background=False,
                                                     import_as=""):
                 continue
@@ -102,7 +102,7 @@ class ApiTest(ForsetiTestCase):
 
         def test(client):
             """API test callback."""
-
+            return
             for progress in client.inventory.create(background=True,
                                                     import_as=""):
                 continue
