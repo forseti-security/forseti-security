@@ -1,5 +1,10 @@
 <div class="left-sidebar">
-  <h4>{{ page.category }}</h4>
+  {% include site/get_docs_for_category.liquid category=page.category %}
+
+  {% assign ordered_docs = category_docs | sort:"order" %}
+  {% assign category_root_url = ordered_docs[0].url | remove:"index.html" %}
+
+  <h4><a href="{{ category_root_url }}">{{ page.category }}</a></h4>
 
   {% comment %}
     Assume that nested subcategories are ordered continguously. with index files
@@ -16,10 +21,6 @@
     children in the second level... even though that's not how the files exist
     on disk.
   {% endcomment %}
-
-  {% include site/get_docs_for_category.liquid category=page.category %}
- 
-  {% assign ordered_docs = category_docs | sort:"order" %}
 
   <ul class="links">
     {% assign last_level = 3 %}
@@ -45,9 +46,11 @@
         </li>
       {% endif %}
 
-      <li {% if page.url == doc.url %}class="active"{% endif %}>
-        <a href="{{ doc.url | remove:"index.html" | remove:".html" }}">{{ doc.title }}</a>
-      </li>
+      {% if forloop.index != 1 %}
+        <li {% if page.url == doc.url %}class="active"{% endif %}>
+          <a href="{{ doc.url | remove:"index.html" | remove:".html" }}">{{ doc.title }}</a>
+        </li>
+      {% endif %}
     {% endfor %}
   </ul>
 </div>
