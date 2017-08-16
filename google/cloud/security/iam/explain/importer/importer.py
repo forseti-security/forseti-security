@@ -23,7 +23,7 @@ import traceback
 
 from google.cloud.security.common.data_access import forseti
 from google.cloud.security.iam.explain.importer import roles as roledef
-from google.cloud.security.iam.inventory.storage import Storage as InventoryStorage
+from google.cloud.security.iam.inventory.storage import Storage as Inventory
 
 
 class ResourceCache(dict):
@@ -273,16 +273,13 @@ class InventoryImporter(object):
             self.session.autoflush = False
             item_counter = 0
             last_res_type = None
-            with InventoryStorage(self.session,
-                                  self.inventory_id) as inventory:
+            with Inventory(self.session, self.inventory_id) as inventory:
 
                 for resource in inventory.iter(gcp_type_list):
                     item_counter += 1
                     last_res_type = self._store_resource(resource,
                                                          last_res_type)
-
-                self._store_resource(None,
-                                     last_res_type)
+                self._store_resource(None, last_res_type)
 
                 self._store_iam_policy_pre()
                 for resource in inventory.iter([], require_iam_policy=True):
@@ -290,6 +287,7 @@ class InventoryImporter(object):
                 self._store_iam_policy_post()
 
         except Exception:  # pylint: disable=broad-except
+            # TODO: Remove 'raises' once Inventory testing is done
             raise
             buf = StringIO()
             traceback.print_exc(file=buf)
@@ -570,8 +568,8 @@ class InventoryImporter(object):
         """Returns the parent object, full resource name and type name.
 
         Args:
-            resource (object): Resource whose full resource name and parent should
-            be returned.
+            resource (object): Resource whose full resource name and parent
+            should be returned.
         """
 
         type_name = self._type_name(resource)

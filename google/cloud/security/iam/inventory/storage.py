@@ -107,17 +107,6 @@ class InventoryIndex(BASE):
         session.flush()
 
 
-class GSuiteMembership(BASE):
-    """Gsuite membership table."""
-
-    __tablename__ = 'gsuite_inventory'
-
-    index = Column(BigInteger(), primary_key=True)
-    member_name = Column(String(1024))
-    parents = Column(Text())
-    other = Column(Text())
-
-
 class Inventory(BASE):
     """Resource inventory table."""
 
@@ -220,8 +209,6 @@ class DataAccess(object):
             result = cls.get(session, inventory_id)
             session.query(Inventory).filter(
                 Inventory.index == inventory_id).delete()
-            session.query(GSuiteMembership).filter(
-                GSuiteMembership.index == inventory_id).delete()
             session.query(InventoryIndex).filter(
                 InventoryIndex.id == inventory_id).delete()
             session.commit()

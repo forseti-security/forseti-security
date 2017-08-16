@@ -27,7 +27,8 @@ class AdminDirectoryClient(_base_client.BaseClient):
     API_NAME = 'admin'
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 86400 # pylint: disable=invalid-name
     REQUIRED_SCOPES = frozenset([
-        'https://www.googleapis.com/auth/admin.directory.group.readonly'
+        'https://www.googleapis.com/auth/admin.directory.group.readonly',
+        'https://www.googleapis.com/auth/admin.directory.user.readonly',
     ])
 
     def __init__(self, global_configs):
@@ -99,6 +100,33 @@ class AdminDirectoryClient(_base_client.BaseClient):
             request, members_api, self.rate_limiter)
 
         return self._flatten_list_results(paged_results, 'members')
+
+    def get_users(self, customer_id='my_customer'):
+        """Get all the users for a given customer_id.
+
+        A note on customer_id='my_customer'. This is a magic string instead
+        of using the real customer id. See:
+
+        https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
+
+        Args:
+            customer_id (str): The customer id to scope the request to.
+
+        Returns:
+            list: A list of member objects returned from the API.
+
+        Raises:
+            api_errors.ApiExecutionError: If groups retrieval fails.
+        """
+
+        groups_api = self.service.users()
+        request = groups_api.list(customer=customer_id,
+                                  viewType='admin_view')
+
+        paged_results = self._build_paged_result(
+            request, groups_api, self.rate_limiter)
+
+        return self._flatten_list_results(paged_results, 'users')
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.

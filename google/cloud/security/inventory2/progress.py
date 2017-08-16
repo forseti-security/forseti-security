@@ -17,7 +17,7 @@
 
 class Progresser(object):
     def __init__(self):
-        raise NotImplementedError()
+        pass
 
     def on_new_object(self, resource):
         raise NotImplementedError()

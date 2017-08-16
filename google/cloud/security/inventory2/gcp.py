@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Crawler implementation. """
+""" GCP API client fassade. """
 
 from google.cloud.security.common.gcp_api2 import admin_directory
 from google.cloud.security.common.gcp_api2 import appengine
@@ -20,7 +20,6 @@ from google.cloud.security.common.gcp_api2 import bigquery
 from google.cloud.security.common.gcp_api2 import cloud_resource_manager
 from google.cloud.security.common.gcp_api2 import cloudsql
 from google.cloud.security.common.gcp_api2 import compute
-from google.cloud.security.common.gcp_api2 import errors
 from google.cloud.security.common.gcp_api2 import iam
 from google.cloud.security.common.gcp_api2 import storage
 
@@ -59,6 +58,19 @@ class ApiClientImpl(ApiClient):
         self.compute = compute.ComputeClient(config)
         self.storage = storage.StorageClient(config)
         self.iam = iam.IAMClient(config)
+
+    def iter_users(self, gsuite_id):
+        for user in self.ad.get_users(gsuite_id):
+            yield user
+
+    def iter_groups(self, gsuite_id):
+        result = self.ad.get_groups(gsuite_id)
+        for group in result:
+            yield group
+
+    def iter_group_members(self, group_key):
+        for member in self.ad.get_group_members(group_key):
+            yield member
 
     def fetch_organization(self, orgid):
         return self.crm.get_organization(orgid)
