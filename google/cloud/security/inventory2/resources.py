@@ -283,12 +283,20 @@ class GsuiteGroup(Resource):
         return 'gsuite_group'
 
 
-class GsuiteMember(Resource):
+class GsuiteUserMember(Resource):
     def key(self):
         return self['id']
 
     def type(self):
-        return 'gsuite_member'
+        return 'gsuite_user_member'
+
+
+class GsuiteGroupMember(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'gsuite_group_member'
 
 
 class ResourceIterator(object):
@@ -417,7 +425,10 @@ class GsuiteMemberIterator(ResourceIterator):
     def iter(self):
         gsuite = self.client
         for data in gsuite.iter_group_members(self.resource['id']):
-            yield FACTORIES['gsuite_member'].create_new(data)
+            if data['type'] == 'USER':
+                yield FACTORIES['gsuite_user_member'].create_new(data)
+            elif data['type'] == 'GROUP':
+                yield FACTORIES['gsuite_group_member'].create_new(data)
 
 
 FACTORIES = {
@@ -524,9 +535,15 @@ FACTORIES = {
                             ],
             }),
 
-        'gsuite_member': ResourceFactory({
+        'gsuite_user_member': ResourceFactory({
                 'dependsOn': ['gsuite_group'],
-                'cls': GsuiteMember,
+                'cls': GsuiteUserMember,
+                'contains': [],
+            }),
+
+        'gsuite_group_member': ResourceFactory({
+                'dependsOn': ['gsuite_group'],
+                'cls': GsuiteGroupMember,
                 'contains': [],
             }),
     }
