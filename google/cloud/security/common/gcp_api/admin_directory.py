@@ -25,7 +25,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
     """GSuite Admin Directory API Client."""
 
     API_NAME = 'admin'
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 86400 # pylint: disable=invalid-name
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100 # pylint: disable=invalid-name
     REQUIRED_SCOPES = frozenset([
         'https://www.googleapis.com/auth/admin.directory.group.readonly'
     ])
