@@ -62,11 +62,15 @@ class Crawler(object):
         return self.config.client
 
 
-def run_crawler(storage, progresser, gsuite_sa):
+def run_crawler(storage,
+                progresser,
+                gsuite_sa,
+                gsuite_admin_email,
+                organization_id):
 
     client_config = {
             'groups_service_account_key_file': gsuite_sa,
-            'domain_super_admin_email': 'felix@henrychang.mygbiz.com',
+            'domain_super_admin_email': gsuite_admin_email,
             'max_admin_api_calls_per_day': 150000,
             'max_appengine_api_calls_per_second': 20,
             'max_bigquery_api_calls_per_100_seconds': 17000,
@@ -76,7 +80,7 @@ def run_crawler(storage, progresser, gsuite_sa):
             'max_iam_api_calls_per_second': 20,
         }
 
-    orgid = 'organizations/660570133860'
+    orgid = 'organizations/{}'.format(organization_id)
 
     client = gcp.ApiClientImpl(client_config)
     resource = resources.Organization.fetch(client, orgid)

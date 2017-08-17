@@ -70,13 +70,18 @@ class QueueProgresser(Progress):
         return self
 
 
-def run_inventory(queue, session, progresser, background):
-    gsuite_sa = '/Users/fmatenaar/deployments/forseti/groups.json'
+def run_inventory(queue, session, progresser, background,
+                  gsuite_sa, gsuite_admin_email, organization_id):
+
     with Storage(session) as storage:
         progresser.inventory_id = storage.index.id
         progresser.final_message = True if background else False
         queue.put(progresser)
-        return run_crawler(storage, progresser, gsuite_sa)
+        return run_crawler(storage,
+                           progresser,
+                           gsuite_sa,
+                           gsuite_admin_email,
+                           organization_id)
 
 
 def run_import(client, model_name, inventory_id):
@@ -105,10 +110,15 @@ class Inventory(object):
         def do_inventory():
             with self.config.scoped_session() as session:
                 try:
-                    result = run_inventory(queue,
-                                           session,
-                                           progresser,
-                                           background)
+                    result = run_inventory(
+                        queue,
+                        session,
+                        progresser,
+                        background,
+                        self.config.get_gsuite_sa_path(),
+                        self.config.get_gsuite_admin_email(),
+                        self.config.get_organization_id())
+
                     if not model_name:
                         return result
                     else:

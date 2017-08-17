@@ -268,6 +268,7 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
+
         folders_api = self.service_v2.folders()
         resource_id = folder_id
         try:

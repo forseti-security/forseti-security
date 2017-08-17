@@ -44,15 +44,29 @@ class ServiceConfig(object):
     def __init__(self,
                  explain_connect_string,
                  forseti_connect_string,
-                 endpoint):
+                 endpoint,
+                 gsuite_sa_path,
+                 gsuite_admin_email,
+                 organization_id):
 
         self.thread_pool = ThreadPool()
-
         self.engine = create_engine(explain_connect_string, pool_recycle=3600)
         self.model_manager = ModelManager(self.engine)
         self.forseti_connect_string = forseti_connect_string
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
+        self.gsuite_sa_path = gsuite_sa_path
+        self.gsuite_admin_email = gsuite_admin_email
+        self.organization_id = organization_id
+
+    def get_organization_id(self):
+        return self.organization_id
+
+    def get_gsuite_sa_path(self):
+        return self.gsuite_sa_path
+
+    def get_gsuite_admin_email(self):
+        return self.gsuite_admin_email
 
     def get_engine(self):
         return self.engine
@@ -65,11 +79,14 @@ class ServiceConfig(object):
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""
+
         self.thread_pool.apply_async(function)
 
 
-def serve(endpoint, services, explain_connect_string, forseti_connect_string,
-          max_workers=1, wait_shutdown_secs=3):
+def serve(endpoint, services,
+          explain_connect_string, forseti_connect_string,
+          gsuite_sa_path, gsuite_admin_email,
+          organization_id, max_workers=1, wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC."""
 
     factories = []
@@ -79,7 +96,12 @@ def serve(endpoint, services, explain_connect_string, forseti_connect_string,
     if not factories:
         raise Exception("No services to start")
 
-    config = ServiceConfig(explain_connect_string, forseti_connect_string, endpoint)
+    config = ServiceConfig(explain_connect_string,
+                           forseti_connect_string,
+                           endpoint,
+                           gsuite_sa_path,
+                           gsuite_admin_email,
+                           organization_id)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     for factory in factories:
         factory(config).create_and_register_service(server)
@@ -99,5 +121,9 @@ if __name__ == "__main__":
     EP = sys.argv[1] if len(sys.argv) > 1 else '[::]:50051'
     FORSETI_DB = sys.argv[2] if len(sys.argv) > 2 else ''
     EXPLAIN_DB = sys.argv[3] if len(sys.argv) > 3 else ''
-    SVCS = sys.argv[4:] if len(sys.argv) > 4 else []
-    serve(EP, SVCS, EXPLAIN_DB, FORSETI_DB)
+    GSUITE_SA = sys.argv[4] if len(sys.argv) > 4 else ''
+    GSUITE_ADMIN_EMAIL = sys.argv[5] if len(sys.argv) > 5 else ''
+    ORGANIZATION_ID = sys.argv[6] if len(sys.argv) > 6 else ''
+    SVCS = sys.argv[7:] if len(sys.argv) > 7 else []
+    serve(EP, SVCS, EXPLAIN_DB, FORSETI_DB,
+          GSUITE_SA, GSUITE_ADMIN_EMAIL, ORGANIZATION_ID)
