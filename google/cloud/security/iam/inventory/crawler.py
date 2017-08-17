@@ -66,6 +66,7 @@ def run_crawler(storage, progresser, gsuite_sa):
 
     client_config = {
             'groups_service_account_key_file': gsuite_sa,
+            'domain_super_admin_email': 'felix@henrychang.mygbiz.com',
             'max_admin_api_calls_per_day': 150000,
             'max_appengine_api_calls_per_second': 20,
             'max_bigquery_api_calls_per_100_seconds': 17000,

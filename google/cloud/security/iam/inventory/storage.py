@@ -24,6 +24,10 @@ from sqlalchemy import BigInteger
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
+from sqlalchemy import or_
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql import join
+
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -107,28 +111,19 @@ class InventoryIndex(BASE):
         session.flush()
 
 
-class GSuiteMembership(BASE):
-    """Gsuite membership table."""
-
-    __tablename__ = 'gsuite_inventory'
-
-    index = Column(BigInteger(), primary_key=True)
-    member_name = Column(String(1024))
-    parents = Column(Text())
-    other = Column(Text())
-
-
 class Inventory(BASE):
     """Resource inventory table."""
 
     __tablename__ = 'gcp_inventory'
 
-    index = Column(BigInteger(), primary_key=True)
+    # Order is used to resemble the order of insert for a given inventory
+    order = Column(Integer, primary_key=True, default=0)
+    index = Column(BigInteger(), primary_key=True, autoincrement=False)
     resource_key = Column(String(1024), primary_key=True)
     resource_type = Column(String(256), primary_key=True)
     resource_data = Column(Text())
-    parent_resource_key = Column(String(1024))
-    parent_resource_type = Column(String(256))
+    parent_resource_key = Column(String(1024), primary_key=True)
+    parent_resource_type = Column(String(256), primary_key=True)
     iam_policy = Column(Text())
     gcs_policy = Column(Text())
     other = Column(Text())
@@ -220,8 +215,6 @@ class DataAccess(object):
             result = cls.get(session, inventory_id)
             session.query(Inventory).filter(
                 Inventory.index == inventory_id).delete()
-            session.query(GSuiteMembership).filter(
-                GSuiteMembership.index == inventory_id).delete()
             session.query(InventoryIndex).filter(
                 InventoryIndex.id == inventory_id).delete()
             session.commit()
@@ -353,27 +346,39 @@ class Storage(BaseStorage):
     def iter(self,
              type_list=[],
              require_iam_policy=False,
-             require_gcs_policy=False):
+             require_gcs_policy=False,
+             with_parent=False):
 
-        base_query = (
-            self.session.query(Inventory)
-            .filter(Inventory.index == self.index.id))
+        filters = []
+        filters.append(Inventory.index == self.index.id)
+
         if require_iam_policy:
-            base_query = base_query.filter(and_(Inventory.iam_policy != 'null',
-                                                Inventory.iam_policy != None))
+            filters.append((and_(Inventory.iam_policy != 'null',
+                                 Inventory.iam_policy != None)))
         if require_gcs_policy:
-            base_query = base_query.filter(and_(Inventory.gcs_policy != 'null',
-                                                Inventory.gcs_policy != None))
+            filters.append((and_(Inventory.gcs_policy != 'null',
+                                 Inventory.gcs_policy != None)))
 
         if type_list:
-            for res_type in type_list:
-                qry = (base_query
-                       .filter(Inventory.resource_type == res_type))
-                for resource in qry.yield_per(1024):
-                    yield resource
+            filters.append(Inventory.resource_type.in_(type_list))
+
+        if with_parent:
+            ParentInventory = aliased(Inventory)
+            base_query = (
+                self.session.query(Inventory, ParentInventory)
+                .filter(
+                    and_(
+                        Inventory.parent_resource_key == ParentInventory.resource_key,
+                        Inventory.parent_resource_type == ParentInventory.resource_type)))
+
         else:
-            for resource in base_query.yield_per(1024):
-                yield resource
+            base_query = self.session.query(Inventory)
+
+        for qry_filter in filters:
+            base_query = base_query.filter(qry_filter)
+
+        for row in base_query.yield_per(PER_YIELD):
+            yield row
 
     def __enter__(self):
         self.open()

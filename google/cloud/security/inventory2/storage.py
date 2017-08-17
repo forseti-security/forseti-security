@@ -69,3 +69,10 @@ class Memory(Storage):
     def __iter__(self):
         for value in self.mem.itervalues():
             yield value
+
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, type_p, value, tb):
+        self.close()

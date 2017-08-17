@@ -47,6 +47,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
 from google.cloud.security.iam import db
+from google.cloud.security.iam.utils import get_sql_dialect
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -360,11 +361,7 @@ def define_model(model_name, dbengine, model_seed):
             tbl2 = aliased(GroupInGroup.__table__, name='alias2')
             tbl3 = aliased(GroupInGroup.__table__, name='alias3')
 
-            def get_dialect(session):
-                """Return the active SqlAlchemy dialect."""
-                return session.bind.dialect.name
-
-            if get_dialect(session) != 'sqlite':
+            if get_sql_dialect(session) != 'sqlite':
                 # Lock tables for denormalization
                 # including aliases 1-3
                 locked_tables = [
@@ -440,7 +437,7 @@ def define_model(model_name, dbengine, model_seed):
                 session.rollback()
                 raise
             finally:
-                if get_dialect(session) != 'sqlite':
+                if get_sql_dialect(session) != 'sqlite':
                     session.execute('UNLOCK TABLES')
                 session.commit()
             return iterations

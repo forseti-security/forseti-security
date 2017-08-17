@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Crawler implementation. """
-import code
+""" Crawler implementation for gcp resources. """
+
 import json
 
 
@@ -113,6 +113,10 @@ class Resource(object):
     def getDatasetPolicy(self, client=None):
         return None
 
+    @cached('group_members')
+    def getGroupMembers(self, client=None):
+        return None
+
     def stack(self):
         if self._stack is None:
             raise Exception('Stack not initialized yet')
@@ -145,6 +149,9 @@ class Organization(Resource):
     def type(self):
         return 'organization'
 
+    def parent(self):
+        return self
+
 
 class Folder(Resource):
     def key(self):
@@ -174,7 +181,7 @@ class Project(Resource):
         return 'project'
 
 
-class Bucket(Resource):
+class GcsBucket(Resource):
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
         return client.get_bucket_iam_policy(self.key())
@@ -193,11 +200,13 @@ class Bucket(Resource):
 class GcsObject(Resource):
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
-        return client.get_object_iam_policy(self.parent()['name'], self['name'])
+        return client.get_object_iam_policy(self.parent()['name'],
+                                            self['name'])
 
     @cached('gcs_policy')
     def getGCSPolicy(self, client=None):
-        return client.get_object_gcs_policy(self.parent()['name'], self['name'])
+        return client.get_object_gcs_policy(self.parent()['name'],
+                                            self['name'])
 
     def type(self):
         return 'storage_object'
@@ -285,6 +294,38 @@ class ServiceAccount(Resource):
         return 'serviceaccount'
 
 
+class GsuiteUser(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'gsuite_user'
+
+
+class GsuiteGroup(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'gsuite_group'
+
+
+class GsuiteUserMember(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'gsuite_user_member'
+
+
+class GsuiteGroupMember(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'gsuite_group_member'
+
+
 class ResourceIterator(object):
     def __init__(self, resource, client):
         self.resource = resource
@@ -336,7 +377,8 @@ class AppEngineAppIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_appengineapps(projectid=self.resource.key()):
+            for data in gcp.iter_appengineapps(
+                        projectid=self.resource.key()):
                 yield FACTORIES['appengineapp'].create_new(data)
 
 
@@ -344,7 +386,8 @@ class InstanceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_computeinstances(projectid=self.resource.key()):
+            for data in gcp.iter_computeinstances(
+                projectid=self.resource.key()):
                 yield FACTORIES['instance'].create_new(data)
 
 
@@ -352,7 +395,8 @@ class FirewallIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_computefirewalls(projectid=self.resource.key()):
+            for data in gcp.iter_computefirewalls(
+                    projectid=self.resource.key()):
                 yield FACTORIES['firewall'].create_new(data)
 
 
@@ -376,7 +420,8 @@ class CloudSqlIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_cloudsqlinstances(projectid=self.resource.key()):
+            for data in gcp.iter_cloudsqlinstances(
+                    projectid=self.resource.key()):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)
 
 
@@ -384,7 +429,8 @@ class ServiceAccountIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_serviceaccounts(projectid=self.resource.key()):
+            for data in gcp.iter_serviceaccounts(
+                projectid=self.resource.key()):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
@@ -392,14 +438,16 @@ class ProjectRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_project_roles(projectid=self.resource.key()):
+            for data in gcp.iter_project_roles(
+                projectid=self.resource.key()):
                 yield FACTORIES['role'].create_new(data)
 
 
 class OrganizationRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_organization_roles(orgid=self.resource['name']):
+        for data in gcp.iter_organization_roles(
+                orgid=self.resource['name']):
             yield FACTORIES['role'].create_new(data)
 
 
@@ -409,14 +457,44 @@ class OrganizationCuratedRoleIterator(ResourceIterator):
         for data in gcp.iter_curated_roles(orgid=self.resource['name']):
             yield FACTORIES['role'].create_new(data)
 
+
+class GsuiteGroupIterator(ResourceIterator):
+    def iter(self):
+        gsuite = self.client
+        for data in gsuite.iter_groups(
+                self.resource['owner']['directoryCustomerId']):
+            yield FACTORIES['gsuite_group'].create_new(data)
+
+
+class GsuiteUserIterator(ResourceIterator):
+    def iter(self):
+        gsuite = self.client
+        for data in gsuite.iter_users(
+                self.resource['owner']['directoryCustomerId']):
+            yield FACTORIES['gsuite_user'].create_new(data)
+
+
+class GsuiteMemberIterator(ResourceIterator):
+    def iter(self):
+        gsuite = self.client
+        for data in gsuite.iter_group_members(self.resource['id']):
+            if data['type'] == 'USER':
+                yield FACTORIES['gsuite_user_member'].create_new(data)
+            elif data['type'] == 'GROUP':
+                yield FACTORIES['gsuite_group_member'].create_new(data)
+
+
 FACTORIES = {
 
         'organization': ResourceFactory({
                 'dependsOn': [],
                 'cls': Organization,
-                'contains': [OrganizationRoleIterator,
-                             OrganizationCuratedRoleIterator,
+                'contains': [
+                             GsuiteGroupIterator,
+                             GsuiteUserIterator,
                              FolderIterator,
+                             OrganizationRoleIterator,
+                             OrganizationCuratedRoleIterator,
                              ProjectIterator
                              ],
             }),
@@ -430,23 +508,23 @@ FACTORIES = {
         'project': ResourceFactory({
                 'dependsOn': ['organization', 'folder'],
                 'cls': Project,
-                'contains': [ProjectRoleIterator,
-                             AppEngineAppIterator,
-                             #BucketIterator,
+                'contains': [AppEngineAppIterator,
+                             BucketIterator,
                              DataSetIterator,
                              InstanceIterator,
                              FirewallIterator,
                              InstanceGroupIterator,
                              BackendServiceIterator,
                              CloudSqlIterator,
-                             ServiceAccountIterator
+                             ServiceAccountIterator,
+                             ProjectRoleIterator
                              ],
             }),
 
         'bucket': ResourceFactory({
                 'dependsOn': ['project'],
-                'cls': Bucket,
-                'contains': [ObjectIterator,
+                'cls': GcsBucket,
+                'contains': [ObjectIterator
                              ],
             }),
 
@@ -515,4 +593,29 @@ FACTORIES = {
                 'contains': [],
             }),
 
+        'gsuite_user': ResourceFactory({
+                'dependsOn': ['organization'],
+                'cls': GsuiteUser,
+                'contains': [],
+            }),
+
+        'gsuite_group': ResourceFactory({
+                'dependsOn': ['organization'],
+                'cls': GsuiteGroup,
+                'contains': [
+                            GsuiteMemberIterator,
+                            ],
+            }),
+
+        'gsuite_user_member': ResourceFactory({
+                'dependsOn': ['gsuite_group'],
+                'cls': GsuiteUserMember,
+                'contains': [],
+            }),
+
+        'gsuite_group_member': ResourceFactory({
+                'dependsOn': ['gsuite_group'],
+                'cls': GsuiteGroupMember,
+                'contains': [],
+            }),
     }
