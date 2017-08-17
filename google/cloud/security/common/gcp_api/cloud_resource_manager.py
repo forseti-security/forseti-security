@@ -46,7 +46,7 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
             use_rate_limiter = False
 
         super(CloudResourceManagerRepository, self).__init__(
-            'cloudresourcemanager', versions=['v1', 'v2']
+            'cloudresourcemanager', versions=['v1', 'v2'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)

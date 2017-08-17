@@ -29,6 +29,7 @@ class AppEngineTest(ForsetiTestCase):
     def setUp(self, mock_google_credential, mock_discovery):
         """Set up."""
 
+        mock_discovery.__name__ = 'discovery'
         fake_global_configs = {
             'max_appengine_api_calls_per_second': 20}
         self.client = appengine.AppEngineClient(fake_global_configs)

@@ -30,6 +30,7 @@ class ComputeTest(ForsetiTestCase):
     @mock.patch('google.cloud.security.common.gcp_api._base_client.GoogleCredentials')
     def setUp(self, mock_google_credential, mock_discovery):
         """Set up."""
+        mock_discovery.__name__ = 'discovery'
         fake_global_configs = {'max_compute_api_calls_per_second': 20}
         self.client = compute.ComputeClient(
             global_configs=fake_global_configs)
