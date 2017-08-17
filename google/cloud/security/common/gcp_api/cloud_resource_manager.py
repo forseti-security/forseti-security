@@ -377,7 +377,7 @@ class CloudResourceManagerClient(object):
         queries = []
         if 'lifecycle_state' in kwargs:
             queries.append('lifecycleState={}'.format(
-                kwargs.get('lifecycle_state'))
+                kwargs.get('lifecycle_state')))
 
         try:
             yield self.repository.folders.search(query=' '.join(queries))

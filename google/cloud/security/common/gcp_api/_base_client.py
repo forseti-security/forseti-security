@@ -14,17 +14,15 @@
 
 """Base GCP client which uses the discovery API."""
 
+import json
+import logging
 import googleapiclient
 from googleapiclient import discovery
 from googleapiclient import errors
 import httplib2
-import json
-import logging
 
 from oauth2client.client import GoogleCredentials
-from ratelimiter import RateLimiter
 from retrying import retry
-import threading
 
 from google.cloud import security as forseti_security
 from google.cloud.security.common.gcp_api import _supported_apis
@@ -66,14 +64,14 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     """Builds and returns a cloud API service object.
 
     Args:
-      credentials: GoogleCredentials that will be passed to the service.
-      service_name: The name of the GCE Apiary API.
-      version: The version of the GCE API to use.
-      developer_key: The api key to use (for GCE API None is sufficient).
-      cache_discovery: Whether or not to cache the discovery doc.
+        credentials: GoogleCredentials that will be passed to the service.
+        service_name: The name of the GCE Apiary API.
+        version: The version of the GCE API to use.
+        developer_key: The api key to use (for GCE API None is sufficient).
+        cache_discovery: Whether or not to cache the discovery doc.
 
     Returns:
-      A Resource object with methods for interacting with the service.
+        A Resource object with methods for interacting with the service.
     """
     # The default logging of the discovery obj is very noisy in recent versions.
     # Lower the default logging level of just this module to WARNING.

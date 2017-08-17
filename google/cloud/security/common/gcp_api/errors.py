@@ -72,4 +72,4 @@ class UnsupportedApiVersionError(Error):
     pass
 
 class PaginationNotSupportedError(Error):
-  """Paged Query was issued against an API that does not support paging."""
+    """Paged Query was issued against an API that does not support paging."""

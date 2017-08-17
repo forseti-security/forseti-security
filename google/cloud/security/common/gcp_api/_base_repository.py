@@ -343,7 +343,7 @@ class GCPRepository(object):
 
 
 class ListQueryMixin(object):
-  """Mixin that implements Paged List query."""
+    """Mixin that implements Paged List query."""
 
     def list(self, project, fields=None, max_results=None, verb='list',
              **kwargs):
