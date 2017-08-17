@@ -403,7 +403,8 @@ class InstanceGroupIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_computeinstancegroups(projectid=self.resource.key()):
+            for data in gcp.iter_computeinstancegroups(
+                projectid=self.resource.key()):
                 yield FACTORIES['instancegroup'].create_new(data)
 
 
@@ -411,7 +412,8 @@ class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_backendservices(projectid=self.resource.key()):
+            for data in gcp.iter_backendservices(
+                projectid=self.resource.key()):
                 yield FACTORIES['backendservice'].create_new(data)
 
 
@@ -582,11 +584,6 @@ FACTORIES = {
             }),
 
         'role': ResourceFactory({
-                'dependsOn': ['organization', 'project'],
-                'cls': Role,
-                'contains': [],
-            }),
-        'policy': ResourceFactory({
                 'dependsOn': ['organization', 'project'],
                 'cls': Role,
                 'contains': [],
