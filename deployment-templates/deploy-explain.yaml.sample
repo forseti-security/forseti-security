@@ -47,39 +47,45 @@ resources:
     instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
-	# EDIT REQUIRED
-	# This needs to be set to the full email address of a gsuite
-	# administrator. IAM Explain Inventory will assume the administrator's
-	# authority in order to enumerate users, groups and group membership.
+    # EDIT REQUIRED
+    # This needs to be set to the full email address of a gsuite
+    # administrator. IAM Explain Inventory will assume the administrator's
+    # authority in order to enumerate users, groups and group membership.
     gsuite-admin-email: GSUITE_ADMINISTRATOR
 
-	# EDIT REQUIRED
-	# This is the numeric ID of your organization, e.g. '433637338589'
-	# Length may vary. You can get this value using the console or
-	# by executing 'gcloud organizations list' in your cloud shell.
+    # EDIT REQUIRED
+    # This is the numeric ID of your organization, e.g. '433637338589'
+    # Length may vary. You can get this value using the console or
+    # by executing 'gcloud organizations list' in your cloud shell.
     organization-id: ORGANIZATION_ID
 
-	# EDIT REQUIRED
-	# This is the service account that holds the security reviewer role
+    # EDIT REQUIRED
+    # This is the service account that holds the security reviewer role
     service-account: YOUR_SERVICE_ACCOUNT
 
-	# EDIT OPTIONAL
-	# This is the service account that is authorized for Gsuite
-	# The path needs to point to the LOCAL machine where IAM Explain is deployed
-	# The default value is good if you copy the key to this path
+    # EDIT OPTIONAL
+    # This is the service account that is authorized for Gsuite
+    # The path needs to point to the LOCAL machine where IAM Explain is deployed
+    # The default value is good if you copy the key to this path
     gsuite-service-accout-path: /home/ubuntu/gsuite.json
 
-	# EDIT OPTIONAL
+    # EDIT OPTIONAL
     # Use the "branch-name" property to deploy a specify a branch of IAM Explain
     # on GCP.
     # Use either branch-name or release-version.
     # This configuration deploys the 'crawling' branch
-    branch-name: "crawling"
+    branch-name: "master"
     #release-version: "1.0.2"
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
 
-	# EDIT DISCOURAGED
-	# No need to set this unless you have deployed Forseti,
-	# Don't change unless you know why you have to change this.
-	database-name-forseti: FORSETI_DATABASE_NAME
+    # EDIT DISCOURAGED
+    # No need to set this unless you have deployed Forseti,
+    # Don't change unless you know why you have to change this.
+    database-name-forseti: ''
+
+    # EDIT DISCOURAGED
+    # No need to set this unless you have deployed Forseti,
+    # Don't change unless you know why you have to change this.
+    forseti-db-name: 'forseti_security'
+    explain-db-name: 'explain_security'
 
