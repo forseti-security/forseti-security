@@ -82,7 +82,7 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     discovery_kwargs = {
         'serviceName': service_name,
         'version': version,
-        'developerKey': developer_key
+        'developerKey': developer_key,
         'credentials': credentials}
     if SUPPORT_DISCOVERY_CACHE:
         discovery_kwargs['cache_discovery'] = cache_discovery

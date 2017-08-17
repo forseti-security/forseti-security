@@ -64,7 +64,7 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     discovery_kwargs = {
         'serviceName': service_name,
         'version': version,
-        'developerKey': developer_key
+        'developerKey': developer_key,
         'credentials': credentials}
     if SUPPORT_DISCOVERY_CACHE:
         discovery_kwargs['cache_discovery'] = cache_discovery
@@ -134,7 +134,7 @@ class BaseRepositoryClient(object):
           self.gcp_services[version] = _create_service_api(
               self._credentials,
               self.name,
-              self.version,
+              version,
               kwargs.get('developer_key'),
               kwargs.get('cache_discovery', False))
 
@@ -381,7 +381,7 @@ class GetQueryMixin(object):
         """Get GCP entity.
 
         Args:
-          project (str): The id of the project to modify.
+          project (str): The id of the project to query.
           target (str):  Name of the entity to fetch.
           fields ([str]): Fields to include in the response - partial response.
           verb (str): The method to call on the API.
@@ -409,15 +409,14 @@ class GetQueryMixin(object):
         )
 
 class GetIamPolicyQueryMixin(object):
-    """Mixin that implements Get query."""
+    """Mixin that implements getIamPolicy query."""
 
     def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
                        **kwargs):
         """Get GCP entity.
 
         Args:
-          project (str): The id of the project to modify.
-          target (str):  Name of the entity to fetch.
+          resource (str): The id of the resource to fetch.
           fields ([str]): Fields to include in the response - partial response.
           verb (str): The method to call on the API.
           kwargs (dict): Optional additional arguments to pass to the query.
