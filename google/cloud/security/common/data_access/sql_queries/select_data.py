@@ -198,6 +198,11 @@ SELECT_GROUPS_VIOLATIONS = """
     SELECT * FROM groups_violations_{0};
 """
 
+SELECT_IAP_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'IAP_VIOLATION';
+"""
+
 BACKEND_SERVICES = """
     SELECT id, project_id, creation_timestamp, name, description,
     affinity_cookie_ttl_sec, backends, cdn_policy, connection_draining,
