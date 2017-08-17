@@ -437,7 +437,7 @@ def define_model(model_name, dbengine, model_seed):
                 session.rollback()
                 raise
             finally:
-                if get_dialect(session) != 'sqlite':
+                if get_sql_dialect(session) != 'sqlite':
                     session.execute('UNLOCK TABLES')
                 session.commit()
             return iterations

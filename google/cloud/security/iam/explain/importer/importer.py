@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from google.cloud.security.iam.utils import get_sql_dialect
 
 """ Importer implementations. """
 
@@ -271,6 +272,9 @@ class InventoryImporter(object):
         gsuite_type_list = [
             'gsuite_group',
             'gsuite_user',
+            ]
+
+        member_type_list = [
             'gsuite_user_member',
             'gsuite_group_member',
             ]
@@ -293,10 +297,14 @@ class InventoryImporter(object):
                     self._store_iam_policy(resource)
                 self._store_iam_policy_post()
 
-                self._store_gsuite_principal_pre()
                 for resource in inventory.iter(gsuite_type_list):
                     self._store_gsuite_principal(resource)
-                self._store_gsuite_principal_post()
+
+                self._store_gsuite_membership_pre()
+                for child, parent in inventory.iter(member_type_list,
+                                                    with_parent=True):
+                    self._store_gsuite_membership(parent, child)
+                self._store_gsuite_membership_post()
 
         except Exception:  # pylint: disable=broad-except
             # TODO: Remove 'raises' once Inventory testing is done
@@ -312,12 +320,6 @@ class InventoryImporter(object):
             self.session.commit()
             self.session.autoflush = autoflush
 
-    def _store_gsuite_principal_pre(self):
-        pass
-
-    def _store_gsuite_principal_post(self):
-        pass
-
     def _store_gsuite_principal(self, principal):
         """Store a gsuite principal such as a group, user or member.
 
@@ -326,17 +328,60 @@ class InventoryImporter(object):
         """
 
         gsuite_type = principal.get_type()
-        data = principal.get_type
+        data = principal.get_data()
         if gsuite_type == 'gsuite_user':
-            pass
+            member = 'user:{}'.format(data['primaryEmail'])
         elif gsuite_type == 'gsuite_group':
-            pass
-        elif gsuite_type == 'gsuite_user_member':
-            pass
-        elif gsuite_type == 'gsuite_group_member':
-            pass
+            member = 'group:{}'.format(data['email'])
         else:
             raise Exception('Unknown gsuite principal: {}'.format(gsuite_type))
+        if member not in self.member_cache:
+            m_type, name = member.split(':', 1)
+            self.member_cache[member] = self.dao.TBL_MEMBER(
+                name=member,
+                type=m_type,
+                member_name=name)
+
+    def _store_gsuite_membership_pre(self):
+        """Prepare storing gsuite memberships."""
+
+        self._membership_cache = []
+
+    def _store_gsuite_membership_post(self):
+        """Flush storing gsuite memberships."""
+
+        if get_sql_dialect(self.session) == 'sqlite':
+            # SQLite doesn't support bulk insert
+            for item in self._membership_cache:
+                stmt = self.dao.TBL_MEMBERSHIP.insert(
+                    dict(group_name=item[0],
+                         members_name=item[1]))
+                self.session.execute(stmt)
+        else:
+            dicts = [dict(group_name=item[0], members_name=item[1])
+                     for item in self._membership_cache]
+            stmt = self.dao.TBL_MEMBERSHIP.insert(dicts)
+            self.session.execute(stmt)
+
+    def _store_gsuite_membership(self, parent, child):
+        """Store a gsuite principal such as a group, user or member.
+
+        Args:
+            parent (object): parent part of membership.
+            child (object): member item
+        """
+
+        def member_name(child):
+            data = child.get_data()
+            return '{}:{}'.format(data['type'].lower(),
+                                  data['email'])
+
+        def group_name(parent):
+            data = parent.get_data()
+            return 'group:{}'.format(data['email'])
+
+        self._membership_cache.append(
+            (group_name(parent), member_name(child)))
 
     def _store_iam_policy_pre(self):
         """Executed before iam policies are inserted."""
@@ -367,9 +412,9 @@ class InventoryImporter(object):
                 if member not in self.member_cache:
                     m_type, name = member.split(':', 1)
                     self.member_cache[member] = self.dao.TBL_MEMBER(
-                        name=name,
+                        name=member,
                         type=m_type,
-                        member_name=member)
+                        member_name=name)
 
             db_members = [self.member_cache[m] for m in binding['members']]
             self.session.add(
