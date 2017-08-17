@@ -57,12 +57,6 @@ API_MAP = {
             'class_name': 'CloudResourceManagerClient',
             'version': None
         },
-    'crm_v2beta1_api':
-        {
-            'module_name': 'cloud_resource_manager',
-            'class_name': 'CloudResourceManagerClient',
-            'version': 'v2beta1'
-        },
     'gcs_api':
         {
             'module_name': 'storage',

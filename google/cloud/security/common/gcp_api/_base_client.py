@@ -14,14 +14,17 @@
 
 """Base GCP client which uses the discovery API."""
 
-import json
-import httplib2
-
 import googleapiclient
 from googleapiclient import discovery
 from googleapiclient import errors
+import httplib2
+import json
+import logging
+
 from oauth2client.client import GoogleCredentials
+from ratelimiter import RateLimiter
 from retrying import retry
+import threading
 
 from google.cloud import security as forseti_security
 from google.cloud.security.common.gcp_api import _supported_apis
@@ -53,6 +56,110 @@ def _attach_user_agent(request):
         forseti_security.__version__)
 
     return request
+
+
+@retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
+       wait_exponential_multiplier=1000, wait_exponential_max=10000,
+       stop_max_attempt_number=5)
+def _create_service_api(credentials, service_name, version, developer_key=None,
+                        cache_discovery=False):
+    """Builds and returns a cloud API service object.
+
+    Args:
+      credentials: GoogleCredentials that will be passed to the service.
+      service_name: The name of the GCE Apiary API.
+      version: The version of the GCE API to use.
+      developer_key: The api key to use (for GCE API None is sufficient).
+      cache_discovery: Whether or not to cache the discovery doc.
+
+    Returns:
+      A Resource object with methods for interacting with the service.
+    """
+    # The default logging of the discovery obj is very noisy in recent versions.
+    # Lower the default logging level of just this module to WARNING.
+    logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
+
+    discovery_kwargs = {
+        'serviceName': service_name,
+        'version': version,
+        'developerKey': developer_key
+        'credentials': credentials}
+    if SUPPORT_DISCOVERY_CACHE:
+        discovery_kwargs['cache_discovery'] = cache_discovery
+
+    return discovery.build(**discovery_kwargs)
+
+
+class BaseRepositoryClient(object):
+    """Base class for API repository for a specified Cloud API."""
+
+    def __init__(self,
+                 api_name,
+                 credentials,
+                 quota_max_calls=None,
+                 quota_period=None,
+                 use_rate_limiter=False,
+                 **kwargs):
+        """Constructor.
+
+        Args:
+          api_name (str): The API name to wrap. More details here:
+                https://developers.google.com/api-client-library/python/apis/
+          credentials: GoogleCredentials.
+          quota_max_calls: (int) Allowed requests per <quota_period> for the
+              API.
+          quota_period: (float) The time period to limit the quota_requests to.
+          use_rate_limiter (bool): Set to false to disable the use of a rate
+              limiter for this service.
+          **kwargs (dict): Additional args such as version.
+        """
+        if not credentials:
+            credentials = GoogleCredentials.get_application_default()
+        self._credentials = credentials
+
+        # Lock may be acquired multiple times in the same thread.
+        self._repository_lock = threading.RLock()
+
+        if use_rate_limiter:
+            self._rate_limiter = ratelimiter.RateLimiter(
+                max_calls=quota_max_calls, period=quota_period)
+        else:
+            self._rate_limiter = None
+
+        self.name = api_name
+
+        # Look to see if the API is formally supported in Forseti.
+        supported_api = _supported_apis.SUPPORTED_APIS.get(api_name)
+        if not supported_api:
+            LOGGER.warn('API "%s" is not formally supported in Forseti, '
+                        'proceed at your own risk.', api_name)
+
+        # See if the version is supported by Forseti.
+        # If no version is specified, try to find the supported API's version.
+        version = kwargs.get('version')
+        if not version and supported_api:
+            version = supported_api.get('version')
+        self.version = version
+
+        if supported_api and supported_api.get('version') != version:
+            LOGGER.warn('API "%s" version %s is not formally supported '
+                        'in Forseti, proceed at your own risk.',
+                        api_name, version)
+
+        self.gcp_service = _create_service_api(
+            self._credentials,
+            self.name,
+            self.version,
+            kwargs.get('developer_key'),
+            kwargs.get('cache_discovery', False))
+
+    def __repr__(self):
+        """The object representation.
+
+        Returns:
+            str: The object representation.
+        """
+        return 'API: name=%s, version=%s' % (self.name, self.version)
 
 
 class BaseClient(object):
@@ -99,13 +206,12 @@ class BaseClient(object):
                         'in Forseti, proceed at your own risk.',
                         api_name, version)
 
-        discovery_kwargs = {'credentials': self._credentials}
-        if SUPPORT_DISCOVERY_CACHE:
-            discovery_kwargs['cache_discovery'] = kwargs.get('cache_discovery')
-
-        self.service = discovery.build(self.name,
-                                       self.version,
-                                       **discovery_kwargs)
+        self.service = _create_service_api(
+            self._credentials,
+            self.name,
+            self.version,
+            kwargs.get('developer_key'),
+            kwargs.get('cache_discovery', False))
 
     def __repr__(self):
         """The object representation.

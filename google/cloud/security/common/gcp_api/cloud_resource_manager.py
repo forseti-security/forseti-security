@@ -26,10 +26,198 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class CloudResourceManagerClient(_base_client.BaseClient):
+class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
+    """Cloud Resource Manager Respository."""
+
+    def __init__(self,
+                 quota_max_calls=None,
+                 quota_period=100.0,
+                 use_rate_limiter=True):
+        """Constructor.
+
+        Args:
+          quota_max_calls: (int) Allowed requests per <quota_period> for the
+              API.
+          quota_period: (float) The time period to limit the quota_requests to.
+          use_rate_limiter (bool): Set to false to disable the use of a rate
+              limiter for this service.
+        """
+        if not quota_max_calls:
+            use_rate_limiter = False
+
+        super(CloudResourceManagerRepository, self).__init__(
+            'cloudresourcemanager', versions=['v1', 'v2']
+            quota_max_calls=quota_max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=use_rate_limiter)
+
+    @property
+    def projects(self):
+        """A CloudBillingProjectsRepository instance."""
+        if not self._projects:
+            self._projects = self._init_repository(
+                _ResourceManagerProjectsRepository,
+                self.gcp_services['v1'],
+                self._projects)
+
+        return self._projects
+
+    @property
+    def organizations(self):
+        """A CloudBillingOrganizationsRepository instance."""
+        if not self._organizations:
+            self._organizations = self._init_repository(
+                _ResourceManagerOrganizationsRepository,
+                self.gcp_services['v1'],
+                self._organizations)
+
+        return self._organizations
+
+    @property
+    def folders(self):
+        """A CloudBillingOrganizationsRepository instance."""
+        if not self._folders:
+            self._folders = self._init_repository(
+                _ResourceManagerFoldersRepository,
+                self.gcp_services['v2'],
+                self._folders)
+
+        return self._folders
+
+
+class _ResourceManagerProjectsRepository(
+    _base_repository.GCPRepository,
+    _base_repository.GetIamPolicyQueryMixin):
+    """Implementation of Cloud Resource Manager Projects repository."""
+
+    def __init__(self, gcp_service, credentials, rate_limiter):
+        """Constructor.
+
+        Args:
+          gce_service: A GCE service object built using the Google discovery API.
+          credentials: GoogleCredentials.
+          rate_limiter: A rate limiter instance.
+        """
+        super(_ResourceManagerProjectsRepository, self).__init__(
+            gcp_service=gcp_service,
+            credentials=credentials,
+            component='projects',
+            entity='',
+            rate_limiter=rate_limiter)
+
+    def get(self, project, fields=None):
+        """Get the project resource data."""
+        return self.execute_query(
+            verb='get',
+            verb_arguments={'projectId': project, 'fields': fields}
+        )
+
+    def get_ancestry(self, project, fields=None):
+        """Get the project ancestory data."""
+        return self.execute_query(
+            verb='getAncestry',
+            verb_arguments={'projectId': project, 'fields': fields, 'body': {}}
+        )
+
+    def list(self, parent_id=None, parent_type=None, filters=None, fields=None):
+        """List projects, optionally by parent."""
+        if not filters:
+            filters = []
+        if parent_id:
+            filters.append('parent.id:{}'.format(parent_id))
+        if parent_type:
+            filters.append('parent.type:{}'.format(parent_type))
+
+        for resp in self.execute_paged_query(
+            verb='list',
+            verb_arguments={'filter': ' '.join(filters), 'fields': fields}):
+            yield resp
+
+
+class _ResourceManagerOrganizationsRepository(
+    _base_repository.GCPRepository,
+    _base_repository.GetIamPolicyQueryMixin):
+    """Implementation of Cloud Resource Manager Organizations repository."""
+
+    def __init__(self, gcp_service, credentials, rate_limiter):
+        """Constructor.
+
+        Args:
+          gce_service: A GCE service object built using the Google discovery API.
+          credentials: GoogleCredentials.
+          rate_limiter: A rate limiter instance.
+        """
+        super(_ResourceManagerProjectsRepository, self).__init__(
+            gcp_service=gcp_service,
+            credentials=credentials,
+            component='organizations',
+            entity='',
+            rate_limiter=rate_limiter)
+
+    def get(self, organization_id, fields=None):
+        """Get the organization resource data."""
+        if not organization_id.startswith('organizations/'):
+          organization_id = 'organizations/{}'.format(organization_id)
+        return self.execute_query(
+            verb='get',
+            verb_arguments={'name': organization_id, 'fields': fields}
+        )
+
+    def search(self, filter=None, fields=None):
+        """Get all organizations the caller has access to."""
+        for resp in self.execute_paged_query(
+            verb='search',
+            verb_arguments={'filter': filter, 'fields': fields}):
+            yield resp
+
+
+class _ResourceManagerFoldersRepository(
+    _base_repository.GCPRepository,
+    _base_repository.GetIamPolicyQueryMixin):
+    """Implementation of Cloud Resource Manager Folders repository."""
+
+    def __init__(self, gcp_service, credentials, rate_limiter):
+        """Constructor.
+
+        Args:
+          gce_service: A GCE service object built using the Google discovery API.
+          credentials: GoogleCredentials.
+          rate_limiter: A rate limiter instance.
+        """
+        super(_ResourceManagerProjectsRepository, self).__init__(
+            gcp_service=gcp_service,
+            credentials=credentials,
+            component='folders',
+            entity='',
+            rate_limiter=rate_limiter)
+
+    def get(self, folder_id, fields=None):
+        """Get the project resource data."""
+        if not folder_id.startswith('folders/'):
+          folder_id = 'folders/{}'.format(folder_id)
+        return self.execute_query(
+            verb='get',
+            verb_arguments={'name': folder_id, 'fields': fields}
+        )
+
+    def list(self, parent, fields=None):
+        """List folders under a parent resource."""
+        for resp in self.execute_paged_query(
+            verb='list',
+            verb_arguments={'parent': parent, 'fields': fields}):
+            yield resp
+
+    def search(self, query=None, fields=None):
+        """Get all folders the caller has access to based on query."""
+        for resp in self.execute_paged_query(
+            verb='search',
+            verb_arguments={'query': query, 'fields': fields}):
+            yield resp
+
+
+class CloudResourceManagerClient(object):
     """Resource Manager Client."""
 
-    API_NAME = 'cloudresourcemanager'
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
     def __init__(self, global_configs, **kwargs):
@@ -39,14 +227,11 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        super(CloudResourceManagerClient, self).__init__(
-            global_configs, api_name=self.API_NAME, **kwargs)
-
-        # TODO: we will need multiple rate limiters when we need to invoke
-        # the CRM write API for enforcement.
-        self.rate_limiter = RateLimiter(
-            self.global_configs.get('max_crm_api_calls_per_100_seconds'),
-            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
+        max_calls = self.global_configs.get('max_crm_api_calls_per_100_seconds')
+        self.repository = CloudResourceManagerRepository(
+            quota_max_calls=max_calls,
+            quota_period=DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
+            use_rate_limiter=True)
 
     def get_project(self, project_id):
         """Get all the projects from organization.
@@ -60,12 +245,8 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        projects_api = self.service.projects()
-
         try:
-            request = projects_api.get(projectId=project_id)
-            response = self._execute(request, self.rate_limiter)
-            return response
+            return self.repository.projects.get(project_id)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -83,23 +264,13 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        projects_api = self.service.projects()
-        project_filter = []
+        filters = []
 
-        for filter_key in filterargs:
-            project_filter.append('%s:%s' %
-                                  (filter_key, filterargs[filter_key]))
-        request = projects_api.list(filter=' '.join(project_filter))
+        for key, value in filterargs.items():
+            filters.append('{}:{}'.format(key, value))
 
-        # TODO: Convert this over to _base_client._build_paged_result().
         try:
-            while request is not None:
-                response = self._execute(request, self.rate_limiter)
-                yield response
-
-                request = projects_api.list_next(
-                    previous_request=request,
-                    previous_response=response)
+            yield self.respository.projects.list(filters=filters)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -115,12 +286,8 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             list: IAM policies of the project.
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
         """
-        projects_api = self.service.projects()
-
         try:
-            request = projects_api.getIamPolicy(
-                resource=project_identifier, body={})
-            return self._execute(request, self.rate_limiter)
+            return self.repository.projects.get_iam_policy(project_identifier)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -133,12 +300,8 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Returns:
             dict: The org response object if found, otherwise False.
         """
-        organizations_api = self.service.organizations()
-
         try:
-            request = organizations_api.get(name=org_name)
-            response = self._execute(request, self.rate_limiter)
-            return response
+            return self.repository.organizations.get(org_name)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(org_name, e)
 
@@ -152,20 +315,8 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             dict: An iterator of the response from the organizations API,
                 which is paginated and contains a list of organizations.
         """
-        organizations_api = self.service.organizations()
-        next_page_token = None
-
         try:
-            while True:
-                req_body = {}
-                if next_page_token:
-                    req_body['pageToken'] = next_page_token
-                request = organizations_api.search(body=req_body)
-                response = self._execute(request, self.rate_limiter)
-                yield response
-                next_page_token = response.get('nextPageToken')
-                if not next_page_token:
-                    break
+            yield self.repository.organizations.search()
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -183,13 +334,12 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        organizations_api = self.service.organizations()
         resource_id = 'organizations/%s' % org_id
         try:
-            request = organizations_api.getIamPolicy(
-                resource=resource_id, body={})
+            iam_policy = (
+                self.repository.organizations.get_iam_policy(resource_id))
             return {'org_id': org_id,
-                    'iam_policy': self._execute(request, self.rate_limiter)}
+                    'iam_policy': iam_policy}
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -206,12 +356,8 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        folders_api = self.service.folders()
-
         try:
-            request = folders_api.get(name=folder_name)
-            response = self._execute(request, self.rate_limiter)
-            return response
+            return self.repository.folders.get(folder_name)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(folder_name, e)
 
@@ -228,24 +374,13 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        folders_api = self.service.folders()
-        next_page_token = None
-
-        lifecycle_state_filter = kwargs.get('lifecycle_state')
+        queries = []
+        if 'lifecycle_state' in kwargs:
+            queries.append('lifecycleState={}'.format(
+                kwargs.get('lifecycle_state'))
 
         try:
-            while True:
-                req_body = {}
-                if next_page_token:
-                    req_body['pageToken'] = next_page_token
-                if lifecycle_state_filter:
-                    req_body['lifecycleState'] = lifecycle_state_filter
-                request = folders_api.search(body=req_body)
-                response = self._execute(request, self.rate_limiter)
-                yield response
-                next_page_token = response.get('nextPageToken')
-                if not next_page_token:
-                    break
+            yield self.repository.folders.search(query=' '.join(queries))
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -262,12 +397,10 @@ class CloudResourceManagerClient(_base_client.BaseClient):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        folders_api = self.service.folders()
         resource_id = 'folders/%s' % folder_id
         try:
-            request = folders_api.getIamPolicy(
-                resource=resource_id, body={})
+            iam_policy = self.repository.folders.get_iam_policy(resource_id)
             return {'folder_id': folder_id,
-                    'iam_policy': self._execute(request, self.rate_limiter)}
+                    'iam_policy': iam_policy}
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)

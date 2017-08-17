@@ -53,12 +53,12 @@ REQUIREMENTS_MAP = {
     'folder_iam_policies':
         {'module_name': 'load_folder_iam_policies_pipeline',
          'depends_on': 'folders',
-         'api_name': 'crm_v2beta1_api',
+         'api_name': 'crm_api',
          'dao_name': 'folder_dao'},
     'folders':
         {'module_name': 'load_folders_pipeline',
          'depends_on': 'organizations',
-         'api_name': 'crm_v2beta1_api',
+         'api_name': 'crm_api',
          'dao_name': 'folder_dao'},
     'forwarding_rules':
         {'module_name': 'load_forwarding_rules_pipeline',
