@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """ Crawler implementation. """
-
+import code
 from google.cloud.security.common.gcp_api2 import admin_directory
 from google.cloud.security.common.gcp_api2 import appengine
 from google.cloud.security.common.gcp_api2 import bigquery
@@ -57,8 +57,8 @@ class ApiClientImpl(ApiClient):
         self.crm = cloud_resource_manager.CloudResourceManagerClient(config)
         self.cloudsql = cloudsql.CloudsqlClient(config)
         self.compute = compute.ComputeClient(config)
-        self.storage = storage.StorageClient(config)
         self.iam = iam.IAMClient(config)
+        self.storage = storage.StorageClient(config)
 
     def fetch_organization(self, orgid):
         return self.crm.get_organization(orgid)
@@ -86,12 +86,20 @@ class ApiClientImpl(ApiClient):
             yield bucket
 
     def iter_objects(self, bucket_id):
-        return self.storage.get_objects(bucket_name=bucket_id)
+        for page in self.storage.get_objects(bucket_name=bucket_id):
+            if 'items' not in page:
+                return
+
+            for object in page['items']:
+                yield object
 
     def iter_datasets(self, projectid):
-        return self.bigquery.get_datasets_for_projectid(projectid)
+        response = self.bigquery.get_datasets_for_projectid(projectid)
+        for dataset in response:
+            yield dataset
 
     def iter_appengineapps(self, projectid):
+        response = self.appengine.get_app(projectid)
         return
         yield
 
@@ -112,6 +120,16 @@ class ApiClientImpl(ApiClient):
         result = self.compute.get_firewall_rules(projectid)
         for rule in result:
             yield rule
+
+    def iter_computeinstancegroups(self, projectid):
+        result = self.compute.get_instance_groups(projectid)
+        for instancegroup in result:
+            yield instancegroup
+
+    def iter_backendservices(self, projectid):
+        result = self.compute.get_backend_services(projectid)
+        for backendservice in result:
+            yield backendservice
 
     def iter_serviceaccounts(self, projectid):
         for serviceaccount in self.iam.get_serviceaccounts(projectid):

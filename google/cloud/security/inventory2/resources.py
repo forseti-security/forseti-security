@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """ Crawler implementation. """
-
+import code
 import json
 
 
@@ -186,6 +186,9 @@ class Bucket(Resource):
     def type(self):
         return 'bucket'
 
+    def key(self):
+        return self['id']
+
 
 class GcsObject(Resource):
     @cached('iam_policy')
@@ -198,6 +201,9 @@ class GcsObject(Resource):
 
     def type(self):
         return 'storage_object'
+
+    def key(self):
+        return self['id']
 
 
 class DataSet(Resource):
@@ -223,7 +229,7 @@ class AppEngineApp(Resource):
 
 class Instance(Resource):
     def key(self):
-        return self['id']
+        return self['name']
 
     def type(self):
         return 'instance'
@@ -235,6 +241,24 @@ class Firewall(Resource):
 
     def type(self):
         return 'firewall'
+
+
+class InstanceGroup(Resource):
+    def key(self):
+        #name or id
+        return self['name']
+
+    def type(self):
+        return 'instancegroup'
+
+
+class BackendService(Resource):
+    def key(self):
+        #name or id
+        return self['name']
+
+    def type(self):
+        return 'backendservice'
 
 
 class Role(Resource):
@@ -273,7 +297,7 @@ class ResourceIterator(object):
 class FolderIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_folders(orgid=self.resource['name']):
+        for data in gcp.iter_folders(orgid=self.resource.key()):
             yield FACTORIES['folder'].create_new(data)
 
 
@@ -281,21 +305,21 @@ class BucketIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_buckets(projectid=int(self.resource['projectNumber'])):
+            for data in gcp.iter_buckets(projectid=self.resource.key()):
                 yield FACTORIES['bucket'].create_new(data)
 
 
 class ProjectIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_projects(orgid=self.resource['name']):
+        for data in gcp.iter_projects(orgid=self.resource.key()):
             yield FACTORIES['project'].create_new(data)
 
 
 class ObjectIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_objects(bucket_id=self.resource['id']):
+        for data in gcp.iter_objects(bucket_id=self.resource.key()):
             yield FACTORIES['object'].create_new(data)
 
 
@@ -303,7 +327,8 @@ class DataSetIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_datasets(projectid=int(self.resource['projectNumber'])):
+            for data in gcp.iter_datasets(projectid=self.resource.key()):
+                code.interact(local=locals())
                 yield FACTORIES['dataset'].create_new(data)
 
 
@@ -311,7 +336,7 @@ class AppEngineAppIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_appengineapps(projectid=int(self.resource['projectNumber'])):
+            for data in gcp.iter_appengineapps(projectid=self.resource.key()):
                 yield FACTORIES['appengineapp'].create_new(data)
 
 
@@ -319,7 +344,7 @@ class InstanceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_computeinstances(projectid=self.resource['projectId']):
+            for data in gcp.iter_computeinstances(projectid=self.resource.key()):
                 yield FACTORIES['instance'].create_new(data)
 
 
@@ -327,15 +352,31 @@ class FirewallIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_computefirewalls(projectid=self.resource['projectId']):
+            for data in gcp.iter_computefirewalls(projectid=self.resource.key()):
                 yield FACTORIES['firewall'].create_new(data)
+
+
+class InstanceGroupIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_computeinstancegroups(projectid=self.resource.key()):
+                yield FACTORIES['instancegroup'].create_new(data)
+
+
+class BackendServiceIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_backendservices(projectid=self.resource.key()):
+                yield FACTORIES['backendservice'].create_new(data)
 
 
 class CloudSqlIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_cloudsqlinstances(projectid=self.resource['projectId']):
+            for data in gcp.iter_cloudsqlinstances(projectid=self.resource.key()):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)
 
 
@@ -343,7 +384,7 @@ class ServiceAccountIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_serviceaccounts(projectid=self.resource['projectId']):
+            for data in gcp.iter_serviceaccounts(projectid=self.resource.key()):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
@@ -351,7 +392,7 @@ class ProjectRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_project_roles(projectid=self.resource['projectId']):
+            for data in gcp.iter_project_roles(projectid=self.resource.key()):
                 yield FACTORIES['role'].create_new(data)
 
 
@@ -368,16 +409,15 @@ class OrganizationCuratedRoleIterator(ResourceIterator):
         for data in gcp.iter_curated_roles(orgid=self.resource['name']):
             yield FACTORIES['role'].create_new(data)
 
-
 FACTORIES = {
 
         'organization': ResourceFactory({
                 'dependsOn': [],
                 'cls': Organization,
-                'contains': [FolderIterator,
-                             OrganizationRoleIterator,
+                'contains': [OrganizationRoleIterator,
                              OrganizationCuratedRoleIterator,
-                             ProjectIterator,
+                             FolderIterator,
+                             ProjectIterator
                              ],
             }),
 
@@ -390,21 +430,23 @@ FACTORIES = {
         'project': ResourceFactory({
                 'dependsOn': ['organization', 'folder'],
                 'cls': Project,
-                'contains': [#AppEngineAppIterator,
+                'contains': [ProjectRoleIterator,
+                             AppEngineAppIterator,
                              #BucketIterator,
                              DataSetIterator,
                              InstanceIterator,
                              FirewallIterator,
+                             InstanceGroupIterator,
+                             BackendServiceIterator,
                              CloudSqlIterator,
-                             ServiceAccountIterator,
-                             ProjectRoleIterator,
+                             ServiceAccountIterator
                              ],
             }),
 
         'bucket': ResourceFactory({
                 'dependsOn': ['project'],
                 'cls': Bucket,
-                'contains': [ObjectIterator
+                'contains': [ObjectIterator,
                              ],
             }),
 
@@ -438,6 +480,18 @@ FACTORIES = {
                 'contains': [],
             }),
 
+        'instancegroup': ResourceFactory({
+                'dependsOn': ['project'],
+                'cls': InstanceGroup,
+                'contains': [],
+            }),
+
+        'backendservice': ResourceFactory({
+                'dependsOn': ['project'],
+                'cls': BackendService,
+                'contains': [],
+            }),
+
         'cloudsqlinstance': ResourceFactory({
                 'dependsOn': ['project'],
                 'cls': CloudSqlInstance,
@@ -451,7 +505,12 @@ FACTORIES = {
             }),
 
         'role': ResourceFactory({
-                'dependsOn': ['project'],
+                'dependsOn': ['organization', 'project'],
+                'cls': Role,
+                'contains': [],
+            }),
+        'policy': ResourceFactory({
+                'dependsOn': ['organization', 'project'],
                 'cls': Role,
                 'contains': [],
             }),
