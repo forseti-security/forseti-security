@@ -238,7 +238,7 @@ class AppEngineApp(Resource):
 
 class Instance(Resource):
     def key(self):
-        return self['name']
+        return self['id']
 
     def type(self):
         return 'instance'
@@ -254,8 +254,7 @@ class Firewall(Resource):
 
 class InstanceGroup(Resource):
     def key(self):
-        #name or id
-        return self['name']
+        return self['id']
 
     def type(self):
         return 'instancegroup'
@@ -263,8 +262,7 @@ class InstanceGroup(Resource):
 
 class BackendService(Resource):
     def key(self):
-        #name or id
-        return self['name']
+        return self['id']
 
     def type(self):
         return 'backendservice'
@@ -338,7 +336,7 @@ class ResourceIterator(object):
 class FolderIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_folders(orgid=self.resource.key()):
+        for data in gcp.iter_folders(orgid=self.resource['name']):
             yield FACTORIES['folder'].create_new(data)
 
 
@@ -346,21 +344,22 @@ class BucketIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_buckets(projectid=self.resource.key()):
+            for data in gcp.iter_buckets(
+                projectid=self.resource['projectNumber']):
                 yield FACTORIES['bucket'].create_new(data)
 
 
 class ProjectIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_projects(orgid=self.resource.key()):
+        for data in gcp.iter_projects(orgid=self.resource['name']):
             yield FACTORIES['project'].create_new(data)
 
 
 class ObjectIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_objects(bucket_id=self.resource.key()):
+        for data in gcp.iter_objects(bucket_id=self.resource['id']):
             yield FACTORIES['object'].create_new(data)
 
 
@@ -368,7 +367,8 @@ class DataSetIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_datasets(projectid=self.resource.key()):
+            for data in gcp.iter_datasets(
+                projectid=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
 
 
@@ -377,7 +377,7 @@ class AppEngineAppIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_appengineapps(
-                        projectid=self.resource.key()):
+                        projectid=self.resource['projectNumber']):
                 yield FACTORIES['appengineapp'].create_new(data)
 
 
@@ -386,7 +386,7 @@ class InstanceIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_computeinstances(
-                projectid=self.resource.key()):
+                projectid=self.resource['projectId']):
                 yield FACTORIES['instance'].create_new(data)
 
 
@@ -395,7 +395,7 @@ class FirewallIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_computefirewalls(
-                    projectid=self.resource.key()):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['firewall'].create_new(data)
 
 
@@ -404,7 +404,7 @@ class InstanceGroupIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_computeinstancegroups(
-                projectid=self.resource.key()):
+                projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroup'].create_new(data)
 
 
@@ -413,7 +413,7 @@ class BackendServiceIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_backendservices(
-                projectid=self.resource.key()):
+                projectid=self.resource['projectId']):
                 yield FACTORIES['backendservice'].create_new(data)
 
 
@@ -422,7 +422,7 @@ class CloudSqlIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_cloudsqlinstances(
-                    projectid=self.resource.key()):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)
 
 
@@ -431,7 +431,7 @@ class ServiceAccountIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_serviceaccounts(
-                projectid=self.resource.key()):
+                projectid=self.resource['projectId']):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
@@ -440,7 +440,7 @@ class ProjectRoleIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_project_roles(
-                projectid=self.resource.key()):
+                projectid=self.resource['projectId']):
                 yield FACTORIES['role'].create_new(data)
 
 
