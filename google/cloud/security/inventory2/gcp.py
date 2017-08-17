@@ -98,12 +98,8 @@ class ApiClientImpl(ApiClient):
             yield bucket
 
     def iter_objects(self, bucket_id):
-        for page in self.storage.get_objects(bucket_name=bucket_id):
-            if 'items' not in page:
-                return
-
-            for object in page['items']:
-                yield object
+        for object in self.storage.get_objects(bucket_name=bucket_id):
+            yield object
 
     def iter_datasets(self, projectid):
         response = self.bigquery.get_datasets_for_projectid(projectid)
@@ -169,10 +165,13 @@ class ApiClientImpl(ApiClient):
         return self.crm.get_project_iam_policies(projectid, projectid)
 
     def get_bucket_gcs_policy(self, bucketid):
-        return self.storage.get_bucket_acls(bucketid)
+        result = self.storage.get_bucket_acls(bucketid)
+        if 'items' not in result:
+            return []
+        return result['items']
 
     def get_bucket_iam_policy(self, bucketid):
-        return None
+        return self.storage.get_bucket_iam_policy(bucketid)
 
     def get_object_gcs_policy(self, bucket_name, object_name):
         result = self.storage.get_object_acls(bucket_name, object_name)

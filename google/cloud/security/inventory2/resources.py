@@ -369,7 +369,6 @@ class DataSetIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_datasets(projectid=self.resource.key()):
-                code.interact(local=locals())
                 yield FACTORIES['dataset'].create_new(data)
 
 
