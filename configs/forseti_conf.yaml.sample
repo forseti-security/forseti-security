@@ -140,3 +140,10 @@ notifier:
                 sendgrid_api_key: ''
                 sender: ''
                 recipient: ''
+            # Slack webhook pipeline
+            # Create an incoming webhook in your organization's Slack located at:
+            # https://[your_org].slack.com/apps/manage/custom-integrations
+            # Add the provided URL in the configuration below in `webhook_url`.
+            - name: slack_webhook_pipeline
+              configuration:
+                webhook_url: ''
