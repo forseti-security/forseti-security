@@ -377,7 +377,7 @@ class AppEngineAppIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_appengineapps(
-                        projectid=self.resource.key()):
+                    projectid=self.resource.key()):
                 yield FACTORIES['appengineapp'].create_new(data)
 
 
@@ -431,7 +431,7 @@ class ServiceAccountIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_serviceaccounts(
-                projectid=self.resource.key()):
+                    projectid=self.resource.key()):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
@@ -440,7 +440,7 @@ class ProjectRoleIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_project_roles(
-                projectid=self.resource.key()):
+                    projectid=self.resource.key()):
                 yield FACTORIES['role'].create_new(data)
 
 
@@ -525,7 +525,8 @@ FACTORIES = {
         'bucket': ResourceFactory({
                 'dependsOn': ['project'],
                 'cls': GcsBucket,
-                'contains': [ObjectIterator
+                'contains': [
+                             ObjectIterator
                              ],
             }),
 
