@@ -163,7 +163,7 @@ class ForsetiGcpSetup(object):
             self.download_gsuite_svc_acct_key()
             self.copy_gsuite_key()
 
-        self.post_install_instructions()
+        self.post_install_instructions(deploy_success=(not return_code))
 
     @staticmethod
     def _print_banner(text):
@@ -687,24 +687,27 @@ class ForsetiGcpSetup(object):
                 print('Done')
                 break
 
-    def post_install_instructions(self):
+    def post_install_instructions(self, deploy_success):
         """Show post-install instructions.
 
+        Print link for deployment manager dashboard.
         Print link to go to GSuite service account and enable DWD.
 
-        Print link for deployment manager dashboard.
+        Args:
+            deploy_success (bool): Whether deployment was successful.
         """
         self._print_banner('Post-setup instructions')
-
-        print('Enable G Suite Groups collection in Forseti:\n\n'
-              '    '
-              'http://forsetisecurity.org/docs/howto/configure/'
-              'gsuite-group-collection\n\n')
 
         print('Your generated Deployment Manager template can be '
               'found here:\n\n    {}\n'.format(self.deploy_tpl_path))
 
-        print('You can check out the details of your deployment in the '
+        if not deploy_success:
+            print ('Your deployment had some issues. Please review the error '
+                   'messages. If you need help, please either file an issue '
+                   'on our Github Issues or email '
+                   'discuss@forsetisecurity.org.\n')
+
+        print('You can see the details of your deployment in the '
               'Cloud Console:\n\n'
               '    https://console.cloud.google.com/deployments?'
               'project={}\n\n'.format(self.project_id))
@@ -718,3 +721,9 @@ class ForsetiGcpSetup(object):
               '    gsutil cp -r rules {}\n\n'.format(
                   self.bucket_name,
                   self.bucket_name))
+
+        print('Finalize your installation by enabling G Suite Groups '
+              'collection in Forseti:\n\n'
+              '    '
+              'http://forsetisecurity.org/docs/howto/configure/'
+              'gsuite-group-collection\n\n')
