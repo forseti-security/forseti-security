@@ -761,7 +761,7 @@ class ForsetiGcpSetup(object):
                    'discuss@forsetisecurity.org.\n')
 
         print('You can see the details of your deployment in the '
-              'Cloud Console:\n\n'
+              'Cloud Console:\n\n    '
               'https://console.cloud.google.com/deployments/details/'
               '{}?project={}&organizationId={}\n'.format(
                   self.deployment_name, self.project_id, self.organization_id))
