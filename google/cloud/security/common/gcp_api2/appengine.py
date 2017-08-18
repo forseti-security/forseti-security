@@ -16,7 +16,7 @@
 
 from ratelimiter import RateLimiter
 
-from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api2 import _base_client
 from googleapiclient import errors
 
 

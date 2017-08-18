@@ -17,8 +17,8 @@
 from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 
-from google.cloud.security.common.gcp_api import _base_client
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api2 import _base_client
+from google.cloud.security.common.gcp_api2 import errors as api_errors
 
 
 class AdminDirectoryClient(_base_client.BaseClient):
