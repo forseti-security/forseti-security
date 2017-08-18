@@ -23,7 +23,8 @@ SUPPORTED_APIS = {
         'version': 'directory_v1'
     },
     'appengine': {
-        'version': 'v1'
+        'default_version': 'v1',
+        'supported_versions': ['v1']
     },
     'bigquery': {
         'default_version': 'v2',
