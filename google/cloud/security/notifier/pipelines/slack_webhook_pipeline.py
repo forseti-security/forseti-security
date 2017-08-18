@@ -93,4 +93,3 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
         for violation in self.violations:
             webhook_payload = self._compose(violation=violation)
             self._send(payload=webhook_payload)
-
