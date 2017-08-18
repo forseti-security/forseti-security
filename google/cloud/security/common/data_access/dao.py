@@ -35,6 +35,9 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
+    #inventory table
+    'inventory': create_tables.CREATE_INVENTORY_TABLE,
+
     # appengine
     'appengine': create_tables.CREATE_APPENGINE_TABLE,
 
@@ -140,6 +143,25 @@ class Dao(_db_connector.DbConnector):
         cursor.execute(create_snapshot_sql)
         return snapshot_table_name
 
+    def _create_snapshot_table(self, resource_name, timestamp):
+        """Creates a snapshot table.
+
+        Args:
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            str: String of the created snapshot table.
+        """
+        snapshot_table_name = self._create_snapshot_table_name(
+            resource_name, timestamp)
+        create_table_sql = CREATE_TABLE_MAP[resource_name]
+        create_snapshot_sql = create_table_sql.format(snapshot_table_name)
+        cursor = self.conn.cursor()
+        cursor.execute(create_snapshot_sql)
+        return snapshot_table_name
+
     @staticmethod
     def _create_snapshot_table_name(resource_name, timestamp):
         """Create the snapshot table if it doesn't exist.
@@ -190,10 +212,11 @@ class Dao(_db_connector.DbConnector):
         """
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
-                snapshot_table_name = self._get_snapshot_table(
-                    resource_name, timestamp)
+#                snapshot_table_name = self._get_snapshot_table(
+#                    resource_name, timestamp)
+                
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
-                    resource_name, csv_file.name, snapshot_table_name)
+                    'inventory', csv_file.name, 'inventory_' + timestamp)
                 LOGGER.debug('SQL: %s', load_data_sql)
                 cursor = self.conn.cursor()
                 cursor.execute(load_data_sql)

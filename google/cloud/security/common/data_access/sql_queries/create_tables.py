@@ -493,3 +493,14 @@ CREATE_VIOLATIONS_TABLE = """
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
+
+CREATE_INVENTORY_TABLE = """
+    CREATE TABLE `{0}` (
+        `index` int DEFAULT NOT NULL,
+        `resource_key` varchar(255) NOT NULL,
+        `parent_resource_key` varchar(255) NULL,
+        `resource_type` varchar(255) NULL,
+        `resource_data` json DEFAULT NULL,
+        PRIMARY KEY (`index`),
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""

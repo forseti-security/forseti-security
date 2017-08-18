@@ -36,7 +36,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
 
         Returns:
             dict: Mapping projects with their AppEngine applications:
-            {project_id: application}
+            {index: application}
         """
         projects = (
             proj_dao
@@ -59,23 +59,12 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
         Yields:
             iterator: AppEngine applications in a dict.
         """
-        for project_id, app in resource_from_api.iteritems():
-            yield {'project_id': project_id,
-                   'name': app.get('name'),
-                   'app_id': app.get('id'),
-                   'dispatch_rules': parser.json_stringify(
-                       app.get('dispatchRules', [])),
-                   'auth_domain': app.get('authDomain'),
-                   'location_id': app.get('locationId'),
-                   'code_bucket': app.get('codeBucket'),
-                   'default_cookie_expiration': app.get(
-                       'defaultCookieExpiration'),
-                   'serving_status': app.get('servingStatus'),
-                   'default_hostname': app.get('defaultHostname'),
-                   'default_bucket': app.get('defaultBucket'),
-                   'iap': parser.json_stringify(app.get('iap', {})),
-                   'gcr_domain': app.get('gcrDomain'),
-                   'raw_application': parser.json_stringify(app)}
+        for index, app in resource_from_api.iteritems():
+            yield {
+                   'index': app.get('id'),
+                   'resource_key': app.get('name'),
+                   'resource_type': 'APPENGINE_PIPELINE',
+                   'resource_data': app}
 
     def run(self):
         """Run the pipeline."""

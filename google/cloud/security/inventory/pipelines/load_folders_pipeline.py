@@ -71,15 +71,11 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
             if folder.get('parent'):
                 parent_type, parent_id = folder.get('parent', '').split('/')
                 parent_type = resource_util.type_from_name(parent_type)
-
-            yield {'folder_id': folder_id,
-                   'name': folder_name,
-                   'display_name': folder.get('displayName'),
-                   'lifecycle_state': folder.get('lifecycleState'),
-                   'parent_type': parent_type,
-                   'parent_id': parent_id,
-                   'raw_folder': folder_json,
-                   'create_time': create_time_fmt}
+            yield {'resource_key': folder_name,
+                   'resource_data': folder,
+                   'resource_type': 'FOLDERS',
+                   'parent_resource_key': parent_id
+                   }
 
     def _retrieve(self):
         """Retrieve the folder resources from GCP.

@@ -62,14 +62,11 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
         """
         for (group, group_member) in resource_from_api:
             for member in group_member:
-                yield {'group_id': group,
-                       'member_kind': member.get('kind'),
-                       'member_role': member.get('role'),
-                       'member_type': member.get('type'),
-                       'member_status': member.get('status'),
-                       'member_id': member.get('id'),
-                       'member_email': member.get('email'),
-                       'raw_member': json.dumps(member)}
+                yield {'resource_key': group,
+                        'resource_type': 'GROUP_MEMBER',
+                        'resource_data': member
+                        }
+
 
     def _retrieve(self, group_ids):  # pylint: disable=arguments-differ
         """Retrieve the membership for a list of given GSuite groups.

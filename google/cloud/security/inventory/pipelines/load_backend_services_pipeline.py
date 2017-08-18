@@ -45,38 +45,10 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
         """
         for (project_id, backend_services) in resource_from_api.iteritems():
             for backend_service in backend_services:
-                yield {'project_id': project_id,
-                       'id': backend_service.get('id'),
-                       'creation_timestamp': parser.format_timestamp(
-                           backend_service.get('creationTimestamp'),
-                           self.MYSQL_DATETIME_FORMAT),
-                       'name': backend_service.get('name'),
-                       'description': backend_service.get('description'),
-                       'affinity_cookie_ttl_sec': self._to_int(
-                           backend_service.get('affinityCookieTtlSec')),
-                       'backends': parser.json_stringify(
-                           backend_service.get('backends', [])),
-                       'cdn_policy': parser.json_stringify(
-                           backend_service.get('cdnPolicy', {})),
-                       'connection_draining': parser.json_stringify(
-                           backend_service.get('connectionDraining', {})),
-                       'enable_cdn': self._to_bool(
-                           backend_service.get('enableCDN')),
-                       'health_checks': parser.json_stringify(
-                           backend_service.get('healthChecks', [])),
-                       'iap': parser.json_stringify(
-                           backend_service.get('iap', {})),
-                       'load_balancing_scheme': backend_service.get(
-                           'loadBalancingScheme'),
-                       'port': self._to_int(backend_service.get('port')),
-                       'port_name': backend_service.get('portName'),
-                       'protocol': backend_service.get('protocol'),
-                       'region': backend_service.get('region'),
-                       'session_affinity': backend_service.get(
-                           'sessionAffinity'),
-                       'timeout_sec': backend_service.get('timeoutSec'),
-                       'raw_backend_service':
-                           parser.json_stringify(backend_service)}
+                yield {'resource_key': project_id,
+                       'resource_type': 'BACKEND_SERVICE',
+                       'resource_data': backend_services
+                       }
 
     def _retrieve(self):
         """Retrieve backend services from GCP.

@@ -52,24 +52,10 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
         """
         for (project_id, forwarding_rules) in resource_from_api.iteritems():
             for rule in forwarding_rules:
-                yield {'project_id': project_id,
-                       'id': rule.get('id'),
-                       'creation_timestamp': parser.format_timestamp(
-                           rule.get('creationTimestamp'),
-                           self.MYSQL_DATETIME_FORMAT),
-                       'name': rule.get('name'),
-                       'description': rule.get('description'),
-                       'region': rule.get('region'),
-                       'ip_address': rule.get('IPAddress'),
-                       'ip_protocol': rule.get('IPProtocol'),
-                       'port_range': rule.get('portRange'),
-                       'ports': parser.json_stringify(rule.get('ports', [])),
-                       'target': rule.get('target'),
-                       'load_balancing_scheme': rule.get('loadBalancingScheme'),
-                       'subnetwork': rule.get('subnetwork'),
-                       'network': rule.get('network'),
-                       'backend_service': rule.get('backendService'),
-                       'raw_forwarding_rule': parser.json_stringify(rule)}
+                yield {'resource_key': project_id,
+                       'resource_type': 'FORWARDING_RULES',
+                       'resource_data': rule
+                       }
 
     def _retrieve(self):
         """Retrieve forwarding rules from GCP.

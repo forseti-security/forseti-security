@@ -52,17 +52,9 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
                 bucket_acl_json = json.dumps(acl_item)
 
                 yield {
-                    'bucket': buckets_acls_map['bucket_name'],
-                    'domain': acl_item.get('domain'),
-                    'email': acl_item.get('email'),
-                    'entity': acl_item.get('entity'),
-                    'entity_id': acl_item.get('entityId'),
-                    'acl_id': acl_item.get('id'),
-                    'kind': acl_item.get('kind'),
-                    'project_team': json.dumps(acl_item.get('projectTeam', [])),
-                    'role': acl_item.get('role'),
-                    'bucket_acl_selflink': acl_item.get('selfLink'),
-                    'raw_bucket_acl': bucket_acl_json
+                    'resource_key': buckets_acls_map['bucket_name'],
+                   'resource_type': 'PROJECTS_BUCKETS_ACL',
+                    'resource_data': acl_item
                     }
 
     def _retrieve(self):

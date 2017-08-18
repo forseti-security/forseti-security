@@ -140,20 +140,9 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
         for (project_id, dataset_id, access) in resource_from_api:
             for acl in access:
                 yield {
-                    'project_id': project_id,
-                    'dataset_id': dataset_id,
-                    'access_domain': acl.get('domain'),
-                    'access_user_by_email': acl.get('userByEmail'),
-                    'access_special_group': acl.get('specialGroup'),
-                    'access_group_by_email': acl.get('groupByEmail'),
-                    'role': acl.get('role'),
-                    'access_view_project_id': acl.get(
-                        'view', {}).get('projectId'),
-                    'access_view_table_id': acl.get(
-                        'view', {}).get('tableId'),
-                    'access_view_dataset_id': acl.get(
-                        'view', {}).get('datasetId'),
-                    'raw_access_map': parser.json_stringify(acl)
+                    'resource_key': project_id,
+                    'resource_type': 'BIGQUERY_DATASETS',
+                    'resource_data': acl
                 }
 
     def _retrieve(self):

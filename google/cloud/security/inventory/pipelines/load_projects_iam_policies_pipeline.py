@@ -61,11 +61,14 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                     if role.startswith('roles/'):
                         role = role.replace('roles/', '')
                         yield {
-                            'project_number': iam_policy_map['project_number'],
-                            'role': role,
-                            'member_type': member_type,
-                            'member_name': member_name,
-                            'member_domain': member_domain}
+                            'resource_key': iam_policy_map['project_number'],
+                            'resource_type': 'PROJECTS_IAM_POLICIES',
+                            'resource_data': {'project_number': iam_policy_map['project_number'],
+                                'role': role,
+                                'member_type': member_type,
+                                'member_name': member_name,
+                                'member_domain': member_domain}
+                            }
 
     def _retrieve(self):
         """Retrieve the project IAM policies from GCP.

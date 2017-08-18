@@ -32,20 +32,10 @@ FAKE_PROJECT_APPLICATIONS_MAP = {
 
 EXPECTED_LOADABLE_APPLICATIONS = [
     {
-        'default_hostname': u'project1.appspot.com',
-        'app_id': u'project1',
-        'serving_status': u'SERVING',
-        'gcr_domain': u'us.gcr.io',
-        'location_id': u'us-central',
-        'dispatch_rules': '[]',
-        'name': u'apps/project1',
-        'default_cookie_expiration': None,
-        'code_bucket': u'staging.project1.appspot.com',
-        'auth_domain': u'gmail.com',
-        'project_id': 'project1',
-        'iap': '{}',
-        'default_bucket': u'project1.appspot.com',
-        'raw_application': parser.json_stringify(
+        'index': u'project1',
+        'resource_key': u'apps/project1',
+        'resource_type': 'APPENGINE_PIPELINE',
+        'resource_data': parser.json_stringify(
             FAKE_PROJECT_APPLICATIONS_MAP['project1'])
     }
 ]
