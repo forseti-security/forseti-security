@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Playground gRPC service. """
+""" Inventory gRPC service. """
 
 import google.protobuf.timestamp_pb2 as timestamp
 
@@ -20,10 +20,10 @@ from google.cloud.security.iam.inventory import inventory_pb2
 from google.cloud.security.iam.inventory import inventory_pb2_grpc
 from google.cloud.security.iam.inventory import inventory
 
-
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
+
 
 def inventory_pb_from_object(inventory_index):
     """Convert internal inventory datastructure to protobuf."""
