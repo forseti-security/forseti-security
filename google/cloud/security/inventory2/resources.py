@@ -50,7 +50,7 @@ class Resource(object):
     def __init__(self, data, contains=None, **kwargs):
         self._data = data
         self._stack = None
-        self._leaf = len(contains) == 0
+        self._leaf = contains is None
         self._contains = [] if contains is None else contains
 
     def is_leaf(self):
@@ -152,6 +152,25 @@ class Organization(Resource):
         return self
 
 
+class DummyParent(Resource):
+    def __init__(self, resource):
+        if resource.type() == 'folder':
+            data = {'type':resource['parent'].split('s/')[0],
+                    'id':resource['parent'].split('s/')[1]}
+            super(DummyParent, self).__init__(data)
+        elif resource.type() == 'project':
+            super(DummyParent, self).__init__(resource['parent'])
+        else:
+            raise NotImplementedError('DummyParent of Class: {}'
+                                      .format(resource.type()))
+
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return self['type']
+
+
 class Folder(Resource):
     def key(self):
         return self['name'].split('/', 1)[-1]
@@ -162,6 +181,9 @@ class Folder(Resource):
 
     def type(self):
         return 'folder'
+
+    def parent(self):
+        return DummyParent(self)
 
 
 class Project(Resource):
@@ -178,6 +200,9 @@ class Project(Resource):
 
     def type(self):
         return 'project'
+
+    def parent(self):
+        return DummyParent(self)
 
 
 class GcsBucket(Resource):
