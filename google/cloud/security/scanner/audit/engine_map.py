@@ -18,6 +18,7 @@
 from google.cloud.security.scanner.audit.bigquery_rules_engine import BigqueryRulesEngine
 from google.cloud.security.scanner.audit.buckets_rules_engine import BucketsRulesEngine
 from google.cloud.security.scanner.audit.cloudsql_rules_engine import CloudSqlRulesEngine
+from google.cloud.security.scanner.audit.instance_network_interface_rules_engine import InstanceNetworkInterfaceRulesEngine
 from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
 from google.cloud.security.scanner.audit.iap_rules_engine import IapRulesEngine
 from google.cloud.security.scanner.audit.forwarding_rule_rules_engine import ForwardingRuleRulesEngine
@@ -28,6 +29,7 @@ ENGINE_TO_DATA_MAP = {
     'BigqueryRulesEngine': BigqueryRulesEngine,
     'BucketsRulesEngine': BucketsRulesEngine,
     'CloudSqlRulesEngine': CloudSqlRulesEngine,
+    'InstanceNetworkInterfaceRulesEngine': InstanceNetworkInterfaceRulesEngine,
     'ForwardingRuleRulesEngine': ForwardingRuleRulesEngine,
     'IamRulesEngine': IamRulesEngine,
     'IapRulesEngine': IapRulesEngine,
