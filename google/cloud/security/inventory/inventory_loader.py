@@ -47,11 +47,9 @@ from google.cloud.security.common.data_access import instance_template_dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import api_map
-from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import pipeline_builder as builder
 from google.cloud.security.inventory import util as inventory_util
 from google.cloud.security.notifier import notifier
@@ -147,6 +145,7 @@ def _start_snapshot_cycle(inventory_dao):
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
 
+# pylint: disable=broad-except
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
 
@@ -165,8 +164,7 @@ def _run_pipelines(pipelines):
             pipeline.run()
             pipeline.status = 'SUCCESS'
             LOGGER.info('Finished running %s', pipeline.__class__.__name__)
-        except (api_errors.ApiInitializationError,
-                inventory_errors.LoadDataPipelineError) as e:
+        except Exception as e:
             LOGGER.error('Encountered error loading data.\n%s', e)
             pipeline.status = 'FAILURE'
             LOGGER.info('Continuing on.')

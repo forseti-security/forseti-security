@@ -28,6 +28,8 @@ def run():
     parser.add_argument('--no-cloudshell',
                         action='store_true',
                         help='Bypass Cloud Shell requirement')
+    parser.add_argument('--branch',
+                        help='Which Forseti branch to deploy')
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
                        help='The GCS bucket location')

@@ -22,6 +22,7 @@ from __future__ import print_function
 import datetime
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -31,6 +32,10 @@ ROOT_DIR_PATH = os.path.dirname(
     os.path.dirname(
         os.path.dirname(
             os.path.dirname(__file__))))
+
+GCLOUD_MIN_VERSION = (163, 0, 0)
+GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
+GCLOUD_ALPHA_REGEX = r'alpha.*'
 
 REQUIRED_APIS = [
     {'name': 'Admin SDK',
@@ -68,7 +73,7 @@ PROJECT_IAM_ROLES = [
     'roles/cloudsql.client'
 ]
 
-DEFAULT_BUCKET_FMT = 'gs://{}-data'
+DEFAULT_BUCKET_FMT = 'gs://{}-data-{}'
 
 DEFAULT_CLOUDSQL_INSTANCE_NAME = 'forseti-security'
 
@@ -101,7 +106,9 @@ class ForsetiGcpSetup(object):
             kwargs (dict): The kwargs.
         """
         self.timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        self.timeonly = self.timestamp[8:]
         self.force_no_cloudshell = kwargs.get('no_cloudshell')
+        self.branch = kwargs.get('branch') or 'master'
 
         self.is_devshell = False
         self.authed_user = None
@@ -109,9 +116,9 @@ class ForsetiGcpSetup(object):
         self.organization_id = None
 
         self.gcp_service_account = SERVICE_ACCT_FMT.format(
-            'gcp', self.timestamp[8:])
+            'gcp', self.timeonly)
         self.gsuite_service_account = SERVICE_ACCT_FMT.format(
-            'gsuite', self.timestamp[8:])
+            'gsuite', self.timeonly)
         self.gsuite_svc_acct_key_location = None
 
         self.bucket_name = None
@@ -196,6 +203,45 @@ class ForsetiGcpSetup(object):
         out, err = proc.communicate()
         return proc.returncode, out, err
 
+    def check_proper_gcloud(self):
+        """Check gcloud version and presence of alpha components."""
+        return_code, out, err = self._run_command(
+            ['gcloud', '--version'])
+
+        version_regex = re.compile(GCLOUD_VERSION_REGEX)
+        alpha_regex = re.compile(GCLOUD_ALPHA_REGEX)
+
+        version = None
+        alpha_match = None
+
+        if return_code:
+            print('Error trying to determine your gcloud version:')
+            print(err)
+            sys.exit(1)
+        else:
+            for line in out.split('\n'):
+                version_match = version_regex.match(line)
+                if version_match:
+                    version = tuple(
+                        [int(i) for i in version_match.group(1).split('.')])
+                    continue
+                alpha_match = alpha_regex.match(line)
+                if alpha_match:
+                    break
+
+        print('Current gcloud version: {}'.format(version))
+        print('Has alpha components? {}'.format(alpha_match is not None))
+        if version < GCLOUD_MIN_VERSION or not alpha_match:
+            print('You need the following gcloud setup:\n\n'
+                  'gcloud version >= {}\n'
+                  'gcloud alpha components\n\n'
+                  'To install gcloud alpha components: '
+                  'gcloud components install alpha\n\n'
+                  'To update gcloud: gcloud components update\n'.
+                  format('.'.join(
+                      [str(i) for i in GCLOUD_MIN_VERSION])))
+            sys.exit(1)
+
     def gcloud_info(self):
         """Read gcloud info, and check if running in Cloud Shell."""
         # Read gcloud info
@@ -203,6 +249,7 @@ class ForsetiGcpSetup(object):
             ['gcloud', 'info', '--format=json'])
         if return_code:
             print(err)
+            sys.exit(1)
         else:
             try:
                 gcloud_info = json.loads(out)
@@ -212,8 +259,10 @@ class ForsetiGcpSetup(object):
                 props = config.get('properties', {})
                 metrics = props.get('metrics', {})
                 self.is_devshell = metrics.get('environment') == 'devshell'
+                print('Got gcloud info')
             except ValueError as verr:
                 print(verr)
+                sys.exit(1)
 
     def check_cloudshell(self):
         """Check whether using Cloud Shell or bypassing Cloud Shell."""
@@ -363,7 +412,7 @@ class ForsetiGcpSetup(object):
         return can_modify_project
 
     def _has_roles(self, resource_type, resource_id, roles):
-        """Check if user has certain roles in a resource.
+        """Check if user has one or more roles in a resource.
 
         Args:
             resource_type (str): The resource type.
@@ -391,7 +440,7 @@ class ForsetiGcpSetup(object):
                         role_members.extend(binding['members'])
 
                 for member in role_members:
-                    if member.find(self.authed_user):
+                    if member.find(self.authed_user) > -1:
                         has_roles = True
                         break
             except ValueError as verr:
@@ -507,7 +556,8 @@ class ForsetiGcpSetup(object):
 
     def generate_bucket_name(self):
         """Generate bucket name for the rules."""
-        self.bucket_name = DEFAULT_BUCKET_FMT.format(self.project_id)
+        self.bucket_name = DEFAULT_BUCKET_FMT.format(
+            self.project_id, self.timeonly)
 
     def generate_deployment_templates(self):
         """Generate deployment templates."""
@@ -532,7 +582,7 @@ class ForsetiGcpSetup(object):
             'BUCKET_LOCATION': self.bucket_location,
             'SERVICE_ACCT_GCP_READER': self.gcp_service_account,
             'SERVICE_ACCT_GSUITE_READER': self.gsuite_service_account,
-            'BRANCH_OR_RELEASE': 'branch-name: "master"',
+            'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
         }
 
         # Create Deployment template with values filled in.
