@@ -23,4 +23,5 @@ RESOURCE_MAP = {
     'instance_network_interface_violations': 'violations',
     'policy_violations': 'violations',
     'iap_violations': 'violations',
+    'blacklist_violations': 'violations',
 }

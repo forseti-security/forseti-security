@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for Blacklist of IP addresses ."""
+"""Rules engine for Blacklist of IP addresses."""
 import itertools
 import re
 import urllib2
@@ -23,11 +23,8 @@ import socket
 from collections import namedtuple
 
 
-from google.cloud.security.common.util.regex_util import escape_and_globify
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner.audit import base_rules_engine as bre
-from google.cloud.security.scanner.audit import errors as audit_errors
-from pprint import pprint as pp
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -117,25 +114,31 @@ class BlacklistRuleBook(bre.BaseRuleBook):
             self.add_rule(rule, i)
 
     def add_rule(self, rule_def, rule_index):
-        """Add a rule to the rule book."""
+        """Add a rule to the rule book.
+        Args:
+            rule_def (dict): A dictionary containing rule definition
+                properties.
+            rule_index (int): The index of the rule from the rule definitions.
+                Assigned automatically when the rule book is built.
+        """
 
         ip_file_url = rule_def.get('threats_url')
 
         ips, nets = self.get_and_parse_threat_url(ip_file_url)
 
         rule_def_resource = {
-             "ips_list": ips,
-             "nets_list": nets
+            "ips_list": ips,
+            "nets_list": nets
         }
 
         rule = Rule(rule_name=rule_def.get('name'),
-                        rule_index=rule_index,
-                        rules=rule_def_resource)
+                    rule_index=rule_index,
+                    rules=rule_def_resource)
 
         resource_rules = self.resource_rules_map.get(rule_index)
 
         if not resource_rules:
-                self.resource_rules_map[rule_index] = rule
+            self.resource_rules_map[rule_index] = rule
 
 
     def get_resource_rules(self):
@@ -151,10 +154,24 @@ class BlacklistRuleBook(bre.BaseRuleBook):
 
         return resource_rules
 
-    def get_and_parse_threat_url(self, url):
+    @staticmethod
+    def get_and_parse_threat_url(url):
+        """Download blacklist from provided url and parse it
+        to ips and net blocks
+
+        Args:
+            url (str): url to download blacklist from
+
+        Returns:
+            lists: first one is IP addresses,
+            second one is network blocks
+
+        """
         data = urllib2.urlopen(url).read()
-        ips = re.findall( r'[0-9]+(?:\.[0-9]+){3}', data)
-        nets = re.findall( r'(?<!\d\.)(?<!\d)(?:\d{1,3}\.){3}\d{1,3}/\d{1,2}(?!\d|(?:\.\d))', data)
+        ips = re.findall(r'[0-9]+(?:\.[0-9]+){3}', data)
+        nets = re.findall(
+            r'(?<!\d\.)(?<!\d)(?:\d{1,3}\.){3}\d{1,3}/\d{1,2}(?!\d|(?:\.\d))',
+            data)
         return ips, nets
 
 class Rule(object):
@@ -173,29 +190,46 @@ class Rule(object):
         self.rule_index = rule_index
         self.rules = rules
 
-    def addressInNetwork(self, ip, net):
-       ipaddr = struct.unpack("!I",socket.inet_aton(ip))[0]
-       netstr, bits = net.split('/')
-       netaddr = struct.unpack("!I",socket.inet_aton(netstr))[0]
-       mask = (0xffffffff << (32 - int(bits))) & 0xffffffff
-       return (ipaddr & mask) == (netaddr & mask)
-
-    def check_if_blacklisted(self, ip):
-        if ip in self.rules['ips_list']:
-            return True
-        for ip_network in self.rules['nets_list']:
-            if self.addressInNetwork(ip, ip_network):
-                return True
-        return False        
-
-
-    def find_violations(self, instance_network_interface):
-        """Raise violation is the ip is not in the whitelist.
+    @staticmethod
+    def address_in_network(ipaddr, net):
+        """ Checks if ip address is in net
 
         Args:
-            instance_network_interface a InstanceNetworkInterface object
+            ipaddr (str): IP address to check
+            net (str): network to check
 
-         Yields:
+        Returns:
+            bool: True if ipaddr in net
+        """
+        ipaddrb = struct.unpack("!I", socket.inet_aton(ipaddr))[0]
+        netstr, bits = net.split('/')
+        netaddr = struct.unpack("!I", socket.inet_aton(netstr))[0]
+        mask = (0xffffffff << (32 - int(bits))) & 0xffffffff
+        return (ipaddrb & mask) == (netaddr & mask)
+
+    def check_if_blacklisted(self, ipaddr):
+        """ Checks if ip address is in a blacklist
+
+        Args:
+            ipaddr (str): IP address to check
+
+        Returns:
+            bool: True if ipaddr is blacklisted
+        """
+        if ipaddr in self.rules['ips_list']:
+            return True
+        for ip_network in self.rules['nets_list']:
+            if self.address_in_network(ipaddr, ip_network):
+                return True
+        return False
+
+    def find_violations(self, instance_network_interface):
+        """Raise violation if the IP is not in the whitelist.
+
+        Args:
+            instance_network_interface (InstanceNetworkInterface): object
+
+        Yields:
             namedtuple: Returns RuleViolation named tuple
         """
 
@@ -206,8 +240,8 @@ class Rule(object):
         network = network_and_project.group(2)
 
         for access_config in instance_network_interface.access_configs:
-            ip = access_config['natIP']
-            if self.check_if_blacklisted(ip):
+            ipaddr = access_config['natIP']
+            if self.check_if_blacklisted(ipaddr):
                 yield self.RuleViolation(
                     resource_type='instance',
                     rule_name=self.rule_name,
