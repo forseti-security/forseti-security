@@ -18,6 +18,7 @@ from ratelimiter import RateLimiter
 
 from google.cloud.security.common.gcp_api import _base_client
 from googleapiclient import errors
+from google.cloud.security.common.gcp_api import errors as api_errors
 
 
 class AppEngineClient(_base_client.BaseClient):
@@ -75,4 +76,6 @@ class AppEngineClient(_base_client.BaseClient):
                 # Operation not allowed
                 # This has been handled by the BaseClient._execute
                 pass
+        except api_errors.ApiNotEnabledError as e:
+            print('Warning: App Engine Admin API not enabled')
         return app

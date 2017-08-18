@@ -120,9 +120,14 @@ class ApiClientImpl(ApiClient):
             yield dataset
 
     def iter_appengineapps(self, projectid):
+        """ TO DO: Have to verify that the customer enabled App Engine Admin
+            API before creating inventory
+        """
         response = self.appengine.get_app(projectid)
-        return
-        yield
+        if not response:
+            return
+            yield
+        yield response
 
     def iter_cloudsqlinstances(self, projectid):
         result = self.cloudsql.get_instances(projectid)

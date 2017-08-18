@@ -16,7 +16,6 @@
 
 import json
 
-
 def cached(field_name):
     field_name = '__cached_{}'.format(field_name)
 
@@ -345,7 +344,7 @@ class BucketIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_buckets(
-                projectid=self.resource['projectNumber']):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['bucket'].create_new(data)
 
 
@@ -368,7 +367,7 @@ class DataSetIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_datasets(
-                projectid=self.resource['projectNumber']):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
 
 
@@ -377,7 +376,7 @@ class AppEngineAppIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_appengineapps(
-                        projectid=self.resource['projectNumber']):
+                    projectid=self.resource['name']):
                 yield FACTORIES['appengineapp'].create_new(data)
 
 
@@ -386,7 +385,7 @@ class InstanceIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_computeinstances(
-                projectid=self.resource['projectId']):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['instance'].create_new(data)
 
 
@@ -404,7 +403,7 @@ class InstanceGroupIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_computeinstancegroups(
-                projectid=self.resource['projectId']):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroup'].create_new(data)
 
 
@@ -413,7 +412,7 @@ class BackendServiceIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_backendservices(
-                projectid=self.resource['projectId']):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['backendservice'].create_new(data)
 
 
