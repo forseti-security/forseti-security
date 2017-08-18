@@ -1,0 +1,13 @@
+rules:
+  - name: all networks covered in whitelist
+    project: '*'
+    network: '*'
+    is_external_network: True
+    whitelist:
+      project-1: 
+        - network-1
+      project-2: 
+        - network-2
+        - project-2-2
+      project-4: 
+        - network-4

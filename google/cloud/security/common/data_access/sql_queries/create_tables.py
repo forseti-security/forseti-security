@@ -477,6 +477,19 @@ CREATE_RAW_PROJECT_IAM_POLICIES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_SERVICE_ACCOUNTS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `email` varchar(255) DEFAULT NULL,
+        `oauth2_client_id` varchar(255) DEFAULT NULL,
+        `account_keys` json DEFAULT NULL,
+        `raw_service_account` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 # TODO: define the violation_type enum as a list
 CREATE_VIOLATIONS_TABLE = """
     CREATE TABLE `{0}` (
@@ -488,7 +501,8 @@ CREATE_VIOLATIONS_TABLE = """
         `violation_type` enum('UNSPECIFIED','ADDED','REMOVED',
                               'BIGQUERY_VIOLATION', 'BUCKET_VIOLATION',
                               'IAP_VIOLATION', 'CLOUD_SQL_VIOLATION',
-                              'FORWARDING_RULE_VIOLATION') NOT NULL,
+                              'FORWARDING_RULE_VIOLATION',
+                              'INSTANCE_NETWORK_INTERFACE_VIOLATION') NOT NULL,
         `violation_data` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Writes the csv files for upload to Cloud SQL."""
-
 from contextlib import contextmanager
 import csv
 import os
@@ -385,6 +384,15 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
     'iam_policy'
 ]
 
+SERVICE_ACCOUNTS_FIELDNAMES = [
+    'project_id',
+    'name',
+    'email',
+    'oauth2_client_id',
+    'account_keys',
+    'raw_service_account'
+]
+
 CSV_FIELDNAME_MAP = {
     'appengine': APPENGINE_SERVICES_FIELDNAMES,
 
@@ -424,6 +432,8 @@ CSV_FIELDNAME_MAP = {
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
+
+    'service_accounts': SERVICE_ACCOUNTS_FIELDNAMES,
 
     'violations': VIOLATION_FIELDNAMES,
 }

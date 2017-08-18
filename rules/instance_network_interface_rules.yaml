@@ -12,35 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The APIs supported by the discovery service.
-
-Not intended to be an exhaustive list (which can be retrieved from
-discovery.get()).
-"""
-
-SUPPORTED_APIS = {
-    'appengine': {
-        'version': 'v1'
-    },
-    'bigquery': {
-        'version': 'v2'
-    },
-    'cloudresourcemanager': {
-        'version': 'v1'
-    },
-    'compute': {
-        'version': 'v1'
-    },
-    'iam': {
-        'version': 'v1'
-    },
-    'storage': {
-        'version': 'v1'
-    },
-    'admin': {
-        'version': 'directory_v1'
-    },
-    'sqladmin': {
-        'version': 'v1beta4'
-    }
-}
+rules:
+  # This rule helps with:
+  # #1 Ensure instances with external IPs are only running 
+  # on whitelisted networks
+  # #2 Ensure instances are only running on networks created in allowed 
+  # projects (using XPN)
+  - name: all networks covered in whitelist
+    project: '*'
+    network: '*'
+    is_external_network: True
+    # this would be a custom list of your networks/projects.
+    whitelist:
+      master: 
+        - master-1
+      network: 
+        - network-1 
+        - network-2
+      default:
+        - default-1
