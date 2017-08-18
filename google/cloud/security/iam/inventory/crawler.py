@@ -14,6 +14,10 @@
 
 """ Crawler implementation. """
 
+# TODO: Remove this when time allows
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc
+
 from google.cloud.security.inventory2 import resources
 from google.cloud.security.inventory2 import gcp
 

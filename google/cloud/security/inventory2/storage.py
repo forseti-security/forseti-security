@@ -15,6 +15,11 @@
 """ Crawler implementation. """
 
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-param-doc
+
+
 class Storage(object):
 
     def open(self):
@@ -36,6 +41,12 @@ class Storage(object):
         raise NotImplementedError()
 
     def __iter__(self):
+        raise NotImplementedError()
+
+    def commit(self):
+        raise NotImplementedError()
+
+    def rollback(self):
         raise NotImplementedError()
 
 
@@ -76,3 +87,9 @@ class Memory(Storage):
 
     def __exit__(self, type_p, value, tb):
         self.close()
+
+    def commit(self):
+        pass
+
+    def rollback(self):
+        pass

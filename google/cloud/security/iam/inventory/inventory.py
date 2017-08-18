@@ -14,9 +14,9 @@
 
 """ Inventory API. """
 
-# TODO: The next editor must remove this disable and correct issues.
+# TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-param-doc,line-too-long
 
 from Queue import Queue
 import traceback
