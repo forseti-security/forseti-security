@@ -124,6 +124,10 @@ class BasePipeline(object):
             return
 
         try:
+            print("1!!!!!!!!!!!!!!!!!!!")
+            print(resource_name)
+            print(data)
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~")
             self.dao.load_data(resource_name, self.cycle_timestamp, data)
         except (data_access_errors.CSVFileError,
                 data_access_errors.MySQLError) as e:

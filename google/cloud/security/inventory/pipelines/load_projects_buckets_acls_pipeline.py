@@ -54,7 +54,7 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
                 yield {
                     'resource_key': buckets_acls_map['bucket_name'],
                    'resource_type': 'PROJECTS_BUCKETS_ACL',
-                    'resource_data': acl_item
+                    'resource_data': parser.json_stringify(acl_item)
                     }
 
     def _retrieve(self):

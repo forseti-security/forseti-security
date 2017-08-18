@@ -146,25 +146,6 @@ class Dao(_db_connector.DbConnector):
         cursor.execute(create_snapshot_sql)
         return snapshot_table_name
 
-    def _create_snapshot_table(self, resource_name, timestamp):
-        """Creates a snapshot table.
-
-        Args:
-            resource_name (str): String of the resource name.
-            timestamp (str): String of timestamp, formatted as
-                YYYYMMDDTHHMMSSZ.
-
-        Returns:
-            str: String of the created snapshot table.
-        """
-        snapshot_table_name = self._create_snapshot_table_name(
-            resource_name, timestamp)
-        create_table_sql = CREATE_TABLE_MAP[resource_name]
-        create_snapshot_sql = create_table_sql.format(snapshot_table_name)
-        cursor = self.conn.cursor()
-        cursor.execute(create_snapshot_sql)
-        return snapshot_table_name
-
     @staticmethod
     def _create_snapshot_table_name(resource_name, timestamp):
         """Create the snapshot table if it doesn't exist.
@@ -219,6 +200,10 @@ class Dao(_db_connector.DbConnector):
                     'inventory', csv_file.name, 'inventory_' + timestamp)
                 LOGGER.debug('SQL: %s', load_data_sql)
                 cursor = self.conn.cursor()
+                print("~~~~~~~~~load-data_sql~~~~~~~~~~")
+                print(load_data_sql)
+                print("~~~~~~~~~load-data_sql~~~~~~~~~~")
+
                 cursor.execute(load_data_sql)
                 self.conn.commit()
                 # TODO: Return the snapshot table name so that it can be tracked

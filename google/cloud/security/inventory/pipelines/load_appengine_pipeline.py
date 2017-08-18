@@ -61,7 +61,6 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
         """
         for index, app in resource_from_api.iteritems():
             yield {
-                   'index': app.get('id'),
                    'resource_key': app.get('name'),
                    'resource_type': 'APPENGINE_PIPELINE',
                    'resource_data': app}

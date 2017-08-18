@@ -47,10 +47,13 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
             # "organizations/<organization_id>".
             org_name = org.get('name')
             org_id = org_name[len('%s/' % self.RESOURCE_NAME):]
-
+            print("||||||||||||||||||")
+            print("resource data resouce:")
+            print(org)
+            print("||||||||||||||||||")
             yield {'resource_key': org_name,
-                   'resource_type': 'ORGS',
-                   'resource_data': org
+                   'resource_type': self.RESOURCE_NAME,
+                   'resource_data': parser.json_stringify(org)
                    }
 
     def _retrieve(self):

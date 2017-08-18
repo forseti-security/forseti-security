@@ -72,9 +72,9 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
                 parent_type, parent_id = folder.get('parent', '').split('/')
                 parent_type = resource_util.type_from_name(parent_type)
             yield {'resource_key': folder_name,
-                   'resource_data': folder,
+                   'resource_data': folder_json,
                    'resource_type': 'FOLDERS',
-                   'parent_resource_key': parent_id
+                   'parent_resource_key': parent_id,
                    }
 
     def _retrieve(self):

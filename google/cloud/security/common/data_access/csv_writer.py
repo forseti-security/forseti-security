@@ -389,6 +389,7 @@ INVENTORY_FIELDNAMES = [
     'parent_resource_key',
     'resource_type',
     'resource_data',
+]
 
 SERVICE_ACCOUNTS_FIELDNAMES = [
     'project_id',
@@ -397,7 +398,6 @@ SERVICE_ACCOUNTS_FIELDNAMES = [
     'oauth2_client_id',
     'account_keys',
     'raw_service_account'
->>>>>>> upstream/dev
 ]
 
 CSV_FIELDNAME_MAP = {

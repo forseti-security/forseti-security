@@ -63,11 +63,11 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                         yield {
                             'resource_key': iam_policy_map['project_number'],
                             'resource_type': 'PROJECTS_IAM_POLICIES',
-                            'resource_data': {'project_number': iam_policy_map['project_number'],
+                            'resource_data': parser.json_stringify({'project_number': iam_policy_map['project_number'],
                                 'role': role,
                                 'member_type': member_type,
                                 'member_name': member_name,
-                                'member_domain': member_domain}
+                                'member_domain': member_domain})
                             }
 
     def _retrieve(self):

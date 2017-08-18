@@ -45,7 +45,8 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
                         for project in d.get('projects', [])):
             yield {'resource_key': project.get('projectId'),
                    'resource_type': 'LOAD_PROJECTS',
-                   'resource_data': project
+                   'parent_resource_key': project.get('parent', {}).get('id'),
+                   'resource_data': parser.json_stringify(project)
                    }
 
     def _retrieve(self):
