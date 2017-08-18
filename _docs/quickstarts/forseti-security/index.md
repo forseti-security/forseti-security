@@ -99,4 +99,3 @@ Open a Cloud Shell session in your Google Cloud console.
   - Enable [GSuite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
   for processing by Forseti.
   - Learn how to [change a deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
-
