@@ -75,6 +75,29 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     return discovery.build(**discovery_kwargs)
 
 
+def flatten_list_results(paged_results, item_key):
+    """Flatten a split-up list as returned by list_next() API.
+
+    GCE 'list' APIs return results in the form:
+      {item_key: [...]}
+    with one dictionary for each "page" of results. This method flattens
+    that to a simple list of items.
+
+    Args:
+        paged_results (list): A list of paged API response objects.
+            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
+        item_key (str): The name of the key within the inner "items" lists
+            containing the objects of interest.
+
+    Returns:
+        list: A list of items.
+    """
+    results = []
+    for page in paged_results:
+        results.extend(page.get(item_key, []))
+    return results
+
+
 class BaseRepositoryClient(object):
     """Base class for API repository for a specified Cloud API."""
 
@@ -172,12 +195,13 @@ class BaseRepositoryClient(object):
 
         return repo_property
 
-
+# pylint: disable=too-many-instance-attributes
 class GCPRepository(object):
     """Base class for GCP APIs."""
 
-    def __init__(self, gcp_service, credentials, component, entity,
-                 num_retries=NUM_HTTP_RETRIES, rate_limiter=None):
+    def __init__(self, gcp_service, credentials, component, entity='',
+                 num_retries=NUM_HTTP_RETRIES, projects_field='project',
+                 rate_limiter=None):
         """Constructor.
 
         Args:
@@ -191,6 +215,8 @@ class GCPRepository(object):
               E.g. 'instance' for compute.instances().get()
           num_retries (int): The number of http retriable errors to retry on
               before hard failing.
+          projects_field (str): The field name representing the project to
+              query in the API.
           rate_limiter (object): A RateLimiter object to manage API quota.
         """
         self.gcp_service = gcp_service
@@ -198,6 +224,7 @@ class GCPRepository(object):
         self._component = getattr(self.gcp_service, component)()
         self._entity = entity
         self._num_retries = num_retries
+        self._projects_field = projects_field
         self._rate_limiter = rate_limiter
 
         self._local = LOCAL_THREAD
@@ -328,7 +355,7 @@ class GCPRepository(object):
         next_page_token = None
         number_of_pages_processed = 0
         while True:
-            req_body = verb_arguments.get('body', {})
+            req_body = verb_arguments.get('body', dict())
             if next_page_token:
                 req_body['pageToken'] = next_page_token
             request = self._build_request(verb, verb_arguments)
@@ -377,12 +404,13 @@ class GCPRepository(object):
         else:
             return request.execute(http=self.http,
                                    num_retries=self._num_retries)
+# pylint: enable=too-many-instance-attributes
 
 
 class ListQueryMixin(object):
     """Mixin that implements Paged List query."""
 
-    def list(self, project, fields=None, max_results=None, verb='list',
+    def list(self, project=None, fields=None, max_results=None, verb='list',
              **kwargs):
         """List GCP entities of a given project.
 
@@ -398,9 +426,11 @@ class ListQueryMixin(object):
         """
         assert isinstance(self, GCPRepository)
 
-        arguments = {'project': project,
-                     'fields': fields,
+        arguments = {'fields': fields,
                      'maxResults': max_results}
+
+        if self._projects_field and project:
+            arguments[self._projects_field] = project
 
         if kwargs:
             arguments.update(kwargs)
@@ -413,7 +443,7 @@ class ListQueryMixin(object):
 class GetQueryMixin(object):
     """Mixin that implements Get query."""
 
-    def get(self, project, target, fields=None, verb='get', **kwargs):
+    def get(self, project, target=None, fields=None, verb='get', **kwargs):
         """Get GCP entity.
 
         Args:
@@ -432,10 +462,12 @@ class GetQueryMixin(object):
             "The resource '...' was not found"
         """
         assert isinstance(self, GCPRepository)
+        assert bool(self._projects_field)
 
-        arguments = {'project': project,
-                     self._entity: target,
+        arguments = {self._projects_field: project,
                      'fields': fields}
+        if self._entity and target:
+            arguments[self._entity] = target
         if kwargs:
             arguments.update(kwargs)
 
@@ -443,6 +475,7 @@ class GetQueryMixin(object):
             verb=verb,
             verb_arguments=arguments,
         )
+
 
 class GetIamPolicyQueryMixin(object):
     """Mixin that implements getIamPolicy query."""

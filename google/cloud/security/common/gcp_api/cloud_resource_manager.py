@@ -102,6 +102,7 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
 
 class _ResourceManagerProjectsRepository(
         _base_repository.GCPRepository,
+        _base_repository.GetQueryMixin,
         _base_repository.GetIamPolicyQueryMixin):
     """Implementation of Cloud Resource Manager Projects repository."""
 
@@ -119,22 +120,8 @@ class _ResourceManagerProjectsRepository(
             credentials=credentials,
             component='projects',
             entity='',
+            projects_field='projectId',
             rate_limiter=rate_limiter)
-
-    def get(self, project, fields=None):
-        """Get the project resource data.
-
-        Args:
-          project (str): The project id or number to query.
-          fields (str): Fields to include in the response - partial response.
-
-        Returns:
-          dict: Response from the API.
-        """
-        return self.execute_query(
-            verb='get',
-            verb_arguments={'projectId': project, 'fields': fields}
-        )
 
     def get_ancestry(self, project, fields=None):
         """Get the project ancestory data.
@@ -148,7 +135,9 @@ class _ResourceManagerProjectsRepository(
         """
         return self.execute_query(
             verb='getAncestry',
-            verb_arguments={'projectId': project, 'fields': fields, 'body': {}}
+            verb_arguments={self._projects_field: project,
+                            'fields': fields,
+                            'body': {}}
         )
 
     def list(self, parent_id=None, parent_type=None, filters=None, fields=None):
@@ -325,12 +314,11 @@ class CloudResourceManagerClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        del kwargs
         max_calls = global_configs.get('max_crm_api_calls_per_100_seconds')
         self.repository = CloudResourceManagerRepository(
             quota_max_calls=max_calls,
             quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
-            use_rate_limiter=True)
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_project(self, project_id):
         """Get all the projects from organization.

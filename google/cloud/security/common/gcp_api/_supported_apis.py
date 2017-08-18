@@ -23,7 +23,8 @@ SUPPORTED_APIS = {
         'version': 'v1'
     },
     'bigquery': {
-        'version': 'v2'
+        'default_version': 'v2',
+        'supported_versions': ['v2']
     },
     'cloudresourcemanager': {
         'default_version': 'v1',

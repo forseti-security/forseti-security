@@ -17,7 +17,6 @@
 import json
 import unittest
 from googleapiclient.http import HttpMock
-from httplib2 import HttpLib2Error
 import mock
 
 from tests.common.gcp_api.test_data import fake_crm_responses
@@ -31,21 +30,17 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 
 
-# pylint: disable=bad-indentation
 class CloudResourceManagerTest(ForsetiTestCase):
     """Test the Cloud Resource Manager API Client."""
-
-    MAX_CRM_API_CALLS_PER_100_SECONDS = 88888
 
     @mock.patch('google.cloud.security.common.gcp_api._base_repository'
                 '.GoogleCredentials')
     def setUp(self, mock_google_credential):
         """Set up."""
         fake_global_configs = {
-            'max_crm_api_calls_per_100_seconds':
-                self.MAX_CRM_API_CALLS_PER_100_SECONDS}
+            'max_crm_api_calls_per_100_seconds': 1000000}
         self.crm_api_client = crm.CloudResourceManagerClient(
-            global_configs=fake_global_configs)
+            global_configs=fake_global_configs, use_rate_limiter=False)
 
         self.project_id = fake_crm_responses.FAKE_PROJECT_ID
 
