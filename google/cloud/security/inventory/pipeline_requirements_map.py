@@ -115,4 +115,9 @@ REQUIREMENTS_MAP = {
          'depends_on': 'projects',
          'api_name': 'crm_api',
          'dao_name': 'project_dao'},
+    'service_accounts':
+        {'module_name': 'load_service_accounts_pipeline',
+         'depends_on': 'projects',
+         'api_name': 'iam_api',
+         'dao_name': 'service_account_dao'},
 }

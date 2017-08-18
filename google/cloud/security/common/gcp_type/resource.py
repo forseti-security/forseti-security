@@ -34,6 +34,9 @@ class ResourceType(object):
     # Groups
     GROUP = 'group'
 
+    # IAM
+    SERVICE_ACCOUNT = 'service_account'
+
     # Compute engine
     BACKEND_SERVICE = 'backend_service'
     FIREWALL_RULE = 'firewall_rule'
@@ -42,6 +45,7 @@ class ResourceType(object):
     INSTANCE_GROUP = 'instance_group'
     INSTANCE_GROUP_MANAGER = 'instance_group_manager'
     INSTANCE_TEMPLATE = 'instance_template'
+    INSTANCE_NETWORK_INTERFACE = 'instance_network_interface'
 
     # Data storage
     BIGQUERY_ACL = 'bigquery_datasets'

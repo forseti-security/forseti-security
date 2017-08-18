@@ -20,6 +20,7 @@ RESOURCE_MAP = {
     'cloudsql_acl_violations': 'violations',
     'forwarding_rule_violations' : 'violations',
     'groups_violations': 'groups_violations',
+    'instance_network_interface_violations': 'violations',
     'policy_violations': 'violations',
     'iap_violations': 'violations',
 }
