@@ -14,17 +14,16 @@
 
 """Base GCP client which uses the discovery API."""
 
+import logging
+import threading
+
 import googleapiclient
 from googleapiclient import discovery
-from googleapiclient import errors
 import httplib2
-import json
-import logging
 
 from oauth2client.client import GoogleCredentials
 from ratelimiter import RateLimiter
 from retrying import retry
-import threading
 
 from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import errors as api_errors
@@ -48,14 +47,15 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     """Builds and returns a cloud API service object.
 
     Args:
-      credentials: GoogleCredentials that will be passed to the service.
-      service_name: The name of the GCE Apiary API.
-      version: The version of the GCE API to use.
-      developer_key: The api key to use (for GCE API None is sufficient).
-      cache_discovery: Whether or not to cache the discovery doc.
+      credentials (object): GoogleCredentials that will be passed to the
+          service.
+      service_name (str): The name of the GCE Apiary API.
+      version (str): The version of the GCE API to use.
+      developer_key (str): The api key to use (for GCE API None is sufficient).
+      cache_discovery (bool): Whether or not to cache the discovery doc.
 
     Returns:
-      A Resource object with methods for interacting with the service.
+      object: A Resource object with methods for interacting with the service.
     """
     # The default logging of the discovery obj is very noisy in recent versions.
     # Lower the default logging level of just this module to WARNING.
@@ -88,7 +88,7 @@ class BaseRepositoryClient(object):
         Args:
           api_name (str): The API name to wrap. More details here:
                 https://developers.google.com/api-client-library/python/apis/
-          versions ([str]): A list of version strings to initialize.
+          versions (list): A list of version strings to initialize.
           credentials: GoogleCredentials.
           quota_max_calls: (int) Allowed requests per <quota_period> for the
               API.
@@ -105,8 +105,8 @@ class BaseRepositoryClient(object):
         self._repository_lock = threading.RLock()
 
         if use_rate_limiter:
-            self._rate_limiter = ratelimiter.RateLimiter(
-                max_calls=quota_max_calls, period=quota_period)
+            self._rate_limiter = RateLimiter(max_calls=quota_max_calls,
+                                             period=quota_period)
         else:
             self._rate_limiter = None
 
@@ -131,12 +131,12 @@ class BaseRepositoryClient(object):
 
         self.gcp_services = {}
         for version in versions:
-          self.gcp_services[version] = _create_service_api(
-              self._credentials,
-              self.name,
-              version,
-              kwargs.get('developer_key'),
-              kwargs.get('cache_discovery', False))
+            self.gcp_services[version] = _create_service_api(
+                self._credentials,
+                self.name,
+                version,
+                kwargs.get('developer_key'),
+                kwargs.get('cache_discovery', False))
 
     def __repr__(self):
         """The object representation.
@@ -144,10 +144,17 @@ class BaseRepositoryClient(object):
         Returns:
             str: The object representation.
         """
-        return 'API: name=%s, version=%s' % (self.name, self.version)
+        return 'API: name=%s, version=%s' % (self.name, self.versions)
 
     def _init_repository(self, repository_class, gcp_service, repo_property):
-        """Safely initialize a repository class to a property."""
+        """Safely initialize a repository class to a property.
+
+        Args:
+          repository_class (class): The class to initialize.
+          gcp_service (object): The gcp service object for the repository.
+          repo_property (object): The pointer to the instance of the initialized
+              class.
+        """
         with self._repository_lock:
             if not repo_property:  # Verify it still doesn't exist.
                 repo_property = (
@@ -161,38 +168,31 @@ class BaseRepositoryClient(object):
 class GCPRepository(object):
     """Base class for GCP APIs."""
 
-    def __init__(
-        self,
-        gcp_service,
-        credentials,
-        component,
-        entity,
-        assert_completion_func=None,
-        num_retries=NUM_HTTP_RETRIES,
-        rate_limiter=None):
+    def __init__(self, gcp_service, credentials, component, entity,
+                 num_retries=NUM_HTTP_RETRIES, rate_limiter=None):
         """Constructor.
 
         Args:
-          gcp_service: A Resource object with methods for interacting with the
-              service.
-          credentials: A GoogleCredentials object
-          component: The subcomponent of the gcp service for this repository
-              instance. E.g. 'instances' for compute.instances().* APIs
-          entity: The API entity returned generally by the .get() api.
+          gcp_service (object): A Resource object with methods for interacting
+              with the service.
+          credentials (object): A GoogleCredentials object
+          component (str): The subcomponent of the gcp service for this
+              repository instance. E.g. 'instances' for compute.instances().*
+              APIs
+          entity (str): The API entity returned generally by the .get() api.
               E.g. 'instance' for compute.instances().get()
-          assert_completion_func: A function that watches an async API operation
-              and returns when it is complete.
-          num_retries: The number of http retriable errors to retry on before
-              hard failing.
-          rate_limiter: A RateLimiter object to manage API quota.
+          num_retries (int): The number of http retriable errors to retry on
+              before hard failing.
+          rate_limiter (object): A RateLimiter object to manage API quota.
         """
         self.gcp_service = gcp_service
         self._credentials = credentials
         self._component = getattr(self.gcp_service, component)()
         self._entity = entity
-        self._assert_completion_func = assert_completion_func
         self._num_retries = num_retries
         self._rate_limiter = rate_limiter
+
+        self._assert_completion_func = None
 
         self._local = LOCAL_THREAD
 
@@ -285,51 +285,58 @@ class GCPRepository(object):
         return request_submission_status
 
     def execute_paged_query(self, verb, verb_arguments):
-      """Executes query (ex. list) via a dedicated http object.
+        """Executes query (ex. list) via a dedicated http object.
 
-      Args:
-        verb (str): Method to execute on the component (ex. get, list).
-        verb_arguments (dict): key-value pairs to be passed to _BuildRequest.
+        Args:
+          verb (str): Method to execute on the component (ex. get, list).
+          verb_arguments (dict): key-value pairs to be passed to _BuildRequest.
 
-      Yields:
-        dict: Service Response.
+        Yields:
+          dict: Service Response.
 
-      Raises:
-        PaginationNotSupportedError: When an API does not support paging.
-      """
-      if not self._request_supports_pagination(verb=verb):
-          raise api_errors.PaginationNotSupportedError(
-              '{} does not support pagination')
+        Raises:
+          PaginationNotSupportedError: When an API does not support paging.
+        """
+        if not self._request_supports_pagination(verb=verb):
+            raise api_errors.PaginationNotSupportedError(
+                '{} does not support pagination')
 
-      request = self._build_request(verb, verb_arguments)
+        request = self._build_request(verb, verb_arguments)
 
-      number_of_pages_processed = 0
-      while request is not None:
-          response = self._execute(request)
-          number_of_pages_processed += 1
-          LOGGER.debug('Executing paged request #%s',
-                        number_of_pages_processed)
-          request = self._build_next_request(verb, request, response)
-          yield response
+        number_of_pages_processed = 0
+        while request is not None:
+            response = self._execute(request)
+            number_of_pages_processed += 1
+            LOGGER.debug('Executing paged request #%s',
+                         number_of_pages_processed)
+            request = self._build_next_request(verb, request, response)
+            yield response
 
     def execute_query(self, verb, verb_arguments):
-      """Executes query (ex. get) via a dedicated http object.
+        """Executes query (ex. get) via a dedicated http object.
 
-      Args:
-        verb (str): Method to execute on the component (ex. get, list).
-        verb_arguments (dict): key-value pairs to be passed to _BuildRequest.
+        Args:
+          verb (str): Method to execute on the component (ex. get, list).
+          verb_arguments (dict): key-value pairs to be passed to _BuildRequest.
 
-      Returns:
-        dict: Service Response.
-      """
-      request = self._build_request(verb, verb_arguments)
-      return self._execute(request)
+        Returns:
+          dict: Service Response.
+        """
+        request = self._build_request(verb, verb_arguments)
+        return self._execute(request)
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
     def _execute(self, request):
-        """Run execute with retries and rate limiting."""
+        """Run execute with retries and rate limiting.
+
+        Args:
+          request (object): The HttpRequest object to execute.
+
+        Returns:
+          dict: The response from the API.
+        """
         if self._rate_limiter:
             # Since the ratelimiter library only exposes a context manager
             # interface the code has to be duplicated to handle the case where
@@ -351,7 +358,7 @@ class ListQueryMixin(object):
 
         Args:
           project: The id of the project to query.
-          fields ([str]): Fields to include in the response - partial response.
+          fields (str): Fields to include in the response - partial response.
           max_results (int): Number of entries to include per page.
           verb (str): The method to call on the API.
           kwargs (dict): Optional additional arguments to pass to the query.
@@ -368,9 +375,8 @@ class ListQueryMixin(object):
         if kwargs:
             arguments.update(kwargs)
 
-        for resp in self.execute_paged_query(
-            verb='list',
-            verb_arguments=arguments):
+        for resp in self.execute_paged_query(verb=verb,
+                                             verb_arguments=arguments):
             yield resp
 
 
@@ -383,7 +389,7 @@ class GetQueryMixin(object):
         Args:
           project (str): The id of the project to query.
           target (str):  Name of the entity to fetch.
-          fields ([str]): Fields to include in the response - partial response.
+          fields (str): Fields to include in the response - partial response.
           verb (str): The method to call on the API.
           kwargs (dict): Optional additional arguments to pass to the query.
 
@@ -417,7 +423,7 @@ class GetIamPolicyQueryMixin(object):
 
         Args:
           resource (str): The id of the resource to fetch.
-          fields ([str]): Fields to include in the response - partial response.
+          fields (str): Fields to include in the response - partial response.
           verb (str): The method to call on the API.
           kwargs (dict): Optional additional arguments to pass to the query.
 

@@ -64,14 +64,15 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     """Builds and returns a cloud API service object.
 
     Args:
-        credentials: GoogleCredentials that will be passed to the service.
-        service_name: The name of the GCE Apiary API.
-        version: The version of the GCE API to use.
-        developer_key: The api key to use (for GCE API None is sufficient).
-        cache_discovery: Whether or not to cache the discovery doc.
+        credentials (object): GoogleCredentials that will be passed to the
+            service.
+        service_name (str): The name of the GCE Apiary API.
+        version (str): The version of the GCE API to use.
+        developer_key (str): The api key to use.
+        cache_discovery (bool): Whether or not to cache the discovery doc.
 
     Returns:
-        A Resource object with methods for interacting with the service.
+        object: A Resource object with methods for interacting with the service.
     """
     # The default logging of the discovery obj is very noisy in recent versions.
     # Lower the default logging level of just this module to WARNING.

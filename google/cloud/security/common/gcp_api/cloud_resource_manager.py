@@ -16,9 +16,8 @@
 
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
-from ratelimiter import RateLimiter
 
-from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 
@@ -53,7 +52,11 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
 
     @property
     def projects(self):
-        """A CloudBillingProjectsRepository instance."""
+        """A _ResourceManagerProjectsRepository instance.
+
+        Returns:
+          object: A _ResourceManagerProjectsRepository instance.
+        """
         if not self._projects:
             self._projects = self._init_repository(
                 _ResourceManagerProjectsRepository,
@@ -64,7 +67,11 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
 
     @property
     def organizations(self):
-        """A CloudBillingOrganizationsRepository instance."""
+        """A _ResourceManagerOrganizationsRepository instance.
+
+        Returns:
+          object: A _ResourceManagerOrganizationsRepository instance.
+        """
         if not self._organizations:
             self._organizations = self._init_repository(
                 _ResourceManagerOrganizationsRepository,
@@ -75,7 +82,11 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
 
     @property
     def folders(self):
-        """A CloudBillingOrganizationsRepository instance."""
+        """A _ResourceManagerFoldersRepository instance.
+
+        Returns:
+          object: A _ResourceManagerFoldersRepository instance.
+        """
         if not self._folders:
             self._folders = self._init_repository(
                 _ResourceManagerFoldersRepository,
@@ -86,17 +97,18 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
 
 
 class _ResourceManagerProjectsRepository(
-    _base_repository.GCPRepository,
-    _base_repository.GetIamPolicyQueryMixin):
+        _base_repository.GCPRepository,
+        _base_repository.GetIamPolicyQueryMixin):
     """Implementation of Cloud Resource Manager Projects repository."""
 
     def __init__(self, gcp_service, credentials, rate_limiter):
         """Constructor.
 
         Args:
-          gce_service: A GCE service object built using the Google discovery API.
-          credentials: GoogleCredentials.
-          rate_limiter: A rate limiter instance.
+          gce_service (object): A GCE service object built using the Google
+              discovery API.
+          credentials (object): GoogleCredentials.
+          rate_limiter (object): A rate limiter instance.
         """
         super(_ResourceManagerProjectsRepository, self).__init__(
             gcp_service=gcp_service,
@@ -106,21 +118,48 @@ class _ResourceManagerProjectsRepository(
             rate_limiter=rate_limiter)
 
     def get(self, project, fields=None):
-        """Get the project resource data."""
+        """Get the project resource data.
+
+        Args:
+          project (str): The project id or number to query.
+          fields (str): Fields to include in the response - partial response.
+
+        Returns:
+          dict: Response from the API.
+        """
         return self.execute_query(
             verb='get',
             verb_arguments={'projectId': project, 'fields': fields}
         )
 
     def get_ancestry(self, project, fields=None):
-        """Get the project ancestory data."""
+        """Get the project ancestory data.
+
+        Args:
+          project (str): The project id or number to query.
+          fields (str): Fields to include in the response - partial response.
+
+        Returns:
+          dict: Response from the API.
+        """
         return self.execute_query(
             verb='getAncestry',
             verb_arguments={'projectId': project, 'fields': fields, 'body': {}}
         )
 
     def list(self, parent_id=None, parent_type=None, filters=None, fields=None):
-        """List projects, optionally by parent."""
+        """List projects, optionally by parent.
+
+        Args:
+          parent_id (str): The id of the organization or folder parent object.
+          parent_type (str): Either folder or organization.
+          filters (str): Additional filters to apply to the restrict the
+              set of projects returned.
+          fields (str): Fields to include in the response - partial response.
+
+        Returns:
+          dict: Response from the API.
+        """
         if not filters:
             filters = []
         if parent_id:
@@ -129,23 +168,24 @@ class _ResourceManagerProjectsRepository(
             filters.append('parent.type:{}'.format(parent_type))
 
         for resp in self.execute_paged_query(
-            verb='list',
-            verb_arguments={'filter': ' '.join(filters), 'fields': fields}):
+                verb='list',
+                verb_arguments={'filter': ' '.join(filters), 'fields': fields}):
             yield resp
 
 
 class _ResourceManagerOrganizationsRepository(
-    _base_repository.GCPRepository,
-    _base_repository.GetIamPolicyQueryMixin):
+        _base_repository.GCPRepository,
+        _base_repository.GetIamPolicyQueryMixin):
     """Implementation of Cloud Resource Manager Organizations repository."""
 
     def __init__(self, gcp_service, credentials, rate_limiter):
         """Constructor.
 
         Args:
-          gce_service: A GCE service object built using the Google discovery API.
-          credentials: GoogleCredentials.
-          rate_limiter: A rate limiter instance.
+          gce_service (object): A GCE service object built using the Google
+              discovery API.
+          credentials (object): GoogleCredentials.
+          rate_limiter (object): A rate limiter instance.
         """
         super(_ResourceManagerProjectsRepository, self).__init__(
             gcp_service=gcp_service,
@@ -155,7 +195,16 @@ class _ResourceManagerOrganizationsRepository(
             rate_limiter=rate_limiter)
 
     def get(self, organization_id, fields=None):
-        """Get the organization resource data."""
+        """Get the organization resource data.
+
+        Args:
+          organization_id (str): The organization id to query, either just the
+              id or the id prefixed with 'organizations/'.
+          fields (str): Fields to include in the response - partial response.
+
+        Returns:
+          dict: Response from the API.
+        """
         if not organization_id.startswith('organizations/'):
           organization_id = 'organizations/{}'.format(organization_id)
         return self.execute_query(
@@ -164,25 +213,35 @@ class _ResourceManagerOrganizationsRepository(
         )
 
     def search(self, filter=None, fields=None):
-        """Get all organizations the caller has access to."""
+        """Get all organizations the caller has access to.
+
+        Args:
+          filters (str): Additional filters to apply to the restrict the
+              set of organizations returned.
+          fields (str): Fields to include in the response - partial response.
+
+        Returns:
+          dict: Response from the API.
+        """
         for resp in self.execute_paged_query(
-            verb='search',
-            verb_arguments={'filter': filter, 'fields': fields}):
+                verb='search',
+                verb_arguments={'filter': filter, 'fields': fields}):
             yield resp
 
 
 class _ResourceManagerFoldersRepository(
-    _base_repository.GCPRepository,
-    _base_repository.GetIamPolicyQueryMixin):
+        _base_repository.GCPRepository,
+        _base_repository.GetIamPolicyQueryMixin):
     """Implementation of Cloud Resource Manager Folders repository."""
 
     def __init__(self, gcp_service, credentials, rate_limiter):
         """Constructor.
 
         Args:
-          gce_service: A GCE service object built using the Google discovery API.
-          credentials: GoogleCredentials.
-          rate_limiter: A rate limiter instance.
+          gce_service (object): A GCE service object built using the Google
+              discovery API.
+          credentials (object): GoogleCredentials.
+          rate_limiter (object): A rate limiter instance.
         """
         super(_ResourceManagerProjectsRepository, self).__init__(
             gcp_service=gcp_service,
@@ -192,26 +251,53 @@ class _ResourceManagerFoldersRepository(
             rate_limiter=rate_limiter)
 
     def get(self, folder_id, fields=None):
-        """Get the project resource data."""
+        """Get the project resource data.
+
+        Args:
+          folder_id (str): The folder id to query, optionally prefixed with
+              'folders/'.
+          fields (str): Fields to include in the response - partial response.
+
+        Returns:
+          dict: Response from the API.
+        """
         if not folder_id.startswith('folders/'):
-          folder_id = 'folders/{}'.format(folder_id)
+            folder_id = 'folders/{}'.format(folder_id)
         return self.execute_query(
             verb='get',
             verb_arguments={'name': folder_id, 'fields': fields}
         )
 
     def list(self, parent, fields=None):
-        """List folders under a parent resource."""
+        """List folders under a parent resource.
+
+        Args:
+          parent (str): The organization id or folder id to list children of,
+              they must be prefixed with 'organizations/' or 'folders/'.
+          fields (str): Fields to include in the response - partial response.
+
+        Returns:
+          dict: Response from the API.
+        """
         for resp in self.execute_paged_query(
-            verb='list',
-            verb_arguments={'parent': parent, 'fields': fields}):
+                verb='list',
+                verb_arguments={'parent': parent, 'fields': fields}):
             yield resp
 
     def search(self, query=None, fields=None):
-        """Get all folders the caller has access to based on query."""
+        """Get all folders the caller has access to based on query.
+
+        Args:
+          query (str): Additional filters to apply to the restrict the
+              set of folders returned.
+          fields (str): Fields to include in the response - partial response.
+
+        Returns:
+          dict: Response from the API.
+        """
         for resp in self.execute_paged_query(
-            verb='search',
-            verb_arguments={'query': query, 'fields': fields}):
+                verb='search',
+                verb_arguments={'query': query, 'fields': fields}):
             yield resp
 
 
