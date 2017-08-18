@@ -122,15 +122,17 @@ class BaseRepositoryClient(object):
                         'proceed at your own risk.', api_name)
 
         # See if the version is supported by Forseti.
-        # If no version is specified, try to find the supported API's version.
+        # If no version is specified, use the supported API's default version.
         if not versions and supported_api:
-            versions = [supported_api.get('version')]
+            versions = [supported_api.get('default_version')]
         self.versions = versions
 
-        if supported_api and supported_api.get('version') != version:
-            LOGGER.warn('API "%s" version %s is not formally supported '
-                        'in Forseti, proceed at your own risk.',
-                        api_name, version)
+        if supported_api:
+            for version in versions:
+                if version not in supported_api.get('supported_versions', []):
+                    LOGGER.warn('API "%s" version %s is not formally supported '
+                                'in Forseti, proceed at your own risk.',
+                                api_name, version)
 
         self.gcp_services = {}
         for version in versions:
@@ -171,6 +173,7 @@ class BaseRepositoryClient(object):
         return repo_property
 
 
+#pylint: disable=too-many-instance-attributes
 class GCPRepository(object):
     """Base class for GCP APIs."""
 
@@ -197,8 +200,6 @@ class GCPRepository(object):
         self._entity = entity
         self._num_retries = num_retries
         self._rate_limiter = rate_limiter
-
-        self._assert_completion_func = None
 
         self._local = LOCAL_THREAD
 
@@ -348,6 +349,7 @@ class GCPRepository(object):
         else:
             return request.execute(http=self.http,
                                    num_retries=self._num_retries)
+#pylint: enable=too-many-instance-attributes
 
 
 class ListQueryMixin(object):

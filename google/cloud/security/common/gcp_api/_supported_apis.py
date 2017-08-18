@@ -26,7 +26,8 @@ SUPPORTED_APIS = {
         'version': 'v2'
     },
     'cloudresourcemanager': {
-        'version': 'v1'
+        'default_version': 'v1',
+        'supported_versions': ['v1', 'v2']
     },
     'compute': {
         'version': 'v1'

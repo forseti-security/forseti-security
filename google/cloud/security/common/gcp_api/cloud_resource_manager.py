@@ -161,7 +161,7 @@ class _ResourceManagerProjectsRepository(
               set of projects returned.
           fields (str): Fields to include in the response - partial response.
 
-        Returns:
+        Yields:
           dict: Response from the API.
         """
         if not filters:
@@ -312,13 +312,14 @@ class CloudResourceManagerClient(object):
 
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
-    def __init__(self, global_configs, **unused_kwargs):
+    def __init__(self, global_configs, **kwargs):
         """Initialize.
 
         Args:
             global_configs (dict): Forseti config.
-            **unused_kwargs (dict): The kwargs.
+            **kwargs (dict): The kwargs.
         """
+        del kwargs
         max_calls = global_configs.get('max_crm_api_calls_per_100_seconds')
         self.repository = CloudResourceManagerRepository(
             quota_max_calls=max_calls,
