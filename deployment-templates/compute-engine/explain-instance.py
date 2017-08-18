@@ -136,7 +136,7 @@ Description=Explain API Server
 [Service]
 Restart=always
 RestartSec=3
-ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' playground explain
+ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' playground explain gcs
 [Install]
 WantedBy=multi-user.target
 Wants=cloudsqlproxy.service

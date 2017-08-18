@@ -61,7 +61,7 @@ class BucketDao(project_dao.ProjectDao):
             project_number)
         rows = self.execute_sql_with_fetch(
             resource_name, buckets_sql, None)
-        return [row['bucket_name'] for row in rows]
+        return [row['bucket_id'] for row in rows]
 
     def get_buckets_acls(self, resource_name, timestamp):
         """Select the bucket acls from a bucket acls snapshot table.
@@ -85,13 +85,15 @@ class BucketDao(project_dao.ProjectDao):
                                                bucket_acls_sql,
                                                None)
             for row in rows:
-                bucket_acl = bkt_acls.\
-                BucketAccessControls(bucket=row['bucket'],
-                                     entity=row['entity'],
-                                     email=row['email'],
-                                     domain=row['domain'],
-                                     role=row['role'],
-                                     project_number=row['project_number'])
+                bucket_acl = (
+                    bkt_acls.
+                    BucketAccessControls(
+                        bucket=row['bucket'],
+                        entity=row['entity'],
+                        email=row['email'],
+                        domain=row['domain'],
+                        role=row['role'],
+                        project_number=row['project_number']))
                 bucket_acls[cnt] = bucket_acl
                 cnt += 1
         except (DataError, IntegrityError, InternalError, NotSupportedError,
@@ -113,3 +115,24 @@ class BucketDao(project_dao.ProjectDao):
         rows = self.execute_sql_with_fetch(
             self.RESOURCE_RAW_BUCKETS, buckets_sql, None)
         return rows
+
+    def get_objects(self, resource_name, timestamp):
+        """Select the storage objects from the snapshot table.
+
+        Args:
+            resource_name (str): String of the resource name.
+            timestamp (str): String of timestamp, formatted as
+                YYYYMMDDTHHMMSSZ.
+
+        Returns:
+            list: List of storage objects.
+
+        Raises:
+            MySQLError: An error with MySQL has occurred.
+        """
+
+        storage_sql = select_data.SELECT_STORAGE_OBJECTS.format(
+            timestamp,
+            )
+        rows = self.execute_sql_with_fetch(resource_name, storage_sql, None)
+        return [row for row in rows]

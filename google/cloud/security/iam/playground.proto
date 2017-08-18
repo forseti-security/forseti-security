@@ -16,8 +16,10 @@ syntax = "proto3";
 
 package playground;
 
+import "iam.proto";
+
 service Playground {
-  rpc Ping(PingRequest) returns (PingReply) {}
+  rpc Ping(iam.PingRequest) returns (iam.PingReply) {}
   rpc SetIamPolicy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
   rpc GetIamPolicy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
   rpc CheckIamPolicy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
@@ -106,14 +108,6 @@ message DelResourceRequest {
 
 message DelResourceReply {
 
-}
-
-message PingRequest {
-  string data = 1;
-}
-
-message PingReply {
-  string data = 1;
 }
 
 message Binding {

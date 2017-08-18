@@ -18,8 +18,9 @@ import time
 from concurrent import futures
 import grpc
 
-from google.cloud.security.iam.playground import playground_pb2
-from google.cloud.security.iam.playground import playground_pb2_grpc
+from google.cloud.security.iam import playground_pb2
+from google.cloud.security.iam import playground_pb2_grpc
+from google.cloud.security.iam import iam_pb2
 from google.cloud.security.iam.playground import playgrounder
 
 
@@ -49,7 +50,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     def Ping(self, request, _):
         """Ping implemented to check service availability."""
 
-        return playground_pb2.PingReply(data=request.data)
+        return iam_pb2.PingReply(data=request.data)
 
     def SetIamPolicy(self, request, context):
         """Sets the policy for a resource."""

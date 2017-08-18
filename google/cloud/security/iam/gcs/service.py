@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Explain gRPC service. """
+""" Gcs gRPC service. """
 
 import time
-from collections import defaultdict
 from concurrent import futures
 import grpc
 
 from google.cloud.security.iam import iam_pb2
-from google.cloud.security.iam import explain_pb2
-from google.cloud.security.iam import explain_pb2_grpc
-from google.cloud.security.iam.explain import explainer
+from google.cloud.security.iam import gcs_pb2_grpc
+from google.cloud.security.iam.gcs import gcs
 from google.cloud.security.iam.dao import session_creator
 
 
@@ -52,8 +50,8 @@ def autoclose_stream(f):
 
 
 # pylint: disable=no-self-use
-class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
-    """IAM Explain gRPC implementation."""
+class GrpcGcs(gcs_pb2_grpc.GcsServicer):
+    """Gcs policy gRPC implementation."""
 
     HANDLE_KEY = "handle"
 
@@ -67,56 +65,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, explainer_api):
-        super(GrpcExplainer, self).__init__()
+        super(GrpcGcs, self).__init__()
         self.explainer = explainer_api
 
     def Ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return iam_pb2.PingReply(data=request.data)
-
-    def ExplainDenied(self, request, context):
-        """Provides information on how to grant access."""
-
-        model_name = self._get_handle(context)
-        binding_strategies = self.explainer.ExplainDenied(model_name,
-                                                          request.member,
-                                                          request.resources,
-                                                          request.permissions,
-                                                          request.roles)
-        reply = explain_pb2.ExplainDeniedReply()
-        strategies = []
-        for overgranting, bindings in binding_strategies:
-            strategy = explain_pb2.BindingStrategy(overgranting=overgranting)
-            strategy.bindings.extend([explain_pb2.Binding(
-                member=b[1], resource=b[2], role=b[0]) for b in bindings])
-            strategies.append(strategy)
-        reply.strategies.extend(strategies)
-        return reply
-
-    def ExplainGranted(self, request, context):
-        """Provides information on why a member has access to a resource."""
-
-        model_name = self._get_handle(context)
-        result = self.explainer.ExplainGranted(model_name,
-                                               request.member,
-                                               request.resource,
-                                               request.role,
-                                               request.permission)
-        reply = explain_pb2.ExplainGrantedReply()
-        bindings, member_graph, resource_names = result
-        memberships = []
-        for child, parents in member_graph.iteritems():
-            memberships.append(
-                explain_pb2.Membership(
-                    member=child,
-                    parents=parents))
-        reply.memberships.extend(memberships)
-        reply.resource_ancestors.extend(resource_names)
-        reply.bindings.extend(
-            [explain_pb2.Binding(member=member, resource=resource, role=role)
-             for resource, role, member in bindings])
-        return reply
 
     def GetAccessByPermissions(self, request, context):
         """Returns stream of access based on permission/role.
@@ -139,8 +94,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                     request.expand_groups,
                     request.expand_resources)):
             yield iam_pb2.Access(members=members,
-                                     role=role,
-                                     resource=resource)
+                                 role=role,
+                                 resource=resource)
 
     def GetAccessByResources(self, request, context):
         """Returns members having access to the specified resource."""
@@ -178,61 +133,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.accesses.extend(accesses)
         return reply
 
-    def GetPermissionsByRoles(self, request, context):
-        """Returns permissions for the specified roles."""
-
-        model_name = self._get_handle(context)
-        result = self.explainer.GetPermissionsByRoles(model_name,
-                                                      request.role_names,
-                                                      request.role_prefixes)
-
-        permissions_by_roles_map = defaultdict(list)
-        for role, permission in result:
-            permissions_by_roles_map[role.name].append(permission.name)
-
-        permissions_by_roles_list = []
-        for role, permissions in permissions_by_roles_map.iteritems():
-            permissions_by_roles_list.append(
-                explain_pb2.GetPermissionsByRolesReply.PermissionsByRole(
-                    role=role, permissions=permissions))
-
-        reply = explain_pb2.GetPermissionsByRolesReply()
-        reply.permissionsbyroles.extend(permissions_by_roles_list)
-        return reply
-
-    def CreateModel(self, request, context):
-        """Creates a new model from an import source."""
-
-        model = self.explainer.CreateModel(request.type, request.name)
-        reply = explain_pb2.CreateModelReply(model=explain_pb2.Model(
-            name=model.name,
-            handle=model.handle,
-            status=model.state,
-            message=model.message))
-        return reply
-
-    def DeleteModel(self, request, _):
-        """Deletes a model and all associated data."""
-
-        model_name = request.handle
-        self.explainer.DeleteModel(model_name)
-        return explain_pb2.DeleteModelReply()
-
-    def ListModel(self, request, _):
-        """List all models."""
-
-        models = self.explainer.ListModel()
-        models_pb = []
-        for model in models:
-            models_pb.append(explain_pb2.Model(name=model.name,
-                                               handle=model.handle,
-                                               status=model.state,
-                                               message=model.message,
-                                               warnings=model.warnings))
-        reply = explain_pb2.ListModelReply()
-        reply.models.extend(models_pb)
-        return reply
-
     def Denormalize(self, _, context):
         """Denormalize the entire model into access triples."""
 
@@ -241,12 +141,12 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         for permission, resource, member in self.explainer.Denormalize(
                 model_name):
             yield iam_pb2.AuthorizationTuple(member=member,
-                                                 permission=permission,
-                                                 resource=resource)
+                                             permission=permission,
+                                             resource=resource)
 
 
-class GrpcExplainerFactory(object):
-    """Factory class for Explain service gRPC interface"""
+class GrpcGcsFactory(object):
+    """Factory class for GCS explain gRPC interface"""
 
     def __init__(self, config):
         self.config = config
@@ -254,16 +154,16 @@ class GrpcExplainerFactory(object):
     def create_and_register_service(self, server):
         """Create and register the IAM Explain service."""
 
-        service = GrpcExplainer(explainer_api=explainer.Explainer(self.config))
-        explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
+        service = GrpcGcs(explainer_api=gcs.Gcs(self.config))
+        gcs_pb2_grpc.add_GcsServicer_to_server(service, server)
         return service
 
 
 def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
-    """Serve IAM Explain with the provided parameters."""
+    """Serve Gcs Policy Explain with the provided parameters."""
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-    GrpcExplainerFactory(config).create_and_register_service(server)
+    GrpcGcsFactory(config).create_and_register_service(server)
     server.add_insecure_port(endpoint)
     server.start()
     while True:

@@ -18,9 +18,13 @@ import binascii
 import os
 import grpc
 
-from google.cloud.security.iam.explain import explain_pb2_grpc, explain_pb2
-from google.cloud.security.iam.playground import playground_pb2_grpc
-from google.cloud.security.iam.playground import playground_pb2
+from google.cloud.security.iam import explain_pb2
+from google.cloud.security.iam import explain_pb2_grpc
+from google.cloud.security.iam import playground_pb2_grpc
+from google.cloud.security.iam import playground_pb2
+from google.cloud.security.iam import gcs_pb2_grpc
+from google.cloud.security.iam import iam_pb2
+
 from google.cloud.security.iam.utils import oneof
 
 
@@ -59,6 +63,82 @@ class IAMClient(object):
         """Create default metadata for gRPC call."""
         return [('handle', self.config.handle())]
 
+class GCSClient(IAMClient):
+    """GCS explainer allows the client to reason about GCS policies.
+
+    GCSClient provides the following functionality:
+       - List access by resource/member/authorization
+       - Provide a full list of GCS access
+    """
+
+    def __init__(self, config):
+        super(GCSClient, self).__init__(config)
+        self.stub = gcs_pb2_grpc.GcsStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Gcs' service is available by performing a ping."""
+
+        data = binascii.hexlify(os.urandom(16))
+        return self.stub.Ping(iam_pb2.PingRequest(data=data)).data == data
+
+    @require_model
+    def query_access_by_resources(self, resource_name, permission_names,
+                                  expand_groups=False):
+        """List members who have access to a given resource."""
+
+        request = iam_pb2.GetAccessByResourcesRequest(
+            resource_name=resource_name,
+            permission_names=permission_names,
+            expand_groups=expand_groups)
+        return self.stub.GetAccessByResources(
+            request, metadata=self.metadata())
+
+    @require_model
+    def query_access_by_members(self, member_name, permission_names,
+                                expand_resources=False):
+        """List resources to which a set of members has access to."""
+
+        request = iam_pb2.GetAccessByMembersRequest(
+            member_name=member_name,
+            permission_names=permission_names,
+            expand_resources=expand_resources)
+        return self.stub.GetAccessByMembers(request, metadata=self.metadata())
+
+    @require_model
+    def query_access_by_permissions(self,
+                                    role_name,
+                                    permission_name,
+                                    expand_groups=False,
+                                    expand_resources=False):
+        """List (resource, member) tuples satisfying the authorization
+
+        Args:
+            role_name (str): Role name to query for.
+            permission_name (str): Permission name to query for.
+            expand_groups (bool): Whether or not to expand groups.
+            epxand_resources (bool) Whether or not to expand resources.
+
+        Returns:
+            object: Generator yielding access tuples.
+        """
+
+        request = iam_pb2.GetAccessByPermissionsRequest(
+            role_name=role_name,
+            permission_name=permission_name,
+            expand_groups=expand_groups,
+            expand_resources=expand_resources)
+        return self.stub.GetAccessByPermissions(
+            request,
+            metadata=self.metadata())
+
+    @require_model
+    def denormalize(self):
+        """Denormalize the entire model into access triples."""
+
+        return self.stub.Denormalize(
+            iam_pb2.DenormalizeRequest(),
+            metadata=self.metadata())
+
 
 class ExplainClient(IAMClient):
     """Explain service allows the client to reason about a model.
@@ -77,7 +157,7 @@ class ExplainClient(IAMClient):
         """Checks if the 'Explain' service is available by performing a ping."""
 
         data = binascii.hexlify(os.urandom(16))
-        return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
+        return self.stub.Ping(iam_pb2.PingRequest(data=data)).data == data
 
     def new_model(self, source, name):
         """Creates a new model, reply contains the handle."""
@@ -136,7 +216,7 @@ class ExplainClient(IAMClient):
                                   expand_groups=False):
         """List members who have access to a given resource."""
 
-        request = explain_pb2.GetAccessByResourcesRequest(
+        request = iam_pb2.GetAccessByResourcesRequest(
             resource_name=resource_name,
             permission_names=permission_names,
             expand_groups=expand_groups)
@@ -148,7 +228,7 @@ class ExplainClient(IAMClient):
                                 expand_resources=False):
         """List resources to which a set of members has access to."""
 
-        request = explain_pb2.GetAccessByMembersRequest(
+        request = iam_pb2.GetAccessByMembersRequest(
             member_name=member_name,
             permission_names=permission_names,
             expand_resources=expand_resources)
@@ -172,7 +252,7 @@ class ExplainClient(IAMClient):
             object: Generator yielding access tuples.
         """
 
-        request = explain_pb2.GetAccessByPermissionsRequest(
+        request = iam_pb2.GetAccessByPermissionsRequest(
             role_name=role_name,
             permission_name=permission_name,
             expand_groups=expand_groups,
@@ -197,7 +277,7 @@ class ExplainClient(IAMClient):
         """Denormalize the entire model into access triples."""
 
         return self.stub.Denormalize(
-            explain_pb2.DenormalizeRequest(),
+            iam_pb2.DenormalizeRequest(),
             metadata=self.metadata())
 
 
@@ -223,7 +303,7 @@ class PlaygroundClient(IAMClient):
 
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(
-            playground_pb2.PingRequest(
+            iam_pb2.PingRequest(
                 data=data)).data == data
 
     @require_model

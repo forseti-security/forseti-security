@@ -22,11 +22,11 @@
 
 # pylint: disable=invalid-name
 # TODO: Look at improving the naming so we don't have need the pylint disable.
-db_schema_version = '2.0'
+db_schema_version = '3.0'
 
 # Change log
 # Version 1.0:
-#   * Added table snapshot_cycles.
+#   * Added table snapshot_cycles
 #   * Added table projects
 #   * Added table project_iam_policies
 #   * Added table raw_project_iam_policies
@@ -34,6 +34,11 @@ db_schema_version = '2.0'
 # Version 2.0:
 #   * Added table folder_iam_policies
 #   * Added table raw_folder_iam_policies
+#
+# Version 3.0:
+#   * Added table raw_bucket_iam_policies
+#   * Added table raw_storage_object_iam_policies
+#   * Added table storage_objects
 #
 # Version x.y:
 #   * ...

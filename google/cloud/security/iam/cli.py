@@ -156,6 +156,79 @@ def define_playground_parser(parent):
         'resource',
         help='Resource to get policy for')
 
+def define_gcs_parser(parent):
+    """Define the gcs service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+    service_parser = parent.add_parser('gcs', help='gcs explain service')
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    query_access_by_member = action_subparser.add_parser(
+        'access_by_member',
+        help='List access by member and permissions')
+    query_access_by_member.add_argument(
+        'member',
+        help='Member to query')
+    query_access_by_member.add_argument(
+        'permissions',
+        default=[],
+        nargs='*',
+        help='Permissions to query for')
+    query_access_by_member.add_argument(
+        '--expand_resources',
+        type=bool,
+        default=False,
+        help='Expand the resource hierarchy')
+
+    query_access_by_authz = action_subparser.add_parser(
+        'access_by_authz',
+        help='List access by role or permission')
+    query_access_by_authz.add_argument(
+        '--permission',
+        default=None,
+        nargs='?',
+        help='Permission to query')
+    query_access_by_authz.add_argument(
+        '--role',
+        default=None,
+        nargs='?',
+        help='Role to query')
+    query_access_by_authz.add_argument(
+        '--expand_groups',
+        type=bool,
+        default=False,
+        help='Expand groups to their members')
+    query_access_by_authz.add_argument(
+        '--expand_resources',
+        type=bool,
+        default=False,
+        help='Expand resources to their children')
+
+    query_access_by_resource = action_subparser.add_parser(
+        'access_by_resource',
+        help='List access by member and permissions')
+    query_access_by_resource.add_argument(
+        'resource',
+        help='Resource to query')
+    query_access_by_resource.add_argument(
+        'permissions',
+        default=[],
+        nargs='*',
+        help='Permissions to query for')
+    query_access_by_resource.add_argument(
+        '--expand_groups',
+        type=bool,
+        default=False,
+        help='Expand groups to their members')
+
+    _ = action_subparser.add_parser(
+        'denormalize',
+        help='Denormalize a model')
+
 
 def define_explainer_parser(parent):
     """Define the explainer service parser.
@@ -360,6 +433,7 @@ def create_parser(parser_cls):
         dest="service")
     define_explainer_parser(service_subparsers)
     define_playground_parser(service_subparsers)
+    define_gcs_parser(service_subparsers)
     return main_parser
 
 
@@ -489,6 +563,53 @@ def run_explainer(client, config, output):
     actions[config.action]()
 
 
+def run_gcs(client, config, output):
+    """Run gcs commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+    """
+
+    client = client.gcs
+
+    def do_denormalize():
+        """Denormalize a model."""
+        for access in client.denormalize():
+            output.write(access)
+
+    def do_query_access_by_member():
+        """Query access by member and permissions"""
+        result = client.query_access_by_members(config.member,
+                                                config.permissions,
+                                                config.expand_resources)
+        output.write(result)
+
+    def do_query_access_by_resource():
+        """Query access by resource and permissions"""
+        result = client.query_access_by_resources(config.resource,
+                                                  config.permissions,
+                                                  config.expand_groups)
+        output.write(result)
+
+    def do_query_access_by_authz():
+        """Query access by role or permission"""
+        for access in (
+                client.query_access_by_permissions(config.role,
+                                                   config.permission,
+                                                   config.expand_groups,
+                                                   config.expand_resources)):
+            output.write(access)
+
+    actions = {
+        'denormalize': do_denormalize,
+        'access_by_member': do_query_access_by_member,
+        'access_by_resource': do_query_access_by_resource,
+        'access_by_authz': do_query_access_by_authz}
+
+    actions[config.action]()
+
+
 def run_playground(client, config, output):
     """Run playground commands.
         Args:
@@ -593,6 +714,7 @@ OUTPUTS = {
 SERVICES = {
     'explainer': run_explainer,
     'playground': run_playground,
+    'gcs': run_gcs,
     }
 
 

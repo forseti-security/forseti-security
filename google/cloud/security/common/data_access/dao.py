@@ -48,6 +48,9 @@ CREATE_TABLE_MAP = {
     'buckets': create_tables.CREATE_BUCKETS_TABLE,
     'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
     'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
+    'raw_bucket_iam_policies': create_tables.CREATE_BUCKET_IAM_POLICIES_TABLE,
+    'storage_objects': create_tables.CREATE_STORAGE_OBJECTS_TABLE,
+    'raw_object_iam_policies': create_tables.CREATE_STORAGE_OBJECT_POLICIES,
 
     # cloudsql
     'cloudsql_instances': create_tables.CREATE_CLOUDSQL_INSTANCES_TABLE,
@@ -254,6 +257,28 @@ class Dao(_db_connector.DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
+    def execute_sql(self, resource_name, sql, values):
+        """Executes a provided sql statement returning a cursor.
+
+        Args:
+            resource_name (str): String of the resource name.
+            sql (str): String of the sql statement.
+            values (tuple): Tuple of string for sql placeholder values.
+
+        Returns:
+            cursor: An iterator to the rows of sql query result.
+
+        Raises:
+            MySQLError: When an error has occured while executing the query.
+        """
+        try:
+            cursor = self.conn.cursor(cursorclass=cursors.SSDictCursor)
+            cursor.execute(sql, values)
+            return cursor
+        except (DataError, IntegrityError, InternalError, NotSupportedError,
+                OperationalError, ProgrammingError) as e:
+            raise MySQLError(resource_name, e)
+
     def execute_sql_with_fetch(self, resource_name, sql, values):
         """Executes a provided sql statement with fetch.
 
@@ -269,8 +294,7 @@ class Dao(_db_connector.DbConnector):
             MySQLError: When an error has occured while executing the query.
         """
         try:
-            cursor = self.conn.cursor(cursorclass=cursors.DictCursor)
-            cursor.execute(sql, values)
+            cursor = self.execute_sql(resource_name, sql, values)
             return cursor.fetchall()
         except (DataError, IntegrityError, InternalError, NotSupportedError,
                 OperationalError, ProgrammingError) as e:

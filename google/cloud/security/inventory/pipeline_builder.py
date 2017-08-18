@@ -163,12 +163,8 @@ class PipelineBuilder(object):
                     .get('module_name')
                     .title()
                     .replace('_', ''))
-                try:
-                    pipeline_class = getattr(module, class_name)
-                except AttributeError:
-                    LOGGER.error('Unable to instantiate %s\n%s',
-                                 class_name, sys.exc_info()[0])
-                    continue
+
+                pipeline_class = getattr(module, class_name)
 
                 api_name = (pipeline_requirements_map.REQUIREMENTS_MAP
                             .get(node.resource_name)

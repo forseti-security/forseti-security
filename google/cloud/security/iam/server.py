@@ -22,10 +22,12 @@ import grpc
 from google.cloud.security.iam.dao import ModelManager, create_engine
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
+from google.cloud.security.iam.gcs.service import GrpcGcsFactory
 
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
     'playground': GrpcPlaygrounderFactory,
+    'gcs': GrpcGcsFactory,
 }
 
 
@@ -46,7 +48,7 @@ class ServiceConfig(object):
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""
-        self.thread_pool.apply_async(function)
+        function()
 
 
 def serve(endpoint, services, explain_connect_string, forseti_connect_string,
