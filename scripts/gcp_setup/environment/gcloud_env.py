@@ -723,10 +723,11 @@ class ForsetiGcpSetup(object):
                 ['gcloud',
                  'compute',
                  'scp',
+                 '--zone={}'.format(self.gce_zone),
+                 '--quiet',
                  self.gsuite_svc_acct_key_location,
                  'ubuntu@{}-vm:/home/ubuntu/{}'.format(
                      self.deployment_name, GSUITE_KEY_NAME),
-                 '--zone={}'.format(self.gce_zone)
                 ])
             if return_code:
                 print(err)
@@ -761,8 +762,9 @@ class ForsetiGcpSetup(object):
 
         print('You can see the details of your deployment in the '
               'Cloud Console:\n\n'
-              '    https://console.cloud.google.com/deployments?'
-              'project={}\n\n'.format(self.project_id))
+              'https://console.cloud.google.com/deployments/details/'
+              '{}?project={}&organizationId={}\n'.format(
+                  self.deployment_name, self.project_id, self.organization_id))
 
         print('A forseti_conf_dm.yaml file has been generated. '
               'If you change your forseti_conf.yaml or Forseti rules, '
