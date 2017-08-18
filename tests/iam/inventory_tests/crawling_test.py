@@ -24,6 +24,7 @@ from google.cloud.security.iam.inventory.crawler import run_crawler
 
 class NullProgresser(Progresser):
     """No-op progresser to suppress output"""
+
     def __init__(self):
         super(NullProgresser, self).__init__()
         self.errors = 0
@@ -48,19 +49,29 @@ class CrawlerTest(ForsetiTestCase):
 
     def setUp(self):
         """Setup method."""
+
         ForsetiTestCase.setUp(self)
 
     def tearDown(self):
         """Tear down method."""
+
         ForsetiTestCase.tearDown(self)
 
     def test_crawling_to_memmory_storage(self):
         """Crawl an environment, test that there are items in storage."""
 
         gsuite_sa = '/Users/fmatenaar/deployments/forseti/groups.json'
+        gsuite_admin_email = 'felix@henrychang.mygbiz.com'
+        organization_id = '433637338589'
+
         with MemoryStorage() as storage:
             progresser = NullProgresser()
-            run_crawler(storage, progresser, gsuite_sa)
+            run_crawler(storage,
+                        progresser,
+                        gsuite_sa,
+                        gsuite_admin_email,
+                        organization_id)
+
             self.assertEqual(0,
                              progresser.errors,
                              'No errors should have occurred')

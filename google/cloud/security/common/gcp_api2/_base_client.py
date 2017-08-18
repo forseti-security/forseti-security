@@ -74,9 +74,11 @@ class BaseClient(object):
                 https://developers.google.com/api-client-library/python/apis/
             **kwargs (dict): Additional args such as version.
         """
+
         self.global_configs = global_configs
         if not credentials:
             credentials = GoogleCredentials.get_application_default()
+
         self._credentials = credentials
 
         self.name = api_name
@@ -109,7 +111,6 @@ class BaseClient(object):
         return discovery.build(api_name,
                                api_version,
                                **self.discovery_kwargs)
-
 
     def __repr__(self):
         """The object representation.
