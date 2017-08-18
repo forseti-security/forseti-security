@@ -52,6 +52,8 @@ REQUIRED_APIS = [
      'service': 'compute.googleapis.com'},
     {'name': 'Deployment Manager',
      'service': 'deploymentmanager.googleapis.com'},
+    {'name': 'IAM',
+     'service': 'iam.googleapis.com'},
 ]
 
 SERVICE_ACCT_FMT = 'forseti-{}-reader-{}'
