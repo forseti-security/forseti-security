@@ -24,9 +24,7 @@ from sqlalchemy import BigInteger
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
-from sqlalchemy import or_
 from sqlalchemy.orm import aliased
-from sqlalchemy.sql import join
 
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -83,9 +81,9 @@ class InventoryIndex(BASE):
             schema_version=CURRENT_SCHEMA,
             counter=0)
 
-    def complete(self):
+    def complete(self, status=InventoryState.SUCCESS):
         self.complete_time = InventoryIndex._utcnow()
-        self.status = InventoryState.SUCCESS
+        self.status = status
 
     def add_warning(self, session, warning):
         """Add a warning to the inventory.
@@ -118,12 +116,12 @@ class Inventory(BASE):
 
     # Order is used to resemble the order of insert for a given inventory
     order = Column(Integer, primary_key=True, default=0)
-    index = Column(BigInteger(), primary_key=True, autoincrement=False)
-    resource_key = Column(String(1024), primary_key=True)
-    resource_type = Column(String(256), primary_key=True)
+    index = Column(Integer, primary_key=True, autoincrement=False)
+    resource_key = Column(String(2048))
+    resource_type = Column(String(256))
     resource_data = Column(Text())
-    parent_resource_key = Column(String(1024), primary_key=True)
-    parent_resource_type = Column(String(256), primary_key=True)
+    parent_resource_key = Column(String(2048))
+    parent_resource_type = Column(String(256))
     iam_policy = Column(Text())
     gcs_policy = Column(Text())
     other = Column(Text())
@@ -271,6 +269,7 @@ class Storage(BaseStorage):
         self.index = None
         self.buffer = BufferedDbWriter(self.session)
         self._existing_id = existing_id
+        self.session_completed = False
 
     def _require_opened(self):
         if not self.opened:
@@ -307,20 +306,31 @@ class Storage(BaseStorage):
 
         self.opened = True
         self.session.flush()
+        self.session.begin_nested()
         return self.index.id
+
+    def rollback(self):
+        self.buffer.flush()
+        self.session.rollback()
+        self.index.complete(status=InventoryState.FAILURE)
+        self.session.commit()
+        self.session_completed = True
+
+    def commit(self):
+        self.buffer.flush()
+        self.session.commit()
+        self.index.complete()
+        self.session.commit()
+        self.session_completed = True
 
     def close(self):
         if not self.opened:
             raise Exception('not open')
 
-        try:
-            self.buffer.flush()
-            self.index.complete()
-            self.session.commit()
-        except Exception:
-            raise
-        else:
-            self.opened = False
+        if not self.session_completed:
+            raise Exception('Need to perform commit or rollback before close')
+
+        self.opened = False
 
     def write(self, resource):
         self.buffer.add(

@@ -74,14 +74,21 @@ def run_inventory(queue, session, progresser, background,
                   gsuite_sa, gsuite_admin_email, organization_id):
 
     with Storage(session) as storage:
-        progresser.inventory_id = storage.index.id
-        progresser.final_message = True if background else False
-        queue.put(progresser)
-        return run_crawler(storage,
-                           progresser,
-                           gsuite_sa,
-                           gsuite_admin_email,
-                           organization_id)
+        try:
+            progresser.inventory_id = storage.index.id
+            progresser.final_message = True if background else False
+            queue.put(progresser)
+            result = run_crawler(storage,
+                                 progresser,
+                                 gsuite_sa,
+                                 gsuite_admin_email,
+                                 organization_id)
+            return result
+        except Exception:
+            storage.rollback()
+            raise
+        else:
+            storage.commit()
 
 
 def run_import(client, model_name, inventory_id):
