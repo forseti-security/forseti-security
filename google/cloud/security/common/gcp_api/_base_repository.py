@@ -173,7 +173,6 @@ class BaseRepositoryClient(object):
         return repo_property
 
 
-#pylint: disable=too-many-instance-attributes
 class GCPRepository(object):
     """Base class for GCP APIs."""
 
@@ -314,6 +313,35 @@ class GCPRepository(object):
             request = self._build_next_request(verb, request, response)
             yield response
 
+    def execute_search_query(self, verb, verb_arguments):
+        """Executes query (ex. search) via a dedicated http object.
+
+        Args:
+          verb (str): Method to execute on the component (ex. search).
+          verb_arguments (dict): key-value pairs to be passed to _BuildRequest.
+
+        Yields:
+          dict: Service Response.
+        """
+        # Implementation of search does not follow the standard API pattern.
+        # Fields need to be in the body rather than sent seperately.
+        next_page_token = None
+        number_of_pages_processed = 0
+        while True:
+            req_body = verb_arguments.get('body', {})
+            if next_page_token:
+                req_body['pageToken'] = next_page_token
+            request = self._build_request(verb, verb_arguments)
+            response = self._execute(request)
+            number_of_pages_processed += 1
+            LOGGER.debug('Executing paged request #%s',
+                         number_of_pages_processed)
+            next_page_token = response.get('nextPageToken')
+            yield response
+
+            if not next_page_token:
+                break
+
     def execute_query(self, verb, verb_arguments):
         """Executes query (ex. get) via a dedicated http object.
 
@@ -349,7 +377,6 @@ class GCPRepository(object):
         else:
             return request.execute(http=self.http,
                                    num_retries=self._num_retries)
-#pylint: enable=too-many-instance-attributes
 
 
 class ListQueryMixin(object):
@@ -441,7 +468,8 @@ class GetIamPolicyQueryMixin(object):
         assert isinstance(self, GCPRepository)
 
         arguments = {'resource': resource,
-                     'fields': fields}
+                     'fields': fields,
+                     'body': {}}
         if kwargs:
             arguments.update(kwargs)
 

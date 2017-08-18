@@ -228,9 +228,12 @@ class _ResourceManagerOrganizationsRepository(
         Yields:
           dict: Response from the API.
         """
-        for resp in self.execute_paged_query(
+        req_body = {}
+        if filter:
+            req_body['filter'] = filter
+        for resp in self.execute_search_query(
                 verb='search',
-                verb_arguments={'filter': filter, 'fields': fields}):
+                verb_arguments={'body': req_body, 'fields': fields}):
             yield resp
     # pylint: enable=redefined-builtin
 
@@ -301,9 +304,12 @@ class _ResourceManagerFoldersRepository(
         Yields:
           dict: Response from the API.
         """
-        for resp in self.execute_paged_query(
+        req_body = {}
+        if query:
+            req_body['query'] = query
+        for resp in self.execute_search_query(
                 verb='search',
-                verb_arguments={'query': query, 'fields': fields}):
+                verb_arguments={'body': req_body, 'fields': fields}):
             yield resp
 
 
@@ -363,7 +369,8 @@ class CloudResourceManagerClient(object):
             filters.append('{}:{}'.format(key, value))
 
         try:
-            yield self.repository.projects.list(filters=filters)
+            for response in self.repository.projects.list(filters=filters):
+                yield response
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -409,7 +416,8 @@ class CloudResourceManagerClient(object):
                 which is paginated and contains a list of organizations.
         """
         try:
-            yield self.repository.organizations.search()
+            for response in self.repository.organizations.search():
+                yield response
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -473,7 +481,9 @@ class CloudResourceManagerClient(object):
                 kwargs.get('lifecycle_state')))
 
         try:
-            yield self.repository.folders.search(query=' '.join(queries))
+            for response in self.repository.folders.search(
+                    query=' '.join(queries)):
+                yield response
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
