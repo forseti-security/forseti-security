@@ -26,6 +26,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'bucket_rules_scanner',
          'class_name': 'BucketsAclScanner',
          'rules_filename': 'bucket_rules.yaml'},
+    'blacklist':
+        {'module_name': 'blacklist_scanner',
+         'class_name': 'BlacklistScanner',
+         'rules_filename': 'blacklist_rules.yaml'},
     'cloudsql_acl':
         {'module_name': 'cloudsql_rules_scanner',
          'class_name': 'CloudSqlAclScanner',
