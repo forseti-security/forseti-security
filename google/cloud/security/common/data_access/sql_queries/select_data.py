@@ -194,13 +194,14 @@ SELECT_FORWARDING_RULE_VIOLATION = """
     WHERE violation_type = 'FORWARDING_RULE_VIOLATION';
 """
 
-SELECT_GROUPS_VIOLATIONS = """
-    SELECT * FROM groups_violations_{0};
+SELECT_BLACKLIST_VIOLATION = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'BLACKLIST_VIOLATION';
 """
 
-SELECT_IAP_VIOLATIONS = """
-    SELECT * FROM violations_{0}
-    WHERE violation_type = 'IAP_VIOLATION';
+
+SELECT_GROUPS_VIOLATIONS = """
+    SELECT * FROM groups_violations_{0};
 """
 
 BACKEND_SERVICES = """
