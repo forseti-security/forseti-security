@@ -35,14 +35,18 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
         """Constructor.
 
         Args:
-          quota_max_calls: (int) Allowed requests per <quota_period> for the
+          quota_max_calls (int): Allowed requests per <quota_period> for the
               API.
-          quota_period: (float) The time period to limit the quota_requests to.
+          quota_period (float): The time period to limit the quota_requests to.
           use_rate_limiter (bool): Set to false to disable the use of a rate
               limiter for this service.
         """
         if not quota_max_calls:
             use_rate_limiter = False
+
+        self._projects = None
+        self._organizations = None
+        self._folders = None
 
         super(CloudResourceManagerRepository, self).__init__(
             'cloudresourcemanager', versions=['v1', 'v2'],
@@ -105,7 +109,7 @@ class _ResourceManagerProjectsRepository(
         """Constructor.
 
         Args:
-          gce_service (object): A GCE service object built using the Google
+          gcp_service (object): A GCE service object built using the Google
               discovery API.
           credentials (object): GoogleCredentials.
           rate_limiter (object): A rate limiter instance.
@@ -182,12 +186,12 @@ class _ResourceManagerOrganizationsRepository(
         """Constructor.
 
         Args:
-          gce_service (object): A GCE service object built using the Google
+          gcp_service (object): A GCE service object built using the Google
               discovery API.
           credentials (object): GoogleCredentials.
           rate_limiter (object): A rate limiter instance.
         """
-        super(_ResourceManagerProjectsRepository, self).__init__(
+        super(_ResourceManagerOrganizationsRepository, self).__init__(
             gcp_service=gcp_service,
             credentials=credentials,
             component='organizations',
@@ -206,27 +210,29 @@ class _ResourceManagerOrganizationsRepository(
           dict: Response from the API.
         """
         if not organization_id.startswith('organizations/'):
-          organization_id = 'organizations/{}'.format(organization_id)
+            organization_id = 'organizations/{}'.format(organization_id)
         return self.execute_query(
             verb='get',
             verb_arguments={'name': organization_id, 'fields': fields}
         )
 
+    # pylint: disable=redefined-builtin
     def search(self, filter=None, fields=None):
         """Get all organizations the caller has access to.
 
         Args:
-          filters (str): Additional filters to apply to the restrict the
+          filter (str): Additional filters to apply to the restrict the
               set of organizations returned.
           fields (str): Fields to include in the response - partial response.
 
-        Returns:
+        Yields:
           dict: Response from the API.
         """
         for resp in self.execute_paged_query(
                 verb='search',
                 verb_arguments={'filter': filter, 'fields': fields}):
             yield resp
+    # pylint: enable=redefined-builtin
 
 
 class _ResourceManagerFoldersRepository(
@@ -238,12 +244,12 @@ class _ResourceManagerFoldersRepository(
         """Constructor.
 
         Args:
-          gce_service (object): A GCE service object built using the Google
+          gcp_service (object): A GCE service object built using the Google
               discovery API.
           credentials (object): GoogleCredentials.
           rate_limiter (object): A rate limiter instance.
         """
-        super(_ResourceManagerProjectsRepository, self).__init__(
+        super(_ResourceManagerFoldersRepository, self).__init__(
             gcp_service=gcp_service,
             credentials=credentials,
             component='folders',
@@ -276,7 +282,7 @@ class _ResourceManagerFoldersRepository(
               they must be prefixed with 'organizations/' or 'folders/'.
           fields (str): Fields to include in the response - partial response.
 
-        Returns:
+        Yields:
           dict: Response from the API.
         """
         for resp in self.execute_paged_query(
@@ -292,7 +298,7 @@ class _ResourceManagerFoldersRepository(
               set of folders returned.
           fields (str): Fields to include in the response - partial response.
 
-        Returns:
+        Yields:
           dict: Response from the API.
         """
         for resp in self.execute_paged_query(
@@ -306,17 +312,17 @@ class CloudResourceManagerClient(object):
 
     DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
 
-    def __init__(self, global_configs, **kwargs):
+    def __init__(self, global_configs, **unused_kwargs):
         """Initialize.
 
         Args:
             global_configs (dict): Forseti config.
-            **kwargs (dict): The kwargs.
+            **unused_kwargs (dict): The kwargs.
         """
-        max_calls = self.global_configs.get('max_crm_api_calls_per_100_seconds')
+        max_calls = global_configs.get('max_crm_api_calls_per_100_seconds')
         self.repository = CloudResourceManagerRepository(
             quota_max_calls=max_calls,
-            quota_period=DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
+            quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
             use_rate_limiter=True)
 
     def get_project(self, project_id):
@@ -356,7 +362,7 @@ class CloudResourceManagerClient(object):
             filters.append('{}:{}'.format(key, value))
 
         try:
-            yield self.respository.projects.list(filters=filters)
+            yield self.repository.projects.list(filters=filters)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 

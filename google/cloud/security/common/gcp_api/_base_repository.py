@@ -36,6 +36,9 @@ SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 # Default value num_retries within HttpRequest execute method
 NUM_HTTP_RETRIES = 5
 
+# Per thread storage.
+LOCAL_THREAD = threading.local()
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -89,10 +92,10 @@ class BaseRepositoryClient(object):
           api_name (str): The API name to wrap. More details here:
                 https://developers.google.com/api-client-library/python/apis/
           versions (list): A list of version strings to initialize.
-          credentials: GoogleCredentials.
-          quota_max_calls: (int) Allowed requests per <quota_period> for the
+          credentials (object): GoogleCredentials.
+          quota_max_calls (int): Allowed requests per <quota_period> for the
               API.
-          quota_period: (float) The time period to limit the quota_requests to.
+          quota_period (float): The time period to limit the quota_requests to.
           use_rate_limiter (bool): Set to false to disable the use of a rate
               limiter for this service.
           **kwargs (dict): Additional args such as version.
@@ -120,7 +123,7 @@ class BaseRepositoryClient(object):
 
         # See if the version is supported by Forseti.
         # If no version is specified, try to find the supported API's version.
-        if not version and supported_api:
+        if not versions and supported_api:
             versions = [supported_api.get('version')]
         self.versions = versions
 
@@ -154,11 +157,14 @@ class BaseRepositoryClient(object):
           gcp_service (object): The gcp service object for the repository.
           repo_property (object): The pointer to the instance of the initialized
               class.
+
+        Returns:
+          object: An instance of repository_class.
         """
         with self._repository_lock:
             if not repo_property:  # Verify it still doesn't exist.
                 repo_property = (
-                    _ResourceManagerFoldersRepository(
+                    repository_class(
                         gcp_service, self._credentials,
                         rate_limiter=self._rate_limiter))
 
@@ -198,6 +204,11 @@ class GCPRepository(object):
 
     @property
     def http(self):
+        """A thread local instance of httplib2.Http.
+
+        Returns:
+          object: An httplib2.Http instance authorized by the credentials.
+        """
         if hasattr(self._local, 'http'):
             return self._local.http
 
@@ -267,20 +278,10 @@ class GCPRepository(object):
               _build_request.
 
         Returns:
-          dict: Service Response.
+          dict: An async operation Service Response.
         """
         request = self._build_request(verb, verb_arguments)
-        # It appears that all API calls include project as part of their
-        # signature. Leveraging this fact to extract the name of project -
-        # instead of trying to parse it out from the response, where json
-        # schema is subject to change.
-        project = verb_arguments['project']
-
         request_submission_status = self._execute(request)
-
-        if self._assert_completion_func is not None:
-            return self._assert_completion_func(request_submission_status,
-                                                project)
 
         return request_submission_status
 
@@ -357,7 +358,7 @@ class ListQueryMixin(object):
         """List GCP entities of a given project.
 
         Args:
-          project: The id of the project to query.
+          project (str): The id of the project to query.
           fields (str): Fields to include in the response - partial response.
           max_results (int): Number of entries to include per page.
           verb (str): The method to call on the API.
