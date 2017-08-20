@@ -22,15 +22,15 @@ import mock
 from tests.common.gcp_api.test_data import fake_bigquery as fbq
 from tests.common.gcp_api.test_data import http_mocks
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
-# pylint: disable=bad-indentation
 class BigqueryTestCase(ForsetiTestCase):
     """Test the Bigquery API Client."""
 
-    @mock.patch('google.cloud.security.common.gcp_api._base_repository.GoogleCredentials')
+    @mock.patch.object(_base_repository, 'GoogleCredentials')
     def setUp(self, mock_google_credential):
         """Set up."""
         fake_global_configs = {

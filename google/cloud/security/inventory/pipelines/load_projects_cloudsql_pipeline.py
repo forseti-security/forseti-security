@@ -59,8 +59,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
 
         for instances_map in cloudsql_instances_map:
             instances = instances_map['instances']
-            items = instances.get('items', [])
-            for item in items:
+            for item in instances:
                 yield {
                     'project_number': instances_map['project_number'],
                     'name': item.get('name'),
@@ -179,8 +178,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
 
         for instances_map in cloudsql_instances_map:
             instances = instances_map['instances']
-            items = instances.get('items', [])
-            for item in items:
+            for item in instances:
                 authorizednetworks = item.get('settings', {})\
                     .get('ipConfiguration', {}).get('authorizedNetworks', [{}])
                 for network in authorizednetworks:
@@ -224,8 +222,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
 
         for instances_map in cloudsql_instances_map:
             instances = instances_map['instances']
-            items = instances.get('items', [])
-            for item in items:
+            for item in instances:
                 ipaddresses = item.get('ipAddresses', [{}])
                 for ipaddress in ipaddresses:
                     if ipaddress.get('timeToRetire') is not None:

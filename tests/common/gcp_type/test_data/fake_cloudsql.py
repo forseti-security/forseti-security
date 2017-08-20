@@ -14,7 +14,29 @@
 
 """Fake cloudsql data."""
 
-from copy import deepcopy
+import copy
+
+FAKE_EMPTY_RESPONSE = """
+{
+ "kind": "sql#instancesList"
+}
+"""
+
+PROJECT_INVALID = """
+{
+ "error": {
+  "errors": [
+   {
+    "domain": "global",
+    "reason": "errorInvalidProject",
+    "message": "Project specified in the request is invalid."
+   }
+  ],
+  "code": 400,
+  "message": "Project specified in the request is invalid."
+ }
+}
+"""
 
 FAKE_CLOUDSQL_RESPONSE = {
   u'items': [{u'backendType': u'SECOND_GEN',
@@ -148,5 +170,5 @@ FAKE_CLOUDSQL_RESPONSE = {
  u'kind': u'sql#instancesList'}
 
 
-EXPECTED_FAKE_CLOUDSQL_FROM_API = [deepcopy(FAKE_CLOUDSQL_RESPONSE)]
-
+EXPECTED_FAKE_CLOUDSQL_FROM_API = copy.deepcopy(
+    FAKE_CLOUDSQL_RESPONSE.get('items'))

@@ -42,7 +42,8 @@ SUPPORTED_APIS = {
         'version': 'v1'
     },
     'sqladmin': {
-        'version': 'v1beta4'
+        'default_version': 'v1beta4',
+        'supported_versions': ['v1beta4']
     },
     'storage': {
         'version': 'v1'
