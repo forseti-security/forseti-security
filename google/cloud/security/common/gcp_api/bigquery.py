@@ -189,7 +189,7 @@ class BigQueryClient(object):
         """
         try:
             results = self.repository.datasets.list(
-                project=project_id,
+                resource=project_id,
                 fields='datasets/datasetReference,nextPageToken',
                 all=True)
             flattened = _base_repository.flatten_list_results(results,
@@ -217,7 +217,7 @@ class BigQueryClient(object):
              {'role': 'READER', 'specialGroup': 'projectReaders'}]
         """
         try:
-            results = self.repository.datasets.get(project=project_id,
+            results = self.repository.datasets.get(resource=project_id,
                                                    target=dataset_id,
                                                    fields='access')
             return results.get('access', [])
