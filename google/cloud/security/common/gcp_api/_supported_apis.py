@@ -20,7 +20,8 @@ discovery.get()).
 
 SUPPORTED_APIS = {
     'admin': {
-        'version': 'directory_v1'
+        'default_version': 'directory_v1',
+        'supported_versions': ['directory_v1']
     },
     'appengine': {
         'default_version': 'v1',

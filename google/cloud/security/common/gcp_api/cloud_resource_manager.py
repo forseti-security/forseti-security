@@ -120,7 +120,7 @@ class _ResourceManagerProjectsRepository(
             credentials=credentials,
             component='projects',
             entity='',
-            projects_field='projectId',
+            key_field='projectId',
             rate_limiter=rate_limiter)
 
     def get_ancestry(self, project, fields=None):
@@ -135,7 +135,7 @@ class _ResourceManagerProjectsRepository(
         """
         return self.execute_query(
             verb='getAncestry',
-            verb_arguments={self._projects_field: project,
+            verb_arguments={self._key_field: project,
                             'fields': fields,
                             'body': {}}
         )

@@ -99,7 +99,7 @@ class _BigQueryProjectsRepository(
         super(_BigQueryProjectsRepository, self).__init__(
             gcp_service=gcp_service,
             credentials=credentials,
-            projects_field='',
+            key_field='',
             component='projects',
             entity='',
             rate_limiter=rate_limiter)
@@ -123,7 +123,7 @@ class _BigQueryDatasetsRepository(
         super(_BigQueryDatasetsRepository, self).__init__(
             gcp_service=gcp_service,
             credentials=credentials,
-            projects_field='projectId',
+            key_field='projectId',
             component='datasets',
             entity='datasetId',
             rate_limiter=rate_limiter)

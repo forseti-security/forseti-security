@@ -22,6 +22,7 @@ from googleapiclient import discovery
 import httplib2
 
 from oauth2client.client import GoogleCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 from retrying import retry
 
@@ -73,6 +74,32 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
         discovery_kwargs['cache_discovery'] = cache_discovery
 
     return discovery.build(**discovery_kwargs)
+
+
+def credential_from_keyfile(keyfile_name, scopes, delegated_account):
+    """Build delegated credentials required for accessing the gsuite APIs.
+
+    Args:
+        keyfile_name (str): The filename to load the json service account key
+            from.
+        scopes (list): The list of required scopes for the service account.
+        delegated_account (str): The account to delegate the service account to
+            use.
+
+    Returns:
+        object: Credentials as built by oauth2client.
+
+    Raises:
+        api_errors.ApiExecutionError: If fails to build credentials.
+    """
+    try:
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(
+            keyfile_name, scopes=scopes)
+    except (ValueError, KeyError, TypeError, IOError) as e:
+        raise api_errors.ApiExecutionError(
+            'Error building admin api credential: %s', e)
+
+    return credentials.create_delegated(delegated_account)
 
 
 def flatten_list_results(paged_results, item_key):
@@ -200,7 +227,7 @@ class GCPRepository(object):
     """Base class for GCP APIs."""
 
     def __init__(self, gcp_service, credentials, component, entity='',
-                 num_retries=NUM_HTTP_RETRIES, projects_field='project',
+                 num_retries=NUM_HTTP_RETRIES, key_field='project',
                  rate_limiter=None):
         """Constructor.
 
@@ -215,7 +242,7 @@ class GCPRepository(object):
               E.g. 'instance' for compute.instances().get()
           num_retries (int): The number of http retriable errors to retry on
               before hard failing.
-          projects_field (str): The field name representing the project to
+          key_field (str): The field name representing the project to
               query in the API.
           rate_limiter (object): A RateLimiter object to manage API quota.
         """
@@ -224,7 +251,7 @@ class GCPRepository(object):
         self._component = getattr(self.gcp_service, component)()
         self._entity = entity
         self._num_retries = num_retries
-        self._projects_field = projects_field
+        self._key_field = key_field
         self._rate_limiter = rate_limiter
 
         self._local = LOCAL_THREAD
@@ -410,12 +437,12 @@ class GCPRepository(object):
 class ListQueryMixin(object):
     """Mixin that implements Paged List query."""
 
-    def list(self, project=None, fields=None, max_results=None, verb='list',
+    def list(self, resource=None, fields=None, max_results=None, verb='list',
              **kwargs):
         """List GCP entities of a given project.
 
         Args:
-          project (str): The id of the project to query.
+          resource (str): The id of the resource to query.
           fields (str): Fields to include in the response - partial response.
           max_results (int): Number of entries to include per page.
           verb (str): The method to call on the API.
@@ -429,8 +456,8 @@ class ListQueryMixin(object):
         arguments = {'fields': fields,
                      'maxResults': max_results}
 
-        if self._projects_field and project:
-            arguments[self._projects_field] = project
+        if self._key_field and resource:
+            arguments[self._key_field] = resource
 
         if kwargs:
             arguments.update(kwargs)
@@ -443,11 +470,11 @@ class ListQueryMixin(object):
 class GetQueryMixin(object):
     """Mixin that implements Get query."""
 
-    def get(self, project, target=None, fields=None, verb='get', **kwargs):
+    def get(self, resource, target=None, fields=None, verb='get', **kwargs):
         """Get GCP entity.
 
         Args:
-          project (str): The id of the project to query.
+          resource (str): The id of the resource to query.
           target (str):  Name of the entity to fetch.
           fields (str): Fields to include in the response - partial response.
           verb (str): The method to call on the API.
@@ -462,9 +489,9 @@ class GetQueryMixin(object):
             "The resource '...' was not found"
         """
         assert isinstance(self, GCPRepository)
-        assert bool(self._projects_field)
+        assert bool(self._key_field)
 
-        arguments = {self._projects_field: project,
+        arguments = {self._key_field: resource,
                      'fields': fields}
         if self._entity and target:
             arguments[self._entity] = target

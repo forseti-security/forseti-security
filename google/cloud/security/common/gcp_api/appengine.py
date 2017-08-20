@@ -80,7 +80,7 @@ class _AppEngineAppsRepository(
         super(_AppEngineAppsRepository, self).__init__(
             gcp_service=gcp_service,
             credentials=credentials,
-            projects_field='appsId',
+            key_field='appsId',
             component='apps',
             rate_limiter=rate_limiter)
 
