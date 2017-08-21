@@ -19,6 +19,7 @@ import os
 import unittest
 import collections
 
+
 class ForsetiTestCase(unittest.TestCase):
     """Forseti base class for tests."""
 

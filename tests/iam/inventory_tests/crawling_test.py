@@ -20,6 +20,7 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.inventory2.storage import Memory as MemoryStorage
 from google.cloud.security.inventory2.progress import Progresser
 from google.cloud.security.iam.inventory.crawler import run_crawler
+from tests.iam.utils.gcp_env import gcp_configured, gcp_env
 
 
 class NullProgresser(Progresser):
@@ -57,12 +58,14 @@ class CrawlerTest(ForsetiTestCase):
 
         ForsetiTestCase.tearDown(self)
 
+    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
     def test_crawling_to_memmory_storage(self):
         """Crawl an environment, test that there are items in storage."""
 
-        gsuite_sa = '/Users/fmatenaar/deployments/forseti/groups.json'
-        gsuite_admin_email = 'felix@henrychang.mygbiz.com'
-        organization_id = '660570133860'
+        gcp = gcp_env()
+        gsuite_sa = gcp.gsuite_sa
+        gsuite_admin_email = gcp.gsuite_admin_email
+        organization_id = gcp.organization_id
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
