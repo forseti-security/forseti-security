@@ -83,12 +83,12 @@ def run_inventory(queue, session, progresser, background,
                                  gsuite_sa,
                                  gsuite_admin_email,
                                  organization_id)
-            return result
         except Exception:
             storage.rollback()
             raise
         else:
             storage.commit()
+        return result
 
 
 def run_import(client, model_name, inventory_id):
