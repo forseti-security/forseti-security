@@ -159,8 +159,8 @@ class Organization(Resource):
 class DummyParent(Resource):
     def __init__(self, resource):
         if resource.type() == 'folder':
-            data = {'type':resource['parent'].split('s/')[0],
-                    'id':resource['parent'].split('s/')[1]}
+            data = {'type':resource['parent'].split('s/',1)[0],
+                    'id':resource['parent'].split('/',1)[-1]}
             super(DummyParent, self).__init__(data)
         elif resource.type() == 'project':
             super(DummyParent, self).__init__(resource['parent'])
