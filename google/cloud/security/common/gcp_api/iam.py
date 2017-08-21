@@ -23,7 +23,6 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=bad-indentation
 class IamRepository(_base_repository.BaseRepositoryClient):
     """IAM API Respository."""
 
@@ -105,7 +104,8 @@ class _IamProjectsServiceAccountsRepository(
             max_results_field='pageSize',
             rate_limiter=rate_limiter)
 
-    def get_name(self, project_id):
+    @staticmethod
+    def get_name(project_id):
         """Returns a formatted name field to pass in to the API.
 
         Args:
@@ -140,24 +140,11 @@ class _IamProjectsServiceAccountsKeysRepository(
             key_field='name',
             rate_limiter=rate_limiter)
 
-    def get_name(self, project_id, service_account):
-        """Returns a formatted name field to pass in to the API.
-
-        Args:
-            project_id (str): The id of the project to query.
-            service_account (str): The service account email address to query.
-
-        Returns:
-            str: A formatted project name.
-        """
-        return 'projects/{}/serviceAccounts/{}'.format(
-            project_id, service_account)
-
 
 class IAMClient(object):
     """IAM Client."""
 
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 1.0
+    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 1.0  # pylint: disable=invalid-name
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.

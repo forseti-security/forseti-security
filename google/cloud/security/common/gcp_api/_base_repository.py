@@ -244,6 +244,8 @@ class GCPRepository(object):
               before hard failing.
           key_field (str): The field name representing the project to
               query in the API.
+          max_results_field (str): The field name that represents the maximum
+              number of results to return in one page.
           rate_limiter (object): A RateLimiter object to manage API quota.
         """
         self.gcp_service = gcp_service
