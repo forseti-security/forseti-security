@@ -48,9 +48,11 @@ from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import service_account_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import api_map
+from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory import pipeline_builder as builder
 from google.cloud.security.inventory import util as inventory_util
 from google.cloud.security.notifier import notifier
@@ -171,10 +173,16 @@ def _run_pipelines(pipelines):
             pipeline.run()
             pipeline.status = 'SUCCESS'
             LOGGER.info('Finished running %s', pipeline.__class__.__name__)
-        except Exception as e:
-            LOGGER.error('Encountered error loading data.\n%s', e)
+
+        except (api_errors.ApiInitializationError,
+                inventory_errors.LoadDataPipelineError) as e:
+            LOGGER.error('Encountered API error loading data.\n%s', e,
+                         exc_info=True)
             pipeline.status = 'FAILURE'
-            LOGGER.info('Continuing on.')
+        except Exception as e:
+            LOGGER.error('Encountered error loading data.\n%s', e,
+                         exc_info=True)
+            pipeline.status = 'FAILURE'
         run_statuses.append(pipeline.status == 'SUCCESS')
     return run_statuses
 

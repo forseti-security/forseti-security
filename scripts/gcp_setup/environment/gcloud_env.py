@@ -28,14 +28,31 @@ import sys
 import time
 
 
-ROOT_DIR_PATH = os.path.dirname(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(__file__))))
+DEFAULT_BUCKET_FMT = 'gs://{}-data-{}'
+DEFAULT_CLOUDSQL_INSTANCE_NAME = 'forseti-security'
 
 GCLOUD_MIN_VERSION = (163, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
+
+GSUITE_KEY_SCP_ATTEMPTS = 5
+GSUITE_KEY_NAME = 'gsuite_key.json'
+
+ORG_IAM_ROLES = [
+    'roles/browser',
+    'roles/compute.networkViewer',
+    'roles/iam.securityReviewer',
+    'roles/appengine.appViewer',
+    'roles/servicemanagement.quotaViewer',
+    'roles/cloudsql.viewer',
+    'roles/compute.securityAdmin',
+]
+
+PROJECT_IAM_ROLES = [
+    'roles/storage.objectViewer',
+    'roles/storage.objectCreator',
+    'roles/cloudsql.client'
+]
 
 REQUIRED_APIS = [
     {'name': 'Admin SDK',
@@ -59,28 +76,10 @@ REQUIRED_APIS = [
 SERVICE_ACCT_FMT = 'forseti-{}-reader-{}'
 SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
 
-ORG_IAM_ROLES = [
-    'roles/browser',
-    'roles/compute.networkViewer',
-    'roles/iam.securityReviewer',
-    'roles/appengine.appViewer',
-    'roles/servicemanagement.quotaViewer',
-    'roles/cloudsql.viewer',
-    'roles/compute.securityAdmin',
-]
-
-PROJECT_IAM_ROLES = [
-    'roles/storage.objectViewer',
-    'roles/storage.objectCreator',
-    'roles/cloudsql.client'
-]
-
-DEFAULT_BUCKET_FMT = 'gs://{}-data-{}'
-
-DEFAULT_CLOUDSQL_INSTANCE_NAME = 'forseti-security'
-
-GSUITE_KEY_SCP_ATTEMPTS = 5
-GSUITE_KEY_NAME = 'gsuite_key.json'
+ROOT_DIR_PATH = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.dirname(__file__))))
 
 
 def org_id_from_org_name(org_name):
