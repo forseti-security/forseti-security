@@ -22,6 +22,7 @@ from google.cloud.security.scanner.audit.instance_network_interface_rules_engine
 from google.cloud.security.scanner.audit.iam_rules_engine import IamRulesEngine
 from google.cloud.security.scanner.audit.iap_rules_engine import IapRulesEngine
 from google.cloud.security.scanner.audit.forwarding_rule_rules_engine import ForwardingRuleRulesEngine
+from google.cloud.security.scanner.audit.blacklist_rules_engine import BlacklistRulesEngine
 # pylint: enable=line-too-long
 
 
@@ -33,4 +34,5 @@ ENGINE_TO_DATA_MAP = {
     'ForwardingRuleRulesEngine': ForwardingRuleRulesEngine,
     'IamRulesEngine': IamRulesEngine,
     'IapRulesEngine': IapRulesEngine,
+    'BlacklistRulesEngine': BlacklistRulesEngine,
 }

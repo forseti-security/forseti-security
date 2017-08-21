@@ -502,7 +502,7 @@ CREATE_VIOLATIONS_TABLE = """
                               'BIGQUERY_VIOLATION', 'BUCKET_VIOLATION',
                               'IAP_VIOLATION', 'CLOUD_SQL_VIOLATION',
                               'FORWARDING_RULE_VIOLATION',
-                              'INSTANCE_NETWORK_INTERFACE_VIOLATION') NOT NULL,
+                              'INSTANCE_NETWORK_INTERFACE_VIOLATION', 'BLACKLIST_VIOLATION') NOT NULL,
         `violation_data` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

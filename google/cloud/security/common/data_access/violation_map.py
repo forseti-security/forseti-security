@@ -37,6 +37,7 @@ VIOLATION_INSERT_MAP = {
 
 VIOLATION_SELECT_MAP = {
     'bigquery_acl_violations': sd.SELECT_BIGQUERY_ACL_VIOLATIONS.format,
+    'blacklist_violations': sd.SELECT_BLACKLIST_VIOLATION.format,
     'buckets_acl_violations': sd.SELECT_BUCKETS_ACL_VIOLATIONS.format,
     'cloudsql_acl_violations': sd.SELECT_CLOUDSQL_VIOLATIONS.format,
     'forwarding_rule_violations': sd.SELECT_FORWARDING_RULE_VIOLATION.format,
