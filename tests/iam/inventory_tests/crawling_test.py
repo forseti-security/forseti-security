@@ -65,6 +65,10 @@ class CrawlerTest(ForsetiTestCase):
                              progresser.errors,
                              'No errors should have occurred')
 
+        types = set([item.type() for item in storage.mem.values()])
+        self.assertEqual(len(types), 18, """"The inventory crawl 18 types of
+        resources in a well populated organization, howevever, there is: """
+        +str(len(types)))
 
 if __name__ == '__main__':
     unittest.main()

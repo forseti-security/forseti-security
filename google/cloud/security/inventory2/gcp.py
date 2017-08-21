@@ -60,8 +60,21 @@ class ApiClientImpl(ApiClient):
         self.crm = cloud_resource_manager.CloudResourceManagerClient(config)
         self.cloudsql = cloudsql.CloudsqlClient(config)
         self.compute = compute.ComputeClient(config)
-        self.storage = storage.StorageClient(config)
         self.iam = iam.IAMClient(config)
+        self.storage = storage.StorageClient(config)
+
+    def iter_users(self, gsuite_id):
+        for user in self.ad.get_users(gsuite_id):
+            yield user
+
+    def iter_groups(self, gsuite_id):
+        result = self.ad.get_groups(gsuite_id)
+        for group in result:
+            yield group
+
+    def iter_group_members(self, group_key):
+        for member in self.ad.get_group_members(group_key):
+            yield member
 
     def iter_users(self, gsuite_id):
         for user in self.ad.get_users(gsuite_id):
@@ -102,14 +115,23 @@ class ApiClientImpl(ApiClient):
             yield bucket
 
     def iter_objects(self, bucket_id):
-        return self.storage.get_objects(bucket_name=bucket_id)
+        for object in self.storage.get_objects(bucket_name=bucket_id):
+            yield object
 
     def iter_datasets(self, projectid):
-        return self.bigquery.get_datasets_for_projectid(projectid)
+        response = self.bigquery.get_datasets_for_projectid(projectid)
+        for dataset in response:
+            yield dataset
 
     def iter_appengineapps(self, projectid):
-        return
-        yield
+        """ TO DO: Have to verify that the customer enabled App Engine Admin
+            API before creating inventory
+        """
+        response = self.appengine.get_app(projectid)
+        if not response:
+            return
+            yield
+        yield response
 
     def iter_cloudsqlinstances(self, projectid):
         result = self.cloudsql.get_instances(projectid)
@@ -128,6 +150,16 @@ class ApiClientImpl(ApiClient):
         result = self.compute.get_firewall_rules(projectid)
         for rule in result:
             yield rule
+
+    def iter_computeinstancegroups(self, projectid):
+        result = self.compute.get_instance_groups(projectid)
+        for instancegroup in result:
+            yield instancegroup
+
+    def iter_backendservices(self, projectid):
+        result = self.compute.get_backend_services(projectid)
+        for backendservice in result:
+            yield backendservice
 
     def iter_serviceaccounts(self, projectid):
         for serviceaccount in self.iam.get_serviceaccounts(projectid):
@@ -155,10 +187,13 @@ class ApiClientImpl(ApiClient):
         return self.crm.get_project_iam_policies(projectid, projectid)
 
     def get_bucket_gcs_policy(self, bucketid):
-        return self.storage.get_bucket_acls(bucketid)
+        result = self.storage.get_bucket_acls(bucketid)
+        if 'items' not in result:
+            return []
+        return result['items']
 
     def get_bucket_iam_policy(self, bucketid):
-        return None
+        return self.storage.get_bucket_iam_policy(bucketid)
 
     def get_object_gcs_policy(self, bucket_name, object_name):
         result = self.storage.get_object_acls(bucket_name, object_name)
