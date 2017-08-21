@@ -39,7 +39,8 @@ SUPPORTED_APIS = {
         'version': 'v1'
     },
     'iam': {
-        'version': 'v1'
+        'default_version': 'v1',
+        'supported_versions': ['v1']
     },
     'sqladmin': {
         'default_version': 'v1beta4',

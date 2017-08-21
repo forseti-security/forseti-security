@@ -25,7 +25,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class CloudSqlRepository(_base_repository.BaseRepositoryClient):
-    """AppEngine API Respository."""
+    """Cloud SQL Admin API Respository."""
 
     def __init__(self,
                  quota_max_calls=None,

@@ -228,7 +228,7 @@ class GCPRepository(object):
 
     def __init__(self, gcp_service, credentials, component, entity='',
                  num_retries=NUM_HTTP_RETRIES, key_field='project',
-                 rate_limiter=None):
+                 max_results_field='maxResults', rate_limiter=None):
         """Constructor.
 
         Args:
@@ -248,10 +248,16 @@ class GCPRepository(object):
         """
         self.gcp_service = gcp_service
         self._credentials = credentials
-        self._component = getattr(self.gcp_service, component)()
+        components = component.split('.')
+        self._component = getattr(
+            self.gcp_service, components.pop(0))()
+        for nested_component in components:
+            self._component = getattr(
+                self._component, nested_component)()
         self._entity = entity
         self._num_retries = num_retries
         self._key_field = key_field
+        self._max_results_field = max_results_field
         self._rate_limiter = rate_limiter
 
         self._local = LOCAL_THREAD
@@ -454,7 +460,7 @@ class ListQueryMixin(object):
         assert isinstance(self, GCPRepository)
 
         arguments = {'fields': fields,
-                     'maxResults': max_results}
+                     self._max_results_field: max_results}
 
         if self._key_field and resource:
             arguments[self._key_field] = resource
@@ -462,9 +468,14 @@ class ListQueryMixin(object):
         if kwargs:
             arguments.update(kwargs)
 
-        for resp in self.execute_paged_query(verb=verb,
-                                             verb_arguments=arguments):
-            yield resp
+        try:
+            for resp in self.execute_paged_query(verb=verb,
+                                                 verb_arguments=arguments):
+                yield resp
+        except api_errors.PaginationNotSupportedError:
+            # Some API list() methods are not actually paginated.
+            del arguments[self._max_results_field]
+            yield self.execute_query(verb=verb, verb_arguments=arguments)
 
 
 class GetQueryMixin(object):

@@ -49,11 +49,11 @@ class BaseClientTest(ForsetiTestCase):
         supported_api = self.supported_apis[api_name]
         mock_credentials = mock.MagicMock()
 
-        client = _base_client.BaseClient({},
-                                         credentials=mock_credentials,
-                                         api_name=api_name)
+        client = _base_client.BaseClient(
+            {}, credentials=mock_credentials, api_name=api_name,
+            version=supported_api['default_version'])
 
-        self.assertEqual((api_name, supported_api['version']),
+        self.assertEqual((api_name, supported_api['default_version']),
                          (client.name, client.version))
 
     @mock.patch.object(discovery, 'build', autospec=True)
