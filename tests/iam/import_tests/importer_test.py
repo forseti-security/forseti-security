@@ -18,7 +18,7 @@ import os
 from shutil import copyfile
 import tempfile
 import unittest
-
+from sqlalchemy import event
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.iam.dao import create_engine
@@ -36,6 +36,19 @@ class ServiceConfig(object):
         engine = create_engine(explain_connect_string, echo=False)
         self.model_manager = ModelManager(engine)
         self.forseti_connect_string = forseti_connect_string
+
+        @event.listens_for(engine, "connect")
+        def do_connect(dbapi_connection, connection_record):
+            # disable pysqlite's emitting of the BEGIN statement entirely.
+            # also stops it from emitting COMMIT before any DDL.
+            dbapi_connection.isolation_level = None
+
+        @event.listens_for(engine, "begin")
+        def do_begin(conn):
+            # emit our own BEGIN
+            conn.execute("BEGIN")
+
+        self.listeners = [do_begin, do_connect]
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""
@@ -66,7 +79,6 @@ class ImporterTest(ForsetiTestCase):
 
     def test_status_done_folder(self):
         """Test if the status of the import is 'done'."""
-        return
 
         EXPLAIN_CONNECT = 'sqlite:///:memory:'
         FORSETI_CONNECT = 'sqlite:///{}'.format(
@@ -96,7 +108,6 @@ class ImporterTest(ForsetiTestCase):
 
     def test_status_done_basic(self):
         """Test if the status of the import is 'done'."""
-        return
 
         EXPLAIN_CONNECT = 'sqlite:///:memory:'
         FORSETI_CONNECT = 'sqlite:///{}'.format(
@@ -126,7 +137,7 @@ class ImporterTest(ForsetiTestCase):
 
     def test_missing_group_collection(self):
         """Test if a missing group membership table is handled"""
-        return
+
         EXPLAIN_CONNECT = 'sqlite:///:memory:'
         FORSETI_CONNECT = 'sqlite:///{}'.format(
             get_db_file_path('forseti_1_missing_groups.db'))

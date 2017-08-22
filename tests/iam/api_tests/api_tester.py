@@ -50,7 +50,7 @@ class ApiTestRunner(object):
     def run(self, test_callback):
         """Test runner."""
 
-        server = grpc.server(futures.ThreadPoolExecutor(1))
+        server = grpc.server(futures.ThreadPoolExecutor(32))
         server.add_insecure_port('[::]:{}'.format(self.service_port))
         for factory in self.service_factories:
             factory(self.service_config).create_and_register_service(server)

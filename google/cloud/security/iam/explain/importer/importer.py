@@ -454,8 +454,7 @@ class InventoryImporter(object):
         res_type = resource.get_type() if resource else None
         if res_type not in handlers:
             raise Exception('Resource type unsupported: {}'.format(res_type))
-            self.model.add_warning(self.session,
-                                   'No handler for type "{}"'.format(res_type))
+            self.model.add_warning('No handler for type "{}"'.format(res_type))
 
         if res_type != last_res_type:
 
@@ -966,7 +965,7 @@ class ForsetiImporter(object):
                 permission_names = self._get_permissions_for_role(
                     binding.get_role())
             except KeyError as err:
-                self.model.add_warning(self.session, str(err))
+                self.model.add_warning(str(err))
                 permission_names = []
 
             permissions = (
@@ -1068,9 +1067,10 @@ class ForsetiImporter(object):
         """
 
         try:
-            self.session.add(self.session.merge(self.model))
-            self.model.set_inprogress(self.session)
-            self.model.kick_watchdog(self.session)
+            self.session.add(self.model)
+            self.model.set_inprogress()
+            self.model.kick_watchdog()
+            self.session.commit()
 
             actions = {
                 'organizations': self._convert_organization,
@@ -1103,8 +1103,9 @@ class ForsetiImporter(object):
 
                 # kick watchdog about every ten seconds
                 if time() - last_watchdog_kick > 10.0:
-                    self.model.kick_watchdog(self.session)
+                    self.model.kick_watchdog()
                     last_watchdog_kick = time()
+                    self.session.commit()
 
             self.dao.denorm_group_in_group(self.session)
 
@@ -1113,10 +1114,10 @@ class ForsetiImporter(object):
             traceback.print_exc(file=buf)
             buf.seek(0)
             message = buf.read()
-            self.model.set_error(self.session, message)
+            self.model.set_error(message)
         else:
-            self.model.set_done(self.session, item_counter)
-            self.session.commit()
+            self.model.set_done(item_counter)
+        self.session.commit()
 
 
 def by_source(source):
