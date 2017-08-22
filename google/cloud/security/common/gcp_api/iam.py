@@ -84,6 +84,7 @@ class IamRepository(_base_repository.BaseRepositoryClient):
 
 class _IamProjectsServiceAccountsRepository(
         _base_repository.GCPRepository,
+        _base_repository.GetIamPolicyQueryMixin,
         _base_repository.ListQueryMixin):
     """Implementation of Iam Projects ServiceAccounts repository."""
 
@@ -103,6 +104,22 @@ class _IamProjectsServiceAccountsRepository(
             key_field='name',
             max_results_field='pageSize',
             rate_limiter=rate_limiter)
+
+    def get_iam_policy(self, resource, fields=None, **kwargs):
+        """Get GCP IAM Policy.
+
+        Args:
+          resource (str): The id of the resource to fetch.
+          fields (str): Fields to include in the response - partial response.
+          kwargs (dict): Optional additional arguments to pass to the query.
+
+        Returns:
+          dict: GCE response.
+        """
+        # The IAM getIamPolicy does not allow the 'body' argument, so this
+        # overrides the default behavior by setting include_body to False.
+        return _base_repository.GetIamPolicyQueryMixin.get_iam_policy(
+            self, resource, fields=fields, include_body=False, **kwargs)
 
     @staticmethod
     def get_name(project_id):
@@ -177,6 +194,22 @@ class IAMClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(name, e))
             raise api_errors.ApiExecutionError('serviceAccounts', e)
+
+    def get_service_account_iam_policy(self, name):
+        """Get IAM policy associated with a service account.
+
+        Args:
+            name (str): The service account name to query, must be in the format
+                projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+
+        Returns:
+            dict: The IAM policies for the service account.
+        """
+        try:
+            return self.repository.projects_serviceaccounts.get_iam_policy(name)
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.warn(api_errors.ApiExecutionError(name, e))
+            raise api_errors.ApiExecutionError('serviceAccountIamPolicy', e)
 
     def get_service_account_keys(self, name):
         """Get keys associated with the given Service Account.

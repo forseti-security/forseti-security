@@ -70,6 +70,24 @@ class IamTest(ForsetiTestCase):
              self.iam_api_client.get_service_account_keys(
                  fake_iam.FAKE_SERVICEACCOUNT_NAME)
 
+    def test_get_service_account_iam_policy(self):
+        """Test get iam project service accounts."""
+        http_mocks.mock_http_response(
+            fake_iam.GET_PROJECT_SERVICEACCOUNT_IAM_POLICY)
+
+        result = self.iam_api_client.get_service_account_iam_policy(
+            fake_iam.FAKE_SERVICEACCOUNT_NAME)
+
+        self.assertTrue('bindings' in result)
+
+    def test_get_service_account_iam_policy_raises(self):
+        """Test get iam project service accounts not found."""
+        http_mocks.mock_http_response(fake_iam.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+             self.iam_api_client.get_service_account_iam_policy(
+                 fake_iam.FAKE_SERVICEACCOUNT_NAME)
+
 
 if __name__ == '__main__':
     unittest.main()

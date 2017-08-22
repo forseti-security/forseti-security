@@ -80,6 +80,20 @@ EXPECTED_SERVICE_ACCOUNT_KEYS = [
         "keyAlgorithm": "KEY_ALG_RSA_2048"
     }]
 
+GET_PROJECT_SERVICEACCOUNT_IAM_POLICY = """
+{
+ "etag": "etag",
+ "bindings": [
+  {
+   "role": "roles/owner",
+   "members": [
+    "user:testuser@foo.testing"
+   ]
+  }
+ ]
+}
+"""
+
 SERVICE_ACCOUNT_NOT_FOUND = """
 {
  "error": {

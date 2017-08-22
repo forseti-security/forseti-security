@@ -521,13 +521,15 @@ class GetIamPolicyQueryMixin(object):
     """Mixin that implements getIamPolicy query."""
 
     def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
-                       **kwargs):
-        """Get GCP entity.
+                       include_body=True, **kwargs):
+        """Get GCP IAM Policy.
 
         Args:
           resource (str): The id of the resource to fetch.
           fields (str): Fields to include in the response - partial response.
           verb (str): The method to call on the API.
+          include_body (bool): If true, include an empty body parameter in the
+              method args.
           kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
@@ -541,8 +543,9 @@ class GetIamPolicyQueryMixin(object):
         assert isinstance(self, GCPRepository)
 
         arguments = {'resource': resource,
-                     'fields': fields,
-                     'body': {}}
+                     'fields': fields}
+        if include_body:
+            arguments['body'] = {}
         if kwargs:
             arguments.update(kwargs)
 
