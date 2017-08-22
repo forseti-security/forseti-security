@@ -161,7 +161,7 @@ RAW_BUCKETS = """
 BUCKETS_BY_PROJECT_ID = """
     SELECT bucket_name
     FROM buckets_{0}
-    WHERE project_number = {1};
+    WHERE project_number = %s;
 """
 
 # TODO: reduce these sql to a generic statement
