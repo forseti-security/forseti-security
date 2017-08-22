@@ -63,18 +63,8 @@ class ApiClientImpl(ApiClient):
         self.iam = iam.IAMClient(config)
         self.storage = storage.StorageClient(config)
 
-    def iter_users(self, gsuite_id):
-        for user in self.ad.get_users(gsuite_id):
-            yield user
-
-    def iter_groups(self, gsuite_id):
-        result = self.ad.get_groups(gsuite_id)
-        for group in result:
-            yield group
-
-    def iter_group_members(self, group_key):
-        for member in self.ad.get_group_members(group_key):
-            yield member
+        self.cached_folders = None
+        self.cached_projects = None
 
     def iter_users(self, gsuite_id):
         for user in self.ad.get_users(gsuite_id):
@@ -92,17 +82,29 @@ class ApiClientImpl(ApiClient):
     def fetch_organization(self, orgid):
         return self.crm.get_organization(orgid)
 
-    def iter_projects(self, orgid):
-        for page in self.crm.get_projects(orgid):
-            for project in page['projects']:
+    def iter_projects(self, parent_type, parent_id):
+        if self.cached_projects is None:
+            self.cached_projects = []
+            for page in self.crm.get_projects(parent_id):
+                for project in page['projects']:
+                    self.cached_projects.append(project)
+
+        for project in self.cached_projects:
+            parent_info = project['parent']
+            if parent_info['type'] == parent_type and \
+               parent_info['id'] == parent_id:
                 yield project
 
-    def iter_folders(self, orgid):
-        for response in self.crm.get_folders(orgid):
-            if 'folders' not in response:
-                return
-                yield
-            for folder in response['folders']:
+    def iter_folders(self, parent_id):
+        if self.cached_folders is None:
+            self.cached_folders = []
+            for response in self.crm.get_folders(parent_id):
+                if 'folders' in response:
+                    for folder in response['folders']:
+                        self.cached_folders.append(folder)
+
+        for folder in self.cached_folders:
+            if folder['parent'] == parent_id:
                 yield folder
 
     def iter_buckets(self, projectid):

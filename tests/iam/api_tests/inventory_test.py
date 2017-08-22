@@ -16,6 +16,7 @@
 
 import unittest
 import time
+from sqlalchemy import event
 
 from google.cloud.security.common.util.threadpool import ThreadPool
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
@@ -26,6 +27,7 @@ from google.cloud.security.iam.client import ClientComposition
 from google.cloud.security.iam import db
 
 from tests.iam.api_tests.api_tester import ApiTestRunner, create_test_engine, cleanup
+from tests.iam.utils.gcp_env import gcp_configured, gcp_env
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -37,6 +39,29 @@ class TestServiceConfig(object):
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.workers = ThreadPool(10)
+        self.env = gcp_env()
+
+        @event.listens_for(self.engine, "connect")
+        def do_connect(dbapi_connection, connection_record):
+            # disable pysqlite's emitting of the BEGIN statement entirely.
+            # also stops it from emitting COMMIT before any DDL.
+            dbapi_connection.isolation_level = None
+
+        @event.listens_for(self.engine, "begin")
+        def do_begin(conn):
+            # emit our own BEGIN
+            conn.execute("BEGIN")
+
+        self.listeners = [do_begin, do_connect]
+
+    def get_organization_id(self):
+        return self.env.organization_id
+
+    def get_gsuite_sa_path(self):
+        return self.env.gsuite_sa
+
+    def get_gsuite_admin_email(self):
+        return self.env.gsuite_admin_email
 
     def run_in_background(self, function):
         """Stub."""
@@ -68,6 +93,7 @@ class ApiTest(ForsetiTestCase):
     def setUp(self):
         self.setup = create_tester()
 
+    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
     def test_basic(self):
         """Test: Create inventory, foreground & no import."""
 
@@ -97,6 +123,7 @@ class ApiTest(ForsetiTestCase):
 
         self.setup.run(test)
 
+    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
     def test_basic_background(self):
         """Test: Create inventory, foreground & no import."""
 

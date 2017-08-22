@@ -148,7 +148,7 @@ class Inventory(BASE):
     __tablename__ = 'gcp_inventory'
 
     # Order is used to resemble the order of insert for a given inventory
-    order = Column(Integer, primary_key=True, autoincrement=True, default=0)
+    order = Column(Integer, primary_key=True, autoincrement=True)
     index = Column(Integer)
     resource_key = Column(String(2048))
     resource_type = Column(String(256))

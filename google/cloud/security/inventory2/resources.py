@@ -20,6 +20,7 @@
 
 import json
 
+
 def cached(field_name):
     field_name = '__cached_{}'.format(field_name)
 
@@ -131,9 +132,11 @@ class Resource(object):
         return self._visitor
 
     def __repr__(self):
-        return '{}<{}>'.format(
+        return '{}<data="{}", parent_type="{}", parent_key="{}">'.format(
             self.__class__.__name__,
-            json.dumps(self._data))
+            json.dumps(self._data),
+            self.parent().type(),
+            self.parent().key())
 
 
 class Organization(Resource):
@@ -156,25 +159,6 @@ class Organization(Resource):
         return self
 
 
-class DummyParent(Resource):
-    def __init__(self, resource):
-        if resource.type() == 'folder':
-            data = {'type':resource['parent'].split('s/',1)[0],
-                    'id':resource['parent'].split('/',1)[-1]}
-            super(DummyParent, self).__init__(data)
-        elif resource.type() == 'project':
-            super(DummyParent, self).__init__(resource['parent'])
-        else:
-            raise NotImplementedError('DummyParent of Class: {}'
-                                      .format(resource.type()))
-
-    def key(self):
-        return self['id']
-
-    def type(self):
-        return self['type']
-
-
 class Folder(Resource):
     def key(self):
         return self['name'].split('/', 1)[-1]
@@ -185,9 +169,6 @@ class Folder(Resource):
 
     def type(self):
         return 'folder'
-
-    def parent(self):
-        return DummyParent(self)
 
 
 class Project(Resource):
@@ -204,9 +185,6 @@ class Project(Resource):
 
     def type(self):
         return 'project'
-
-    def parent(self):
-        return DummyParent(self)
 
 
 class GcsBucket(Resource):
@@ -364,8 +342,33 @@ class ResourceIterator(object):
 class FolderIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_folders(orgid=self.resource['name']):
+        for data in gcp.iter_folders(parent_id=self.resource['name']):
             yield FACTORIES['folder'].create_new(data)
+
+
+class FolderFolderIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        for data in gcp.iter_folders(parent_id=self.resource['name']):
+            yield FACTORIES['folder'].create_new(data)
+
+
+class ProjectIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        orgid = self.resource['name'].split('/', 1)[-1]
+        for data in gcp.iter_projects(parent_type='organization',
+                                      parent_id=orgid):
+            yield FACTORIES['project'].create_new(data)
+
+
+class FolderProjectIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        folderid = self.resource['name'].split('/', 1)[-1]
+        for data in gcp.iter_projects(parent_type='folder',
+                                      parent_id=folderid):
+            yield FACTORIES['project'].create_new(data)
 
 
 class BucketIterator(ResourceIterator):
@@ -375,13 +378,6 @@ class BucketIterator(ResourceIterator):
             for data in gcp.iter_buckets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['bucket'].create_new(data)
-
-
-class ProjectIterator(ResourceIterator):
-    def iter(self):
-        gcp = self.client
-        for data in gcp.iter_projects(orgid=self.resource['name']):
-            yield FACTORIES['project'].create_new(data)
 
 
 class ObjectIterator(ResourceIterator):
@@ -531,7 +527,10 @@ FACTORIES = {
         'folder': ResourceFactory({
                 'dependsOn': ['organization'],
                 'cls': Folder,
-                'contains': [],
+                'contains': [
+                             FolderFolderIterator,
+                             FolderProjectIterator,
+                            ],
             }),
 
         'project': ResourceFactory({
