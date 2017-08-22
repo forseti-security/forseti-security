@@ -70,27 +70,30 @@ class Explainer(object):
                                                            expand_groups)
             return mapping
 
-    def CreateModel(self, source, name, inventory_id):
+    def CreateModel(self, source, name, inventory_id, background):
         """Creates a model from the import source."""
 
         model_manager = self.config.model_manager
         model_handle = model_manager.create(name=name)
         scoped_session, data_access = model_manager.get(model_handle)
-        with scoped_session as session:
 
-            def doImport():
-                """Import runnable."""
+        def doImport():
+            """Import runnable."""
+            with scoped_session as session:
                 importer_cls = importer.by_source(source)
                 import_runner = importer_cls(
                     session,
                     model_manager.model(model_handle, expunge=False),
                     data_access,
                     self.config,
-                    inventory=inventory_id)
+                    inventory_id)
                 import_runner.run()
 
+        if background:
             self.config.run_in_background(doImport)
-            return model_manager.model(model_handle, expunge=True)
+        else:
+            doImport()
+        return model_manager.model(model_handle, expunge=True)
 
     def GetAccessByPermissions(self, model_name, role_name, permission_name,
                                expand_groups, expand_resources):

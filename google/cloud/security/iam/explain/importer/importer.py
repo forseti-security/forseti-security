@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from google.cloud.security.iam.utils import get_sql_dialect
 
 """ Importer implementations. """
 
@@ -22,6 +21,7 @@ from StringIO import StringIO
 from time import time
 import traceback
 
+from google.cloud.security.iam.utils import get_sql_dialect
 from google.cloud.security.common.data_access import forseti
 from google.cloud.security.iam.explain.importer import roles as roledef
 from google.cloud.security.iam.inventory.storage import Storage as Inventory
@@ -284,7 +284,7 @@ class InventoryImporter(object):
             self.session.autoflush = False
             item_counter = 0
             last_res_type = None
-            with Inventory(self.session, self.inventory_id) as inventory:
+            with Inventory(self.session, self.inventory_id, True) as inventory:
 
                 for resource in inventory.iter(gcp_type_list):
                     item_counter += 1
@@ -305,6 +305,8 @@ class InventoryImporter(object):
                                                     with_parent=True):
                     self._store_gsuite_membership(parent, child)
                 self._store_gsuite_membership_post()
+
+                self.dao.denorm_group_in_group(self.session)
 
         except Exception:  # pylint: disable=broad-except
             # TODO: Remove 'raises' once Inventory testing is done
@@ -500,15 +502,15 @@ class InventoryImporter(object):
 
         data = folder.get_data()
         parent, full_res_name, type_name = self._full_resource_name(folder)
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                    full_name=full_res_name,
-                    type_name=type_name,
-                    name=folder.get_key(),
-                    type=folder.get_type(),
-                    display_name=data.get('displayName', ''),
-                    parent=parent,
-                ))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=folder.get_key(),
+            type=folder.get_type(),
+            display_name=data.get('displayName', ''),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(folder, resource)
 
     def _convert_project(self, project):
         """Convert a project to a database object.

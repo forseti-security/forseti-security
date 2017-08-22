@@ -230,11 +230,24 @@ def define_explainer_parser(parent):
         help='Create a model')
     create_model_parser.add_argument(
         'source',
-        choices=['forseti', 'empty'],
+        choices=['forseti', 'empty', 'inventory'],
         help='Source to import from')
     create_model_parser.add_argument(
         'name',
         help='Human readable name for this model')
+    create_model_parser.add_argument(
+        '--id',
+        type=int,
+        default=-1,
+        help='Inventory id to import from, if "inventory" source'
+        )
+    create_model_parser.add_argument(
+        '--background',
+        '-b',
+        default=False,
+        action='store_true',
+        help='Run import in background'
+        )
 
     _ = action_subparser.add_parser(
         'denormalize',
@@ -507,7 +520,10 @@ def run_explainer(client, config, output):
 
     def do_create_model():
         """Create a model."""
-        result = client.new_model(config.source, config.name)
+        result = client.new_model(config.source,
+                                  config.name,
+                                  config.id,
+                                  config.background)
         output.write(result)
 
     def do_denormalize():

@@ -204,7 +204,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
         model = self.explainer.CreateModel(request.type,
                                            request.name,
-                                           request.id)
+                                           request.id,
+                                           request.background)
         reply = explain_pb2.CreateModelReply(model=explain_pb2.Model(
             name=model.name,
             handle=model.handle,

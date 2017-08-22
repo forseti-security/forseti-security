@@ -65,8 +65,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 step=progress.step,
                 warnings=progress.warnings,
                 errors=progress.errors,
-                last_warning=progress.last_warning,
-                last_error=progress.last_error)
+                last_warning=repr(progress.last_warning),
+                last_error=repr(progress.last_error))
 
     def List(self, request, context):
         """Lists existing inventory."""

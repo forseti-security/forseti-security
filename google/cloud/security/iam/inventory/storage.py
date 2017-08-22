@@ -20,7 +20,6 @@ import json
 from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy import Text
-from sqlalchemy import BigInteger
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
@@ -68,9 +67,21 @@ class InventoryIndex(BASE):
 
     @classmethod
     def _utcnow(self):
+        """Return current time in utc.
+
+        Returns:
+            object: UTC now time object.
+        """
+
         return datetime.datetime.utcnow()
 
     def __repr__(self):
+        """Object string representation.
+
+        Returns:
+            str: String representation of the object.
+        """
+
         return """<{}(id='{}', version='{}', timestamp='{}')>""".format(
             self.__class__.__name__,
             self.id,
@@ -79,13 +90,26 @@ class InventoryIndex(BASE):
 
     @classmethod
     def create(cls):
+        """Create a new inventory index row.
+
+        Returns:
+            object: InventoryIndex row object.
+        """
+
         return InventoryIndex(
             start_time=cls._utcnow(),
+            complete_time=datetime.datetime.utcfromtimestamp(0),
             status=InventoryState.CREATED,
             schema_version=CURRENT_SCHEMA,
             counter=0)
 
     def complete(self, status=InventoryState.SUCCESS):
+        """Mark the inventory as completed with a final status.
+
+        Args:
+            status (str): Final status.
+        """
+
         self.complete_time = InventoryIndex._utcnow()
         self.status = status
 
@@ -93,6 +117,7 @@ class InventoryIndex(BASE):
         """Add a warning to the inventory.
 
         Args:
+            session (object): session object to work on.
             warning (str): Warning message
         """
 
@@ -105,9 +130,13 @@ class InventoryIndex(BASE):
         session.flush()
 
     def set_error(self, session, message):
-        """Indicate a broken import."""
+        """Indicate a broken import.
 
-        self.state = "BROKEN"
+        Args:
+            session (object): session object to work on.
+            message (str): Error message to set.
+        """
+
         self.message = message
         session.add(self)
         session.flush()
@@ -119,8 +148,8 @@ class Inventory(BASE):
     __tablename__ = 'gcp_inventory'
 
     # Order is used to resemble the order of insert for a given inventory
-    order = Column(Integer, primary_key=True, default=0)
-    index = Column(Integer, primary_key=True, autoincrement=False)
+    order = Column(Integer, primary_key=True, autoincrement=True, default=0)
+    index = Column(Integer)
     resource_key = Column(String(2048))
     resource_type = Column(String(256))
     resource_data = Column(Text())
@@ -267,13 +296,14 @@ def initialize(engine):
 class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
-    def __init__(self, session, existing_id=None):
+    def __init__(self, session, existing_id=None, readonly=False):
         self.session = session
         self.opened = False
         self.index = None
         self.buffer = BufferedDbWriter(self.session)
         self._existing_id = existing_id
         self.session_completed = False
+        self.readonly = readonly
 
     def _require_opened(self):
         if not self.opened:
@@ -309,34 +339,40 @@ class Storage(BaseStorage):
             self.index = self._create()
 
         self.opened = True
-        self.session.flush()
+        self.session.commit()
         self.session.begin_nested()
         return self.index.id
 
     def rollback(self):
-        self.buffer.flush()
-        self.session.rollback()
-        self.index.complete(status=InventoryState.FAILURE)
-        self.session.commit()
-        self.session_completed = True
+        try:
+            self.buffer.flush()
+            self.session.rollback()
+            self.index.complete(status=InventoryState.FAILURE)
+            self.session.commit()
+        finally:
+            self.session_completed = True
 
     def commit(self):
-        self.buffer.flush()
-        self.session.commit()
-        self.index.complete()
-        self.session.commit()
-        self.session_completed = True
+        try:
+            self.buffer.flush()
+            self.session.commit()
+            self.index.complete()
+            self.session.commit()
+        finally:
+            self.session_completed = True
 
     def close(self):
         if not self.opened:
             raise Exception('not open')
 
-        if not self.session_completed:
+        if not self.readonly and not self.session_completed:
             raise Exception('Need to perform commit or rollback before close')
 
         self.opened = False
 
     def write(self, resource):
+        if self.readonly:
+            raise Exception('Opened storage readonly')
         self.buffer.add(
             Inventory.from_resource(
                 self.index,
@@ -352,9 +388,13 @@ class Storage(BaseStorage):
             .one())
 
     def error(self, message):
+        if self.readonly:
+            raise Exception('Opened storage readonly')
         self.index.set_error(self.session, message)
 
     def warning(self, message):
+        if self.readonly:
+            raise Exception('Opened storage readonly')
         self.index.add_warning(self.session, message)
 
     def iter(self,
@@ -367,29 +407,36 @@ class Storage(BaseStorage):
         filters.append(Inventory.index == self.index.id)
 
         if require_iam_policy:
-            filters.append((and_(Inventory.iam_policy != 'null',
-                                 Inventory.iam_policy != None)))
+            filters.append(
+                (and_(Inventory.iam_policy != 'null',
+                      Inventory.iam_policy != None)))
+
         if require_gcs_policy:
-            filters.append((and_(Inventory.gcs_policy != 'null',
-                                 Inventory.gcs_policy != None)))
+            filters.append(
+                (and_(Inventory.gcs_policy != 'null',
+                      Inventory.gcs_policy != None)))
 
         if type_list:
             filters.append(Inventory.resource_type.in_(type_list))
 
         if with_parent:
             ParentInventory = aliased(Inventory)
+            p_resource_key = ParentInventory.resource_key
+            p_resource_type = ParentInventory.resource_type
             base_query = (
                 self.session.query(Inventory, ParentInventory)
                 .filter(
                     and_(
-                        Inventory.parent_resource_key == ParentInventory.resource_key,
-                        Inventory.parent_resource_type == ParentInventory.resource_type)))
+                        Inventory.parent_resource_key == p_resource_key,
+                        Inventory.parent_resource_type == p_resource_type)))
 
         else:
             base_query = self.session.query(Inventory)
 
         for qry_filter in filters:
             base_query = base_query.filter(qry_filter)
+
+        base_query = base_query.order_by(Inventory.order.asc())
 
         for row in base_query.yield_per(PER_YIELD):
             yield row

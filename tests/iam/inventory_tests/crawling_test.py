@@ -20,10 +20,12 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.inventory2.storage import Memory as MemoryStorage
 from google.cloud.security.inventory2.progress import Progresser
 from google.cloud.security.iam.inventory.crawler import run_crawler
+from tests.iam.utils.gcp_env import gcp_configured, gcp_env
 
 
 class NullProgresser(Progresser):
     """No-op progresser to suppress output"""
+
     def __init__(self):
         super(NullProgresser, self).__init__()
         self.errors = 0
@@ -48,19 +50,31 @@ class CrawlerTest(ForsetiTestCase):
 
     def setUp(self):
         """Setup method."""
+
         ForsetiTestCase.setUp(self)
 
     def tearDown(self):
         """Tear down method."""
+
         ForsetiTestCase.tearDown(self)
 
+    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
     def test_crawling_to_memmory_storage(self):
         """Crawl an environment, test that there are items in storage."""
 
-        gsuite_sa = '/Users/fmatenaar/deployments/forseti/groups.json'
+        gcp = gcp_env()
+        gsuite_sa = gcp.gsuite_sa
+        gsuite_admin_email = gcp.gsuite_admin_email
+        organization_id = gcp.organization_id
+
         with MemoryStorage() as storage:
             progresser = NullProgresser()
-            run_crawler(storage, progresser, gsuite_sa)
+            run_crawler(storage,
+                        progresser,
+                        gsuite_sa,
+                        gsuite_admin_email,
+                        organization_id)
+
             self.assertEqual(0,
                              progresser.errors,
                              'No errors should have occurred')
@@ -69,6 +83,7 @@ class CrawlerTest(ForsetiTestCase):
         self.assertEqual(len(types), 18, """"The inventory crawl 18 types of
         resources in a well populated organization, howevever, there is: """
         +str(len(types)))
+
 
 if __name__ == '__main__':
     unittest.main()
