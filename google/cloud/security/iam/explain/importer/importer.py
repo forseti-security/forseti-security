@@ -284,7 +284,7 @@ class InventoryImporter(object):
             self.session.autoflush = False
             item_counter = 0
             last_res_type = None
-            with Inventory(self.session, self.inventory_id) as inventory:
+            with Inventory(self.session, self.inventory_id, True) as inventory:
 
                 for resource in inventory.iter(gcp_type_list):
                     item_counter += 1
@@ -502,15 +502,15 @@ class InventoryImporter(object):
 
         data = folder.get_data()
         parent, full_res_name, type_name = self._full_resource_name(folder)
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                    full_name=full_res_name,
-                    type_name=type_name,
-                    name=folder.get_key(),
-                    type=folder.get_type(),
-                    display_name=data.get('displayName', ''),
-                    parent=parent,
-                ))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=folder.get_key(),
+            type=folder.get_type(),
+            display_name=data.get('displayName', ''),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(folder, resource)
 
     def _convert_project(self, project):
         """Convert a project to a database object.

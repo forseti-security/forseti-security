@@ -296,13 +296,14 @@ def initialize(engine):
 class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
-    def __init__(self, session, existing_id=None):
+    def __init__(self, session, existing_id=None, readonly=False):
         self.session = session
         self.opened = False
         self.index = None
         self.buffer = BufferedDbWriter(self.session)
         self._existing_id = existing_id
         self.session_completed = False
+        self.readonly = readonly
 
     def _require_opened(self):
         if not self.opened:
@@ -364,12 +365,14 @@ class Storage(BaseStorage):
         if not self.opened:
             raise Exception('not open')
 
-        if not self.session_completed:
+        if not self.readonly and not self.session_completed:
             raise Exception('Need to perform commit or rollback before close')
 
         self.opened = False
 
     def write(self, resource):
+        if self.readonly:
+            raise Exception('Opened storage readonly')
         self.buffer.add(
             Inventory.from_resource(
                 self.index,
@@ -385,9 +388,13 @@ class Storage(BaseStorage):
             .one())
 
     def error(self, message):
+        if self.readonly:
+            raise Exception('Opened storage readonly')
         self.index.set_error(self.session, message)
 
     def warning(self, message):
+        if self.readonly:
+            raise Exception('Opened storage readonly')
         self.index.add_warning(self.session, message)
 
     def iter(self,
@@ -428,6 +435,8 @@ class Storage(BaseStorage):
 
         for qry_filter in filters:
             base_query = base_query.filter(qry_filter)
+
+        base_query = base_query.order_by(Inventory.order.asc())
 
         for row in base_query.yield_per(PER_YIELD):
             yield row

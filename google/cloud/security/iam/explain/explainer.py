@@ -86,7 +86,7 @@ class Explainer(object):
                     model_manager.model(model_handle, expunge=False),
                     data_access,
                     self.config,
-                    inventory=inventory_id)
+                    inventory_id)
                 import_runner.run()
 
         if background:
