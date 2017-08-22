@@ -20,45 +20,25 @@
 # pylint: disable=missing-param-doc
 
 
-class CrawlerConfig(dict):
-    def __init__(self, storage, progresser, api_client, variables={}):
-        self.storage = storage
-        self.progresser = progresser
-        self.variables = variables
-        self.client = api_client
-
+class CrawlerConfig(object):
+    """The configuration profile of an inventory crawler"""
+    def __init__(self, storage, progresser, api_client, variables=None):
+        raise NotImplementedError('The configuration profile of an inventory crawler')
 
 class Crawler(object):
+    """The inventory crawler interface"""
+    def run(self):
+        """To start the crawler"""
+        raise NotImplementedError('The run function of the crawler')
 
-    def __init__(self, config):
-        self.config = config
+    def visit(self):
+        """To visit a resource"""
+        raise NotImplementedError('The visit function of the crawler')
 
-    def run(self, resource):
-        try:
-            resource.accept(self)
-        finally:
-            pass
-        return self.config.progresser
-
-    def visit(self, resource):
-        storage = self.config.storage
-        progresser = self.config.progresser
-        try:
-
-            resource.getIamPolicy(self.get_client())
-            resource.getGCSPolicy(self.get_client())
-            resource.getDatasetPolicy(self.get_client())
-            resource.getCloudSQLPolicy(self.get_client())
-
-            storage.write(resource)
-        except Exception as e:
-            progresser.on_error(e)
-            raise
-        else:
-            progresser.on_new_object(resource)
-
-    def dispatch(self, resource_visit):
-        resource_visit()
+    def dispatch(self):
+        """To start a new visitor or continue"""
+        raise NotImplementedError('The dispatch function of the crawler')
 
     def get_client(self):
-        return self.config.client
+        """Get the current API client"""
+        raise NotImplementedError('The get_client function of the crawler')
