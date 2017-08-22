@@ -213,7 +213,7 @@ class StorageClient(_base_client.BaseClient):
             bucket_name (str): The name of the bucket.
 
         Yields:
-            generator of GCS objects.
+            dict: generator of GCS objects.
         """
 
         api = self.service.objects()
@@ -247,6 +247,7 @@ class StorageClient(_base_client.BaseClient):
 
         Args:
             bucket_name (str): The name of the bucket.
+            object_name (str): The name of the object.
 
         Returns:
             dict: IAM policy data.
@@ -278,9 +279,3 @@ class StorageClient(_base_client.BaseClient):
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_id, e))
             raise api_errors.ApiExecutionError('buckets', e)
-
-    def buckets(self):
-        return self.service.buckets()
-
-    def objects(self):
-        return self.service.objects()
