@@ -193,6 +193,17 @@ class CloudResourceManagerClient(_base_client.BaseClient):
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_org_org_policies(self, org_id):
+        """Get all the organization policies of an org.
+
+        Args:
+            org_id (int): The org id number.
+
+        Returns:
+            dict: Organization org policy for given org_id.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
         organizations_api = self.service.organizations()
         try:
             request = organizations_api.getOrgPolicy(
@@ -277,9 +288,3 @@ class CloudResourceManagerClient(_base_client.BaseClient):
                     'iam_policy': self._execute(request, self.rate_limiter)}
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('folder', e)
-
-    def folders(self):
-        return self.service.folders()
-
-    def projects(self):
-        return self.service.projects()
