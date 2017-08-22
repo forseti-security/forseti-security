@@ -53,7 +53,7 @@ class IAMClient(_base_client.BaseClient):
         Args:
             project_id (str): The id of the project.
 
-        Returns:
+        Yields:
             dict: The response of retrieving the service account
         """
         endpoint = self.service.projects().serviceAccounts().list
@@ -90,7 +90,7 @@ class IAMClient(_base_client.BaseClient):
         Args:
             project_id (str): The id of the project.
 
-        Returns:
+        Yields:
             dict: The response of retrieving the project roles
         """
         endpoint = self.service.projects().roles().list
@@ -126,9 +126,9 @@ class IAMClient(_base_client.BaseClient):
         """Get information about organization roles
 
         Args:
-            project_id (str): The id of the project.
+            orgid (str): The id of the organization.
 
-        Returns:
+        Yields:
             dict: The response of retrieving the organization roles
         """
         endpoint = self.service.organizations().roles().list
@@ -163,9 +163,9 @@ class IAMClient(_base_client.BaseClient):
         """Get information about curated roles
 
         Args:
-            project_id (str): The id of the project.
+            orgid (str): The id of the organization.
 
-        Returns:
+        Yields:
             dict: The response of retrieving the curated roles
         """
         endpoint = self.service.roles().list
