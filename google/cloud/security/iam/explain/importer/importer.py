@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from google.cloud.security.iam.utils import get_sql_dialect
 
 """ Importer implementations. """
 
@@ -22,6 +21,7 @@ from StringIO import StringIO
 from time import time
 import traceback
 
+from google.cloud.security.iam.utils import get_sql_dialect
 from google.cloud.security.common.data_access import forseti
 from google.cloud.security.iam.explain.importer import roles as roledef
 from google.cloud.security.iam.inventory.storage import Storage as Inventory
@@ -305,6 +305,8 @@ class InventoryImporter(object):
                                                     with_parent=True):
                     self._store_gsuite_membership(parent, child)
                 self._store_gsuite_membership_post()
+
+                self.dao.denorm_group_in_group(self.session)
 
         except Exception:  # pylint: disable=broad-except
             # TODO: Remove 'raises' once Inventory testing is done

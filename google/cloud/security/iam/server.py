@@ -86,7 +86,7 @@ class ServiceConfig(object):
 def serve(endpoint, services,
           explain_connect_string, forseti_connect_string,
           gsuite_sa_path, gsuite_admin_email,
-          organization_id, max_workers=1, wait_shutdown_secs=3):
+          organization_id, max_workers=32, wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC."""
 
     factories = []
