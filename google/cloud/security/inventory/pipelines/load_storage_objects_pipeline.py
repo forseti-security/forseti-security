@@ -59,7 +59,7 @@ class LoadStorageObjectsPipeline(base_pipeline.BasePipeline):
         """Retrieve the projects from the database.
 
         Yields:
-            A generator for projects.
+            str: A generator for project_number
         """
 
         try:
@@ -91,9 +91,6 @@ class LoadStorageObjectsPipeline(base_pipeline.BasePipeline):
 
     def _iter_objects(self):
         """Retrieve all objects from GCP.
-
-        Args:
-            project_number (str): Identifies the project.
 
         Yields:
             dict: GCS objects.
