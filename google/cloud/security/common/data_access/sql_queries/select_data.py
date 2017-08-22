@@ -198,6 +198,11 @@ SELECT_GROUPS_VIOLATIONS = """
     SELECT * FROM groups_violations_{0};
 """
 
+SELECT_INSTANCE_NETWORK_INTERFACE_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'INSTANCE_NETWORK_INTERFACE_VIOLATION';
+"""
+
 BACKEND_SERVICES = """
     SELECT id, project_id, creation_timestamp, name, description,
     affinity_cookie_ttl_sec, backends, cdn_policy, connection_draining,
@@ -276,4 +281,9 @@ APPENGINE_APPS = """
     location_id, code_bucket, default_cookie_expiration, serving_status,
     default_hostname, default_bucket, iap, gcr_domain, raw_application
     FROM appengine_{0}
+"""
+
+SERVICE_ACCOUNTS = """
+    SELECT project_id, name, email, oauth2_client_id, account_keys, raw_service_account
+    FROM service_accounts_{0}
 """

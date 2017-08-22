@@ -18,7 +18,6 @@ See: https://cloud.google.com/compute/docs/reference/latest/instances
 """
 
 import os
-
 from google.cloud.security.common.gcp_type import key
 from google.cloud.security.common.util import parser
 
@@ -55,12 +54,21 @@ class Instance(object):
 
     @property
     def key(self):
-        """Returns a Key identifying the object.
+        """Return a Key identifying the object.
 
         Returns:
             Key: the key
         """
         return Key.from_args(self.project_id, self.zone, self.name)
+
+    def create_network_interfaces(self):
+        """Return a list of network_interface objects.
+
+        Returns:
+            List: list of InstanceNetworkInterface objects
+        """
+        return [InstanceNetworkInterface(**ni)
+                for ni in self.network_interfaces]
 
 
 KEY_OBJECT_KIND = 'Instance'
@@ -136,3 +144,71 @@ class Key(key.Key):
             str: name
         """
         return self._path_component('name')
+
+
+# pylint: disable=too-few-public-methods
+class InstanceNetworkInterface(object):
+    """InstanceNetworkInterface Resource."""
+
+    def __init__(self, **kwargs):
+        """Initialize
+
+        Args:
+            kwargs: json from a single instance on the network_interfaces
+        """
+        self.kind = kwargs.get('kind')
+        self.network = kwargs.get('network')
+        self.subnetwork = kwargs.get('subnetwork')
+        self.network_ip = kwargs.get('networkIP')
+        self.name = kwargs.get('name')
+        self.access_configs = kwargs.get('accessConfigs')
+        self.alias_ip_ranges = kwargs.get('aliasIpRanges')
+
+    def __repr__(self):
+        """Repr
+
+        Returns:
+            string: a string for a InstanceNetworkInterface
+        """
+        return ('kind: %s Network: %s subnetwork: %s network_ip %s name %s'
+                'access_configs %s alias_ip_ranges %s' % (
+                    self.kind, self.network, self.subnetwork, self.network_ip,
+                    self.name, self.access_configs, self.alias_ip_ranges))
+
+    def __hash__(self):
+        """hash
+
+        Returns:
+            hash: of InstanceNetworkInterface
+        """
+        return hash(self.__repr__())
+
+    def __ne__(self, other):
+        """Ne
+
+        Args:
+            other (InstanceNetworkInterface): other InstanceNetworkInterface
+
+        Return:
+            bool: True if not equal
+        """
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        """Eq
+
+        Args:
+            other (InstanceNetworkInterface) : other InstanceNetworkInterface
+
+        Return:
+            bool: True if is equal
+        """
+        if isinstance(self, InstanceNetworkInterface):
+            return ((self.kind == other.kind) and
+                    (self.network == other.network) and
+                    (self.subnetwork == other.subnetwork) and
+                    (self.network_ip == other.network_ip) and
+                    (self.name == other.name) and
+                    (self.access_configs == other.access_configs) and
+                    (self.alias_ip_ranges == other.alias_ip_ranges))
+        return False

@@ -43,4 +43,6 @@ VIOLATION_SELECT_MAP = {
     'groups_violations': sd.SELECT_GROUPS_VIOLATIONS.format,
     'policy_violations': sd.SELECT_POLICY_VIOLATIONS.format,
     'iap_violations': sd.SELECT_IAP_VIOLATIONS.format,
+    'instance_network_interface_violations': (
+        sd.SELECT_INSTANCE_NETWORK_INTERFACE_VIOLATIONS.format),
 }

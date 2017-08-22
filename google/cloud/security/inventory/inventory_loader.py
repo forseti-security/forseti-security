@@ -46,6 +46,7 @@ from google.cloud.security.common.data_access import instance_group_manager_dao
 from google.cloud.security.common.data_access import instance_template_dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
+from google.cloud.security.common.data_access import service_account_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import file_loader
@@ -153,6 +154,7 @@ def _start_snapshot_cycle(inventory_dao):
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
 
+# pylint: disable=broad-except
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
 
@@ -171,11 +173,16 @@ def _run_pipelines(pipelines):
             pipeline.run()
             pipeline.status = 'SUCCESS'
             LOGGER.info('Finished running %s', pipeline.__class__.__name__)
+
         except (api_errors.ApiInitializationError,
                 inventory_errors.LoadDataPipelineError) as e:
-            LOGGER.error('Encountered error loading data.\n%s', e)
+            LOGGER.error('Encountered API error loading data.\n%s', e,
+                         exc_info=True)
             pipeline.status = 'FAILURE'
-            LOGGER.info('Continuing on.')
+        except Exception as e:
+            LOGGER.error('Encountered error loading data.\n%s', e,
+                         exc_info=True)
+            pipeline.status = 'FAILURE'
         run_statuses.append(pipeline.status == 'SUCCESS')
     return run_statuses
 
@@ -237,6 +244,8 @@ def _create_dao_map(global_configs):
             'organization_dao': organization_dao.OrganizationDao(
                 global_configs),
             'project_dao': project_dao.ProjectDao(global_configs),
+            'service_account_dao':
+                service_account_dao.ServiceAccountDao(global_configs),
         }
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error to creating DAO map.\n%s', e)

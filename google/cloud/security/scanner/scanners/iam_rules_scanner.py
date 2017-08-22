@@ -157,7 +157,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """
         policies = itertools.chain(*policies)
         all_violations = []
-        LOGGER.info('Finding policy violations...')
+        LOGGER.info('Finding IAM policy violations...')
         for (resource, policy) in policies:
             LOGGER.debug('%s => %s', resource, policy)
             violations = self.rules_engine.find_policy_violations(
