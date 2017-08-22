@@ -15,7 +15,7 @@ to `enabled: true` in your `forseti_conf.yaml` file. Learn more about
 [configuring
 Inventory]({% link _docs/howto/configure/configuring-forseti.md %}#configuring-inventory).
 
-## bigquery scanner
+## BigQuery dataset ACL scanner
 
 BigQuery datasets have access properties that can publicly expose your datasets.
 The BigQuery scanner supports a blacklist mode, to ensure unauthorized users
@@ -29,21 +29,21 @@ The bigquery scanner depends on the following Forseti Inventory pipelines:
 
 - `load_bigquery_datasets_pipeline`
 
-## bucket scanner
+## Bucket ACL scanner
 
 GCS buckets have ACLs that can grant public access to your GCS bucket and
 objects. The bucket scanner supports a blacklist mode, to ensure unauthorized
 users don't gain access to your GCS bucket.
 
 For examples of how to define scanner rules for your GCS buckets, see the
-bucket_rules.yaml rule file.
+[bucket_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/bucket_rules.yaml) rule file.
 
 The bucket scanner depends on the following Forseti Inventory pipelines:
 
 - `load_projects_buckets_pipeline`
 - `load_projects_buckets_acls_pipeline`
 
-## cloudsql scanner
+## Cloud SQL Networks scanner
 
 Cloud SQL instances can be configured to grant external networks access. The
 Cloud SQL scanner supports a blacklist mode, to ensure unauthorized users don't
@@ -51,14 +51,14 @@ gain access to your Cloud SQL instances.
 
 For examples of how to define scanner rules for your Cloud SQL instances, see
 the
-[bucket_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/bucket_rules.yaml)
+[cloudsql_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/cloudsql_rules.yaml)
 rule file.
 
 The cloudsql scanner depends on the following Forseti Inventory pipelines:
 
 - `load_projects_cloudsql_pipeline`
 
-## load balancer forwarding rule scanner
+## Load Balancer Forwarding Rules scanner
 
 Load balancer forwarding rules can be configured to direct unauthorized external
 traffic to your target instances. The forwarding rule scanner supports a
@@ -74,7 +74,7 @@ Inventory pipelines:
 
 - `load_forwarding_rules_pipeline`
 
-## group scanner
+## Groups scanner
 
 Because groups can be added to IAM policies, GSuite group membership can allow
 access on Google Cloud Platform. The group scanner supports a whitelist mode, to
@@ -89,7 +89,7 @@ The group scanner depends on the following Forseti Inventory pipelines:
 - `load_groups_pipeline`
 - `load_group_members_pipeline`
 
-## IAM scanner
+## IAM policy scanner (organization resources)
 
 Cloud Identity and Access Management (Cloud IAM) policies directly grant access
 on Google Cloud Platform. To ensure only authorized members and permissions are
@@ -132,3 +132,11 @@ IAP scanner depends on the following Forseti Inventory pipelines:
 - `load_instance_groups_pipeline`
 - `load_instance_templates_pipeline`
 - `load_instances_pipeline`
+
+## Network Interface scanner
+
+Coming soon.
+
+For examples of how to define scanner rules for network interfaces, see the
+[instance_network_interface_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/instance_network_interface_rules.yaml)
+rule file.

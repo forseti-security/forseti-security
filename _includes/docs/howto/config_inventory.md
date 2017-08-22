@@ -4,9 +4,9 @@ file and save it as **forseti_conf.yaml**.
 
 You will also need to edit, at a minimum, the following variables in the config file:
 
-* `db_host`
-* `db_user`
-* `db_name`
+* `db_host`: If using Cloud SQL Proxy, this is usually "127.0.0.1".
+* `db_user`: The database user you created. If you deployed using Deployment Manager, the default value is "root".
+* `db_name`: The name of the database you created in the Cloud SQL instance. If you deployed using Deployment Manager, the default value is "forseti_security".
 
 When you're finished making changes, run the following command with your
 updated configuration:

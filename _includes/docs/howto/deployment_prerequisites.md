@@ -1,6 +1,6 @@
 ### Enabling APIs
 
-First, you'll install and configure the gcloud command-line tool so you can
+First, install and configure the gcloud command-line tool so you can
 enable required APIs:
 
   1. Download and install the [gcloud command-line tool](https://cloud.google.com/sdk/gcloud/).
@@ -11,8 +11,8 @@ enable required APIs:
       1. Run `gcloud auth login` and use your Google credentials to authenticate.
       1. Run `gcloud init` and select your Forseti Security project and Google
       account.
-  1. Enable the required APIs by running `gcloud beta service-management enable`
-  for each of the following API paths:
+  1. Enable the required APIs by running `gcloud beta service-management enable <API NAME>`
+  for each of the following:
   
   {% include docs/required_apis.md %}
 
@@ -38,7 +38,9 @@ Scanner, and Enforcer, follow the steps below.
   
       **Organization level bindings**
       
-      You MUST either be Organization Admin or Security Admin on the organization IAM policy.
+      Your authed account MUST have the Organization Admin role in order to add roles to the organization IAM policy.
+      If you do not create these IAM policy bindings at the organization level, Forseti will only
+      be able to read the GCP data of the resource (and any sub-resources) where you added the binding.
       
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
@@ -71,8 +73,8 @@ Scanner, and Enforcer, follow the steps below.
       --role=roles/cloudsql.viewer
       ```
       
-      **Note that binding at any other level than the Organization
-      limits `forseti_enforcer`.**
+      **Note that binding this role at any other level than the Organization (e.g. a certain folder or project)
+      limits `forseti_enforcer` to that resource and its sub-resources, if applicable.**
       
       ```bash
       $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
@@ -81,6 +83,8 @@ Scanner, and Enforcer, follow the steps below.
       ```
       
       **Project level bindings**
+      
+      These are necessary for reading/writing Forseti data in Google Cloud Storage and Cloud SQL.
       
       ```bash
       $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \

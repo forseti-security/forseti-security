@@ -17,14 +17,17 @@ Engine vulnerability scanning. Learn more about
 ## Scanners
 
 Forseti Scanner can run multiple scanners at a time. To configure which scanners
-to run, see [Configuring Forseti page: Configuring Scanner]({% link _docs/howto/configure/configuring-forseti.md %}).
+to run, see [Configuring Forseti: Configuring Scanner]({% link _docs/howto/configure/configuring-forseti.md %}#configuring-scanner).
 
 ## Running Forseti Scanner
 
 To run Forseti Scanner, follow the process below:
 
   1. Activate any virtualenv you're using for your Forseti installation,
-  if applicable.
+     if applicable (e.g. if you're running in a dev environment).
+     
+  1. Run the [inventory data import](http://forsetisecurity.org/docs/quickstarts/inventory/index.html#executing-the-inventory-loader) 
+     first, to make sure the data for scanning is available and up-to-date.
 
   1. Run the scanners:
 
@@ -39,6 +42,7 @@ manually.
 
 ## What's next
 
-- Read about [configuring Forseti]({% link _docs/howto/configure/configuring-forseti.md %})
+- Read more about [configuring Scanner]({% link _docs/howto/configure/configuring-forseti.md %}#configuring-scanner).
+- Learn about the [different scanners]({% link _docs/quickstarts/scanner/descriptions.md %}) available in Forseti.
 - Learn about [defining rules]({% link _docs/quickstarts/scanner/rules.md %}).
 - Read about how Scanner outputs [policy violations]({% link _docs/quickstarts/scanner/policy-violations.md %}).
