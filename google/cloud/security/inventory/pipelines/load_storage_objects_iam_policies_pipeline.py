@@ -38,8 +38,6 @@ class LoadStorageObjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
     def _transform(self):
         """Not Implemented.
 
-        Args:
-            resource_from_api (dict): Resources from API responses.
         Raises:
             NotImplementedError: Because not implemented.
         """
@@ -66,7 +64,7 @@ class LoadStorageObjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         """
         try:
             for storage_object in (
-                self.dao.get_objects(self.RESOURCE_NAME,
+                    self.dao.get_objects(self.RESOURCE_NAME,
                                      self.cycle_timestamp)):
                 yield storage_object
         except data_access_errors.MySQLError as e:
@@ -84,13 +82,14 @@ class LoadStorageObjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
                 object_row['object_name'])
 
             yield {
-                    'project_number': object_row['project_number'],
-                    'bucket_id': object_row['bucket_id'],
-                    'object_name': object_row['object_name'],
-                    'raw': json.dumps(policy),
+                'project_number': object_row['project_number'],
+                'bucket_id': object_row['bucket_id'],
+                'object_name': object_row['object_name'],
+                'raw': json.dumps(policy),
                 }
 
-    def run(self, progress_report=None):
-        """Runs the load storage objects data pipeline."""
+    def run(self):
+        """Runs the load storage objects data pipeline.
+        """
 
         self._load(self.RESOURCE_NAME, self._iter_object_policies())
