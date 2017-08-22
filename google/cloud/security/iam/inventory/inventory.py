@@ -42,12 +42,17 @@ class Progress(object):
 
 
 class QueueProgresser(Progress):
+    """Queue based progresser."""
+
     def __init__(self, queue):
         super(QueueProgresser, self).__init__()
         self.queue = queue
 
     def _notify(self):
         self.queue.put_nowait(self)
+
+    def _notify_eof(self):
+        self.queue.put(None)
 
     def on_new_object(self, resource):
         self.step = resource.key()
@@ -66,29 +71,59 @@ class QueueProgresser(Progress):
     def get_summary(self):
         self.final_message = True
         self._notify()
-        self.queue.put(None)
+        self._notify_eof()
         return self
 
 
-def run_inventory(queue, session, progresser, background,
-                  gsuite_sa, gsuite_admin_email, organization_id):
+class FirstMessageQueueProgresser(QueueProgresser):
+    """Queue base progresser only delivers first message.
+    Then throws away all subsequent messages. This is used
+    to make sure that we're not creating an internal buffer of
+    infinite size as we're crawling in background without a queue consumer."""
 
-    with Storage(session) as storage:
-        try:
-            progresser.inventory_id = storage.index.id
-            progresser.final_message = True if background else False
-            queue.put(progresser)
-            result = run_crawler(storage,
-                                 progresser,
-                                 gsuite_sa,
-                                 gsuite_admin_email,
-                                 organization_id)
-        except Exception:
-            storage.rollback()
-            raise
-        else:
-            storage.commit()
-        return result
+    def __init__(self, *args, **kwargs):
+        super(FirstMessageQueueProgresser, self).__init__(*args, **kwargs)
+        self.first_message_sent = False
+
+    def _notify(self):
+        if not self.first_message_sent:
+            self.first_message_sent = True
+            QueueProgresser._notify(self)
+
+    def _notify_eof(self):
+        if not self.first_message_sent:
+            self.first_message_sent = True
+        QueueProgresser._notify_eof(self)
+
+
+def run_inventory(queue,
+                  session,
+                  progresser,
+                  background,
+                  gsuite_sa,
+                  gsuite_admin_email,
+                  organization_id):
+
+    print 'entering run_inventory'
+    try:
+        with Storage(session) as storage:
+            try:
+                progresser.inventory_id = storage.index.id
+                progresser.final_message = True if background else False
+                queue.put(progresser)
+                result = run_crawler(storage,
+                                     progresser,
+                                     gsuite_sa,
+                                     gsuite_admin_email,
+                                     organization_id)
+            except Exception:
+                storage.rollback()
+                raise
+            else:
+                storage.commit()
+            return result
+    finally:
+        print 'exiting run_inventory'
 
 
 def run_import(client, model_name, inventory_id):
@@ -112,11 +147,15 @@ class Inventory(object):
         """
 
         queue = Queue()
-        progresser = QueueProgresser(queue)
+        if background:
+            progresser = FirstMessageQueueProgresser(queue)
+        else:
+            progresser = QueueProgresser(queue)
 
         def do_inventory():
             with self.config.scoped_session() as session:
                 try:
+                    print 'running inventory'
                     result = run_inventory(
                         queue,
                         session,

@@ -98,6 +98,7 @@ class InventoryIndex(BASE):
 
         return InventoryIndex(
             start_time=cls._utcnow(),
+            complete_time=datetime.datetime.utcfromtimestamp(0),
             status=InventoryState.CREATED,
             schema_version=CURRENT_SCHEMA,
             counter=0)
@@ -337,7 +338,7 @@ class Storage(BaseStorage):
             self.index = self._create()
 
         self.opened = True
-        self.session.flush()
+        self.session.commit()
         self.session.begin_nested()
         return self.index.id
 
