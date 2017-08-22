@@ -27,10 +27,10 @@ file based on your input.
       git clone https://github.com/GoogleCloudPlatform/forseti-security
       ```
       
-      If you want to deploy a particular release:
+      To get the latest release:
       
       ```
-      git checkout <release version>
+      git checkout master
       ```
 
   1. Navigate to the setup wizard directory:
