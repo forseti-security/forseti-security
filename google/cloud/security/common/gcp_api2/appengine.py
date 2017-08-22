@@ -14,11 +14,12 @@
 
 """Wrapper for AppEngine API client."""
 
+import warnings
 from ratelimiter import RateLimiter
-
-from google.cloud.security.common.gcp_api2 import _base_client
 from googleapiclient import errors
+
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api2 import _base_client
 
 
 class AppEngineClient(_base_client.BaseClient):
@@ -77,5 +78,5 @@ class AppEngineClient(_base_client.BaseClient):
                 # This has been handled by the BaseClient._execute
                 pass
         except api_errors.ApiNotEnabledError as e:
-            print('Warning: App Engine Admin API not enabled')
+            warnings.warn('Warning: App Engine Admin API not enabled')
         return app
