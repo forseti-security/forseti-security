@@ -25,40 +25,23 @@ Prior to running the setup wizard, you will need:
 The setup wizard automatically determines setup information, generates a 
 deployment template, and creates a Forseti deployment.
 
-We recommend using Cloud Shell to run Forseti setup wizard to ensure 
-that you have the latest version of gcloud and the necessary gcloud components.
-Also, using Cloud Shell pre-authenticates you in your gcloud environment, 
-which is a necessary step for using the setup wizard.
+## Activate Google Cloud Shell
 
-### Preliminary steps for setup without Cloud Shell
-
-If you choose not to use Cloud Shell, then make sure to do the following:
-
-  1. Install [gcloud](https://cloud.google.com/sdk/downloads). If you already have 
-     gcloud, then update it.
-     
-  1. Ensure you have gcloud alpha components installed.
-  
-  1. Authenticate your user.
-     
-  1. Set your project.
-
-### Using Cloud Shell
-
-Open a Cloud Shell session in your Google Cloud console.
+We recommend using [Cloud Shell](https://cloud.google.com/shell/docs/quickstart)
+to run Forseti setup wizard to ensure that you have the latest version of Cloud SDK.
 
 ### Running setup
-
-  1. Download Forseti. The setup wizard is included:
+  
+  1. Once you've started Cloud Shell, download Forseti. The setup wizard is included:
   
       ```bash
       git clone https://github.com/GoogleCloudPlatform/forseti-security
       ```
       
-      If you want to install from a particular release:
+      To install the latest release:
       
       ```
-      git checkout <release version>
+      git checkout master
       ```
 
   1. Navigate to the setup wizard directory:
@@ -68,27 +51,28 @@ Open a Cloud Shell session in your Google Cloud console.
       ```
 
   1. Invoke the setup:
-  
-      If you downloaded a certain release of Forseti, specify the release version
-      to the setup wizard.
      
       ```bash
-      # Default: master branch
       python setup_forseti.py
+      ```
       
-      # Specify a branch (e.g. develop)
-      python setup_forseti.py --branch develop
-      
-      # Display help information
+      To see additional configurations for the setup:
+
+      ```bash
       python setup_forseti.py -h
       ```
 
   1. Setup will infer the necessary information to install Forseti. You will be 
      prompted to enter a SendGrid API key, which is optional. (More information 
      on setting up  [email notifications]({% link _docs/howto/configure/email-notification.md %}))
+     
+  1. You may be prompted to enter an ssh passphrase for Compute Engine. This will only 
+     happen if you've previously used Cloud Shell to ssh to a Compute Engine instance and
+     set a passphrase for ssh. The Forseti setup uses scp to copy the auto-generated G Suite 
+     service account key to the Forseti GCE instance.
 
   1. After successfully running the setup and Deployment Manager, you should 
-     follow instructions for enabling [GSuite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %}).
+     follow instructions for enabling [G Suite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %}).
 
 ## What's next
 
