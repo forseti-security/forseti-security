@@ -48,6 +48,14 @@ class IAMClient(_base_client.BaseClient):
             1)
 
     def get_serviceaccounts(self, project_id):
+        """Get information about service account
+
+        Args:
+            project_id (str): The id of the project.
+
+        Returns:
+            dict: The response of retrieving the service account
+        """
         endpoint = self.service.projects().serviceAccounts().list
         project_name = 'projects/{}'.format(project_id)
 
@@ -77,6 +85,14 @@ class IAMClient(_base_client.BaseClient):
             next_token = result['nextPageToken']
 
     def get_project_roles(self, project_id):
+        """Get information about project roles
+
+        Args:
+            project_id (str): The id of the project.
+
+        Returns:
+            dict: The response of retrieving the project roles
+        """
         endpoint = self.service.projects().roles().list
         org_name = 'projects/{}'.format(project_id)
 
@@ -107,6 +123,14 @@ class IAMClient(_base_client.BaseClient):
             next_token = result['nextPageToken']
 
     def get_organization_roles(self, orgid):
+        """Get information about organization roles
+
+        Args:
+            project_id (str): The id of the project.
+
+        Returns:
+            dict: The response of retrieving the organization roles
+        """
         endpoint = self.service.organizations().roles().list
         org_name = orgid
 
@@ -136,6 +160,14 @@ class IAMClient(_base_client.BaseClient):
             next_token = result['nextPageToken']
 
     def get_curated_roles(self, orgid):
+        """Get information about curated roles
+
+        Args:
+            project_id (str): The id of the project.
+
+        Returns:
+            dict: The response of retrieving the curated roles
+        """
         endpoint = self.service.roles().list
         org_name = ''
 
