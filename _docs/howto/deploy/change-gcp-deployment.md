@@ -16,11 +16,9 @@ notification email address, instance type, or `src-path` when you want your depl
        --config path/to/deploy-forseti.yaml
       ```
 
-If you change the Compute Engine instance's startup script, such as changing
-the properties in the `deploy-forseti.yaml` "Compute Engine" section or the
-startup script in `forseti-instance.py`, you may need to reset the instance.
-To reset the instance and make sure changes take effect, run the following
-command:
+If you change the properties in the `deploy-forseti.yaml` "Compute Engine" 
+section or the startup script in `forseti-instance.py`, you need to reset 
+the instance for changes to take effect:
 
   ```bash
   $ gcloud compute instances reset COMPUTE_ENGINE_INSTANCE_NAME
