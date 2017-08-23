@@ -53,9 +53,8 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
         """
         for buckets_map in resource_from_api:
             buckets = buckets_map['buckets']
-            items = buckets.get('items', [])
 
-            for item in items:
+            for item in buckets:
                 bucket_json = json.dumps(item)
 
                 try:

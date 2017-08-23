@@ -215,10 +215,8 @@ class BaseRepositoryClient(object):
         """
         with self._repository_lock:
             if not repo_property:  # Verify it still doesn't exist.
-                repo_property = (
-                    repository_class(
-                        gcp_service, self._credentials,
-                        rate_limiter=self._rate_limiter))
+                return repository_class(gcp_service, self._credentials,
+                                        rate_limiter=self._rate_limiter)
 
         return repo_property
 
@@ -521,7 +519,7 @@ class GetIamPolicyQueryMixin(object):
     """Mixin that implements getIamPolicy query."""
 
     def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
-                       include_body=True, **kwargs):
+                       include_body=True, resource_field='resource', **kwargs):
         """Get GCP IAM Policy.
 
         Args:
@@ -530,6 +528,8 @@ class GetIamPolicyQueryMixin(object):
           verb (str): The method to call on the API.
           include_body (bool): If true, include an empty body parameter in the
               method args.
+          resource_field (str): The parameter name of the resource field to
+              pass to the method.
           kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
@@ -542,7 +542,7 @@ class GetIamPolicyQueryMixin(object):
         """
         assert isinstance(self, GCPRepository)
 
-        arguments = {'resource': resource,
+        arguments = {resource_field: resource,
                      'fields': fields}
         if include_body:
             arguments['body'] = {}

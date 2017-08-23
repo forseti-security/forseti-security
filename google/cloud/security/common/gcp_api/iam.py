@@ -106,7 +106,7 @@ class _IamProjectsServiceAccountsRepository(
             rate_limiter=rate_limiter)
 
     def get_iam_policy(self, resource, fields=None, **kwargs):
-        """Get GCP IAM Policy.
+        """Get Service Account IAM Policy.
 
         Args:
           resource (str): The id of the resource to fetch.

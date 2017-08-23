@@ -47,6 +47,7 @@ SUPPORTED_APIS = {
         'supported_versions': ['v1beta4']
     },
     'storage': {
-        'version': 'v1'
+        'default_version': 'v1',
+        'supported_versions': ['v1']
     }
 }
