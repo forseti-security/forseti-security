@@ -14,16 +14,14 @@
 
 """Pipeline to load storage objects data into Inventory."""
 
+# pylint: disable=line-too-long, arguments-differ
+
 import json
 
-from dateutil import parser as dateutil_parser
-
-# pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -65,7 +63,7 @@ class LoadStorageObjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         try:
             for storage_object in (
                     self.dao.get_objects(self.RESOURCE_NAME,
-                                     self.cycle_timestamp)):
+                                         self.cycle_timestamp)):
                 yield storage_object
         except data_access_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
