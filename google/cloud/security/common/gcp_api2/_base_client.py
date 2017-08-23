@@ -116,7 +116,7 @@ class BaseClient(object):
             api_version (str): The version of the API
 
         Returns:
-            A Resource object with methods for interacting with the service.
+            Object: with methods for interacting with the service.
         """
         return discovery.build(api_name,
                                api_version,
