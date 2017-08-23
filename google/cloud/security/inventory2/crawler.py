@@ -16,49 +16,45 @@
 
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-type-doc, missing-param-doc,
+# pylint: disable=
 
 
-class CrawlerConfig(dict):
-    def __init__(self, storage, progresser, api_client, variables={}):
-        self.storage = storage
-        self.progresser = progresser
-        self.variables = variables
-        self.client = api_client
-
+class CrawlerConfig(object):
+    """The configuration profile of an inventory crawler"""
+    def __init__(self, storage, progresser, api_client, variables=None):
+        raise NotImplementedError('The crawler config')
 
 class Crawler(object):
+    """The inventory crawler interface"""
+    def run(self):
+        """To start the crawler, Not Implemented.
 
-    def __init__(self, config):
-        self.config = config
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
+        raise NotImplementedError('The run function of the crawler')
 
-    def run(self, resource):
-        try:
-            resource.accept(self)
-        finally:
-            pass
-        return self.config.progresser
+    def visit(self):
+        """To visit a resource, Not Implemented.
 
-    def visit(self, resource):
-        storage = self.config.storage
-        progresser = self.config.progresser
-        try:
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
+        raise NotImplementedError('The visit function of the crawler')
 
-            resource.getIamPolicy(self.get_client())
-            resource.getGCSPolicy(self.get_client())
-            resource.getDatasetPolicy(self.get_client())
-            resource.getCloudSQLPolicy(self.get_client())
+    def dispatch(self):
+        """To start a new visitor or continue, Not Implemented.
 
-            storage.write(resource)
-        except Exception as e:
-            progresser.on_error(e)
-            raise
-        else:
-            progresser.on_new_object(resource)
-
-    def dispatch(self, resource_visit):
-        resource_visit()
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
+        raise NotImplementedError('The dispatch function of the crawler')
 
     def get_client(self):
-        return self.config.client
+        """Get the current API client, Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
+        raise NotImplementedError('The get_client function of the crawler')

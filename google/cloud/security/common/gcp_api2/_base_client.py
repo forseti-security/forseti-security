@@ -103,11 +103,21 @@ class BaseClient(object):
 
         self.discovery_kwargs = {'credentials': self._credentials}
         if SUPPORT_DISCOVERY_CACHE:
-            self.discovery_kwargs['cache_discovery'] = kwargs.get('cache_discovery')
+            self.discovery_kwargs['cache_discovery'] = kwargs.get(
+                'cache_discovery')
 
         self.service = self.get_service(self.name, self.version)
 
     def get_service(self, api_name, api_version):
+        """Create a Resource for interacting with an API
+
+        Args:
+            api_name (str): The name of the API
+            api_version (str): The version of the API
+
+        Returns:
+            Object: with methods for interacting with the service.
+        """
         return discovery.build(api_name,
                                api_version,
                                **self.discovery_kwargs)

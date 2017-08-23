@@ -286,8 +286,7 @@ class CloudResourceManagerTest(ForsetiTestCase):
         response = '22222'
         expected_result = {'folder_id': folder_id, 'iam_policy': response}
         self.crm_api_client._execute = mock.MagicMock(return_value=response)
-        result = self.crm_api_client.get_folder_iam_policies(
-            'folders', folder_id)
+        result = self.crm_api_client.get_folder_iam_policies(folder_id)
 
         self.assertEquals(expected_result, result)
         self.crm_api_client.service.folders.assert_called_once_with()
