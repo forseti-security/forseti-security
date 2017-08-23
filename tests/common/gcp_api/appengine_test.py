@@ -16,6 +16,7 @@
 
 import unittest
 import mock
+from oauth2client import client
 
 from tests.common.gcp_api.test_data import fake_appengine_responses as fae
 from tests.common.gcp_api.test_data import http_mocks
@@ -27,13 +28,19 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 class AppEngineTest(ForsetiTestCase):
     """Test the AppEngine client."""
 
-    @mock.patch('google.cloud.security.common.gcp_api._base_repository.GoogleCredentials')
+    @mock.patch.object(client, 'GoogleCredentials', spec=True)
     def setUp(self, mock_google_credential):
         """Set up."""
         fake_global_configs = {
             'max_appengine_api_calls_per_second': 20}
         self.ae_api_client = ae.AppEngineClient(fake_global_configs,
                                                 use_rate_limiter=False)
+
+    @mock.patch.object(client, 'GoogleCredentials')
+    def test_no_quota(self, mock_google_credential):
+        """Verify no rate limiter is used if the configuration is missing."""
+        ae_api_client = ae.AppEngineClient(global_configs={})
+        self.assertEqual(None, ae_api_client.repository._rate_limiter)
 
     def test_get_app(self):
         http_mocks.mock_http_response(fae.FAKE_APP_GET_RESPONSE)

@@ -16,11 +16,11 @@
 
 import unittest
 import mock
+from oauth2client import client
 
 from tests.common.gcp_api.test_data import fake_iam_responses as fake_iam
 from tests.common.gcp_api.test_data import http_mocks
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import iam
 
@@ -29,12 +29,17 @@ from google.cloud.security.common.gcp_api import iam
 class IamTest(ForsetiTestCase):
     """Test the IAM Client."""
 
-    @mock.patch.object(_base_repository, 'GoogleCredentials')
+    @mock.patch.object(client, 'GoogleCredentials', spec=True)
     def setUp(self, mock_google_credential):
         """Set up."""
         fake_global_configs = {'max_iam_api_calls_per_second': 10000}
-        self.iam_api_client = iam.IAMClient(
-            global_configs=fake_global_configs, use_rate_limiter=False)
+        self.iam_api_client = iam.IAMClient(global_configs=fake_global_configs)
+
+    @mock.patch.object(client, 'GoogleCredentials')
+    def test_no_quota(self, mock_google_credential):
+        """Verify no rate limiter is used if the configuration is missing."""
+        iam_api_client = iam.IAMClient(global_configs={})
+        self.assertEqual(None, iam_api_client.repository._rate_limiter)
 
     def test_get_service_accounts(self):
         """Test get iam project service accounts."""

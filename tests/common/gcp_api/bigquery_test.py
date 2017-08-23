@@ -18,11 +18,11 @@ import json
 import unittest
 
 import mock
+from oauth2client import client
 
 from tests.common.gcp_api.test_data import fake_bigquery as fbq
 from tests.common.gcp_api.test_data import http_mocks
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import errors as api_errors
 
@@ -30,13 +30,19 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 class BigqueryTestCase(ForsetiTestCase):
     """Test the Bigquery API Client."""
 
-    @mock.patch.object(_base_repository, 'GoogleCredentials')
+    @mock.patch.object(client, 'GoogleCredentials', spec=True)
     def setUp(self, mock_google_credential):
         """Set up."""
         fake_global_configs = {
             'max_bigquery_api_calls_per_100_seconds': 1000000}
         self.bq_api_client = bq.BigQueryClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
+
+    @mock.patch.object(client, 'GoogleCredentials')
+    def test_no_quota(self, mock_google_credential):
+        """Verify no rate limiter is used if the configuration is missing."""
+        bq_api_client = bq.BigQueryClient(global_configs={})
+        self.assertEqual(None, bq_api_client.repository._rate_limiter)
 
     def test_get_bigquery_projectids_raises(self):
         """Test that get_bigquery_projectids raises on HTTP exception."""

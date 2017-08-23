@@ -19,12 +19,12 @@ import tempfile
 import contextlib
 
 import mock
+from oauth2client import client
 import unittest
 
 from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
 from tests.common.gcp_api.test_data import http_mocks
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import storage
 
@@ -41,7 +41,7 @@ def create_temp_file(data):
 class StorageTest(ForsetiTestCase):
     """Test the StorageClient."""
 
-    @mock.patch.object(_base_repository, 'GoogleCredentials')
+    @mock.patch.object(client, 'GoogleCredentials', spec=True)
     def setUp(self, mock_google_credential):
         """Set up."""
         self.gcs_api_client = storage.StorageClient()
@@ -55,10 +55,13 @@ class StorageTest(ForsetiTestCase):
         self.assertEqual(fake_storage.FAKE_OBJECT_NAME, obj_name)
 
     def test_non_bucket_uri_raises(self):
-        """Given a valid bucket object path, return the bucket and path."""
+        """Raise exception on invalid paths."""
         test_path = '/some/local/path/file.ext'
         with self.assertRaises(api_errors.InvalidBucketPathError):
             bucket, obj_path = storage.get_bucket_and_path_from(test_path)
+
+        with self.assertRaises(api_errors.InvalidBucketPathError):
+            bucket, obj_path = storage.get_bucket_and_path_from(None)
 
     def test_get_buckets(self):
         """Test get buckets."""

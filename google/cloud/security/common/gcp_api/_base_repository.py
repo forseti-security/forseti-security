@@ -21,8 +21,8 @@ import googleapiclient
 from googleapiclient import discovery
 import httplib2
 
-from oauth2client.client import GoogleCredentials
-from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client import client
+from oauth2client import service_account
 from ratelimiter import RateLimiter
 from retrying import retry
 
@@ -76,6 +76,25 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     return discovery.build(**discovery_kwargs)
 
 
+def _set_user_agent(credentials):
+    """Set custom Forseti user agent for all authenticated requests.
+
+    Args:
+        credentials (OAuth2Credentials): The credentials object used to
+            authenticate all http requests.
+    """
+    if isinstance(credentials, client.OAuth2Credentials):
+        user_agent = credentials.user_agent
+        if (not user_agent or
+            forseti_security.__package_name__ not in user_agent):
+
+            credentials.user_agent = (
+                'Python-httplib2/{} (gzip), {}/{}'.format(
+                    httplib2.__version__,
+                    forseti_security.__package_name__,
+                    forseti_security.__version__))
+
+
 def credential_from_keyfile(keyfile_name, scopes, delegated_account):
     """Build delegated credentials required for accessing the gsuite APIs.
 
@@ -93,8 +112,9 @@ def credential_from_keyfile(keyfile_name, scopes, delegated_account):
         api_errors.ApiExecutionError: If fails to build credentials.
     """
     try:
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            keyfile_name, scopes=scopes)
+        credentials = (
+            service_account.ServiceAccountCredentials.from_json_keyfile_name(
+                keyfile_name, scopes=scopes))
     except (ValueError, KeyError, TypeError, IOError) as e:
         raise api_errors.ApiExecutionError(
             'Error building admin api credential: %s', e)
@@ -151,8 +171,10 @@ class BaseRepositoryClient(object):
           **kwargs (dict): Additional args such as version.
         """
         if not credentials:
-            credentials = GoogleCredentials.get_application_default()
+            credentials = client.GoogleCredentials.get_application_default()
         self._credentials = credentials
+
+        _set_user_agent(credentials)
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()

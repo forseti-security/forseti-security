@@ -16,11 +16,11 @@
 
 import unittest
 import mock
+from oauth2client import service_account
 
 from tests.common.gcp_api.test_data import fake_admin_directory_responses as fake_admin
 from tests.common.gcp_api.test_data import http_mocks
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import admin_directory as admin
 from google.cloud.security.common.gcp_api import errors as api_errors
 
@@ -28,7 +28,7 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 class AdminDirectoryTest(ForsetiTestCase):
     """Test the GSuite Admin Directory client."""
 
-    @mock.patch.object(_base_repository, 'ServiceAccountCredentials')
+    @mock.patch.object(service_account, 'ServiceAccountCredentials', spec=True)
     def setUp(self, mock_credential):
         """Set up."""
         self.fake_global_configs = {
@@ -36,10 +36,17 @@ class AdminDirectoryTest(ForsetiTestCase):
             'domain_super_admin_email': 'admin@foo.testing',
             'max_admin_api_calls_per_100_seconds': 1500}
         self.ad_api_client = admin.AdminDirectoryClient(
-            self.fake_global_configs, use_rate_limiter=False)
+            self.fake_global_configs)
+
+    @mock.patch.object(service_account, 'ServiceAccountCredentials')
+    def test_no_quota(self, mock_google_credential):
+        """Verify no rate limiter is used if the configuration is missing."""
+        self.fake_global_configs.pop('max_admin_api_calls_per_100_seconds')
+        ad_api_client = admin.AdminDirectoryClient(self.fake_global_configs)
+        self.assertEqual(None, ad_api_client.repository._rate_limiter)
 
     @mock.patch.object(admin, 'LOGGER')
-    @mock.patch.object(_base_repository, 'ServiceAccountCredentials')
+    @mock.patch.object(service_account, 'ServiceAccountCredentials')
     def test_deprecated_config(self, mock_credential, mock_logger):
         self.fake_global_configs.pop('max_admin_api_calls_per_100_seconds')
         self.fake_global_configs['max_admin_api_calls_per_day'] = 150000
