@@ -15,8 +15,10 @@
 """ Crawler implementation for gcp resources. """
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-docstring,unused-argument,invalid-name
+# pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc,attribute-defined-outside-init
+# pylint: disable=useless-suppression,cell-var-from-loop
 
 import json
 
@@ -85,16 +87,19 @@ class Resource(object):
     def key(self):
         raise NotImplementedError('Class: {}'.format(self.__class__.__name__))
 
-    def accept(self, visitor, stack=[]):
+    def accept(self, visitor, stack=None):
+        stack = [] if not stack else stack
         self._stack = stack
         self._visitor = visitor
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
             for resource in yielder.iter():
+                res = resource
+
                 def call_accept():
-                    resource.accept(visitor, stack + [self])
-                if resource.is_leaf():
+                    res.accept(visitor, stack + [self])
+                if res.is_leaf():
                     call_accept()
 
                 # Potential parallelization for non-leaf resources
@@ -511,135 +516,131 @@ class GsuiteMemberIterator(ResourceIterator):
 
 FACTORIES = {
 
-        'organization': ResourceFactory({
-                'dependsOn': [],
-                'cls': Organization,
-                'contains': [
-                             GsuiteGroupIterator,
-                             GsuiteUserIterator,
-                             FolderIterator,
-                             OrganizationRoleIterator,
-                             OrganizationCuratedRoleIterator,
-                             ProjectIterator
-                             ],
-            }),
+    'organization': ResourceFactory({
+        'dependsOn': [],
+        'cls': Organization,
+        'contains': [
+            GsuiteGroupIterator,
+            GsuiteUserIterator,
+            FolderIterator,
+            OrganizationRoleIterator,
+            OrganizationCuratedRoleIterator,
+            ProjectIterator
+            ]}),
 
-        'folder': ResourceFactory({
-                'dependsOn': ['organization'],
-                'cls': Folder,
-                'contains': [
-                             FolderFolderIterator,
-                             FolderProjectIterator,
-                            ],
-            }),
+    'folder': ResourceFactory({
+        'dependsOn': ['organization'],
+        'cls': Folder,
+        'contains': [
+            FolderFolderIterator,
+            FolderProjectIterator
+            ]}),
 
-        'project': ResourceFactory({
-                'dependsOn': ['organization', 'folder'],
-                'cls': Project,
-                'contains': [AppEngineAppIterator,
-                             BucketIterator,
-                             DataSetIterator,
-                             InstanceIterator,
-                             FirewallIterator,
-                             InstanceGroupIterator,
-                             BackendServiceIterator,
-                             CloudSqlIterator,
-                             ServiceAccountIterator,
-                             ProjectRoleIterator
-                             ],
-            }),
+    'project': ResourceFactory({
+        'dependsOn': ['organization', 'folder'],
+        'cls': Project,
+        'contains': [
+            AppEngineAppIterator,
+            BucketIterator,
+            DataSetIterator,
+            InstanceIterator,
+            FirewallIterator,
+            InstanceGroupIterator,
+            BackendServiceIterator,
+            CloudSqlIterator,
+            ServiceAccountIterator,
+            ProjectRoleIterator
+            ]}),
 
-        'bucket': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': GcsBucket,
-                'contains': [
-                             # ObjectIterator
-                             ],
-            }),
+    'bucket': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': GcsBucket,
+        'contains': [
+            # ObjectIterator
+            ]}),
 
-        'object': ResourceFactory({
-                'dependsOn': ['bucket'],
-                'cls': GcsObject,
-                'contains': [],
-            }),
+    'object': ResourceFactory({
+        'dependsOn': ['bucket'],
+        'cls': GcsObject,
+        'contains': [
+            ]}),
 
-        'dataset': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': DataSet,
-                'contains': [],
-            }),
+    'dataset': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': DataSet,
+        'contains': [
+            ]}),
 
-        'appengineapp': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': AppEngineApp,
-                'contains': [],
-            }),
+    'appengineapp': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': AppEngineApp,
+        'contains': [
+            ]}),
 
-        'instance': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': Instance,
-                'contains': [],
-            }),
+    'instance': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Instance,
+        'contains': [
+            ]}),
 
-        'firewall': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': Firewall,
-                'contains': [],
-            }),
+    'firewall': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Firewall,
+        'contains': [
+            ]}),
 
-        'instancegroup': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': InstanceGroup,
-                'contains': [],
-            }),
+    'instancegroup': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': InstanceGroup,
+        'contains': [
+            ]}),
 
-        'backendservice': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': BackendService,
-                'contains': [],
-            }),
+    'backendservice': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': BackendService,
+        'contains': [
+            ]}),
 
-        'cloudsqlinstance': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': CloudSqlInstance,
-                'contains': [],
-            }),
+    'cloudsqlinstance': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': CloudSqlInstance,
+        'contains': [
+            ]}),
 
-        'serviceaccount': ResourceFactory({
-                'dependsOn': ['project'],
-                'cls': ServiceAccount,
-                'contains': [],
-            }),
+    'serviceaccount': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ServiceAccount,
+        'contains': [
+            ]}),
 
-        'role': ResourceFactory({
-                'dependsOn': ['organization', 'project'],
-                'cls': Role,
-                'contains': [],
-            }),
+    'role': ResourceFactory({
+        'dependsOn': ['organization', 'project'],
+        'cls': Role,
+        'contains': [
+            ]}),
 
-        'gsuite_user': ResourceFactory({
-                'dependsOn': ['organization'],
-                'cls': GsuiteUser,
-                'contains': [],
-            }),
+    'gsuite_user': ResourceFactory({
+        'dependsOn': ['organization'],
+        'cls': GsuiteUser,
+        'contains': [
+            ]}),
 
-        'gsuite_group': ResourceFactory({
-                'dependsOn': ['organization'],
-                'cls': GsuiteGroup,
-                'contains': [
-                            GsuiteMemberIterator,
-                            ],
-            }),
+    'gsuite_group': ResourceFactory({
+        'dependsOn': ['organization'],
+        'cls': GsuiteGroup,
+        'contains': [
+            GsuiteMemberIterator,
+            ]}),
 
-        'gsuite_user_member': ResourceFactory({
-                'dependsOn': ['gsuite_group'],
-                'cls': GsuiteUserMember,
-                'contains': [],
-            }),
+    'gsuite_user_member': ResourceFactory({
+        'dependsOn': ['gsuite_group'],
+        'cls': GsuiteUserMember,
+        'contains': [
+            ]}),
 
-        'gsuite_group_member': ResourceFactory({
-                'dependsOn': ['gsuite_group'],
-                'cls': GsuiteGroupMember,
-                'contains': [],
-            }),
+    'gsuite_group_member': ResourceFactory({
+        'dependsOn': ['gsuite_group'],
+        'cls': GsuiteGroupMember,
+        'contains': [
+            ]}),
     }
