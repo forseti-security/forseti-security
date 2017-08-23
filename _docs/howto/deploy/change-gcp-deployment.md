@@ -12,7 +12,7 @@ notification email address, instance type, or `src-path` when you want your depl
   1. Run the following update command:
 
       ```bash
-      $ gcloud deployment-manager deployments update forseti-security \
+      $ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
        --config path/to/deploy-forseti.yaml
       ```
 
