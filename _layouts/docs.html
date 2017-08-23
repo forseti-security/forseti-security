@@ -4,15 +4,19 @@ layout: default
 {% include site/layout/docs/tabs.html %}
 
 <div class="row">
-  <div class="col-md-3">
-    {% unless page.hide.left_sidebar %} 
-      {% include site/layout/docs/category_nav.html %}
-    {% endunless %}
-  </div>
+  {% unless page.hide.left_sidebar %} 
+    <div class="col-md-3">
+        {% include site/layout/docs/category_nav.html %}
+    </div>
 
-  <div id="documentation" class="col-md-7">
-    {{ content }}
-  </div>
+    <div id="documentation" class="col-md-7">
+      {{ content }}
+    </div>
+  {% else %}
+    <div id="documentation" class="col-md-10">
+      {{ content }}
+    </div>
+  {% endunless %}
 
   {% unless page.hide.right_sidebar %}
     <div id="toc" class="col-md-2 toc">
