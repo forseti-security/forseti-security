@@ -347,17 +347,19 @@ class ForsetiGcpSetup(object):
         Args:
             folder_id (str): The folder id, just a number.
         """
-        parent_type = 'folder'
+        parent_type = 'folders'
+        parent_id = folder_id
         while parent_type != 'organizations':
             return_code, out, err = self._run_command(
                 ['gcloud', 'alpha', 'resource-manager', 'folders',
-                 'describe', folder_id, '--format=json'])
+                 'describe', parent_id, '--format=json'])
             if return_code:
                 print(err)
                 self._no_organization()
             try:
                 folder = json.loads(out)
                 parent_type, parent_id = folder['parent'].split('/')
+                print('Check parent: %s' % folder['parent'])
             except ValueError as verr:
                 print(verr)
                 self._no_organization()
