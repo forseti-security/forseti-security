@@ -16,11 +16,10 @@
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,line-too-long
+# pylint: disable=missing-param-doc,line-too-long,broad-except
+# pylint: disable=invalid-name
 
 from Queue import Queue
-import traceback
-from StringIO import StringIO
 
 from google.cloud.security.iam.inventory.storage import Storage
 from google.cloud.security.iam.inventory.storage import DataAccess
@@ -49,26 +48,42 @@ class QueueProgresser(Progress):
         self.queue = queue
 
     def _notify(self):
+        """Notify status update into queue."""
+
         self.queue.put_nowait(self)
 
     def _notify_eof(self):
+        """Notify end of status updates into queue."""
+
         self.queue.put(None)
 
     def on_new_object(self, resource):
+        """Update the status with the new resource."""
+
         self.step = resource.key()
         self._notify()
 
     def on_warning(self, warning):
+        """Stores the warning and updates the counter."""
+
         self.last_warning = warning
         self.warnings += 1
         self._notify()
 
     def on_error(self, error):
+        """Stores the error and updates the counter."""
+
         self.last_error = error
         self.errors += 1
         self._notify()
 
     def get_summary(self):
+        """Indicate end of updates, and return self as last state.
+
+        Returns:
+            object: Progresser in its last state.
+        """
+
         self.final_message = True
         self._notify()
         self._notify_eof()
@@ -103,6 +118,23 @@ def run_inventory(queue,
                   gsuite_sa,
                   gsuite_admin_email,
                   organization_id):
+    """Runs the inventory given the environment configuration.
+
+    Args:
+        queue (object): Queue to push status updates into.
+        session (object): Database session.
+        progresser (object): Progresser implementation to use.
+        background (object): Whether or not this runs in background.
+        gsuite_sa (str): Path to the gsuite service account.
+        gsuite_admin_email (str): Administrator email to impersonate.
+        organization_id (str): Organization id to crawl against.
+
+    Returns:
+        object: Returns the result of the crawl.
+
+    Raises:
+        Exception: Reraises any exception.
+    """
 
     with Storage(session) as storage:
         try:
@@ -123,10 +155,20 @@ def run_inventory(queue,
 
 
 def run_import(client, model_name, inventory_id):
+    """Runs the import against an inventory.
+
+    Args:
+        client (object): Api client to use.
+        model_name (str): Model name to create.
+        inventory_id (int): Inventory index number to source.
+
+    Returns:
+        object: RPC response object to indicate status.
+    """
+
     return client.explain('INVENTORY', model_name, inventory_id)
 
 
-# pylint: disable=invalid-name,no-self-use
 class Inventory(object):
     """Inventory API implementation."""
 
@@ -140,6 +182,9 @@ class Inventory(object):
         Args:
             background (bool): Run import in background, return immediately
             model_name (str): Model name to import into
+
+        Yields:
+            object: Yields status updates.
         """
 
         queue = Queue()
@@ -149,6 +194,8 @@ class Inventory(object):
             progresser = QueueProgresser(queue)
 
         def do_inventory():
+            """Run the inventory."""
+
             with self.config.scoped_session() as session:
                 try:
                     result = run_inventory(
@@ -162,16 +209,10 @@ class Inventory(object):
 
                     if not model_name:
                         return result
-                    else:
-                        return run_import(self.config.client(),
-                                          model_name,
-                                          result.inventory_id)
+                    return run_import(self.config.client(),
+                                      model_name,
+                                      result.inventory_id)
                 except Exception as e:
-                    buf = StringIO()
-                    traceback.print_exc(file=buf)
-                    buf.seek(0)
-                    message = buf.read()
-                    print message
                     queue.put(e)
                     queue.put(None)
 

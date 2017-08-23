@@ -64,9 +64,10 @@ class InventoryIndex(BASE):
     counter = Column(Integer())
     warnings = Column(Text())
     errors = Column(Text())
+    message = Column(Text())
 
     @classmethod
-    def _utcnow(self):
+    def _utcnow(cls):
         """Return current time in utc.
 
         Returns:
@@ -161,6 +162,16 @@ class Inventory(BASE):
 
     @classmethod
     def from_resource(cls, index, resource):
+        """Creates a database row object from a crawled resource.
+
+        Args:
+            index (int): Inventory index number to associate.
+            resource (object): Crawled resource.
+
+        Returns:
+            object: database row object.
+        """
+
         parent = resource.parent()
         iam_policy = resource.getIamPolicy()
         gcs_policy = resource.getGCSPolicy()
@@ -176,6 +187,8 @@ class Inventory(BASE):
             other=None)
 
     def __repr__(self):
+        """String representation of the database row object."""
+
         return """<{}(index='{}', key='{}', type='{}')>""".format(
             self.__class__.__name__,
             self.index,
@@ -183,29 +196,77 @@ class Inventory(BASE):
             self.resource_type)
 
     def get_key(self):
+        """Get the row's resource key.
+
+        Returns:
+            str: resource key.
+        """
+
         return self.resource_key
 
     def get_type(self):
+        """Get the row's resource type.
+
+        Returns:
+            str: resource type.
+        """
+
         return self.resource_type
 
     def get_parent_key(self):
+        """Get the row's parent key.
+
+        Returns:
+            str: parent key.
+        """
+
         return self.parent_resource_key
 
     def get_parent_type(self):
+        """Get the row's parent type.
+
+        Returns:
+            str: parent type.
+        """
+
         return self.parent_resource_type
 
     def get_data(self):
+        """Get the row's raw data.
+
+        Returns:
+            dict: row's raw data.
+        """
+
         return json.loads(self.resource_data)
 
     def get_other(self):
+        """Get the row's other data.
+
+        Returns:
+            dict: row's other data.
+        """
+
         return json.loads(self.other)
 
     def get_iam_policy(self):
+        """Get the associated iam policy if any.
+
+        Returns:
+            dict: row's iam policy if any.
+        """
+
         if not self.iam_policy:
             return None
         return json.loads(self.iam_policy)
 
     def get_gcs_policy(self):
+        """Get the associated gcs policy if any.
+
+        Returns:
+            dict: row's gcs policy if any.
+        """
+
         if not self.gcs_policy:
             return None
         return json.loads(self.gcs_policy)
@@ -214,17 +275,25 @@ class Inventory(BASE):
 class BufferedDbWriter(object):
     """Buffered db writing."""
 
-    def __init__(self, session, max_size=1):
+    def __init__(self, session, max_size=1024):
         self.session = session
         self.buffer = []
         self.max_size = max_size
 
     def add(self, obj):
+        """Add an object to the buffer to write to db.
+
+        Args:
+            obj (object): Object to write to db.
+        """
+
         self.buffer.append(obj)
         if self.buffer >= self.max_size:
             self.flush()
 
     def flush(self):
+        """Flush all pending objects to the database."""
+
         self.session.add_all(self.buffer)
         self.session.flush()
         self.buffer = []
@@ -240,6 +309,9 @@ class DataAccess(object):
         Args:
             session (object): Database session.
             inventory_id (int): Id specifying which inventory to delete.
+
+        Raises:
+            Exception: Reraises any exception.
         """
 
         try:
@@ -290,6 +362,12 @@ class DataAccess(object):
 
 
 def initialize(engine):
+    """Create all tables in the database if not existing.
+
+    Args:
+        engine (object): Database engine to operate on.
+    """
+
     BASE.metadata.create_all(engine)
 
 
@@ -306,10 +384,25 @@ class Storage(BaseStorage):
         self.readonly = readonly
 
     def _require_opened(self):
+        """Make sure the storage is in 'open' state.
+
+        Raises:
+            Exception: If storage is not opened.
+        """
+
         if not self.opened:
             raise Exception('Storage is not opened')
 
     def _create(self):
+        """Create a new inventory.
+
+        Returns:
+            int: Index number of the created inventory.
+
+        Raises:
+            Exception: Reraises any exception.
+        """
+
         try:
             index = InventoryIndex.create()
             self.session.add(index)
@@ -320,12 +413,32 @@ class Storage(BaseStorage):
             return index
 
     def _open(self, existing_id):
+        """Open an existing inventory.
+
+        Returns:
+            object: The inventory db row.
+        """
+
         return (
             self.session.query(InventoryIndex)
             .filter(InventoryIndex.id == existing_id)
             .one())
 
-    def open(self, existing_id=None):
+    def open(self, handle=None):
+        """Open the storage, potentially create a new index.
+
+        Args:
+            handle (int): If None, create a new index instead
+                          of opening an existing one.
+
+        Returns:
+            int: Index number of the opened or created inventory.
+
+        Raises:
+            Exception: if open was called more than once
+        """
+
+        existing_id = handle
         if self.opened:
             raise Exception('open called before')
 
@@ -344,6 +457,8 @@ class Storage(BaseStorage):
         return self.index.id
 
     def rollback(self):
+        """Roll back the stored inventory, but keep the index entry."""
+
         try:
             self.buffer.flush()
             self.session.rollback()
@@ -353,6 +468,8 @@ class Storage(BaseStorage):
             self.session_completed = True
 
     def commit(self):
+        """Commit the stored inventory."""
+
         try:
             self.buffer.flush()
             self.session.commit()
@@ -362,6 +479,14 @@ class Storage(BaseStorage):
             self.session_completed = True
 
     def close(self):
+        """Close the storage.
+
+        Raises:
+            Exception: If the storage was not opened before or
+                       if the storage is writeable but neither
+                       rollback nor commit has been called.
+        """
+
         if not self.opened:
             raise Exception('not open')
 
@@ -371,6 +496,15 @@ class Storage(BaseStorage):
         self.opened = False
 
     def write(self, resource):
+        """Write a resource to the storage.
+
+        Args:
+            resource (object): Resource object to store in db.
+
+        Raises:
+            Exception: If storage was opened readonly.
+        """
+
         if self.readonly:
             raise Exception('Opened storage readonly')
         self.buffer.add(
@@ -380,6 +514,15 @@ class Storage(BaseStorage):
         self.index.counter += 1
 
     def read(self, resource_key):
+        """Read a resource from the storage.
+
+        Args:
+            resource_key (str): Key of the object to read.
+
+        Returns:
+            object: Row object read from database.
+        """
+
         self.buffer.flush()
         return (
             self.session.query(Inventory)
@@ -388,20 +531,49 @@ class Storage(BaseStorage):
             .one())
 
     def error(self, message):
+        """Store a fatal error in storage. This will help debug problems.
+
+        Args:
+            message (str): Error message describing the problem.
+
+        Raises:
+            Exception: If the storage was opened readonly.
+        """
+
         if self.readonly:
             raise Exception('Opened storage readonly')
         self.index.set_error(self.session, message)
 
     def warning(self, message):
+        """Store a fatal error in storage. This will help debug problems.
+
+        Args:
+            message (str): Error message describing the problem.
+
+        Raises:
+            Exception: If the storage was opened readonly.
+        """
+
         if self.readonly:
             raise Exception('Opened storage readonly')
         self.index.add_warning(self.session, message)
 
     def iter(self,
-             type_list=[],
+             type_list=None,
              require_iam_policy=False,
              require_gcs_policy=False,
              with_parent=False):
+        """Iterate the objects in the storage.
+
+        Args:
+            type_list (list): List of types to iterate over, or [] for all.
+            require_iam_policy (bool): Yield only objects with iam policy.
+            require_gcs_policy (bool): Yield only objects with gcs policy.
+            with_parent (bool): Join parent with results, yield tuples.
+
+        Yields:
+            object: Single row object or child/parent if 'with_parent' is set.
+        """
 
         filters = []
         filters.append(Inventory.index == self.index.id)
@@ -420,11 +592,11 @@ class Storage(BaseStorage):
             filters.append(Inventory.resource_type.in_(type_list))
 
         if with_parent:
-            ParentInventory = aliased(Inventory)
-            p_resource_key = ParentInventory.resource_key
-            p_resource_type = ParentInventory.resource_type
+            parent_inventory = aliased(Inventory)
+            p_resource_key = parent_inventory.resource_key
+            p_resource_type = parent_inventory.resource_type
             base_query = (
-                self.session.query(Inventory, ParentInventory)
+                self.session.query(Inventory, parent_inventory)
                 .filter(
                     and_(
                         Inventory.parent_resource_key == p_resource_key,
@@ -442,8 +614,18 @@ class Storage(BaseStorage):
             yield row
 
     def __enter__(self):
+        """To support with statement for auto closing."""
+
         self.open()
         return self
 
-    def __exit__(self, type_p, value, tb):
+    def __exit__(self, type_p, value, traceback):
+        """To support with statement for auto closing.
+
+        Args:
+            type_p (object): Unused.
+            value (object): Unused.
+            traceback (object): Unused.
+        """
+
         self.close()

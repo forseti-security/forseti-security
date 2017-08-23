@@ -14,6 +14,8 @@
 
 """ Importer implementations. """
 
+# pylint: disable=too-many-lines, unused-argument,too-many-instance-attributes,no-self-use,not-callable
+
 from collections import defaultdict
 import csv
 import json
@@ -141,7 +143,7 @@ class Policy(dict):
 class EmptyImporter(object):
     """Imports an empty model."""
 
-    def __init__(self, session, model, dao, _, **kwargs):
+    def __init__(self, session, model, dao, _, *args, **kwargs):
         """Create an EmptyImporter which creates an empty stub model.
 
         Args:
@@ -149,6 +151,8 @@ class EmptyImporter(object):
             model (str): Model name to create.
             dao (object): Data Access Object from dao.py.
             _ (object): Unused.
+            *args (list): Unused.
+            **kwargs (dict): Unused.
         """
 
         self.session = session
@@ -165,7 +169,7 @@ class EmptyImporter(object):
 class TestImporter(object):
     """Importer for testing purposes. Imports a test scenario."""
 
-    def __init__(self, session, model, dao, _, **kwargs):
+    def __init__(self, session, model, dao, _, *args, **kwargs):
         """Create a TestImporter which creates a constant defined model.
 
         Args:
@@ -173,6 +177,8 @@ class TestImporter(object):
             model (str): Model name to create.
             dao (object): Data Access Object from dao.py.
             _ (object): Unused.
+            *args (list): Unused args.
+            **kwargs (dict): Unused kwargs.
         """
         self.session = session
         self.model = model
@@ -234,6 +240,7 @@ class InventoryImporter(object):
                  dao,
                  service_config,
                  inventory_id,
+                 *args,
                  **kwargs):
         """Create a Inventory importer which creates a model from the inventory.
 
@@ -243,6 +250,8 @@ class InventoryImporter(object):
             dao (object): Data Access Object from dao.py
             service_config (ServiceConfig): Service configuration.
             inventory_id (int): Inventory id to import from
+            *args (list): Unused.
+            **kwargs (dict): Unused.
         """
 
         self.session = session
@@ -250,8 +259,13 @@ class InventoryImporter(object):
         self.dao = dao
         self.service_config = service_config
         self.inventory_id = inventory_id
-        self.resource_cache = ResourceCache()
         self.session.add(self.model)
+
+        self.role_cache = {}
+        self.permission_cache = {}
+        self.resource_cache = ResourceCache()
+        self._membership_cache = []
+        self.member_cache = {}
 
     def run(self):
         """Runs the import.
@@ -309,8 +323,6 @@ class InventoryImporter(object):
                 self.dao.denorm_group_in_group(self.session)
 
         except Exception:  # pylint: disable=broad-except
-            # TODO: Remove 'raises' once Inventory testing is done
-            raise
             buf = StringIO()
             traceback.print_exc(file=buf)
             buf.seek(0)
@@ -327,6 +339,9 @@ class InventoryImporter(object):
 
         Args:
             principal (object): object to store.
+
+        Raises:
+            Exception: if the principal type is unknown.
         """
 
         gsuite_type = principal.get_type()
@@ -347,7 +362,7 @@ class InventoryImporter(object):
     def _store_gsuite_membership_pre(self):
         """Prepare storing gsuite memberships."""
 
-        self._membership_cache = []
+        pass
 
     def _store_gsuite_membership_post(self):
         """Flush storing gsuite memberships."""
@@ -374,11 +389,28 @@ class InventoryImporter(object):
         """
 
         def member_name(child):
+            """Create the type:name representation for a non-group.
+
+            Args:
+                child (object): member to create representation from.
+
+            Returns:
+                str: type:name representation of the member.
+            """
             data = child.get_data()
             return '{}:{}'.format(data['type'].lower(),
                                   data['email'])
 
         def group_name(parent):
+            """Create the type:name representation for a group.
+
+            Args:
+                parent (object): group to create representation from.
+
+            Returns:
+                str: group:name representation of the group.
+            """
+
             data = parent.get_data()
             return 'group:{}'.format(data['email'])
 
@@ -388,7 +420,7 @@ class InventoryImporter(object):
     def _store_iam_policy_pre(self):
         """Executed before iam policies are inserted."""
 
-        self.member_cache = {}
+        pass
 
     def _store_iam_policy_post(self):
         """Executed after iam policies are inserted."""
@@ -430,34 +462,38 @@ class InventoryImporter(object):
 
         Args:
             resource (object): Resource object to convert from.
+            last_res_type (str): Previsouly processed resource type
+                                 used to spot transition between types
+                                 to execute pre/handler/post accordingly.
+
+        Returns:
+            str: Resource type that was processed during the execution.
         """
 
         handlers = {
-                'organization': (None,
-                                 self._convert_organization,
-                                 None),
-                'folder': (None,
-                           self._convert_folder,
-                           None),
-                'project': (None,
-                            self._convert_project,
-                            None),
-                'role': (self._convert_role_pre,
-                         self._convert_role,
-                         self._convert_role_post),
-                'serviceaccount': (None,
-                                   self._convert_serviceaccount,
-                                   None),
-                None: (None, None, None),
+            'organization': (None,
+                             self._convert_organization,
+                             None),
+            'folder': (None,
+                       self._convert_folder,
+                       None),
+            'project': (None,
+                        self._convert_project,
+                        None),
+            'role': (self._convert_role_pre,
+                     self._convert_role,
+                     self._convert_role_post),
+            'serviceaccount': (None,
+                               self._convert_serviceaccount,
+                               None),
+            None: (None, None, None),
             }
 
         res_type = resource.get_type() if resource else None
         if res_type not in handlers:
-            raise Exception('Resource type unsupported: {}'.format(res_type))
             self.model.add_warning('No handler for type "{}"'.format(res_type))
 
         if res_type != last_res_type:
-
             post = handlers[last_res_type][-1]
             if post:
                 post()
@@ -472,25 +508,25 @@ class InventoryImporter(object):
             return res_type
         return None
 
-    def _convert_serviceaccount(self, sa):
+    def _convert_serviceaccount(self, service_account):
         """Convert a service account to a database object.
 
         Args:
-            sa (object): Service account to store.
+            service_account (object): Service account to store.
         """
 
-        data = sa.get_data()
-        parent, full_res_name, type_name = self._full_resource_name(sa)
+        data = service_account.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            service_account)
         self.session.add(
             self.dao.TBL_RESOURCE(
-                    full_name=full_res_name,
-                    type_name=type_name,
-                    name=sa.get_key(),
-                    type=sa.get_type(),
-                    display_name=data.get('displayName', ''),
-                    email=data.get('email', ''),
-                    parent=parent,
-                ))
+                full_name=full_res_name,
+                type_name=type_name,
+                name=service_account.get_key(),
+                type=service_account.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                parent=parent))
 
     def _convert_folder(self, folder):
         """Convert a folder to a database object.
@@ -534,8 +570,7 @@ class InventoryImporter(object):
     def _convert_role_pre(self):
         """Executed before roles are handled. Prepares for bulk insert."""
 
-        self.role_cache = {}
-        self.permission_cache = {}
+        pass
 
     def _convert_role_post(self):
         """Executed after all roles were handled. Performs bulk insert."""
@@ -578,19 +613,18 @@ class InventoryImporter(object):
             parent, full_res_name, type_name = self._full_resource_name(role)
             self.session.add(
                 self.dao.TBL_RESOURCE(
-                        full_name=full_res_name,
-                        type_name=type_name,
-                        name=role.get_key(),
-                        type=role.get_type(),
-                        display_name=data.get('title'),
-                        parent=parent,
-                    ))
+                    full_name=full_res_name,
+                    type_name=type_name,
+                    name=role.get_key(),
+                    type=role.get_type(),
+                    display_name=data.get('title'),
+                    parent=parent))
 
     def _convert_organization(self, organization):
         """Convert an organization a database object.
 
         Args:
-            org (object): Organization to store.
+            organization (object): Organization to store.
         """
 
         data = organization.get_data()
@@ -622,6 +656,9 @@ class InventoryImporter(object):
 
         Args:
             resource (object): Resource whose parent to look for.
+
+        Returns:
+            tuple: cached object and full resource name
         """
 
         return self.resource_cache[self._parent_type_name(resource)]
@@ -631,6 +668,9 @@ class InventoryImporter(object):
 
         Args:
             resource (object): Resource to retrieve type/name for.
+
+        Returns:
+            str: type/name representation of the resource.
         """
 
         return '{}/{}'.format(
@@ -642,6 +682,9 @@ class InventoryImporter(object):
 
         Args:
             resource (object): Resource whose parent should be returned.
+
+        Returns:
+            str: type/name representation of the resource's parent.
         """
 
         return '{}/{}'.format(
@@ -654,20 +697,23 @@ class InventoryImporter(object):
         Args:
             resource (object): Resource whose full resource name and parent
             should be returned.
+
+        Returns:
+            str: full resource name for the provided resource.
         """
 
         type_name = self._type_name(resource)
         parent, full_res_name = self._get_parent(resource)
         full_resource_name = '{}/{}'.format(
-                                full_res_name,
-                                type_name)
+            full_res_name,
+            type_name)
         return parent, full_resource_name, type_name
 
 
 class ForsetiImporter(object):
     """Imports data from Forseti."""
 
-    def __init__(self, session, model, dao, service_config, **kwargs):
+    def __init__(self, session, model, dao, service_config, *args, **kwargs):
         """Create a ForsetiImporter which creates a model from the Forseti DB.
 
         Args:
@@ -675,6 +721,8 @@ class ForsetiImporter(object):
             model (str): Model name to create.
             dao (object): Data Access Object from dao.py.
             service_config (ServiceConfig): Service configuration.
+            *args (list): Unused.
+            **kwargs (dict): Unused.
         """
         self.session = session
         self.model = model

@@ -112,7 +112,6 @@ class Model(MODEL_BASE):
     def set_done(self, message=''):
         """Indicate a finished import.
             Args:
-                session (object): Database session
                 message (str): Success message or ''
         """
 
@@ -1554,6 +1553,15 @@ class ModelManager(object):
         """Get model from database by name."""
 
         def instantiate_model(session, model_name, expunge):
+            """Creates a model object by querying the database.
+
+            Args:
+                session (object): Database session.
+                model_name (str): Model name to instantiate.
+                expunge (bool): Whether or not to detach the object from
+                                the session for use in another session.
+            """
+
             item = session.query(Model).filter(
                 Model.handle == model_name).one()
             if expunge:
@@ -1561,8 +1569,8 @@ class ModelManager(object):
             return item
 
         if not session:
-            with self.modelmaker() as session:
-                return instantiate_model(session, model_name, expunge)
+            with self.modelmaker() as scoped_session:
+                return instantiate_model(scoped_session, model_name, expunge)
         else:
             return instantiate_model(session, model_name, expunge)
 

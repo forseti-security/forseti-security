@@ -22,7 +22,7 @@
 
 class Storage(object):
 
-    def open(self):
+    def open(self, handle=None):
         raise NotImplementedError()
 
     def write(self, resource):
@@ -31,16 +31,13 @@ class Storage(object):
     def read(self, resource_key):
         raise NotImplementedError()
 
-    def error(self, exception):
+    def error(self, message):
         raise NotImplementedError()
 
-    def warning(self, exception):
+    def warning(self, message):
         raise NotImplementedError()
 
     def close(self):
-        raise NotImplementedError()
-
-    def __iter__(self):
         raise NotImplementedError()
 
     def commit(self):
@@ -57,8 +54,8 @@ class Memory(Storage):
         super(Memory, self).__init__()
         self.mem = {}
 
-    def open(self):
-        handle = self.HANDLE
+    def open(self, handle=None):
+        handle = self.HANDLE if handle is None else handle
         self.HANDLE += 1
         return handle
 
@@ -68,18 +65,14 @@ class Memory(Storage):
     def read(self, resource_key):
         return self.mem[resource_key]
 
-    def error(self, exception):
+    def error(self, message):
         pass
 
-    def warning(self, exception):
+    def warning(self, message):
         pass
 
     def close(self):
         pass
-
-    def __iter__(self):
-        for value in self.mem.itervalues():
-            yield value
 
     def __enter__(self):
         self.open()

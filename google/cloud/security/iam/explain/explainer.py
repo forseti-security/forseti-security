@@ -14,17 +14,15 @@
 
 """ Explain API. """
 
-from google.cloud.security.iam import dao
 from google.cloud.security.iam.explain.importer import importer
 
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc
+# pylint: disable=missing-yield-type-doc,invalid-name
 
 
-# pylint: disable=invalid-name,no-self-use
 class Explainer(object):
     """Implements the IAM Explain API."""
 
@@ -163,20 +161,3 @@ class Explainer(object):
             for tpl in data_access.denormalize(session):
                 permission, resource, member = tpl
                 yield permission, resource, member
-
-
-if __name__ == "__main__":
-    class DummyConfig(object):
-        """Dummy configuration."""
-
-        def __init__(self):
-            engine = dao.create_engine('sqlite:////tmp/test.db')
-            self.model_manager = dao.ModelManager(engine)
-
-        def run_in_background(self, function):
-            """Dummy implementation."""
-
-            function()
-
-    e = Explainer(config=DummyConfig())
-    e.CreateModel("TEST", 'test')

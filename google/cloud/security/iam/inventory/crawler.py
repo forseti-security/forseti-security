@@ -16,33 +16,48 @@
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-param-doc,no-self-use
 
 from google.cloud.security.inventory2 import resources
 from google.cloud.security.inventory2 import gcp
 
 
-class CrawlerConfig(dict):
-    def __init__(self, storage, progresser, api_client, variables={}):
+class CrawlerConfig(object):
+    """Crawler configuration to inject dependencies."""
+
+    def __init__(self, storage, progresser, api_client, variables=None):
         self.storage = storage
         self.progresser = progresser
-        self.variables = variables
+        self.variables = {} if not variables else variables
         self.client = api_client
 
 
 class Crawler(object):
+    """Simple single-threaded Crawler implementation."""
 
     def __init__(self, config):
         self.config = config
 
     def run(self, resource):
-        try:
-            resource.accept(self)
-        finally:
-            pass
+        """Run the crawler, given a start resource.
+
+        Args:
+            resource (object): Resource to start with.
+        """
+
+        resource.accept(self)
         return self.config.progresser
 
     def visit(self, resource):
+        """Handle a newly found resource.
+
+        Args:
+            resource (object): Resource to handle.
+
+        Raises:
+            Exception: Reraises any exception.
+        """
+
         storage = self.config.storage
         progresser = self.config.progresser
         try:
@@ -60,9 +75,17 @@ class Crawler(object):
             progresser.on_new_object(resource)
 
     def dispatch(self, resource_visit):
+        """Dispatch crawling of a subtree.
+
+        Args:
+            resource_visit (function): Callback to dispatch.
+        """
+
         resource_visit()
 
     def get_client(self):
+        """Get the GCP API client."""
+
         return self.config.client
 
 
@@ -71,17 +94,26 @@ def run_crawler(storage,
                 gsuite_sa,
                 gsuite_admin_email,
                 organization_id):
+    """Run the crawler with a determined configuration.
+
+    Args:
+        storage (object): Storage implementation to use.
+        progresser (object): Progresser to notify status updates.
+        gsuite_sa (str): Gsuite service account to use.
+        gsuite_admin_email (str): Gsuite admin email to impersonate.
+        organization_id (str): Organization id to crawl.
+    """
 
     client_config = {
-            'groups_service_account_key_file': gsuite_sa,
-            'domain_super_admin_email': gsuite_admin_email,
-            'max_admin_api_calls_per_day': 150000,
-            'max_appengine_api_calls_per_second': 20,
-            'max_bigquery_api_calls_per_100_seconds': 17000,
-            'max_crm_api_calls_per_100_seconds': 400,
-            'max_sqladmin_api_calls_per_100_seconds': 100,
-            'max_compute_api_calls_per_second': 20,
-            'max_iam_api_calls_per_second': 20,
+        'groups_service_account_key_file': gsuite_sa,
+        'domain_super_admin_email': gsuite_admin_email,
+        'max_admin_api_calls_per_day': 150000,
+        'max_appengine_api_calls_per_second': 20,
+        'max_bigquery_api_calls_per_100_seconds': 17000,
+        'max_crm_api_calls_per_100_seconds': 400,
+        'max_sqladmin_api_calls_per_100_seconds': 100,
+        'max_compute_api_calls_per_second': 20,
+        'max_iam_api_calls_per_second': 20,
         }
 
     orgid = 'organizations/{}'.format(organization_id)
