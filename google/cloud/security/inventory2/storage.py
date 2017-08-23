@@ -21,33 +21,70 @@
 
 
 class Storage(object):
+    """The inventory storage interface"""
 
     def open(self, handle=None):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def write(self, resource):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def read(self, resource_key):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def error(self, message):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def warning(self, message):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def close(self):
         raise NotImplementedError()
 
     def commit(self):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def rollback(self):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
 
 class Memory(Storage):
+    """The storage in memory"""
     HANDLE = 0
 
     def __init__(self):
@@ -55,23 +92,29 @@ class Memory(Storage):
         self.mem = {}
 
     def open(self, handle=None):
+        """Open the memory storage"""
         handle = self.HANDLE if handle is None else handle
         self.HANDLE += 1
         return handle
 
     def write(self, resource):
+        """Write a resource object into storage"""
         self.mem[resource.key()] = resource
 
     def read(self, resource_key):
+        """Read a resource object from storage"""
         return self.mem[resource_key]
 
     def error(self, message):
+        """Ingore the error message"""
         pass
 
     def warning(self, message):
+        """Ingore the warning message"""
         pass
 
     def close(self):
+        """close the memory storage"""
         pass
 
     def __enter__(self):
@@ -82,7 +125,9 @@ class Memory(Storage):
         self.close()
 
     def commit(self):
+        """No need to commit when using a memory storage"""
         pass
 
     def rollback(self):
+        """No rollback when using a memory storage"""
         pass

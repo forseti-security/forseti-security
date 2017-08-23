@@ -13,17 +13,14 @@
 # limitations under the License.
 
 """Pipeline to load storage objects data into Inventory."""
+# pylint: disable=line-too-long, arguments-differ
 
 import json
 
-from dateutil import parser as dateutil_parser
-
-# pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -40,8 +37,6 @@ class LoadStorageBucketsIamPoliciesPipeline(base_pipeline.BasePipeline):
     def _transform(self):
         """Not Implemented.
 
-        Args:
-            resource_from_api (dict): Resources from API responses.
         Raises:
             NotImplementedError: Because not implemented.
         """
@@ -58,7 +53,11 @@ class LoadStorageBucketsIamPoliciesPipeline(base_pipeline.BasePipeline):
         raise NotImplementedError()
 
     def _iter_projects(self):
-        """Retrieve the projects from the database."""
+        """Retrieve the projects from the database.
+
+        Yields:
+            str: Project number iterator
+        """
 
         try:
             project_numbers = self.dao.get_project_numbers(
@@ -69,7 +68,17 @@ class LoadStorageBucketsIamPoliciesPipeline(base_pipeline.BasePipeline):
             raise inventory_errors.LoadDataPipelineError(e)
 
     def _iter_buckets(self, project_number):
-        """Retrieve the buckets by project from the database."""
+        """Retrieve the buckets by project from the database.
+
+        Args:
+            project_number (int): The project id for a GCP project.
+
+        Yields:
+            dict: Storage Instances in the project
+
+        Raises:
+            LoadDataPipelineError: Pipeline Load Error
+        """
 
         try:
             buckets = self.dao.get_buckets_by_project_number(
@@ -81,6 +90,11 @@ class LoadStorageBucketsIamPoliciesPipeline(base_pipeline.BasePipeline):
             raise inventory_errors.LoadDataPipelineError(e)
 
     def _iter_bucket_policies(self):
+        """Retrieve the bucket policy of the bucket.
+
+        Yields:
+            dict: Bucket policies Iterator
+        """
         for project_number in self._iter_projects():
             for bucket in self._iter_buckets(project_number):
                 policy = self.api_client.get_bucket_iam_policy(bucket)
@@ -91,7 +105,7 @@ class LoadStorageBucketsIamPoliciesPipeline(base_pipeline.BasePipeline):
                     'raw': json.dumps(policy),
                     }
 
-    def run(self, progress_report=None):
+    def run(self):
         """Runs the load storage objects data pipeline."""
 
         self._load(self.RESOURCE_NAME, self._iter_bucket_policies())

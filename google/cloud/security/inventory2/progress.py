@@ -21,39 +21,65 @@
 
 
 class Progresser(object):
+    """Progress state Interface"""
     def __init__(self):
         pass
 
     def on_new_object(self, resource):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def on_warning(self, warning):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def on_error(self, error):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def get_summary(self):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
 
 class CliProgresser(object):
+    """The command line progress state"""
     def __init__(self):
         self.errors = []
         self.warnings = []
 
     def on_new_object(self, resource):
+        """Show progress state when found a new object"""
         print 'found new object: {}'.format(resource)
 
     def on_warning(self, warning):
+        """Show progress state when have a warning"""
         print 'warning: {}'.format(warning)
         self.warnings.append(warning)
 
     def on_error(self, error):
+        """Show progress state when encounter an error"""
         print 'error: {}'.format(error)
         self.errors.append(error)
 
     def get_summary(self):
+        """Show progress state when finish"""
         print 'Errors: {}, Warnings: {}'.format(
             len(self.errors),
             len(self.warnings))

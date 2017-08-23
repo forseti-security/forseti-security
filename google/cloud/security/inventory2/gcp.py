@@ -29,25 +29,61 @@ from google.cloud.security.common.gcp_api2 import storage
 
 
 class ApiClient(object):
+    """The gcp api client interface"""
     def fetch_organization(self, orgid):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def iter_projects(self, orgid):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def iter_folders(self, orgid):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def iter_buckets(self, projectid):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def iter_objects(self, bucket_id):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def get_organization_iam_policy(self, orgid):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
     def get_project_iam_policy(self, projectid):
+        """Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError()
 
 

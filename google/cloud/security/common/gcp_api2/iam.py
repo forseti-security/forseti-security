@@ -126,7 +126,7 @@ class IAMClient(_base_client.BaseClient):
         """Get information about organization roles
 
         Args:
-            project_id (str): The id of the project.
+            orgid (str): The id of the organization.
 
         Yields:
             dict: The response of retrieving the organization roles
@@ -163,7 +163,7 @@ class IAMClient(_base_client.BaseClient):
         """Get information about curated roles
 
         Args:
-            project_id (str): The id of the project.
+            orgid (str): The id of the organization.
 
         Yields:
             dict: The response of retrieving the curated roles
