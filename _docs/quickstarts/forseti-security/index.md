@@ -74,6 +74,7 @@ to run Forseti setup wizard to ensure that you have the latest version of Cloud 
   1. After successfully running the setup and Deployment Manager, you should 
      follow instructions for enabling [G Suite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %}).
 
+
 ## What's next
 
   - Set up [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
