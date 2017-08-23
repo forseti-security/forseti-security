@@ -16,19 +16,19 @@
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-param-doc,no-self-use
 
 from google.cloud.security.inventory2 import resources
 from google.cloud.security.inventory2 import gcp
 
 
-class CrawlerConfig(dict):
+class CrawlerConfig(object):
     """Crawler configuration to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, variables={}):
+    def __init__(self, storage, progresser, api_client, variables=None):
         self.storage = storage
         self.progresser = progresser
-        self.variables = variables
+        self.variables = {} if not variables else variables
         self.client = api_client
 
 

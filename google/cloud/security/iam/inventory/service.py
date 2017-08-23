@@ -41,7 +41,6 @@ def inventory_pb_from_object(inventory_index):
         errors=inventory_index.errors)
 
 
-# pylint: disable=no-self-use
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     """Inventory gRPC handler."""
 
@@ -50,12 +49,28 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         self.inventory = inventory_api
 
     def Ping(self, request, _):
-        """Ping implemented to check service availability."""
+        """Ping implemented to check service availability.
+
+        Args:
+            request (object): gRPC request object.
+            _ (object): Unused.
+
+        Returns:
+            object: PingReply containing echo of data.
+        """
 
         return inventory_pb2.PingReply(data=request.data)
 
-    def Create(self, request, context):
-        """Creates a new inventory."""
+    def Create(self, request, _):
+        """Creates a new inventory.
+
+        Args:
+            request (object): gRPC request object.
+            _ (object): Unused.
+
+        Yields:
+            object: Inventory progress updates.
+        """
 
         for progress in self.inventory.Create(request.background,
                                               request.model_name):
@@ -68,21 +83,45 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 last_warning=repr(progress.last_warning),
                 last_error=repr(progress.last_error))
 
-    def List(self, request, context):
-        """Lists existing inventory."""
+    def List(self, request, _):
+        """Lists existing inventory.
+
+        Args:
+            request (object): gRPC request object.
+            _ (object): Unused.
+
+        Yields:
+            object: Each Inventory API object.
+        """
 
         for inventory_index in self.inventory.List():
             yield inventory_pb_from_object(inventory_index)
 
-    def Get(self, request, context):
-        """Gets existing inventory."""
+    def Get(self, request, _):
+        """Gets existing inventory.
+
+        Args:
+            request (object): gRPC request object.
+            _ (object): Unused.
+
+        Returns:
+            object: Inventory API object that is requested.
+        """
 
         inventory_index = self.inventory.Get(request.id)
         return inventory_pb2.GetReply(
             inventory=inventory_pb_from_object(inventory_index))
 
-    def Delete(self, request, context):
-        """Deletes existing inventory."""
+    def Delete(self, request, _):
+        """Deletes existing inventory.
+
+        Returns:
+            request (object): gRPC request object.
+            _ (object): Unused
+
+        Returns:
+            object: Inventory API object that is deleted.
+        """
 
         inventory_index = self.inventory.Delete(request.id)
         return inventory_pb2.DeleteReply(
@@ -96,7 +135,14 @@ class GrpcInventoryFactory(object):
         self.config = config
 
     def create_and_register_service(self, server):
-        """Creates an inventory service and registers it in the server"""
+        """Creates an inventory service and registers it in the server.
+
+        Args:
+            server (object): Server to register service to.
+
+        Returns:
+            object: The instantiated gRPC service for inventory.
+        """
 
         service = GrpcInventory(
             inventory_api=inventory.Inventory(
