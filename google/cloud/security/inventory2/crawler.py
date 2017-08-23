@@ -16,8 +16,8 @@
 
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-type-doc, missing-param-doc, arguments-differ
+# pylint: disable=
 
 
 class CrawlerConfig(object):
@@ -28,17 +28,33 @@ class CrawlerConfig(object):
 class Crawler(object):
     """The inventory crawler interface"""
     def run(self):
-        """To start the crawler"""
+        """To start the crawler, Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError('The run function of the crawler')
 
     def visit(self):
-        """To visit a resource"""
+        """To visit a resource, Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError('The visit function of the crawler')
 
     def dispatch(self):
-        """To start a new visitor or continue"""
+        """To start a new visitor or continue, Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError('The dispatch function of the crawler')
 
     def get_client(self):
-        """Get the current API client"""
+        """Get the current API client, Not Implemented.
+
+        Raises:
+            NotImplementedError: Because not implemented.
+        """
         raise NotImplementedError('The get_client function of the crawler')
