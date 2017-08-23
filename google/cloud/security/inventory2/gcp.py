@@ -16,7 +16,8 @@
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc, invalid-name
+# pylint: disable=missing-param-doc,invalid-name,too-many-instance-attributes
+# pylint: disable=too-many-public-methods
 
 from google.cloud.security.common.gcp_api2 import admin_directory
 from google.cloud.security.common.gcp_api2 import appengine
@@ -103,27 +104,47 @@ class ApiClientImpl(ApiClient):
         self.cached_projects = None
 
     def iter_users(self, gsuite_id):
-        """Gsuite user Iterator from gcp API call"""
+        """Gsuite user Iterator from gcp API call
+
+        Yields:
+            dict: Generator of user
+        """
         for user in self.ad.get_users(gsuite_id):
             yield user
 
     def iter_groups(self, gsuite_id):
-        """Gsuite group Iterator from gcp API call"""
+        """Gsuite group Iterator from gcp API call
+
+        Yields:
+            dict: Generator of groups
+        """
         result = self.ad.get_groups(gsuite_id)
         for group in result:
             yield group
 
     def iter_group_members(self, group_key):
-        """Gsuite group_memeber Iterator from gcp API call"""
+        """Gsuite group_memeber Iterator from gcp API call
+
+        Yields:
+            dict: Generator of group_member
+        """
         for member in self.ad.get_group_members(group_key):
             yield member
 
     def fetch_organization(self, orgid):
-        """Organization data from gcp API call"""
+        """Organization data from gcp API call
+
+        Returns:
+            dict: Generator of organization
+        """
         return self.crm.get_organization(orgid)
 
     def iter_projects(self, parent_type, parent_id):
-        """Project Iterator from gcp API call"""
+        """Project Iterator from gcp API call
+
+        Yields:
+            dict: Generator of projects
+        """
         if self.cached_projects is None:
             self.cached_projects = []
             for page in self.crm.get_projects(parent_id):
@@ -137,7 +158,11 @@ class ApiClientImpl(ApiClient):
                 yield project
 
     def iter_folders(self, parent_id):
-        """Folder Iterator from gcp API call"""
+        """Folder Iterator from gcp API call
+
+        Yields:
+            dict: Generator of folders
+        """
         if self.cached_folders is None:
             self.cached_folders = []
             for response in self.crm.get_folders(parent_id):
@@ -150,7 +175,11 @@ class ApiClientImpl(ApiClient):
                 yield folder
 
     def iter_buckets(self, projectid):
-        """Bucket Iterator from gcp API call"""
+        """Bucket Iterator from gcp API call
+
+        Yields:
+            dict: Generator of buckets
+        """
         response = self.storage.get_buckets(projectid)
         if 'items' not in response:
             return
@@ -160,18 +189,30 @@ class ApiClientImpl(ApiClient):
             yield bucket
 
     def iter_objects(self, bucket_id):
-        """Object Iterator from gcp API call"""
+        """Object Iterator from gcp API call
+
+        Yields:
+            dict: Generator of objects
+        """
         for object in self.storage.get_objects(bucket_name=bucket_id):
             yield object
 
     def iter_datasets(self, projectid):
-        """Dataset Iterator from gcp API call"""
+        """Dataset Iterator from gcp API call
+
+        Yields:
+            dict: Generator of datasets
+        """
         response = self.bigquery.get_datasets_for_projectid(projectid)
         for dataset in response:
             yield dataset
 
     def iter_appengineapps(self, projectid):
-        """ Appengine Iterator from gcp API call"""
+        """ Appengine Iterator from gcp API call
+
+        Yields:
+            dict: Generator of appengine
+        """
         response = self.appengine.get_app(projectid)
         if not response:
             return
@@ -179,7 +220,11 @@ class ApiClientImpl(ApiClient):
         yield response
 
     def iter_cloudsqlinstances(self, projectid):
-        """Cloudsqlinstance Iterator from gcp API call"""
+        """Cloudsqlinstance Iterator from gcp API call
+
+        Yields:
+            dict: Generator of cloudsqlinstance
+        """
         result = self.cloudsql.get_instances(projectid)
         if 'items' not in result:
             return
