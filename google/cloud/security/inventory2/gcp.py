@@ -15,9 +15,9 @@
 """ GCP API client fassade. """
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-type-doc
 # pylint: disable=missing-param-doc,invalid-name,too-many-instance-attributes
-# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods,arguments-differ
 
 from google.cloud.security.common.gcp_api2 import admin_directory
 from google.cloud.security.common.gcp_api2 import appengine
@@ -183,7 +183,6 @@ class ApiClientImpl(ApiClient):
         response = self.storage.get_buckets(projectid)
         if 'items' not in response:
             return
-            yield
 
         for bucket in response['items']:
             yield bucket
@@ -194,8 +193,8 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of objects
         """
-        for object in self.storage.get_objects(bucket_name=bucket_id):
-            yield object
+        for object_ in self.storage.get_objects(bucket_name=bucket_id):
+            yield object_
 
     def iter_datasets(self, projectid):
         """Dataset Iterator from gcp API call
@@ -216,100 +215,162 @@ class ApiClientImpl(ApiClient):
         response = self.appengine.get_app(projectid)
         if not response:
             return
-            yield
         yield response
 
     def iter_cloudsqlinstances(self, projectid):
         """Cloudsqlinstance Iterator from gcp API call
 
         Yields:
-            dict: Generator of cloudsqlinstance
+            dict: Generator of cloudsql instance
         """
         result = self.cloudsql.get_instances(projectid)
         if 'items' not in result:
             return
-            yield
         for item in result['items']:
             yield item
 
     def iter_computeinstances(self, projectid):
-        """Compute Engine Instance Iterator from gcp API call"""
+        """Compute Engine Instance Iterator from gcp API call
+
+        Yields:
+            dict: Generator of Compute Engine Instance
+        """
         result = self.compute.get_instances(projectid)
         for instance in result:
             yield instance
 
     def iter_computefirewalls(self, projectid):
-        """Compute Engine Firewall Iterator from gcp API call"""
+        """Compute Engine Firewall Iterator from gcp API call
+
+        Yields:
+            dict: Generator of Compute Engine Firewall
+        """
         result = self.compute.get_firewall_rules(projectid)
         for rule in result:
             yield rule
 
     def iter_computeinstancegroups(self, projectid):
-        """Compute Engine group Iterator from gcp API call"""
+        """Compute Engine group Iterator from gcp API call
+
+        Yields:
+            dict: Generator of Compute Instance group
+        """
         result = self.compute.get_instance_groups(projectid)
         for instancegroup in result:
             yield instancegroup
 
     def iter_backendservices(self, projectid):
-        """Backend service Iterator from gcp API call"""
+        """Backend service Iterator from gcp API call
+
+        Yields:
+            dict: Generator of backend service
+        """
         result = self.compute.get_backend_services(projectid)
         for backendservice in result:
             yield backendservice
 
     def iter_serviceaccounts(self, projectid):
-        """Service Account Iterator from gcp API call"""
+        """Service Account Iterator in a project from gcp API call
+
+        Yields:
+            dict: Generator of service account
+        """
         for serviceaccount in self.iam.get_serviceaccounts(projectid):
             yield serviceaccount
 
     def iter_project_roles(self, projectid):
-        """Project role Iterator from gcp API call"""
+        """Project role Iterator in a project from gcp API call
+
+        Yields:
+            dict: Generator of project roles
+        """
         for role in self.iam.get_project_roles(projectid):
             yield role
 
     def iter_organization_roles(self, orgid):
-        """Organization role Iterator from gcp API call"""
+        """Organization role Iterator from gcp API call
+
+        Yields:
+            dict: Generator of organization role
+        """
         for role in self.iam.get_organization_roles(orgid):
             yield role
 
     def iter_curated_roles(self, orgid):
-        """Curated role Iterator from gcp API call"""
+        """Curated role Iterator in an organization from gcp API call
+
+        Yields:
+            dict: Generator of curated roles
+        """
         for role in self.iam.get_curated_roles(orgid):
             yield role
 
     def get_folder_iam_policy(self, folderid):
-        """Folder IAM policy Iterator from gcp API call"""
+        """Folder IAM policy in a folder from gcp API call
+
+        Returns:
+            dict: Folder IAM policy
+        """
         return self.crm.get_folder_iam_policies(folderid)
 
     def get_organization_iam_policy(self, orgid):
-        """Organization IAM policy Iterator from gcp API call"""
+        """Organization IAM policy from gcp API call
+
+        Returns:
+            dict: Organization IAM policy
+        """
         return self.crm.get_org_iam_policies(orgid, orgid)
 
     def get_project_iam_policy(self, projectid):
-        """Project IAM policy Iterator from gcp API call"""
+        """Project IAM policy from gcp API call
+
+        Returns:
+            dict: Project IAM Policy
+        """
         return self.crm.get_project_iam_policies(projectid, projectid)
 
     def get_bucket_gcs_policy(self, bucketid):
-        """Bucket GCS policy Iterator from gcp API call"""
+        """Bucket GCS policy from gcp API call
+
+        Returns:
+            dict: Bucket GCS policy
+        """
         result = self.storage.get_bucket_acls(bucketid)
         if 'items' not in result:
             return []
         return result['items']
 
     def get_bucket_iam_policy(self, bucketid):
-        """Bucket IAM policy Iterator from gcp API call"""
+        """Bucket IAM policy Iterator from gcp API call
+
+        Returns:
+            dict: Bucket IAM policy
+        """
         return self.storage.get_bucket_iam_policy(bucketid)
 
     def get_object_gcs_policy(self, bucket_name, object_name):
-        """Object GCS policy Iterator for an object from gcp API call"""
+        """Object GCS policy for an object from gcp API call
+
+        Returns:
+            dict: Object GCS policy
+        """
         result = self.storage.get_object_acls(bucket_name, object_name)
         if 'items' not in result:
             return []
         return result['items']
 
     def get_object_iam_policy(self, bucket_name, object_name):
-        """Object IAM policy Iterator for an object from gcp API call"""
+        """Object IAM policy Iterator for an object from gcp API call
+
+        Returns:
+            dict: Object IAM policy
+        """
         return self.storage.get_object_iam_policy(bucket_name, object_name)
 
     def get_dataset_dataset_policy(self, projectid, datasetid):
-        """Dataset policy Iterator for a dataset from gcp API call"""
+        """Dataset policy Iterator for a dataset from gcp API call
+
+        Returns:
+            dict: Dataset Policy
+        """
         return self.bigquery.get_dataset_access(projectid, datasetid)

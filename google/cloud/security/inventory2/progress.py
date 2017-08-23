@@ -16,7 +16,7 @@
 
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,disable=missing-param-doc,no-self-use
+# pylint: disable=missing-type-doc,missing-param-doc,no-self-use
 
 
 class Progresser(object):
