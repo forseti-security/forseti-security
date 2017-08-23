@@ -6,7 +6,8 @@ order: 104
 
 This page describes how to change a Forseti Security deployment. Most changes
 to a deployment are usually to the deployment properties, such as the
-notification email address, instance type, or `src-path` when you want your deployment to run a certain version of Forseti Security. To update your deployment, follow the process below:
+instance type or `src-path` when you want your deployment to run a certain 
+version of Forseti Security. To update your deployment, follow the process below:
 
   1. Edit `deploy-forseti.yaml` and update the values you want to change.
   1. Run the following update command:
