@@ -34,12 +34,11 @@ STATIC_SERVICE_MAPPING = {
 
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
+# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc,too-many-instance-attributes
 
 
 class ServiceConfig(object):
-    """Helper class to implement dependency injection to IAM Explain services.
-    """
+    """Implements composed dependency injection to IAM Explain services."""
 
     def __init__(self,
                  explain_connect_string,
@@ -60,21 +59,57 @@ class ServiceConfig(object):
         self.organization_id = organization_id
 
     def get_organization_id(self):
+        """Get the organization id.
+
+        Returns:
+            str: The configure organization id.
+        """
+
         return self.organization_id
 
     def get_gsuite_sa_path(self):
+        """Get path to gsuite service account.
+
+        Returns:
+            str: Gsuite admin service account path.
+        """
+
         return self.gsuite_sa_path
 
     def get_gsuite_admin_email(self):
+        """Get the gsuite admin email.
+
+        Returns:
+            str: Gsuite admin email address to impersonate.
+        """
+
         return self.gsuite_admin_email
 
     def get_engine(self):
+        """Get the database engine.
+
+        Returns:
+            object: Database engine object.
+        """
+
         return self.engine
 
     def scoped_session(self):
+        """Get a scoped session.
+
+        Returns:
+            object: A scoped session.
+        """
+
         return self.sessionmaker()
 
     def client(self):
+        """Get an API client.
+
+        Returns:
+            object: API client to use against services.
+        """
+
         return ClientComposition(self.endpoint)
 
     def run_in_background(self, function):
