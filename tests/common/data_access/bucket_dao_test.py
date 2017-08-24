@@ -53,7 +53,7 @@ class BucketDaoTest(ForsetiTestCase):
             self.FAKE_PROJECT_NUMBERS[0])
 
         self.fetch_mock.assert_called_once_with(
-            self.resource_name, fake_query, None)
+            self.resource_name, fake_query, (self.FAKE_PROJECT_NUMBERS[0],))
 
     def test_get_project_numbers_raises_error(self):
         """Test get_project_numbers() raises a MySQLError."""

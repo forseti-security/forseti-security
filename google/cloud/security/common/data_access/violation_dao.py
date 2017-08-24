@@ -65,7 +65,7 @@ class ViolationDao(dao.Dao):
         # TODO: Remove this exception handling by moving the check for
         # violations table outside of the scanners.
         except MySQLdb.OperationalError, e:
-            if 'already exists' in str(e):
+            if e[0] == 1050:
                 LOGGER.debug('Violations table already exists: %s', e)
                 snapshot_table = self._create_snapshot_table_name(
                     resource_name, snapshot_timestamp)
