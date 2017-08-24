@@ -81,15 +81,13 @@ class BucketDao(project_dao.ProjectDao):
                                                bucket_acls_sql,
                                                None)
             for row in rows:
-                bucket_acl = (
-                    bkt_acls.
-                    BucketAccessControls(
-                        bucket=row['bucket'],
-                        entity=row['entity'],
-                        email=row['email'],
-                        domain=row['domain'],
-                        role=row['role'],
-                        project_number=row['project_number']))
+                bucket_acl = bkt_acls.\
+                BucketAccessControls(bucket=row['bucket'],
+                                     entity=row['entity'],
+                                     email=row['email'],
+                                     domain=row['domain'],
+                                     role=row['role'],
+                                     project_number=row['project_number'])
                 bucket_acls[cnt] = bucket_acl
                 cnt += 1
         except (DataError, IntegrityError, InternalError, NotSupportedError,
