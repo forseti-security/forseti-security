@@ -81,4 +81,4 @@ Forseti Security is now set up in your GCP project but requires some extra steps
   - Set up Forseti to send [email notifications]({% link _docs/howto/email-notification.md %}).
   - Enable [GSuite Google Groups collection]({% link _docs/howto/gsuite-group-collection.md %})
   for processing by Forseti.
-  - Learn how to [change a deployment]({% link _docs/howto/change-gcp-deployment.md %}).
+  - Learn how to [change a deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
