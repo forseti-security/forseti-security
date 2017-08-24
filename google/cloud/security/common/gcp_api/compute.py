@@ -447,6 +447,10 @@ class ComputeClient(object):
             quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
+        # Default service object, currently used by enforcer.
+        # TODO: Clean up enforcer so this isn't required.
+        self.service = self.repository.gcp_services['beta']
+
     # TODO: Migrate helper functions from gce_firewall_enforcer.py
     # ComputeFirewallAPI class.
 
