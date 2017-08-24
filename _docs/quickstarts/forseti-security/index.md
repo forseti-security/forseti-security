@@ -40,12 +40,6 @@ It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) t
       ```bash
       git clone https://github.com/GoogleCloudPlatform/forseti-security
       ```
-      
-      To install the latest release:
-      
-      ```
-      git checkout master
-      ```
 
   1. Navigate to the setup wizard directory:
   
@@ -77,13 +71,14 @@ It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) t
   1. After the setup wizard successfully completes Forseti setup and deployment, 
      complete the steps to [enable G Suite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %}). This is a **required** step if you also plan to deploy IAM Explain.
 
+Forseti Security is now set up in your GCP project but requires some extra steps (shown below) to run autonomously.
 
 ## What's next
 
-  - Configure [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
-  [Scanner]({% link _docs/quickstarts/scanner/index.md %}),
-  and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %}).
-  - Configure Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
-  - Enable [GSuite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
+  - Set up [Inventory]({% link _docs/quickstarts/inventory/index.md %}). Forseti
+    Scanner and Enforcer depend on Inventory data to perform their operations.
+  - Once [Inventory]({% link _docs/quickstarts/inventory/index.md %}) setup is complete, proceed to set up [Scanner]({% link _docs/quickstarts/scanner/index.md %}) and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %})
+  - Set up Forseti to send [email notifications]({% link _docs/howto/email-notification.md %}).
+  - Enable [GSuite Google Groups collection]({% link _docs/howto/gsuite-group-collection.md %})
   for processing by Forseti.
-  - Learn how to [change a deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
+  - Learn how to [change a deployment]({% link _docs/howto/change-gcp-deployment.md %}).
