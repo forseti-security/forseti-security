@@ -69,8 +69,8 @@ To submit a pull request for Forseti, follow the process below:
 
       ```bash
       $ git fetch upstream
-      $ git checkout master
-      $ git merge upstream/master
+      $ git checkout dev
+      $ git merge upstream/dev
       ```
     
 

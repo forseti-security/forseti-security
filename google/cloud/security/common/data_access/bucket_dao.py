@@ -36,6 +36,8 @@ LOGGER = log_util.get_logger(__name__)
 class BucketDao(project_dao.ProjectDao):
     """Data access object (DAO) for Organizations."""
 
+    RESOURCE_RAW_BUCKETS = 'raw_buckets'
+
     def get_buckets_by_project_number(self, resource_name,
                                       timestamp, project_number):
         """Select the buckets for project from a buckets snapshot table.
@@ -52,12 +54,10 @@ class BucketDao(project_dao.ProjectDao):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        buckets_sql = select_data.BUCKETS_BY_PROJECT_ID.format(
-            timestamp,
-            project_number)
+        buckets_sql = select_data.BUCKETS_BY_PROJECT_ID.format(timestamp)
         rows = self.execute_sql_with_fetch(
-            resource_name, buckets_sql, None)
-        return [row['bucket_id'] for row in rows]
+            resource_name, buckets_sql, (project_number,))
+        return [row['bucket_name'] for row in rows]
 
     def get_buckets_acls(self, resource_name, timestamp):
         """Select the bucket acls from a bucket acls snapshot table.
@@ -97,23 +97,17 @@ class BucketDao(project_dao.ProjectDao):
             LOGGER.error(errors.MySQLError(resource_name, e))
         return bucket_acls
 
-    def get_objects(self, resource_name, timestamp):
-        """Select the storage objects from the snapshot table.
+    def get_raw_buckets(self, timestamp):
+        """Select the bucket and its raw json.
 
         Args:
-            resource_name (str): String of the resource name.
-            timestamp (str): String of timestamp, formatted as
+            timestamp (str): The snapshot timestamp, formatted as
                 YYYYMMDDTHHMMSSZ.
 
         Returns:
-            list: List of storage objects.
-
-        Raises:
-            MySQLError: An error with MySQL has occurred.
+            list: List of dict mapping buckets to their raw json.
         """
-
-        storage_sql = select_data.SELECT_STORAGE_OBJECTS.format(
-            timestamp,
-            )
-        rows = self.execute_sql_with_fetch(resource_name, storage_sql, None)
-        return [row for row in rows]
+        buckets_sql = select_data.RAW_BUCKETS.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            self.RESOURCE_RAW_BUCKETS, buckets_sql, None)
+        return rows

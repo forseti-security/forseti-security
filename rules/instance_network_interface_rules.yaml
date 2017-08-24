@@ -12,15 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Map for mapping rules engine to scanner class"""
-
-RESOURCE_MAP = {
-    'bigquery_acl_violations': 'violations',
-    'buckets_acl_violations': 'violations',
-    'cloudsql_acl_violations': 'violations',
-    'forwarding_rule_violations': 'violations',
-    'groups_violations': 'groups_violations',
-    'instance_network_interface_violations': 'violations',
-    'policy_violations': 'violations',
-    'iap_violations': 'violations',
-}
+rules:
+  # This rule helps with:
+  # #1 Ensure instances with external IPs are only running 
+  # on whitelisted networks
+  # #2 Ensure instances are only running on networks created in allowed 
+  # projects (using XPN)
+  - name: all networks covered in whitelist
+    project: '*'
+    network: '*'
+    is_external_network: True
+    # this would be a custom list of your networks/projects.
+    whitelist:
+      master: 
+        - master-1
+      network: 
+        - network-1 
+        - network-2
+      default:
+        - default-1

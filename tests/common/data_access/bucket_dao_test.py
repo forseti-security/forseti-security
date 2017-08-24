@@ -37,19 +37,13 @@ class BucketDaoTest(ForsetiTestCase):
     def setUp(self, mock_db_connector):
         mock_db_connector.return_value = None
         self.bucket_dao = bucket_dao.BucketDao()
+        self.fetch_mock = mock.MagicMock()
+        self.bucket_dao.execute_sql_with_fetch = self.fetch_mock
         self.resource_name = 'buckets_acl'
         self.fake_timestamp = '12345'
 
     def test_get_buckets_by_project_number(self):
         """Test get_buckets_by_project_number()."""
-        conn_mock = mock.MagicMock()
-        cursor_mock = mock.MagicMock()
-        fetch_mock = mock.MagicMock()
-
-        self.bucket_dao.conn = conn_mock
-        self.bucket_dao.conn.cursor.return_value = cursor_mock
-        cursor_mock.fetchall.return_value = fetch_mock
-
         fake_query = select_data.BUCKETS_BY_PROJECT_ID.format(
             self.fake_timestamp,
             self.FAKE_PROJECT_NUMBERS[0])
@@ -58,14 +52,12 @@ class BucketDaoTest(ForsetiTestCase):
             self.fake_timestamp,
             self.FAKE_PROJECT_NUMBERS[0])
 
-        cursor_mock.execute.assert_called_once_with(fake_query, None)
-        cursor_mock.fetchall.assert_called_once_with()
+        self.fetch_mock.assert_called_once_with(
+            self.resource_name, fake_query, (self.FAKE_PROJECT_NUMBERS[0],))
 
     def test_get_project_numbers_raises_error(self):
         """Test get_project_numbers() raises a MySQLError."""
-        fetch_mock = mock.MagicMock()
-        self.bucket_dao.execute_sql_with_fetch = fetch_mock
-        fetch_mock.side_effect = (
+        self.fetch_mock.side_effect = (
             errors.MySQLError(self.resource_name, mock.MagicMock()))
 
         with self.assertRaises(errors.MySQLError):
@@ -76,22 +68,25 @@ class BucketDaoTest(ForsetiTestCase):
 
     def test_get_buckets_acls(self):
         """Test get_buckets_acls()."""
-        conn_mock = mock.MagicMock()
-        cursor_mock = mock.MagicMock()
-        fetch_mock = mock.MagicMock()
-
-        self.bucket_dao.conn = conn_mock
-        self.bucket_dao.conn.cursor.return_value = cursor_mock
-        cursor_mock.fetchall.return_value = fetch_mock
-
         fake_query_acls = select_data.BUCKET_ACLS.format(
             self.fake_timestamp)
         self.bucket_dao.get_buckets_acls(
             self.resource_name,
             self.fake_timestamp)
 
-        cursor_mock.execute.assert_called_once_with(fake_query_acls, None)
-        cursor_mock.fetchall.assert_called_once_with()
+        self.fetch_mock.assert_called_once_with(
+            self.resource_name, fake_query_acls, None)
+
+    def test_get_raw_buckets(self):
+        """Test get_raw_buckets()."""
+        fake_return = [{'bucket_id': 'bucketid', 'acl': {"foo": 1}}]
+
+        self.fetch_mock.return_value = fake_return
+
+        fake_query = select_data.RAW_BUCKETS.format(self.fake_timestamp)
+        actual = self.bucket_dao.get_raw_buckets(self.fake_timestamp)
+
+        self.assertEquals(fake_return, actual)
 
 
 if __name__ == '__main__':
