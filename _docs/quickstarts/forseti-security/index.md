@@ -78,7 +78,7 @@ Forseti Security is now set up in your GCP project but requires some extra steps
   - Set up [Inventory]({% link _docs/quickstarts/inventory/index.md %}). Forseti
     Scanner and Enforcer depend on Inventory data to perform their operations.
   - Once [Inventory]({% link _docs/quickstarts/inventory/index.md %}) setup is complete, proceed to set up [Scanner]({% link _docs/quickstarts/scanner/index.md %}) and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %})
-  - Set up Forseti to send [email notifications]({% link _docs/howto/email-notification.md %}).
-  - Enable [GSuite Google Groups collection]({% link _docs/howto/gsuite-group-collection.md %})
+  - Set up Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
+  - Enable [GSuite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
   for processing by Forseti.
-  - Learn how to [change a deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
+  - Learn how to [change a deployment]({% link _docs/howto/configure/deploy/change-gcp-deployment.md %}).
