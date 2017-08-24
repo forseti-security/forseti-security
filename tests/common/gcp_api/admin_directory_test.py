@@ -28,29 +28,33 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 class AdminDirectoryTest(ForsetiTestCase):
     """Test the GSuite Admin Directory client."""
 
+    @classmethod
     @mock.patch.object(service_account, 'ServiceAccountCredentials', spec=True)
-    def setUp(self, mock_credential):
+    def setUpClass(cls, mock_credential):
         """Set up."""
-        self.fake_global_configs = {
+        fake_global_configs = {
             'groups_service_account_key_file': 'abc.key',
             'domain_super_admin_email': 'admin@foo.testing',
             'max_admin_api_calls_per_100_seconds': 1500}
-        self.ad_api_client = admin.AdminDirectoryClient(
-            self.fake_global_configs)
+        cls.ad_api_client = admin.AdminDirectoryClient(fake_global_configs)
 
     @mock.patch.object(service_account, 'ServiceAccountCredentials')
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
-        self.fake_global_configs.pop('max_admin_api_calls_per_100_seconds')
-        ad_api_client = admin.AdminDirectoryClient(self.fake_global_configs)
+        global_configs = {
+            'groups_service_account_key_file': 'abc.key',
+            'domain_super_admin_email': 'admin@foo.testing'}
+        ad_api_client = admin.AdminDirectoryClient(global_configs)
         self.assertEqual(None, ad_api_client.repository._rate_limiter)
 
     @mock.patch.object(admin, 'LOGGER')
     @mock.patch.object(service_account, 'ServiceAccountCredentials')
     def test_deprecated_config(self, mock_credential, mock_logger):
-        self.fake_global_configs.pop('max_admin_api_calls_per_100_seconds')
-        self.fake_global_configs['max_admin_api_calls_per_day'] = 150000
-        ad_api_client = admin.AdminDirectoryClient(self.fake_global_configs)
+        global_configs = {
+            'groups_service_account_key_file': 'abc.key',
+            'domain_super_admin_email': 'admin@foo.testing',
+            'max_admin_api_calls_per_day': 150000}
+        ad_api_client = admin.AdminDirectoryClient(global_configs)
         mock_logger.error.assert_called_once()
         self.assertEqual(ad_api_client.repository._rate_limiter.period, 86400.0)
 

@@ -41,10 +41,11 @@ def create_temp_file(data):
 class StorageTest(ForsetiTestCase):
     """Test the StorageClient."""
 
+    @classmethod
     @mock.patch.object(client, 'GoogleCredentials', spec=True)
-    def setUp(self, mock_google_credential):
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
-        self.gcs_api_client = storage.StorageClient()
+        cls.gcs_api_client = storage.StorageClient()
 
     def test_get_bucket_and_path_from(self):
         """Given a valid bucket object path, return the bucket and path."""

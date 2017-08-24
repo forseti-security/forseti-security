@@ -47,20 +47,17 @@ class AppEngineRepository(_base_repository.BaseRepositoryClient):
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
 
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def apps(self):
-        """An _AppEngineAppsRepository instance.
-
-        Returns:
-          object: An _AppEngineAppsRepository instance.
-        """
+        """Returns an _AppEngineAppsRepository instance."""
         if not self._apps:
             self._apps = self._init_repository(
-                _AppEngineAppsRepository,
-                self.gcp_services['v1'],
-                self._apps)
+                _AppEngineAppsRepository)
 
         return self._apps
+    # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _AppEngineAppsRepository(
@@ -68,21 +65,14 @@ class _AppEngineAppsRepository(
         _base_repository.GetQueryMixin):
     """Implementation of AppEngine Apps repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_AppEngineAppsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            key_field='appsId',
-            component='apps',
-            rate_limiter=rate_limiter)
+            key_field='appsId', component='apps', **kwargs)
 
 
 class AppEngineClient(object):
@@ -90,8 +80,7 @@ class AppEngineClient(object):
 
     https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps
     """
-    # TODO: Remove pylint disable.
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 1  # pylint: disable=invalid-name
+    DEFAULT_QUOTA_PERIOD = 1.0
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -103,7 +92,7 @@ class AppEngineClient(object):
         max_calls = global_configs.get('max_appengine_api_calls_per_second')
         self.repository = AppEngineRepository(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
+            quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_app(self, project_id):

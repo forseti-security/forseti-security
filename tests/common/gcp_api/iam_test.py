@@ -29,11 +29,12 @@ from google.cloud.security.common.gcp_api import iam
 class IamTest(ForsetiTestCase):
     """Test the IAM Client."""
 
+    @classmethod
     @mock.patch.object(client, 'GoogleCredentials', spec=True)
-    def setUp(self, mock_google_credential):
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {'max_iam_api_calls_per_second': 10000}
-        self.iam_api_client = iam.IAMClient(global_configs=fake_global_configs)
+        cls.iam_api_client = iam.IAMClient(global_configs=fake_global_configs)
 
     @mock.patch.object(client, 'GoogleCredentials')
     def test_no_quota(self, mock_google_credential):

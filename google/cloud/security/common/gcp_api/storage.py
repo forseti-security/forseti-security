@@ -96,9 +96,7 @@ class StorageRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._buckets:
             self._buckets = self._init_repository(
-                _StorageBucketsRepository,
-                self.gcp_services['v1'],
-                self._buckets)
+                _StorageBucketsRepository)
 
         return self._buckets
 
@@ -111,9 +109,7 @@ class StorageRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._objects:
             self._objects = self._init_repository(
-                _StorageObjectsRepository,
-                self.gcp_services['v1'],
-                self._objects)
+                _StorageObjectsRepository)
 
         return self._objects
 
@@ -124,20 +120,14 @@ class _StorageBucketsRepository(
         _base_repository.ListQueryMixin):
     """Implementation of Storage Buckets repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-            gcp_service (object): A GCE service object built using the Google
-                discovery API.
-            credentials (object): GoogleCredentials.
-            rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_StorageBucketsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            component='buckets',
-            rate_limiter=rate_limiter)
+            component='buckets', **kwargs)
 
     def get_iam_policy(self, bucket, fields=None, **kwargs):
         """Get Bucket IAM Policy.
@@ -164,21 +154,14 @@ class _StorageObjectsRepository(
         _base_repository.ListQueryMixin):
     """Implementation of Iam Projects ServiceAccounts repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-            gcp_service (object): A GCE service object built using the Google
-                discovery API.
-            credentials (object): GoogleCredentials.
-            rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_StorageObjectsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            component='objects',
-            key_field='bucket',
-            rate_limiter=rate_limiter)
+            key_field='bucket', component='objects', **kwargs)
 
     def get_iam_policy(self, bucket, object_name, fields=None, **kwargs):
         """Get Object IAM Policy.

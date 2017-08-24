@@ -21,7 +21,10 @@ from google.cloud.security.common.gcp_api import _base_repository
 def mock_http_response(response, status='200'):
     """Set the mock response to an http request."""
     http_mock = http.HttpMock()
-    http_mock.response_headers = {'status': status}
+    http_mock.response_headers = {
+        'status': status,
+        'content-type': 'application/json',
+    }
     http_mock.data = response
     _base_repository.LOCAL_THREAD.http = http_mock
 

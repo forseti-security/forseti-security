@@ -26,6 +26,7 @@ from oauth2client import service_account
 from ratelimiter import RateLimiter
 from retrying import retry
 
+from google.cloud import security as forseti_security
 from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
@@ -86,7 +87,7 @@ def _set_user_agent(credentials):
     if isinstance(credentials, client.OAuth2Credentials):
         user_agent = credentials.user_agent
         if (not user_agent or
-            forseti_security.__package_name__ not in user_agent):
+                forseti_security.__package_name__ not in user_agent):
 
             credentials.user_agent = (
                 'Python-httplib2/{} (gzip), {}/{}'.format(
@@ -143,6 +144,56 @@ def flatten_list_results(paged_results, item_key):
     for page in paged_results:
         results.extend(page.get(item_key, []))
     return results
+
+
+def flatten_aggregated_list_results(paged_results, item_key):
+    """Flatten a split-up list as returned by GCE "aggregatedList" API.
+
+    The compute API's aggregatedList methods return a structure in
+    the form:
+      {
+        items: {
+          $group_value_1: {
+            $item_key: [$items]
+          },
+          $group_value_2: {
+            $item_key: [$items]
+          },
+          $group_value_3: {
+            "warning": {
+              message: "There are no results for ..."
+            }
+          },
+          ...,
+          $group_value_n, {
+            $item_key: [$items]
+          },
+        }
+      }
+    where each "$group_value_n" is a particular element in the
+    aggregation, e.g. a particular zone or group or whatever, and
+    "$item_key" is some type-specific resource name, e.g.
+    "backendServices" for an aggregated list of backend services.
+
+    This method takes such a structure and yields a simple list of
+    all $items across all of the groups.
+
+    Args:
+        paged_results (list): A list of paged API response objects.
+            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
+        item_key (str): The name of the key within the inner "items" lists
+            containing the objects of interest.
+
+    Returns:
+        list: A list of items.
+    """
+    items = []
+    for page in paged_results:
+        aggregated_items = page.get('items', {})
+        for items_for_grouping in aggregated_items.values():
+            for item in items_for_grouping.get(item_key, []):
+                items.append(item)
+    return items
 
 
 class BaseRepositoryClient(object):
@@ -221,26 +272,32 @@ class BaseRepositoryClient(object):
         Returns:
             str: The object representation.
         """
-        return 'API: name=%s, version=%s' % (self.name, self.versions)
+        return 'API: name=%s, versions=%s' % (self.name, self.versions)
 
-    def _init_repository(self, repository_class, gcp_service, repo_property):
+    def _init_repository(self, repository_class, version=None):
         """Safely initialize a repository class to a property.
 
         Args:
           repository_class (class): The class to initialize.
-          gcp_service (object): The gcp service object for the repository.
-          repo_property (object): The pointer to the instance of the initialized
-              class.
+          version (str): The gcp service version for the repository.
 
         Returns:
           object: An instance of repository_class.
         """
-        with self._repository_lock:
-            if not repo_property:  # Verify it still doesn't exist.
-                return repository_class(gcp_service, self._credentials,
-                                        rate_limiter=self._rate_limiter)
+        if not version:
+            # Use either the default version if defined or the first version
+            # returned when sorted by name.
+            version = (
+                _supported_apis.SUPPORTED_APIS.get(self.name, {})
+                .get('default_version'))
+            if not version or version not in self.gcp_services:
+                version = sorted(self.gcp_services.keys())[0]
 
-        return repo_property
+        with self._repository_lock:
+            return repository_class(gcp_service=self.gcp_services[version],
+                                    credentials=self._credentials,
+                                    rate_limiter=self._rate_limiter)
+
 
 # pylint: disable=too-many-instance-attributes
 class GCPRepository(object):
@@ -467,7 +524,7 @@ class ListQueryMixin(object):
 
     def list(self, resource=None, fields=None, max_results=None, verb='list',
              **kwargs):
-        """List GCP entities of a given project.
+        """List GCP entities of a given resource.
 
         Args:
           resource (str): The id of the resource to query.
@@ -498,6 +555,27 @@ class ListQueryMixin(object):
             # Some API list() methods are not actually paginated.
             del arguments[self._max_results_field]
             yield self.execute_query(verb=verb, verb_arguments=arguments)
+
+
+class AggregatedListQueryMixin(ListQueryMixin):
+    """Mixin that implements a Paged List and AggregatedList query."""
+
+    def aggregated_list(self, resource=None, fields=None, max_results=None,
+                        verb='aggregatedList', **kwargs):
+        """List GCP entities of a given resource.
+
+        Args:
+          resource (str): The id of the resource to query.
+          fields (str): Fields to include in the response - partial response.
+          max_results (int): Number of entries to include per page.
+          verb (str): The method to call on the API.
+          kwargs (dict): Optional additional arguments to pass to the query.
+
+        Returns:
+          iterator: An iterator of API responses by page.
+        """
+        return super(AggregatedListQueryMixin, self).list(
+            resource, fields, max_results, verb, **kwargs)
 
 
 class GetQueryMixin(object):

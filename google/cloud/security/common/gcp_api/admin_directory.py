@@ -56,35 +56,26 @@ class AdminDirectoryRepository(_base_repository.BaseRepositoryClient):
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
 
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def groups(self):
-        """An _AdminDirectoryGroupsRepository instance.
-
-        Returns:
-          object: An _AdminDirectoryGroupsRepository instance.
-        """
+        """Returns an _AdminDirectoryGroupsRepository instance."""
         if not self._groups:
             self._groups = self._init_repository(
-                _AdminDirectoryGroupsRepository,
-                self.gcp_services['directory_v1'],
-                self._groups)
+                _AdminDirectoryGroupsRepository)
 
         return self._groups
 
     @property
     def members(self):
-        """An _AdminDirectoryMembersRepository instance.
-
-        Returns:
-          object: An _AdminDirectoryMembersRepository instance.
-        """
+        """Returns an _AdminDirectoryMembersRepository instance."""
         if not self._members:
             self._members = self._init_repository(
-                _AdminDirectoryMembersRepository,
-                self.gcp_services['directory_v1'],
-                self._members)
+                _AdminDirectoryMembersRepository)
 
         return self._members
+    # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _AdminDirectoryGroupsRepository(
@@ -92,21 +83,14 @@ class _AdminDirectoryGroupsRepository(
         _base_repository.ListQueryMixin):
     """Implementation of Admin Directory Groups repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_AdminDirectoryGroupsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            key_field='',
-            component='groups',
-            rate_limiter=rate_limiter)
+            key_field='', component='groups', **kwargs)
 
 
 class _AdminDirectoryMembersRepository(
@@ -114,21 +98,14 @@ class _AdminDirectoryMembersRepository(
         _base_repository.ListQueryMixin):
     """Implementation of Admin Directory Members repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_AdminDirectoryMembersRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            key_field='groupKey',
-            component='members',
-            rate_limiter=rate_limiter)
+            key_field='groupKey', component='members', **kwargs)
 
 
 class AdminDirectoryClient(object):

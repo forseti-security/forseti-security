@@ -60,9 +60,7 @@ class IamRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._projects_serviceaccounts:
             self._projects_serviceaccounts = self._init_repository(
-                _IamProjectsServiceAccountsRepository,
-                self.gcp_services['v1'],
-                self._projects_serviceaccounts)
+                _IamProjectsServiceAccountsRepository)
 
         return self._projects_serviceaccounts
 
@@ -75,9 +73,7 @@ class IamRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._projects_serviceaccounts_keys:
             self._projects_serviceaccounts_keys = self._init_repository(
-                _IamProjectsServiceAccountsKeysRepository,
-                self.gcp_services['v1'],
-                self._projects_serviceaccounts_keys)
+                _IamProjectsServiceAccountsKeysRepository)
 
         return self._projects_serviceaccounts_keys
 
@@ -88,22 +84,15 @@ class _IamProjectsServiceAccountsRepository(
         _base_repository.ListQueryMixin):
     """Implementation of Iam Projects ServiceAccounts repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-            gcp_service (object): A GCE service object built using the Google
-                discovery API.
-            credentials (object): GoogleCredentials.
-            rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_IamProjectsServiceAccountsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            component='projects.serviceAccounts',
-            key_field='name',
-            max_results_field='pageSize',
-            rate_limiter=rate_limiter)
+            key_field='name', max_results_field='pageSize',
+            component='projects.serviceAccounts', **kwargs)
 
     def get_iam_policy(self, resource, fields=None, **kwargs):
         """Get Service Account IAM Policy.
@@ -141,21 +130,15 @@ class _IamProjectsServiceAccountsKeysRepository(
         _base_repository.ListQueryMixin):
     """Implementation of Iam Projects ServiceAccounts Keys repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-            gcp_service (object): A GCE service object built using the Google
-                discovery API.
-            credentials (object): GoogleCredentials.
-            rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_IamProjectsServiceAccountsKeysRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            component='projects.serviceAccounts.keys',
-            key_field='name',
-            rate_limiter=rate_limiter)
+            key_field='name', component='projects.serviceAccounts.keys',
+            **kwargs)
 
 
 class IAMClient(object):

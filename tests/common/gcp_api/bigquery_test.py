@@ -30,12 +30,13 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 class BigqueryTestCase(ForsetiTestCase):
     """Test the Bigquery API Client."""
 
+    @classmethod
     @mock.patch.object(client, 'GoogleCredentials', spec=True)
-    def setUp(self, mock_google_credential):
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
             'max_bigquery_api_calls_per_100_seconds': 1000000}
-        self.bq_api_client = bq.BigQueryClient(
+        cls.bq_api_client = bq.BigQueryClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
 
     @mock.patch.object(client, 'GoogleCredentials')

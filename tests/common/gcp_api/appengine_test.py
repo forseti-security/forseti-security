@@ -28,13 +28,14 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 class AppEngineTest(ForsetiTestCase):
     """Test the AppEngine client."""
 
+    @classmethod
     @mock.patch.object(client, 'GoogleCredentials', spec=True)
-    def setUp(self, mock_google_credential):
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
             'max_appengine_api_calls_per_second': 20}
-        self.ae_api_client = ae.AppEngineClient(fake_global_configs,
-                                                use_rate_limiter=False)
+        cls.ae_api_client = ae.AppEngineClient(fake_global_configs,
+                                               use_rate_limiter=False)
 
     @mock.patch.object(client, 'GoogleCredentials')
     def test_no_quota(self, mock_google_credential):

@@ -60,9 +60,7 @@ class BigQueryRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._projects:
             self._projects = self._init_repository(
-                _BigQueryProjectsRepository,
-                self.gcp_services['v2'],
-                self._projects)
+                _BigQueryProjectsRepository)
 
         return self._projects
 
@@ -75,9 +73,7 @@ class BigQueryRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._datasets:
             self._datasets = self._init_repository(
-                _BigQueryDatasetsRepository,
-                self.gcp_services['v2'],
-                self._datasets)
+                _BigQueryDatasetsRepository)
 
         return self._datasets
 
@@ -87,22 +83,14 @@ class _BigQueryProjectsRepository(
         _base_repository.ListQueryMixin):
     """Implementation of Big Query Projects repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_BigQueryProjectsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            key_field='',
-            component='projects',
-            entity='',
-            rate_limiter=rate_limiter)
+            key_field='', entity='', component='projects', **kwargs)
 
 
 class _BigQueryDatasetsRepository(
@@ -111,29 +99,21 @@ class _BigQueryDatasetsRepository(
         _base_repository.ListQueryMixin):
     """Implementation of Big Query Datasets repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_BigQueryDatasetsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            key_field='projectId',
-            component='datasets',
-            entity='datasetId',
-            rate_limiter=rate_limiter)
+            key_field='projectId', entity='datasetId', component='datasets',
+            **kwargs)
 
 
 class BigQueryClient(object):
     """BigQuery Client manager."""
 
-    # TODO: Remove pylint disable.
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100.0  # pylint: disable=invalid-name
+    DEFAULT_QUOTA_PERIOD = 100.0
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -145,7 +125,7 @@ class BigQueryClient(object):
         max_calls = global_configs.get('max_bigquery_api_calls_per_100_seconds')
         self.repository = BigQueryRepository(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
+            quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_bigquery_projectids(self):

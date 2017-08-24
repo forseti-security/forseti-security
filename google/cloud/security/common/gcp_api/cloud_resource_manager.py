@@ -63,9 +63,7 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._projects:
             self._projects = self._init_repository(
-                _ResourceManagerProjectsRepository,
-                self.gcp_services['v1'],
-                self._projects)
+                _ResourceManagerProjectsRepository)
 
         return self._projects
 
@@ -78,9 +76,7 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._organizations:
             self._organizations = self._init_repository(
-                _ResourceManagerOrganizationsRepository,
-                self.gcp_services['v1'],
-                self._organizations)
+                _ResourceManagerOrganizationsRepository)
 
         return self._organizations
 
@@ -93,9 +89,7 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._folders:
             self._folders = self._init_repository(
-                _ResourceManagerFoldersRepository,
-                self.gcp_services['v2'],
-                self._folders)
+                _ResourceManagerFoldersRepository, version='v2')
 
         return self._folders
 
@@ -106,22 +100,14 @@ class _ResourceManagerProjectsRepository(
         _base_repository.GetIamPolicyQueryMixin):
     """Implementation of Cloud Resource Manager Projects repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerProjectsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            component='projects',
-            entity='',
-            key_field='projectId',
-            rate_limiter=rate_limiter)
+            key_field='projectId', entity='', component='projects', **kwargs)
 
     def get_ancestry(self, project, fields=None):
         """Get the project ancestory data.
@@ -171,21 +157,14 @@ class _ResourceManagerOrganizationsRepository(
         _base_repository.GetIamPolicyQueryMixin):
     """Implementation of Cloud Resource Manager Organizations repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerOrganizationsRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            component='organizations',
-            entity='',
-            rate_limiter=rate_limiter)
+            component='organizations', **kwargs)
 
     def get(self, organization_id, fields=None):
         """Get the organization resource data.
@@ -229,24 +208,18 @@ class _ResourceManagerOrganizationsRepository(
 
 class _ResourceManagerFoldersRepository(
         _base_repository.GCPRepository,
-        _base_repository.GetIamPolicyQueryMixin):
+        _base_repository.GetIamPolicyQueryMixin,
+        _base_repository.ListQueryMixin):
     """Implementation of Cloud Resource Manager Folders repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerFoldersRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            component='folders',
-            entity='',
-            rate_limiter=rate_limiter)
+            key_field='parent', component='folders', **kwargs)
 
     def get(self, folder_id, fields=None):
         """Get the project resource data.
@@ -265,22 +238,6 @@ class _ResourceManagerFoldersRepository(
             verb='get',
             verb_arguments={'name': folder_id, 'fields': fields}
         )
-
-    def list(self, parent, fields=None):
-        """List folders under a parent resource.
-
-        Args:
-          parent (str): The organization id or folder id to list children of,
-              they must be prefixed with 'organizations/' or 'folders/'.
-          fields (str): Fields to include in the response - partial response.
-
-        Yields:
-          dict: Response from the API.
-        """
-        for resp in self.execute_paged_query(
-                verb='list',
-                verb_arguments={'parent': parent, 'fields': fields}):
-            yield resp
 
     def search(self, query=None, fields=None):
         """Get all folders the caller has access to based on query.

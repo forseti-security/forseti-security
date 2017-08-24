@@ -60,9 +60,7 @@ class CloudSqlRepository(_base_repository.BaseRepositoryClient):
         """
         if not self._instances:
             self._instances = self._init_repository(
-                _CloudSqlInstancesRepository,
-                self.gcp_services['v1beta4'],
-                self._instances)
+                _CloudSqlInstancesRepository)
 
         return self._instances
 
@@ -72,20 +70,14 @@ class _CloudSqlInstancesRepository(
         _base_repository.ListQueryMixin):
     """Implementation of CloudSql Instances repository."""
 
-    def __init__(self, gcp_service, credentials, rate_limiter):
+    def __init__(self, **kwargs):
         """Constructor.
 
         Args:
-          gcp_service (object): A GCE service object built using the Google
-              discovery API.
-          credentials (object): GoogleCredentials.
-          rate_limiter (object): A rate limiter instance.
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_CloudSqlInstancesRepository, self).__init__(
-            gcp_service=gcp_service,
-            credentials=credentials,
-            component='instances',
-            rate_limiter=rate_limiter)
+            component='instances', **kwargs)
 
 
 class CloudsqlClient(object):

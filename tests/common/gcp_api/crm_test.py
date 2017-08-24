@@ -33,15 +33,16 @@ from google.cloud.security.common.gcp_type.resource import LifecycleState
 class CloudResourceManagerTest(ForsetiTestCase):
     """Test the Cloud Resource Manager API Client."""
 
+    @classmethod
     @mock.patch.object(client, 'GoogleCredentials', spec=True)
-    def setUp(self, mock_google_credential):
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
             'max_crm_api_calls_per_100_seconds': 1000000}
-        self.crm_api_client = crm.CloudResourceManagerClient(
+        cls.crm_api_client = crm.CloudResourceManagerClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
 
-        self.project_id = fake_crm_responses.FAKE_PROJECT_ID
+        cls.project_id = fake_crm_responses.FAKE_PROJECT_ID
 
     @mock.patch.object(client, 'GoogleCredentials')
     def test_no_quota(self, mock_google_credential):
