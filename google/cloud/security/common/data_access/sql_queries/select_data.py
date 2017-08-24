@@ -154,15 +154,14 @@ BUCKETS = """
     FROM buckets_{0};
 """
 
-BUCKETS_BY_PROJECT_ID = """
-    SELECT bucket_id
-    FROM buckets_{0}
-    WHERE project_number = {1};
+RAW_BUCKETS = """
+    SELECT bucket_id, raw_bucket FROM buckets_{0}
 """
 
-SELECT_STORAGE_OBJECTS = """
-    SELECT project_number, bucket_id, object_name, raw
-    FROM storage_objects_{0};
+BUCKETS_BY_PROJECT_ID = """
+    SELECT bucket_name
+    FROM buckets_{0}
+    WHERE project_number = %s;
 """
 
 # TODO: reduce these sql to a generic statement
@@ -197,6 +196,11 @@ SELECT_FORWARDING_RULE_VIOLATION = """
 
 SELECT_GROUPS_VIOLATIONS = """
     SELECT * FROM groups_violations_{0};
+"""
+
+SELECT_INSTANCE_NETWORK_INTERFACE_VIOLATIONS = """
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'INSTANCE_NETWORK_INTERFACE_VIOLATION';
 """
 
 BACKEND_SERVICES = """
@@ -277,4 +281,9 @@ APPENGINE_APPS = """
     location_id, code_bucket, default_cookie_expiration, serving_status,
     default_hostname, default_bucket, iap, gcr_domain, raw_application
     FROM appengine_{0}
+"""
+
+SERVICE_ACCOUNTS = """
+    SELECT project_id, name, email, oauth2_client_id, account_keys, raw_service_account
+    FROM service_accounts_{0}
 """
