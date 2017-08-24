@@ -36,7 +36,6 @@ def get_bucket_and_path_from(full_path):
     Return:
         tuple: The bucket name and object path.
     """
-
     if not full_path or not full_path.startswith('gs://'):
         raise api_errors.InvalidBucketPathError(
             'Invalid bucket path: {}'.format(full_path))
@@ -59,7 +58,6 @@ class StorageClient(_base_client.BaseClient):
             credentials (GoogleCredentials): Google credentials for auth-ing
                 to the API.
         """
-
         super(StorageClient, self).__init__(
             global_configs, credentials=credentials, api_name=self.API_NAME)
         # Storage API has unlimited rate.
@@ -71,7 +69,6 @@ class StorageClient(_base_client.BaseClient):
             local_file_path (str): The local path of the file to upload.
             full_bucket_path (str): The full GCS path for the output.
         """
-
         storage_service = self.service
         bucket, object_path = get_bucket_and_path_from(
             full_bucket_path)
@@ -100,7 +97,6 @@ class StorageClient(_base_client.BaseClient):
             HttpError: HttpError is raised if the call to the
                 GCP storage API fails
         """
-
         file_content = ''
         storage_service = self.service
         bucket, object_path = get_bucket_and_path_from(
@@ -143,43 +139,16 @@ class StorageClient(_base_client.BaseClient):
             ApiExecutionError: ApiExecutionError is raised if the call to the
                 GCP ClodSQL API fails
         """
-
         buckets_api = self.service.buckets()
         try:
-            buckets_request = buckets_api.list(project=project_id)
+            buckets_request = buckets_api.list(project=project_id,
+                                               projection='full')
             buckets = buckets_request.execute()
             return buckets
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
             # TODO: pass in "buckets" as resource_name variable
             raise api_errors.ApiExecutionError('buckets', e)
-
-    def get_object_acls(self, bucket_name, object_name):
-        """Gets acls for GCS objects.
-
-        Args:
-            bucket_name (str): The name of the bucket.
-            object_name (str): The name of the object.
-
-        Returns:
-            dict: ACL json for bucket
-
-        Raises:
-            ApiExecutionError: ApiExecutionError is raised if the call to the
-                GCP ClodSQL API fails
-        """
-
-        bucket_access_controls_api = self.service.objectAccessControls()
-        bucket_acl_request = bucket_access_controls_api.list(
-            bucket=bucket_name, object=object_name)
-
-        try:
-            return bucket_acl_request.execute()
-        except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
-            # TODO: pass in "buckets" as resource_name variable
-            raise api_errors.ApiExecutionError('buckets', e)
-
 
     def get_bucket_acls(self, bucket_name):
         """Gets acls for GCS bucket.
@@ -194,88 +163,11 @@ class StorageClient(_base_client.BaseClient):
             ApiExecutionError: ApiExecutionError is raised if the call to the
                 GCP ClodSQL API fails
         """
-
         bucket_access_controls_api = self.service.bucketAccessControls()
-        bucket_acl_request = bucket_access_controls_api.list(
-            bucket=bucket_name)
-
+        bucket_acl_request = bucket_access_controls_api.list(bucket=bucket_name)
         try:
             return bucket_acl_request.execute()
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
             # TODO: pass in "buckets" as resource_name variable
-            raise api_errors.ApiExecutionError('buckets', e)
-
-    def get_objects(self, bucket_name):
-        """Fetches objects contained in a GCS bucket.
-
-        Args:
-            bucket_name (str): The name of the bucket.
-
-        Yields:
-            dict: generator of GCS objects.
-        """
-
-        api = self.service.objects()
-        next_token = ''
-        while True:
-            api_call = api.list(bucket=bucket_name,
-                                pageToken=next_token)
-
-            try:
-                result = api_call.execute()
-            except (errors.HttpError, HttpLib2Error) as e:
-                LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
-                # TODO: pass in "buckets" as resource_name variable
-                raise api_errors.ApiExecutionError('objects', e)
-
-            # Does the result have any objects listed?
-            if 'items' not in result:
-                break
-
-            # Yield objects
-            for item in result['items']:
-                yield item
-
-            # Are we finished?
-            if 'nextPageToken' not in result:
-                break
-            next_token = result['nextPageToken']
-
-    def get_object_iam_policy(self, bucket_name, object_name):
-        """Returns the IAM policy attached to a GCS objects.
-
-        Args:
-            bucket_name (str): The name of the bucket.
-            object_name (str): The name of the object.
-
-        Returns:
-            dict: IAM policy data.
-        """
-
-        api = self.service.objects()
-        api_call = api.getIamPolicy(bucket=bucket_name, object=object_name)
-        try:
-            return api_call.execute()
-        except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(object_name, e))
-            raise api_errors.ApiExecutionError('objects', e)
-
-    def get_bucket_iam_policy(self, bucket_id):
-        """Returns the IAM policy attached to a GCS buckets.
-
-        Args:
-            bucket_id (str): The id of the bucket.
-
-        Returns:
-            dict: IAM policy data.
-        """
-
-        api = self.service.buckets()
-        api_call = api.getIamPolicy(bucket=bucket_id)
-
-        try:
-            return api_call.execute()
-        except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.error(api_errors.ApiExecutionError(bucket_id, e))
             raise api_errors.ApiExecutionError('buckets', e)

@@ -163,8 +163,12 @@ class PipelineBuilder(object):
                     .get('module_name')
                     .title()
                     .replace('_', ''))
-
-                pipeline_class = getattr(module, class_name)
+                try:
+                    pipeline_class = getattr(module, class_name)
+                except AttributeError:
+                    LOGGER.error('Unable to instantiate %s\n%s',
+                                 class_name, sys.exc_info()[0])
+                    continue
 
                 api_name = (pipeline_requirements_map.REQUIREMENTS_MAP
                             .get(node.resource_name)
@@ -218,7 +222,7 @@ class PipelineBuilder(object):
         for entry in configured_pipelines:
             parent_name = (
                 pipeline_requirements_map.REQUIREMENTS_MAP.get(
-                    entry.get('resource')).get('depends_on'))
+                    entry.get('resource'), {}).get('depends_on'))
             if parent_name is not None:
                 parent_node = map_of_all_pipeline_nodes[parent_name]
                 map_of_all_pipeline_nodes[entry.get('resource')].parent = (

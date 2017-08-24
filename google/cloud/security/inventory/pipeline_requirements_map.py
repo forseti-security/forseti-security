@@ -40,11 +40,6 @@ REQUIREMENTS_MAP = {
          'depends_on': 'buckets',
          'api_name': 'gcs_api',
          'dao_name': 'bucket_dao'},
-    'bucket_iam_policies':
-        {'module_name': 'load_storage_buckets_iam_policies_pipeline',
-         'depends_on': 'buckets',
-         'api_name': 'gcs_api',
-         'dao_name': 'bucket_dao'},
     'cloudsql':
         {'module_name': 'load_projects_cloudsql_pipeline',
          'depends_on': 'projects',
@@ -120,14 +115,9 @@ REQUIREMENTS_MAP = {
          'depends_on': 'projects',
          'api_name': 'crm_api',
          'dao_name': 'project_dao'},
-    'storage_objects':
-        {'module_name': 'load_storage_objects_pipeline',
-         'depends_on': 'buckets',
-         'api_name': 'gcs_api',
-         'dao_name': 'bucket_dao'},
-    'storage_objects_iam_policies':
-        {'module_name': 'load_storage_objects_iam_policies_pipeline',
-         'depends_on': 'storage_objects',
-         'api_name': 'gcs_api',
-         'dao_name': 'bucket_dao'},
+    'service_accounts':
+        {'module_name': 'load_service_accounts_pipeline',
+         'depends_on': 'projects',
+         'api_name': 'iam_api',
+         'dao_name': 'service_account_dao'},
 }

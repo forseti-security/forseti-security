@@ -51,9 +51,9 @@ EXPECTED_LOADABLE_BUCKETS = [{
 ]
 
 FAKE_BUCKET_ACL_MAP = [{
-     'bucket_name': 'fakebucket1',
-     'acl': {
-          'items': [{
+    'bucket_name': 'fakebucket1',
+    'acl': [
+        {
             'kind': 'storage#bucketAccessControl', 
             'bucket': 'fakebucket1', 
             'entity': 'project-owners-11111', 
@@ -65,8 +65,8 @@ FAKE_BUCKET_ACL_MAP = [{
                 }, 
             'id': 'fakebucket1/project-owners-11111', 
             'selfLink': 'https://www.googleapis.com/storage/v1/b/fakebucket1/acl/project-owners-11111'
-            },
-            {
+        },
+        {
             'kind': 'storage#bucketAccessControl', 
             'bucket': 'fakebucket1', 
             'entity': 'project-readers-11111', 
@@ -77,9 +77,8 @@ FAKE_BUCKET_ACL_MAP = [{
                 'team': 'readers'}, 
                 'id': 'fakebucket1/project-readers-11111', 
                 'selfLink': 'https://www.googleapis.com/storage/v1/b/fakebucket1/acl/project-readers-11111'
-            }
-          ]
-     }
+        }
+    ]
 }]
 
 EXPECTED_LOADABLE_BUCKET_ACLS = [{
@@ -108,3 +107,42 @@ EXPECTED_LOADABLE_BUCKET_ACLS = [{
       'raw_bucket_acl': '{"kind": "storage#bucketAccessControl", "etag": "CAE=", "role": "READER", "projectTeam": {"projectNumber": "11111", "team": "readers"}, "bucket": "fakebucket1", "id": "fakebucket1/project-readers-11111", "selfLink": "https://www.googleapis.com/storage/v1/b/fakebucket1/acl/project-readers-11111", "entity": "project-readers-11111"}',
       'role': 'READER'
 }]
+
+FAKE_RAW_BUCKET_ROW = [
+    {
+        'bucket_id': 'bucket1',
+        'raw_bucket': """{
+            "acl": [
+                {"id": "bucket1/project-readers-1",
+                 "role": "READER",
+                 "bucket": "bucket1",
+                 "domain": "",
+                 "email": "",
+                 "entity": "",
+                 "entityId": "",
+                 "kind": "",
+                 "projectTeam": []
+                }
+            ],
+            "id": "bucket1"
+        }"""
+    }
+]
+
+EXPECTED_RAW_BUCKET_JSON = [
+    {
+        'bucket_name': 'bucket1',
+        'acl': [
+            {'id': 'bucket1/project-readers-1',
+             'role': 'READER',
+             'bucket': 'bucket1',
+             'domain': '',
+             'email': '',
+             'entity': '',
+             'entityId': '',
+             'kind': '',
+             'projectTeam': [],
+            }
+        ]
+    }
+]

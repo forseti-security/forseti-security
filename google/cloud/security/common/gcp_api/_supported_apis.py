@@ -19,6 +19,9 @@ discovery.get()).
 """
 
 SUPPORTED_APIS = {
+    'admin': {
+        'version': 'directory_v1'
+    },
     'appengine': {
         'version': 'v1'
     },
@@ -31,16 +34,13 @@ SUPPORTED_APIS = {
     'compute': {
         'version': 'v1'
     },
-    'storage': {
+    'iam': {
         'version': 'v1'
-    },
-    'admin': {
-        'version': 'directory_v1'
     },
     'sqladmin': {
         'version': 'v1beta4'
     },
-    'iam': {
+    'storage': {
         'version': 'v1'
-    },
+    }
 }

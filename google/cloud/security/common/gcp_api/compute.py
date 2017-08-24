@@ -155,27 +155,43 @@ class ComputeClient(_base_client.BaseClient):
         return self._flatten_aggregated_list_results(
             paged_results, 'instances')
 
-    def get_instance_group_instances(self, project_id, zone,
-                                     instance_group_name):
+    def get_instance_group_instances(self, project_id, instance_group_name,
+                                     region=None, zone=None):
         """Get the instance groups for a project.
+
+        One and only one of zone (for zonal instance groups) and region
+        (for regional instance groups) must be specified.
 
         Args:
             project_id (str): The project id.
-            zone (str): The instance group's zone.
             instance_group_name (str): The instance group's name.
+            zone (str): The zonal instance group's zone.
+            region (str): The regional instance group's region.
 
         Return:
             list: instance URLs for this instance group.
 
-        Raise:
+        Raises:
             api_errors.ApiExecutionError: if API raises an error.
+            ValueError: invalid combination of parameters
         """
-        instance_groups_api = self.service.instanceGroups()
-        list_request = instance_groups_api.listInstances(
-            project=project_id,
-            zone=zone,
-            instanceGroup=instance_group_name,
-            body={'instanceState': 'ALL'})
+        if not bool(zone) ^ bool(region):
+            raise ValueError('One and only one of zone and region must be '
+                             'specified.')
+        if zone:
+            instance_groups_api = self.service.instanceGroups()
+            list_request = instance_groups_api.listInstances(
+                project=project_id,
+                zone=zone,
+                instanceGroup=instance_group_name,
+                body={'instanceState': 'ALL'})
+        else:
+            instance_groups_api = self.service.regionInstanceGroups()
+            list_request = instance_groups_api.listInstances(
+                project=project_id,
+                region=region,
+                instanceGroup=instance_group_name,
+                body={'instanceState': 'ALL'})
         list_next_request = instance_groups_api.listInstances_next
 
         paged_results = self._build_paged_result(
@@ -214,9 +230,10 @@ class ComputeClient(_base_client.BaseClient):
         for instance_group in instance_groups:
             instance_group['instance_urls'] = self.get_instance_group_instances(
                 project_id,
-                # Turn a zone URL into a zone name
-                os.path.basename(instance_group.get('zone')),
-                instance_group.get('name'))
+                instance_group.get('name'),
+                # Turn zone and region URLs into a names
+                zone=os.path.basename(instance_group.get('zone', '')),
+                region=os.path.basename(instance_group.get('region', '')))
         return instance_groups
 
     def get_instance_templates(self, project_id):
