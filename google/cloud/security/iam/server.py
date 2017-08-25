@@ -14,6 +14,7 @@
 
 """ IAM Explain server program. """
 
+from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import ThreadPool
 import time
 from concurrent import futures
@@ -26,6 +27,11 @@ from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
 from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
 
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc,too-many-instance-attributes
+
+
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
     'playground': GrpcPlaygrounderFactory,
@@ -33,11 +39,77 @@ STATIC_SERVICE_MAPPING = {
 }
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc,too-many-instance-attributes
+class AbstractServiceConfig(object):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def get_organization_id(self):
+        """Get the organization id.
+
+        Returns:
+            str: The configure organization id.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_gsuite_sa_path(self):
+        """Get path to gsuite service account.
+
+        Returns:
+            str: Gsuite admin service account path.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_gsuite_admin_email(self):
+        """Get the gsuite admin email.
+
+        Returns:
+            str: Gsuite admin email address to impersonate.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_engine(self):
+        """Get the database engine.
+
+        Returns:
+            object: Database engine object.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def scoped_session(self):
+        """Get a scoped session.
+
+        Returns:
+            object: A scoped session.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def client(self):
+        """Get an API client.
+
+        Returns:
+            object: API client to use against services.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def run_in_background(self, function):
+        """Runs a function in a thread pool in the background."""
+
+        raise NotImplementedError()
 
 
-class ServiceConfig(object):
+class ServiceConfig(AbstractServiceConfig):
     """Implements composed dependency injection to IAM Explain services."""
 
     def __init__(self,
@@ -48,6 +120,7 @@ class ServiceConfig(object):
                  gsuite_admin_email,
                  organization_id):
 
+        super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
         self.engine = create_engine(explain_connect_string, pool_recycle=3600)
         self.model_manager = ModelManager(self.engine)

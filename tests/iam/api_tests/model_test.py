@@ -18,6 +18,7 @@ import unittest
 
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
+from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
 from google.cloud.security.iam.dao import ModelManager
 
 from tests.iam.api_tests.api_tester import ModelTestRunner, create_test_engine
@@ -85,7 +86,8 @@ def create_tester():
     return ModelTestRunner(MODEL,
                            TestServiceConfig(),
                            [GrpcExplainerFactory,
-                            GrpcPlaygrounderFactory])
+                            GrpcPlaygrounderFactory,
+                            GrpcInventoryFactory])
 
 
 class ModelTest(ForsetiTestCase):
