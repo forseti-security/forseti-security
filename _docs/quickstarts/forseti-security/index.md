@@ -38,13 +38,8 @@ It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) t
   1. Once you've started Cloud Shell, download Forseti. The setup wizard is included:
   
       ```bash
-      git clone https://github.com/GoogleCloudPlatform/forseti-security
-      ```
-      
-      To install the latest release:
-      
-      ```
-      git checkout master
+      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security
+
       ```
 
   1. Navigate to the setup wizard directory:
@@ -76,7 +71,6 @@ It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) t
 
   1. After the setup wizard successfully completes Forseti setup and deployment, 
      complete the steps to [enable G Suite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %}). This is a **required** step if you also plan to deploy IAM Explain.
-
 
 ## What's next
 
