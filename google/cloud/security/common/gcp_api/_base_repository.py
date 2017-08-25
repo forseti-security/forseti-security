@@ -560,11 +560,11 @@ class ListQueryMixin(object):
         if kwargs:
             arguments.update(kwargs)
 
-        try:
+        if self._request_supports_pagination(verb):
             for resp in self.execute_paged_query(verb=verb,
                                                  verb_arguments=arguments):
                 yield resp
-        except api_errors.PaginationNotSupportedError:
+        else:
             # Some API list() methods are not actually paginated.
             del arguments[self._max_results_field]
             yield self.execute_query(verb=verb, verb_arguments=arguments)
