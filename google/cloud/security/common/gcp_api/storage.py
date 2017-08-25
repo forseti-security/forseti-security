@@ -243,14 +243,15 @@ class _StorageObjectsRepository(
 class StorageClient(object):
     """Storage Client."""
 
-    def __init__(self, global_configs, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Initialize.
 
         Args:
-            global_configs (dict): Global configurations
+            *args (dict): Default args passed to all API Clients, not used by
+                the StorageClient.
             **kwargs (dict): The kwargs.
         """
-        del global_configs, kwargs
+        del args, kwargs
         # Storage API has unlimited rate.
         self.repository = StorageRepositoryClient(
             quota_max_calls=0,
