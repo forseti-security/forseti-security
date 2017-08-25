@@ -15,31 +15,28 @@
 """ Unit Tests: Inventory storage for IAM Explain. """
 
 import unittest
-
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.iam.inventory.storage import Storage
+from sqlalchemy import event
 
+from google.cloud.security.iam.inventory.storage import Storage, initialize
+from google.cloud.security.iam import db
+from google.cloud.security.inventory2.resources import Resource
+from tests.iam.api_tests.api_tester import create_test_engine
 
-class ResourceMock:
-    def __init__(self, key, data, res_type):
+class ResourceMock(Resource):
+    def __init__(self, key, data, res_type, parent=None):
         self._key = key
         self._data = data
         self._res_type = res_type
-
+        self._parent = parent if parent else self
     def type(self):
         return self._res_type
 
     def key(self):
         return self._key
 
-    def data(self):
-        return self._data
-
-    def getIamPolicy(self):
-        return {}
-
-    def getGCSPolicy(self):
-        return {}
+    def parent(self):
+        return self._parent
 
 
 class StorageTest(ForsetiTestCase):
@@ -55,51 +52,69 @@ class StorageTest(ForsetiTestCase):
 
     def reduced_inventory(self, storage, types):
         result = (
-            [x for x in storage.iterinventory(types)])
+            [x for x in storage.iter(types)])
         return result
 
     def test_basic(self):
         """Test storing a few resources, then iterate."""
-        MEMORY_DB = 'sqlite:///:memory:'
+        engine = create_test_engine()
+        @event.listens_for(engine, "connect")
+        def do_connect(dbapi_connection, connection_record):
+            dbapi_connection.isolation_level = None
+        
+        @event.listens_for(engine, "begin")
+        def do_begin(conn):
+            conn.execute("BEGIN")
 
+        initialize(engine)
+        sessionmaker = db.create_scoped_sessionmaker(engine)
+
+        res_org = ResourceMock('1', {'id': 'test'}, 'organization')
+        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', res_org)
+        res_buc1 = ResourceMock('3', {'id': 'test'}, 'bucket', res_proj1)
+        res_proj2 = ResourceMock('4', {'id': 'test'}, 'project', res_org)
+        res_buc2 = ResourceMock('5', {'id': 'test'}, 'bucket', res_proj2)
+        res_obj2 = ResourceMock('6', {'id': 'test'}, 'object', res_buc2)
+        
         resources = [
-                ResourceMock('1', {'id': 'test'}, 'organization'),
-                ResourceMock('2', {'id': 'test'}, 'project'),
-                ResourceMock('3', {'id': 'test'}, 'bucket'),
-                ResourceMock('4', {'id': 'test'}, 'project'),
-                ResourceMock('5', {'id': 'test'}, 'bucket'),
-                ResourceMock('6', {'id': 'test'}, 'object'),
+                res_org,
+                res_proj1,
+                res_buc1,
+                res_proj2,
+                res_buc2,
+                res_obj2
             ]
 
-        with Storage(MEMORY_DB) as storage:
+        with sessionmaker() as session:
+            with Storage(session) as storage:
+                for resource in resources:
+                    storage.write(resource)
+                storage.commit()
+    
+                self.assertEqual(3,
+                                 len(self.reduced_inventory(
+                                     storage,
+                                     ['organization', 'bucket'])),
+                                 'Only 1 organization and 2 buckets')
+    
+                self.assertEqual(6,
+                                 len(self.reduced_inventory(storage, [])),
+                                 'No types should yield empty list')
+
+        with sessionmaker() as session:
+            storage = Storage(session)
+            _ = storage.open()
             for resource in resources:
                 storage.write(resource)
-
             self.assertEqual(3,
                              len(self.reduced_inventory(
                                  storage,
                                  ['organization', 'bucket'])),
                              'Only 1 organization and 2 buckets')
-
+    
             self.assertEqual(6,
                              len(self.reduced_inventory(storage, [])),
                              'No types should yield empty list')
-
-        storage = Storage(MEMORY_DB)
-        _ = storage.open()
-        for resource in resources:
-            storage.write(resource)
-        self.assertEqual(3,
-                         len(self.reduced_inventory(
-                             storage,
-                             ['organization', 'bucket'])),
-                         'Only 1 organization and 2 buckets')
-
-        self.assertEqual(6,
-                         len(self.reduced_inventory(storage, [])),
-                         'No types should yield empty list')
-
-        storage.close()
 
 
 if __name__ == '__main__':
