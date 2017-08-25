@@ -20,7 +20,7 @@ from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
-class AppEngineRepository(_base_repository.BaseRepositoryClient):
+class AppEngineRepositoryClient(_base_repository.BaseRepositoryClient):
     """AppEngine API Respository."""
 
     def __init__(self,
@@ -41,7 +41,7 @@ class AppEngineRepository(_base_repository.BaseRepositoryClient):
 
         self._apps = None
 
-        super(AppEngineRepository, self).__init__(
+        super(AppEngineRepositoryClient, self).__init__(
             'appengine', versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -90,7 +90,7 @@ class AppEngineClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls = global_configs.get('max_appengine_api_calls_per_second')
-        self.repository = AppEngineRepository(
+        self.repository = AppEngineRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))

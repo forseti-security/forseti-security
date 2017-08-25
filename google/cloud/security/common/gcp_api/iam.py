@@ -23,7 +23,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class IamRepository(_base_repository.BaseRepositoryClient):
+class IamRepositoryClient(_base_repository.BaseRepositoryClient):
     """IAM API Respository."""
 
     def __init__(self,
@@ -45,7 +45,7 @@ class IamRepository(_base_repository.BaseRepositoryClient):
         self._projects_serviceaccounts = None
         self._projects_serviceaccounts_keys = None
 
-        super(IamRepository, self).__init__(
+        super(IamRepositoryClient, self).__init__(
             'iam', versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -154,7 +154,7 @@ class IAMClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls = global_configs.get('max_iam_api_calls_per_second')
-        self.repository = IamRepository(
+        self.repository = IamRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))

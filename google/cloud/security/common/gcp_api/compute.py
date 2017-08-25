@@ -127,7 +127,7 @@ def _flatten_list_results(project_id, paged_results, item_key):
 
 
 # pylint: disable=too-many-instance-attributes
-class ComputeRepository(_base_repository.BaseRepositoryClient):
+class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
     """Compute API Respository."""
 
     def __init__(self,
@@ -155,7 +155,7 @@ class ComputeRepository(_base_repository.BaseRepositoryClient):
         self._instance_templates = None
         self._region_instance_groups = None
 
-        super(ComputeRepository, self).__init__(
+        super(ComputeRepositoryClient, self).__init__(
             'compute', versions=['beta', 'v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -450,7 +450,7 @@ class ComputeClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls = global_configs.get('max_compute_api_calls_per_second')
-        self.repository = ComputeRepository(
+        self.repository = ComputeRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))

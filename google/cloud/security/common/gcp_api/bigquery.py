@@ -23,7 +23,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class BigQueryRepository(_base_repository.BaseRepositoryClient):
+class BigQueryRepositoryClient(_base_repository.BaseRepositoryClient):
     """Big Query API Respository."""
 
     def __init__(self,
@@ -45,7 +45,7 @@ class BigQueryRepository(_base_repository.BaseRepositoryClient):
         self._projects = None
         self._datasets = None
 
-        super(BigQueryRepository, self).__init__(
+        super(BigQueryRepositoryClient, self).__init__(
             'bigquery', versions=['v2'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -85,7 +85,7 @@ class _BigQueryProjectsRepository(
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_BigQueryProjectsRepository, self).__init__(
-            key_field='', entity='', component='projects', **kwargs)
+            key_field=None, component='projects', **kwargs)
 
 
 class _BigQueryDatasetsRepository(
@@ -101,8 +101,8 @@ class _BigQueryDatasetsRepository(
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_BigQueryDatasetsRepository, self).__init__(
-            key_field='projectId', entity='datasetId', component='datasets',
-            **kwargs)
+            key_field='projectId', entity_field='datasetId',
+            component='datasets', **kwargs)
 
 
 class BigQueryClient(object):
@@ -118,7 +118,7 @@ class BigQueryClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls = global_configs.get('max_bigquery_api_calls_per_100_seconds')
-        self.repository = BigQueryRepository(
+        self.repository = BigQueryRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))

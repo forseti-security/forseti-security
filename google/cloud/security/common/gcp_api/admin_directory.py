@@ -23,8 +23,8 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class AdminDirectoryRepository(_base_repository.BaseRepositoryClient):
-    """Admin Directory API Respository."""
+class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
+    """Admin Directory API Respository Client."""
 
     def __init__(self,
                  credentials,
@@ -49,7 +49,7 @@ class AdminDirectoryRepository(_base_repository.BaseRepositoryClient):
         self._groups = None
         self._members = None
 
-        super(AdminDirectoryRepository, self).__init__(
+        super(AdminDirectoryRepositoryClient, self).__init__(
             'admin', versions=['directory_v1'],
             credentials=credentials,
             quota_max_calls=quota_max_calls,
@@ -137,7 +137,7 @@ class AdminDirectoryClient(object):
             global_configs.get('groups_service_account_key_file'),
             self.REQUIRED_SCOPES,
             global_configs.get('domain_super_admin_email'))
-        self.repository = AdminDirectoryRepository(
+        self.repository = AdminDirectoryRepositoryClient(
             credentials=credentials,
             quota_max_calls=max_calls,
             quota_period=quota_period,

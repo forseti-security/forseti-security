@@ -41,7 +41,6 @@ LOCAL_THREAD = threading.local()
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=bad-indentation, bad-continuation
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
        wait_exponential_multiplier=1000, wait_exponential_max=10000,
        stop_max_attempt_number=5)
@@ -301,9 +300,9 @@ class BaseRepositoryClient(object):
 class GCPRepository(object):
     """Base class for GCP APIs."""
 
-    def __init__(self, gcp_service, credentials, component, entity='',
+    def __init__(self, gcp_service, credentials, component,
                  num_retries=NUM_HTTP_RETRIES, key_field='project',
-                 list_key_field=None, get_key_field=None,
+                 entity_field=None, list_key_field=None, get_key_field=None,
                  max_results_field='maxResults', search_query_field='query',
                  rate_limiter=None):
         """Constructor.
@@ -315,12 +314,12 @@ class GCPRepository(object):
             component (str): The subcomponent of the gcp service for this
                 repository instance. E.g. 'instances' for compute.instances().*
                 APIs
-            entity (str): The API entity returned generally by the .get() api.
-                E.g. 'instance' for compute.instances().get()
             num_retries (int): The number of http retriable errors to retry on
                 before hard failing.
             key_field (str): The field name representing the project to
                 query in the API.
+            entity_field (str): The API entity returned generally by the .get()
+                api. E.g. 'instance' for compute.instances().get()
             list_key_field (str): Optional override of key field for calls to
                 list methods.
             get_key_field (str): Optional override of key field for calls to
@@ -339,7 +338,7 @@ class GCPRepository(object):
         for nested_component in components:
             self._component = getattr(
                 self._component, nested_component)()
-        self._entity = entity
+        self._entity_field = entity_field
         self._num_retries = num_retries
         if list_key_field:
             self._list_key_field = list_key_field
@@ -557,6 +556,9 @@ class ListQueryMixin(object):
         arguments = {'fields': fields,
                      self._max_results_field: max_results}
 
+        # Most APIs call list on a parent resource to list subresources of
+        # a specific type. For APIs that have no parent, set the list_key_field
+        # to None when initializing the GCPRespository instance.
         if self._list_key_field and resource:
             arguments[self._list_key_field] = resource
 
@@ -627,8 +629,13 @@ class GetQueryMixin(object):
 
         arguments = {self._get_key_field: resource,
                      'fields': fields}
-        if self._entity and target:
-            arguments[self._entity] = target
+
+        # Most APIs take both a resource and a target when calling get, but
+        # for APIs that the resource itself is the target, then setting
+        # 'entity' to None when initializing the GCPRepository instance will
+        # ensure the correct parameters are passed to the API method.
+        if self._entity_field and target:
+            arguments[self._entity_field] = target
         if kwargs:
             arguments.update(kwargs)
 

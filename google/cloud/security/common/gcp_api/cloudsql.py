@@ -23,7 +23,7 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class CloudSqlRepository(_base_repository.BaseRepositoryClient):
+class CloudSqlRepositoryClient(_base_repository.BaseRepositoryClient):
     """Cloud SQL Admin API Respository."""
 
     def __init__(self,
@@ -44,7 +44,7 @@ class CloudSqlRepository(_base_repository.BaseRepositoryClient):
 
         self._instances = None
 
-        super(CloudSqlRepository, self).__init__(
+        super(CloudSqlRepositoryClient, self).__init__(
             'sqladmin', versions=['v1beta4'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -91,7 +91,7 @@ class CloudsqlClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls = global_configs.get('max_sqladmin_api_calls_per_100_seconds')
-        self.repository = CloudSqlRepository(
+        self.repository = CloudSqlRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))

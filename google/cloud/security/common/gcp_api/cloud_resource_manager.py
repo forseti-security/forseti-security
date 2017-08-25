@@ -24,7 +24,8 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
+class CloudResourceManagerRepositoryClient(
+        _base_repository.BaseRepositoryClient):
     """Cloud Resource Manager Respository."""
 
     def __init__(self,
@@ -47,7 +48,7 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
         self._organizations = None
         self._folders = None
 
-        super(CloudResourceManagerRepository, self).__init__(
+        super(CloudResourceManagerRepositoryClient, self).__init__(
             'cloudresourcemanager', versions=['v1', 'v2'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -98,7 +99,7 @@ class _ResourceManagerProjectsRepository(
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerProjectsRepository, self).__init__(
-            get_key_field='projectId', list_key_field='', entity='',
+            get_key_field='projectId', list_key_field=None,
             max_results_field='pageSize', component='projects', **kwargs)
 
     def get_ancestry(self, resource, **kwargs):
@@ -196,7 +197,7 @@ class CloudResourceManagerClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls = global_configs.get('max_crm_api_calls_per_100_seconds')
-        self.repository = CloudResourceManagerRepository(
+        self.repository = CloudResourceManagerRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))

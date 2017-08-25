@@ -57,7 +57,7 @@ def get_bucket_and_path_from(full_path):
     return bucket_name, object_name
 
 
-class StorageRepository(_base_repository.BaseRepositoryClient):
+class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
     """Storage API Respository."""
 
     def __init__(self,
@@ -79,7 +79,7 @@ class StorageRepository(_base_repository.BaseRepositoryClient):
         self._objects = None
         self._buckets = None
 
-        super(StorageRepository, self).__init__(
+        super(StorageRepositoryClient, self).__init__(
             'storage', versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -246,7 +246,7 @@ class StorageClient(object):
         """
         del kwargs
         # Storage API has unlimited rate.
-        self.repository = StorageRepository(
+        self.repository = StorageRepositoryClient(
             quota_max_calls=0,
             use_rate_limiter=False)
 
