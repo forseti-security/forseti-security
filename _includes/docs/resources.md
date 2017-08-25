@@ -24,7 +24,8 @@ interested in isn't listed, please open an issue or contribute!
 | [GSuite Group Members](https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members) | Done | Done | TODO |
 | [IAM GrantableRoles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) | In Progress | TODO | TODO |
 | [Load Balancer Forwarding Rules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules#resource) | Done | Done | TODO |
-| [Organizations](https://cloud.google.com/resource-manager/reference/rest/v1beta1/organizations) | Done | N/A | TODO |
+| [Organizations](https://cloud.google.com/resource-manager/reference/rest/v1/organizations) | Done | N/A | TODO |
 | [Organizations Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) | Done | Done | TODO |
-| [Projects](https://cloud.google.com/resource-manager/reference/rest/v1beta1/projects) | Done | N/A | TODO |
+| [Projects](https://cloud.google.com/resource-manager/reference/rest/v1/projects) | Done | N/A | TODO |
 | [Projects Cloud IAM Policies](https://cloud.google.com/resource-manager/reference/rest/v1beta1/projects/getIamPolicy) | Done | Done | TODO |
+| [Service Accounts](https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts) | Done | TODO | TODO |
