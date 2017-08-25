@@ -18,22 +18,29 @@ import unittest
 
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
+from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
+from google.cloud.security.iam.server import AbstractServiceConfig
 from google.cloud.security.iam.dao import ModelManager
 
 from tests.iam.api_tests.api_tester import ApiTestRunner, create_test_engine, cleanup
+from tests.iam.utils.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
 
 
-class TestServiceConfig(object):
+class TestServiceConfig(MockServerConfig):
     """ServiceConfig Stub."""
     def __init__(self):
-        engine = create_test_engine()
-        self.model_manager = ModelManager(engine)
+        self.engine = create_test_engine()
+        self.model_manager = ModelManager(self.engine)
 
     def run_in_background(self, function):
         """Stub."""
         function()
         return self
+
+    def get_engine(self):
+        """Stub."""
+        return self.engine
 
 
 def create_tester():
@@ -41,7 +48,8 @@ def create_tester():
     return ApiTestRunner(
         TestServiceConfig(),
         [GrpcExplainerFactory,
-         GrpcPlaygrounderFactory])
+         GrpcPlaygrounderFactory,
+         GrpcInventoryFactory])
 
 
 class ApiTest(ForsetiTestCase):

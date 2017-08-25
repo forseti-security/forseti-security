@@ -19,6 +19,7 @@ import google.protobuf.timestamp_pb2 as timestamp
 from google.cloud.security.iam.inventory import inventory_pb2
 from google.cloud.security.iam.inventory import inventory_pb2_grpc
 from google.cloud.security.iam.inventory import inventory
+from google.cloud.security.iam.utils import autoclose_stream
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -26,7 +27,7 @@ from google.cloud.security.iam.inventory import inventory
 
 
 def inventory_pb_from_object(inventory_index):
-    """Convert internal inventory datastructure to protobuf."""
+    """Convert internal inventory data structure to protobuf."""
 
     return inventory_pb2.InventoryIndex(
         id=inventory_index.id,
@@ -61,6 +62,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
 
         return inventory_pb2.PingReply(data=request.data)
 
+    @autoclose_stream
     def Create(self, request, _):
         """Creates a new inventory.
 
@@ -83,6 +85,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 last_warning=repr(progress.last_warning),
                 last_error=repr(progress.last_error))
 
+    @autoclose_stream
     def List(self, request, _):
         """Lists existing inventory.
 

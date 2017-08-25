@@ -162,7 +162,8 @@ class EmptyImporter(object):
     def run(self):
         """Runs the import."""
 
-        self.model.set_done(self.session)
+        self.session.add(self.model)
+        self.model.set_done()
         self.session.commit()
 
 
