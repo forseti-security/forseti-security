@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Writes the csv files for upload to Cloud SQL."""
-
 from contextlib import contextmanager
 import csv
 import os
@@ -105,26 +104,6 @@ BUCKETS_FIELDNAMES = [
     'bucket_selflink',
     'bucket_lifecycle_raw',
     'raw_bucket'
-]
-
-BUCKET_IAM_POLICIES_FIELDNAMES = [
-    'project_number',
-    'bucket_id',
-    'raw',
-]
-
-STORAGE_OBJECTS_FIELDNAMES = [
-    'project_number',
-    'bucket_id',
-    'object_name',
-    'raw',
-]
-
-STORAGE_OBJECTS_POLICIES_FIELDNAMES = [
-    'project_number',
-    'bucket_id',
-    'object_name',
-    'raw',
 ]
 
 CLOUDSQL_INSTANCES_FIELDNAMES = [
@@ -405,6 +384,15 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
     'iam_policy'
 ]
 
+SERVICE_ACCOUNTS_FIELDNAMES = [
+    'project_id',
+    'name',
+    'email',
+    'oauth2_client_id',
+    'account_keys',
+    'raw_service_account'
+]
+
 CSV_FIELDNAME_MAP = {
     'appengine': APPENGINE_SERVICES_FIELDNAMES,
 
@@ -414,11 +402,7 @@ CSV_FIELDNAME_MAP = {
 
     'buckets': BUCKETS_FIELDNAMES,
     'buckets_acl': BUCKETS_ACL_FIELDNAMES,
-    'bucket_iam_policies': BUCKET_IAM_POLICIES_FIELDNAMES,
     'raw_buckets': RAW_BUCKETS_FIELDNAMES,
-
-    'storage_objects': STORAGE_OBJECTS_FIELDNAMES,
-    'storage_object_iam_policies': STORAGE_OBJECTS_POLICIES_FIELDNAMES,
 
     'cloudsql_instances': CLOUDSQL_INSTANCES_FIELDNAMES,
     'cloudsql_ipaddresses': CLOUDSQL_IPADDRESSES_FIELDNAMES,
@@ -448,6 +432,8 @@ CSV_FIELDNAME_MAP = {
     'project_iam_policies': PROJECT_IAM_POLICIES_FIELDNAMES,
     'projects': PROJECTS_FIELDNAMES,
     'raw_project_iam_policies': RAW_PROJECT_IAM_POLICIES_FIELDNAMES,
+
+    'service_accounts': SERVICE_ACCOUNTS_FIELDNAMES,
 
     'violations': VIOLATION_FIELDNAMES,
 }

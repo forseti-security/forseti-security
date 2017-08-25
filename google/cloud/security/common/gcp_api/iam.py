@@ -31,30 +31,34 @@ class IAMClient(_base_client.BaseClient):
 
     API_NAME = 'iam'
 
-    def __init__(self, global_configs=None, credentials=None):
+    def __init__(self, global_configs, credentials=None, version=None):
         """Initialize.
 
         Args:
             global_configs (dict): Global configurations.
             credentials (GoogleCredentials): Google credentials for auth-ing
                 to the API.
+            version (str): The version.
         """
 
         super(IAMClient, self).__init__(
-            global_configs, credentials=credentials, api_name=self.API_NAME)
+            global_configs,
+            credentials=credentials,
+            api_name=self.API_NAME,
+            version=version)
 
         self.rate_limiter = RateLimiter(
             self.global_configs.get('max_iam_api_calls_per_second'),
             1)
 
-    def get_serviceaccounts(self, project_id):
-        """Get information about service account
+    def get_service_accounts(self, project_id):
+        """Get Service Accounts associated with a project.
 
         Args:
-            project_id (str): The id of the project.
+            project_id (str): The project ID to get Service Accounts for.
 
         Yields:
-            dict: The response of retrieving the service account
+            dict: Service account associated with the project.
         """
         endpoint = self.service.projects().serviceAccounts().list
         project_name = 'projects/{}'.format(project_id)
@@ -68,7 +72,6 @@ class IAMClient(_base_client.BaseClient):
                 result = api_call.execute()
             except (errors.HttpError, HttpLib2Error) as e:
                 LOGGER.error(api_errors.ApiExecutionError(project_name, e))
-                # TODO: pass in "buckets" as resource_name variable
                 raise api_errors.ApiExecutionError('serviceAccounts', e)
 
             # Does the result have any objects listed?
@@ -84,114 +87,21 @@ class IAMClient(_base_client.BaseClient):
                 break
             next_token = result['nextPageToken']
 
-    def get_project_roles(self, project_id):
-        """Get information about project roles
+    def get_service_account_keys(self, service_account_name):
+        """Get keys associated with the given Service Account.
 
         Args:
-            project_id (str): The id of the project.
+            service_account_name (str): Name of the Service Account for which
+                to get keys.
 
-        Yields:
-            dict: The response of retrieving the project roles
+        Returns:
+            list: List with a dict for each key associated with the account.
         """
-        endpoint = self.service.projects().roles().list
-        org_name = 'projects/{}'.format(project_id)
-
-        next_token = ''
-        while True:
-            api_call = endpoint(parent=org_name,
-                                pageToken=next_token,
-                                view='FULL')
-
-            try:
-                result = api_call.execute()
-            except (errors.HttpError, HttpLib2Error) as e:
-                LOGGER.error(api_errors.ApiExecutionError(project_id, e))
-                # TODO: pass in "buckets" as resource_name variable
-                raise api_errors.ApiExecutionError('roles', e)
-
-            # Does the result have any objects listed?
-            if 'roles' not in result:
-                break
-
-            # Yield objects
-            for item in result['roles']:
-                yield item
-
-            # Are we finished?
-            if 'nextPageToken' not in result:
-                break
-            next_token = result['nextPageToken']
-
-    def get_organization_roles(self, orgid):
-        """Get information about organization roles
-
-        Args:
-            orgid (str): The id of the organization.
-
-        Yields:
-            dict: The response of retrieving the organization roles
-        """
-        endpoint = self.service.organizations().roles().list
-        org_name = orgid
-
-        next_token = ''
-        while True:
-            api_call = endpoint(parent=org_name,
-                                pageToken=next_token,
-                                view='FULL')
-            try:
-                result = api_call.execute()
-            except (errors.HttpError, HttpLib2Error) as e:
-                LOGGER.error(api_errors.ApiExecutionError(orgid, e))
-                # TODO: pass in "buckets" as resource_name variable
-                raise api_errors.ApiExecutionError('roles', e)
-
-            # Does the result have any objects listed?
-            if 'roles' not in result:
-                break
-
-            # Yield objects
-            for item in result['roles']:
-                yield item
-
-            # Are we finished?
-            if 'nextPageToken' not in result:
-                break
-            next_token = result['nextPageToken']
-
-    def get_curated_roles(self, orgid):
-        """Get information about curated roles
-
-        Args:
-            orgid (str): The id of the organization.
-
-        Yields:
-            dict: The response of retrieving the curated roles
-        """
-        endpoint = self.service.roles().list
-        org_name = ''
-
-        next_token = ''
-        while True:
-            api_call = endpoint(parent=org_name,
-                                pageToken=next_token,
-                                view='FULL')
-            try:
-                result = api_call.execute()
-            except (errors.HttpError, HttpLib2Error) as e:
-                LOGGER.error(api_errors.ApiExecutionError(orgid, e))
-                # TODO: pass in "buckets" as resource_name variable
-                raise api_errors.ApiExecutionError('roles', e)
-
-            # Does the result have any objects listed?
-            if 'roles' not in result:
-                break
-
-            # Yield objects
-            for item in result['roles']:
-                yield item
-
-            # Are we finished?
-            if 'nextPageToken' not in result:
-                break
-            next_token = result['nextPageToken']
+        endpoint = self.service.projects().serviceAccounts().keys().list
+        api_call = endpoint(name=service_account_name)
+        try:
+            result = api_call.execute()
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error(api_errors.ApiExecutionError(service_account_name, e))
+            raise api_errors.ApiExecutionError('serviceAccountKeys', e)
+        return result
