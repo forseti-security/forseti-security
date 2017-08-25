@@ -38,7 +38,8 @@ It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) t
   1. Once you've started Cloud Shell, download Forseti. The setup wizard is included:
   
       ```bash
-      git clone https://github.com/GoogleCloudPlatform/forseti-security
+      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security
+
       ```
 
   1. Navigate to the setup wizard directory:
@@ -75,10 +76,10 @@ Forseti Security is now set up in your GCP project but requires some extra steps
 
 ## What's next
 
-  - Set up [Inventory]({% link _docs/quickstarts/inventory/index.md %}). Forseti
-    Scanner and Enforcer depend on Inventory data to perform their operations.
-  - Once [Inventory]({% link _docs/quickstarts/inventory/index.md %}) setup is complete, proceed to set up [Scanner]({% link _docs/quickstarts/scanner/index.md %}) and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %})
-  - Set up Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
+  - Configure [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
+  [Scanner]({% link _docs/quickstarts/scanner/index.md %}),
+  and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %}).
+  - Configure Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
   - Enable [GSuite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
   for processing by Forseti.
   - Learn how to [change a deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
