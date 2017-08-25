@@ -18,6 +18,7 @@ from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 
 
 class AppEngineRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -55,13 +56,12 @@ class AppEngineRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._apps:
             self._apps = self._init_repository(
                 _AppEngineAppsRepository)
-
         return self._apps
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _AppEngineAppsRepository(
-        _base_repository.GetQueryMixin,
+        repository_mixins.GetQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of AppEngine Apps repository."""
 

@@ -20,7 +20,9 @@ from googleapiclient import http
 from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -95,7 +97,6 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._buckets:
             self._buckets = self._init_repository(
                 _StorageBucketsRepository)
-
         return self._buckets
 
     @property
@@ -108,14 +109,13 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._objects:
             self._objects = self._init_repository(
                 _StorageObjectsRepository)
-
         return self._objects
 
 
 class _StorageBucketsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.ListQueryMixin):
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Storage Buckets repository."""
 
     def __init__(self, **kwargs):
@@ -127,6 +127,8 @@ class _StorageBucketsRepository(
         super(_StorageBucketsRepository, self).__init__(
             component='buckets', **kwargs)
 
+    # Extend the base get_iam_policy implementation to support buckets.
+    # pylint: disable=arguments-differ
     def get_iam_policy(self, bucket, fields=None, **kwargs):
         """Get Bucket IAM Policy.
 
@@ -141,15 +143,16 @@ class _StorageBucketsRepository(
         # The Buckets getIamPolicy does not allow the 'body' argument, so this
         # overrides the default behavior by setting include_body to False. It
         # also takes a bucket id instead of a resource path.
-        return _base_repository.GetIamPolicyQueryMixin.get_iam_policy(
+        return repository_mixins.GetIamPolicyQueryMixin.get_iam_policy(
             self, bucket, fields=fields, include_body=False,
             resource_field='bucket', **kwargs)
+    # pylint: enable=arguments-differ
 
 
 class _StorageObjectsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.ListQueryMixin):
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Iam Projects ServiceAccounts repository."""
 
     def __init__(self, **kwargs):
@@ -161,6 +164,8 @@ class _StorageObjectsRepository(
         super(_StorageObjectsRepository, self).__init__(
             key_field='bucket', component='objects', **kwargs)
 
+    # Extend the base get_iam_policy implementation to support objects.
+    # pylint: disable=arguments-differ
     def get_iam_policy(self, bucket, object_name, fields=None, **kwargs):
         """Get Object IAM Policy.
 
@@ -176,9 +181,10 @@ class _StorageObjectsRepository(
         # The Objects getIamPolicy does not allow the 'body' argument, so this
         # overrides the default behavior by setting include_body to False. It
         # also takes a bucket id and object id instead of a resource path.
-        return _base_repository.GetIamPolicyQueryMixin.get_iam_policy(
+        return repository_mixins.GetIamPolicyQueryMixin.get_iam_policy(
             self, bucket, fields=fields, include_body=False,
             resource_field='bucket', object=object_name, **kwargs)
+    # pylint: enable=arguments-differ
 
     def download(self, bucket, object_name):
         """Download an object from a bucket.
@@ -207,7 +213,6 @@ class _StorageObjectsRepository(
             file_content = out_stream.getvalue()
         finally:
             out_stream.close()
-
         return file_content
 
     def upload(self, bucket, object_name, file_content):
@@ -304,8 +309,7 @@ class StorageClient(object):
         try:
             paged_results = self.repository.buckets.list(project_id,
                                                          projection='full')
-            return _base_repository.flatten_list_results(paged_results,
-                                                         'items')
+            return api_helpers.flatten_list_results(paged_results, 'items')
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError('buckets', e)
@@ -342,8 +346,7 @@ class StorageClient(object):
         try:
             paged_results = self.repository.objects.list(bucket,
                                                          projection='full')
-            return _base_repository.flatten_list_results(paged_results,
-                                                         'items')
+            return api_helpers.flatten_list_results(paged_results, 'items')
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
             raise api_errors.ApiExecutionError('objects', e)

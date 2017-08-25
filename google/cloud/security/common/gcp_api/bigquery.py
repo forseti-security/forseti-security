@@ -17,7 +17,9 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -59,7 +61,6 @@ class BigQueryRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._projects:
             self._projects = self._init_repository(
                 _BigQueryProjectsRepository)
-
         return self._projects
 
     @property
@@ -68,13 +69,12 @@ class BigQueryRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._datasets:
             self._datasets = self._init_repository(
                 _BigQueryDatasetsRepository)
-
         return self._datasets
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _BigQueryProjectsRepository(
-        _base_repository.ListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Big Query Projects repository."""
 
@@ -89,8 +89,8 @@ class _BigQueryProjectsRepository(
 
 
 class _BigQueryDatasetsRepository(
-        _base_repository.GetQueryMixin,
-        _base_repository.ListQueryMixin,
+        repository_mixins.GetQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Big Query Datasets repository."""
 
@@ -139,14 +139,12 @@ class BigQueryClient(object):
         try:
             results = self.repository.projects.list(
                 fields='nextPageToken,projects/id')
-            flattened = _base_repository.flatten_list_results(results,
-                                                              'projects')
+            flattened = api_helpers.flatten_list_results(results, 'projects')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('bigquery', e)
 
         project_ids = [result.get('id') for result in flattened
                        if 'id' in result]
-
         return project_ids
 
     def get_datasets_for_projectid(self, project_id):
@@ -167,14 +165,12 @@ class BigQueryClient(object):
                 resource=project_id,
                 fields='datasets/datasetReference,nextPageToken',
                 all=True)
-            flattened = _base_repository.flatten_list_results(results,
-                                                              'datasets')
+            flattened = api_helpers.flatten_list_results(results, 'datasets')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
         datasets = [result.get('datasetReference') for result in flattened
                     if 'datasetReference' in result]
-
         return datasets
 
     def get_dataset_access(self, project_id, dataset_id):

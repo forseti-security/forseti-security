@@ -19,7 +19,6 @@ import googleapiclient
 from googleapiclient import discovery
 import httplib2
 from oauth2client import client
-from oauth2client import service_account
 from ratelimiter import RateLimiter
 from retrying import retry
 
@@ -53,7 +52,9 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
             authenticate the API calls.
         service_name (str): The name of the API.
         version (str): The version of the API to use.
-        developer_key (str): The api key to use, .
+        developer_key (str): The api key to use to determine the project
+            associated with the API call, most API services do not require
+            this to be set.
         cache_discovery (bool): Whether or not to cache the discovery doc.
 
     Returns:
@@ -70,7 +71,6 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
         'credentials': credentials}
     if SUPPORT_DISCOVERY_CACHE:
         discovery_kwargs['cache_discovery'] = cache_discovery
-
     return discovery.build(**discovery_kwargs)
 
 
@@ -91,106 +91,6 @@ def _set_user_agent(credentials):
                     httplib2.__version__,
                     forseti_security.__package_name__,
                     forseti_security.__version__))
-
-
-def credential_from_keyfile(keyfile_name, scopes, delegated_account):
-    """Build delegated credentials required for accessing the gsuite APIs.
-
-    Args:
-        keyfile_name (str): The filename to load the json service account key
-            from.
-        scopes (list): The list of required scopes for the service account.
-        delegated_account (str): The account to delegate the service account to
-            use.
-
-    Returns:
-        OAuth2Credentials: Credentials as built by oauth2client.
-
-    Raises:
-        api_errors.ApiExecutionError: If fails to build credentials.
-    """
-    try:
-        credentials = (
-            service_account.ServiceAccountCredentials.from_json_keyfile_name(
-                keyfile_name, scopes=scopes))
-    except (ValueError, KeyError, TypeError, IOError) as e:
-        raise api_errors.ApiExecutionError(
-            'Error building admin api credential: %s', e)
-
-    return credentials.create_delegated(delegated_account)
-
-
-def flatten_list_results(paged_results, item_key):
-    """Flatten a split-up list as returned by list_next() API.
-
-    GCE 'list' APIs return results in the form:
-      {item_key: [...]}
-    with one dictionary for each "page" of results. This method flattens
-    that to a simple list of items.
-
-    Args:
-        paged_results (list): A list of paged API response objects.
-            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
-        item_key (str): The name of the key within the inner "items" lists
-            containing the objects of interest.
-
-    Returns:
-        list: A list of items.
-    """
-    results = []
-    for page in paged_results:
-        results.extend(page.get(item_key, []))
-    return results
-
-
-def flatten_aggregated_list_results(paged_results, item_key):
-    """Flatten a split-up list as returned by GCE "aggregatedList" API.
-
-    The compute API's aggregatedList methods return a structure in
-    the form:
-      {
-        items: {
-          $group_value_1: {
-            $item_key: [$items]
-          },
-          $group_value_2: {
-            $item_key: [$items]
-          },
-          $group_value_3: {
-            "warning": {
-              message: "There are no results for ..."
-            }
-          },
-          ...,
-          $group_value_n, {
-            $item_key: [$items]
-          },
-        }
-      }
-    where each "$group_value_n" is a particular element in the
-    aggregation, e.g. a particular zone or group or whatever, and
-    "$item_key" is some type-specific resource name, e.g.
-    "backendServices" for an aggregated list of backend services.
-
-    This method takes such a structure and yields a simple list of
-    all $items across all of the groups.
-
-    Args:
-        paged_results (list): A list of paged API response objects.
-            [{page 1 results}, {page 2 results}, {page 3 results}, ...]
-        item_key (str): The name of the key within the inner "items" lists
-            containing the objects of interest.
-
-    Returns:
-        list: A list of items.
-    """
-    items = []
-    for page in paged_results:
-        aggregated_items = page.get('items', {})
-        for items_for_grouping in aggregated_items.values():
-            for item in items_for_grouping.get(item_key, []):
-                items.append(item)
-    return items
 
 
 class BaseRepositoryClient(object):
@@ -434,7 +334,6 @@ class GCPRepository(object):
         """
         request = self._build_request(verb, verb_arguments)
         request_submission_status = self._execute(request)
-
         return request_submission_status
 
     def execute_paged_query(self, verb, verb_arguments):
@@ -529,185 +428,6 @@ class GCPRepository(object):
             with self._rate_limiter:
                 return request.execute(http=self.http,
                                        num_retries=self._num_retries)
-        else:
-            return request.execute(http=self.http,
-                                   num_retries=self._num_retries)
+        return request.execute(http=self.http,
+                               num_retries=self._num_retries)
 # pylint: enable=too-many-instance-attributes, too-many-arguments
-
-
-class ListQueryMixin(object):
-    """Mixin that implements Paged List query."""
-
-    def list(self, resource=None, fields=None, max_results=None, verb='list',
-             **kwargs):
-        """List subresources of a given resource.
-
-        Args:
-            self (GCPRespository): An instance of a GCPRespository class.
-            resource (str): The id of the resource to query.
-            fields (str): Fields to include in the response - partial response.
-            max_results (int): Number of entries to include per page.
-            verb (str): The method to call on the API.
-            **kwargs (dict): Optional additional arguments to pass to the query.
-
-        Yields:
-            dict: An API response containing one page of results.
-        """
-        arguments = {'fields': fields,
-                     self._max_results_field: max_results}
-
-        # Most APIs call list on a parent resource to list subresources of
-        # a specific type. For APIs that have no parent, set the list_key_field
-        # to None when initializing the GCPRespository instance.
-        if self._list_key_field and resource:
-            arguments[self._list_key_field] = resource
-
-        if kwargs:
-            arguments.update(kwargs)
-
-        if self._request_supports_pagination(verb):
-            for resp in self.execute_paged_query(verb=verb,
-                                                 verb_arguments=arguments):
-                yield resp
-        else:
-            # Some API list() methods are not actually paginated.
-            del arguments[self._max_results_field]
-            yield self.execute_query(verb=verb, verb_arguments=arguments)
-
-
-class AggregatedListQueryMixin(ListQueryMixin):
-    """Mixin that implements a Paged List and AggregatedList query."""
-
-    def aggregated_list(self, resource=None, fields=None, max_results=None,
-                        verb='aggregatedList', **kwargs):
-        """List all subresource entities of a given resource.
-
-        Args:
-            self (GCPRespository): An instance of a GCPRespository class.
-            resource (str): The id of the resource to query.
-            fields (str): Fields to include in the response - partial response.
-            max_results (int): Number of entries to include per page.
-            verb (str): The method to call on the API.
-            **kwargs (dict): Optional additional arguments to pass to the query.
-
-        Returns:
-            iterator: An iterator of API responses by page.
-        """
-        return super(AggregatedListQueryMixin, self).list(
-            resource, fields, max_results, verb, **kwargs)
-
-
-class GetQueryMixin(object):
-    """Mixin that implements Get query."""
-
-    def get(self, resource, target=None, fields=None, verb='get', **kwargs):
-        """Get API entity.
-
-        Args:
-            self (GCPRespository): An instance of a GCPRespository class.
-            resource (str): The id of the resource to query.
-            target (str):  Name of the entity to fetch.
-            fields (str): Fields to include in the response - partial response.
-            verb (str): The method to call on the API.
-            **kwargs (dict): Optional additional arguments to pass to the query.
-
-        Returns:
-            dict: GCE response.
-
-        Raises:
-            ValueError: When get_key_field was not defined in the base
-                GCPRepository instance.
-
-            errors.HttpError: When attempting to get a non-existent entity.
-               ex: HttpError 404 when requesting ... returned
-                   "The resource '...' was not found"
-        """
-        if not self._get_key_field:
-            raise ValueError('Repository was created without a valid '
-                             'get_key_field argument. Cannot execute get '
-                             'request.')
-
-        arguments = {self._get_key_field: resource,
-                     'fields': fields}
-
-        # Most APIs take both a resource and a target when calling get, but
-        # for APIs that the resource itself is the target, then setting
-        # 'entity' to None when initializing the GCPRepository instance will
-        # ensure the correct parameters are passed to the API method.
-        if self._entity_field and target:
-            arguments[self._entity_field] = target
-        if kwargs:
-            arguments.update(kwargs)
-
-        return self.execute_query(
-            verb=verb,
-            verb_arguments=arguments,
-        )
-
-
-class GetIamPolicyQueryMixin(object):
-    """Mixin that implements getIamPolicy query."""
-
-    def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
-                       include_body=True, resource_field='resource', **kwargs):
-        """Get resource IAM Policy.
-
-        Args:
-            self (GCPRespository): An instance of a GCPRespository class.
-            resource (str): The id of the resource to fetch.
-            fields (str): Fields to include in the response - partial response.
-            verb (str): The method to call on the API.
-            include_body (bool): If true, include an empty body parameter in the
-                method args.
-            resource_field (str): The parameter name of the resource field to
-                pass to the method.
-            **kwargs (dict): Optional additional arguments to pass to the query.
-
-        Returns:
-            dict: GCE response.
-
-        Raises:
-            errors.HttpError: When attempting to get a non-existent entity.
-                ex: HttpError 404 when requesting ... returned
-                    "The resource '...' was not found"
-        """
-        arguments = {resource_field: resource,
-                     'fields': fields}
-        if include_body:
-            arguments['body'] = {}
-        if kwargs:
-            arguments.update(kwargs)
-
-        return self.execute_query(
-            verb=verb,
-            verb_arguments=arguments,
-        )
-
-
-class SearchQueryMixin(object):
-    """Mixin that implements Search query."""
-
-    def search(self, query=None, fields=None, max_results=500, verb='search'):
-        """List all subresource entities visable to the caller.
-
-        Args:
-            self (GCPRespository): An instance of a GCPRespository class.
-            query (str): Additional filters to apply to the restrict the
-                set of resources returned.
-            fields (str): Fields to include in the response - partial response.
-            max_results (int): Number of entries to include per page.
-            verb (str): The method to call on the API.
-
-        Yields:
-            dict: Response from the API.
-        """
-        req_body = {}
-        if query:
-            req_body[self._search_query_field] = query
-
-        req_body[self._max_results_field] = max_results
-
-        for resp in self.execute_search_query(
-                verb=verb,
-                verb_arguments={'body': req_body, 'fields': fields}):
-            yield resp

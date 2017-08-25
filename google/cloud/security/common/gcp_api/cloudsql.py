@@ -17,7 +17,9 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -58,13 +60,12 @@ class CloudSqlRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._instances:
             self._instances = self._init_repository(
                 _CloudSqlInstancesRepository)
-
         return self._instances
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _CloudSqlInstancesRepository(
-        _base_repository.ListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of CloudSql Instances repository."""
 
@@ -81,7 +82,7 @@ class _CloudSqlInstancesRepository(
 class CloudsqlClient(object):
     """CloudSQL Client."""
 
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100.0  # pylint: disable=invalid-name
+    DEFAULT_QUOTA_PERIOD = 100.0
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -93,7 +94,7 @@ class CloudsqlClient(object):
         max_calls = global_configs.get('max_sqladmin_api_calls_per_100_seconds')
         self.repository = CloudSqlRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
+            quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_instances(self, project_id):
@@ -117,8 +118,7 @@ class CloudsqlClient(object):
 
         try:
             paged_results = self.repository.instances.list(project_id)
-            return _base_repository.flatten_list_results(paged_results,
-                                                         'items')
+            return api_helpers.flatten_list_results(paged_results, 'items')
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError('instances', e)

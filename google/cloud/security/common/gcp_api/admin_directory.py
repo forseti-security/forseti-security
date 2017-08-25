@@ -17,7 +17,9 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -64,7 +66,6 @@ class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._groups:
             self._groups = self._init_repository(
                 _AdminDirectoryGroupsRepository)
-
         return self._groups
 
     @property
@@ -73,13 +74,12 @@ class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._members:
             self._members = self._init_repository(
                 _AdminDirectoryMembersRepository)
-
         return self._members
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _AdminDirectoryGroupsRepository(
-        _base_repository.ListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Admin Directory Groups repository."""
 
@@ -94,7 +94,7 @@ class _AdminDirectoryGroupsRepository(
 
 
 class _AdminDirectoryMembersRepository(
-        _base_repository.ListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Admin Directory Members repository."""
 
@@ -111,7 +111,7 @@ class _AdminDirectoryMembersRepository(
 class AdminDirectoryClient(object):
     """GSuite Admin Directory API Client."""
 
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100.0  # pylint: disable=invalid-name
+    DEFAULT_QUOTA_PERIOD = 100.0
     REQUIRED_SCOPES = frozenset([
         'https://www.googleapis.com/auth/admin.directory.group.readonly'
     ])
@@ -124,7 +124,7 @@ class AdminDirectoryClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls = global_configs.get('max_admin_api_calls_per_100_seconds')
-        quota_period = self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS
+        quota_period = self.DEFAULT_QUOTA_PERIOD
         if not max_calls:
             max_calls = global_configs.get('max_admin_api_calls_per_day')
             quota_period = 86400.0
@@ -133,7 +133,7 @@ class AdminDirectoryClient(object):
                          'using "max_admin_api_calls_per_100_seconds" instead. '
                          'See the sample configuration file for reference.')
 
-        credentials = _base_repository.credential_from_keyfile(
+        credentials = api_helpers.credential_from_keyfile(
             global_configs.get('groups_service_account_key_file'),
             self.REQUIRED_SCOPES,
             global_configs.get('domain_super_admin_email'))
@@ -157,8 +157,7 @@ class AdminDirectoryClient(object):
         """
         try:
             paged_results = self.repository.members.list(group_key)
-            return _base_repository.flatten_list_results(paged_results,
-                                                         'members')
+            return api_helpers.flatten_list_results(paged_results, 'members')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(group_key, e)
 
@@ -181,7 +180,6 @@ class AdminDirectoryClient(object):
         """
         try:
             paged_results = self.repository.groups.list(customer=customer_id)
-            return _base_repository.flatten_list_results(paged_results,
-                                                         'groups')
+            return api_helpers.flatten_list_results(paged_results, 'groups')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)

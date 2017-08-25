@@ -17,7 +17,9 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 from google.cloud.security.common.util import log_util
 
 
@@ -62,7 +64,6 @@ class CloudResourceManagerRepositoryClient(
         if not self._projects:
             self._projects = self._init_repository(
                 _ResourceManagerProjectsRepository)
-
         return self._projects
 
     @property
@@ -71,7 +72,6 @@ class CloudResourceManagerRepositoryClient(
         if not self._organizations:
             self._organizations = self._init_repository(
                 _ResourceManagerOrganizationsRepository)
-
         return self._organizations
 
     @property
@@ -80,15 +80,14 @@ class CloudResourceManagerRepositoryClient(
         if not self._folders:
             self._folders = self._init_repository(
                 _ResourceManagerFoldersRepository, version='v2')
-
         return self._folders
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _ResourceManagerProjectsRepository(
-        _base_repository.GetQueryMixin,
-        _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.ListQueryMixin,
+        repository_mixins.GetQueryMixin,
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Projects repository."""
 
@@ -113,14 +112,14 @@ class _ResourceManagerProjectsRepository(
         Returns:
             dict: Response from the API.
         """
-        return _base_repository.GetQueryMixin.get(
+        return repository_mixins.GetQueryMixin.get(
             self, resource, verb='getAncestry', body=dict(), **kwargs)
 
 
 class _ResourceManagerOrganizationsRepository(
-        _base_repository.GetQueryMixin,
-        _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.SearchQueryMixin,
+        repository_mixins.GetQueryMixin,
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.SearchQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Organizations repository."""
 
@@ -151,10 +150,10 @@ class _ResourceManagerOrganizationsRepository(
 
 
 class _ResourceManagerFoldersRepository(
-        _base_repository.GetQueryMixin,
-        _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.ListQueryMixin,
-        _base_repository.SearchQueryMixin,
+        repository_mixins.GetQueryMixin,
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
+        repository_mixins.SearchQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Folders repository."""
 
@@ -187,7 +186,7 @@ class _ResourceManagerFoldersRepository(
 class CloudResourceManagerClient(object):
     """Resource Manager Client."""
 
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100  # pylint: disable=invalid-name
+    DEFAULT_QUOTA_PERIOD = 100.0
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -199,7 +198,7 @@ class CloudResourceManagerClient(object):
         max_calls = global_configs.get('max_crm_api_calls_per_100_seconds')
         self.repository = CloudResourceManagerRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
+            quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_project(self, project_id):
@@ -315,8 +314,8 @@ class CloudResourceManagerClient(object):
         """
         try:
             paged_results = self.repository.organizations.search()
-            return _base_repository.flatten_list_results(paged_results,
-                                                         'organizations')
+            return api_helpers.flatten_list_results(paged_results,
+                                                    'organizations')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -392,8 +391,7 @@ class CloudResourceManagerClient(object):
             paged_results = self.repository.folders.search(query=query)
 
         try:
-            return _base_repository.flatten_list_results(paged_results,
-                                                         'folders')
+            return api_helpers.flatten_list_results(paged_results, 'folders')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 

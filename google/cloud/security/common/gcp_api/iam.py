@@ -17,7 +17,9 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -61,7 +63,6 @@ class IamRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._projects_serviceaccounts:
             self._projects_serviceaccounts = self._init_repository(
                 _IamProjectsServiceAccountsRepository)
-
         return self._projects_serviceaccounts
 
     @property
@@ -74,14 +75,13 @@ class IamRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._projects_serviceaccounts_keys:
             self._projects_serviceaccounts_keys = self._init_repository(
                 _IamProjectsServiceAccountsKeysRepository)
-
         return self._projects_serviceaccounts_keys
 
 
 class _IamProjectsServiceAccountsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.ListQueryMixin):
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Iam Projects ServiceAccounts repository."""
 
     def __init__(self, **kwargs):
@@ -94,12 +94,19 @@ class _IamProjectsServiceAccountsRepository(
             key_field='name', max_results_field='pageSize',
             component='projects.serviceAccounts', **kwargs)
 
-    def get_iam_policy(self, resource, fields=None, **kwargs):
+    def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
+                       include_body=False, resource_field='resource', **kwargs):
         """Get Service Account IAM Policy.
 
         Args:
+            self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to fetch.
             fields (str): Fields to include in the response - partial response.
+            verb (str): The method to call on the API.
+            include_body (bool): If true, include an empty body parameter in the
+                method args.
+            resource_field (str): The parameter name of the resource field to
+                pass to the method.
             **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
@@ -107,8 +114,9 @@ class _IamProjectsServiceAccountsRepository(
         """
         # The IAM getIamPolicy does not allow the 'body' argument, so this
         # overrides the default behavior by setting include_body to False.
-        return _base_repository.GetIamPolicyQueryMixin.get_iam_policy(
-            self, resource, fields=fields, include_body=False, **kwargs)
+        return repository_mixins.GetIamPolicyQueryMixin.get_iam_policy(
+            self, resource, fields=fields, verb=verb, include_body=include_body,
+            resource_field=resource_field, **kwargs)
 
     @staticmethod
     def get_name(project_id):
@@ -126,8 +134,8 @@ class _IamProjectsServiceAccountsRepository(
 
 
 class _IamProjectsServiceAccountsKeysRepository(
-        _base_repository.GCPRepository,
-        _base_repository.ListQueryMixin):
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Iam Projects ServiceAccounts Keys repository."""
 
     def __init__(self, **kwargs):
@@ -144,7 +152,7 @@ class _IamProjectsServiceAccountsKeysRepository(
 class IAMClient(object):
     """IAM Client."""
 
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 1.0  # pylint: disable=invalid-name
+    DEFAULT_QUOTA_PERIOD = 1.0
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -156,7 +164,7 @@ class IAMClient(object):
         max_calls = global_configs.get('max_iam_api_calls_per_second')
         self.repository = IamRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
+            quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_service_accounts(self, project_id):
@@ -172,8 +180,7 @@ class IAMClient(object):
 
         try:
             paged_results = self.repository.projects_serviceaccounts.list(name)
-            return _base_repository.flatten_list_results(paged_results,
-                                                         'accounts')
+            return api_helpers.flatten_list_results(paged_results, 'accounts')
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(name, e))
             raise api_errors.ApiExecutionError('serviceAccounts', e)
@@ -206,7 +213,7 @@ class IAMClient(object):
         """
         try:
             results = self.repository.projects_serviceaccounts_keys.list(name)
-            return _base_repository.flatten_list_results(results, 'keys')
+            return api_helpers.flatten_list_results(results, 'keys')
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(name, e))
             raise api_errors.ApiExecutionError('serviceAccountKeys', e)

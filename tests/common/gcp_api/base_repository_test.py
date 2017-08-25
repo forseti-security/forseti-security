@@ -26,18 +26,6 @@ from tests import unittest_utils
 from google.cloud import security as forseti_security
 from google.cloud.security.common.gcp_api import _base_repository as base
 from google.cloud.security.common.gcp_api import _supported_apis
-from google.cloud.security.common.gcp_api import errors as api_errors
-
-# From oauth2client/tests/test_service_account.py
-FAKE_KEYFILE = b"""
-{
-  "type": "service_account",
-  "client_id": "id123",
-  "client_email": "foo@bar.com",
-  "private_key_id": "pkid456",
-  "private_key": "s3kr3tz"
-}
-"""
 
 
 class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
@@ -226,23 +214,6 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         t2.join()
 
         self.assertIsNot(http_objects[0], http_objects[1])
-
-    @mock.patch('oauth2client.crypt.Signer.from_string',
-                return_value=object())
-    def test_credential_from_keyfile(self, signer_factory):
-        """Validate with a valid test credential file."""
-
-        test_delegate = 'user@forseti.testing'
-        with unittest_utils.create_temp_file(FAKE_KEYFILE) as f:
-            credentials = base.credential_from_keyfile(
-                f, 'scope', test_delegate)
-            self.assertEqual(credentials._kwargs['sub'], test_delegate)
-
-    def test_credential_from_keyfile_raises(self):
-        """Validate that an invalid credential file raises exception."""
-        with unittest_utils.create_temp_file(b'{}') as f:
-            with self.assertRaises(api_errors.ApiExecutionError):
-                base.credential_from_keyfile(f, 'scope', 'user@forseti.testing')
 
 
 if __name__ == '__main__':

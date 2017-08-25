@@ -19,9 +19,10 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 from google.cloud.security.common.util import log_util
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -88,8 +89,8 @@ def _flatten_aggregated_list_results(project_id, paged_results, item_key,
     """
     try:
         return sorted(
-            _base_repository.flatten_aggregated_list_results(paged_results,
-                                                             item_key),
+            api_helpers.flatten_aggregated_list_results(paged_results,
+                                                        item_key),
             key=lambda d: d.get(sort_key, ''))
     except (errors.HttpError, HttpLib2Error) as e:
         api_not_enabled, details = _api_not_enabled(e)
@@ -118,7 +119,7 @@ def _flatten_list_results(project_id, paged_results, item_key):
             API method.
     """
     try:
-        return _base_repository.flatten_list_results(paged_results, item_key)
+        return api_helpers.flatten_list_results(paged_results, item_key)
     except (errors.HttpError, HttpLib2Error) as e:
         api_not_enabled, details = _api_not_enabled(e)
         if api_not_enabled:
@@ -171,7 +172,6 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._backend_services:
             self._backend_services = self._init_repository(
                 _ComputeBackendServicesRepository, version='beta')
-
         return self._backend_services
 
     @property
@@ -180,7 +180,6 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._forwarding_rules:
             self._forwarding_rules = self._init_repository(
                 _ComputeForwardingRulesRepository)
-
         return self._forwarding_rules
 
     @property
@@ -191,7 +190,6 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._firewalls:
             self._firewalls = self._init_repository(
                 _ComputeFirewallsRepository, version='beta')
-
         return self._firewalls
 
     @property
@@ -200,7 +198,6 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._instance_group_managers:
             self._instance_group_managers = self._init_repository(
                 _ComputeInstanceGroupManagersRepository)
-
         return self._instance_group_managers
 
     @property
@@ -209,7 +206,6 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._instance_groups:
             self._instance_groups = self._init_repository(
                 _ComputeInstanceGroupsRepository)
-
         return self._instance_groups
 
     @property
@@ -218,7 +214,6 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._instances:
             self._instances = self._init_repository(
                 _ComputeInstancesRepository)
-
         return self._instances
 
     @property
@@ -227,7 +222,6 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._instance_templates:
             self._instance_templates = self._init_repository(
                 _ComputeInstanceTemplatesRepository)
-
         return self._instance_templates
 
     @property
@@ -236,15 +230,14 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         if not self._region_instance_groups:
             self._region_instance_groups = self._init_repository(
                 _ComputeRegionInstanceGroupsRepository)
-
         return self._region_instance_groups
     # pylint: enable=missing-return-doc, missing-return-type-doc
 # pylint: enable=too-many-instance-attributes
 
 
 class _ComputeBackendServicesRepository(
-        _base_repository.AggregatedListQueryMixin,
-        _base_repository.ListQueryMixin,
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Compute Backend Services repository."""
 
@@ -259,8 +252,8 @@ class _ComputeBackendServicesRepository(
 
 
 class _ComputeForwardingRulesRepository(
-        _base_repository.AggregatedListQueryMixin,
-        _base_repository.ListQueryMixin,
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Compute Forwarding Rules repository."""
 
@@ -287,12 +280,12 @@ class _ComputeForwardingRulesRepository(
             iterator: An iterator over each page of results from the API.
         """
         kwargs['region'] = region
-        return _base_repository.ListQueryMixin.list(self, resource, **kwargs)
+        return repository_mixins.ListQueryMixin.list(self, resource, **kwargs)
     # pylint: enable=arguments-differ
 
 
 class _ComputeFirewallsRepository(
-        _base_repository.ListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Compute Forwarding Rules repository."""
 
@@ -307,8 +300,8 @@ class _ComputeFirewallsRepository(
 
 
 class _ComputeInstanceGroupManagersRepository(
-        _base_repository.AggregatedListQueryMixin,
-        _base_repository.ListQueryMixin,
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Compute Instance Group Managers repository."""
 
@@ -323,8 +316,8 @@ class _ComputeInstanceGroupManagersRepository(
 
 
 class _ComputeInstanceGroupsRepository(
-        _base_repository.AggregatedListQueryMixin,
-        _base_repository.ListQueryMixin,
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Compute Instance Groups repository."""
 
@@ -351,14 +344,13 @@ class _ComputeInstanceGroupsRepository(
         """
         kwargs['instanceGroup'] = instance_group
         kwargs['zone'] = zone
-
-        return _base_repository.ListQueryMixin.list(
+        return repository_mixins.ListQueryMixin.list(
             self, resource, verb='listInstances', **kwargs)
 
 
 class _ComputeInstancesRepository(
-        _base_repository.AggregatedListQueryMixin,
-        _base_repository.ListQueryMixin,
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Compute Instances repository."""
 
@@ -385,12 +377,12 @@ class _ComputeInstancesRepository(
             iterator: An iterator over each page of results from the API.
         """
         kwargs['zone'] = zone
-        return _base_repository.ListQueryMixin.list(self, resource, **kwargs)
+        return repository_mixins.ListQueryMixin.list(self, resource, **kwargs)
     # pylint: enable=arguments-differ
 
 
 class _ComputeInstanceTemplatesRepository(
-        _base_repository.ListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Compute Instance Templates repository."""
 
@@ -405,7 +397,7 @@ class _ComputeInstanceTemplatesRepository(
 
 
 class _ComputeRegionInstanceGroupsRepository(
-        _base_repository.ListQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Compute Region Instance Groups repository."""
 
@@ -432,8 +424,7 @@ class _ComputeRegionInstanceGroupsRepository(
         """
         kwargs['instanceGroup'] = instance_group
         kwargs['region'] = region
-
-        return _base_repository.ListQueryMixin.list(
+        return repository_mixins.ListQueryMixin.list(
             self, resource, verb='listInstances', **kwargs)
 
 
@@ -568,7 +559,6 @@ class ComputeClient(object):
                 project_id, instance_group_name, region,
                 fields='items/instance,nextPageToken',
                 body={'instanceState': 'ALL'})
-
         return [
             instance_data.get('instance')
             for instance_data in _flatten_list_results(
