@@ -72,8 +72,6 @@ It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) t
   1. After the setup wizard successfully completes Forseti setup and deployment, 
      complete the steps to [enable G Suite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %}). This is a **required** step if you also plan to deploy IAM Explain.
 
-Forseti Security is now set up in your GCP project but requires some extra steps (shown below) to run autonomously.
-
 ## What's next
 
   - Configure [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
