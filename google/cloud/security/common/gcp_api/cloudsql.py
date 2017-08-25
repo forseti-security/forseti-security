@@ -51,23 +51,21 @@ class CloudSqlRepository(_base_repository.BaseRepositoryClient):
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
 
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def instances(self):
-        """An _CloudSqlInstancesRepository instance.
-
-        Returns:
-          object: An _CloudSqlInstancesRepository instance.
-        """
+        """Returns a _CloudSqlInstancesRepository instance."""
         if not self._instances:
             self._instances = self._init_repository(
                 _CloudSqlInstancesRepository)
 
         return self._instances
-
+    # pylint: enable=missing-return-doc, missing-return-type-doc
 
 class _CloudSqlInstancesRepository(
-        _base_repository.GCPRepository,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of CloudSql Instances repository."""
 
     def __init__(self, **kwargs):

@@ -61,8 +61,8 @@ class AppEngineRepository(_base_repository.BaseRepositoryClient):
 
 
 class _AppEngineAppsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.GetQueryMixin):
+        _base_repository.GetQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of AppEngine Apps repository."""
 
     def __init__(self, **kwargs):

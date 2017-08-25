@@ -51,13 +51,11 @@ class BigQueryRepository(_base_repository.BaseRepositoryClient):
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
 
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def projects(self):
-        """A _BigQueryProjectsRepository instance.
-
-        Returns:
-          object: A _BigQueryProjectsRepository instance.
-        """
+        """Returns a _BigQueryProjectsRepository instance."""
         if not self._projects:
             self._projects = self._init_repository(
                 _BigQueryProjectsRepository)
@@ -66,21 +64,17 @@ class BigQueryRepository(_base_repository.BaseRepositoryClient):
 
     @property
     def datasets(self):
-        """A _BigQueryDatasetsRepository instance.
-
-        Returns:
-          object: A _BigQueryDatasetsRepository instance.
-        """
+        """Returns a _BigQueryDatasetsRepository instance."""
         if not self._datasets:
             self._datasets = self._init_repository(
                 _BigQueryDatasetsRepository)
 
         return self._datasets
-
+    # pylint: enable=missing-return-doc, missing-return-type-doc
 
 class _BigQueryProjectsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Big Query Projects repository."""
 
     def __init__(self, **kwargs):
@@ -94,9 +88,9 @@ class _BigQueryProjectsRepository(
 
 
 class _BigQueryDatasetsRepository(
-        _base_repository.GCPRepository,
         _base_repository.GetQueryMixin,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Big Query Datasets repository."""
 
     def __init__(self, **kwargs):

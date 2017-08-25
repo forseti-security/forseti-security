@@ -16,11 +16,9 @@
 
 import logging
 import threading
-
 import googleapiclient
 from googleapiclient import discovery
 import httplib2
-
 from oauth2client import client
 from oauth2client import service_account
 from ratelimiter import RateLimiter
@@ -423,7 +421,7 @@ class GCPRepository(object):
     def execute_command(self, verb, verb_arguments):
         """Executes command (ex. add) via a dedicated http object.
 
-        GCP APIs may take minutes to complete. Therefore, callers are
+        Async APIs may take minutes to complete. Therefore, callers are
         encouraged to leverage concurrent.futures (or similar) to place long
         running commands on a separate threads.
 
@@ -540,7 +538,7 @@ class ListQueryMixin(object):
 
     def list(self, resource=None, fields=None, max_results=None, verb='list',
              **kwargs):
-        """List GCP entities of a given resource.
+        """List subresources of a given resource.
 
         Args:
           resource (str): The id of the resource to query.
@@ -550,7 +548,7 @@ class ListQueryMixin(object):
           kwargs (dict): Optional additional arguments to pass to the query.
 
         Yields:
-          dict: GCE response.
+          dict: An API response containing one page of results.
         """
         assert isinstance(self, GCPRepository)
 
@@ -578,7 +576,7 @@ class AggregatedListQueryMixin(ListQueryMixin):
 
     def aggregated_list(self, resource=None, fields=None, max_results=None,
                         verb='aggregatedList', **kwargs):
-        """List GCP entities of a given resource.
+        """List all subresource entities of a given resource.
 
         Args:
           resource (str): The id of the resource to query.
@@ -598,7 +596,7 @@ class GetQueryMixin(object):
     """Mixin that implements Get query."""
 
     def get(self, resource, target=None, fields=None, verb='get', **kwargs):
-        """Get GCP entity.
+        """Get API entity.
 
         Args:
           resource (str): The id of the resource to query.
@@ -636,7 +634,7 @@ class GetIamPolicyQueryMixin(object):
 
     def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
                        include_body=True, resource_field='resource', **kwargs):
-        """Get GCP IAM Policy.
+        """Get resource IAM Policy.
 
         Args:
           resource (str): The id of the resource to fetch.
@@ -673,7 +671,7 @@ class GetIamPolicyQueryMixin(object):
 class SearchQueryMixin(object):
     """Mixin that implements Search query."""
 
-    def search(self, query=None, fields=None, max_results=None, verb='search'):
+    def search(self, query=None, fields=None, max_results=500, verb='search'):
         """Get all organizations the caller has access to.
 
         Args:
@@ -689,8 +687,8 @@ class SearchQueryMixin(object):
         req_body = {}
         if query:
             req_body[self._search_query_field] = query
-        if max_results:
-            req_body[self._max_results_field] = max_results
+
+        req_body[self._max_results_field] = max_results
 
         for resp in self.execute_search_query(
                 verb=verb,

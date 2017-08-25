@@ -86,10 +86,10 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
 
 
 class _ResourceManagerProjectsRepository(
-        _base_repository.GCPRepository,
         _base_repository.GetQueryMixin,
         _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Projects repository."""
 
     def __init__(self, **kwargs):
@@ -118,10 +118,10 @@ class _ResourceManagerProjectsRepository(
 
 
 class _ResourceManagerOrganizationsRepository(
-        _base_repository.GCPRepository,
         _base_repository.GetQueryMixin,
         _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.SearchQueryMixin):
+        _base_repository.SearchQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Organizations repository."""
 
     def __init__(self, **kwargs):
@@ -151,11 +151,11 @@ class _ResourceManagerOrganizationsRepository(
 
 
 class _ResourceManagerFoldersRepository(
-        _base_repository.GCPRepository,
         _base_repository.GetQueryMixin,
         _base_repository.GetIamPolicyQueryMixin,
         _base_repository.ListQueryMixin,
-        _base_repository.SearchQueryMixin):
+        _base_repository.SearchQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Folders repository."""
 
     def __init__(self, **kwargs):

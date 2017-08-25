@@ -14,31 +14,19 @@
 
 """Tests the Storage client."""
 
-import os
-import tempfile
-import contextlib
+import unittest
 
 import mock
 from oauth2client import client
-import unittest
 
 from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
 from tests.common.gcp_api.test_data import http_mocks
-from tests.unittest_utils import ForsetiTestCase
+from tests import unittest_utils
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import storage
 
-@contextlib.contextmanager
-def create_temp_file(data):
-    temp = tempfile.NamedTemporaryFile(delete=False)
-    temp.write(data)
-    temp.close()
-    try:
-        yield temp.name
-    finally:
-        os.unlink(temp.name)
 
-class StorageTest(ForsetiTestCase):
+class StorageTest(unittest_utils.ForsetiTestCase):
     """Test the StorageClient."""
 
     @classmethod
@@ -169,7 +157,7 @@ class StorageTest(ForsetiTestCase):
         """Test upload text file."""
         http_mocks.mock_http_response(u'{}')
 
-        with create_temp_file(b'12345') as temp_file:
+        with unittest_utils.create_temp_file(b'12345') as temp_file:
             result = self.gcs_api_client.put_text_file(
                 temp_file,
                 'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
@@ -181,7 +169,7 @@ class StorageTest(ForsetiTestCase):
         http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(storage.errors.HttpError):
-            with create_temp_file(b'12345') as temp_file:
+            with unittest_utils.create_temp_file(b'12345') as temp_file:
                 self.gcs_api_client.put_text_file(
                     temp_file,
                     'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,

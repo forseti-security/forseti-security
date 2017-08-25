@@ -245,8 +245,9 @@ class ComputeRepository(_base_repository.BaseRepositoryClient):
 
 
 class _ComputeBackendServicesRepository(
-        _base_repository.GCPRepository,
-        _base_repository.AggregatedListQueryMixin):
+        _base_repository.AggregatedListQueryMixin,
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Backend Services repository."""
 
     def __init__(self, **kwargs):
@@ -260,8 +261,9 @@ class _ComputeBackendServicesRepository(
 
 
 class _ComputeForwardingRulesRepository(
-        _base_repository.GCPRepository,
-        _base_repository.AggregatedListQueryMixin):
+        _base_repository.AggregatedListQueryMixin,
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Forwarding Rules repository."""
 
     def __init__(self, **kwargs):
@@ -289,8 +291,8 @@ class _ComputeForwardingRulesRepository(
 
 
 class _ComputeFirewallsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Forwarding Rules repository."""
 
     def __init__(self, **kwargs):
@@ -304,8 +306,9 @@ class _ComputeFirewallsRepository(
 
 
 class _ComputeInstanceGroupManagersRepository(
-        _base_repository.GCPRepository,
-        _base_repository.AggregatedListQueryMixin):
+        _base_repository.AggregatedListQueryMixin,
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Instance Group Managers repository."""
 
     def __init__(self, **kwargs):
@@ -319,8 +322,9 @@ class _ComputeInstanceGroupManagersRepository(
 
 
 class _ComputeInstanceGroupsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.AggregatedListQueryMixin):
+        _base_repository.AggregatedListQueryMixin,
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Instance Groups repository."""
 
     def __init__(self, **kwargs):
@@ -353,8 +357,9 @@ class _ComputeInstanceGroupsRepository(
 
 
 class _ComputeInstancesRepository(
-        _base_repository.GCPRepository,
-        _base_repository.AggregatedListQueryMixin):
+        _base_repository.AggregatedListQueryMixin,
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Instances repository."""
 
     def __init__(self, **kwargs):
@@ -382,8 +387,8 @@ class _ComputeInstancesRepository(
 
 
 class _ComputeInstanceTemplatesRepository(
-        _base_repository.GCPRepository,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Instance Templates repository."""
 
     def __init__(self, **kwargs):
@@ -397,8 +402,8 @@ class _ComputeInstanceTemplatesRepository(
 
 
 class _ComputeRegionInstanceGroupsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Region Instance Groups repository."""
 
     def __init__(self, **kwargs):

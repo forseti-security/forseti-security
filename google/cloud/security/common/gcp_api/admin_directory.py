@@ -79,8 +79,8 @@ class AdminDirectoryRepository(_base_repository.BaseRepositoryClient):
 
 
 class _AdminDirectoryGroupsRepository(
-        _base_repository.GCPRepository,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Admin Directory Groups repository."""
 
     def __init__(self, **kwargs):
@@ -94,8 +94,8 @@ class _AdminDirectoryGroupsRepository(
 
 
 class _AdminDirectoryMembersRepository(
-        _base_repository.GCPRepository,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Admin Directory Members repository."""
 
     def __init__(self, **kwargs):
