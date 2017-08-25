@@ -32,10 +32,9 @@ from tests.inventory.pipelines.test_data import fake_orgs
 
 
 def _setup_raw_orgs():
-    fakes = [o for res in fake_orgs.FAKE_ORGS \
-        for o in res.get('organizations', [])]
     for (i, o) in enumerate(fake_orgs.EXPECTED_LOADABLE_ORGS):
-        fake_orgs.EXPECTED_LOADABLE_ORGS[i]['raw_org'] = json.dumps(fakes[i])
+        fake_orgs.EXPECTED_LOADABLE_ORGS[i]['raw_org'] = json.dumps(
+            fake_orgs.FAKE_ORGS[i])
 
 
 class LoadOrgsPipelineTest(ForsetiTestCase):

@@ -45,12 +45,6 @@ API_MAP = {
             'class_name': 'ComputeClient',
             'version': None
         },
-    'compute_beta_api':
-        {
-            'module_name': 'compute',
-            'class_name': 'ComputeClient',
-            'version': 'beta'
-        },
     'crm_api':
         {
             'module_name': 'cloud_resource_manager',

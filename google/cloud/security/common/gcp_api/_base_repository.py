@@ -299,13 +299,15 @@ class BaseRepositoryClient(object):
                                     rate_limiter=self._rate_limiter)
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-arguments
 class GCPRepository(object):
     """Base class for GCP APIs."""
 
     def __init__(self, gcp_service, credentials, component, entity='',
                  num_retries=NUM_HTTP_RETRIES, key_field='project',
-                 max_results_field='maxResults', rate_limiter=None):
+                 list_key_field=None, get_key_field=None,
+                 max_results_field='maxResults', search_query_field='query',
+                 rate_limiter=None):
         """Constructor.
 
         Args:
@@ -321,8 +323,14 @@ class GCPRepository(object):
               before hard failing.
           key_field (str): The field name representing the project to
               query in the API.
+          list_key_field (str): Optional override of key field for calls to
+              list methods.
+          get_key_field (str): Optional override of key field for calls to
+              get methods.
           max_results_field (str): The field name that represents the maximum
               number of results to return in one page.
+          search_query_field (str): The field name used to filter search
+              results.
           rate_limiter (object): A RateLimiter object to manage API quota.
         """
         self.gcp_service = gcp_service
@@ -335,8 +343,16 @@ class GCPRepository(object):
                 self._component, nested_component)()
         self._entity = entity
         self._num_retries = num_retries
-        self._key_field = key_field
+        if list_key_field:
+            self._list_key_field = list_key_field
+        else:
+            self._list_key_field = key_field
+        if get_key_field:
+            self._get_key_field = get_key_field
+        else:
+            self._get_key_field = key_field
         self._max_results_field = max_results_field
+        self._search_query_field = search_query_field
         self._rate_limiter = rate_limiter
 
         self._local = LOCAL_THREAD
@@ -516,7 +532,7 @@ class GCPRepository(object):
         else:
             return request.execute(http=self.http,
                                    num_retries=self._num_retries)
-# pylint: enable=too-many-instance-attributes
+# pylint: enable=too-many-instance-attributes, too-many-arguments
 
 
 class ListQueryMixin(object):
@@ -541,8 +557,8 @@ class ListQueryMixin(object):
         arguments = {'fields': fields,
                      self._max_results_field: max_results}
 
-        if self._key_field and resource:
-            arguments[self._key_field] = resource
+        if self._list_key_field and resource:
+            arguments[self._list_key_field] = resource
 
         if kwargs:
             arguments.update(kwargs)
@@ -600,9 +616,9 @@ class GetQueryMixin(object):
             "The resource '...' was not found"
         """
         assert isinstance(self, GCPRepository)
-        assert bool(self._key_field)
+        assert bool(self._get_key_field)
 
-        arguments = {self._key_field: resource,
+        arguments = {self._get_key_field: resource,
                      'fields': fields}
         if self._entity and target:
             arguments[self._entity] = target
@@ -653,3 +669,30 @@ class GetIamPolicyQueryMixin(object):
             verb=verb,
             verb_arguments=arguments,
         )
+
+class SearchQueryMixin(object):
+    """Mixin that implements Search query."""
+
+    def search(self, query=None, fields=None, max_results=None, verb='search'):
+        """Get all organizations the caller has access to.
+
+        Args:
+          query (str): Additional filters to apply to the restrict the
+              set of resources returned.
+          fields (str): Fields to include in the response - partial response.
+          max_results (int): Number of entries to include per page.
+          verb (str): The method to call on the API.
+
+        Yields:
+          dict: Response from the API.
+        """
+        req_body = {}
+        if query:
+            req_body[self._search_query_field] = query
+        if max_results:
+            req_body[self._max_results_field] = max_results
+
+        for resp in self.execute_search_query(
+                verb=verb,
+                verb_arguments={'body': req_body, 'fields': fields}):
+            yield resp

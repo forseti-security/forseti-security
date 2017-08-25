@@ -44,14 +44,12 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable folders.
 
         Args:
-            resource_from_api: An iterable of resource manager folders
-                search response.
+            resource_from_api: An list of resource manager folders.
 
         Yields:
             An iterable of loadable folders, each folder as a dict.
         """
-        for folder in (f for d in resource_from_api for f in d.get('folders',
-                                                                   [])):
+        for folder in resource_from_api:
             folder_json = json.dumps(folder)
             try:
                 parsed_time = dateutil_parser.parse(folder.get('createTime'))

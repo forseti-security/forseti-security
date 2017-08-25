@@ -33,15 +33,32 @@ GET_PROJECT_RESPONSE = """
 }
 """
 
-GET_PROJECT_NOT_FOUND = """
+GET_PROJECT_ANCESTRY_RESPONSE = """
 {
- "error": {
-  "code": 403,
-  "message": "The caller does not have permission",
-  "status": "PERMISSION_DENIED"
- }
+ "ancestor": [
+  {
+   "resourceId": {
+    "type": "project",
+    "id": "forseti-system-test"
+   }
+  },
+  {
+   "resourceId": {
+    "type": "folder",
+    "id": "3333333"
+   }
+  },
+  {
+   "resourceId": {
+    "type": "organization",
+    "id": "2222222"
+   }
+  }
+ ]
 }
 """
+
+EXPECTED_PROJECT_ANCESTRY_IDs = ["forseti-system-test", "3333333", "2222222"]
 
 GET_IAM_POLICY = """
 {
@@ -66,6 +83,45 @@ GET_IAM_POLICY = """
 }
 """
 
+SEARCH_ORGANIZATIONS_PAGE1 = """
+{
+ "organizations": [
+  {
+   "displayName": "foresti.testing",
+   "owner": {
+    "directoryCustomerId": "ABC123DEF"
+   },
+   "creationTime": "2015-09-09T19:34:18.591Z",
+   "lifecycleState": "ACTIVE",
+   "name": "organizations/2222222"
+  }
+ ],
+ "nextPageToken": "123"
+}
+"""
+
+SEARCH_ORGANIZATIONS_PAGE2 = """
+{
+ "organizations": [
+  {
+   "displayName": "test.foresti.testing",
+   "owner": {
+    "directoryCustomerId": "FED987CBA"
+   },
+   "creationTime": "2016-01-09T09:30:28.001Z",
+   "lifecycleState": "ACTIVE",
+   "name": "organizations/4444444"
+  }
+ ]
+}
+"""
+
+SEARCH_ORGANIZATIONS = [SEARCH_ORGANIZATIONS_PAGE1,
+                        SEARCH_ORGANIZATIONS_PAGE2]
+
+EXPECTED_ORGANIZATIONS_FROM_SEARCH = ["organizations/2222222",
+                                      "organizations/4444444"]
+
 GET_ORGANIZATION = """
 {
  "displayName": "forsetisecurity.testing",
@@ -85,5 +141,17 @@ GET_FOLDER = """
  "displayName": "folder-forseti-test",
  "lifecycleState": "ACTIVE",
  "createTime": "2017-02-09T22:02:07.769Z"
+}
+"""
+
+# Errors
+
+GET_PROJECT_NOT_FOUND = """
+{
+ "error": {
+  "code": 403,
+  "message": "The caller does not have permission",
+  "status": "PERMISSION_DENIED"
+ }
 }
 """

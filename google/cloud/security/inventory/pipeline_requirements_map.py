@@ -48,7 +48,7 @@ REQUIREMENTS_MAP = {
     'firewall_rules':
         {'module_name': 'load_firewall_rules_pipeline',
          'depends_on': 'projects',
-         'api_name': 'compute_beta_api',
+         'api_name': 'compute_api',
          'dao_name': 'project_dao'},
     'folder_iam_policies':
         {'module_name': 'load_folder_iam_policies_pipeline',

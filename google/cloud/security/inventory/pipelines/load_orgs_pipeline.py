@@ -33,7 +33,7 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable organizations.
 
         Args:
-            resource_from_api (iterable): Resource manager org search
+            resource_from_api (list): Resource manager org search
                 response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations#Organization
@@ -41,8 +41,7 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         Yields:
             iterable: Loadable orgs, each org as a dict.
         """
-        for org in (o for d in resource_from_api for o in d.get(
-                'organizations', [])):
+        for org in resource_from_api:
             # org_name is the unique identifier for the org, formatted as
             # "organizations/<organization_id>".
             org_name = org.get('name')
@@ -65,8 +64,7 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
         """
         try:
-            return self.api_client.get_organizations(
-                self.RESOURCE_NAME)
+            return self.api_client.get_organizations(self.RESOURCE_NAME)
         except api_errors.ApiExecutionError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 

@@ -54,13 +54,11 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
 
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def projects(self):
-        """A _ResourceManagerProjectsRepository instance.
-
-        Returns:
-          object: A _ResourceManagerProjectsRepository instance.
-        """
+        """Returns a _ResourceManagerProjectsRepository instance."""
         if not self._projects:
             self._projects = self._init_repository(
                 _ResourceManagerProjectsRepository)
@@ -69,11 +67,7 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
 
     @property
     def organizations(self):
-        """A _ResourceManagerOrganizationsRepository instance.
-
-        Returns:
-          object: A _ResourceManagerOrganizationsRepository instance.
-        """
+        """Returns a _ResourceManagerOrganizationsRepository instance."""
         if not self._organizations:
             self._organizations = self._init_repository(
                 _ResourceManagerOrganizationsRepository)
@@ -82,22 +76,20 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
 
     @property
     def folders(self):
-        """A _ResourceManagerFoldersRepository instance.
-
-        Returns:
-          object: A _ResourceManagerFoldersRepository instance.
-        """
+        """Returns a _ResourceManagerFoldersRepository instance."""
         if not self._folders:
             self._folders = self._init_repository(
                 _ResourceManagerFoldersRepository, version='v2')
 
         return self._folders
+    # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _ResourceManagerProjectsRepository(
         _base_repository.GCPRepository,
         _base_repository.GetQueryMixin,
-        _base_repository.GetIamPolicyQueryMixin):
+        _base_repository.GetIamPolicyQueryMixin,
+        _base_repository.ListQueryMixin):
     """Implementation of Cloud Resource Manager Projects repository."""
 
     def __init__(self, **kwargs):
@@ -107,54 +99,29 @@ class _ResourceManagerProjectsRepository(
           **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerProjectsRepository, self).__init__(
-            key_field='projectId', entity='', component='projects', **kwargs)
+            get_key_field='projectId', list_key_field='', entity='',
+            max_results_field='pageSize', component='projects', **kwargs)
 
-    def get_ancestry(self, project, fields=None):
+    def get_ancestry(self, resource, **kwargs):
         """Get the project ancestory data.
 
         Args:
-          project (str): The project id or number to query.
-          fields (str): Fields to include in the response - partial response.
+          resource (str): The project id or number to query.
+          kwargs (dict): Additional parameters to pass through to
+              GetQueryMixin.get().
 
         Returns:
           dict: Response from the API.
         """
-        return self.execute_query(
-            verb='getAncestry',
-            verb_arguments={self._key_field: project,
-                            'fields': fields,
-                            'body': {}}
-        )
-
-    def list(self, parent_id=None, parent_type=None, filters=None, fields=None):
-        """List projects, optionally by parent.
-
-        Args:
-          parent_id (str): The id of the organization or folder parent object.
-          parent_type (str): Either folder or organization.
-          filters (str): Additional filters to apply to the restrict the
-              set of projects returned.
-          fields (str): Fields to include in the response - partial response.
-
-        Yields:
-          dict: Response from the API.
-        """
-        if not filters:
-            filters = []
-        if parent_id:
-            filters.append('parent.id:{}'.format(parent_id))
-        if parent_type:
-            filters.append('parent.type:{}'.format(parent_type))
-
-        for resp in self.execute_paged_query(
-                verb='list',
-                verb_arguments={'filter': ' '.join(filters), 'fields': fields}):
-            yield resp
+        return _base_repository.GetQueryMixin.get(
+            self, resource, verb='getAncestry', body=dict(), **kwargs)
 
 
 class _ResourceManagerOrganizationsRepository(
         _base_repository.GCPRepository,
-        _base_repository.GetIamPolicyQueryMixin):
+        _base_repository.GetQueryMixin,
+        _base_repository.GetIamPolicyQueryMixin,
+        _base_repository.SearchQueryMixin):
     """Implementation of Cloud Resource Manager Organizations repository."""
 
     def __init__(self, **kwargs):
@@ -164,52 +131,31 @@ class _ResourceManagerOrganizationsRepository(
           **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerOrganizationsRepository, self).__init__(
-            component='organizations', **kwargs)
+            key_field='name', max_results_field='pageSize',
+            search_query_field='filter', component='organizations', **kwargs)
 
-    def get(self, organization_id, fields=None):
-        """Get the organization resource data.
+    @staticmethod
+    def get_name(organization_id):
+        """Format's an organization_id to pass in to .get().
 
         Args:
-          organization_id (str): The organization id to query, either just the
-              id or the id prefixed with 'organizations/'.
-          fields (str): Fields to include in the response - partial response.
+            organization_id (str): The organization id to query, either just the
+                id or the id prefixed with 'organizations/'.
 
         Returns:
-          dict: Response from the API.
+            str: The formatted resource name.
         """
         if not organization_id.startswith('organizations/'):
             organization_id = 'organizations/{}'.format(organization_id)
-        return self.execute_query(
-            verb='get',
-            verb_arguments={'name': organization_id, 'fields': fields}
-        )
-
-    # pylint: disable=redefined-builtin
-    def search(self, filter=None, fields=None):
-        """Get all organizations the caller has access to.
-
-        Args:
-          filter (str): Additional filters to apply to the restrict the
-              set of organizations returned.
-          fields (str): Fields to include in the response - partial response.
-
-        Yields:
-          dict: Response from the API.
-        """
-        req_body = {}
-        if filter:
-            req_body['filter'] = filter
-        for resp in self.execute_search_query(
-                verb='search',
-                verb_arguments={'body': req_body, 'fields': fields}):
-            yield resp
-    # pylint: enable=redefined-builtin
+        return organization_id
 
 
 class _ResourceManagerFoldersRepository(
         _base_repository.GCPRepository,
+        _base_repository.GetQueryMixin,
         _base_repository.GetIamPolicyQueryMixin,
-        _base_repository.ListQueryMixin):
+        _base_repository.ListQueryMixin,
+        _base_repository.SearchQueryMixin):
     """Implementation of Cloud Resource Manager Folders repository."""
 
     def __init__(self, **kwargs):
@@ -219,44 +165,23 @@ class _ResourceManagerFoldersRepository(
           **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerFoldersRepository, self).__init__(
-            key_field='parent', component='folders', **kwargs)
+            list_key_field='parent', get_key_field='name',
+            max_results_field='pageSize', component='folders', **kwargs)
 
-    def get(self, folder_id, fields=None):
-        """Get the project resource data.
+    @staticmethod
+    def get_name(folder_id):
+        """Format's an folder_id to pass in to .get().
 
         Args:
-          folder_id (str): The folder id to query, optionally prefixed with
-              'folders/'.
-          fields (str): Fields to include in the response - partial response.
+            folder_id (str): The folder id to query, either just the
+                id or the id prefixed with 'folders/'.
 
         Returns:
-          dict: Response from the API.
+            str: The formatted resource name.
         """
         if not folder_id.startswith('folders/'):
             folder_id = 'folders/{}'.format(folder_id)
-        return self.execute_query(
-            verb='get',
-            verb_arguments={'name': folder_id, 'fields': fields}
-        )
-
-    def search(self, query=None, fields=None):
-        """Get all folders the caller has access to based on query.
-
-        Args:
-          query (str): Additional filters to apply to the restrict the
-              set of folders returned.
-          fields (str): Fields to include in the response - partial response.
-
-        Yields:
-          dict: Response from the API.
-        """
-        req_body = {}
-        if query:
-            req_body['query'] = query
-        for resp in self.execute_search_query(
-                verb='search',
-                verb_arguments={'body': req_body, 'fields': fields}):
-            yield resp
+        return folder_id
 
 
 class CloudResourceManagerClient(object):
@@ -294,11 +219,18 @@ class CloudResourceManagerClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
-    def get_projects(self, resource_name, **filterargs):
-        """Get all the projects this application has access to.
+    def get_projects(self, resource_name, parent_id=None, parent_type=None,
+                     **filterargs):
+        """Get all the projects the authenticated account has access to.
+
+        If no parent is passed in, then all projects the caller has visibility
+        to are returned. This is significantly less efficient then listing by
+        parent.
 
         Args:
             resource_name (str): The resource type.
+            parent_id (str): The id of the organization or folder parent object.
+            parent_type (str): Either folder or organization.
             filterargs (dict): Extra project filter args.
 
         Yields:
@@ -313,26 +245,47 @@ class CloudResourceManagerClient(object):
         for key, value in filterargs.items():
             filters.append('{}:{}'.format(key, value))
 
+        if parent_id:
+            filters.append('parent.id:{}'.format(parent_id))
+        if parent_type:
+            filters.append('parent.type:{}'.format(parent_type))
+
         try:
-            for response in self.repository.projects.list(filters=filters):
+            for response in self.repository.projects.list(
+                    filter=' '.join(filters)):
                 yield response
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
-    def get_project_iam_policies(self, resource_name, project_identifier):
+    def get_project_ancestry(self, project_id):
+        """Get the full folder ancestry for a project.
+
+        Args:
+            project_id (str): Either the project number or the project id.
+
+        Returns:
+            list: The ancesters of the project, in order from direct parent to
+                root organization id.
+        """
+        try:
+            results = self.repository.projects.get_ancestry(project_id)
+            return results.get('ancestor', [])
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(project_id, e)
+
+    def get_project_iam_policies(self, resource_name, project_id):
         """Get all the iam policies of given project numbers.
 
         Args:
             resource_name (str): The resource type.
-            project_identifier (str): Either the project number or the
-                project id.
+            project_id (str): Either the project number or the project id.
 
         Returns:
             list: IAM policies of the project.
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
         """
         try:
-            return self.repository.projects.get_iam_policy(project_identifier)
+            return self.repository.projects.get_iam_policy(project_id)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -345,24 +298,25 @@ class CloudResourceManagerClient(object):
         Returns:
             dict: The org response object if found, otherwise False.
         """
+        name = self.repository.organizations.get_name(org_name)
         try:
-            return self.repository.organizations.get(org_name)
+            return self.repository.organizations.get(name)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(org_name, e)
 
     def get_organizations(self, resource_name):
-        """Get organizations that this application has access to.
+        """Get organizations that the authenticated account has access to.
 
         Args:
             resource_name (str): The resource type.
 
-        Yields:
-            dict: An iterator of the response from the organizations API,
-                which is paginated and contains a list of organizations.
+        Returns:
+            list: A list of Folder dicts as returned by the API.
         """
         try:
-            for response in self.repository.organizations.search():
-                yield response
+            paged_results = self.repository.organizations.search()
+            return _base_repository.flatten_list_results(paged_results,
+                                                         'organizations')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -402,33 +356,44 @@ class CloudResourceManagerClient(object):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
+        name = self.repository.folders.get_name(folder_name)
         try:
-            return self.repository.folders.get(folder_name)
+            return self.repository.folders.get(name)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(folder_name, e)
 
-    def get_folders(self, resource_name, **kwargs):
-        """Find all folders Forseti can access.
+    def get_folders(self, resource_name, parent=None, show_deleted=False):
+        """Find all folders that the authenticated account has access to.
+
+        If no parent is passed in, then all folders the caller has visibility
+        to are returned. This is significantly less efficient then listing by
+        parent.
 
         Args:
             resource_name (str): The resource type.
-            **kwargs (dict): Extra args.
+            parent (str): Optional parent resource, either
+                'organizations/{org_id}' or 'folders/{folder_id}'.
+            show_deleted (bool): Determines if deleted folders should be
+                returned in the results.
 
-        Yields:
-            dict: The folders API response.
+        Returns:
+            list: A list of Folder dicts as returned by the API.
 
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        queries = []
-        if 'lifecycle_state' in kwargs:
-            queries.append('lifecycleState={}'.format(
-                kwargs.get('lifecycle_state')))
+        if parent:
+            paged_results = self.repository.folders.list(
+                parent, showDeleted=show_deleted)
+        else:
+            query = ''
+            if not show_deleted:
+                query = 'lifecycleState=ACTIVE'
+            paged_results = self.repository.folders.search(query=query)
 
         try:
-            for response in self.repository.folders.search(
-                    query=' '.join(queries)):
-                yield response
+            return _base_repository.flatten_list_results(paged_results,
+                                                         'folders')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
