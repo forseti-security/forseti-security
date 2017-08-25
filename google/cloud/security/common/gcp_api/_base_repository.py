@@ -41,6 +41,7 @@ LOCAL_THREAD = threading.local()
 LOGGER = log_util.get_logger(__name__)
 
 
+# pylint: disable=bad-indentation, bad-continuation
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
        wait_exponential_multiplier=1000, wait_exponential_max=10000,
        stop_max_attempt_number=5)
@@ -543,6 +544,7 @@ class ListQueryMixin(object):
         """List subresources of a given resource.
 
         Args:
+            self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to query.
             fields (str): Fields to include in the response - partial response.
             max_results (int): Number of entries to include per page.
@@ -552,8 +554,6 @@ class ListQueryMixin(object):
         Yields:
             dict: An API response containing one page of results.
         """
-        assert isinstance(self, GCPRepository)
-
         arguments = {'fields': fields,
                      self._max_results_field: max_results}
 
@@ -581,6 +581,7 @@ class AggregatedListQueryMixin(ListQueryMixin):
         """List all subresource entities of a given resource.
 
         Args:
+            self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to query.
             fields (str): Fields to include in the response - partial response.
             max_results (int): Number of entries to include per page.
@@ -601,6 +602,7 @@ class GetQueryMixin(object):
         """Get API entity.
 
         Args:
+            self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to query.
             target (str):  Name of the entity to fetch.
             fields (str): Fields to include in the response - partial response.
@@ -611,12 +613,17 @@ class GetQueryMixin(object):
             dict: GCE response.
 
         Raises:
+            ValueError: When get_key_field was not defined in the base
+                GCPRepository instance.
+
             errors.HttpError: When attempting to get a non-existent entity.
                ex: HttpError 404 when requesting ... returned
                    "The resource '...' was not found"
         """
-        assert isinstance(self, GCPRepository)
-        assert bool(self._get_key_field)
+        if not self._get_key_field:
+            raise ValueError('Repository was created without a valid '
+                             'get_key_field argument. Cannot execute get '
+                             'request.')
 
         arguments = {self._get_key_field: resource,
                      'fields': fields}
@@ -639,6 +646,7 @@ class GetIamPolicyQueryMixin(object):
         """Get resource IAM Policy.
 
         Args:
+            self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to fetch.
             fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
@@ -656,8 +664,6 @@ class GetIamPolicyQueryMixin(object):
                 ex: HttpError 404 when requesting ... returned
                     "The resource '...' was not found"
         """
-        assert isinstance(self, GCPRepository)
-
         arguments = {resource_field: resource,
                      'fields': fields}
         if include_body:
@@ -675,9 +681,10 @@ class SearchQueryMixin(object):
     """Mixin that implements Search query."""
 
     def search(self, query=None, fields=None, max_results=500, verb='search'):
-        """Get all organizations the caller has access to.
+        """List all subresource entities visable to the caller.
 
         Args:
+            self (GCPRespository): An instance of a GCPRespository class.
             query (str): Additional filters to apply to the restrict the
                 set of resources returned.
             fields (str): Fields to include in the response - partial response.
