@@ -15,7 +15,6 @@
 """ Explain API. """
 
 from google.cloud.security.iam.explain.importer import importer
-from google.cloud.security.iam.utils import autoclose_stream
 
 
 # TODO: The next editor must remove this disable and correct issues.

@@ -27,7 +27,14 @@ def autoclose_stream(f):
     """Decorator to close gRPC stream."""
 
     def wrapper(*args):
-        """Wrapper function, checks context state to close stream."""
+        """Wrapper function, checks context state to close stream.
+
+        Args:
+            *args (list): All arguments provided to the wrapped function.
+
+        Yields:
+            object: Whatever the wrapped function yields to the stream.
+        """
 
         def closed(context):
             """Returns true iff the connection is closed."""

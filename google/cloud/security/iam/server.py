@@ -40,14 +40,17 @@ STATIC_SERVICE_MAPPING = {
 
 
 class AbstractServiceConfig(object):
+    """Abstract base class for service configuration. This class
+    is used to implement dependency injection for the gRPC services."""
+
     __metaclass__ = ABCMeta
 
     @abstractmethod
     def get_organization_id(self):
         """Get the organization id.
 
-        Returns:
-            str: The configure organization id.
+        Raises:
+            NotImplementedError: Abstract.
         """
 
         raise NotImplementedError()
@@ -56,8 +59,8 @@ class AbstractServiceConfig(object):
     def get_gsuite_sa_path(self):
         """Get path to gsuite service account.
 
-        Returns:
-            str: Gsuite admin service account path.
+        Raises:
+            NotImplementedError: Abstract.
         """
 
         raise NotImplementedError()
@@ -66,8 +69,8 @@ class AbstractServiceConfig(object):
     def get_gsuite_admin_email(self):
         """Get the gsuite admin email.
 
-        Returns:
-            str: Gsuite admin email address to impersonate.
+        Raises:
+            NotImplementedError: Abstract.
         """
 
         raise NotImplementedError()
@@ -76,8 +79,8 @@ class AbstractServiceConfig(object):
     def get_engine(self):
         """Get the database engine.
 
-        Returns:
-            object: Database engine object.
+        Raises:
+            NotImplementedError: Abstract.
         """
 
         raise NotImplementedError()
@@ -86,8 +89,8 @@ class AbstractServiceConfig(object):
     def scoped_session(self):
         """Get a scoped session.
 
-        Returns:
-            object: A scoped session.
+        Raises:
+            NotImplementedError: Abstract.
         """
 
         raise NotImplementedError()
@@ -96,15 +99,19 @@ class AbstractServiceConfig(object):
     def client(self):
         """Get an API client.
 
-        Returns:
-            object: API client to use against services.
+        Raises:
+            NotImplementedError: Abstract.
         """
 
         raise NotImplementedError()
 
     @abstractmethod
     def run_in_background(self, function):
-        """Runs a function in a thread pool in the background."""
+        """Runs a function in a thread pool in the background.
+
+        Raises:
+            NotImplementedError: Abstract.
+        """
 
         raise NotImplementedError()
 

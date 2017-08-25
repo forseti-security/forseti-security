@@ -27,7 +27,7 @@ from google.cloud.security.iam.utils import autoclose_stream
 
 
 def inventory_pb_from_object(inventory_index):
-    """Convert internal inventory datastructure to protobuf."""
+    """Convert internal inventory data structure to protobuf."""
 
     return inventory_pb2.InventoryIndex(
         id=inventory_index.id,
