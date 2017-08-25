@@ -20,6 +20,25 @@ import logging
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
+# pylint: disable=protected-access
+
+
+def autoclose_stream(f):
+    """Decorator to close gRPC stream."""
+
+    def wrapper(*args):
+        """Wrapper function, checks context state to close stream."""
+
+        def closed(context):
+            """Returns true iff the connection is closed."""
+
+            return context._state.client == 'closed'
+        context = args[-1]
+        for result in f(*args):
+            if closed(context):
+                return
+            yield result
+    return wrapper
 
 
 def logcall(f, level=logging.CRITICAL):
