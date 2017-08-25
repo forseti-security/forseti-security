@@ -13,10 +13,8 @@
 # limitations under the License.
 
 """Wrapper for Compute API client."""
-
 import json
 import os
-
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 

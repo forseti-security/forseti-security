@@ -13,10 +13,8 @@
 # limitations under the License.
 
 """Wrapper for Storage API client."""
-
 import StringIO
 import urlparse
-
 from googleapiclient import errors
 from googleapiclient import http
 from httplib2 import HttpLib2Error

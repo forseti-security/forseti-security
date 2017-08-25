@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Wrapper for Resource Manager API client."""
-
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 

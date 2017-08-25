@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Wrapper for SQL API client."""
-
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 

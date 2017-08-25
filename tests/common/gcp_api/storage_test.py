@@ -13,15 +13,13 @@
 # limitations under the License.
 
 """Tests the Storage client."""
-
 import unittest
-
 import mock
 from oauth2client import client
 
+from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
 from tests.common.gcp_api.test_data import http_mocks
-from tests import unittest_utils
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import storage
 

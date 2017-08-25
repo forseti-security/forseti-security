@@ -13,11 +13,9 @@
 # limitations under the License.
 
 """Tests the base repository classes."""
-
 import datetime
 import threading
 import unittest
-
 from googleapiclient import discovery
 from googleapiclient import http
 import mock

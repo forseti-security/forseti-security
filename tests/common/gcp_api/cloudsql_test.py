@@ -13,21 +13,20 @@
 # limitations under the License.
 
 """Tests the CloudSQL API client."""
-
 import json
 import unittest
 import mock
 from oauth2client import client
 
+from tests import unittest_utils
 from tests.common.gcp_api.test_data import http_mocks
 from tests.common.gcp_type.test_data import fake_cloudsql
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
 # pylint: disable=bad-indentation
-class CloudsqlTest(ForsetiTestCase):
+class CloudsqlTest(unittest_utils.ForsetiTestCase):
     """Test the CloudSQL Client."""
 
     @classmethod

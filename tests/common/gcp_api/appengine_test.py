@@ -13,19 +13,18 @@
 # limitations under the License.
 
 """Tests the AppEngine client."""
-
 import unittest
 import mock
 from oauth2client import client
 
+from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_appengine_responses as fae
 from tests.common.gcp_api.test_data import http_mocks
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import appengine as ae
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
-class AppEngineTest(ForsetiTestCase):
+class AppEngineTest(unittest_utils.ForsetiTestCase):
     """Test the AppEngine client."""
 
     @classmethod

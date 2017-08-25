@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Base GCP client which uses the discovery API."""
-
 import logging
 import threading
 import googleapiclient

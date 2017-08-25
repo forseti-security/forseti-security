@@ -13,20 +13,19 @@
 # limitations under the License.
 
 """Tests the IAM API client."""
-
 import unittest
 import mock
 from oauth2client import client
 
+from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_iam_responses as fake_iam
 from tests.common.gcp_api.test_data import http_mocks
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import iam
 
 
 # pylint: disable=bad-indentation
-class IamTest(ForsetiTestCase):
+class IamTest(unittest_utils.ForsetiTestCase):
     """Test the IAM Client."""
 
     @classmethod

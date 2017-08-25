@@ -13,19 +13,18 @@
 # limitations under the License.
 
 """Tests the AppEngine client."""
-
 import unittest
 import mock
 from oauth2client import service_account
 
+from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_admin_directory_responses as fake_admin
 from tests.common.gcp_api.test_data import http_mocks
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import admin_directory as admin
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
-class AdminDirectoryTest(ForsetiTestCase):
+class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
     """Test the GSuite Admin Directory client."""
 
     @classmethod

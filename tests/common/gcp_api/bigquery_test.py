@@ -13,21 +13,19 @@
 # limitations under the License.
 
 """Tests the Bigquery client."""
-
 import json
 import unittest
-
 import mock
 from oauth2client import client
 
+from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_bigquery as fbq
 from tests.common.gcp_api.test_data import http_mocks
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import bigquery as bq
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
-class BigqueryTestCase(ForsetiTestCase):
+class BigqueryTestCase(unittest_utils.ForsetiTestCase):
     """Test the Bigquery API Client."""
 
     @classmethod

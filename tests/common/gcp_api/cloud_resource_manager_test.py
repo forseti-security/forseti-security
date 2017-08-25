@@ -13,24 +13,23 @@
 # limitations under the License.
 
 """Tests the Cloud Resource Manager API client."""
-
 import json
 import unittest
 import mock
 from oauth2client import client
 
+from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_crm_responses
 from tests.common.gcp_api.test_data import http_mocks
 from tests.common.gcp_type.test_data import fake_folders
 from tests.common.gcp_type.test_data import fake_orgs
 from tests.common.gcp_type.test_data import fake_projects
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 
 
-class CloudResourceManagerTest(ForsetiTestCase):
+class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
     """Test the Cloud Resource Manager API Client."""
 
     @classmethod
