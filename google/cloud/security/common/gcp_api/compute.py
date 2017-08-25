@@ -137,11 +137,11 @@ class ComputeRepository(_base_repository.BaseRepositoryClient):
         """Constructor.
 
         Args:
-          quota_max_calls (int): Allowed requests per <quota_period> for the
-              API.
-          quota_period (float): The time period to limit the quota_requests to.
-          use_rate_limiter (bool): Set to false to disable the use of a rate
-              limiter for this service.
+            quota_max_calls (int): Allowed requests per <quota_period> for the
+                API.
+            quota_period (float): The time period to track requests over.
+            use_rate_limiter (bool): Set to false to disable the use of a rate
+                limiter for this service.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -252,7 +252,7 @@ class _ComputeBackendServicesRepository(
         """Constructor.
 
         Args:
-          kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeBackendServicesRepository, self).__init__(
             component='backendServices', **kwargs)
@@ -268,7 +268,7 @@ class _ComputeForwardingRulesRepository(
         """Constructor.
 
         Args:
-            kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeForwardingRulesRepository, self).__init__(
             component='forwardingRules', **kwargs)
@@ -281,7 +281,7 @@ class _ComputeForwardingRulesRepository(
         Args:
             resource (str): The project to query resources for.
             region (str): The region of the forwarding rules to query.
-            kwargs (dict): Additional args to pass through to the base method.
+            **kwargs (dict): Additional args to pass through to the base method.
 
         Returns:
             iterator: An iterator over each page of results from the API.
@@ -300,7 +300,7 @@ class _ComputeFirewallsRepository(
         """Constructor.
 
         Args:
-            kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeFirewallsRepository, self).__init__(
             component='firewalls', **kwargs)
@@ -316,7 +316,7 @@ class _ComputeInstanceGroupManagersRepository(
         """Constructor.
 
         Args:
-            kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeInstanceGroupManagersRepository, self).__init__(
             component='instanceGroupManagers', **kwargs)
@@ -332,7 +332,7 @@ class _ComputeInstanceGroupsRepository(
         """Constructor.
 
         Args:
-            kwargs (dict): The args to pass into GCPRepository.__init__()
+           **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeInstanceGroupsRepository, self).__init__(
             component='instanceGroups', **kwargs)
@@ -344,7 +344,7 @@ class _ComputeInstanceGroupsRepository(
             resource (str): The project to query resources for.
             instance_group (str): The name of the instance group to query.
             zone (str): The zone of the instance group to query.
-            kwargs (dict): Additional args to pass through to the base method.
+            **kwargs (dict): Additional args to pass through to the base method.
 
         Returns:
             iterator: An iterator over each page of results from the API.
@@ -354,7 +354,6 @@ class _ComputeInstanceGroupsRepository(
 
         return _base_repository.ListQueryMixin.list(
             self, resource, verb='listInstances', **kwargs)
-
 
 
 class _ComputeInstancesRepository(
@@ -367,7 +366,7 @@ class _ComputeInstancesRepository(
         """Constructor.
 
         Args:
-            kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeInstancesRepository, self).__init__(
             component='instances', **kwargs)
@@ -380,7 +379,7 @@ class _ComputeInstancesRepository(
         Args:
             resource (str): The project to query resources for.
             zone (str): The zone of the instance group to query.
-            kwargs (dict): Additional args to pass through to the base method.
+            **kwargs (dict): Additional args to pass through to the base method.
 
         Returns:
             iterator: An iterator over each page of results from the API.
@@ -399,7 +398,7 @@ class _ComputeInstanceTemplatesRepository(
         """Constructor.
 
         Args:
-            kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeInstanceTemplatesRepository, self).__init__(
             component='instanceTemplates', **kwargs)
@@ -414,7 +413,7 @@ class _ComputeRegionInstanceGroupsRepository(
         """Constructor.
 
         Args:
-            kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeRegionInstanceGroupsRepository, self).__init__(
             component='regionInstanceGroups', **kwargs)
@@ -426,7 +425,7 @@ class _ComputeRegionInstanceGroupsRepository(
             resource (str): The project to query resources for.
             instance_group (str): The name of the instance group to query.
             region (str): The region of the instance group to query.
-            kwargs (dict): Additional args to pass through to the base method.
+            **kwargs (dict): Additional args to pass through to the base method.
 
         Returns:
             iterator: An iterator over each page of results from the API.
@@ -469,7 +468,7 @@ class ComputeClient(object):
         Args:
             project_id (str): The project id.
 
-        Return:
+        Returns:
             list: A list of backend services for this project.
         """
         paged_results = self.repository.backend_services.aggregated_list(
@@ -487,7 +486,7 @@ class ComputeClient(object):
             project_id (str): The project id.
             region (str): The region name.
 
-        Return:
+        Returns:
             list: A list of forwarding rules for this project.
         """
         repository = self.repository.forwarding_rules
@@ -507,7 +506,7 @@ class ComputeClient(object):
         Args:
             project_id (str): The project id.
 
-        Return:
+        Returns:
             list: A list of firewall rules for this project id.
         """
         paged_results = self.repository.firewalls.list(project_id)
@@ -520,7 +519,7 @@ class ComputeClient(object):
             project_id (str): The project id.
             zone (str): The zone to list the instances in.
 
-        Return:
+        Returns:
             list: A list of instances for this project.
         """
         repository = self.repository.instances
@@ -544,10 +543,10 @@ class ComputeClient(object):
         Args:
             project_id (str): The project id.
             instance_group_name (str): The instance group's name.
-            zone (str): The zonal instance group's zone.
             region (str): The regional instance group's region.
+            zone (str): The zonal instance group's zone.
 
-        Return:
+        Returns:
             list: instance URLs for this instance group.
 
         Raises:
@@ -583,7 +582,7 @@ class ComputeClient(object):
         Args:
             project_id (str): The project id.
 
-        Return:
+        Returns:
             list: A list of instance groups for this project.
         """
         paged_results = self.repository.instance_groups.aggregated_list(
@@ -608,7 +607,7 @@ class ComputeClient(object):
         Args:
             project_id (str): The project id.
 
-        Return:
+        Returns:
             list: A list of instance templates for this project.
         """
         paged_results = self.repository.instance_templates.list(project_id)
@@ -620,7 +619,7 @@ class ComputeClient(object):
         Args:
             project_id (str): The project id.
 
-        Return:
+        Returns:
             list: A list of instance group managers for this project.
         """
         paged_results = self.repository.instance_group_managers.aggregated_list(

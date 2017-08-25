@@ -88,7 +88,7 @@ class _IamProjectsServiceAccountsRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_IamProjectsServiceAccountsRepository, self).__init__(
             key_field='name', max_results_field='pageSize',
@@ -98,12 +98,12 @@ class _IamProjectsServiceAccountsRepository(
         """Get Service Account IAM Policy.
 
         Args:
-          resource (str): The id of the resource to fetch.
-          fields (str): Fields to include in the response - partial response.
-          kwargs (dict): Optional additional arguments to pass to the query.
+            resource (str): The id of the resource to fetch.
+            fields (str): Fields to include in the response - partial response.
+            **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
-          dict: GCE response.
+            dict: GCE response.
         """
         # The IAM getIamPolicy does not allow the 'body' argument, so this
         # overrides the default behavior by setting include_body to False.
@@ -134,7 +134,7 @@ class _IamProjectsServiceAccountsKeysRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_IamProjectsServiceAccountsKeysRepository, self).__init__(
             key_field='name', component='projects.serviceAccounts.keys',

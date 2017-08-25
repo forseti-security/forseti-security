@@ -34,14 +34,14 @@ class AdminDirectoryRepository(_base_repository.BaseRepositoryClient):
         """Constructor.
 
         Args:
-          credentials (object): An oauth2client credentials object. The admin
-              directory API needs a service account credential with delegated
-              super admin role.
-          quota_max_calls (int): Allowed requests per <quota_period> for the
-              API.
-          quota_period (float): The time period to limit the quota_requests to.
-          use_rate_limiter (bool): Set to false to disable the use of a rate
-              limiter for this service.
+            credentials (object): An oauth2client credentials object. The admin
+                directory API needs a service account credential with delegated
+                super admin role.
+            quota_max_calls (int): Allowed requests per <quota_period> for the
+                API.
+            quota_period (float): The time period to track requests over.
+            use_rate_limiter (bool): Set to false to disable the use of a rate
+                limiter for this service.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -87,7 +87,7 @@ class _AdminDirectoryGroupsRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_AdminDirectoryGroupsRepository, self).__init__(
             key_field='', component='groups', **kwargs)
@@ -102,7 +102,7 @@ class _AdminDirectoryMembersRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_AdminDirectoryMembersRepository, self).__init__(
             key_field='groupKey', component='members', **kwargs)

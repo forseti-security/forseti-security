@@ -14,6 +14,7 @@
 
 """API errors."""
 
+
 class Error(Exception):
     """Base Error class."""
 

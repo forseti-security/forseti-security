@@ -25,7 +25,6 @@ from google.cloud.security.common.gcp_api import cloudsql
 from google.cloud.security.common.gcp_api import errors as api_errors
 
 
-# pylint: disable=bad-indentation
 class CloudsqlTest(unittest_utils.ForsetiTestCase):
     """Test the CloudSQL Client."""
 

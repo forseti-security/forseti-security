@@ -45,10 +45,10 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         """Raise exception on invalid paths."""
         test_path = '/some/local/path/file.ext'
         with self.assertRaises(api_errors.InvalidBucketPathError):
-            bucket, obj_path = storage.get_bucket_and_path_from(test_path)
+            storage.get_bucket_and_path_from(test_path)
 
         with self.assertRaises(api_errors.InvalidBucketPathError):
-            bucket, obj_path = storage.get_bucket_and_path_from(None)
+            storage.get_bucket_and_path_from(None)
 
     def test_get_buckets(self):
         """Test get buckets."""

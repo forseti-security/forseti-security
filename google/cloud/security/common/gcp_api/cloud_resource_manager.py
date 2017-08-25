@@ -34,11 +34,11 @@ class CloudResourceManagerRepository(_base_repository.BaseRepositoryClient):
         """Constructor.
 
         Args:
-          quota_max_calls (int): Allowed requests per <quota_period> for the
-              API.
-          quota_period (float): The time period to limit the quota_requests to.
-          use_rate_limiter (bool): Set to false to disable the use of a rate
-              limiter for this service.
+            quota_max_calls (int): Allowed requests per <quota_period> for the
+                API.
+            quota_period (float): The time period to track requests over.
+            use_rate_limiter (bool): Set to false to disable the use of a rate
+                limiter for this service.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -95,7 +95,7 @@ class _ResourceManagerProjectsRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerProjectsRepository, self).__init__(
             get_key_field='projectId', list_key_field='', entity='',
@@ -105,12 +105,12 @@ class _ResourceManagerProjectsRepository(
         """Get the project ancestory data.
 
         Args:
-          resource (str): The project id or number to query.
-          kwargs (dict): Additional parameters to pass through to
-              GetQueryMixin.get().
+            resource (str): The project id or number to query.
+            **kwargs (dict): Additional parameters to pass through to
+                GetQueryMixin.get().
 
         Returns:
-          dict: Response from the API.
+            dict: Response from the API.
         """
         return _base_repository.GetQueryMixin.get(
             self, resource, verb='getAncestry', body=dict(), **kwargs)
@@ -127,7 +127,7 @@ class _ResourceManagerOrganizationsRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerOrganizationsRepository, self).__init__(
             key_field='name', max_results_field='pageSize',
@@ -161,7 +161,7 @@ class _ResourceManagerFoldersRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ResourceManagerFoldersRepository, self).__init__(
             list_key_field='parent', get_key_field='name',
@@ -230,7 +230,7 @@ class CloudResourceManagerClient(object):
             resource_name (str): The resource type.
             parent_id (str): The id of the organization or folder parent object.
             parent_type (str): Either folder or organization.
-            filterargs (dict): Extra project filter args.
+            **filterargs (dict): Extra project filter args.
 
         Yields:
             dict: The projects.list() response.

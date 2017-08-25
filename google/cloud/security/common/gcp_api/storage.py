@@ -35,7 +35,7 @@ def get_bucket_and_path_from(full_path):
         full_path (str): The full GCS path. Must be in the format
             gs://bucket-name/path/to/object
 
-    Return:
+    Returns:
         tuple: The bucket name and object path.
             Ex. (bucket-name, path/to/object)
     Raises:
@@ -131,12 +131,12 @@ class _StorageBucketsRepository(
         """Get Bucket IAM Policy.
 
         Args:
-          bucket (str): The id of the bucket to fetch.
-          fields (str): Fields to include in the response - partial response.
-          kwargs (dict): Optional additional arguments to pass to the query.
+            bucket (str): The id of the bucket to fetch.
+            fields (str): Fields to include in the response - partial response.
+            **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
-          dict: GCE response.
+            dict: GCE response.
         """
         # The Buckets getIamPolicy does not allow the 'body' argument, so this
         # overrides the default behavior by setting include_body to False. It
@@ -156,7 +156,7 @@ class _StorageObjectsRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_StorageObjectsRepository, self).__init__(
             key_field='bucket', component='objects', **kwargs)
@@ -168,7 +168,7 @@ class _StorageObjectsRepository(
             bucket (str): The name of the bucket to fetch.
             object_name (str): The name of the object to fetch.
             fields (str): Fields to include in the response - partial response.
-            kwargs (dict): Optional additional arguments to pass to the query.
+            **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
             dict: GCE response.

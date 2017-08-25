@@ -28,7 +28,6 @@ from google.cloud.security.common.gcp_api import _base_repository as base
 from google.cloud.security.common.gcp_api import _supported_apis
 from google.cloud.security.common.gcp_api import errors as api_errors
 
-
 # From oauth2client/tests/test_service_account.py
 FAKE_KEYFILE = b"""
 {
@@ -82,6 +81,9 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             mock_discovery_build):
         """Test that Forseti-supported API in BaseClient.__init__() works.
 
+        Args:
+            mock_discovery_build (Mock): Mock object.
+
         Setup:
             * Pick one of the supported APIs.
             * Instantiate the Base Client with just the API name.
@@ -95,12 +97,11 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         supported_api = _supported_apis.SUPPORTED_APIS[api_name]
         mock_credentials = mock.MagicMock()
 
-        client = base.BaseRepositoryClient(
+        repo_client = base.BaseRepositoryClient(
             api_name, credentials=mock_credentials)
 
         self.assertEqual((api_name, [supported_api['default_version']]),
-                         (client.name, client.versions))
-
+                         (repo_client.name, repo_client.versions))
 
     @mock.patch.object(discovery, 'build', autospec=True)
     @mock.patch.object(base, 'LOGGER', autospec=True)
@@ -109,6 +110,10 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             mock_logger,
             mock_discovery_build):
         """Test that Forseti-supported API with unsupported valid version is ok.
+
+        Args:
+            mock_logger (Mock): Mock objects.
+            mock_discovery_build (Mock): Mock object.
 
         Setup:
             * Pick one of the supported APIs.
@@ -128,11 +133,11 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
 
         mock_credentials = mock.MagicMock()
 
-        client = base.BaseRepositoryClient(
+        repo_client = base.BaseRepositoryClient(
             api_name, credentials=mock_credentials, versions=[provided_version])
 
         self.assertEqual((api_name, [provided_version]),
-                         (client.name, client.versions))
+                         (repo_client.name, repo_client.versions))
 
         mock_logger.warn.assert_called_with(
             mock.ANY, api_name, provided_version)
@@ -144,6 +149,10 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             mock_logger,
             mock_discovery_build):
         """Test that unsupported API is ok.
+
+        Args:
+            mock_logger (Mock): Mock objects.
+            mock_discovery_build (Mock): Mock object.
 
         Setup:
             * Pick a non-supported API.
@@ -160,11 +169,11 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
 
         mock_credentials = mock.MagicMock()
 
-        client = base.BaseRepositoryClient(
+        repo_client = base.BaseRepositoryClient(
             api_name, credentials=mock_credentials, versions=provided_versions)
 
         expected_repr = 'API: name=zoo, versions=[\'v1\', \'v2\']'
-        self.assertEqual(expected_repr, '%s' % client)
+        self.assertEqual(expected_repr, '%s' % repo_client)
 
         mock_logger.warn.assert_called_with(
             mock.ANY, api_name)
@@ -172,7 +181,9 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
     @mock.patch.object(discovery, 'build', autospec=True)
     def test_init_repository_no_supported_version(self, mock_discovery_build):
         """Verify that _init_repository will pick a version if none provided."""
+
         class ZooRepository(base.GCPRepository):
+
             def __init__(self, **kwargs):
                 super(ZooRepository, self).__init__(component='a', **kwargs)
 
@@ -180,12 +191,12 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         mock_discovery_build.side_effect = [mock.Mock(), mock.Mock()]
 
         mock_credentials = mock.MagicMock()
-        client = base.BaseRepositoryClient(
+        repo_client = base.BaseRepositoryClient(
             'zoo', credentials=mock_credentials, versions=['v2', 'v1'])
 
-        repo = client._init_repository(ZooRepository)
-        self.assertEqual(client.gcp_services['v1'], repo.gcp_service)
-        self.assertNotEqual(client.gcp_services['v2'], repo.gcp_service)
+        repo = repo_client._init_repository(ZooRepository)
+        self.assertEqual(repo_client.gcp_services['v1'], repo.gcp_service)
+        self.assertNotEqual(repo_client.gcp_services['v2'], repo.gcp_service)
 
     def test_multiple_threads_unique_http_objects(self):
         """Validate that each thread gets its unique http object.
@@ -225,13 +236,14 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         with unittest_utils.create_temp_file(FAKE_KEYFILE) as f:
             credentials = base.credential_from_keyfile(
                 f, 'scope', test_delegate)
-            self.assertEqual(credentials._kwargs['sub'],test_delegate)
+            self.assertEqual(credentials._kwargs['sub'], test_delegate)
 
     def test_credential_from_keyfile_raises(self):
         """Validate that an invalid credential file raises exception."""
         with unittest_utils.create_temp_file(b'{}') as f:
             with self.assertRaises(api_errors.ApiExecutionError):
                 base.credential_from_keyfile(f, 'scope', 'user@forseti.testing')
+
 
 if __name__ == '__main__':
     unittest.main()

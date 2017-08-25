@@ -24,7 +24,6 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import iam
 
 
-# pylint: disable=bad-indentation
 class IamTest(unittest_utils.ForsetiTestCase):
     """Test the IAM Client."""
 

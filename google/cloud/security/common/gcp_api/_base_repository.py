@@ -49,15 +49,15 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     """Builds and returns a cloud API service object.
 
     Args:
-      credentials (object): GoogleCredentials that will be passed to the
-          service.
-      service_name (str): The name of the GCE Apiary API.
-      version (str): The version of the GCE API to use.
-      developer_key (str): The api key to use (for GCE API None is sufficient).
-      cache_discovery (bool): Whether or not to cache the discovery doc.
+        credentials (OAuth2Credentials): Credentials that will be used to
+            authenticate the API calls.
+        service_name (str): The name of the API.
+        version (str): The version of the API to use.
+        developer_key (str): The api key to use, .
+        cache_discovery (bool): Whether or not to cache the discovery doc.
 
     Returns:
-      object: A Resource object with methods for interacting with the service.
+        object: A Resource object with methods for interacting with the service.
     """
     # The default logging of the discovery obj is very noisy in recent versions.
     # Lower the default logging level of just this module to WARNING.
@@ -104,7 +104,7 @@ def credential_from_keyfile(keyfile_name, scopes, delegated_account):
             use.
 
     Returns:
-        object: Credentials as built by oauth2client.
+        OAuth2Credentials: Credentials as built by oauth2client.
 
     Raises:
         api_errors.ApiExecutionError: If fails to build credentials.
@@ -207,16 +207,16 @@ class BaseRepositoryClient(object):
         """Constructor.
 
         Args:
-          api_name (str): The API name to wrap. More details here:
-                https://developers.google.com/api-client-library/python/apis/
-          versions (list): A list of version strings to initialize.
-          credentials (object): GoogleCredentials.
-          quota_max_calls (int): Allowed requests per <quota_period> for the
-              API.
-          quota_period (float): The time period to limit the quota_requests to.
-          use_rate_limiter (bool): Set to false to disable the use of a rate
-              limiter for this service.
-          **kwargs (dict): Additional args such as version.
+            api_name (str): The API name to wrap. More details here:
+                  https://developers.google.com/api-client-library/python/apis/
+            versions (list): A list of version strings to initialize.
+            credentials (object): GoogleCredentials.
+            quota_max_calls (int): Allowed requests per <quota_period> for the
+                API.
+            quota_period (float): The time period to track requests over.
+            use_rate_limiter (bool): Set to false to disable the use of a rate
+                limiter for this service.
+            **kwargs (dict): Additional args such as version.
         """
         if not credentials:
             credentials = client.GoogleCredentials.get_application_default()
@@ -275,11 +275,11 @@ class BaseRepositoryClient(object):
         """Safely initialize a repository class to a property.
 
         Args:
-          repository_class (class): The class to initialize.
-          version (str): The gcp service version for the repository.
+            repository_class (class): The class to initialize.
+            version (str): The gcp service version for the repository.
 
         Returns:
-          object: An instance of repository_class.
+            object: An instance of repository_class.
         """
         if not version:
             # Use either the default version if defined or the first version
@@ -308,27 +308,27 @@ class GCPRepository(object):
         """Constructor.
 
         Args:
-          gcp_service (object): A Resource object with methods for interacting
-              with the service.
-          credentials (object): A GoogleCredentials object
-          component (str): The subcomponent of the gcp service for this
-              repository instance. E.g. 'instances' for compute.instances().*
-              APIs
-          entity (str): The API entity returned generally by the .get() api.
-              E.g. 'instance' for compute.instances().get()
-          num_retries (int): The number of http retriable errors to retry on
-              before hard failing.
-          key_field (str): The field name representing the project to
-              query in the API.
-          list_key_field (str): Optional override of key field for calls to
-              list methods.
-          get_key_field (str): Optional override of key field for calls to
-              get methods.
-          max_results_field (str): The field name that represents the maximum
-              number of results to return in one page.
-          search_query_field (str): The field name used to filter search
-              results.
-          rate_limiter (object): A RateLimiter object to manage API quota.
+            gcp_service (object): A Resource object with methods for interacting
+                with the service.
+            credentials (OAuth2Credentials): A Credentials object
+            component (str): The subcomponent of the gcp service for this
+                repository instance. E.g. 'instances' for compute.instances().*
+                APIs
+            entity (str): The API entity returned generally by the .get() api.
+                E.g. 'instance' for compute.instances().get()
+            num_retries (int): The number of http retriable errors to retry on
+                before hard failing.
+            key_field (str): The field name representing the project to
+                query in the API.
+            list_key_field (str): Optional override of key field for calls to
+                list methods.
+            get_key_field (str): Optional override of key field for calls to
+                get methods.
+            max_results_field (str): The field name that represents the maximum
+                number of results to return in one page.
+            search_query_field (str): The field name used to filter search
+                results.
+            rate_limiter (object): A RateLimiter object to manage API quota.
         """
         self.gcp_service = gcp_service
         self._credentials = credentials
@@ -359,7 +359,7 @@ class GCPRepository(object):
         """A thread local instance of httplib2.Http.
 
         Returns:
-          object: An httplib2.Http instance authorized by the credentials.
+            httplib2.Http: An Http instance authorized by the credentials.
         """
         if hasattr(self._local, 'http'):
             return self._local.http
@@ -372,11 +372,11 @@ class GCPRepository(object):
         """Builds HttpRequest object.
 
         Args:
-          verb (str): Request verb (ex. insert, update, delete).
-          verb_arguments (dict): Arguments to be passed with the request.
+            verb (str): Request verb (ex. insert, update, delete).
+            verb_arguments (dict): Arguments to be passed with the request.
 
         Returns:
-          httplib2.HttpRequest: HttpRequest to be sent to the API.
+            httplib2.HttpRequest: HttpRequest to be sent to the API.
         """
         method = getattr(self._component, verb)
 
@@ -394,14 +394,14 @@ class GCPRepository(object):
           https://developers.google.com/api-client-library/python/guide/pagination
 
         Args:
-          verb (str): Request verb (ex. insert, update, delete).
-          prior_request (httplib2.HttpRequest): Request that may trigger
-              paging.
-          prior_response (dict): Potentially partial response.
+            verb (str): Request verb (ex. insert, update, delete).
+            prior_request (httplib2.HttpRequest): Request that may trigger
+                paging.
+            prior_response (dict): Potentially partial response.
 
         Returns:
-          httplib2.HttpRequest: HttpRequest or None. None is returned when
-            there is nothing more to fetch - request completed.
+            httplib2.HttpRequest: HttpRequest or None. None is returned when
+                there is nothing more to fetch - request completed.
         """
         method = getattr(self._component, verb + '_next')
         return method(prior_request, prior_response)
@@ -410,10 +410,10 @@ class GCPRepository(object):
         """Determines if the API action supports pagination.
 
         Args:
-          verb (str): Request verb (ex. insert, update, delete).
+            verb (str): Request verb (ex. insert, update, delete).
 
         Returns:
-          bool: True when API supports pagination, False otherwise.
+            bool: True when API supports pagination, False otherwise.
         """
         return getattr(self._component, verb + '_next', None)
 
@@ -425,12 +425,12 @@ class GCPRepository(object):
         running commands on a separate threads.
 
         Args:
-          verb (str): Method to execute on the component (ex. get, list).
-          verb_arguments (dict): key-value pairs to be passed to
-              _build_request.
+            verb (str): Method to execute on the component (ex. get, list).
+            verb_arguments (dict): key-value pairs to be passed to
+                _build_request.
 
         Returns:
-          dict: An async operation Service Response.
+            dict: An async operation Service Response.
         """
         request = self._build_request(verb, verb_arguments)
         request_submission_status = self._execute(request)
@@ -441,14 +441,15 @@ class GCPRepository(object):
         """Executes query (ex. list) via a dedicated http object.
 
         Args:
-          verb (str): Method to execute on the component (ex. get, list).
-          verb_arguments (dict): key-value pairs to be passed to _BuildRequest.
+            verb (str): Method to execute on the component (ex. get, list).
+            verb_arguments (dict): key-value pairs to be passed to
+                _BuildRequest.
 
         Yields:
-          dict: Service Response.
+            dict: Service Response.
 
         Raises:
-          PaginationNotSupportedError: When an API does not support paging.
+            PaginationNotSupportedError: When an API does not support paging.
         """
         if not self._request_supports_pagination(verb=verb):
             raise api_errors.PaginationNotSupportedError(
@@ -469,11 +470,12 @@ class GCPRepository(object):
         """Executes query (ex. search) via a dedicated http object.
 
         Args:
-          verb (str): Method to execute on the component (ex. search).
-          verb_arguments (dict): key-value pairs to be passed to _BuildRequest.
+            verb (str): Method to execute on the component (ex. search).
+            verb_arguments (dict): key-value pairs to be passed to
+                _BuildRequest.
 
         Yields:
-          dict: Service Response.
+            dict: Service Response.
         """
         # Implementation of search does not follow the standard API pattern.
         # Fields need to be in the body rather than sent seperately.
@@ -498,11 +500,12 @@ class GCPRepository(object):
         """Executes query (ex. get) via a dedicated http object.
 
         Args:
-          verb (str): Method to execute on the component (ex. get, list).
-          verb_arguments (dict): key-value pairs to be passed to _BuildRequest.
+            verb (str): Method to execute on the component (ex. get, list).
+            verb_arguments (dict): key-value pairs to be passed to
+                _BuildRequest.
 
         Returns:
-          dict: Service Response.
+            dict: Service Response.
         """
         request = self._build_request(verb, verb_arguments)
         return self._execute(request)
@@ -514,10 +517,10 @@ class GCPRepository(object):
         """Run execute with retries and rate limiting.
 
         Args:
-          request (object): The HttpRequest object to execute.
+            request (object): The HttpRequest object to execute.
 
         Returns:
-          dict: The response from the API.
+            dict: The response from the API.
         """
         if self._rate_limiter:
             # Since the ratelimiter library only exposes a context manager
@@ -540,14 +543,14 @@ class ListQueryMixin(object):
         """List subresources of a given resource.
 
         Args:
-          resource (str): The id of the resource to query.
-          fields (str): Fields to include in the response - partial response.
-          max_results (int): Number of entries to include per page.
-          verb (str): The method to call on the API.
-          kwargs (dict): Optional additional arguments to pass to the query.
+            resource (str): The id of the resource to query.
+            fields (str): Fields to include in the response - partial response.
+            max_results (int): Number of entries to include per page.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the query.
 
         Yields:
-          dict: An API response containing one page of results.
+            dict: An API response containing one page of results.
         """
         assert isinstance(self, GCPRepository)
 
@@ -578,14 +581,14 @@ class AggregatedListQueryMixin(ListQueryMixin):
         """List all subresource entities of a given resource.
 
         Args:
-          resource (str): The id of the resource to query.
-          fields (str): Fields to include in the response - partial response.
-          max_results (int): Number of entries to include per page.
-          verb (str): The method to call on the API.
-          kwargs (dict): Optional additional arguments to pass to the query.
+            resource (str): The id of the resource to query.
+            fields (str): Fields to include in the response - partial response.
+            max_results (int): Number of entries to include per page.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
-          iterator: An iterator of API responses by page.
+            iterator: An iterator of API responses by page.
         """
         return super(AggregatedListQueryMixin, self).list(
             resource, fields, max_results, verb, **kwargs)
@@ -598,19 +601,19 @@ class GetQueryMixin(object):
         """Get API entity.
 
         Args:
-          resource (str): The id of the resource to query.
-          target (str):  Name of the entity to fetch.
-          fields (str): Fields to include in the response - partial response.
-          verb (str): The method to call on the API.
-          kwargs (dict): Optional additional arguments to pass to the query.
+            resource (str): The id of the resource to query.
+            target (str):  Name of the entity to fetch.
+            fields (str): Fields to include in the response - partial response.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
-          dict: GCE response.
+            dict: GCE response.
 
         Raises:
-          errors.HttpError: When attempting to get a non-existent entity.
-           ex: HttpError 404 when requesting ... returned
-            "The resource '...' was not found"
+            errors.HttpError: When attempting to get a non-existent entity.
+               ex: HttpError 404 when requesting ... returned
+                   "The resource '...' was not found"
         """
         assert isinstance(self, GCPRepository)
         assert bool(self._get_key_field)
@@ -636,22 +639,22 @@ class GetIamPolicyQueryMixin(object):
         """Get resource IAM Policy.
 
         Args:
-          resource (str): The id of the resource to fetch.
-          fields (str): Fields to include in the response - partial response.
-          verb (str): The method to call on the API.
-          include_body (bool): If true, include an empty body parameter in the
-              method args.
-          resource_field (str): The parameter name of the resource field to
-              pass to the method.
-          kwargs (dict): Optional additional arguments to pass to the query.
+            resource (str): The id of the resource to fetch.
+            fields (str): Fields to include in the response - partial response.
+            verb (str): The method to call on the API.
+            include_body (bool): If true, include an empty body parameter in the
+                method args.
+            resource_field (str): The parameter name of the resource field to
+                pass to the method.
+            **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
-          dict: GCE response.
+            dict: GCE response.
 
         Raises:
-          errors.HttpError: When attempting to get a non-existent entity.
-           ex: HttpError 404 when requesting ... returned
-            "The resource '...' was not found"
+            errors.HttpError: When attempting to get a non-existent entity.
+                ex: HttpError 404 when requesting ... returned
+                    "The resource '...' was not found"
         """
         assert isinstance(self, GCPRepository)
 
@@ -667,6 +670,7 @@ class GetIamPolicyQueryMixin(object):
             verb_arguments=arguments,
         )
 
+
 class SearchQueryMixin(object):
     """Mixin that implements Search query."""
 
@@ -674,14 +678,14 @@ class SearchQueryMixin(object):
         """Get all organizations the caller has access to.
 
         Args:
-          query (str): Additional filters to apply to the restrict the
-              set of resources returned.
-          fields (str): Fields to include in the response - partial response.
-          max_results (int): Number of entries to include per page.
-          verb (str): The method to call on the API.
+            query (str): Additional filters to apply to the restrict the
+                set of resources returned.
+            fields (str): Fields to include in the response - partial response.
+            max_results (int): Number of entries to include per page.
+            verb (str): The method to call on the API.
 
         Yields:
-          dict: Response from the API.
+            dict: Response from the API.
         """
         req_body = {}
         if query:

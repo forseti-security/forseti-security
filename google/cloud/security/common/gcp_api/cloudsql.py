@@ -33,11 +33,11 @@ class CloudSqlRepository(_base_repository.BaseRepositoryClient):
         """Constructor.
 
         Args:
-          quota_max_calls (int): Allowed requests per <quota_period> for the
-              API.
-          quota_period (float): The time period to limit the quota_requests to.
-          use_rate_limiter (bool): Set to false to disable the use of a rate
-              limiter for this service.
+            quota_max_calls (int): Allowed requests per <quota_period> for the
+                API.
+            quota_period (float): The time period to track requests over.
+            use_rate_limiter (bool): Set to false to disable the use of a rate
+                limiter for this service.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -62,6 +62,7 @@ class CloudSqlRepository(_base_repository.BaseRepositoryClient):
         return self._instances
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
+
 class _CloudSqlInstancesRepository(
         _base_repository.ListQueryMixin,
         _base_repository.GCPRepository):
@@ -71,7 +72,7 @@ class _CloudSqlInstancesRepository(
         """Constructor.
 
         Args:
-          **kwargs (dict): The args to pass into GCPRepository.__init__()
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_CloudSqlInstancesRepository, self).__init__(
             component='instances', **kwargs)
