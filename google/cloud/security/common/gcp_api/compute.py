@@ -273,6 +273,8 @@ class _ComputeForwardingRulesRepository(
         super(_ComputeForwardingRulesRepository, self).__init__(
             component='forwardingRules', **kwargs)
 
+    # Extend the base list implementation to support the required region field.
+    # pylint: disable=arguments-differ
     def list(self, resource, region, **kwargs):
         """List instances by zone.
 
@@ -286,6 +288,7 @@ class _ComputeForwardingRulesRepository(
         """
         kwargs['region'] = region
         return _base_repository.ListQueryMixin.list(self, resource, **kwargs)
+    # pylint: enable=arguments-differ
 
 
 class _ComputeFirewallsRepository(
@@ -369,6 +372,8 @@ class _ComputeInstancesRepository(
         super(_ComputeInstancesRepository, self).__init__(
             component='instances', **kwargs)
 
+    # Extend the base list implementation to support the required zone field.
+    # pylint: disable=arguments-differ
     def list(self, resource, zone, **kwargs):
         """List instances by zone.
 
@@ -382,6 +387,7 @@ class _ComputeInstancesRepository(
         """
         kwargs['zone'] = zone
         return _base_repository.ListQueryMixin.list(self, resource, **kwargs)
+    # pylint: enable=arguments-differ
 
 
 class _ComputeInstanceTemplatesRepository(
