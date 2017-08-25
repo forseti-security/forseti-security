@@ -66,6 +66,7 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
                 self.RESOURCE_NAME,
                 lifecycleState=LifecycleState.ACTIVE)
         except api_errors.ApiExecutionError as e:
+            self.has_error_to_retrieve_api_data = True
             raise inventory_errors.LoadDataPipelineError(e)
 
     def run(self):

@@ -162,11 +162,14 @@ def _run_pipelines(pipelines):
         pipelines (list): List of pipelines to be run.
 
     Returns:
-        list: a list of booleans whether each pipeline completed
-            successfully or not.
+        list: a list of booleans whether each pipeline successfully
+            completed or not.
+        list: a list of booleans whether each pipeline successfully
+            retrieved all the data from the api or not.
     """
     # TODO: Define these status codes programmatically.
     run_statuses = []
+    api_data_error_statuses = []
     for pipeline in pipelines:
         try:
             LOGGER.info('Running pipeline %s', pipeline.__class__.__name__)
@@ -184,20 +187,23 @@ def _run_pipelines(pipelines):
                          exc_info=True)
             pipeline.status = 'FAILURE'
         run_statuses.append(pipeline.status == 'SUCCESS')
-    return run_statuses
+        api_data_error_statuses.append(pipeline.has_error_to_retrieve_api_data)
+    return run_statuses, api_data_error_statuses
 
-def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
+def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status,
+                             has_all_data):
     """Complete the snapshot cycle.
 
     Args:
         inventory_dao (dao.Dao): Data access object.
         cycle_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
         status (str): The current cycle's status.
+        has_all_data (bool): The current cycle's api data status.
     """
     complete_time = datetime.utcnow()
 
     try:
-        values = (status, complete_time, cycle_timestamp)
+        values = (status, has_all_data, complete_time, cycle_timestamp)
         sql = snapshot_cycles_sql.UPDATE_CYCLE
         inventory_dao.execute_sql_with_commit(snapshot_cycles_sql.RESOURCE_NAME,
                                               sql, values)
@@ -292,7 +298,7 @@ def main(_):
         dao_map)
     pipelines = pipeline_builder.build()
 
-    run_statuses = _run_pipelines(pipelines)
+    run_statuses, api_data_error_statuses = _run_pipelines(pipelines)
 
     if all(run_statuses):
         snapshot_cycle_status = 'SUCCESS'
@@ -301,8 +307,13 @@ def main(_):
     else:
         snapshot_cycle_status = 'FAILURE'
 
+    if any(api_data_error_statuses):
+        has_all_data = False
+    else:
+        has_all_data = True
+
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
-                             snapshot_cycle_status)
+                             snapshot_cycle_status, has_all_data)
 
     if global_configs.get('email_recipient') is not None:
         payload = {

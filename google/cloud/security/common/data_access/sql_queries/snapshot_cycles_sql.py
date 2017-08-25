@@ -24,6 +24,7 @@ CREATE_TABLE = """
         `complete_time` datetime DEFAULT NULL,
         `status` enum('SUCCESS','RUNNING','FAILURE',
                       'PARTIAL_SUCCESS','TIMEOUT') DEFAULT NULL,
+        `has_all_data` bool DEFAULT NULL,
         `schema_version` varchar(255) DEFAULT NULL,
         `cycle_timestamp` varchar(255) DEFAULT NULL,
          PRIMARY KEY (`id`),
@@ -46,6 +47,6 @@ INSERT_CYCLE = """
 
 UPDATE_CYCLE = """
     UPDATE snapshot_cycles
-    SET status=%s, complete_time=%s
+    SET status=%s, has_all_data=%s, complete_time=%s
     WHERE cycle_timestamp=%s;
 """
