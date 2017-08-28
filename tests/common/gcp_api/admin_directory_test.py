@@ -43,6 +43,8 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
                 'domain_super_admin_email': 'admin@foo.testing',
                 'max_admin_api_calls_per_100_seconds': 1500}
             cls.ad_api_client = admin.AdminDirectoryClient(fake_global_configs)
+            http_mocks.mock_http_credentials(
+                cls.ad_api_client.repository._credentials)
             mock_default_credential.assert_not_called()
 
     @mock.patch.object(service_account, 'ServiceAccountCredentials')

@@ -36,6 +36,8 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
             'max_bigquery_api_calls_per_100_seconds': 1000000}
         cls.bq_api_client = bq.BigQueryClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
+        http_mocks.mock_http_credentials(
+            cls.bq_api_client.repository._credentials)
 
     @mock.patch.object(client, 'GoogleCredentials')
     def test_no_quota(self, mock_google_credential):

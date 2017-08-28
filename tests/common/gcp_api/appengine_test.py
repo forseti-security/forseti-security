@@ -35,6 +35,8 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
             'max_appengine_api_calls_per_second': 20}
         cls.ae_api_client = ae.AppEngineClient(fake_global_configs,
                                                use_rate_limiter=False)
+        http_mocks.mock_http_credentials(
+            cls.ae_api_client.repository._credentials)
 
     @mock.patch.object(client, 'GoogleCredentials')
     def test_no_quota(self, mock_google_credential):

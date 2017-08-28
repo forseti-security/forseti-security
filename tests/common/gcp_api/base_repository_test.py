@@ -228,9 +228,6 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         distinctly scoped credentials, whereas the authenticated http object
         is cached for all clients in the same thread.
         """
-        if hasattr(base.LOCAL_THREAD, 'http'):
-            delattr(base.LOCAL_THREAD, 'http')
-
         http_objects = [None] * 2
         for i in range(2):
             gcp_service_mock = mock.Mock()
@@ -251,9 +248,6 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         This verifies that a new http object is not created when two
         repository clients use the same credentials object.
         """
-        if hasattr(base.LOCAL_THREAD, 'http'):
-            delattr(base.LOCAL_THREAD, 'http')
-
         fake_credentials = self.get_test_credential()
 
         http_objects = [None] * 2

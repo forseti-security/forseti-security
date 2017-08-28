@@ -268,14 +268,13 @@ class GCPRepository(object):
             # Verify the current cached credential matches the credential
             # on the cached http object. Mock http objects have no credentials
             # cached, so pass them through as well.
-            # pylint: disable=no-member
-            if (not hasattr(self._local.http.request, 'credentials') or
-                    self._local.http.request.credentials == self._credentials):
+            if (hasattr(self._local, 'credentials') and
+                    self._local.credentials == self._credentials):
                 return self._local.http
-            # pylint: enable=no-member
 
         self._local.http = httplib2.Http()
-        self._credentials.authorize(http=self._local.http)
+        self._local.credentials = self._credentials
+        self._local.credentials.authorize(http=self._local.http)
         return self._local.http
 
     def _build_request(self, verb, verb_arguments):

@@ -32,6 +32,8 @@ class StorageTest(unittest_utils.ForsetiTestCase):
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         cls.gcs_api_client = storage.StorageClient({})
+        http_mocks.mock_http_credentials(
+            cls.gcs_api_client.repository._credentials)
 
     def test_get_bucket_and_path_from(self):
         """Given a valid bucket object path, return the bucket and path."""
