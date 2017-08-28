@@ -85,18 +85,12 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
         Returns:
             An iterable of resource manager folder search response.
         """
-        try:
-            return self.api_client.get_folders(
-                self.RESOURCE_NAME)
-        except api_errors.ApiExecutionError as e:
-            raise inventory_errors.LoadDataPipelineError(e)
+        return self.safe_api_call('get_folders', self.RESOURCE_NAME)
 
     def run(self):
         """Runs the data pipeline."""
         folders_map = self._retrieve()
-
-        loadable_folders = self._transform(folders_map)
-
-        self._load(self.RESOURCE_NAME, loadable_folders)
-
-        self._get_loaded_count()
+        if folders_map:
+            loadable_folders = self._transform(folders_map)
+            self._load(self.RESOURCE_NAME, loadable_folders)
+            self._get_loaded_count()

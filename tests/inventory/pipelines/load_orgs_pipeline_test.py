@@ -72,14 +72,17 @@ class LoadOrgsPipelineTest(ForsetiTestCase):
         self.pipeline.api_client.get_organizations.assert_called_once_with(
             self.pipeline.RESOURCE_NAME)
 
-    def test_retrieve_errors_are_handled(self):
+    @mock.patch(
+        'google.cloud.security.inventory.pipelines.base_pipeline.LOGGER')
+    def test_retrieve_errors_are_handled(self, mock_logger):
         """Test that errors are handled when retrieving."""
 
         self.pipeline.api_client.get_organizations.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve()
+        results = self.pipeline._retrieve()
+        self.assertEqual(None, results)
+        self.assertEqual(1, mock_logger.error.call_count)
 
     @mock.patch.object(
         load_orgs_pipeline.LoadOrgsPipeline,

@@ -72,13 +72,10 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
                     .get_projects(self.cycle_timestamp))
         instance_templates = {}
         for project in projects:
-            try:
-                project_instance_templates = (
-                    self.api_client.get_instance_templates(project.id))
-                if project_instance_templates:
-                    instance_templates[project.id] = project_instance_templates
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(inventory_errors.LoadDataPipelineError(e))
+            project_instance_templates = self.safe_api_call(
+                'get_instance_templates', project.id)
+            if project_instance_templates:
+                instance_templates[project.id] = project_instance_templates
         return instance_templates
 
     def run(self):

@@ -44,7 +44,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
             .get_projects(self.cycle_timestamp))
         apps = {}
         for project in projects:
-            app = self.api_client.get_app(project.id)
+            app = self.safe_api_call('get_app', project.id)
             if app:
                 apps[project.id] = app
         return apps

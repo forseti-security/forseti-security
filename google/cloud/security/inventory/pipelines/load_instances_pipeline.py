@@ -87,12 +87,10 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
                     .get_projects(self.cycle_timestamp))
         instances = {}
         for project in projects:
-            try:
-                project_instances = self.api_client.get_instances(project.id)
-                if project_instances:
-                    instances[project.id] = project_instances
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(inventory_errors.LoadDataPipelineError(e))
+            project_instances = self.safe_api_call('get_instances',
+                                                   project.id)
+            if project_instances:
+                instances[project.id] = project_instances
         return instances
 
     def run(self):

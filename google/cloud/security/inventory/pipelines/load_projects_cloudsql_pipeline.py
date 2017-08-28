@@ -293,16 +293,11 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
 
         instances_maps = []
         for project_number in project_numbers:
-            try:
-                instances = self.api_client.get_instances(
-                    project_number)
+            instances = self.safe_api_call('get_instances', project_number)
+            if instances:
                 instances_map = {'project_number': project_number,
                                  'instances': instances}
                 instances_maps.append(instances_map)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(
-                    'Unable to get cloudsql instances for project %s:\n%s',
-                    project_number, e)
         return instances_maps
 
     def _get_loaded_count(self):

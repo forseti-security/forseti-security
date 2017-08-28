@@ -78,8 +78,8 @@ class LoadFoldersPipelineTest(ForsetiTestCase):
         self.pipeline.api_client.get_folders.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve()
+        results = self.pipeline._retrieve()
+        self.assertEqual(None, results)
 
     @mock.patch.object(
         load_folders_pipeline.LoadFoldersPipeline,

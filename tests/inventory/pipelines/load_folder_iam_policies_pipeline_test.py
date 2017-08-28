@@ -79,17 +79,17 @@ class LoadFolderIamPoliciesPipelineTest(ForsetiTestCase):
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve()
 
-    def test_retrieve_error_logged_when_api_error(self):
+    @mock.patch(
+        'google.cloud.security.inventory.pipelines.base_pipeline.LOGGER')
+    def test_retrieve_error_logged_when_api_error(self, mock_logger):
         """Test that LOGGER.error() is called when there is an API error."""
         self.mock_dao.get_folders.return_value = [
             folder.Folder(self.fake_id)]
         self.pipeline.api_client.get_folder_iam_policies.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
-        load_folder_iam_policies_pipeline.LOGGER = mock.MagicMock()
-        self.pipeline._retrieve()
-
-        self.assertEqual(
-            1, load_folder_iam_policies_pipeline.LOGGER.error.call_count)
+        results = self.pipeline._retrieve()
+        self.assertEqual([], results)
+        self.assertEqual(1, mock_logger.error.call_count)
 
     @mock.patch.object(
         load_folder_iam_policies_pipeline.LoadFolderIamPoliciesPipeline,

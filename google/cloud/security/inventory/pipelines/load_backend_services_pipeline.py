@@ -93,13 +93,11 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
                     .get_projects(self.cycle_timestamp))
         backend_services = {}
         for project in projects:
-            try:
-                project_backend_services = self.api_client.get_backend_services(
-                    project.id)
-                if project_backend_services:
-                    backend_services[project.id] = project_backend_services
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(inventory_errors.LoadDataPipelineError(e))
+            project_backend_services = self.safe_api_call(
+                'get_backend_services', project.id)
+            if project_backend_services:
+                backend_services[project.id] = project_backend_services
+
         return backend_services
 
     def run(self):

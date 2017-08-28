@@ -115,16 +115,11 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
         # Retrieve data from GCP.
         buckets_maps = []
         for project_number in project_numbers:
-            try:
-                buckets = self.api_client.get_buckets(
-                    project_number)
+            buckets = self.safe_api_call('get_buckets', project_number)
+            if buckets:
                 buckets_map = {'project_number': project_number,
                                'buckets': buckets}
                 buckets_maps.append(buckets_map)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(
-                    'Unable to get buckets for project %s:\n%s',
-                    project_number, e)
         return buckets_maps
 
     def run(self):

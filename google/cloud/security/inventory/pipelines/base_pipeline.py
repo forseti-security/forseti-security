@@ -16,13 +16,10 @@
 
 import abc
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
-# pylint: enable=line-too-long
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -70,6 +67,30 @@ class BasePipeline(object):
             resource_from_api (dict): Resources from API responses.
         """
         pass
+
+    def safe_api_call(self, method_name, *args, **kwargs):
+        """Safely fetch resources from an API client.
+
+        ApiNotEnabledError and ApiExecutionError are logged and return None.
+
+        Args:
+            method_name (str): The method to call on the API client.
+            *args (list): Args to pass to the method.
+            **kwargs (dict): Key word args to pass to the method.
+
+        Returns:
+            object: The dict or list response from the API client method.
+        """
+        try:
+            method = getattr(self.api_client, method_name)
+            return method(*args, **kwargs)
+        except api_errors.ApiNotEnabledError as e:
+            LOGGER.warn('Api not enabled on target project: %s.', e)
+            return None
+        except api_errors.ApiExecutionError as e:
+            LOGGER.error(
+                'Error calling API, may have incomplete results: %s.', e)
+            return None
 
     @staticmethod
     def _to_bool(value):

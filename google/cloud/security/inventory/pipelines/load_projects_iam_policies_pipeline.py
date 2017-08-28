@@ -90,16 +90,13 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         # Not using iterator since we will use the iam_policy_maps twice.
         iam_policy_maps = []
         for project_number in project_numbers:
-            try:
-                iam_policy = self.api_client.get_project_iam_policies(
-                    self.RESOURCE_NAME, project_number)
+            iam_policy = self.safe_api_call('get_project_iam_policies',
+                                            self.RESOURCE_NAME,
+                                            project_number)
+            if iam_policy:
                 iam_policy_map = {'project_number': project_number,
                                   'iam_policy': iam_policy}
                 iam_policy_maps.append(iam_policy_map)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(
-                    'Unable to get IAM policies for project %s:\n%s',
-                    project_number, e)
         return iam_policy_maps
 
     def run(self):

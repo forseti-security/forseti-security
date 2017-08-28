@@ -44,14 +44,17 @@ class LoadServiceAccountsPipeline(base_pipeline.BasePipeline):
             .get_projects(self.cycle_timestamp))
         service_accounts_per_project = {}
         for project in projects:
-            service_accounts = self.api_client.get_service_accounts(project.id)
-            for service_account in service_accounts:
-                # TODO: also retrieve associated IAM policies, see:
-                # https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
-                service_account['keys'] = (
-                    self.api_client.get_service_account_keys(
-                        service_account['name']))
-            service_accounts_per_project[project.id] = service_accounts
+            service_accounts = self.safe_api_call('get_service_accounts',
+                                                  project.id)
+            if service_accounts:
+                for service_account in service_accounts:
+                    # TODO: also retrieve associated IAM policies, see:
+                    # https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
+                    keys = self.safe_api_call(
+                        'get_service_account_keys', service_account['name'])
+                    if keys:
+                          service_account['keys'] = keys
+                service_accounts_per_project[project.id] = service_accounts
         return service_accounts_per_project
 
     def _transform(self, resource_from_api):
@@ -77,10 +80,7 @@ class LoadServiceAccountsPipeline(base_pipeline.BasePipeline):
 
     def run(self):
         """Run the pipeline."""
-        try:
-            service_accounts = self._retrieve()
-        except api_errors.ApiExecutionError as e:
-            raise inventory_errors.LoadDataPipelineError(e)
+        service_accounts = self._retrieve()
         loadable_service_accounts = self._transform(service_accounts)
         self._load(self.RESOURCE_NAME, loadable_service_accounts)
         self._get_loaded_count()

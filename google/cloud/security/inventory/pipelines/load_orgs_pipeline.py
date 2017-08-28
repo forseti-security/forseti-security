@@ -63,17 +63,12 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
             iterable: resource manager org search response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
         """
-        try:
-            return self.api_client.get_organizations(self.RESOURCE_NAME)
-        except api_errors.ApiExecutionError as e:
-            raise inventory_errors.LoadDataPipelineError(e)
+        return self.safe_api_call('get_organizations', self.RESOURCE_NAME)
 
     def run(self):
         """Runs the data pipeline."""
         orgs_map = self._retrieve()
-
-        loadable_orgs = self._transform(orgs_map)
-
-        self._load(self.RESOURCE_NAME, loadable_orgs)
-
-        self._get_loaded_count()
+        if orgs_map:
+            loadable_orgs = self._transform(orgs_map)
+            self._load(self.RESOURCE_NAME, loadable_orgs)
+            self._get_loaded_count()

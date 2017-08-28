@@ -82,13 +82,10 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
                     .get_projects(self.cycle_timestamp))
         igms = {}
         for project in projects:
-            try:
-                project_igms = self.api_client.get_instance_group_managers(
-                    project.id)
-                if project_igms:
-                    igms[project.id] = project_igms
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(inventory_errors.LoadDataPipelineError(e))
+            project_igms = self.safe_api_call('get_instance_group_managers',
+                                              project.id)
+            if project_igms:
+                igms[project.id] = project_igms
         return igms
 
     def run(self):
