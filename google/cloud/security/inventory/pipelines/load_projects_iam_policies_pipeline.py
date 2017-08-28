@@ -16,16 +16,11 @@
 
 import json
 
-# TODO: Investigate improving so the pylint disable isn't needed.
-# pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -83,7 +78,7 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         try:
             project_numbers = self.dao.get_project_numbers(
                 self.RESOURCE_NAME, self.cycle_timestamp)
-        except data_access_errors.MySQLError as e:
+        except dao_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
         # Retrieve data from GCP.

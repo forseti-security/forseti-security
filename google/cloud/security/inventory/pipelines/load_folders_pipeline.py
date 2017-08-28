@@ -18,17 +18,13 @@ import json
 
 from dateutil import parser as dateutil_parser
 
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
-from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc
 # pylint: disable=missing-yield-type-doc
-
 
 LOGGER = log_util.get_logger(__name__)
 

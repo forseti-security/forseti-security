@@ -16,7 +16,7 @@
 
 import abc
 
-from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
@@ -146,8 +146,8 @@ class BasePipeline(object):
 
         try:
             self.dao.load_data(resource_name, self.cycle_timestamp, data)
-        except (data_access_errors.CSVFileError,
-                data_access_errors.MySQLError) as e:
+        except (dao_errors.CSVFileError,
+                dao_errors.MySQLError) as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
     def _get_loaded_count(self):
@@ -156,6 +156,6 @@ class BasePipeline(object):
             self.count = self.dao.select_record_count(
                 self.RESOURCE_NAME,
                 self.cycle_timestamp)
-        except data_access_errors.MySQLError as e:
+        except dao_errors.MySQLError as e:
             LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
                          self.RESOURCE_NAME, self.cycle_timestamp, e)

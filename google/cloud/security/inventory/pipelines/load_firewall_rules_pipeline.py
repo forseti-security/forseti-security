@@ -18,11 +18,9 @@ This pipeline depends on the LoadProjectsPipeline.
 """
 
 from google.cloud.security.common.data_access import project_dao as proj_dao
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 LOGGER = log_util.get_logger(__name__)
 
