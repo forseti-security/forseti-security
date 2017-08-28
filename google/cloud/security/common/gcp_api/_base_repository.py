@@ -17,7 +17,6 @@ import logging
 import threading
 import googleapiclient
 from googleapiclient import discovery
-from googleapiclient import http
 import httplib2
 from oauth2client import client
 from ratelimiter import RateLimiter
@@ -275,7 +274,7 @@ class GCPRepository(object):
                 return self._local.http
             # pylint: enable=no-member
 
-        self._local.http = http.build_http()
+        self._local.http = httplib2.Http()
         self._credentials.authorize(http=self._local.http)
         return self._local.http
 
