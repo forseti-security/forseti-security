@@ -24,6 +24,7 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.iam.dao import create_engine
 from google.cloud.security.iam.dao import ModelManager
 from google.cloud.security.iam.explain.importer import importer
+from google.cloud.security.iam.inventory.storage import InventoryState
 
 
 class ServiceConfig(object):
@@ -190,8 +191,13 @@ class ImporterTest(ForsetiTestCase):
                                          session=session),
                 data_access,
                 self.service_config,
-                inventory_id=1)
+                inventory_id=9)
             import_runner.run()
+
+        model = self.model_manager.model(self.model_name)
+        self.assertIn(model.state,
+                      [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS],
+                      'Model state should be success or partial success')
 
 
 if __name__ == '__main__':
