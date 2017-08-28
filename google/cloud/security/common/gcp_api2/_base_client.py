@@ -14,7 +14,10 @@
 
 """Base GCP client which uses the discovery API."""
 
+# pylint: disable=protected-access,no-self-use
+
 import json
+import pickle
 import httplib2
 
 import googleapiclient
@@ -22,7 +25,6 @@ from googleapiclient import discovery
 from googleapiclient import errors
 from oauth2client.client import GoogleCredentials
 from retrying import retry
-import pickle
 
 from google.cloud import security as forseti_security
 from google.cloud.security.common.gcp_api2 import _supported_apis
@@ -36,13 +38,37 @@ SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 LOGGER = log_util.get_logger(__name__)
 
 
-def record_if(var, filename):
-    if var:
-        recording = {}
+def record(function):
+    """Record and serialize GCP API call answers.
 
-        def real_decorator(function):
-            def record_wrapper(request, rate_limiter=None):
-                with file(filename, 'w') as outfile:
+    Args:
+        function (function): Function to decorate
+
+    Returns:
+        function: Decorator
+    """
+
+    def record_wrapper(self, request, rate_limiter=None):
+        """Record and serialize GCP API call answers.
+
+        Args:
+            request (object): API request.
+            rate_limiter (object): API call rate limiter.
+
+        Returns:
+            object: Whatever the GCP API returned.
+        Raises:
+            Exception: Whatever the GCP API raised.
+        """
+
+        try:
+            recording = self.__recording
+        except AttributeError:
+            record_file = self.global_configs.get('record_file', None)
+            if not record_file:
+                return function(self, request, rate_limiter)
+            else:
+                with file(record_file, 'w') as outfile:
                     pickler = pickle.Pickler(outfile)
                     try:
                         result = function(request, rate_limiter)
@@ -65,19 +91,37 @@ def record_if(var, filename):
                         raise
                     finally:
                         outfile.flush()
-            return record_wrapper
 
-    # noop
-    else:
-        def real_decorator(function):
-            def noop_wrapper(*args, **kwargs):
-                return function(*args, **kwargs)
-            return noop_wrapper
-    return real_decorator
+        obj = recording[request.uri]
+        if obj['raised']:
+            raise obj['result']('', '')
+        return obj['result']
+    return record_wrapper
 
 
 def replay(function):
+    """Replay GCP API call answers.
+
+    Args:
+        function (function): Function to decorate
+
+    Returns:
+        function: Decorator
+    """
+
     def replay_wrapper(self, request, rate_limiter=None):
+        """Replay and deserialize GCP API call answers.
+
+        Args:
+            request (object): API request.
+            rate_limiter (object): API call rate limiter.
+
+        Returns:
+            object: Whatever the GCP API returned.
+        Raises:
+            Exception: Whatever the GCP API raised.
+        """
+
         try:
             recording = self.__recording
         except AttributeError:
@@ -118,6 +162,15 @@ def _attach_user_agent(request):
 
 
 def _execute_request(request):
+    """Calls execute on the request.
+
+    Args:
+        request (object): Request to execute.
+
+    Returns:
+        object: Whatever the request returns.
+    """
+
     return request.execute()
 
 
@@ -266,10 +319,10 @@ class BaseClient(object):
                     raise api_errors.ApiNotEnabledError(
                         api_disabled_errors[0].get('extendedHelp', ''),
                         e)
-            if (e.resp.status == 404):
+            if e.resp.status == 404:
                 raise api_errors.ApiNotFoundError(e.uri, e)
 
-            if (e.resp.status == 403):
+            if e.resp.status == 403:
                 raise api_errors.ApiNotAllowedError(e.uri, e)
             raise
 
