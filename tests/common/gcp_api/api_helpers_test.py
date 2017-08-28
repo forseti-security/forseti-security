@@ -18,19 +18,9 @@ import unittest
 import mock
 
 from tests import unittest_utils
+from tests.common.gcp_api.test_data import fake_key_file
 from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
-
-# From oauth2client/tests/test_service_account.py
-FAKE_KEYFILE = b"""
-{
-  "type": "service_account",
-  "client_id": "id123",
-  "client_email": "foo@bar.com",
-  "private_key_id": "pkid456",
-  "private_key": "s3kr3tz"
-}
-"""
 
 
 class ApiHelpersTest(unittest_utils.ForsetiTestCase):
@@ -41,17 +31,18 @@ class ApiHelpersTest(unittest_utils.ForsetiTestCase):
     def test_credential_from_keyfile(self, signer_factory):
         """Validate with a valid test credential file."""
         test_delegate = 'user@forseti.testing'
-        with unittest_utils.create_temp_file(FAKE_KEYFILE) as f:
+        with unittest_utils.create_temp_file(fake_key_file.FAKE_KEYFILE) as f:
             credentials = api_helpers.credential_from_keyfile(
-                f, 'scope', test_delegate)
+                f, fake_key_file.FAKE_REQUIRED_SCOPES, test_delegate)
             self.assertEqual(credentials._kwargs['sub'], test_delegate)
 
     def test_credential_from_keyfile_raises(self):
         """Validate that an invalid credential file raises exception."""
         with unittest_utils.create_temp_file(b'{}') as f:
-            with self.assertRaises(api_errors.ApiExecutionError):
-                api_helpers.credential_from_keyfile(f, 'scope',
-                                                    'user@forseti.testing')
+            with self.assertRaises(api_errors.ApiInitializationError):
+                api_helpers.credential_from_keyfile(
+                    f, fake_key_file.FAKE_REQUIRED_SCOPES,
+                    'user@forseti.testing')
 
 
 if __name__ == '__main__':

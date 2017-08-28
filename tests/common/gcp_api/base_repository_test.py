@@ -31,19 +31,22 @@ from google.cloud.security.common.gcp_api import _supported_apis
 class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
     """Test the Base Repository methods."""
 
-    def test_set_user_agent(self):
-        """Verify set user agent sets the user agent correctly."""
+    def get_test_credential(self):
         access_token = 'foo'
         client_id = 'some_client_id'
         client_secret = 'cOuDdkfjxxnv+'
         refresh_token = '1/0/a.df219fjls0'
         token_expiry = datetime.datetime.utcnow()
         user_agent = ''
-        credentials = client.OAuth2Credentials(
+        return client.OAuth2Credentials(
             access_token, client_id, client_secret,
             refresh_token, token_expiry, oauth2client.GOOGLE_TOKEN_URI,
             user_agent, revoke_uri=oauth2client.GOOGLE_REVOKE_URI,
             scopes='foo', token_info_uri=oauth2client.GOOGLE_TOKEN_INFO_URI)
+
+    def test_set_user_agent(self):
+        """Verify set user agent sets the user agent correctly."""
+        credentials = self.get_test_credential()
 
         self.assertEqual('', credentials.user_agent)
 
@@ -213,7 +216,56 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         t1.join()
         t2.join()
 
-        self.assertIsNot(http_objects[0], http_objects[1])
+        self.assertNotEqual(http_objects[0], http_objects[1])
+
+    @mock.patch('oauth2client.crypt.Signer.from_string',
+                return_value=object())
+    def test_different_credentials_gets_different_http_objects(self,
+                                                               signer_factory):
+        """Validate that each unique credential gets a unique http object.
+
+        At the core of this requirement is the fact that some API's require
+        distinctly scoped credentials, whereas the authenticated http object
+        is cached for all clients in the same thread.
+        """
+        if hasattr(base.LOCAL_THREAD, 'http'):
+            delattr(base.LOCAL_THREAD, 'http')
+
+        http_objects = [None] * 2
+        for i in range(2):
+            gcp_service_mock = mock.Mock()
+            fake_credentials = self.get_test_credential()
+            repo = base.GCPRepository(
+                gcp_service=gcp_service_mock,
+                credentials=fake_credentials,
+                component='fake_component{}'.format(i))
+            http_objects[i] = repo.http
+
+        self.assertNotEqual(http_objects[0], http_objects[1])
+
+    @mock.patch('oauth2client.crypt.Signer.from_string',
+                return_value=object())
+    def test_same_credentials_gets_same_http_objects(self, signer_factory):
+        """Different clients with the same credential get the same http object.
+
+        This verifies that a new http object is not created when two
+        repository clients use the same credentials object.
+        """
+        if hasattr(base.LOCAL_THREAD, 'http'):
+            delattr(base.LOCAL_THREAD, 'http')
+
+        fake_credentials = self.get_test_credential()
+
+        http_objects = [None] * 2
+        for i in range(2):
+            gcp_service_mock = mock.Mock()
+            repo = base.GCPRepository(
+                gcp_service=gcp_service_mock,
+                credentials=fake_credentials,
+                component='fake_component{}'.format(i))
+            http_objects[i] = repo.http
+
+        self.assertEqual(http_objects[0], http_objects[1])
 
 
 if __name__ == '__main__':

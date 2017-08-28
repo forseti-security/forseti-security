@@ -24,6 +24,10 @@ from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
 
+REQUIRED_SCOPES = frozenset([
+    'https://www.googleapis.com/auth/admin.directory.group.readonly'
+])
+
 
 class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
     """Admin Directory API Respository Client."""
@@ -112,9 +116,6 @@ class AdminDirectoryClient(object):
     """GSuite Admin Directory API Client."""
 
     DEFAULT_QUOTA_PERIOD = 100.0
-    REQUIRED_SCOPES = frozenset([
-        'https://www.googleapis.com/auth/admin.directory.group.readonly'
-    ])
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -135,7 +136,7 @@ class AdminDirectoryClient(object):
 
         credentials = api_helpers.credential_from_keyfile(
             global_configs.get('groups_service_account_key_file'),
-            self.REQUIRED_SCOPES,
+            REQUIRED_SCOPES,
             global_configs.get('domain_super_admin_email'))
         self.repository = AdminDirectoryRepositoryClient(
             credentials=credentials,

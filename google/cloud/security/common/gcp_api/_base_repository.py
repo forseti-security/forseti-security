@@ -17,6 +17,7 @@ import logging
 import threading
 import googleapiclient
 from googleapiclient import discovery
+from googleapiclient import http
 import httplib2
 from oauth2client import client
 from ratelimiter import RateLimiter
@@ -80,6 +81,10 @@ def _set_user_agent(credentials):
     Args:
         credentials (OAuth2Credentials): The credentials object used to
             authenticate all http requests.
+
+    Returns:
+        OAuth2Credentials: The credentials object with the user agent attribute
+            set or updated.
     """
     if isinstance(credentials, client.OAuth2Credentials):
         user_agent = credentials.user_agent
@@ -91,6 +96,7 @@ def _set_user_agent(credentials):
                     httplib2.__version__,
                     forseti_security.__package_name__,
                     forseti_security.__version__))
+    return credentials
 
 
 class BaseRepositoryClient(object):
@@ -120,9 +126,7 @@ class BaseRepositoryClient(object):
         """
         if not credentials:
             credentials = client.GoogleCredentials.get_application_default()
-        self._credentials = credentials
-
-        _set_user_agent(credentials)
+        self._credentials = _set_user_agent(credentials)
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()
@@ -262,9 +266,16 @@ class GCPRepository(object):
             httplib2.Http: An Http instance authorized by the credentials.
         """
         if hasattr(self._local, 'http'):
-            return self._local.http
+            # Verify the current cached credential matches the credential
+            # on the cached http object. Mock http objects have no credentials
+            # cached, so pass them through as well.
+            # pylint: disable=no-member
+            if (not hasattr(self._local.http.request, 'credentials') or
+                    self._local.http.request.credentials == self._credentials):
+                return self._local.http
+            # pylint: enable=no-member
 
-        self._local.http = httplib2.Http()
+        self._local.http = http.build_http()
         self._credentials.authorize(http=self._local.http)
         return self._local.http
 

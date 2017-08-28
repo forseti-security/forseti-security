@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the AppEngine client."""
+"""Tests the Admin Directory  API client."""
 import unittest
 import mock
+from oauth2client import client
 from oauth2client import service_account
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_admin_directory_responses as fake_admin
+from tests.common.gcp_api.test_data import fake_key_file
 from tests.common.gcp_api.test_data import http_mocks
 from google.cloud.security.common.gcp_api import admin_directory as admin
 from google.cloud.security.common.gcp_api import errors as api_errors
@@ -28,14 +30,20 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
     """Test the GSuite Admin Directory client."""
 
     @classmethod
-    @mock.patch.object(service_account, 'ServiceAccountCredentials', spec=True)
-    def setUpClass(cls, mock_credential):
+    @mock.patch('oauth2client.crypt.Signer.from_string',
+                return_value=object())
+    @mock.patch.object(client.GoogleCredentials, 'get_application_default',
+                       spec=True)
+    def setUpClass(cls, mock_default_credential, signer_factory):
         """Set up."""
-        fake_global_configs = {
-            'groups_service_account_key_file': 'abc.key',
-            'domain_super_admin_email': 'admin@foo.testing',
-            'max_admin_api_calls_per_100_seconds': 1500}
-        cls.ad_api_client = admin.AdminDirectoryClient(fake_global_configs)
+        with unittest_utils.create_temp_file(
+                fake_key_file.FAKE_KEYFILE) as key_file:
+            fake_global_configs = {
+                'groups_service_account_key_file': key_file,
+                'domain_super_admin_email': 'admin@foo.testing',
+                'max_admin_api_calls_per_100_seconds': 1500}
+            cls.ad_api_client = admin.AdminDirectoryClient(fake_global_configs)
+            mock_default_credential.assert_not_called()
 
     @mock.patch.object(service_account, 'ServiceAccountCredentials')
     def test_no_quota(self, mock_google_credential):

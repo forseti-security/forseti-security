@@ -39,7 +39,7 @@ def credential_from_keyfile(keyfile_name, scopes, delegated_account):
             service_account.ServiceAccountCredentials.from_json_keyfile_name(
                 keyfile_name, scopes=scopes))
     except (ValueError, KeyError, TypeError, IOError) as e:
-        raise api_errors.ApiExecutionError(
+        raise api_errors.ApiInitializationError(
             'Error building admin api credential: %s', e)
     return credentials.create_delegated(delegated_account)
 
