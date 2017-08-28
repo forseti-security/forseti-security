@@ -27,6 +27,8 @@ from google.cloud.security.iam import cli
 CLIENT = mock.Mock()
 CLIENT.playground = CLIENT
 CLIENT.explainer = CLIENT
+CLIENT.inventory = CLIENT
+CLIENT.inventory.create = mock.Mock(return_value=iter([]))
 
 
 class ArgumentParserError(Exception):
@@ -70,9 +72,15 @@ class ImporterTest(ForsetiTestCase):
          CLIENT.playground.list_members,
          [''],
          {}),
+
+        ('inventory create --background --import_as "bar"',
+         CLIENT.inventory.create,
+         [True, 'bar'],
+         {}),
+
         ])
     def test_cli(self, test_cases):
-        """Foo."""
+        """Test if the CLI hits specific client methods."""
         for commandline, client_func, func_args, func_kwargs in test_cases:
             try:
                 args = shlex.split(commandline)
