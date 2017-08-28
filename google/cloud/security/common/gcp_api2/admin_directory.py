@@ -14,6 +14,7 @@
 
 """Wrapper for Admin Directory  API client."""
 
+import os
 from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 
@@ -58,6 +59,10 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Raises:
             api_errors.ApiExecutionError: If fails to build credentials.
         """
+
+        if os.environ.get('GCP_API_REPLAY', None):
+            return None
+
         try:
             credentials = ServiceAccountCredentials.from_json_keyfile_name(
                 global_configs.get('groups_service_account_key_file'),

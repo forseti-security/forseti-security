@@ -93,7 +93,9 @@ def run_crawler(storage,
                 progresser,
                 gsuite_sa,
                 gsuite_admin_email,
-                organization_id):
+                organization_id,
+                replay_file=None,
+                record_file=None,):
     """Run the crawler with a determined configuration.
 
     Args:
@@ -115,6 +117,11 @@ def run_crawler(storage,
         'max_compute_api_calls_per_second': 20,
         'max_iam_api_calls_per_second': 20,
         }
+
+    if replay_file:
+        client_config['replay_file'] = replay_file
+    if record_file:
+        client_config['record_file'] = record_file
 
     orgid = 'organizations/{}'.format(organization_id)
 

@@ -16,7 +16,6 @@
 
 import json
 import httplib2
-import os
 
 import googleapiclient
 from googleapiclient import discovery
@@ -36,49 +35,33 @@ SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 
 LOGGER = log_util.get_logger(__name__)
 
-COUNTER = 0
-
-counter = 0
-
 
 def record_if(var, filename):
     if var:
-        m = {}
+        recording = {}
 
         def real_decorator(function):
             def record_wrapper(request, rate_limiter=None):
                 with file(filename, 'w') as outfile:
-                    global counter
                     pickler = pickle.Pickler(outfile)
-                    counter += 1
                     try:
                         result = function(request, rate_limiter)
-                        if request.uri in m:
-                            print 'double URI'
-                            import code
-                            code.interact(local=locals())
                         obj = {
                             'raised': False,
                             'result': result,
                             'request': request.to_json(),
                             'uri': request.uri}
-                        m[request.uri] = obj
-                        m[counter] = obj
-                        pickler.dump(m)
+                        recording[request.uri] = obj
+                        pickler.dump(recording)
                         return result
                     except Exception as e:
-                        if request.uri in m:
-                            print 'double URI for exception'
-                            import code
-                            code.interact(local=locals())
                         obj = {
                             'raised': True,
                             'result': e.__class__,
                             'request': request.to_json(),
                             'uri': request.uri}
-                        m[request.uri] = obj
-                        m[counter] = obj
-                        pickler.dump(m)
+                        recording[request.uri] = obj
+                        pickler.dump(recording)
                         raise
                     finally:
                         outfile.flush()
@@ -93,40 +76,25 @@ def record_if(var, filename):
     return real_decorator
 
 
-def replay_if(var, filename):
-    if var:
-
-        def real_decorator(function):
-            def replay_wrapper(request, rate_limiter=None):
-                global counter
-                counter += 1
-
-                with file(filename) as infile:
-
+def replay(function):
+    def replay_wrapper(self, request, rate_limiter=None):
+        try:
+            recording = self.__recording
+        except AttributeError:
+            replay_file = self.global_configs.get('replay_file', None)
+            if not replay_file:
+                return function(self, request, rate_limiter)
+            else:
+                with file(replay_file) as infile:
                     unpickler = pickle.Unpickler(infile)
-                    print 'Deserializing counter={}'.format(counter)
-                    m = unpickler.load()
+                    self.__recording = unpickler.load()
+                    recording = self.__recording
 
-                    try:
-                        obj = m[request.uri]
-                    except KeyError as e:
-                        if counter == 83:
-                            import code
-                            code.interact(local=locals())
-                        obj = m[counter]
-                    if obj['raised']:
-                        raise obj['result']('', '')
-                    return obj['result']
-
-            return replay_wrapper
-
-    # noop
-    else:
-        def real_decorator(function):
-            def noop_wrapper(*args, **kwargs):
-                return function(*args, **kwargs)
-            return noop_wrapper
-    return real_decorator
+        obj = recording[request.uri]
+        if obj['raised']:
+            raise obj['result']('', '')
+        return obj['result']
+    return replay_wrapper
 
 
 def _attach_user_agent(request):
@@ -174,13 +142,15 @@ class BaseClient(object):
         """
 
         self.global_configs = global_configs
-        if os.environ.get('GCP_API_REPLAY'):
+
+        # This is supporting the recording and replaying
+        # of GCP API calls for regression testing purpose
+        if global_configs.get('replay_file', None):
             supported_api = _supported_apis.SUPPORTED_APIS.get(api_name)
             version = kwargs.get('version')
             if not version and supported_api:
                 version = supported_api.get('version')
             self.version = version
-            print 'configuring mock object'
             self.discovery_kwargs = {}
             self.service = self.get_service(api_name, self.version)
             return
@@ -240,17 +210,14 @@ class BaseClient(object):
         """
         return 'API: name=%s, version=%s' % (self.name, self.version)
 
-    @staticmethod
+
+    @replay
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
-    @record_if(os.environ.get('GCP_API_RECORD', None),
-               os.environ.get('GCP_API_FILE'))
-    @replay_if(os.environ.get('GCP_API_REPLAY', None),
-               os.environ.get('GCP_API_FILE'))
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
-    def _execute(request, rate_limiter=None):
+    def _execute(self, request, rate_limiter=None):
         """Executes requests in a rate-limited way.
 
         Args:
@@ -267,8 +234,6 @@ class BaseClient(object):
                 be handled upstream.
         """
 
-        if not os.environ.get('GCP_API_REPLAY'):
-            request = _attach_user_agent(request)
         try:
             if rate_limiter is not None:
                 with rate_limiter:
