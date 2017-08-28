@@ -85,7 +85,7 @@ class StorageClient(_base_client.BaseClient):
                 body=req_body,
                 media_body=http.MediaIoBaseUpload(
                     f, 'application/octet-stream'))
-            _ = req.execute()
+            _ = self._execute(req)
 
     def get_text_file(self, full_bucket_path):
         """Gets a text file object as a string.
@@ -147,7 +147,7 @@ class StorageClient(_base_client.BaseClient):
         buckets_api = self.service.buckets()
         try:
             buckets_request = buckets_api.list(project=project_id)
-            buckets = buckets_request.execute()
+            buckets = self._execute(buckets_request)
             return buckets
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(project_id, e))
@@ -174,12 +174,11 @@ class StorageClient(_base_client.BaseClient):
             bucket=bucket_name, object=object_name)
 
         try:
-            return bucket_acl_request.execute()
+            return self._execute(bucket_acl_request)
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
             # TODO: pass in "buckets" as resource_name variable
             raise api_errors.ApiExecutionError('buckets', e)
-
 
     def get_bucket_acls(self, bucket_name):
         """Gets acls for GCS bucket.
@@ -200,7 +199,7 @@ class StorageClient(_base_client.BaseClient):
             bucket=bucket_name)
 
         try:
-            return bucket_acl_request.execute()
+            return self._execute(bucket_acl_request)
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
             # TODO: pass in "buckets" as resource_name variable
@@ -223,7 +222,7 @@ class StorageClient(_base_client.BaseClient):
                                 pageToken=next_token)
 
             try:
-                result = api_call.execute()
+                result = self._execute(api_call)
             except (errors.HttpError, HttpLib2Error) as e:
                 LOGGER.error(api_errors.ApiExecutionError(bucket_name, e))
                 # TODO: pass in "buckets" as resource_name variable
@@ -256,7 +255,7 @@ class StorageClient(_base_client.BaseClient):
         api = self.service.objects()
         api_call = api.getIamPolicy(bucket=bucket_name, object=object_name)
         try:
-            return api_call.execute()
+            return self._execute(api_call)
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(object_name, e))
             raise api_errors.ApiExecutionError('objects', e)
@@ -275,7 +274,7 @@ class StorageClient(_base_client.BaseClient):
         api_call = api.getIamPolicy(bucket=bucket_id)
 
         try:
-            return api_call.execute()
+            return self._execute(api_call)
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(api_errors.ApiExecutionError(bucket_id, e))
             raise api_errors.ApiExecutionError('buckets', e)

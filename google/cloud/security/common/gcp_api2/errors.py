@@ -35,6 +35,38 @@ class ApiExecutionError(Error):
             self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
 
 
+class ApiNotAllowedError(Error):
+    """Error for HTTP 403."""
+
+    CUSTOM_ERROR_MESSAGE = 'GCP API Error: unable to get {0} from GCP:\n{1}'
+
+    def __init__(self, error_url, e):
+        """Initialize.
+
+        Args:
+            error_url (str): The resource name.
+            e (Exception): The exception.
+        """
+        super(ApiNotAllowedError, self).__init__(
+            self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
+
+
+class ApiNotFoundError(Error):
+    """Error for HTTP 404."""
+
+    CUSTOM_ERROR_MESSAGE = 'GCP API Error: unable to get {0} from GCP:\n{1}'
+
+    def __init__(self, error_url, e):
+        """Initialize.
+
+        Args:
+            error_url (str): The resource name.
+            e (Exception): The exception.
+        """
+        super(ApiNotFoundError, self).__init__(
+            self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
+
+
 class ApiNotEnabledError(Error):
     """The requested API is not enabled on this project."""
 
@@ -51,9 +83,11 @@ class ApiNotEnabledError(Error):
         super(ApiNotEnabledError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
 
+
 class ApiInitializationError(Error):
     """Error initializing the API."""
     pass
+
 
 class InvalidBucketPathError(Error):
     """Invalid GCS bucket path."""

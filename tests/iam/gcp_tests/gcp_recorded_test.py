@@ -15,6 +15,10 @@
 """ Unit Tests: Inventory crawler for IAM Explain. """
 
 import unittest
+import os
+
+os.environ['GCP_API_REPLAY'] = 'ENABLED'
+os.environ['GCP_API_FILE'] = '/tmp/pickled.test'
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.inventory2.storage import Memory as MemoryStorage
@@ -45,6 +49,11 @@ class NullProgresser(Progresser):
         pass
 
 
+def get_api_file_path(filename):
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(module_dir, 'test_data', filename)
+
+
 class CrawlerTest(ForsetiTestCase):
     """Test inventory storage."""
 
@@ -59,7 +68,7 @@ class CrawlerTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
-    def test_crawling_to_memmory_storage(self):
+    def test_recprd_gcp_api2(self):
         """Crawl an environment, test that there are items in storage."""
 
         gcp = gcp_env()
@@ -81,6 +90,32 @@ class CrawlerTest(ForsetiTestCase):
 
         types = set([item.type() for item in storage.mem.values()])
         self.assertEqual(len(types), 17, """"The inventory crawl 18 types of
+        resources in a well populated organization, howevever, there is: """
+        +str(len(types)))
+
+    def test_replay_gcp_api2(self):
+        """Replay recorded GCP API responses to emulate a GCP environment."""
+
+        gsuite_sa = ""
+        gsuite_admin_email = ""
+        organization_id = "660570133860"
+        test_file = get_api_file_path('henry_gbiz_08282017.pickled')
+
+        with MemoryStorage() as storage:
+            progresser = NullProgresser()
+            run_crawler(storage,
+                        progresser,
+                        gsuite_sa,
+                        gsuite_admin_email,
+                        organization_id,
+                        replay_file=test_file)
+
+            self.assertEqual(0,
+                             progresser.errors,
+                             'No errors should have occurred')
+
+        types = set([item.type() for item in storage.mem.values()])
+        self.assertEqual(len(types), 16, """"The inventory crawl 16 types of
         resources in a well populated organization, howevever, there is: """
         +str(len(types)))
 

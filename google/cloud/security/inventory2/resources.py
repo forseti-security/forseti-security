@@ -540,7 +540,7 @@ FACTORIES = {
         'dependsOn': ['organization', 'folder'],
         'cls': Project,
         'contains': [
-            AppEngineAppIterator,
+            #AppEngineAppIterator,
             BucketIterator,
             DataSetIterator,
             InstanceIterator,

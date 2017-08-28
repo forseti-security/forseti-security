@@ -65,7 +65,7 @@ class IAMClient(_base_client.BaseClient):
                                 pageToken=next_token)
 
             try:
-                result = api_call.execute()
+                result = self._execute(api_call, self.rate_limiter)
             except (errors.HttpError, HttpLib2Error) as e:
                 LOGGER.error(api_errors.ApiExecutionError(project_name, e))
                 # TODO: pass in "buckets" as resource_name variable
@@ -103,7 +103,7 @@ class IAMClient(_base_client.BaseClient):
                                 view='FULL')
 
             try:
-                result = api_call.execute()
+                result = self._execute(api_call, self.rate_limiter)
             except (errors.HttpError, HttpLib2Error) as e:
                 LOGGER.error(api_errors.ApiExecutionError(project_id, e))
                 # TODO: pass in "buckets" as resource_name variable
@@ -139,12 +139,8 @@ class IAMClient(_base_client.BaseClient):
             api_call = endpoint(parent=org_name,
                                 pageToken=next_token,
                                 view='FULL')
-            try:
-                result = api_call.execute()
-            except (errors.HttpError, HttpLib2Error) as e:
-                LOGGER.error(api_errors.ApiExecutionError(orgid, e))
-                # TODO: pass in "buckets" as resource_name variable
-                raise api_errors.ApiExecutionError('roles', e)
+
+            result = self._execute(api_call, self.rate_limiter)
 
             # Does the result have any objects listed?
             if 'roles' not in result:
@@ -177,7 +173,7 @@ class IAMClient(_base_client.BaseClient):
                                 pageToken=next_token,
                                 view='FULL')
             try:
-                result = api_call.execute()
+                result = self._execute(api_call, self.rate_limiter)
             except (errors.HttpError, HttpLib2Error) as e:
                 LOGGER.error(api_errors.ApiExecutionError(orgid, e))
                 # TODO: pass in "buckets" as resource_name variable
