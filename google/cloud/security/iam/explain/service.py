@@ -23,34 +23,16 @@ from google.cloud.security.iam.explain import explain_pb2
 from google.cloud.security.iam.explain import explain_pb2_grpc
 from google.cloud.security.iam.explain import explainer
 from google.cloud.security.iam.dao import session_creator
+from google.cloud.security.iam.utils import autoclose_stream
 
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc
-
-
-# pylint: disable=protected-access
-def autoclose_stream(f):
-    """Decorator to close gRPC stream."""
-
-    def wrapper(*args):
-        """Wrapper function, checks context state to close stream."""
-
-        def closed(context):
-            """Returns true iff the connection is closed."""
-
-            return context._state.client == 'closed'
-        context = args[-1]
-        for result in f(*args):
-            if closed(context):
-                return
-            yield result
-    return wrapper
-
-
 # pylint: disable=no-self-use
+
+
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     """IAM Explain gRPC implementation."""
 
@@ -117,6 +99,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
              for resource, role, member in bindings])
         return reply
 
+    @autoclose_stream
     def GetAccessByPermissions(self, request, context):
         """Returns stream of access based on permission/role.
 
@@ -202,7 +185,10 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     def CreateModel(self, request, context):
         """Creates a new model from an import source."""
 
-        model = self.explainer.CreateModel(request.type, request.name)
+        model = self.explainer.CreateModel(request.type,
+                                           request.name,
+                                           request.id,
+                                           request.background)
         reply = explain_pb2.CreateModelReply(model=explain_pb2.Model(
             name=model.name,
             handle=model.handle,
@@ -232,6 +218,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.models.extend(models_pb)
         return reply
 
+    @autoclose_stream
     def Denormalize(self, _, context):
         """Denormalize the entire model into access triples."""
 

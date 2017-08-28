@@ -27,6 +27,7 @@ from threading import Lock
 
 from sqlalchemy import Column
 from sqlalchemy import Integer
+from sqlalchemy import Boolean
 from sqlalchemy import String
 from sqlalchemy import Sequence
 from sqlalchemy import ForeignKey
@@ -45,6 +46,8 @@ from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.security.iam.utils import mutual_exclusive
+from google.cloud.security.iam import db
+from google.cloud.security.iam.utils import get_sql_dialect
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -83,14 +86,12 @@ class Model(MODEL_BASE):
     message = Column(Text())
     warnings = Column(Text())
 
-    def kick_watchdog(self, session):
+    def kick_watchdog(self):
         """Used during import to notify the import is still progressing."""
 
         self.watchdog_timer = datetime.datetime.utcnow()
-        session.add(self)
-        session.commit()
 
-    def add_warning(self, session, warning):
+    def add_warning(self, warning):
         """Add a warning to the model.
 
         Args:
@@ -102,38 +103,29 @@ class Model(MODEL_BASE):
             self.warnings = warning_message
         else:
             self.warnings += warning_message
-        session.add(self)
-        session.commit()
 
-    def set_inprogress(self, session):
+    def set_inprogress(self):
         """Set state to 'in progress'."""
 
-        session.add(self)
         self.state = "INPROGRESS"
-        session.commit()
 
-    def set_done(self, session, message=''):
+    def set_done(self, message=''):
         """Indicate a finished import.
             Args:
-                session (object): Database session
                 message (str): Success message or ''
         """
 
-        session.add(self)
         if self.warnings:
             self.state = "PARTIAL_SUCCESS"
         else:
             self.state = "SUCCESS"
         self.message = message
-        session.commit()
 
-    def set_error(self, session, message):
+    def set_error(self, message):
         """Indicate a broken import."""
 
         self.state = "BROKEN"
         self.message = message
-        session.add(self)
-        session.commit()
 
     def __repr__(self):
         """String representation."""
@@ -198,12 +190,13 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
-        full_name = Column(String(1024))
+        full_name = Column(String(1024), nullable=False)
         type_name = Column(String(256), primary_key=True)
-        name = Column(String(128))
-        type = Column(String(64))
+        name = Column(String(128), nullable=False)
+        type = Column(String(64), nullable=False)
         policy_update_counter = Column(Integer, default=0)
-        display_name = Column(String(256))
+        display_name = Column(String(256), default='')
+        email = Column(String(256), default='')
 
         parent_type_name = Column(
             String(128),
@@ -304,6 +297,10 @@ def define_model(model_name, dbengine, model_seed):
 
         __tablename__ = roles_tablename
         name = Column(String(128), primary_key=True)
+        title = Column(String(128), default='')
+        stage = Column(String(128), default='')
+        description = Column(String(256), default='')
+        custom = Column(Boolean, default=False)
         permissions = relationship('Permission',
                                    secondary=role_permissions,
                                    back_populates='roles')
@@ -363,11 +360,7 @@ def define_model(model_name, dbengine, model_seed):
             tbl2 = aliased(GroupInGroup.__table__, name='alias2')
             tbl3 = aliased(GroupInGroup.__table__, name='alias3')
 
-            def get_dialect(session):
-                """Return the active SqlAlchemy dialect."""
-                return session.bind.dialect.name
-
-            if get_dialect(session) != 'sqlite':
+            if get_sql_dialect(session) != 'sqlite':
                 # Lock tables for denormalization
                 # including aliases 1-3
                 locked_tables = [
@@ -443,7 +436,7 @@ def define_model(model_name, dbengine, model_seed):
                 session.rollback()
                 raise
             finally:
-                if get_dialect(session) != 'sqlite':
+                if get_sql_dialect(session) != 'sqlite':
                     session.execute('UNLOCK TABLES')
                 session.commit()
             return iterations
@@ -1466,36 +1459,6 @@ def undefine_model(session_maker, data_access):
     session = session_maker()
     data_access.delete_all(session)
 
-
-class ScopedSession(object):
-    """A scoped session is automatically released."""
-
-    def __init__(self, session, auto_commit=False):
-        self.session = session
-        self.auto_commit = auto_commit
-
-    def __enter__(self):
-        return self.session
-
-    def __exit__(self, exc_type, value, traceback):
-        try:
-            if traceback is None and self.auto_commit:
-                self.session.commit()
-        finally:
-            self.session.close()
-
-
-class ScopedSessionMaker(object):
-    """Wraps session maker to create scoped sessions."""
-
-    def __init__(self, session_maker, auto_commit=False):
-        self.sessionmaker = session_maker
-        self.auto_commit = auto_commit
-
-    def __call__(self, *args):
-        return ScopedSession(self.sessionmaker(*args), self.auto_commit)
-
-
 LOCK = Lock()
 
 
@@ -1515,7 +1478,7 @@ class ModelManager(object):
         """Create a session to read from the models table."""
 
         MODEL_BASE.metadata.create_all(self.engine)
-        return ScopedSessionMaker(
+        return db.ScopedSessionMaker(
             sessionmaker(
                 bind=self.engine),
             auto_commit=True)
@@ -1542,7 +1505,7 @@ class ModelManager(object):
         """Get model data by name."""
 
         session_maker, data_access = self._get(model)
-        return ScopedSession(session_maker()), data_access
+        return db.ScopedSession(session_maker()), data_access
 
     def _get(self, handle):
         """Get model data by name internal."""
@@ -1586,15 +1549,30 @@ class ModelManager(object):
         """Expunging wrapper for _models."""
         return self._models(expunge=True)
 
-    def model(self, model_name, expunge=True):
+    def model(self, model_name, expunge=True, session=None):
         """Get model from database by name."""
 
-        with self.modelmaker() as session:
+        def instantiate_model(session, model_name, expunge):
+            """Creates a model object by querying the database.
+
+            Args:
+                session (object): Database session.
+                model_name (str): Model name to instantiate.
+                expunge (bool): Whether or not to detach the object from
+                                the session for use in another session.
+            """
+
             item = session.query(Model).filter(
                 Model.handle == model_name).one()
             if expunge:
                 session.expunge(item)
             return item
+
+        if not session:
+            with self.modelmaker() as scoped_session:
+                return instantiate_model(scoped_session, model_name, expunge)
+        else:
+            return instantiate_model(session, model_name, expunge)
 
 
 def session_creator(model_name, filename=None, seed=None, echo=False):

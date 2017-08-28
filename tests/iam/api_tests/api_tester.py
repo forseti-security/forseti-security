@@ -49,10 +49,20 @@ class ApiTestRunner(object):
 
     def run(self, test_callback):
         """Test runner."""
-        server = grpc.server(futures.ThreadPoolExecutor(1))
+
+        server = grpc.server(futures.ThreadPoolExecutor(32))
         server.add_insecure_port('[::]:{}'.format(self.service_port))
         for factory in self.service_factories:
-            factory(self.service_config).create_and_register_service(server)
+            try:
+                factory(self.service_config).create_and_register_service(server)
+            except Exception:
+                # This is a workaround for a gRPC bug
+                # that triggers an assertion if the server is gc'd
+                # without ever being started.
+                server.start()
+                server.stop(0)
+                raise
+
         server.start()
         try:
             client = ClientComposition(

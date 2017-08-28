@@ -54,3 +54,8 @@ def RunExplainCli():
     """Run Explain CLI."""
     import google.cloud.security.iam.cli as iam_cli
     run_script_module.RunScriptModule(iam_cli)
+
+def RunInventory2():
+    """Run Inventory2."""
+    import google.cloud.security.inventory2.crawler as crawler
+    run_script_module.RunScriptModule(crawler)
