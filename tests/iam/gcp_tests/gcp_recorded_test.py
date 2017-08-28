@@ -15,6 +15,10 @@
 """ Unit Tests: Inventory crawler for IAM Explain. """
 
 import unittest
+import os
+
+os.environ['GCP_API_REPLAY'] = 'ENABLED'
+os.environ['GCP_API_FILE'] = '/tmp/pickled.test'
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.inventory2.storage import Memory as MemoryStorage
@@ -59,7 +63,7 @@ class CrawlerTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
-    def test_crawling_to_memmory_storage(self):
+    def test_recprd_gcp_api2(self):
         """Crawl an environment, test that there are items in storage."""
 
         gcp = gcp_env()

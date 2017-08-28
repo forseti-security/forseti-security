@@ -16,9 +16,8 @@
 
 import warnings
 from ratelimiter import RateLimiter
-from googleapiclient import errors
 
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api2 import errors as api_errors
 from google.cloud.security.common.gcp_api2 import _base_client
 
 
@@ -67,16 +66,10 @@ class AppEngineClient(_base_client.BaseClient):
         request = apps.get(appsId=project_id)
         try:
             app = self._execute(request, self.rate_limiter)
-        except errors.HttpError as e:
-            resp = e.resp
-            if resp.status == '404':
-                # TODO: handle error more gracefully
-                # application not found
-                pass
-            if resp.status == '403':
-                # Operation not allowed
-                # This has been handled by the BaseClient._execute
-                pass
-        except api_errors.ApiNotEnabledError as e:
+        except api_errors.ApiNotAllowedError:
+            warnings.warn('Warning: App Engine Admin API: 403')
+        except api_errors.ApiNotFoundError:
+            warnings.warn('Warning: App Engine Admin API: 404')
+        except api_errors.ApiNotEnabledError:
             warnings.warn('Warning: App Engine Admin API not enabled')
         return app

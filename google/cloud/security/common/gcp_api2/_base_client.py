@@ -16,16 +16,18 @@
 
 import json
 import httplib2
+import os
 
 import googleapiclient
 from googleapiclient import discovery
 from googleapiclient import errors
 from oauth2client.client import GoogleCredentials
 from retrying import retry
+import pickle
 
 from google.cloud import security as forseti_security
-from google.cloud.security.common.gcp_api import _supported_apis
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api2 import _supported_apis
+from google.cloud.security.common.gcp_api2 import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
@@ -33,6 +35,98 @@ from google.cloud.security.common.util import retryable_exceptions
 SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 
 LOGGER = log_util.get_logger(__name__)
+
+COUNTER = 0
+
+counter = 0
+
+
+def record_if(var, filename):
+    if var:
+        m = {}
+
+        def real_decorator(function):
+            def record_wrapper(request, rate_limiter=None):
+                with file(filename, 'w') as outfile:
+                    global counter
+                    pickler = pickle.Pickler(outfile)
+                    counter += 1
+                    try:
+                        result = function(request, rate_limiter)
+                        if request.uri in m:
+                            print 'double URI'
+                            import code
+                            code.interact(local=locals())
+                        obj = {
+                            'raised': False,
+                            'result': result,
+                            'request': request.to_json(),
+                            'uri': request.uri}
+                        m[request.uri] = obj
+                        m[counter] = obj
+                        pickler.dump(m)
+                        return result
+                    except Exception as e:
+                        if request.uri in m:
+                            print 'double URI for exception'
+                            import code
+                            code.interact(local=locals())
+                        obj = {
+                            'raised': True,
+                            'result': e.__class__,
+                            'request': request.to_json(),
+                            'uri': request.uri}
+                        m[request.uri] = obj
+                        m[counter] = obj
+                        pickler.dump(m)
+                        raise
+                    finally:
+                        outfile.flush()
+            return record_wrapper
+
+    # noop
+    else:
+        def real_decorator(function):
+            def noop_wrapper(*args, **kwargs):
+                return function(*args, **kwargs)
+            return noop_wrapper
+    return real_decorator
+
+
+def replay_if(var, filename):
+    if var:
+
+        def real_decorator(function):
+            def replay_wrapper(request, rate_limiter=None):
+                global counter
+                counter += 1
+
+                with file(filename) as infile:
+
+                    unpickler = pickle.Unpickler(infile)
+                    print 'Deserializing counter={}'.format(counter)
+                    m = unpickler.load()
+
+                    try:
+                        obj = m[request.uri]
+                    except KeyError as e:
+                        if counter == 83:
+                            import code
+                            code.interact(local=locals())
+                        obj = m[counter]
+                    if obj['raised']:
+                        raise obj['result']('', '')
+                    return obj['result']
+
+            return replay_wrapper
+
+    # noop
+    else:
+        def real_decorator(function):
+            def noop_wrapper(*args, **kwargs):
+                return function(*args, **kwargs)
+            return noop_wrapper
+    return real_decorator
 
 
 def _attach_user_agent(request):
@@ -53,6 +147,10 @@ def _attach_user_agent(request):
         forseti_security.__version__)
 
     return request
+
+
+def _execute_request(request):
+    return request.execute()
 
 
 class BaseClient(object):
@@ -76,6 +174,17 @@ class BaseClient(object):
         """
 
         self.global_configs = global_configs
+        if os.environ.get('GCP_API_REPLAY'):
+            supported_api = _supported_apis.SUPPORTED_APIS.get(api_name)
+            version = kwargs.get('version')
+            if not version and supported_api:
+                version = supported_api.get('version')
+            self.version = version
+            print 'configuring mock object'
+            self.discovery_kwargs = {}
+            self.service = self.get_service(api_name, self.version)
+            return
+
         if not credentials:
             credentials = GoogleCredentials.get_application_default()
 
@@ -118,6 +227,7 @@ class BaseClient(object):
         Returns:
             Object: with methods for interacting with the service.
         """
+
         return discovery.build(api_name,
                                api_version,
                                **self.discovery_kwargs)
@@ -133,6 +243,10 @@ class BaseClient(object):
     @staticmethod
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
+    @record_if(os.environ.get('GCP_API_RECORD', None),
+               os.environ.get('GCP_API_FILE'))
+    @replay_if(os.environ.get('GCP_API_REPLAY', None),
+               os.environ.get('GCP_API_FILE'))
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)
@@ -152,12 +266,14 @@ class BaseClient(object):
                 This exception is not wrapped by the retry library, and will
                 be handled upstream.
         """
-        request = _attach_user_agent(request)
+
+        if not os.environ.get('GCP_API_REPLAY'):
+            request = _attach_user_agent(request)
         try:
             if rate_limiter is not None:
                 with rate_limiter:
-                    return request.execute()
-            return request.execute()
+                    return _execute_request(request)
+            return _execute_request(request)
         except errors.HttpError as e:
             if (e.resp.status == 403 and
                     e.resp.get('content-type', '').startswith(
@@ -185,6 +301,11 @@ class BaseClient(object):
                     raise api_errors.ApiNotEnabledError(
                         api_disabled_errors[0].get('extendedHelp', ''),
                         e)
+            if (e.resp.status == 404):
+                raise api_errors.ApiNotFoundError(e.uri, e)
+
+            if (e.resp.status == 403):
+                raise api_errors.ApiNotAllowedError(e.uri, e)
             raise
 
     def _build_paged_result(self, request, api_stub, rate_limiter,
