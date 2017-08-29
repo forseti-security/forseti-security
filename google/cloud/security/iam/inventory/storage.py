@@ -418,16 +418,13 @@ class Storage(BaseStorage):
         Returns:
             object: The inventory db row.
         """
-        try:
-            return (
-                self.session.query(InventoryIndex)
-                .filter(InventoryIndex.id == 9)
-                .filter(InventoryIndex.status.in_(
-                    [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS]))
-                .one())
-        except Exception as e:
-            import code
-            code.interact(local=locals())
+
+        return (
+            self.session.query(InventoryIndex)
+            .filter(InventoryIndex.id == existing_id)
+            .filter(InventoryIndex.status.in_(
+                [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS]))
+            .one())
 
     def open(self, handle=None):
         """Open the storage, potentially create a new index.
