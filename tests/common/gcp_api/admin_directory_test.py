@@ -32,8 +32,7 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
     @classmethod
     @mock.patch('oauth2client.crypt.Signer.from_string',
                 return_value=object())
-    @mock.patch.object(client.GoogleCredentials, 'get_application_default',
-                       spec=True)
+    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
     def setUpClass(cls, mock_default_credential, signer_factory):
         """Set up."""
         with unittest_utils.create_temp_file(
@@ -43,9 +42,10 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
                 'domain_super_admin_email': 'admin@foo.testing',
                 'max_admin_api_calls_per_100_seconds': 1500}
             cls.ad_api_client = admin.AdminDirectoryClient(fake_global_configs)
-            http_mocks.mock_http_credentials(
-                cls.ad_api_client.repository._credentials)
             mock_default_credential.assert_not_called()
+
+        # Override _use_cached_http so we can use mock http response objects
+        cls.ad_api_client.repository._use_cached_http = True
 
     @mock.patch.object(service_account, 'ServiceAccountCredentials')
     def test_no_quota(self, mock_google_credential):

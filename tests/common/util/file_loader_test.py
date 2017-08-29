@@ -51,8 +51,6 @@ class FileLoaderTest(ForsetiTestCase):
     @mock.patch.object(client.GoogleCredentials, 'get_application_default')
     def test_read_file_from_gcs_json(self, mock_default_credential):
         """Test read_file_from_gcs for json."""
-        mock_credential = mock_default_credential()
-        http_mocks.mock_http_credentials(mock_credential)
         mock_responses = [
             ({'status': '200',
               'content-range': '0-10/11'}, b'{"test": 1}')
@@ -66,8 +64,6 @@ class FileLoaderTest(ForsetiTestCase):
     @mock.patch.object(client.GoogleCredentials, 'get_application_default')
     def test_read_file_from_gcs_yaml(self, mock_default_credential):
         """Test read_file_from_gcs for yaml."""
-        mock_credential = mock_default_credential()
-        http_mocks.mock_http_credentials(mock_credential)
         mock_responses = [
             ({'status': '200',
               'content-range': '0-6/7'}, b'test: 1')

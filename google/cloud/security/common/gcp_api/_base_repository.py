@@ -123,7 +123,10 @@ class BaseRepositoryClient(object):
                 limiter for this service.
             **kwargs (dict): Additional args such as version.
         """
+        self._use_cached_http = False
         if not credentials:
+            # Only share the http object when using the default credentials.
+            self._use_cached_http = True
             credentials = client.GoogleCredentials.get_application_default()
         self._credentials = _set_user_agent(credentials)
 
@@ -196,7 +199,8 @@ class BaseRepositoryClient(object):
         with self._repository_lock:
             return repository_class(gcp_service=self.gcp_services[version],
                                     credentials=self._credentials,
-                                    rate_limiter=self._rate_limiter)
+                                    rate_limiter=self._rate_limiter,
+                                    use_cached_http=self._use_cached_http)
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -207,7 +211,7 @@ class GCPRepository(object):
                  num_retries=NUM_HTTP_RETRIES, key_field='project',
                  entity_field=None, list_key_field=None, get_key_field=None,
                  max_results_field='maxResults', search_query_field='query',
-                 rate_limiter=None):
+                 rate_limiter=None, use_cached_http=True):
         """Constructor.
 
         Args:
@@ -232,6 +236,9 @@ class GCPRepository(object):
             search_query_field (str): The field name used to filter search
                 results.
             rate_limiter (object): A RateLimiter object to manage API quota.
+            use_cached_http (bool): If set to true, calls to the API will use
+                a thread local shared http object. When false a new http object
+                is used for each request.
         """
         self.gcp_service = gcp_service
         self._credentials = credentials
@@ -255,6 +262,7 @@ class GCPRepository(object):
         self._search_query_field = search_query_field
         self._rate_limiter = rate_limiter
 
+        self._use_cached_http = use_cached_http
         self._local = LOCAL_THREAD
 
     @property
@@ -264,18 +272,14 @@ class GCPRepository(object):
         Returns:
             httplib2.Http: An Http instance authorized by the credentials.
         """
-        if hasattr(self._local, 'http'):
-            # Verify the current cached credential matches the credential
-            # on the cached http object. Mock http objects have no credentials
-            # cached, so pass them through as well.
-            if (hasattr(self._local, 'credentials') and
-                    self._local.credentials == self._credentials):
-                return self._local.http
+        if self._use_cached_http and hasattr(self._local, 'http'):
+            return self._local.http
 
-        self._local.http = httplib2.Http()
-        self._local.credentials = self._credentials
-        self._local.credentials.authorize(http=self._local.http)
-        return self._local.http
+        http = httplib2.Http()
+        self._credentials.authorize(http=http)
+        if self._use_cached_http:
+            self._local.http = http
+        return http
 
     def _build_request(self, verb, verb_arguments):
         """Builds HttpRequest object.

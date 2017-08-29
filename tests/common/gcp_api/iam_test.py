@@ -33,8 +33,6 @@ class IamTest(unittest_utils.ForsetiTestCase):
         """Set up."""
         fake_global_configs = {'max_iam_api_calls_per_second': 10000}
         cls.iam_api_client = iam.IAMClient(global_configs=fake_global_configs)
-        http_mocks.mock_http_credentials(
-            cls.iam_api_client.repository._credentials)
 
     @mock.patch.object(client, 'GoogleCredentials')
     def test_no_quota(self, mock_google_credential):

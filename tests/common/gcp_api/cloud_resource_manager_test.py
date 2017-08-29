@@ -40,9 +40,6 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
             'max_crm_api_calls_per_100_seconds': 1000000}
         cls.crm_api_client = crm.CloudResourceManagerClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
-        http_mocks.mock_http_credentials(
-            cls.crm_api_client.repository._credentials)
-
         cls.project_id = fake_crm_responses.FAKE_PROJECT_ID
 
     @mock.patch.object(client, 'GoogleCredentials')

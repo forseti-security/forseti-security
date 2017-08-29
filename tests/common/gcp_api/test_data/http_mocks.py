@@ -18,11 +18,6 @@ from googleapiclient import http
 from google.cloud.security.common.gcp_api import _base_repository
 
 
-def mock_http_credentials(credentials):
-    """Set the thread local credentials to the mock credentials object."""
-    _base_repository.LOCAL_THREAD.credentials = credentials
-
-
 def mock_http_response(response, status='200'):
     """Set the mock response to an http request."""
     http_mock = http.HttpMock()

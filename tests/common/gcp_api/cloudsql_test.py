@@ -35,8 +35,6 @@ class CloudsqlTest(unittest_utils.ForsetiTestCase):
         fake_global_configs = {'max_sqladmin_api_calls_per_100_seconds': 10000}
         cls.sql_api_client = cloudsql.CloudsqlClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
-        http_mocks.mock_http_credentials(
-            cls.sql_api_client.repository._credentials)
         cls.project_id = 111111
 
     @mock.patch.object(client, 'GoogleCredentials')

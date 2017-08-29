@@ -42,8 +42,6 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         fake_global_configs = {'max_compute_api_calls_per_second': 2000}
         cls.gce_api_client = compute.ComputeClient(
             global_configs=fake_global_configs)
-        http_mocks.mock_http_credentials(
-            cls.gce_api_client.repository._credentials)
         cls.project_id = fake_compute.FAKE_PROJECT_ID
 
     @mock.patch.object(client, 'GoogleCredentials')
