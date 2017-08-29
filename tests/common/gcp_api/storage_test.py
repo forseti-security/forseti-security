@@ -13,75 +13,165 @@
 # limitations under the License.
 
 """Tests the Storage client."""
-
-import mock
 import unittest
+import mock
+from oauth2client import client
 
-from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_client
+from tests import unittest_utils
+from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
+from tests.common.gcp_api.test_data import http_mocks
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_api import storage
-from tests.common.gcp_type.test_data import fake_buckets
 
 
-class StorageTest(ForsetiTestCase):
+class StorageTest(unittest_utils.ForsetiTestCase):
     """Test the StorageClient."""
 
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def setUp(self, mock_base_client):
+    @classmethod
+    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
-        self.gcs_api_client = storage.StorageClient()
+        cls.gcs_api_client = storage.StorageClient({})
 
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def test_get_bucket_and_path_from(self, mock_base):
+    def test_get_bucket_and_path_from(self):
         """Given a valid bucket object path, return the bucket and path."""
-        expected_bucket = 'my-bucket'
-        expected_obj_path = 'path/to/object'
-        test_path = 'gs://{}/{}'.format(expected_bucket, expected_obj_path)
-        client = storage.StorageClient()
-        bucket, obj_path = storage.get_bucket_and_path_from(test_path)
-        self.assertEqual(expected_bucket, bucket)
-        self.assertEqual(expected_obj_path, obj_path)
+        test_path = 'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
+                                        fake_storage.FAKE_OBJECT_NAME)
+        bucket, obj_name = storage.get_bucket_and_path_from(test_path)
+        self.assertEqual(fake_storage.FAKE_BUCKET_NAME, bucket)
+        self.assertEqual(fake_storage.FAKE_OBJECT_NAME, obj_name)
 
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    def test_non_bucket_uri_raises(self, mock_base):
-        """Given a valid bucket object path, return the bucket and path."""
+    def test_non_bucket_uri_raises(self):
+        """Raise exception on invalid paths."""
         test_path = '/some/local/path/file.ext'
-        client = storage.StorageClient()
         with self.assertRaises(api_errors.InvalidBucketPathError):
-            bucket, obj_path = storage.get_bucket_and_path_from(test_path)
+            storage.get_bucket_and_path_from(test_path)
+
+        with self.assertRaises(api_errors.InvalidBucketPathError):
+            storage.get_bucket_and_path_from(None)
 
     def test_get_buckets(self):
         """Test get buckets."""
-        project_number = '11111'
-        mock_buckets_stub = mock.MagicMock()
-        self.gcs_api_client.service = mock.MagicMock()
-        self.gcs_api_client.service.buckets.return_value = mock_buckets_stub
+        mock_responses = []
+        for page in fake_storage.LIST_FOLDERS_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
 
-        fake_buckets_response = fake_buckets.FAKE_BUCKETS_RESPONSE
-        expected_buckets = fake_buckets.EXPECTED_FAKE_BUCKETS_FROM_API
+        expected_bucket_names = fake_storage.EXPECTED_FAKE_BUCKET_NAMES
 
-        self.gcs_api_client.get_buckets = mock.MagicMock(
-            return_value=fake_buckets_response)
+        results = self.gcs_api_client.get_buckets(
+            fake_storage.FAKE_PROJECT_NUMBER)
+        self.assertEquals(expected_bucket_names,
+                          [r.get('name') for r in results])
 
-        result = list(self.gcs_api_client.get_buckets(project_number))
-        self.assertEquals(expected_buckets, [fake_buckets_response])
+    def test_get_buckets_raises(self):
+        """Test get buckets access forbidden."""
+        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
-    def test_get_bucket_acls(self):
-        """Test get bucket acls."""
-        bucket_name = 'fakebucket1'
-        mock_buckets_stub = mock.MagicMock()
-        self.gcs_api_client.service = mock.MagicMock()
-        self.gcs_api_client.service.bucketAccessControls.return_value = mock_buckets_stub
+        with self.assertRaises(api_errors.ApiExecutionError):
+             self.gcs_api_client.get_buckets(fake_storage.FAKE_PROJECT_NUMBER)
 
-        fake_bucket_acls_response = fake_buckets.FAKE_BUCKET_ACLS_RESPONSE
-        expected_bucket_acls = fake_buckets.EXPECTED_FAKE_BUCKET_ACLS_FROM_API
+    def test_get_bucket_iam_policy(self):
+        """Test get bucket iam policy."""
+        http_mocks.mock_http_response(
+            fake_storage.GET_BUCKET_IAM_POLICY_RESPONSE)
 
-        self.gcs_api_client.get_buckets = mock.MagicMock(
-            return_value=fake_bucket_acls_response)
+        results = self.gcs_api_client.get_bucket_iam_policy(
+            fake_storage.FAKE_BUCKET_NAME)
+        self.assertTrue('bindings' in results)
 
-        result = list(self.gcs_api_client.get_bucket_acls(bucket_name))
-        self.assertEquals(expected_bucket_acls, [fake_bucket_acls_response])
+    def test_get_buckets_iam_policy_raises(self):
+        """Test get buckets iam policy access forbidden."""
+        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+             self.gcs_api_client.get_bucket_iam_policy(
+                 fake_storage.FAKE_PROJECT_NUMBER)
+
+    def test_get_objects(self):
+        """Test get objects."""
+        mock_responses = []
+        for page in fake_storage.LIST_OBJECTS_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        expected_object_names = fake_storage.EXPECTED_FAKE_OBJECT_NAMES
+
+        results = self.gcs_api_client.get_objects(
+            fake_storage.FAKE_PROJECT_NUMBER)
+        self.assertEquals(expected_object_names,
+                          [r.get('name') for r in results])
+
+    def test_get_objects_raises(self):
+        """Test get objects bucket not found."""
+        http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+             self.gcs_api_client.get_objects(fake_storage.FAKE_PROJECT_NUMBER)
+
+    def test_get_object_iam_policy(self):
+        """Test get object iam policy."""
+        http_mocks.mock_http_response(
+            fake_storage.GET_OBJECT_IAM_POLICY_RESPONSE)
+
+        results = self.gcs_api_client.get_object_iam_policy(
+            fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
+        self.assertTrue('bindings' in results)
+
+    def test_get_objects_iam_policy_raises(self):
+        """Test get objects iam policy access forbidden."""
+        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+             self.gcs_api_client.get_object_iam_policy(
+                 fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
+
+    def test_get_text_file(self):
+        """Test get test file returns a valid response."""
+        mock_responses = [
+            ({'status': '200',
+              'content-range': '0-2/5'}, b'123'),
+            ({'status': '200',
+              'content-range': '3-4/5'}, b'45')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        expected_result = b'12345'
+        result = self.gcs_api_client.get_text_file(
+            'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
+                                fake_storage.FAKE_OBJECT_NAME))
+        self.assertEqual(expected_result, result)
+
+    def test_get_text_file_raises(self):
+        """Test get test file returns not found error."""
+        http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
+
+        with self.assertRaises(storage.errors.HttpError):
+            self.gcs_api_client.get_text_file(
+                'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
+                                    fake_storage.FAKE_OBJECT_NAME))
+
+    def test_upload_text_file(self):
+        """Test upload text file."""
+        http_mocks.mock_http_response(u'{}')
+
+        with unittest_utils.create_temp_file(b'12345') as temp_file:
+            result = self.gcs_api_client.put_text_file(
+                temp_file,
+                'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
+                                    fake_storage.FAKE_OBJECT_NAME))
+        self.assertEqual({}, result)
+
+    def test_upload_text_file_raises(self):
+        """Test upload text access forbidden."""
+        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+
+        with self.assertRaises(storage.errors.HttpError):
+            with unittest_utils.create_temp_file(b'12345') as temp_file:
+                self.gcs_api_client.put_text_file(
+                    temp_file,
+                    'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
+                                        fake_storage.FAKE_OBJECT_NAME))
 
 
 if __name__ == '__main__':

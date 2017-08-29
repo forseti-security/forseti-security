@@ -70,8 +70,8 @@ class LoadProjectsPipelineTest(ForsetiTestCase):
         self.pipeline.api_client.get_projects.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve()
+        projects = self.pipeline._retrieve()
+        self.assertEqual(None, projects)
 
     @mock.patch.object(
         load_projects_pipeline.LoadProjectsPipeline,

@@ -17,13 +17,10 @@
 This pipeline depends on the LoadProjectsPipeline.
 """
 
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
-from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -87,12 +84,10 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
                     .get_projects(self.cycle_timestamp))
         instances = {}
         for project in projects:
-            try:
-                project_instances = self.api_client.get_instances(project.id)
-                if project_instances:
-                    instances[project.id] = project_instances
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(inventory_errors.LoadDataPipelineError(e))
+            project_instances = self.safe_api_call('get_instances',
+                                                   project.id)
+            if project_instances:
+                instances[project.id] = project_instances
         return instances
 
     def run(self):

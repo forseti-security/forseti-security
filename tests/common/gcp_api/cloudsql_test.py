@@ -13,47 +13,59 @@
 # limitations under the License.
 
 """Tests the CloudSQL API client."""
-
-import mock
+import json
 import unittest
+import mock
+from oauth2client import client
 
-from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_client
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_api import cloudsql
+from tests import unittest_utils
+from tests.common.gcp_api.test_data import http_mocks
 from tests.common.gcp_type.test_data import fake_cloudsql
+from google.cloud.security.common.gcp_api import cloudsql
+from google.cloud.security.common.gcp_api import errors as api_errors
 
 
-from pprint import pprint as pp
+class CloudsqlTest(unittest_utils.ForsetiTestCase):
+    """Test the CloudSQL Client."""
 
-
-class CloudsqlTest(ForsetiTestCase):
-    """Test the StorageClient."""
-
-    @mock.patch('google.cloud.security.common.gcp_api._base_client.discovery')
-    @mock.patch('google.cloud.security.common.gcp_api._base_client.GoogleCredentials')
-    def setUp(self, mock_google_credential, mock_discovery):
+    @classmethod
+    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
-        fake_global_configs = {'max_sqladmin_api_calls_per_100_seconds': 88888}
-        self.sql_api_client = cloudsql.CloudsqlClient(
-            global_configs=fake_global_configs)
+        fake_global_configs = {'max_sqladmin_api_calls_per_100_seconds': 10000}
+        cls.sql_api_client = cloudsql.CloudsqlClient(
+            global_configs=fake_global_configs, use_rate_limiter=False)
+        cls.project_id = 111111
+
+    @mock.patch.object(client, 'GoogleCredentials')
+    def test_no_quota(self, mock_google_credential):
+        """Verify no rate limiter is used if the configuration is missing."""
+        sql_api_client = cloudsql.CloudsqlClient(global_configs={})
+        self.assertEqual(None, sql_api_client.repository._rate_limiter)
 
     def test_get_instances(self):
         """Test get cloudsql instances."""
-        project_number = '11111'
-        mock_cloudsql_stub = mock.MagicMock()
-        self.sql_api_client.service = mock.MagicMock()
-        self.sql_api_client.service.instances.return_value = mock_cloudsql_stub
+        http_mocks.mock_http_response(
+            json.dumps(fake_cloudsql.FAKE_CLOUDSQL_RESPONSE))
 
-        fake_cloudsql_response = fake_cloudsql.FAKE_CLOUDSQL_RESPONSE
-        expected_cloudsql = fake_cloudsql.EXPECTED_FAKE_CLOUDSQL_FROM_API
+        result = self.sql_api_client.get_instances(self.project_id)
 
-        self.sql_api_client.get_instances = mock.MagicMock(
-            return_value=fake_cloudsql_response)
+        self.assertEquals(fake_cloudsql.EXPECTED_FAKE_CLOUDSQL_FROM_API, result)
 
-        result = [self.sql_api_client.get_instances(project_number)]
+    def test_get_instances_empty(self):
+        """Test get cloudsql instances."""
+        http_mocks.mock_http_response(fake_cloudsql.FAKE_EMPTY_RESPONSE)
 
-        self.assertEquals(expected_cloudsql, result)
+        result = self.sql_api_client.get_instances(self.project_id)
+
+        self.assertEquals([], result)
+
+    def test_get_instances_raises(self):
+        """Test get cloudsql instances."""
+        http_mocks.mock_http_response(fake_cloudsql.PROJECT_INVALID, '400')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+             self.sql_api_client.get_instances(self.project_id)
 
 
 if __name__ == '__main__':

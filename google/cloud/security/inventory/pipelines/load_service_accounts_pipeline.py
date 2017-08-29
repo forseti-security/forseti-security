@@ -20,7 +20,6 @@ from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory.pipelines import base_pipeline
 
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -42,15 +41,16 @@ class LoadServiceAccountsPipeline(base_pipeline.BasePipeline):
             .get_projects(self.cycle_timestamp))
         service_accounts_per_project = {}
         for project in projects:
-            service_accounts = self.api_client.get_service_accounts(project.id)
+            service_accounts = self.safe_api_call('get_service_accounts',
+                                                  project.id)
             if service_accounts:
-                service_accounts = list(service_accounts)
                 for service_account in service_accounts:
                     # TODO: also retrieve associated IAM policies, see:
                     # https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
-                    service_account['keys'] = (
-                        self.api_client.get_service_account_keys(
-                            service_account['name'])['keys'])
+                    keys = self.safe_api_call(
+                        'get_service_account_keys', service_account['name'])
+                    if keys:
+                        service_account['keys'] = keys
                 service_accounts_per_project[project.id] = service_accounts
         return service_accounts_per_project
 

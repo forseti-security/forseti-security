@@ -18,7 +18,6 @@ import mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_client
 from google.cloud.security.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type.organization import OrgLifecycleState

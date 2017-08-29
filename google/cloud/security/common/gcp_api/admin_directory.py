@@ -13,70 +13,136 @@
 # limitations under the License.
 
 """Wrapper for Admin Directory  API client."""
+from googleapiclient import errors
+from httplib2 import HttpLib2Error
 
-from oauth2client.service_account import ServiceAccountCredentials
-from ratelimiter import RateLimiter
-
-from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
 from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
+from google.cloud.security.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
+
+REQUIRED_SCOPES = frozenset([
+    'https://www.googleapis.com/auth/admin.directory.group.readonly'
+])
 
 
-class AdminDirectoryClient(_base_client.BaseClient):
+class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
+    """Admin Directory API Respository Client."""
+
+    def __init__(self,
+                 credentials,
+                 quota_max_calls=None,
+                 quota_period=1.0,
+                 use_rate_limiter=True):
+        """Constructor.
+
+        Args:
+            credentials (object): An oauth2client credentials object. The admin
+                directory API needs a service account credential with delegated
+                super admin role.
+            quota_max_calls (int): Allowed requests per <quota_period> for the
+                API.
+            quota_period (float): The time period to track requests over.
+            use_rate_limiter (bool): Set to false to disable the use of a rate
+                limiter for this service.
+        """
+        if not quota_max_calls:
+            use_rate_limiter = False
+
+        self._groups = None
+        self._members = None
+
+        super(AdminDirectoryRepositoryClient, self).__init__(
+            'admin', versions=['directory_v1'],
+            credentials=credentials,
+            quota_max_calls=quota_max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=use_rate_limiter)
+
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
+    @property
+    def groups(self):
+        """Returns an _AdminDirectoryGroupsRepository instance."""
+        if not self._groups:
+            self._groups = self._init_repository(
+                _AdminDirectoryGroupsRepository)
+        return self._groups
+
+    @property
+    def members(self):
+        """Returns an _AdminDirectoryMembersRepository instance."""
+        if not self._members:
+            self._members = self._init_repository(
+                _AdminDirectoryMembersRepository)
+        return self._members
+    # pylint: enable=missing-return-doc, missing-return-type-doc
+
+
+class _AdminDirectoryGroupsRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Admin Directory Groups repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_AdminDirectoryGroupsRepository, self).__init__(
+            key_field='', component='groups', **kwargs)
+
+
+class _AdminDirectoryMembersRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Admin Directory Members repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_AdminDirectoryMembersRepository, self).__init__(
+            key_field='groupKey', component='members', **kwargs)
+
+
+class AdminDirectoryClient(object):
     """GSuite Admin Directory API Client."""
 
-    API_NAME = 'admin'
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 86400 # pylint: disable=invalid-name
-    REQUIRED_SCOPES = frozenset([
-        'https://www.googleapis.com/auth/admin.directory.group.readonly'
-    ])
+    DEFAULT_QUOTA_PERIOD = 100.0
 
-    def __init__(self, global_configs):
+    def __init__(self, global_configs, **kwargs):
         """Initialize.
 
         Args:
             global_configs (dict): Global configurations.
+            **kwargs (dict): The kwargs.
         """
-        super(AdminDirectoryClient, self).__init__(
-            global_configs,
-            credentials=self._build_credentials(global_configs),
-            api_name=self.API_NAME)
+        max_calls = global_configs.get('max_admin_api_calls_per_100_seconds')
+        quota_period = self.DEFAULT_QUOTA_PERIOD
+        if not max_calls:
+            max_calls = global_configs.get('max_admin_api_calls_per_day')
+            quota_period = 86400.0
+            LOGGER.error('Configuration is using a deprecated directive: '
+                         '"max_admin_api_calls_per_day". Please switch to '
+                         'using "max_admin_api_calls_per_100_seconds" instead. '
+                         'See the sample configuration file for reference.')
 
-        self.rate_limiter = RateLimiter(
-            self.global_configs.get('max_admin_api_calls_per_day'),
-            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
-
-    def _build_credentials(self, global_configs):
-        """Build credentials required for accessing the directory API.
-
-        Args:
-            global_configs (dict): Global configurations.
-
-        Returns:
-            object: Credentials as built by oauth2client.
-
-        Raises:
-            api_errors.ApiExecutionError: If fails to build credentials.
-        """
-        try:
-            credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                global_configs.get('groups_service_account_key_file'),
-                scopes=self.REQUIRED_SCOPES)
-        except (ValueError, KeyError, TypeError, IOError) as e:
-            raise api_errors.ApiExecutionError(
-                'Error building admin api credential: %s', e)
-
-        return credentials.create_delegated(
+        credentials = api_helpers.credential_from_keyfile(
+            global_configs.get('groups_service_account_key_file'),
+            REQUIRED_SCOPES,
             global_configs.get('domain_super_admin_email'))
-
-    def get_rate_limiter(self):
-        """Return an appriopriate rate limiter.
-
-        Returns:
-            object: The rate limiter.
-        """
-        return RateLimiter(
-            self.global_configs.get('max_admin_api_calls_per_day'),
-            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
+        self.repository = AdminDirectoryRepositoryClient(
+            credentials=credentials,
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_group_members(self, group_key):
         """Get all the members for specified groups.
@@ -90,15 +156,11 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Raises:
             api_errors.ApiExecutionError: If group member retrieval fails.
         """
-        members_api = self.service.members()
-        request = members_api.list(
-            groupKey=group_key,
-            maxResults=self.global_configs.get('max_results_admin_api'))
-
-        paged_results = self._build_paged_result(
-            request, members_api, self.rate_limiter)
-
-        return self._flatten_list_results(paged_results, 'members')
+        try:
+            paged_results = self.repository.members.list(group_key)
+            return api_helpers.flatten_list_results(paged_results, 'members')
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(group_key, e)
 
     def get_groups(self, customer_id='my_customer'):
         """Get all the groups for a given customer_id.
@@ -117,10 +179,8 @@ class AdminDirectoryClient(_base_client.BaseClient):
         Raises:
             api_errors.ApiExecutionError: If groups retrieval fails.
         """
-        groups_api = self.service.groups()
-        request = groups_api.list(customer=customer_id)
-
-        paged_results = self._build_paged_result(
-            request, groups_api, self.rate_limiter)
-
-        return self._flatten_list_results(paged_results, 'groups')
+        try:
+            paged_results = self.repository.groups.list(customer=customer_id)
+            return api_helpers.flatten_list_results(paged_results, 'groups')
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError('groups', e)

@@ -14,19 +14,14 @@
 
 """Tests the file loader utility."""
 
-import json
-
-import mock
 import unittest
-import yaml
+import mock
+from oauth2client import client
 
+from tests.common.gcp_api.test_data import http_mocks
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_client
-from google.cloud.security.common.gcp_api import storage
-from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import errors
-
-from StringIO import StringIO
+from google.cloud.security.common.util import file_loader
 
 
 class FileLoaderTest(ForsetiTestCase):
@@ -53,26 +48,28 @@ class FileLoaderTest(ForsetiTestCase):
         with self.assertRaises(errors.InvalidParserTypeError):
             file_loader._get_filetype_parser('path/to/file.yaml', 'asdf')
 
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    @mock.patch.object(storage.StorageClient, 'get_text_file')
-    def test_read_file_from_gcs_json(
-        self, mock_get_text_file, mock_base_client):
+    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
+    def test_read_file_from_gcs_json(self, mock_default_credential):
         """Test read_file_from_gcs for json."""
+        mock_responses = [
+            ({'status': '200',
+              'content-range': '0-10/11'}, b'{"test": 1}')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
         expected_dict = {"test": 1}
-        mock_base_client.return_value = None
-        mock_get_text_file.return_value = json.dumps(expected_dict)
         return_dict = file_loader._read_file_from_gcs('gs://fake/file.json')
 
         self.assertEqual(expected_dict, return_dict)
 
-    @mock.patch.object(_base_client.BaseClient, '__init__', autospec=True)
-    @mock.patch.object(storage.StorageClient, 'get_text_file')
-    def test_read_file_from_gcs_yaml(
-        self, mock_get_text_file, mock_base_client):
+    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
+    def test_read_file_from_gcs_yaml(self, mock_default_credential):
         """Test read_file_from_gcs for yaml."""
+        mock_responses = [
+            ({'status': '200',
+              'content-range': '0-6/7'}, b'test: 1')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
         expected_dict = {"test": 1}
-        mock_base_client.return_value = None
-        mock_get_text_file.return_value = 'test: 1'
         return_dict = file_loader._read_file_from_gcs('gs://fake/file.yaml')
 
         self.assertEqual(expected_dict, return_dict)

@@ -17,42 +17,34 @@
 
 FAKE_ORGS = [
     {
-        'organizations': [
-            {
-                'name': 'organizations/111111111111',
-                'displayName': 'Organization1',
-                'lifecycleState': 'ACTIVE',
-                'creationTime': '2016-10-22T16:57:36.096Z'
-            },
-            {
-                'name': 'organizations/222222222222',
-                'displayName': 'Organization2',
-                'lifecycleState': 'ACTIVE',
-                'creationTime': '2016-11-13T05:32:10.930Z'
-            },
-            {
-                'name': 'organizations/333333333333',
-                'displayName': 'Organization3',
-                'lifecycleState': 'ACTIVE',
-                'creationTime': '2016-11-13T05:32:49.377Z'
-            },
-        ]
+        'name': 'organizations/111111111111',
+        'displayName': 'Organization1',
+        'lifecycleState': 'ACTIVE',
+        'creationTime': '2016-10-22T16:57:36.096Z'
     },
     {
-        'organizations': [
-            {
-                'name': 'organizations/444444444444',
-                'displayName': 'Organization4',
-                'lifecycleState': 'ACTIVE',
-                'creationTime': '2016-10-22T16:57:36.066Z'
-            },
-            {
-                'name': 'organizations/555555555555',
-                'displayName': 'Organization5',
-                'lifecycleState': 'ACTIVE',
-                'creationTime': '2016-11-13T05:32:10.977Z'
-            }
-        ]
+        'name': 'organizations/222222222222',
+        'displayName': 'Organization2',
+        'lifecycleState': 'ACTIVE',
+        'creationTime': '2016-11-13T05:32:10.930Z'
+    },
+    {
+        'name': 'organizations/333333333333',
+        'displayName': 'Organization3',
+        'lifecycleState': 'ACTIVE',
+        'creationTime': '2016-11-13T05:32:49.377Z'
+    },
+    {
+        'name': 'organizations/444444444444',
+        'displayName': 'Organization4',
+        'lifecycleState': 'ACTIVE',
+        'creationTime': '2016-10-22T16:57:36.066Z'
+    },
+    {
+        'name': 'organizations/555555555555',
+        'displayName': 'Organization5',
+        'lifecycleState': 'ACTIVE',
+        'creationTime': '2016-11-13T05:32:10.977Z'
     }
 ]
 

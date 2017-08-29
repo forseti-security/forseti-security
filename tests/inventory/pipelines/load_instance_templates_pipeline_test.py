@@ -100,18 +100,19 @@ class LoadInstanceTemplatesPipelineTest(ForsetiTestCase):
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch(
+        'google.cloud.security.inventory.pipelines.base_pipeline.LOGGER')
     def test_retrieve_error_logged_when_api_error(
-            self, mock_get_projects, mock_conn):
+            self, mock_logger, mock_get_projects, mock_conn):
         """Test that LOGGER.error() is called when there is an API error."""
         mock_get_projects.return_value = self.projects
         self.pipeline.api_client.get_instance_templates.side_effect = (
             api_errors.ApiExecutionError(self.resource_name, mock.MagicMock()))
-        load_instance_templates_pipeline.LOGGER = mock.MagicMock()
-        self.pipeline._retrieve()
-
+        results = self.pipeline._retrieve()
+        self.assertEqual({}, results)
         self.assertEqual(
             len(self.project_ids),
-            load_instance_templates_pipeline.LOGGER.error.call_count)
+            mock_logger.error.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')

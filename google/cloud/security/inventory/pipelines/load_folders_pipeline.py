@@ -18,17 +18,13 @@ import json
 
 from dateutil import parser as dateutil_parser
 
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.util import log_util
-from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc
 # pylint: disable=missing-yield-type-doc
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -44,14 +40,12 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable folders.
 
         Args:
-            resource_from_api: An iterable of resource manager folders
-                search response.
+            resource_from_api: An list of resource manager folders.
 
         Yields:
             An iterable of loadable folders, each folder as a dict.
         """
-        for folder in (f for d in resource_from_api for f in d.get('folders',
-                                                                   [])):
+        for folder in resource_from_api:
             folder_json = json.dumps(folder)
             try:
                 parsed_time = dateutil_parser.parse(folder.get('createTime'))
@@ -87,18 +81,12 @@ class LoadFoldersPipeline(base_pipeline.BasePipeline):
         Returns:
             An iterable of resource manager folder search response.
         """
-        try:
-            return self.api_client.get_folders(
-                self.RESOURCE_NAME)
-        except api_errors.ApiExecutionError as e:
-            raise inventory_errors.LoadDataPipelineError(e)
+        return self.safe_api_call('get_folders', self.RESOURCE_NAME)
 
     def run(self):
         """Runs the data pipeline."""
         folders_map = self._retrieve()
-
-        loadable_folders = self._transform(folders_map)
-
-        self._load(self.RESOURCE_NAME, loadable_folders)
-
-        self._get_loaded_count()
+        if folders_map:
+            loadable_folders = self._transform(folders_map)
+            self._load(self.RESOURCE_NAME, loadable_folders)
+            self._get_loaded_count()

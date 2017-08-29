@@ -51,20 +51,22 @@ class ApiNotEnabledError(Error):
         super(ApiNotEnabledError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
 
+
 class ApiInitializationError(Error):
     """Error initializing the API."""
-    pass
+
 
 class InvalidBucketPathError(Error):
     """Invalid GCS bucket path."""
-    pass
 
 
 class UnsupportedApiError(Error):
     """Error for unsupported API."""
-    pass
 
 
 class UnsupportedApiVersionError(Error):
     """Error for unsupported API version."""
-    pass
+
+
+class PaginationNotSupportedError(Error):
+    """Paged Query was issued against an API that does not support paging."""

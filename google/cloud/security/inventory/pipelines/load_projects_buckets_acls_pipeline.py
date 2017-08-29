@@ -16,13 +16,10 @@
 
 import json
 
-# pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
+from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -81,7 +78,7 @@ class LoadProjectsBucketsAclsPipeline(base_pipeline.BasePipeline):
         # Get the projects for which we will retrieve the buckets.
         try:
             raw_buckets = self.dao.get_raw_buckets(self.cycle_timestamp)
-        except data_access_errors.MySQLError as e:
+        except dao_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
         for result in raw_buckets:

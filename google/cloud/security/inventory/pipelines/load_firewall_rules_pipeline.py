@@ -18,11 +18,9 @@ This pipeline depends on the LoadProjectsPipeline.
 """
 
 from google.cloud.security.common.data_access import project_dao as proj_dao
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -103,12 +101,10 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                     .ProjectDao(self.global_configs)
                     .get_projects(self.cycle_timestamp))
         for project in projects:
-            try:
-                firewall_rules = self.api_client.get_firewall_rules(project.id)
+            firewall_rules = self.safe_api_call('get_firewall_rules',
+                                                project.id)
+            if firewall_rules:
                 firewall_rules_map[project.id] = firewall_rules
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error('Unable to get firewall rules for '
-                             'project id: %s\n%s', project.id, e)
         return firewall_rules_map
 
     def run(self):

@@ -52,7 +52,7 @@ FAKE_FOLDERS_RESPONSE = {
     ]
 }
 
-EXPECTED_FAKE_FOLDERS_FROM_API = [FAKE_FOLDERS_RESPONSE]
+EXPECTED_FAKE_FOLDERS_FROM_API = FAKE_FOLDERS_RESPONSE['folders']
 
 FAKE_FOLDERS_OK_IAM_DB_ROWS = [
     {'folder_id': '1111111111',
@@ -91,8 +91,7 @@ FAKE_FOLDERS_API_RESPONSE1 = {
             'name': 'folders/111',
             'parent': 'folders/1111111',
             'lifecycleState': 'ACTIVE',
-            'parent_id': '9999',
-            'parent_type': 'organizations',
+            'parent': 'organizations/9999'
         },
         {
             'displayName': 'folder-2',
@@ -109,11 +108,22 @@ FAKE_FOLDERS_API_RESPONSE1 = {
     ]
 }
 
-EXPECTED_FAKE_FOLDERS1 =  [FAKE_FOLDERS_API_RESPONSE1]
+EXPECTED_FAKE_FOLDERS1 = FAKE_FOLDERS_API_RESPONSE1['folders']
 
-EXPECTED_FAKE_ACTIVE_FOLDERS1 = [{
+FAKE_FOLDERS_LIST_API_RESPONSE1 = {
+    'folders': [
+        f for f in FAKE_FOLDERS_API_RESPONSE1['folders']
+            if f['parent'] == 'organizations/9999'
+    ]
+}
+
+EXPECTED_FAKE_FOLDERS_LIST1 = FAKE_FOLDERS_LIST_API_RESPONSE1['folders']
+
+FAKE_ACTIVE_FOLDERS_API_RESPONSE1 = {
     'folders': [
         f for f in FAKE_FOLDERS_API_RESPONSE1['folders']
             if f['lifecycleState'] == 'ACTIVE'
     ]
-}]
+}
+
+EXPECTED_FAKE_ACTIVE_FOLDERS1 = FAKE_ACTIVE_FOLDERS_API_RESPONSE1['folders']

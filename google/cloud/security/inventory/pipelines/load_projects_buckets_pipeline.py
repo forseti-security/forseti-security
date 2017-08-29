@@ -18,14 +18,10 @@ import json
 
 from dateutil import parser as dateutil_parser
 
-# pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -53,9 +49,8 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
         """
         for buckets_map in resource_from_api:
             buckets = buckets_map['buckets']
-            items = buckets.get('items', [])
 
-            for item in items:
+            for item in buckets:
                 bucket_json = json.dumps(item)
 
                 try:
@@ -111,21 +106,16 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
         try:
             project_numbers = self.dao.get_project_numbers(
                 self.PROJECTS_RESOURCE_NAME, self.cycle_timestamp)
-        except data_access_errors.MySQLError as e:
+        except dao_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
         # Retrieve data from GCP.
         buckets_maps = []
         for project_number in project_numbers:
-            try:
-                buckets = self.api_client.get_buckets(
-                    project_number)
+            buckets = self.safe_api_call('get_buckets', project_number)
+            if buckets:
                 buckets_map = {'project_number': project_number,
                                'buckets': buckets}
                 buckets_maps.append(buckets_map)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(
-                    'Unable to get buckets for project %s:\n%s',
-                    project_number, e)
         return buckets_maps
 
     def run(self):

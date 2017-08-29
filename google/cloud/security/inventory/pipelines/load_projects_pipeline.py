@@ -14,13 +14,10 @@
 
 """Pipeline to load projects data into Inventory."""
 
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.gcp_type.resource import LifecycleState
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
-from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -61,19 +58,15 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
             iterable: resource manager project list response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body
         """
-        try:
-            return self.api_client.get_projects(
-                self.RESOURCE_NAME,
-                lifecycleState=LifecycleState.ACTIVE)
-        except api_errors.ApiExecutionError as e:
-            raise inventory_errors.LoadDataPipelineError(e)
+        return self.safe_api_call('get_projects',
+                                  self.RESOURCE_NAME,
+                                  lifecycleState=LifecycleState.ACTIVE)
+
 
     def run(self):
         """Runs the data pipeline."""
         projects_map = self._retrieve()
-
-        loadable_projects = self._transform(projects_map)
-
-        self._load(self.RESOURCE_NAME, loadable_projects)
-
-        self._get_loaded_count()
+        if projects_map:
+            loadable_projects = self._transform(projects_map)
+            self._load(self.RESOURCE_NAME, loadable_projects)
+            self._get_loaded_count()

@@ -14,12 +14,9 @@
 
 """Pipeline to load organizations data into Inventory."""
 
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
-from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -33,7 +30,7 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         """Yield an iterator of loadable organizations.
 
         Args:
-            resource_from_api (iterable): Resource manager org search
+            resource_from_api (list): Resource manager org search
                 response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations#Organization
@@ -41,8 +38,7 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
         Yields:
             iterable: Loadable orgs, each org as a dict.
         """
-        for org in (o for d in resource_from_api for o in d.get(
-                'organizations', [])):
+        for org in resource_from_api:
             # org_name is the unique identifier for the org, formatted as
             # "organizations/<organization_id>".
             org_name = org.get('name')
@@ -64,18 +60,12 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
             iterable: resource manager org search response.
                 https://cloud.google.com/resource-manager/reference/rest/v1/organizations/search
         """
-        try:
-            return self.api_client.get_organizations(
-                self.RESOURCE_NAME)
-        except api_errors.ApiExecutionError as e:
-            raise inventory_errors.LoadDataPipelineError(e)
+        return self.safe_api_call('get_organizations', self.RESOURCE_NAME)
 
     def run(self):
         """Runs the data pipeline."""
         orgs_map = self._retrieve()
-
-        loadable_orgs = self._transform(orgs_map)
-
-        self._load(self.RESOURCE_NAME, loadable_orgs)
-
-        self._get_loaded_count()
+        if orgs_map:
+            loadable_orgs = self._transform(orgs_map)
+            self._load(self.RESOURCE_NAME, loadable_orgs)
+            self._get_loaded_count()
