@@ -16,7 +16,7 @@
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,no-self-use
+# pylint: disable=missing-param-doc
 
 from google.cloud.security.inventory2 import resources
 from google.cloud.security.inventory2 import gcp
@@ -27,6 +27,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
     def __init__(self, storage, progresser, api_client, variables=None):
+        super(CrawlerConfig, self).__init__()
         self.storage = storage
         self.progresser = progresser
         self.variables = {} if not variables else variables
@@ -37,6 +38,7 @@ class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
     def __init__(self, config):
+        super(Crawler, self).__init__()
         self.config = config
 
     def run(self, resource):
@@ -75,14 +77,14 @@ class Crawler(crawler.Crawler):
         else:
             progresser.on_new_object(resource)
 
-    def dispatch(self, resource_visit):
+    def dispatch(self, callback):
         """Dispatch crawling of a subtree.
 
         Args:
-            resource_visit (function): Callback to dispatch.
+            callback (function): Callback to dispatch.
         """
 
-        resource_visit()
+        callback()
 
     def get_client(self):
         """Get the GCP API client."""
@@ -130,6 +132,6 @@ def run_crawler(storage,
     resource = resources.Organization.fetch(client, orgid)
 
     config = CrawlerConfig(storage, progresser, client)
-    crawler = Crawler(config)
-    progresser = crawler.run(resource)
+    crawler_impl = Crawler(config)
+    progresser = crawler_impl.run(resource)
     return progresser.get_summary()

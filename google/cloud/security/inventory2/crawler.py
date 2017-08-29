@@ -15,37 +15,41 @@
 """ Crawler implementation. """
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc, missing-param-doc,
-# pylint: disable=
-
-
 class CrawlerConfig(object):
     """The configuration profile of an inventory crawler"""
-    def __init__(self, storage, progresser, api_client, variables=None):
-        raise NotImplementedError('The crawler config')
+
+    pass
 
 
 class Crawler(object):
     """The inventory crawler interface"""
-    def run(self):
+    def run(self, resource):
         """To start the crawler, Not Implemented.
+
+        Args:
+            resource (object): Root resource to run on.
 
         Raises:
             NotImplementedError: Because not implemented.
         """
         raise NotImplementedError('The run function of the crawler')
 
-    def visit(self):
+    def visit(self, resource):
         """To visit a resource, Not Implemented.
+
+        Args:
+            resource (object): Resource to visit.
 
         Raises:
             NotImplementedError: Because not implemented.
         """
         raise NotImplementedError('The visit function of the crawler')
 
-    def dispatch(self):
+    def dispatch(self, callback):
         """To start a new visitor or continue, Not Implemented.
+
+        Args:
+            callback (function): Callback to dispatch.
 
         Raises:
             NotImplementedError: Because not implemented.
