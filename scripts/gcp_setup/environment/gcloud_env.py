@@ -51,7 +51,8 @@ ORG_IAM_ROLES = [
 PROJECT_IAM_ROLES = [
     'roles/storage.objectViewer',
     'roles/storage.objectCreator',
-    'roles/cloudsql.client'
+    'roles/cloudsql.client',
+    'roles/logging.logWriter',
 ]
 
 REQUIRED_APIS = [
