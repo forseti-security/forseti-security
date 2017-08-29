@@ -42,9 +42,9 @@ def autoclose_stream(f):
             return context._state.client == 'closed'
         context = args[-1]
         for result in f(*args):
+            yield result
             if closed(context):
                 return
-            yield result
     return wrapper
 
 
