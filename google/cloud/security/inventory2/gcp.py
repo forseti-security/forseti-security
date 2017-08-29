@@ -20,7 +20,6 @@
 # pylint: disable=too-many-public-methods,arguments-differ
 
 from google.cloud.security.common.gcp_api2 import admin_directory
-from google.cloud.security.common.gcp_api2 import appengine
 from google.cloud.security.common.gcp_api2 import bigquery
 from google.cloud.security.common.gcp_api2 import cloud_resource_manager
 from google.cloud.security.common.gcp_api2 import cloudsql
@@ -92,7 +91,6 @@ class ApiClientImpl(ApiClient):
     """The gcp api client Implementation"""
     def __init__(self, config):
         self.ad = admin_directory.AdminDirectoryClient(config)
-        self.appengine = appengine.AppEngineClient(config)
         self.bigquery = bigquery.BigQueryClient(config)
         self.crm = cloud_resource_manager.CloudResourceManagerClient(config)
         self.cloudsql = cloudsql.CloudsqlClient(config)
@@ -205,17 +203,6 @@ class ApiClientImpl(ApiClient):
         response = self.bigquery.get_datasets_for_projectid(projectid)
         for dataset in response:
             yield dataset
-
-    def iter_appengineapps(self, projectid):
-        """ Appengine Iterator from gcp API call
-
-        Yields:
-            dict: Generator of appengine
-        """
-        response = self.appengine.get_app(projectid)
-        if not response:
-            return
-        yield response
 
     def iter_cloudsqlinstances(self, projectid):
         """Cloudsqlinstance Iterator from gcp API call

@@ -239,14 +239,6 @@ class DataSet(Resource):
         return 'dataset'
 
 
-class AppEngineApp(Resource):
-    def key(self):
-        return self['name']
-
-    def type(self):
-        return 'appengineapp'
-
-
 class Instance(Resource):
     def key(self):
         return self['id']
@@ -401,15 +393,6 @@ class DataSetIterator(ResourceIterator):
                 yield FACTORIES['dataset'].create_new(data)
 
 
-class AppEngineAppIterator(ResourceIterator):
-    def iter(self):
-        gcp = self.client
-        if self.resource.enumerable():
-            for data in gcp.iter_appengineapps(
-                    projectid=self.resource['name']):
-                yield FACTORIES['appengineapp'].create_new(data)
-
-
 class InstanceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
@@ -540,7 +523,6 @@ FACTORIES = {
         'dependsOn': ['organization', 'folder'],
         'cls': Project,
         'contains': [
-            #AppEngineAppIterator,
             BucketIterator,
             DataSetIterator,
             InstanceIterator,
@@ -568,12 +550,6 @@ FACTORIES = {
     'dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': DataSet,
-        'contains': [
-            ]}),
-
-    'appengineapp': ResourceFactory({
-        'dependsOn': ['project'],
-        'cls': AppEngineApp,
         'contains': [
             ]}),
 
