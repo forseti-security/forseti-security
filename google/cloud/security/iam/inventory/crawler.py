@@ -20,9 +20,10 @@
 
 from google.cloud.security.inventory2 import resources
 from google.cloud.security.inventory2 import gcp
+from google.cloud.security.inventory2 import crawler
 
 
-class CrawlerConfig(object):
+class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
     def __init__(self, storage, progresser, api_client, variables=None):
@@ -32,7 +33,7 @@ class CrawlerConfig(object):
         self.client = api_client
 
 
-class Crawler(object):
+class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
     def __init__(self, config):

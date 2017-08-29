@@ -16,6 +16,7 @@
 
 import unittest
 
+
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.inventory2.storage import Memory as MemoryStorage
 from google.cloud.security.inventory2.progress import Progresser

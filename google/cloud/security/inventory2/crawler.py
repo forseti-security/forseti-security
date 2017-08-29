@@ -25,6 +25,7 @@ class CrawlerConfig(object):
     def __init__(self, storage, progresser, api_client, variables=None):
         raise NotImplementedError('The crawler config')
 
+
 class Crawler(object):
     """The inventory crawler interface"""
     def run(self):
