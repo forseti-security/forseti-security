@@ -538,7 +538,7 @@ FACTORIES = {
         'dependsOn': ['project'],
         'cls': GcsBucket,
         'contains': [
-            # ObjectIterator
+            ObjectIterator
             ]}),
 
     'object': ResourceFactory({

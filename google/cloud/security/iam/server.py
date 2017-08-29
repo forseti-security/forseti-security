@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from google.protobuf.internal.test_bad_identifiers_pb2 import service
 
 """ IAM Explain server program. """
 
@@ -26,6 +27,7 @@ from google.cloud.security.iam.dao import ModelManager, create_engine
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
 from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
+from google.cloud.security.iam.inventory.storage import Storage
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -44,36 +46,6 @@ class AbstractServiceConfig(object):
     is used to implement dependency injection for the gRPC services."""
 
     __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def get_organization_id(self):
-        """Get the organization id.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_gsuite_sa_path(self):
-        """Get path to gsuite service account.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_gsuite_admin_email(self):
-        """Get the gsuite admin email.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-
-        raise NotImplementedError()
 
     @abstractmethod
     def get_engine(self):
@@ -115,17 +87,71 @@ class AbstractServiceConfig(object):
 
         raise NotImplementedError()
 
+    def get_storage_class(self):
+        """Returns the class used for the inventory storage.
+
+        Raises:
+            NotImplementedError: Abstract.
+        """
+
+        raise NotImplementedError()
+
+
+class AbstractInventoryConfig(dict):
+    """Abstract base class for service configuration. This class
+    is used to implement dependency injection for the gRPC services."""
+
+    __metaclass__ = ABCMeta
+
+    def __init__(self, *args, **kwargs):
+        super(AbstractInventoryConfig, self).__init__(*args, **kwargs)
+
+    def get_organization_id(self):
+        raise NotImplementedError()
+
+    def get_gsuite_sa_path(self):
+        raise NotImplementedError()
+
+    def get_gsuite_admin_email(self):
+        raise NotImplementedError()
+
+    def get_service_config(self):
+        raise NotImplementedError()
+
+
+class InventoryConfig(AbstractInventoryConfig):
+    """Implements composed dependency injection for the inventory."""
+
+    def __init__(self, *args, **kwargs):
+        super(InventoryConfig, self).__init__(*args, **kwargs)
+        self.service_config = None
+
+    def get_organization_id(self):
+        pass
+
+    def get_gsuite_sa_path(self):
+        pass
+
+    def get_gsuite_admin_email(self):
+        pass
+
+    def get_service_config(self):
+
+        return self.service_config
+
+    def set_service_config(self, service_config):
+
+        self.service_config = service_config
+
 
 class ServiceConfig(AbstractServiceConfig):
     """Implements composed dependency injection to IAM Explain services."""
 
     def __init__(self,
+                 inventory_config,
                  explain_connect_string,
                  forseti_connect_string,
-                 endpoint,
-                 gsuite_sa_path,
-                 gsuite_admin_email,
-                 organization_id):
+                 endpoint):
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
@@ -134,36 +160,18 @@ class ServiceConfig(AbstractServiceConfig):
         self.forseti_connect_string = forseti_connect_string
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
-        self.gsuite_sa_path = gsuite_sa_path
-        self.gsuite_admin_email = gsuite_admin_email
-        self.organization_id = organization_id
 
-    def get_organization_id(self):
-        """Get the organization id.
+        self.inventory_config = inventory_config
+        self.inventory_config.set_service_config(self)
 
-        Returns:
-            str: The configure organization id.
-        """
-
-        return self.organization_id
-
-    def get_gsuite_sa_path(self):
-        """Get path to gsuite service account.
+    def get_inventory_config(self):
+        """Get the inventory config.
 
         Returns:
-            str: Gsuite admin service account path.
+            object: Inventory config.
         """
 
-        return self.gsuite_sa_path
-
-    def get_gsuite_admin_email(self):
-        """Get the gsuite admin email.
-
-        Returns:
-            str: Gsuite admin email address to impersonate.
-        """
-
-        return self.gsuite_admin_email
+        return self.inventory_config
 
     def get_engine(self):
         """Get the database engine.
@@ -196,6 +204,15 @@ class ServiceConfig(AbstractServiceConfig):
         """Runs a function in a thread pool in the background."""
 
         self.thread_pool.apply_async(function)
+
+    def get_storage_class(self):
+        """Returns the storage class used to access the inventory.
+
+        Returns:
+            class: Type of a storage implementation.
+        """
+
+        return Storage
 
 
 def serve(endpoint, services,

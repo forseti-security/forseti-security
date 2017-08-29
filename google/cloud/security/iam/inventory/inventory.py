@@ -21,7 +21,6 @@
 
 from Queue import Queue
 
-from google.cloud.security.iam.inventory.storage import Storage
 from google.cloud.security.iam.inventory.storage import DataAccess
 from google.cloud.security.iam.inventory.storage import initialize as init_storage
 from google.cloud.security.iam.inventory.crawler import run_crawler
@@ -111,7 +110,8 @@ class FirstMessageQueueProgresser(QueueProgresser):
         QueueProgresser._notify_eof(self)
 
 
-def run_inventory(queue,
+def run_inventory(service_config,
+                  queue,
                   session,
                   progresser,
                   background,
@@ -136,7 +136,8 @@ def run_inventory(queue,
         Exception: Reraises any exception.
     """
 
-    with Storage(session) as storage:
+    storage_cls = service_config.get_storage_class()
+    with storage_cls(session) as storage:
         try:
             progresser.inventory_id = storage.index.id
             progresser.final_message = True if background else False

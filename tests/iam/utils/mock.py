@@ -79,3 +79,8 @@ class MockServerConfig(AbstractServiceConfig):
         """Runs a function in a thread pool in the background."""
 
         raise NotImplementedError()
+
+    def get_storage_class(self):
+        """Returns an inventory storage implementation class."""
+
+        raise NotImplementedError()

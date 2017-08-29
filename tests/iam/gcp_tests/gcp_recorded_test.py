@@ -17,9 +17,6 @@
 import unittest
 import os
 
-os.environ['GCP_API_REPLAY'] = 'ENABLED'
-os.environ['GCP_API_FILE'] = '/tmp/pickled.test'
-
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.inventory2.storage import Memory as MemoryStorage
 from google.cloud.security.inventory2.progress import Progresser
@@ -75,6 +72,7 @@ class CrawlerTest(ForsetiTestCase):
         gsuite_sa = gcp.gsuite_sa
         gsuite_admin_email = gcp.gsuite_admin_email
         organization_id = gcp.organization_id
+        test_file = get_api_file_path('henry_gbiz_08282017.pickled')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -82,7 +80,8 @@ class CrawlerTest(ForsetiTestCase):
                         progresser,
                         gsuite_sa,
                         gsuite_admin_email,
-                        organization_id)
+                        organization_id,
+                        record_file=test_file)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -93,6 +92,7 @@ class CrawlerTest(ForsetiTestCase):
         resources in a well populated organization, howevever, there is: """
         +str(len(types)))
 
+    @unittest.skipIf(gcp_configured(), "Don't replay when recordings run")
     def test_replay_gcp_api2(self):
         """Replay recorded GCP API responses to emulate a GCP environment."""
 
