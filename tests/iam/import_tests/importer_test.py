@@ -184,6 +184,39 @@ class ImporterTest(ForsetiTestCase):
                       [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS],
                       'Model state should be success or partial success')
 
+    def test_inventory_dup(self):
+        """Test the basic importer for the inventory."""
+
+        FORSETI_CONNECT = ''
+        EXPLAIN_CONNECT = 'sqlite:///{}'.format(
+            copy_db(get_db_file_path('inventory_dup.db')))
+
+        self.service_config = ServiceConfig(EXPLAIN_CONNECT,
+                                            FORSETI_CONNECT)
+
+        self.source = 'INVENTORY'
+        self.model_manager = self.service_config.model_manager
+        self.model_name = self.model_manager.create(name=self.source)
+
+        scoped_session, data_access = self.model_manager.get(self.model_name)
+        with scoped_session as session:
+
+            importer_cls = importer.by_source(self.source)
+            import_runner = importer_cls(
+                session,
+                self.model_manager.model(self.model_name,
+                                         expunge=False,
+                                         session=session),
+                data_access,
+                self.service_config,
+                inventory_id=9)
+            import_runner.run()
+
+        model = self.model_manager.model(self.model_name)
+        self.assertIn(model.state,
+                      [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS],
+                      'Model state should be success or partial success')
+
 
 if __name__ == '__main__':
     unittest.main()
