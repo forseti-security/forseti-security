@@ -1,5 +1,5 @@
 ---
-title: I had a typo in my Forseti setup, how do I update this?
+title: I made a mistake in Forseti setup, how do I fix/update this?
 order: 3
 ---
 {::options auto_ids="false" /}
