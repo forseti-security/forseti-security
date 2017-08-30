@@ -147,19 +147,23 @@ def run_inventory(service_config,
         return result
 
 
-def run_import(client, model_name, inventory_id):
+def run_import(client, model_name, inventory_id, background):
     """Runs the import against an inventory.
 
     Args:
         client (object): Api client to use.
         model_name (str): Model name to create.
         inventory_id (int): Inventory index number to source.
+        background (bool): If the import should run in background.
 
     Returns:
         object: RPC response object to indicate status.
     """
 
-    return client.explain('INVENTORY', model_name, inventory_id)
+    return client.explain.new_model('INVENTORY',
+                                    model_name,
+                                    inventory_id,
+                                    background)
 
 
 class Inventory(object):
@@ -202,7 +206,8 @@ class Inventory(object):
                         return result
                     return run_import(self.config.client(),
                                       model_name,
-                                      result.inventory_id)
+                                      result.inventory_id,
+                                      background)
                 except Exception as e:
                     queue.put(e)
                     queue.put(None)
