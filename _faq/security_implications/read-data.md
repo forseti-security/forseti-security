@@ -11,4 +11,5 @@ at the folder or project level. For example, if you grant the "Browser" role
 to someone on the organization, they will also be able to see folders and 
 projects within the organization.
 
-For more information, please refer to ["Service account for Forseti Security"]({% link _docs/guides/best-practices.md %}#service-account-for-forseti-security).
+For more information, please refer to 
+["Service account for Forseti Security"]({% link _docs/guides/best-practices.md %}#service-account-for-forseti-security).
