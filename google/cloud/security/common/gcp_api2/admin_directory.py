@@ -14,7 +14,6 @@
 
 """Wrapper for Admin Directory  API client."""
 
-import os
 from oauth2client.service_account import ServiceAccountCredentials
 from ratelimiter import RateLimiter
 

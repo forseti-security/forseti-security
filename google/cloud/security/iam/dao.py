@@ -1597,7 +1597,13 @@ def create_engine(*args,
     dialect = engine.dialect.name
     if dialect == 'sqlite':
         @event.listens_for(engine, "connect")
-        def do_connect(dbapi_connection, connection_record):
+        def do_connect(dbapi_connection, _):
+            """Hooking database connect.
+
+            Args:
+                dbapi_connection (object): Database connection.
+                _ (object): Unknown.
+            """
             # Fix for nested transaction problems
             dbapi_connection.isolation_level = None
             if kwargs.get(sqlite_enforce_fks, False):
@@ -1606,8 +1612,15 @@ def create_engine(*args,
 
         @event.listens_for(engine, "begin")
         def do_begin(conn):
+            """Hooking database transaction begin.
+
+            Args:
+                conn (object): Database connection.
+            """
             # Fix for nested transaction problems
             conn.execute("BEGIN")
+
+        engine.__explain_hooks = [do_connect, do_begin] # pylint: disable=protected-access
 
     return engine
 

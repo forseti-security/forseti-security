@@ -121,7 +121,13 @@ def replay(function):
         if not hasattr(self, '__recording'):
             with file(replay_file) as infile:
                 unpickler = pickle.Unpickler(infile)
-                self.__recording = unpickler.load()
+                try:
+                    self.__recording = {}
+                    while True:
+                        obj = unpickler.load()
+                        self.__recording[obj['uri']] = obj
+                except EOFError:
+                    pass
 
         recording = self.__recording
         obj = recording[request.uri]

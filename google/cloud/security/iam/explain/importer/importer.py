@@ -22,7 +22,6 @@ import json
 from StringIO import StringIO
 from time import time
 import traceback
-import logging
 
 from google.cloud.security.iam.utils import get_sql_dialect
 from google.cloud.security.common.data_access import forseti
@@ -457,6 +456,9 @@ class InventoryImporter(object):
 
         Args:
             resource (object): Object whose policy to store.
+
+        Raises:
+            KeyError: if member could not be found in any cache.
         """
 
         policy = resource.get_iam_policy()
@@ -487,13 +489,13 @@ class InventoryImporter(object):
             # Get all the member objects to reference
             # in the binding row
             db_members = []
-            for m in binding['members']:
-                if m not in self.member_cache:
-                    if m not in self.member_cache_policies:
-                        raise KeyError(m)
-                    db_members.append(self.member_cache_policies[m])
+            for member in binding['members']:
+                if member not in self.member_cache:
+                    if member not in self.member_cache_policies:
+                        raise KeyError(member)
+                    db_members.append(self.member_cache_policies[member])
                     continue
-                db_members.append(self.member_cache[m])
+                db_members.append(self.member_cache[member])
 
             self.session.add(
                 self.dao.TBL_BINDING(

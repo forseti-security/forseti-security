@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from google.protobuf.internal.test_bad_identifiers_pb2 import service
 
 """ IAM Explain server program. """
 
@@ -31,7 +30,7 @@ from google.cloud.security.iam.inventory.storage import Storage
 
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc,too-many-instance-attributes
+# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
 
 
 STATIC_SERVICE_MAPPING = {
@@ -103,19 +102,40 @@ class AbstractInventoryConfig(dict):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, *args, **kwargs):
-        super(AbstractInventoryConfig, self).__init__(*args, **kwargs)
-
     def get_organization_id(self):
+        """Returns the organization id.
+
+        Raises:
+            NotImplementedError: Abstract.
+        """
+
         raise NotImplementedError()
 
     def get_gsuite_sa_path(self):
+        """Returns gsuite service account path.
+
+        Raises:
+            NotImplementedError: Abstract.
+        """
+
         raise NotImplementedError()
 
     def get_gsuite_admin_email(self):
+        """Returns gsuite admin email.
+
+        Raises:
+            NotImplementedError: Abstract.
+        """
+
         raise NotImplementedError()
 
     def get_service_config(self):
+        """Returns the service config.
+
+        Raises:
+            NotImplementedError: Abstract.
+        """
+
         raise NotImplementedError()
 
 

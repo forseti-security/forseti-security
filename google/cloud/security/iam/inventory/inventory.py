@@ -118,13 +118,10 @@ def run_inventory(service_config,
     """Runs the inventory given the environment configuration.
 
     Args:
+        service_config (object): Service configuration.
         queue (object): Queue to push status updates into.
         session (object): Database session.
         progresser (object): Progresser implementation to use.
-        background (object): Whether or not this runs in background.
-        gsuite_sa (str): Path to the gsuite service account.
-        gsuite_admin_email (str): Administrator email to impersonate.
-        organization_id (str): Organization id to crawl against.
 
     Returns:
         object: Returns the result of the crawl.

@@ -100,9 +100,7 @@ def run_crawler(storage,
     Args:
         storage (object): Storage implementation to use.
         progresser (object): Progresser to notify status updates.
-        gsuite_sa (str): Gsuite service account to use.
-        gsuite_admin_email (str): Gsuite admin email to impersonate.
-        organization_id (str): Organization id to crawl.
+        config (object): Inventory configuration.
     """
 
     client_config = {
