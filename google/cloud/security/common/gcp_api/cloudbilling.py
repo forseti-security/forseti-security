@@ -155,4 +155,3 @@ class CloudBillingClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError('billing_info', e)
-
