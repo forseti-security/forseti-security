@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,116 +17,189 @@
 from copy import deepcopy
 
 FAKE_CLOUDSQL_MAP = [{
-  'project_number': 11111,
-  'instances':{
-    u'items': [{u'backendType': u'SECOND_GEN',
-               u'connectionName': u'project-1:us-east1:cloudsql-instance',
-               u'databaseVersion': u'MYSQL_5_7',
-               u'etag': u'"CAE="',
-               u'instanceType': u'CLOUD_SQL_INSTANCE',
-               u'ipAddresses': [{u'ipAddress': u'1.2.3.4',
-                                 u'type': u'PRIMARY'}],
-               u'kind': u'sql#instance',
-               u'name': u'cloudsql-instance',
-               u'project': u'project-1',
-               u'region': u'us-east1',
-               u'selfLink': u'https://www.googleapis.com/sql/v1beta4/projects/project-1/instances/cloudsql-instance',
-               u'serverCaCert': {},
-               u'serviceAccountEmailAddress': u'serviceaccount1@iam.gserviceaccount.com',
-               u'settings': {u'activationPolicy': u'ALWAYS',
-                             u'authorizedGaeApplications': [],
-                             u'backupConfiguration': {u'binaryLogEnabled': True,
-                                                      u'enabled': True,
-                                                      u'kind': u'sql#backupConfiguration',
-                                                      u'startTime': u'03:00'},
-                             u'dataDiskSizeGb': u'10',
-                             u'dataDiskType': u'PD_SSD',
-                             u'ipConfiguration': {u'authorizedNetworks': [],
-                                                  u'ipv4Enabled': True,
-                                                  u'requireSsl': True},
-                             u'kind': u'sql#settings',
-                             u'pricingPlan': u'PER_USE',
-                             u'replicationType': u'SYNCHRONOUS',
-                             u'settingsVersion': u'28',
-                             u'storageAutoResize': False,
-                             u'storageAutoResizeLimit': u'0',
-                             u'tier': u'db-n1-standard-1'},
-               u'state': u'RUNNABLE'},
-              {u'backendType': u'SECOND_GEN',
-               u'connectionName': u'project-1:europe-west1:test-forseti',
-               u'databaseVersion': u'MYSQL_5_7',
-               u'etag': u'"CAE="',
-               u'instanceType': u'CLOUD_SQL_INSTANCE',
-               u'ipAddresses': [{u'ipAddress': u'4.3.2.1',
-                                 u'type': u'PRIMARY'}],
-               u'kind': u'sql#instance',
-               u'name': u'test-forseti',
-               u'project': u'project-1',
-               u'region': u'europe-west1',
-               u'selfLink': u'https://www.googleapis.com/sql/v1beta4/projects/project-1/instances/test-forseti',
-               u'serverCaCert': {},
-               u'serviceAccountEmailAddress': u'serviceaccount2@iam.gserviceaccount.com',
-               u'settings': {u'activationPolicy': u'ALWAYS',
-                             u'authorizedGaeApplications': [],
-                             u'backupConfiguration': {u'binaryLogEnabled': False,
-                                                      u'enabled': False,
-                                                      u'kind': u'sql#backupConfiguration',
-                                                      u'startTime': u'03:00'},
-                             u'dataDiskSizeGb': u'250',
-                             u'dataDiskType': u'PD_SSD',
-                             u'ipConfiguration': {u'authorizedNetworks': [{u'kind': u'sql#aclEntry',
-                                                                           u'name': u'test',
-                                                                           u'value': u'0.0.0.0/0'}],
-                                                  u'ipv4Enabled': True},
-                             u'kind': u'sql#settings',
-                             u'maintenanceWindow': {u'day': 0,
-                                                    u'hour': 0,
-                                                    u'kind': u'sql#maintenanceWindow'},
-                             u'pricingPlan': u'PER_USE',
-                             u'replicationType': u'SYNCHRONOUS',
-                             u'settingsVersion': u'6',
-                             u'storageAutoResize': True,
-                             u'storageAutoResizeLimit': u'0',
-                             u'tier': u'db-n1-standard-1'},
-               u'state': u'RUNNABLE'},
-              {u'backendType': u'SECOND_GEN',
-               u'connectionName': u'project-1:us-central1:forsetitest-2',
-               u'databaseVersion': u'MYSQL_5_7',
-               u'etag': u'"CAE="',
-               u'instanceType': u'CLOUD_SQL_INSTANCE',
-               u'ipAddresses': [{u'ipAddress': u'192.168.1.2',
-                                 u'type': u'PRIMARY'}],
-               u'kind': u'sql#instance',
-               u'name': u'forsetitest-2',
-               u'project': u'project-1',
-               u'region': u'us-central1',
-               u'selfLink': u'https://www.googleapis.com/sql/v1beta4/projects/project-1/instances/forsetitest-2',
-               u'serverCaCert': {},
-               u'serviceAccountEmailAddress': u'serviceaccount3@iam.gserviceaccount.com',
-               u'settings': {u'activationPolicy': u'ALWAYS',
-                             u'authorizedGaeApplications': [],
-                             u'backupConfiguration': {u'binaryLogEnabled': True,
-                                                      u'enabled': True,
-                                                      u'kind': u'sql#backupConfiguration',
-                                                      u'startTime': u'11:00'},
-                             u'dataDiskSizeGb': u'25',
-                             u'dataDiskType': u'PD_HDD',
-                             u'ipConfiguration': {u'authorizedNetworks': [{u'kind': u'sql#aclEntry',
-                                                                           u'name': u'127.7.7.7',
-                                                                           u'value': u'127.0.214.3/32'}],
-                                                  u'ipv4Enabled': True},
-                             u'kind': u'sql#settings',
-                             u'maintenanceWindow': {u'day': 0,
-                                                    u'hour': 0,
-                                                    u'kind': u'sql#maintenanceWindow'},
-                             u'pricingPlan': u'PER_USE',
-                             u'replicationType': u'SYNCHRONOUS',
-                             u'settingsVersion': u'57',
-                             u'storageAutoResize': True,
-                             u'storageAutoResizeLimit': u'0',
-                             u'tier': u'db-n1-standard-1'},
-               u'state': u'RUNNABLE'}],
-   u'kind': u'sql#instancesList'}
+    'project_number':
+        11111,
+    'instances': [{
+        u'backendType':
+            u'SECOND_GEN',
+        u'connectionName':
+            u'project-1:us-east1:cloudsql-instance',
+        u'databaseVersion':
+            u'MYSQL_5_7',
+        u'etag':
+            u'"CAE="',
+        u'instanceType':
+            u'CLOUD_SQL_INSTANCE',
+        u'ipAddresses': [{
+            u'ipAddress': u'1.2.3.4',
+            u'type': u'PRIMARY'
+        }],
+        u'kind':
+            u'sql#instance',
+        u'name':
+            u'cloudsql-instance',
+        u'project':
+            u'project-1',
+        u'region':
+            u'us-east1',
+        u'selfLink':
+            u'https://www.googleapis.com/sql/v1beta4/projects/project-1/instances/cloudsql-instance',
+        u'serverCaCert': {},
+        u'serviceAccountEmailAddress':
+            u'serviceaccount1@iam.gserviceaccount.com',
+        u'settings': {
+            u'activationPolicy': u'ALWAYS',
+            u'authorizedGaeApplications': [],
+            u'backupConfiguration': {
+                u'binaryLogEnabled': True,
+                u'enabled': True,
+                u'kind': u'sql#backupConfiguration',
+                u'startTime': u'03:00'
+            },
+            u'dataDiskSizeGb': u'10',
+            u'dataDiskType': u'PD_SSD',
+            u'ipConfiguration': {
+                u'authorizedNetworks': [],
+                u'ipv4Enabled': True,
+                u'requireSsl': True
+            },
+            u'kind': u'sql#settings',
+            u'pricingPlan': u'PER_USE',
+            u'replicationType': u'SYNCHRONOUS',
+            u'settingsVersion': u'28',
+            u'storageAutoResize': False,
+            u'storageAutoResizeLimit': u'0',
+            u'tier': u'db-n1-standard-1'
+        },
+        u'state':
+            u'RUNNABLE'
+    }, {
+        u'backendType':
+            u'SECOND_GEN',
+        u'connectionName':
+            u'project-1:europe-west1:test-forseti',
+        u'databaseVersion':
+            u'MYSQL_5_7',
+        u'etag':
+            u'"CAE="',
+        u'instanceType':
+            u'CLOUD_SQL_INSTANCE',
+        u'ipAddresses': [{
+            u'ipAddress': u'4.3.2.1',
+            u'type': u'PRIMARY'
+        }],
+        u'kind':
+            u'sql#instance',
+        u'name':
+            u'test-forseti',
+        u'project':
+            u'project-1',
+        u'region':
+            u'europe-west1',
+        u'selfLink':
+            u'https://www.googleapis.com/sql/v1beta4/projects/project-1/instances/test-forseti',
+        u'serverCaCert': {},
+        u'serviceAccountEmailAddress':
+            u'serviceaccount2@iam.gserviceaccount.com',
+        u'settings': {
+            u'activationPolicy': u'ALWAYS',
+            u'authorizedGaeApplications': [],
+            u'backupConfiguration': {
+                u'binaryLogEnabled': False,
+                u'enabled': False,
+                u'kind': u'sql#backupConfiguration',
+                u'startTime': u'03:00'
+            },
+            u'dataDiskSizeGb': u'250',
+            u'dataDiskType': u'PD_SSD',
+            u'ipConfiguration': {
+                u'authorizedNetworks': [{
+                    u'kind': u'sql#aclEntry',
+                    u'name': u'test',
+                    u'value': u'0.0.0.0/0'
+                }],
+                u'ipv4Enabled':
+                    True
+            },
+            u'kind': u'sql#settings',
+            u'maintenanceWindow': {
+                u'day': 0,
+                u'hour': 0,
+                u'kind': u'sql#maintenanceWindow'
+            },
+            u'pricingPlan': u'PER_USE',
+            u'replicationType': u'SYNCHRONOUS',
+            u'settingsVersion': u'6',
+            u'storageAutoResize': True,
+            u'storageAutoResizeLimit': u'0',
+            u'tier': u'db-n1-standard-1'
+        },
+        u'state':
+            u'RUNNABLE'
+    }, {
+        u'backendType':
+            u'SECOND_GEN',
+        u'connectionName':
+            u'project-1:us-central1:forsetitest-2',
+        u'databaseVersion':
+            u'MYSQL_5_7',
+        u'etag':
+            u'"CAE="',
+        u'instanceType':
+            u'CLOUD_SQL_INSTANCE',
+        u'ipAddresses': [{
+            u'ipAddress': u'192.168.1.2',
+            u'type': u'PRIMARY'
+        }],
+        u'kind':
+            u'sql#instance',
+        u'name':
+            u'forsetitest-2',
+        u'project':
+            u'project-1',
+        u'region':
+            u'us-central1',
+        u'selfLink':
+            u'https://www.googleapis.com/sql/v1beta4/projects/project-1/instances/forsetitest-2',
+        u'serverCaCert': {},
+        u'serviceAccountEmailAddress':
+            u'serviceaccount3@iam.gserviceaccount.com',
+        u'settings': {
+            u'activationPolicy': u'ALWAYS',
+            u'authorizedGaeApplications': [],
+            u'backupConfiguration': {
+                u'binaryLogEnabled': True,
+                u'enabled': True,
+                u'kind': u'sql#backupConfiguration',
+                u'startTime': u'11:00'
+            },
+            u'dataDiskSizeGb': u'25',
+            u'dataDiskType': u'PD_HDD',
+            u'ipConfiguration': {
+                u'authorizedNetworks': [{
+                    u'kind': u'sql#aclEntry',
+                    u'name': u'127.7.7.7',
+                    u'value': u'127.0.214.3/32'
+                }],
+                u'ipv4Enabled':
+                    True
+            },
+            u'kind': u'sql#settings',
+            u'maintenanceWindow': {
+                u'day': 0,
+                u'hour': 0,
+                u'kind': u'sql#maintenanceWindow'
+            },
+            u'pricingPlan': u'PER_USE',
+            u'replicationType': u'SYNCHRONOUS',
+            u'settingsVersion': u'57',
+            u'storageAutoResize': True,
+            u'storageAutoResizeLimit': u'0',
+            u'tier': u'db-n1-standard-1'
+        },
+        u'state':
+            u'RUNNABLE'
+    }]
 }]
 
 EXPECTED_LOADED_AUTHORIZEDNETWORKS = [
@@ -182,7 +255,8 @@ EXPECTED_LOADED_INSTANCES = [
    'replica_configuration': 'null',
    'replica_names': 'null',
    'self_link': u'https://www.googleapis.com/sql/v1beta4/projects/\
-project-1/instances/cloudsql-instance',
+project-1/instances/cloudsql-instance'
+,
    'server_ca_cert': '{}',
    'service_account_email_address': u'serviceaccount1@iam.gserviceaccount.com',
    'settings_activation_policy': u'ALWAYS',
@@ -234,7 +308,8 @@ project-1/instances/cloudsql-instance',
    'replica_configuration': 'null',
    'replica_names': 'null',
    'self_link': u'https://www.googleapis.com/sql/v1beta4/projects/project-1/\
-instances/test-forseti',
+instances/test-forseti'
+,
    'server_ca_cert': '{}',
    'service_account_email_address': u'serviceaccount2@iam.gserviceaccount.com',
    'settings_activation_policy': u'ALWAYS',
@@ -257,7 +332,8 @@ instances/test-forseti',
    'settings_location_preference_kind': None,
    'settings_location_preference_zone': None,
    'settings_maintenance_window': '{"kind": "sql#maintenanceWindow", \
-"day": 0, "hour": 0}',
+"day": 0, "hour": 0}'
+,
    'settings_pricing_plan': u'PER_USE',
    'settings_replication_type': u'SYNCHRONOUS',
    'settings_settings_version': 6,
@@ -287,7 +363,8 @@ instances/test-forseti',
    'replica_configuration': 'null',
    'replica_names': 'null',
    'self_link': u'https://www.googleapis.com/sql/v1beta4/projects/project-1/\
-instances/forsetitest-2',
+instances/forsetitest-2'
+,
    'server_ca_cert': '{}',
    'service_account_email_address': u'serviceaccount3@iam.gserviceaccount.com',
    'settings_activation_policy': u'ALWAYS',
@@ -310,7 +387,8 @@ instances/forsetitest-2',
    'settings_location_preference_kind': None,
    'settings_location_preference_zone': None,
    'settings_maintenance_window': '{"kind": "sql#maintenanceWindow", "day": 0, \
-"hour": 0}',
+"hour": 0}'
+,
    'settings_pricing_plan': u'PER_USE',
    'settings_replication_type': u'SYNCHRONOUS',
    'settings_settings_version': 57,

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,46 +13,115 @@
 # limitations under the License.
 
 """Wrapper for the BigQuery API client."""
+from googleapiclient import errors
+from httplib2 import HttpLib2Error
 
-from ratelimiter import RateLimiter
-
-from google.cloud.security.common.gcp_api import _base_client
+from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.security.common.gcp_api import api_helpers
+from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.gcp_api import repository_mixins
 from google.cloud.security.common.util import log_util
-
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class BigQueryClient(_base_client.BaseClient):
+class BigQueryRepositoryClient(_base_repository.BaseRepositoryClient):
+    """Big Query API Respository."""
+
+    def __init__(self,
+                 quota_max_calls=None,
+                 quota_period=100.0,
+                 use_rate_limiter=True):
+        """Constructor.
+
+        Args:
+            quota_max_calls (int): Allowed requests per <quota_period> for the
+                API.
+            quota_period (float): The time period to track requests over.
+            use_rate_limiter (bool): Set to false to disable the use of a rate
+                limiter for this service.
+        """
+        if not quota_max_calls:
+            use_rate_limiter = False
+
+        self._projects = None
+        self._datasets = None
+
+        super(BigQueryRepositoryClient, self).__init__(
+            'bigquery', versions=['v2'],
+            quota_max_calls=quota_max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=use_rate_limiter)
+
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
+    @property
+    def projects(self):
+        """Returns a _BigQueryProjectsRepository instance."""
+        if not self._projects:
+            self._projects = self._init_repository(
+                _BigQueryProjectsRepository)
+        return self._projects
+
+    @property
+    def datasets(self):
+        """Returns a _BigQueryDatasetsRepository instance."""
+        if not self._datasets:
+            self._datasets = self._init_repository(
+                _BigQueryDatasetsRepository)
+        return self._datasets
+    # pylint: enable=missing-return-doc, missing-return-type-doc
+
+
+class _BigQueryProjectsRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Big Query Projects repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_BigQueryProjectsRepository, self).__init__(
+            key_field=None, component='projects', **kwargs)
+
+
+class _BigQueryDatasetsRepository(
+        repository_mixins.GetQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Big Query Datasets repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_BigQueryDatasetsRepository, self).__init__(
+            key_field='projectId', entity_field='datasetId',
+            component='datasets', **kwargs)
+
+
+class BigQueryClient(object):
     """BigQuery Client manager."""
 
-    API_NAME = 'bigquery'
+    DEFAULT_QUOTA_PERIOD = 100.0
 
-    # TODO: Remove pylint disable.
-    # pylint: disable=invalid-name
-    DEFAULT_QUOTA_TIMESPAN_PER_SECONDS = 100
-    # pylint: enable=invalid-name
-
-    def __init__(self, global_configs):
+    def __init__(self, global_configs, **kwargs):
         """Initialize.
 
         Args:
-            global_configs (dict): Global configurations.
+            global_configs (dict): Forseti config.
+            **kwargs (dict): The kwargs.
         """
-        super(BigQueryClient, self).__init__(
-            global_configs,
-            api_name=self.API_NAME)
-        self.rate_limiter = self.get_rate_limiter()
-
-    def get_rate_limiter(self):
-        """Return an appropriate rate limiter.
-
-        Returns:
-            RateLimiter: The rate limiter.
-        """
-        return RateLimiter(
-            self.global_configs.get('max_bigquery_api_calls_per_100_seconds'),
-            self.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS)
+        max_calls = global_configs.get('max_bigquery_api_calls_per_100_seconds')
+        self.repository = BigQueryRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_bigquery_projectids(self):
         """Request and page through bigquery projectids.
@@ -67,19 +136,15 @@ class BigQueryClient(_base_client.BaseClient):
             If there are no project_ids enabled for bigquery an empty list will
             be returned.
         """
-        key = 'projects'
-        bigquery_projects_api = self.service.projects()
-        request = bigquery_projects_api.list()
+        try:
+            results = self.repository.projects.list(
+                fields='nextPageToken,projects/id')
+            flattened = api_helpers.flatten_list_results(results, 'projects')
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError('bigquery', e)
 
-        paged_results = self._build_paged_result(
-            request, bigquery_projects_api, self.rate_limiter)
-
-        flattened_result = self._flatten_list_results(paged_results, key)
-
-        project_ids = []
-        for result in flattened_result:
-            project_ids.append(result.get('id'))
-
+        project_ids = [result.get('id') for result in flattened
+                       if 'id' in result]
         return project_ids
 
     def get_datasets_for_projectid(self, project_id):
@@ -95,19 +160,17 @@ class BigQueryClient(_base_client.BaseClient):
               'projectId': 'project-id'},
              {...}]
         """
-        key = 'datasets'
-        bigquery_datasets_api = self.service.datasets()
-        request = bigquery_datasets_api.list(projectId=project_id, all=True)
+        try:
+            results = self.repository.datasets.list(
+                resource=project_id,
+                fields='datasets/datasetReference,nextPageToken',
+                all=True)
+            flattened = api_helpers.flatten_list_results(results, 'datasets')
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(project_id, e)
 
-        paged_results = self._build_paged_result(
-            request, bigquery_datasets_api, self.rate_limiter)
-
-        flattened_result = self._flatten_list_results(paged_results, key)
-
-        datasets = []
-        for result in flattened_result:
-            datasets.append(result.get('datasetReference'))
-
+        datasets = [result.get('datasetReference') for result in flattened
+                    if 'datasetReference' in result]
         return datasets
 
     def get_dataset_access(self, project_id, dataset_id):
@@ -124,12 +187,10 @@ class BigQueryClient(_base_client.BaseClient):
              {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
              {'role': 'READER', 'specialGroup': 'projectReaders'}]
         """
-        key = 'access'
-        bigquery_datasets_api = self.service.datasets()
-        request = bigquery_datasets_api.get(projectId=project_id,
-                                            datasetId=dataset_id)
-
-        paged_results = self._build_paged_result(
-            request, bigquery_datasets_api, self.rate_limiter)
-
-        return self._flatten_list_results(paged_results, key)
+        try:
+            results = self.repository.datasets.get(resource=project_id,
+                                                   target=dataset_id,
+                                                   fields='access')
+            return results.get('access', [])
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(project_id, e)
