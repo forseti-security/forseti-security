@@ -5,23 +5,21 @@ order: 104
 #  {{ page.title }}
 
 ### Update local installation
-
 If you want to update your local version of Forseti, pull in the latest changes from
 git:
 
-```
-cd forseti-security
-git pull
+```bash
+$ cd forseti-security
+$ git pull
 ```
 
 And then run the python installation:
 
-```
-python setup.py install
+```bash
+$ python setup.py install
 ```
 
 ### Change deployment properties
-
 If you need to change any of the properties for your Forseti deployment, such as the
 `release-version`, follow the process below:
 
@@ -32,9 +30,9 @@ If you need to change any of the properties for your Forseti deployment, such as
      
      To get the latest version of Forseti, sync your master branch:
      
-     ```
-     git checkout master
-     git pull
+     ```bash
+     $ git checkout master
+     $ git pull
      ```
      
   1. Check `deploy-forseti.yaml.sample` to see if there are any new properties 
