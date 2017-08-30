@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,23 +45,11 @@ API_MAP = {
             'class_name': 'ComputeClient',
             'version': None
         },
-    'compute_beta_api':
-        {
-            'module_name': 'compute',
-            'class_name': 'ComputeClient',
-            'version': 'beta'
-        },
     'crm_api':
         {
             'module_name': 'cloud_resource_manager',
             'class_name': 'CloudResourceManagerClient',
             'version': None
-        },
-    'crm_v2beta1_api':
-        {
-            'module_name': 'cloud_resource_manager',
-            'class_name': 'CloudResourceManagerClient',
-            'version': 'v2beta1'
         },
     'gcs_api':
         {

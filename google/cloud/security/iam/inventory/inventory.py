@@ -21,7 +21,6 @@
 
 from Queue import Queue
 
-from google.cloud.security.iam.inventory.storage import Storage
 from google.cloud.security.iam.inventory.storage import DataAccess
 from google.cloud.security.iam.inventory.storage import initialize as init_storage
 from google.cloud.security.iam.inventory.crawler import run_crawler
@@ -111,23 +110,18 @@ class FirstMessageQueueProgresser(QueueProgresser):
         QueueProgresser._notify_eof(self)
 
 
-def run_inventory(queue,
+def run_inventory(service_config,
+                  queue,
                   session,
                   progresser,
-                  background,
-                  gsuite_sa,
-                  gsuite_admin_email,
-                  organization_id):
+                  background):
     """Runs the inventory given the environment configuration.
 
     Args:
+        service_config (object): Service configuration.
         queue (object): Queue to push status updates into.
         session (object): Database session.
         progresser (object): Progresser implementation to use.
-        background (object): Whether or not this runs in background.
-        gsuite_sa (str): Path to the gsuite service account.
-        gsuite_admin_email (str): Administrator email to impersonate.
-        organization_id (str): Organization id to crawl against.
 
     Returns:
         object: Returns the result of the crawl.
@@ -136,16 +130,15 @@ def run_inventory(queue,
         Exception: Reraises any exception.
     """
 
-    with Storage(session) as storage:
+    storage_cls = service_config.get_storage_class()
+    with storage_cls(session) as storage:
         try:
             progresser.inventory_id = storage.index.id
             progresser.final_message = True if background else False
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 gsuite_sa,
-                                 gsuite_admin_email,
-                                 organization_id)
+                                 service_config.get_inventory_config())
         except Exception:
             storage.rollback()
             raise
@@ -199,13 +192,11 @@ class Inventory(object):
             with self.config.scoped_session() as session:
                 try:
                     result = run_inventory(
+                        self.config,
                         queue,
                         session,
                         progresser,
-                        background,
-                        self.config.get_gsuite_sa_path(),
-                        self.config.get_gsuite_admin_email(),
-                        self.config.get_organization_id())
+                        background)
 
                     if not model_name:
                         return result

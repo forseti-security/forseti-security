@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,13 +26,14 @@ from threading import Lock
 
 
 from sqlalchemy import Column
+from sqlalchemy import event
 from sqlalchemy import Integer
 from sqlalchemy import Boolean
 from sqlalchemy import String
 from sqlalchemy import Sequence
 from sqlalchemy import ForeignKey
 from sqlalchemy import Text
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine as sqlalchemy_create_engine
 from sqlalchemy import Table
 from sqlalchemy import DateTime
 from sqlalchemy import or_
@@ -1573,6 +1574,55 @@ class ModelManager(object):
                 return instantiate_model(scoped_session, model_name, expunge)
         else:
             return instantiate_model(session, model_name, expunge)
+
+
+def create_engine(*args,
+                  **kwargs):
+    """Create engine wrapper to patch database options.
+
+    Args:
+        *args (list): Arguments.
+        **kwargs (dict): Arguments.
+
+    Returns:
+        object: Engine.
+    """
+
+    sqlite_enforce_fks = 'sqlite_enforce_fks'
+    forward_kwargs = {k: v for k, v in kwargs.iteritems()}
+    if sqlite_enforce_fks in forward_kwargs:
+        del forward_kwargs[sqlite_enforce_fks]
+
+    engine = sqlalchemy_create_engine(*args, **forward_kwargs)
+    dialect = engine.dialect.name
+    if dialect == 'sqlite':
+        @event.listens_for(engine, "connect")
+        def do_connect(dbapi_connection, _):
+            """Hooking database connect.
+
+            Args:
+                dbapi_connection (object): Database connection.
+                _ (object): Unknown.
+            """
+            # Fix for nested transaction problems
+            dbapi_connection.isolation_level = None
+            if kwargs.get(sqlite_enforce_fks, False):
+                # Enable foreign key constraints
+                dbapi_connection.execute('pragma foreign_keys=ON')
+
+        @event.listens_for(engine, "begin")
+        def do_begin(conn):
+            """Hooking database transaction begin.
+
+            Args:
+                conn (object): Database connection.
+            """
+            # Fix for nested transaction problems
+            conn.execute("BEGIN")
+
+        engine.__explain_hooks = [do_connect, do_begin] # pylint: disable=protected-access
+
+    return engine
 
 
 def session_creator(model_name, filename=None, seed=None, echo=False):

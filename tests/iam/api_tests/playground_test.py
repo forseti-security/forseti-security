@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ import unittest
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
 from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
-from google.cloud.security.iam.server import AbstractServiceConfig
 from google.cloud.security.iam.dao import ModelManager
 
-from tests.iam.api_tests.api_tester import ApiTestRunner, create_test_engine, cleanup
+from tests.iam.api_tests.api_tester import ApiTestRunner
+from tests.iam.utils.db import create_test_engine, cleanup
 from tests.iam.utils.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
 
@@ -30,7 +30,8 @@ from tests.unittest_utils import ForsetiTestCase
 class TestServiceConfig(MockServerConfig):
     """ServiceConfig Stub."""
     def __init__(self):
-        self.engine = create_test_engine()
+        # TODO: Enable FK constraint enforcement and fix test
+        self.engine = create_test_engine(enforce_fks=False)
         self.model_manager = ModelManager(self.engine)
 
     def run_in_background(self, function):

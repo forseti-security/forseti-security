@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -267,6 +267,7 @@ class InventoryImporter(object):
         self.resource_cache = ResourceCache()
         self._membership_cache = []
         self.member_cache = {}
+        self.member_cache_policies = {}
 
     def run(self):
         """Runs the import.
@@ -306,14 +307,11 @@ class InventoryImporter(object):
                     last_res_type = self._store_resource(resource,
                                                          last_res_type)
                 self._store_resource(None, last_res_type)
-
-                self._store_iam_policy_pre()
-                for resource in inventory.iter([], require_iam_policy=True):
-                    self._store_iam_policy(resource)
-                self._store_iam_policy_post()
+                self.session.flush()
 
                 for resource in inventory.iter(gsuite_type_list):
                     self._store_gsuite_principal(resource)
+                self.session.flush()
 
                 self._store_gsuite_membership_pre()
                 for child, parent in inventory.iter(member_type_list,
@@ -322,6 +320,12 @@ class InventoryImporter(object):
                 self._store_gsuite_membership_post()
 
                 self.dao.denorm_group_in_group(self.session)
+
+                self._store_iam_policy_pre()
+                for resource in inventory.iter(gcp_type_list,
+                                               require_iam_policy=True):
+                    self._store_iam_policy(resource)
+                self._store_iam_policy_post()
 
         except Exception:  # pylint: disable=broad-except
             buf = StringIO()
@@ -368,6 +372,11 @@ class InventoryImporter(object):
     def _store_gsuite_membership_post(self):
         """Flush storing gsuite memberships."""
 
+        # Store all members before we flush the memberships
+        self.session.add_all(self.member_cache.values())
+        self.session.flush()
+
+        # session.execute automatically flushes
         if get_sql_dialect(self.session) == 'sqlite':
             # SQLite doesn't support bulk insert
             for item in self._membership_cache:
@@ -415,8 +424,19 @@ class InventoryImporter(object):
             data = parent.get_data()
             return 'group:{}'.format(data['email'])
 
+        # Gsuite group members don't have to be part
+        # of this domain, so we might see them for
+        # the first time here.
+        member = member_name(child)
+        if member not in self.member_cache:
+            m_type, name = member.split(':', 1)
+            self.member_cache[member] = self.dao.TBL_MEMBER(
+                name=member,
+                type=m_type,
+                member_name=name)
+
         self._membership_cache.append(
-            (group_name(parent), member_name(child)))
+            (group_name(parent), member))
 
     def _store_iam_policy_pre(self):
         """Executed before iam policies are inserted."""
@@ -426,13 +446,19 @@ class InventoryImporter(object):
     def _store_iam_policy_post(self):
         """Executed after iam policies are inserted."""
 
-        self.session.add_all(self.member_cache.values())
+        # Store all members which are mentioned in policies
+        # that were not previously in groups or gsuite users.
+        self.session.add_all(self.member_cache_policies.values())
+        self.session.flush()
 
     def _store_iam_policy(self, resource):
         """Store the iam policy of the resource.
 
         Args:
             resource (object): Object whose policy to store.
+
+        Raises:
+            KeyError: if member could not be found in any cache.
         """
 
         policy = resource.get_iam_policy()
@@ -443,15 +469,34 @@ class InventoryImporter(object):
         bindings = policy['bindings']
         for binding in bindings:
             role = binding['role']
+            if role not in self.role_cache:
+                msg = 'Role reference in iam policy not found: {}'.format(role)
+                self.model.add_warning(msg)
+                continue
             for member in binding['members']:
-                if member not in self.member_cache:
+
+                # We still might hit external users or groups
+                # that we haven't seen in gsuite.
+                if member not in self.member_cache and \
+                   member not in self.member_cache_policies:
                     m_type, name = member.split(':', 1)
-                    self.member_cache[member] = self.dao.TBL_MEMBER(
+                    self.member_cache_policies[member] = self.dao.TBL_MEMBER(
                         name=member,
                         type=m_type,
                         member_name=name)
+                    self.session.add(self.member_cache_policies[member])
 
-            db_members = [self.member_cache[m] for m in binding['members']]
+            # Get all the member objects to reference
+            # in the binding row
+            db_members = []
+            for member in binding['members']:
+                if member not in self.member_cache:
+                    if member not in self.member_cache_policies:
+                        raise KeyError(member)
+                    db_members.append(self.member_cache_policies[member])
+                    continue
+                db_members.append(self.member_cache[member])
+
             self.session.add(
                 self.dao.TBL_BINDING(
                     resource_type_name=self._type_name(resource),

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,26 +15,17 @@
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
 from tests.unittest_utils import ForsetiTestCase
-import uuid
-import os
 from collections import defaultdict
 from sqlalchemy.orm.exc import NoResultFound
 import unittest
 
-from google.cloud.security.iam.utils import full_to_type_name
-from google.cloud.security.iam.dao import ModelManager, session_creator, create_engine
-from google.cloud.security.common.util.threadpool import ThreadPool
-from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1, RESOURCE_EXPANSION_2,\
-    MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1, ROLES_PERMISSIONS_TESTING_1,\
-    DENORMALIZATION_TESTING_1, ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2,\
-    MEMBER_TESTING_3, EXPLAIN_GRANTED_1, GROUP_IN_GROUP_TESTING_1,\
-    ACCESS_BY_PERMISSIONS_1
+from google.cloud.security.iam.dao import session_creator
+from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1,\
+    RESOURCE_EXPANSION_2, MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1,\
+    ROLES_PERMISSIONS_TESTING_1, DENORMALIZATION_TESTING_1,\
+    ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2, MEMBER_TESTING_3,\
+    EXPLAIN_GRANTED_1, GROUP_IN_GROUP_TESTING_1, ACCESS_BY_PERMISSIONS_1
 from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
-
-
-def create_test_engine():
-    tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
-    return create_engine('sqlite:///{}'.format(tmpfile)), tmpfile
 
 
 class DaoTest(ForsetiTestCase):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ SETUP_REQUIRES = [
 TEST_REQUIRES = [
     'mock==2.0.0',
     'SQLAlchemy==1.1.9',
+    'parameterized==0.6.1',
 ]
 
 if sys.version_info < (2, 7):

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ import os
 from shutil import copyfile
 import tempfile
 import unittest
-from sqlalchemy import event
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.iam.dao import create_engine
-from google.cloud.security.iam.dao import ModelManager
+from google.cloud.security.iam.dao import ModelManager, create_engine
 from google.cloud.security.iam.explain.importer import importer
 from google.cloud.security.iam.inventory.storage import InventoryState
 
@@ -37,19 +35,6 @@ class ServiceConfig(object):
         engine = create_engine(explain_connect_string, echo=False)
         self.model_manager = ModelManager(engine)
         self.forseti_connect_string = forseti_connect_string
-
-        @event.listens_for(engine, "connect")
-        def do_connect(dbapi_connection, connection_record):
-            # disable pysqlite's emitting of the BEGIN statement entirely.
-            # also stops it from emitting COMMIT before any DDL.
-            dbapi_connection.isolation_level = None
-
-        @event.listens_for(engine, "begin")
-        def do_begin(conn):
-            # emit our own BEGIN
-            conn.execute("BEGIN")
-
-        self.listeners = [do_begin, do_connect]
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""

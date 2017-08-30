@@ -455,7 +455,8 @@ class Storage(BaseStorage):
 
         self.opened = True
         self.session.commit()
-        self.session.begin_nested()
+        if not self.readonly:
+            self.session.begin_nested()
         return self.index.id
 
     def rollback(self):
