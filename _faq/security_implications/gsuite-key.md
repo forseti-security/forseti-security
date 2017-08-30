@@ -4,4 +4,10 @@ order: 1
 ---
 {::options auto_ids="false" /}
 
-The [Admin API](https://developers.google.com/admin-sdk/directory/v1/guides/delegation), which performs the G Suite Groups data retrieval, expects a private key file. To minimize G Suite service account access, don't assign any IAM roles to it and only grant the Groups/Group Members Read-Only scope in G Suite. To learn more, see the [Best Practices]({% link _docs/guides/best-practices.md %}#gsuite-groups-service-account) page.
+The 
+[Admin API](https://developers.google.com/admin-sdk/directory/v1/guides/delegation), 
+which performs the G Suite Groups data retrieval, expects a private key file. 
+To minimize G Suite service account access, don't assign any IAM roles to it 
+and only grant the Groups/Group Members Read-Only scope in G Suite. 
+To learn more, see the 
+[Best Practices]({% link _docs/guides/best-practices.md %}#gsuite-groups-service-account) page.
