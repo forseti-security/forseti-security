@@ -94,7 +94,7 @@ updated configuration:
 
 
 ## Updating configuration for GCP deployments
-If you've updated a forseti_conf.yaml for a GCP deployment, refer to "GCP Deployment" 
+If you've updated a forseti_conf.yaml for a GCP deployment, refer to ["GCP Deployment"](http://localhost:4000/docs/howto/deploy/gcp-deployment#move-configuration-to-gcs) 
 for instructions how to copy it to the bucket associated with your deployment. After 
 copying your conf file to the bucket, the next time Forseti runs, it will download the
 new configuration automatically.
