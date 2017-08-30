@@ -14,25 +14,21 @@
 
 """ Unit Tests: Database abstraction objects for IAM Explain. """
 
-from tests.unittest_utils import ForsetiTestCase
-import uuid
 import os
 import unittest
 
-from google.cloud.security.iam.dao import ModelManager, session_creator, create_engine
+from tests.iam.utils.db import create_test_engine_with_file
+from tests.unittest_utils import ForsetiTestCase
+
+from google.cloud.security.iam.dao import ModelManager
 from google.cloud.security.common.util.threadpool import ThreadPool
-
-
-def create_test_engine():
-    tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
-    return create_engine('sqlite:///{}'.format(tmpfile)), tmpfile
 
 
 class ModelManagerTest(ForsetiTestCase):
     """Test for dao.ModelManager create/delete/list."""
 
     def setUp(self):
-        self.engine, self.dbfile = create_test_engine()
+        self.engine, self.dbfile = create_test_engine_with_file()
         self.model_manager = ModelManager(self.engine)
 
     def tearDown(self):

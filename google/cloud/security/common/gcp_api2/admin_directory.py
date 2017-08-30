@@ -60,7 +60,7 @@ class AdminDirectoryClient(_base_client.BaseClient):
             api_errors.ApiExecutionError: If fails to build credentials.
         """
 
-        if os.environ.get('GCP_API_REPLAY', None):
+        if global_configs.get('replay_file', None):
             return None
 
         try:

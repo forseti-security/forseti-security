@@ -21,7 +21,8 @@ from sqlalchemy import event
 from google.cloud.security.iam.inventory.storage import Storage, initialize
 from google.cloud.security.iam import db
 from google.cloud.security.inventory2.resources import Resource
-from tests.iam.api_tests.api_tester import create_test_engine
+from tests.iam.utils.db import create_test_engine
+
 
 class ResourceMock(Resource):
     def __init__(self, key, data, res_type, parent=None):
@@ -29,6 +30,7 @@ class ResourceMock(Resource):
         self._data = data
         self._res_type = res_type
         self._parent = parent if parent else self
+
     def type(self):
         return self._res_type
 
@@ -58,13 +60,6 @@ class StorageTest(ForsetiTestCase):
     def test_basic(self):
         """Test storing a few resources, then iterate."""
         engine = create_test_engine()
-        @event.listens_for(engine, "connect")
-        def do_connect(dbapi_connection, connection_record):
-            dbapi_connection.isolation_level = None
-        
-        @event.listens_for(engine, "begin")
-        def do_begin(conn):
-            conn.execute("BEGIN")
 
         initialize(engine)
         sessionmaker = db.create_scoped_sessionmaker(engine)
@@ -75,7 +70,7 @@ class StorageTest(ForsetiTestCase):
         res_proj2 = ResourceMock('4', {'id': 'test'}, 'project', res_org)
         res_buc2 = ResourceMock('5', {'id': 'test'}, 'bucket', res_proj2)
         res_obj2 = ResourceMock('6', {'id': 'test'}, 'object', res_buc2)
-        
+
         resources = [
                 res_org,
                 res_proj1,
@@ -90,13 +85,13 @@ class StorageTest(ForsetiTestCase):
                 for resource in resources:
                     storage.write(resource)
                 storage.commit()
-    
+
                 self.assertEqual(3,
                                  len(self.reduced_inventory(
                                      storage,
                                      ['organization', 'bucket'])),
                                  'Only 1 organization and 2 buckets')
-    
+
                 self.assertEqual(6,
                                  len(self.reduced_inventory(storage, [])),
                                  'No types should yield empty list')
@@ -111,7 +106,7 @@ class StorageTest(ForsetiTestCase):
                                  storage,
                                  ['organization', 'bucket'])),
                              'Only 1 organization and 2 buckets')
-    
+
             self.assertEqual(6,
                              len(self.reduced_inventory(storage, [])),
                              'No types should yield empty list')
@@ -119,4 +114,3 @@ class StorageTest(ForsetiTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

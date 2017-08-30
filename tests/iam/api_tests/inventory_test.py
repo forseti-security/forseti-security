@@ -27,10 +27,12 @@ from google.cloud.security.iam.client import ClientComposition
 from google.cloud.security.iam import db
 from google.cloud.security.iam.inventory.storage import Storage
 
-from tests.iam.api_tests.api_tester import ApiTestRunner, create_test_engine, cleanup
+from tests.iam.api_tests.api_tester import ApiTestRunner
+from tests.iam.utils.db import create_test_engine
 from tests.iam.utils.gcp_env import gcp_configured, gcp_env
 from tests.unittest_utils import ForsetiTestCase
 from tests.iam.utils.mock import MockServerConfig
+
 
 class TestServiceConfig(MockServerConfig):
     """ServiceConfig Stub."""

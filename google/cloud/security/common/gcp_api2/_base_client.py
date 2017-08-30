@@ -66,34 +66,28 @@ def record(function):
             return function(self, request, rate_limiter)
 
         if not hasattr(self, '__recording'):
-            self.__recording = {}
+            self.__recording_file = file(record_file, 'w')
+            self.__recording = pickle.Pickler(self.__recording_file)
         recording = self.__recording
-
-        # Write data structure out to file
-        print 'writing to {}'.format(record_file)
-        with file(record_file, 'w') as outfile:
-            pickler = pickle.Pickler(outfile)
-            try:
-                result = function(self, request, rate_limiter)
-                obj = {
-                    'raised': False,
-                    'result': result,
-                    'request': request.to_json(),
-                    'uri': request.uri}
-                recording[request.uri] = obj
-                pickler.dump(recording)
-                return result
-            except Exception as e:
-                obj = {
-                    'raised': True,
-                    'result': e.__class__,
-                    'request': request.to_json(),
-                    'uri': request.uri}
-                recording[request.uri] = obj
-                pickler.dump(recording)
-                raise
-            finally:
-                outfile.flush()
+        try:
+            result = function(self, request, rate_limiter)
+            obj = {
+                'raised': False,
+                'result': result,
+                'request': request.to_json(),
+                'uri': request.uri}
+            recording.dump(obj)
+            return result
+        except Exception as e:
+            obj = {
+                'raised': True,
+                'result': e.__class__,
+                'request': request.to_json(),
+                'uri': request.uri}
+            recording.dump(obj)
+            raise
+        finally:
+            self.__recording_file.flush()
     return record_wrapper
 
 

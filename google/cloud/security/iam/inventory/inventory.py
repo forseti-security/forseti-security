@@ -114,10 +114,7 @@ def run_inventory(service_config,
                   queue,
                   session,
                   progresser,
-                  background,
-                  gsuite_sa,
-                  gsuite_admin_email,
-                  organization_id):
+                  background):
     """Runs the inventory given the environment configuration.
 
     Args:
@@ -144,9 +141,7 @@ def run_inventory(service_config,
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 gsuite_sa,
-                                 gsuite_admin_email,
-                                 organization_id)
+                                 service_config.get_inventory_config())
         except Exception:
             storage.rollback()
             raise
@@ -200,13 +195,11 @@ class Inventory(object):
             with self.config.scoped_session() as session:
                 try:
                     result = run_inventory(
+                        self.config,
                         queue,
                         session,
                         progresser,
-                        background,
-                        self.config.get_gsuite_sa_path(),
-                        self.config.get_gsuite_admin_email(),
-                        self.config.get_organization_id())
+                        background)
 
                     if not model_name:
                         return result

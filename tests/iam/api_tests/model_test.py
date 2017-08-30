@@ -21,7 +21,8 @@ from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
 from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
 from google.cloud.security.iam.dao import ModelManager
 
-from tests.iam.api_tests.api_tester import ModelTestRunner, create_test_engine
+from tests.iam.api_tests.api_tester import ModelTestRunner
+from tests.iam.utils.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
 
 

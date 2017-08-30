@@ -94,11 +94,7 @@ class Crawler(crawler.Crawler):
 
 def run_crawler(storage,
                 progresser,
-                gsuite_sa,
-                gsuite_admin_email,
-                organization_id,
-                replay_file=None,
-                record_file=None,):
+                config):
     """Run the crawler with a determined configuration.
 
     Args:
@@ -110,8 +106,8 @@ def run_crawler(storage,
     """
 
     client_config = {
-        'groups_service_account_key_file': gsuite_sa,
-        'domain_super_admin_email': gsuite_admin_email,
+        'groups_service_account_key_file': config.get_gsuite_sa_path(),
+        'domain_super_admin_email': config.get_gsuite_admin_email(),
         'max_admin_api_calls_per_day': 150000,
         'max_appengine_api_calls_per_second': 20,
         'max_bigquery_api_calls_per_100_seconds': 17000,
@@ -119,14 +115,11 @@ def run_crawler(storage,
         'max_sqladmin_api_calls_per_100_seconds': 100,
         'max_compute_api_calls_per_second': 20,
         'max_iam_api_calls_per_second': 20,
+        'replay_file': config.get_replay_file(),
+        'record_file': config.get_record_file(),
         }
 
-    if replay_file:
-        client_config['replay_file'] = replay_file
-    if record_file:
-        client_config['record_file'] = record_file
-
-    orgid = 'organizations/{}'.format(organization_id)
+    orgid = 'organizations/{}'.format(config.get_organization_id())
 
     client = gcp.ApiClientImpl(client_config)
     resource = resources.Organization.fetch(client, orgid)

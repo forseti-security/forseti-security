@@ -122,26 +122,85 @@ class AbstractInventoryConfig(dict):
 class InventoryConfig(AbstractInventoryConfig):
     """Implements composed dependency injection for the inventory."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self,
+                 organization_id,
+                 gsuite_sa_path,
+                 gsuite_admin_email,
+                 record_file=None,
+                 replay_file=None,
+                 *args,
+                 **kwargs):
+
         super(InventoryConfig, self).__init__(*args, **kwargs)
         self.service_config = None
+        self.organization_id = organization_id
+        self.gsuite_sa_path = gsuite_sa_path
+        self.gsuite_admin_email = gsuite_admin_email
+        self.record_file = record_file
+        self.replay_file = replay_file
 
     def get_organization_id(self):
-        pass
+        """Return the configured organization id.
+
+        Returns:
+            str: Organization ID.
+        """
+
+        return self.organization_id
 
     def get_gsuite_sa_path(self):
-        pass
+        """Return the gsuite service account path.
+
+        Returns:
+            str: Gsuite service account path.
+        """
+
+        return self.gsuite_sa_path
 
     def get_gsuite_admin_email(self):
-        pass
+        """Return the gsuite admin email to use.
+
+        Returns:
+            str: Gsuite admin email.
+        """
+
+        return self.gsuite_admin_email
 
     def get_service_config(self):
+        """Return the attached service configuration.
+
+        Returns:
+            object: Service configuration.
+        """
 
         return self.service_config
 
     def set_service_config(self, service_config):
+        """Attach a service configuration.
+
+        Args:
+            service_config (object): Service configuration.
+        """
 
         self.service_config = service_config
+
+    def get_replay_file(self):
+        """Return the replay file which is None most of the time.
+
+        Returns:
+            str: File to replay GCP API calls from.
+        """
+
+        return self.replay_file
+
+    def get_record_file(self):
+        """Return the record file which is None most of the time.
+
+        Returns:
+            str: File to record GCP API calls to.
+        """
+
+        return self.record_file
 
 
 class ServiceConfig(AbstractServiceConfig):
@@ -228,12 +287,16 @@ def serve(endpoint, services,
     if not factories:
         raise Exception("No services to start")
 
-    config = ServiceConfig(explain_connect_string,
+    # Setting up configurations
+    inventory_config = InventoryConfig(organization_id,
+                                       gsuite_sa_path,
+                                       gsuite_admin_email)
+    config = ServiceConfig(inventory_config,
+                           explain_connect_string,
                            forseti_connect_string,
-                           endpoint,
-                           gsuite_sa_path,
-                           gsuite_admin_email,
-                           organization_id)
+                           endpoint)
+    inventory_config.set_service_config(config)
+
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     for factory in factories:
         factory(config).create_and_register_service(server)

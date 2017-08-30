@@ -14,6 +14,85 @@
 
 
 from google.cloud.security.iam.server import AbstractServiceConfig
+from google.cloud.security.iam.server import AbstractInventoryConfig
+
+
+class InventoryConfig(AbstractInventoryConfig):
+    """Implements composed dependency injection for the inventory."""
+
+    def __init__(self,
+                 organization_id,
+                 gsuite_sa_path,
+                 gsuite_admin_email,
+                 record_file=None,
+                 replay_file=None,
+                 *args,
+                 **kwargs):
+
+        super(InventoryConfig, self).__init__(*args, **kwargs)
+
+    def get_organization_id(self):
+        """Return the configured organization id.
+
+        Returns:
+            str: Organization ID.
+        """
+
+        raise NotImplementedError()
+
+    def get_gsuite_sa_path(self):
+        """Return the gsuite service account path.
+
+        Returns:
+            str: Gsuite service account path.
+        """
+
+        raise NotImplementedError()
+
+    def get_gsuite_admin_email(self):
+        """Return the gsuite admin email to use.
+
+        Returns:
+            str: Gsuite admin email.
+        """
+
+        raise NotImplementedError()
+
+    def get_service_config(self):
+        """Return the attached service configuration.
+
+        Returns:
+            object: Service configuration.
+        """
+
+        raise NotImplementedError()
+
+    def set_service_config(self, service_config):
+        """Attach a service configuration.
+
+        Args:
+            service_config (object): Service configuration.
+        """
+
+        raise NotImplementedError()
+
+    def get_replay_file(self):
+        """Return the replay file which is None most of the time.
+
+        Returns:
+            str: File to replay GCP API calls from.
+        """
+
+        raise NotImplementedError()
+
+    def get_record_file(self):
+        """Return the record file which is None most of the time.
+
+        Returns:
+            str: File to record GCP API calls to.
+        """
+
+        raise NotImplementedError()
 
 
 class MockServerConfig(AbstractServiceConfig):
@@ -21,57 +100,18 @@ class MockServerConfig(AbstractServiceConfig):
     def __init__(self, *args, **kwargs):
         super(MockServerConfig, self).__init__(*args, **kwargs)
 
-    def get_organization_id(self):
-        """Get the organization id.
-
-        Returns:
-            str: The configure organization id.
-        """
-
-        raise NotImplementedError()
-
-    def get_gsuite_sa_path(self):
-        """Get path to gsuite service account.
-
-        Returns:
-            str: Gsuite admin service account path.
-        """
-
-        raise NotImplementedError()
-
-    def get_gsuite_admin_email(self):
-        """Get the gsuite admin email.
-
-        Returns:
-            str: Gsuite admin email address to impersonate.
-        """
-
-        raise NotImplementedError()
-
     def get_engine(self):
-        """Get the database engine.
-
-        Returns:
-            object: Database engine object.
-        """
+        """Get the database engine."""
 
         raise NotImplementedError()
 
     def scoped_session(self):
-        """Get a scoped session.
-
-        Returns:
-            object: A scoped session.
-        """
+        """Get a scoped session."""
 
         raise NotImplementedError()
 
     def client(self):
-        """Get an API client.
-
-        Returns:
-            object: API client to use against services.
-        """
+        """Get an API client."""
 
         raise NotImplementedError()
 
@@ -82,5 +122,10 @@ class MockServerConfig(AbstractServiceConfig):
 
     def get_storage_class(self):
         """Returns an inventory storage implementation class."""
+
+        raise NotImplementedError()
+
+    def get_inventory_config(self):
+        """Get the inventory config."""
 
         raise NotImplementedError()
