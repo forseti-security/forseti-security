@@ -91,3 +91,10 @@ updated configuration:
  Some scanners are dependent on specific Inventory pipelines. To learn about
  the available scanners and dependencies, see
  [Scanner specifications]({% link _docs/quickstarts/scanner/descriptions.md %}).
+
+
+## Updating configuration for GCP deployments
+If you've updated a forseti_conf.yaml for a GCP deployment, refer to "GCP Deployment" 
+for instructions how to copy it to the bucket associated with your deployment. After 
+copying your conf file to the bucket, the next time Forseti runs, it will download the
+new configuration automatically.
