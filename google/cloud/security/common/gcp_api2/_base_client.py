@@ -265,6 +265,7 @@ class BaseClient(object):
 
 
     @replay
+    @record
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,

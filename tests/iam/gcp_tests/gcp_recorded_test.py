@@ -93,6 +93,7 @@ class CrawlerTest(ForsetiTestCase):
         resources in a well populated organization, howevever, there is: """
         +str(len(types)))
 
+    @unittest.skipIf(os.environ.get('DOCKER_ENV'), None)
     def test_replay_gcp_api2(self):
         """Replay recorded GCP API responses to emulate a GCP environment."""
 
