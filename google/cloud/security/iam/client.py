@@ -132,7 +132,7 @@ class ExplainClient(IAMClient):
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
 
-    def new_model(self, source, name, inventory_id=-1, background=False):
+    def new_model(self, source, name, inventory_id=-1, background=True):
         """Creates a new model, reply contains the handle."""
 
         return self.stub.CreateModel(
