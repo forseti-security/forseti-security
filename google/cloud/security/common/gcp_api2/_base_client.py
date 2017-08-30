@@ -61,41 +61,37 @@ def record(function):
             Exception: Whatever the GCP API raised.
         """
 
-        try:
-            recording = self.__recording
-        except AttributeError:
-            record_file = self.global_configs.get('record_file', None)
-            if not record_file:
-                return function(self, request, rate_limiter)
-            else:
-                with file(record_file, 'w') as outfile:
-                    pickler = pickle.Pickler(outfile)
-                    try:
-                        result = function(request, rate_limiter)
-                        obj = {
-                            'raised': False,
-                            'result': result,
-                            'request': request.to_json(),
-                            'uri': request.uri}
-                        recording[request.uri] = obj
-                        pickler.dump(recording)
-                        return result
-                    except Exception as e:
-                        obj = {
-                            'raised': True,
-                            'result': e.__class__,
-                            'request': request.to_json(),
-                            'uri': request.uri}
-                        recording[request.uri] = obj
-                        pickler.dump(recording)
-                        raise
-                    finally:
-                        outfile.flush()
+        print 'triggering record wrapper with request: {}'.format(request.uri)
+        record_file = self.global_configs.get('record_file', None)
+        if not record_file:
+            return function(self, request, rate_limiter)
 
-        obj = recording[request.uri]
-        if obj['raised']:
-            raise obj['result']('', '')
-        return obj['result']
+        if not hasattr(self, '__recording'):
+            self.__recording = {}
+        recording = self.__recording
+        with file(record_file, 'w') as outfile:
+            pickler = pickle.Pickler(outfile)
+            try:
+                result = function(self, request, rate_limiter)
+                obj = {
+                    'raised': False,
+                    'result': result,
+                    'request': request.to_json(),
+                    'uri': request.uri}
+                recording[request.uri] = obj
+                return result
+            except Exception as e:
+                obj = {
+                    'raised': True,
+                    'result': e.__class__,
+                    'request': request.to_json(),
+                    'uri': request.uri}
+                recording[request.uri] = obj
+                raise
+            finally:
+                pickler.dump(recording)
+                outfile.flush()
+
     return record_wrapper
 
 
@@ -263,7 +259,6 @@ class BaseClient(object):
         """
         return 'API: name=%s, version=%s' % (self.name, self.version)
 
-    @record
     @replay
     @record
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry

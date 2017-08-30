@@ -70,8 +70,6 @@ class CrawlerTest(ForsetiTestCase):
     def test_record_gcp_api2(self):
         """Crawl an environment, test that there are items in storage."""
 
-        return
-
         gcp = gcp_env()
         test_file = get_api_file_path('henry_gbiz_08282017.pickled')
         config = InventoryConfig(gcp.organization_id,
