@@ -263,7 +263,7 @@ class BaseClient(object):
         """
         return 'API: name=%s, version=%s' % (self.name, self.version)
 
-
+    @record
     @replay
     # The wait time is (2^X * multiplier) milliseconds, where X is the retry
     # number.

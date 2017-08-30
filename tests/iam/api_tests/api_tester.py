@@ -13,30 +13,10 @@
 # limitations under the License.
 
 import grpc
-import uuid
 from concurrent import futures
-import logging
 from collections import defaultdict
 
 from google.cloud.security.iam.client import ClientComposition
-from google.cloud.security.iam.dao import create_engine
-
-
-def cleanup(test_callback):
-    """Decorator based model deletion."""
-    def wrapper(client):
-        """Decorator implementation."""
-        for model in client.list_models().models:
-            client.delete_model(model.handle)
-        test_callback(client)
-    return wrapper
-
-
-def create_test_engine():
-    """Create a test db in /tmp/."""
-    tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
-    logging.info('Creating database at %s', tmpfile)
-    return create_engine('sqlite:///{}'.format(tmpfile))
 
 
 class ApiTestRunner(object):
