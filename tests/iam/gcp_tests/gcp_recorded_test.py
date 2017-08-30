@@ -98,7 +98,6 @@ class CrawlerTest(ForsetiTestCase):
     def test_replay_gcp_api2_basic(self):
         """Replay recorded GCP API responses to emulate a GCP environment."""
 
-        return 
         gsuite_sa = ""
         gsuite_admin_email = ""
         organization_id = "660570133860"
@@ -123,36 +122,6 @@ class CrawlerTest(ForsetiTestCase):
         msg = "The inventory crawl 16 types of resources in a well populated\
         organization, howevever, there is: {}"
         self.assertEqual(len(types), 16, msg.format(len(types)))
-
-    @unittest.skipIf(gcp_configured(), "Don't replay when recordings run")
-    def test_replay_gcp_api2_with_gcs_objects(self):
-        """Replay recorded GCP API responses to emulate a GCP environment."""
-
-        return
-        gsuite_sa = ""
-        gsuite_admin_email = ""
-        organization_id = "660570133860"
-
-        test_file = get_api_file_path('henry_gbiz_08282017_with_objects.pickled')
-        config = InventoryConfig(organization_id,
-                                 gsuite_sa,
-                                 gsuite_admin_email,
-                                 replay_file=test_file)
-
-        with MemoryStorage() as storage:
-            progresser = NullProgresser()
-            run_crawler(storage,
-                        progresser,
-                        config)
-
-            self.assertEqual(0,
-                             progresser.errors,
-                             'No errors should have occurred')
-
-        types = set([item.type() for item in storage.mem.values()])
-        msg = "The inventory crawl 17 types of resources in a well populated\
-        organization, howevever, there is: {}"
-        self.assertEqual(len(types), 17, msg.format(len(types)))
 
 
 if __name__ == '__main__':
