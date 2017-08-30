@@ -603,7 +603,8 @@ class Storage(BaseStorage):
                 .filter(
                     and_(
                         Inventory.parent_resource_key == p_resource_key,
-                        Inventory.parent_resource_type == p_resource_type)))
+                        Inventory.parent_resource_type == p_resource_type,
+                        parent_inventory.index == self.index.id)))
 
         else:
             base_query = self.session.query(Inventory)
