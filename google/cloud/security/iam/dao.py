@@ -342,6 +342,7 @@ def define_model(model_name, dbengine, model_seed):
 
             Binding.__table__.drop(engine)
             Permission.__table__.drop(engine)
+            GroupInGroup.__table__.drop(engine)
 
             Role.__table__.drop(engine)
             Member.__table__.drop(engine)
