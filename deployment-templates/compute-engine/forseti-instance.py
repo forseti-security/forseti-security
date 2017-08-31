@@ -146,7 +146,7 @@ cd $USER_HOME
 rm -rf *forseti*
 pip install --upgrade pip
 pip install --upgrade setuptools
-pip install grpcio grpcio-tools google-apputils
+pip install grpcio==1.4.0 grpcio-tools==1.4.0 google-apputils
 
 # Download Forseti src; see DOWNLOAD_FORSETI.
 {}
