@@ -4,63 +4,52 @@ order: 202
 ---
 # {{ page.title }}
 
-This quickstart describes how to set up IAM Explain for Forseti Security.
+This quickstart describes how to set up IAM Explain.
 IAM Explain is a client-server based application that helps administrators,
-auditors, and users of Google Cloud to understand, test, and develop Cloud
+auditors, and users of Google Cloud to understand, test, develop and debug Cloud
 Identity and Access Management (Cloud IAM) policies. It can enumerate access by
-resource or member, answer why a principal has access to a certain resource, or
-offer possible strategies for how to grant a specific resource. You'll use a
-command-line interface to deploy IAM Explain on a separate virtual machine and
-use Forseti Inventory to build a model of Cloud IAM policies to offer its
-service.
-
-For more detail about your Cloud IAM policies, you can use the denormalizer,
-which calculates all the principals, permissions, and resources for the model.
-It also allows a primitive "diff" of the access between two full models, such
-as comparing the access at two different points in time. To use the
-denormalizer, run `forseti_iam explainer denormalize` or
-`forseti_iam explainer --help`. You can also explore the `forseti_iam` tool by
-using `forseti_iam --help`.
+resource, member, role or permission, answer why a principal has access on a
+certain resource, or offer possible strategies for how to grant access.
+In the latest version, IAM Explain is functional complete without a Forseti
+deployment (see below for steps).
+When you deploy IAM Explain, it creates a GCE instance and a MySQL database.
+In order to use IAM Explain you login to the GCE instance and use the command line
+tool `forseti_iam`. See below for usage examples.
 
 Because IAM Explain and its API are still in early development, third party
-clients won't be supported until a first stable API version is released.
+clients won't be supported until a first stable API version is released. Only command
+line is currently supported.
 
 ## Before you begin
 
-Before you set up and deploy IAM Explain, you'll need the following:
+Before you set up and deploy IAM Explain, you need to perform the following steps:
 
-  - A running Forseti instance with [group collection enabled]({% link _docs/howto/configure/gsuite-group-collection.md %})
-  - A service account with the Cloud SQL Client role. For security purposes,
-  it's best to create a separate service account for IAM Explain. However, you
-  can use your [Forseti Security service account]({% link _docs/howto/deploy/local-deployment.md %}#creating-service-accounts)
-  if you want.
-  - An SQL instance. You can use the SQL instance you created when you
-  set up Forseti Security, or create a new, separate SQL instance for IAM
-  Explain. Learn how to [create a Cloud SQL instance](https://cloud.google.com/sql/docs/mysql/quickstart).
-  - A new database for IAM Explain inside the SQL instance.
+  - Create a new project in your organization so IAM Explain's data will be protected from other users in the organization. Note that individuals with access on an organization or folder level might still have access though.
+  - Setup a service account with [group collection enabled]({% link _docs/howto/configure/gsuite-group-collection.md %})
+  - Create a service account with the following roles
+    - Organization level:
+      - 'roles/browser',
+      - 'roles/compute.networkViewer',
+      - 'roles/iam.securityReviewer',
+      - 'roles/appengine.appViewer',
+      - 'roles/servicemanagement.quotaViewer',
+      - 'roles/cloudsql.viewer',
+      - 'roles/compute.securityAdmin',
+    - Project level:
+      - 'roles/cloudsql.client'
+  - The organization level roles are needed to create an inventory of your infrastructure. The sql client role is required to connect to the database which is created during the deployment.
 
 ## Customizing the deployment template
 
 You can use the provided
 [sample IAM Explain deployment file](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/deployment-templates/deploy-explain.yaml.sample)
-to customize your deployment. You'll need to point to the SQL instance you want
-to use for IAM Explain. To prepare your IAM Explain template, update the
-following values:
+to customize your deployment. The following values are mandatory to configure
 
-  - `CLOUDSQL_DATABASE_INSTANCE`: the Cloud SQL instance that hosts the
-  IAM Explain database, in the form of `{project}:{region}:{instance-name}`.
-  - `EXPLAIN_DATABASE_INSTANCE_NAME`: the Cloud SQL database name where IAM Explain
-  data is stored. (Can be the same as `FORSETI_DATABASE_INSTANCE_NAME`.)
-  - `FORSETI_DATABASE_INSTANCE_NAME`: the Cloud SQL database name where Forseti
-  data is stored. (Can be the same as `EXPLAIN_DATABASE_INSTANCE_NAME`.)
-  - `YOUR_SERVICE_ACCOUNT`: the service account you created for IAM Explain,
-  or the shared Forseti service account.
-  - `src-path, release-version`: the path and release version of IAM Explain
-  you want to use.
-    - It's best to use an IAM Explain release version that's equal to or higher
-    than the Forseti release you're using.
-    - IAM Explain supports the same version identifiers as Forseti, starting
-    with `1.0.3`.
+  - `GSUITE_ADMINISTRATOR`: The email address of one of your Gsuite administrators. IAM Explain will assume the administrator's identity using OAuth2 temporarily while creating the inventory when figuring out what groups and users are in your Gsuite domain. Since you restricted the service account scope to user/group readonly, the service account cannot perform any other actions on your Gsuite domain than reading user & group data. This data is important to figure out effective IAM access when groups are assigned in IAM policies.
+
+  - `ORGANIZATION_ID`: This is the id of your GCP organization.
+  - `YOUR_SERVICE_ACCOUNT`: This is the service account holding the securityReviewer role from above. This is NOT the service account you set up for Gsuite domain wide delegation. If you choose to use a single service account for both purposes, put in that service account's ID.
+
 
 After you configure the deployment template variables, run the following
 command to create a new deployment:
@@ -70,7 +59,19 @@ command to create a new deployment:
   --config path/to/deploy-explain.yaml
   ```
 
-## Running the server
+## Provisioning the Gsuite service account
+
+As of today, the IAM Explain requires access to the Gsuite domain wide delegation enabled service account file. If you downloaded the json key file, you can upload it with:
+```bash
+$ gcloud compute scp groups.json ubuntu@host:/home/ubuntu/gsuite.json
+```
+Note that you have to substitute `groups.json` with the proper local filename. If you changed the path to the gsuite service account to something other than `/home/ubuntu/gsuite.json`, you need to change that path as well.
+
+## Using IAM Explain
+
+You should now be able to login to your IAM Explain instance and use the `forseti_iam` command. You can skip the next section unless you are interested in a local deployment or want to gain an understanding of how IAM Explain's deployment works internally.
+
+## Running the server (manually)
 
 The IAM Explain server uses its own database for IAM models and simulations,
 but queries the Forseti database for new imports. To run the IAM Explain server
@@ -90,8 +91,7 @@ together with a Forseti deployment, use one of the following methods:
   - Start the server in a local installation:
 
       ```bash
-      $ forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/forseti_db'\
-       'mysql://root@127.0.0.1:3306/explain_db' playground explain
+      $ forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/forseti_security' 'mysql://root@127.0.0.1:3306/explain_security' '/Users/user/deployments/forseti/groups.json' 'admin@gsuite.domain.com' '$organization_id' playground explain inventory
       ```
 
   - Use the SQL proxy to establish a connection to the Cloud SQL instance:
@@ -105,57 +105,40 @@ together with a Forseti deployment, use one of the following methods:
 The IAM Explain client uses hierarchical command parsing. At the top level,
 commands divide into "explainer" and "playground".
 
-### Setting up an explain model
+### Getting started
 
-To run the client, you'll first set up a model using one of the following
-methods:
+The first thing you need to do with a fresh instance is to create an inventory:
 
+```bash
+$ forseti_iam inventory create
+```
 
-  - Importing a Forseti model:
-  
-      ```bash
-      $ forseti_iam explainer create_model forseti <name>
-      ```
+This will crawl the organization and create an inventory in a single table for long term storage.
 
-  - Creating an empty model:
+In order to the other services like playground and explain, you need to create a so called model. A model is a data model instance created from an inventory. You can have multiple models at the same time from the same or different inventories. Models are what you work on, inventory is just the long term storage format. In order to create a model, the first question is which inventory you want to create it from. Use the inventory list to see what inventories are available or create a new one using the above command.
 
-      ```bash
-      $ forseti_iam explainer create_model empty <name>
-      ```
+```bash
+$ forseti_iam inventory list
+```
 
-### Using an explain model
+In order to create a model from an inventory, use the inventory id. You can choose an arbitrary name to associate your work with the model:
+```bash
+$ forseti_iam explainer create_model --id ID inventory NAME
+```
 
-To use a model, run the commands below:
+In order to use a newly created or existing model, use the list functionality and either set the handle of the model in the command line or using an environment variable:
 
-  ```bash
-  $ forseti_iam --out-format json explainer list_models
+```bash
+$ forseti_iam explainer list_models
+$ export IAM_MODEL=....
+$ forseti_iam explainer list_permissions
+```
 
-    {
-      "handles": [
-        "2654f082f572a9c328cd5bb6f7011b08",
-        "33ff45caa913837eb7680056c05d5f31",
-    }
-    
-  $ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
-    playground list_resources
-    
-    ...
-    
-  $ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
-    explainer denormalize
-    
-    ...
-  ```
+Or:
 
-### Using the playground
+```bash
+$ forseti_iam explainer list_models
+$ forseti_iam --use_model ... explainer list_permissions
+```
 
-IAM Explain playground is a simluator that allows you to inspect and modify
-the current state of a model. For example,
-`forseti_iam playground list_resources` displays all the resources available
-in the model. On its own, it enables you to set and check new policies. When
-used with an explain model, it also enables you to simulate a state
-modification and compare it to the live explain output.
-
-To view all the
-commands available for IAM Explain playground, run
-`forseti_iam playground --help`.
+From here, we recommend you extensively use the `--help` parameter in all variations to explore the functionality of each service. Playground is the simulator which allows you to change a model, Explainer is the tool that allows you to ask questions stated in the introduction like 'who has access to what and why'.
