@@ -787,7 +787,7 @@ class ForsetiGcpSetup(object):
               'gsuite-group-collection\n\n')
         
         print('A default configuration (configs/forseti_conf_dm.yaml) '
-              'file has been generated. If wish to change your '
+              'file has been generated. If you wish to change your '
               'Forseti configuration or rules, e.g. after enabling '
               'GSuite Groups collection you copy the changed files '
               'from the root directory of forseti-security/ to '
