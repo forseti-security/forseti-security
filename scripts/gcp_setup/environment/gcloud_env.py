@@ -780,7 +780,7 @@ class ForsetiGcpSetup(object):
                   'http://forsetisecurity.org/docs/howto/configure/'
                   'email-notification\n\n')
 
-        print('Finalize your installation by enabling GSuite Groups '
+        print('Finalize your installation by enabling G Suite Groups '
               'collection in Forseti:\n\n'
               '    '
               'http://forsetisecurity.org/docs/howto/configure/'
