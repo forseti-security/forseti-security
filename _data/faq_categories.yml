@@ -1,6 +1,6 @@
 # The order of the categories in this file (first-to-last) determines their
 # order in the UI (top-to-bottom)
 - title: General
-- title: Installation and Deployment
+- title: Installation and deployment
 - title: Using Forseti
-- title: Security Implications
+- title: Security implications
