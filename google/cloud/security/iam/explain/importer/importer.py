@@ -269,6 +269,7 @@ class InventoryImporter(object):
         self.member_cache = {}
         self.member_cache_policies = {}
 
+
     def run(self):
         """Runs the import.
 
@@ -282,7 +283,14 @@ class InventoryImporter(object):
             'folder',
             'project',
             'role',
-            'serviceaccount'
+            'serviceaccount',
+            'bucket',
+            'dataset',
+            'instancegroup',
+            'instance',
+            'firewall',
+            'backendservice',
+            'cloudsqlinstance'
             ]
 
         gsuite_type_list = [
@@ -532,6 +540,30 @@ class InventoryImporter(object):
             'serviceaccount': (None,
                                self._convert_serviceaccount,
                                None),
+            'bucket': (None,
+                       self._convert_bucket,
+                       None),
+            'object': (None,
+                       self._convert_object,
+                       None),
+            'dataset': (None,
+                        self._convert_dataset,
+                        None),
+            'instancegroup': (None,
+                              self._convert_instancegroup,
+                              None),
+            'instance': (None,
+                         self._convert_instance,
+                         None),
+            'firewall': (None,
+                         self._convert_firewall,
+                         None),
+            'backendservice': (None,
+                               self._convert_backendservice,
+                               None),
+            'cloudsqlinstance': (None,
+                         self._convert_cloudsqlinstance,
+                         None),
             None: (None, None, None),
             }
 
@@ -553,6 +585,147 @@ class InventoryImporter(object):
             handler(resource)
             return res_type
         return None
+
+    def _convert_bucket(self, bucket):
+        """Convert a bucket to a database object.
+
+        Args:
+            bucket (object): Bucket to store.
+        """
+
+        data = bucket.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            bucket)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=bucket.get_key(),
+                type=bucket.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                parent=parent))
+
+    def _convert_object(self, gcsobject):
+        """Not Implemented
+
+        Args:
+            gcsobject (object): Object to store.
+        """
+
+    def _convert_dataset(self, dataset):
+        """Convert a dataset to a database object.
+
+        Args:
+            dataset (object): Dataset to store.
+        """
+        data = dataset.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            dataset)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=dataset.get_key(),
+                type=dataset.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                parent=parent))
+
+    def _convert_instancegroup(self, instancegroup):
+        """Convert a instancegroup to a database object.
+
+        Args:
+            instancegroup (object): Instancegroup to store.
+        """
+        data = instancegroup.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            instancegroup)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=instancegroup.get_key(),
+                type=instancegroup.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                parent=parent))
+
+    def _convert_instance(self, instance):
+        """Convert a instance to a database object.
+
+        Args:
+            instance (object): Instance to store.
+        """
+        data = instance.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            instance)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=instance.get_key(),
+                type=instance.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                parent=parent))
+
+    def _convert_firewall(self, firewall):
+        """Convert a firewall to a database object.
+
+        Args:
+            firewall (object): Firewall to store.
+        """
+        data = firewall.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            firewall)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=firewall.get_key(),
+                type=firewall.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                parent=parent))
+
+    def _convert_backendservice(self, backendservice):
+        """Convert a backendservice to a database object.
+
+        Args:
+            backendservice (object): Backendservice to store.
+        """
+        data = backendservice.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            backendservice)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=backendservice.get_key(),
+                type=backendservice.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                parent=parent))
+
+    def _convert_cloudsqlinstance(self, cloudsqlinstance):
+        """Convert a cloudsqlinstance to a database object.
+
+        Args:
+            cloudsqlinstance (object): Cloudsql to store.
+        """
+        data = cloudsqlinstance.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            cloudsqlinstance)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=cloudsqlinstance.get_key(),
+                type=cloudsqlinstance.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                parent=parent))
 
     def _convert_serviceaccount(self, service_account):
         """Convert a service account to a database object.
@@ -602,7 +775,6 @@ class InventoryImporter(object):
 
         data = project.get_data()
         parent, full_res_name, type_name = self._full_resource_name(project)
-
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -695,7 +867,8 @@ class InventoryImporter(object):
         """
 
         type_name = self._type_name(resource)
-        self.resource_cache[type_name] = (dbobj, type_name)
+        full_res_name = dbobj.full_name
+        self.resource_cache[type_name] = (dbobj, full_res_name)
 
     def _get_parent(self, resource):
         """Return the parent object for a resource from cache.
