@@ -562,8 +562,8 @@ class InventoryImporter(object):
                                self._convert_backendservice,
                                None),
             'cloudsqlinstance': (None,
-                         self._convert_cloudsqlinstance,
-                         None),
+                                 self._convert_cloudsqlinstance,
+                                 None),
             None: (None, None, None),
             }
 
