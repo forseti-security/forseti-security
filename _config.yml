@@ -40,10 +40,18 @@ defaults:
       category: Guides
 # The order of faq categories is defined in _data/faq_categories.yml
   - scope:
-      path: _faq/category_1
+      path: _faq/general
     values:
-      category: Category 1
+      category: General
   - scope:
-      path: _faq/category_2
+      path: _faq/installation_and_deployment
     values:
-      category: Category 2
+      category: Installation and Deployment
+  - scope:
+      path: _faq/using_forseti
+    values:
+      category: Using Forseti
+  - scope:
+      path: _faq/security_implications
+    values:
+      category: Security Implications
