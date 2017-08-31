@@ -342,6 +342,7 @@ def define_model(model_name, dbengine, model_seed):
 
             Binding.__table__.drop(engine)
             Permission.__table__.drop(engine)
+            GroupInGroup.__table__.drop(engine)
 
             Role.__table__.drop(engine)
             Member.__table__.drop(engine)
@@ -375,7 +376,7 @@ def define_model(model_name, dbengine, model_seed):
                     '`{}` as {}'.format(
                         GroupInGroup.__tablename__,
                         tbl3.name),
-                    group_members.name]
+                    '`{}`'.format(group_members.name)]
                 lock_stmts = ['{} WRITE'.format(tbl) for tbl in locked_tables]
                 query = 'LOCK TABLES {}'.format(', '.join(lock_stmts))
                 session.execute(query)
