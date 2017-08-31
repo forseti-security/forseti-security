@@ -785,7 +785,7 @@ class ForsetiGcpSetup(object):
               '    '
               'http://forsetisecurity.org/docs/howto/configure/'
               'gsuite-group-collection\n\n')
-        
+
         print('A default configuration file '
               '(configs/forseti_conf_dm.yaml) '
               'has been generated. If you wish to change your '
