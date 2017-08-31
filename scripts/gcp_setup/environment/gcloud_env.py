@@ -149,6 +149,7 @@ class ForsetiGcpSetup(object):
         self.get_authed_user()
         self.get_project()
         self.get_organization()
+        self.check_billing_enabled()
         self.has_permissions()
 
         self.enable_apis()
@@ -303,6 +304,34 @@ class ForsetiGcpSetup(object):
             print('You need to have an active project! Exiting.')
             sys.exit(1)
         print('Project id: %s' % self.project_id)
+
+    def check_billing_enabled(self):
+        """Check if billing is enabled."""
+        return_code, out, err = self._run_command(
+            ['gcloud', 'alpha', 'billing', 'projects', 'describe',
+             self.project_id, '--format=json'])
+        if return_code:
+            print(err)
+            self._billing_not_enabled()
+        try:
+            billing_info = json.loads(out)
+            if billing_info.get('billingEnabled'):
+                print('Billing IS enabled.')
+            else:
+                self._billing_not_enabled()
+        except ValueError:
+            self._billing_not_enabled()
+
+    def _billing_not_enabled(self):
+        """Print message and exit."""
+        print('\nIt seems that billing is not enabled for your project. '
+              'You can check whether billing has been enabled in the '
+              'Cloud Platform Console:\n\n'
+              '    https://console.cloud.google.com/billing/linkedaccount?'
+              'project={}&organizationId={}\n\n'
+              'Once you have enabled billing, re-run this setup.\n'.format(
+                  self.project_id, self.organization_id))
+        sys.exit(1)
 
     def get_organization(self):
         """Infer the organization from the project's parent."""
@@ -774,16 +803,6 @@ class ForsetiGcpSetup(object):
               '{}?project={}&organizationId={}\n\n'.format(
                   self.deployment_name, self.project_id, self.organization_id))
 
-        print('A forseti_conf_dm.yaml file has been generated. '
-              'If you change your forseti_conf.yaml or Forseti rules, '
-              'copy the following files from the root directory of '
-              'forseti-security to your Forseti bucket:\n\n'
-              '    gsutil cp configs/forseti_conf_dm.yaml '
-              '{}/configs/forseti_conf.yaml\n'
-              '    gsutil cp -r rules {}\n\n'.format(
-                  self.bucket_name,
-                  self.bucket_name))
-
         if self.skip_email:
             print('If you would like to enable email notifications via '
                   'SendGrid, please refer to:\n\n    '
@@ -795,3 +814,16 @@ class ForsetiGcpSetup(object):
               '    '
               'http://forsetisecurity.org/docs/howto/configure/'
               'gsuite-group-collection\n\n')
+
+        print('A default configuration file '
+              '(configs/forseti_conf_dm.yaml) '
+              'has been generated. If you wish to change your '
+              'Forseti configuration or rules, e.g. enabling G Suite '
+              'Groups collection, copy the changed files '
+              'from the root directory of forseti-security/ to '
+              'your Forseti bucket:\n\n'
+              '    gsutil cp configs/forseti_conf_dm.yaml '
+              '{}/configs/forseti_conf.yaml\n\n'
+              '    gsutil cp -r rules {}\n\n'.format(
+                  self.bucket_name,
+                  self.bucket_name))
