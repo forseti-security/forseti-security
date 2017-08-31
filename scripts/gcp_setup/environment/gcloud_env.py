@@ -774,24 +774,26 @@ class ForsetiGcpSetup(object):
               '{}?project={}&organizationId={}\n\n'.format(
                   self.deployment_name, self.project_id, self.organization_id))
 
-        print('A forseti_conf_dm.yaml file has been generated. '
-              'If you change your forseti_conf.yaml or Forseti rules, '
-              'copy the following files from the root directory of '
-              'forseti-security to your Forseti bucket:\n\n'
-              '    gsutil cp configs/forseti_conf_dm.yaml '
-              '{}/configs/forseti_conf.yaml\n'
-              '    gsutil cp -r rules {}\n\n'.format(
-                  self.bucket_name,
-                  self.bucket_name))
-
         if self.skip_email:
             print('If you would like to enable email notifications via '
                   'SendGrid, please refer to:\n\n    '
                   'http://forsetisecurity.org/docs/howto/configure/'
                   'email-notification\n\n')
 
-        print('Finalize your installation by enabling G Suite Groups '
+        print('Finalize your installation by enabling GSuite Groups '
               'collection in Forseti:\n\n'
               '    '
               'http://forsetisecurity.org/docs/howto/configure/'
               'gsuite-group-collection\n\n')
+        
+        print('A default configuration (configs/forseti_conf_dm.yaml) '
+              'file has been generated. If wish to change your '
+              'Forseti configuration or rules, e.g. after enabling '
+              'GSuite Groups collection you copy the changed files '
+              'from the root directory of forseti-security/ to '
+              'your Forseti bucket:\n\n'
+              '    gsutil cp configs/forseti_conf_dm.yaml '
+              '{}/configs/forseti_conf.yaml\n\n'
+              '    gsutil cp -r rules {}\n\n'.format(
+                  self.bucket_name,
+                  self.bucket_name))
