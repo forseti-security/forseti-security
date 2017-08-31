@@ -149,6 +149,7 @@ class ForsetiGcpSetup(object):
         self.get_authed_user()
         self.get_project()
         self.get_organization()
+        self.check_billing_enabled()
         self.has_permissions()
 
         self.enable_apis()
@@ -303,6 +304,34 @@ class ForsetiGcpSetup(object):
             print('You need to have an active project! Exiting.')
             sys.exit(1)
         print('Project id: %s' % self.project_id)
+
+    def check_billing_enabled(self):
+        """Check if billing is enabled."""
+        return_code, out, err = self._run_command(
+            ['gcloud', 'alpha', 'billing', 'projects', 'describe',
+             self.project_id, '--format=json'])
+        if return_code:
+            print(err)
+            self._billing_not_enabled()
+        try:
+            billing_info = json.loads(out)
+            if billing_info.get('billingEnabled'):
+                print('Billing IS enabled.')
+            else:
+                self._billing_not_enabled()
+        except ValueError:
+            self._billing_not_enabled()
+
+    def _billing_not_enabled(self):
+        """Print message and exit."""
+        print('\nIt seems that billing is not enabled for your project. '
+              'You can check whether billing has been enabled in the '
+              'Cloud Platform Console:\n\n'
+              '    https://console.cloud.google.com/billing/linkedaccount?'
+              'project={}&organizationId={}\n\n'
+              'Once you have enabled billing, re-run this setup.\n'.format(
+                  self.project_id, self.organization_id))
+        sys.exit(1)
 
     def get_organization(self):
         """Infer the organization from the project's parent."""
