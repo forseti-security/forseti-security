@@ -788,8 +788,8 @@ class ForsetiGcpSetup(object):
         
         print('A default configuration (configs/forseti_conf_dm.yaml) '
               'file has been generated. If you wish to change your '
-              'Forseti configuration or rules, e.g. after enabling '
-              'GSuite Groups collection you copy the changed files '
+              'Forseti configuration or rules, e.g. enabling G Suite '
+              'Groups collection, copy the changed files '
               'from the root directory of forseti-security/ to '
               'your Forseti bucket:\n\n'
               '    gsutil cp configs/forseti_conf_dm.yaml '
