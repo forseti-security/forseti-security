@@ -18,9 +18,13 @@ import binascii
 import os
 import grpc
 
-from google.cloud.security.iam.explain import explain_pb2_grpc, explain_pb2
+from google.cloud.security.iam.explain import explain_pb2
+from google.cloud.security.iam.explain import explain_pb2_grpc
 from google.cloud.security.iam.playground import playground_pb2_grpc
 from google.cloud.security.iam.playground import playground_pb2
+from google.cloud.security.iam.inventory import inventory_pb2
+from google.cloud.security.iam.inventory import inventory_pb2_grpc
+
 from google.cloud.security.iam.utils import oneof
 
 
@@ -60,6 +64,55 @@ class IAMClient(object):
         return [('handle', self.config.handle())]
 
 
+class InventoryClient(IAMClient):
+    """Inventory service allows the client to create GCP inventory.
+
+    Inventory provides the following functionality:
+       - Create a new inventory and optionally import it
+       - Manage your inventory using List/Get/Delete
+    """
+
+    def __init__(self, config):
+        super(InventoryClient, self).__init__(config)
+        self.stub = inventory_pb2_grpc.InventoryStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Inventory' service is available by performing a ping.
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(inventory_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    def create(self, background=False, import_as=None):
+        """Creates a new inventory, with an optional import."""
+
+        request = inventory_pb2.CreateRequest(
+            background=background,
+            model_name=import_as)
+        return self.stub.Create(request)
+
+    def get(self, inventory_id):
+        """Returns all information about a particular inventory."""
+
+        request = inventory_pb2.GetRequest(
+            id=inventory_id)
+        return self.stub.Get(request)
+
+    def delete(self, inventory_id):
+        """Delete an inventory."""
+
+        request = inventory_pb2.DeleteRequest(
+            id=inventory_id)
+        return self.stub.Delete(request)
+
+    def list(self):
+        """Lists all available inventory."""
+
+        request = inventory_pb2.ListRequest()
+        return self.stub.List(request)
+
+
 class ExplainClient(IAMClient):
     """Explain service allows the client to reason about a model.
 
@@ -79,13 +132,15 @@ class ExplainClient(IAMClient):
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
 
-    def new_model(self, source, name):
+    def new_model(self, source, name, inventory_id=-1, background=True):
         """Creates a new model, reply contains the handle."""
 
         return self.stub.CreateModel(
             explain_pb2.CreateModelRequest(
                 type=source,
-                name=name))
+                name=name,
+                id=inventory_id,
+                background=background))
 
     def list_models(self):
         """List existing models in the service."""
@@ -373,15 +428,16 @@ class ClientComposition(object):
 
         self.explain = ExplainClient(self.config)
         self.playground = PlaygroundClient(self.config)
+        self.inventory = InventoryClient(self.config)
 
-        self.clients = [self.explain, self.playground]
+        self.clients = [self.explain, self.playground, self.inventory]
         if not all([c.is_available() for c in self.clients]):
             raise Exception('gRPC connected but services not registered')
 
-    def new_model(self, source, name):
+    def new_model(self, source, name, inventory_id=-1, background=False):
         """Create a new model from the specified source."""
 
-        return self.explain.new_model(source, name)
+        return self.explain.new_model(source, name, inventory_id, background)
 
     def list_models(self):
         """List existing models."""

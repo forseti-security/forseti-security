@@ -24,6 +24,7 @@ def GenerateConfig(context):
         """.format(
             context.properties['src-path'],
             context.properties['branch-name'])
+
     else:
         DOWNLOAD_FORSETI = """
             wget -qO- {}/archive/v{}.tar.gz | tar xvz
@@ -33,9 +34,21 @@ def GenerateConfig(context):
             context.properties['release-version'],
             context.properties['release-version'])
 
-    SQL_INSTANCE = context.properties['sql-instance']
-    EXPLAIN_DATABASE_NAME = context.properties['database-name-forseti']
-    FORSETI_DATABASE_NAME = context.properties['database-name-explain']
+
+    FORSETI_CONN_STRING = context.properties['database-name-forseti']
+    if FORSETI_CONN_STRING != '':
+        SQL_INSTANCE_CONN_STRING = FORSETI_CONN_STRING
+    else:
+        SQL_INSTANCE_CONN_STRING = '{}:{}:{}'.format(
+            context.env['project'],
+            '$(ref.cloudsql-instance.region)',
+            '$(ref.cloudsql-instance.name)')
+
+    FORSETI_DB_NAME = context.properties['forseti-db-name']
+    EXPLAIN_DB_NAME = context.properties['explain-db-name']
+    GSUITE_SERVICE_ACCOUNT_PATH = context.properties['gsuite-service-accout-path']
+    GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
+    ORGANIZATION_ID = context.properties['organization-id']
 
     resources = []
 
@@ -136,7 +149,7 @@ Description=Explain API Server
 [Service]
 Restart=always
 RestartSec=3
-ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' playground explain
+ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' '{}' '{}' '{}' playground explain inventory
 [Install]
 WantedBy=multi-user.target
 Wants=cloudsqlproxy.service
@@ -164,11 +177,14 @@ systemctl start forseti
 
     # install forseti
     DOWNLOAD_FORSETI,
-    EXPLAIN_DATABASE_NAME.split(':')[-1],
-    FORSETI_DATABASE_NAME.split(':')[-1],
+    FORSETI_DB_NAME,
+    EXPLAIN_DB_NAME,
+    GSUITE_SERVICE_ACCOUNT_PATH,
+    GSUITE_ADMIN_EMAIL,
+    ORGANIZATION_ID,
 
     # cloud_sql_proxy
-    SQL_INSTANCE,
+    SQL_INSTANCE_CONN_STRING,
 )
                 }]
             }

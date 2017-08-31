@@ -20,6 +20,32 @@ import logging
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
+# pylint: disable=protected-access
+
+
+def autoclose_stream(f):
+    """Decorator to close gRPC stream."""
+
+    def wrapper(*args):
+        """Wrapper function, checks context state to close stream.
+
+        Args:
+            *args (list): All arguments provided to the wrapped function.
+
+        Yields:
+            object: Whatever the wrapped function yields to the stream.
+        """
+
+        def closed(context):
+            """Returns true iff the connection is closed."""
+
+            return context._state.client == 'closed'
+        context = args[-1]
+        for result in f(*args):
+            yield result
+            if closed(context):
+                return
+    return wrapper
 
 
 def logcall(f, level=logging.CRITICAL):
@@ -66,3 +92,9 @@ def resource_to_type_name(resource):
     """Creates a type/name format from a resource dbo."""
 
     return resource.type_name
+
+
+def get_sql_dialect(session):
+    """Return the active SqlAlchemy dialect."""
+
+    return session.bind.dialect.name
