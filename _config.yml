@@ -46,7 +46,7 @@ defaults:
   - scope:
       path: _faq/installation_and_deployment
     values:
-      category: Installation and Deployment
+      category: Installation and deployment
   - scope:
       path: _faq/using_forseti
     values:
@@ -54,4 +54,4 @@ defaults:
   - scope:
       path: _faq/security_implications
     values:
-      category: Security Implications
+      category: Security implications
