@@ -328,7 +328,8 @@ class ForsetiGcpSetup(object):
               'You can check whether billing has been enabled in the '
               'Cloud Platform Console:\n\n'
               '    https://console.cloud.google.com/billing/linkedaccount?'
-              'project={}&organizationId={}\n'.format(
+              'project={}&organizationId={}\n\n'
+              'Once you have enabled billing, re-run this setup.\n'.format(
                   self.project_id, self.organization_id))
         sys.exit(1)
 
