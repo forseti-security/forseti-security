@@ -154,6 +154,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._instance_groups = None
         self._instances = None
         self._instance_templates = None
+        self._projects = None
         self._region_instance_groups = None
 
         super(ComputeRepositoryClient, self).__init__(
@@ -223,6 +224,14 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             self._instance_templates = self._init_repository(
                 _ComputeInstanceTemplatesRepository)
         return self._instance_templates
+
+    @property
+    def projects(self):
+        """Returns a _ComputeProjectsRepository instance."""
+        if not self._projects:
+            self._projects = self._init_repository(
+                _ComputeProjectsRepository)
+        return self._projects
 
     @property
     def region_instance_groups(self):
@@ -394,6 +403,21 @@ class _ComputeInstanceTemplatesRepository(
         """
         super(_ComputeInstanceTemplatesRepository, self).__init__(
             component='instanceTemplates', **kwargs)
+
+
+class _ComputeProjectsRepository(
+        repository_mixins.GetQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Projects repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeProjectsRepository, self).__init__(
+            component='projects', **kwargs)
 
 
 class _ComputeRegionInstanceGroupsRepository(
@@ -616,3 +640,40 @@ class ComputeClient(object):
             project_id)
         return _flatten_aggregated_list_results(project_id, paged_results,
                                                 'instanceGroupManagers')
+
+    # pylint: disable=bad-indentation
+    def get_project(self, project_id):
+        """Returns the specified Project resource.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            dict: A Compute Project resource dict.
+            https://cloud.google.com/compute/docs/reference/latest/projects/get
+        """
+        try:
+            return self.repository.projects.get(project_id)
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+
+    def test_api_enabled(self, project_id):
+        """Checks if the Compute API is enabled for the specified project.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            bool: True if the API is enabled, else False.
+        """
+        try:
+            result = self.repository.projects.get(project_id, fields='name')
+            return bool('name' in result)  # True if name, otherwise False.
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, _ = _api_not_enabled(e)
+            if api_not_enabled:
+                return False
+            raise api_errors.ApiExecutionError(project_id, e)

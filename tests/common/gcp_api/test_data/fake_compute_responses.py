@@ -592,7 +592,7 @@ REGION_INSTANCE_GROUP_LIST_INSTANCES = """
 """
 
 FAKE_INSTANCE_GROUP = "iap-ig"
-FAKE_INSTANCE_GROUP_REGION = 'us-central1'
+FAKE_INSTANCE_GROUP_REGION = "us-central1"
 
 EXPECTED_INSTANCE_GROUP_ZONE_URLS = [
     ("https://www.googleapis.com/compute/v1/projects/project1/zones/"
@@ -888,6 +888,166 @@ INSTANCE_GROUP_MANAGERS_AGGREGATED_LIST = """
 """
 
 EXPECTED_INSTANCE_GROUP_MANAGER_NAMES = ["iap-ig", "iap-ig-region"]
+
+GET_PROJECT_RESPONSE = """
+{
+ "kind": "compute#project",
+ "id": "1111111",
+ "creationTimestamp": "2016-02-25T14:01:23.140-08:00",
+ "name": "project1",
+ "commonInstanceMetadata": {
+  "kind": "compute#metadata",
+  "fingerprint": "ABC",
+  "items": [
+   {
+    "key": "some-key",
+    "value": "some-value"
+   }
+  ]
+ },
+ "quotas": [
+  {
+   "metric": "SNAPSHOTS",
+   "limit": 1000.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "NETWORKS",
+   "limit": 5.0,
+   "usage": 1.0
+  },
+  {
+   "metric": "FIREWALLS",
+   "limit": 100.0,
+   "usage": 9.0
+  },
+  {
+   "metric": "IMAGES",
+   "limit": 100.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "STATIC_ADDRESSES",
+   "limit": 8.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "ROUTES",
+   "limit": 200.0,
+   "usage": 12.0
+  },
+  {
+   "metric": "FORWARDING_RULES",
+   "limit": 15.0,
+   "usage": 1.0
+  },
+  {
+   "metric": "TARGET_POOLS",
+   "limit": 50.0,
+   "usage": 1.0
+  },
+  {
+   "metric": "HEALTH_CHECKS",
+   "limit": 50.0,
+   "usage": 1.0
+  },
+  {
+   "metric": "IN_USE_ADDRESSES",
+   "limit": 23.0,
+   "usage": 1.0
+  },
+  {
+   "metric": "TARGET_INSTANCES",
+   "limit": 50.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "TARGET_HTTP_PROXIES",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "URL_MAPS",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "BACKEND_SERVICES",
+   "limit": 5.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "INSTANCE_TEMPLATES",
+   "limit": 100.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "TARGET_VPN_GATEWAYS",
+   "limit": 5.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "VPN_TUNNELS",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "BACKEND_BUCKETS",
+   "limit": 3.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "ROUTERS",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "TARGET_SSL_PROXIES",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "TARGET_HTTPS_PROXIES",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "SSL_CERTIFICATES",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "SUBNETWORKS",
+   "limit": 100.0,
+   "usage": 11.0
+  },
+  {
+   "metric": "TARGET_TCP_PROXIES",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "SECURITY_POLICIES",
+   "limit": 10.0,
+   "usage": 0.0
+  },
+  {
+   "metric": "SECURITY_POLICY_RULES",
+   "limit": 1000.0,
+   "usage": 0.0
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1",
+ "defaultServiceAccount": "1111111-compute@developer.gserviceaccount.com",
+ "xpnProjectStatus": "UNSPECIFIED_XPN_PROJECT_STATUS"
+}
+"""
+
+GET_PROJECT_NAME_RESPONSE = """
+{
+ "name": "project1"
+}
+"""
 
 # Errors
 
