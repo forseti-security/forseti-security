@@ -659,7 +659,7 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
 
-    def test_api_enabled(self, project_id):
+    def is_api_enabled(self, project_id):
         """Checks if the Compute API is enabled for the specified project.
 
         Args:

@@ -270,24 +270,24 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(expected_exception):
             self.gce_api_client.get_project(self.project_id)
 
-    def test_test_api_enabled_true(self):
+    def test_is_api_enabled_true(self):
         """Verify that a positive response from the API returns True."""
         http_mocks.mock_http_response(
             fake_compute.GET_PROJECT_NAME_RESPONSE)
-        results = self.gce_api_client.test_api_enabled(self.project_id)
+        results = self.gce_api_client.is_api_enabled(self.project_id)
         self.assertTrue(results)
 
-    def test_test_api_enabled_false(self):
+    def test_is_api_enabled_false(self):
         """Verify that a positive response from the API returns True."""
         http_mocks.mock_http_response(fake_compute.API_NOT_ENABLED, '403')
-        results = self.gce_api_client.test_api_enabled(self.project_id)
+        results = self.gce_api_client.is_api_enabled(self.project_id)
         self.assertFalse(results)
 
-    def test_test_api_enabled_error(self):
+    def test_is_api_enabled_error(self):
         """Verify that a positive response from the API returns True."""
         http_mocks.mock_http_response(fake_compute.ACCESS_DENIED, '403')
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.gce_api_client.test_api_enabled(self.project_id)
+            self.gce_api_client.is_api_enabled(self.project_id)
 
 
 if __name__ == '__main__':
