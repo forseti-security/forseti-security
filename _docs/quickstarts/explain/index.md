@@ -4,11 +4,11 @@ order: 202
 ---
 # {{ page.title }}
 
-This quickstart describes how to set up IAM Explain.
+This quickstart describes how to set up IAM Explain and get started.
 IAM Explain is a client-server based application that helps administrators,
 auditors, and users of Google Cloud to understand, test, develop and debug Cloud
 Identity and Access Management (Cloud IAM) policies. It can enumerate access by
-resource, member, role or permission, answer why a principal has access on a
+resource, member, role or permission and answer why a principal has access on a
 certain resource, or offer possible strategies for how to grant access.
 In the latest version, IAM Explain is functional complete without a Forseti
 deployment (see below for steps).
@@ -18,7 +18,7 @@ tool `forseti_iam`. See below for usage examples.
 
 Because IAM Explain and its API are still in early development, third party
 clients won't be supported until a first stable API version is released. Only command
-line is currently supported.
+line is currently supported but feel free to experiment with the API as well.
 
 ## Before you begin
 
