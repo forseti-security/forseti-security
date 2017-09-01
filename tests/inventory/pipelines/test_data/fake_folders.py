@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -17,44 +17,36 @@
 
 FAKE_FOLDERS = [
     {
-        'folders': [
-            {
-                'name': 'folders/111111111111',
-                'displayName': 'Folder1',
-                'lifecycleState': 'ACTIVE',
-                'parent': 'organizations/7777',
-                'createTime': '2016-10-22T16:57:36.096Z'
-            },
-            {
-                'name': 'folders/222222222222',
-                'displayName': 'Folder2',
-                'lifecycleState': 'ACTIVE',
-                'parent': 'folders/111111111111',
-                'createTime': '2016-11-13T05:32:10.930Z'
-            },
-            {
-                'name': 'folders/333333333333',
-                'displayName': 'Folder3',
-                'lifecycleState': 'ACTIVE',
-                'createTime': '2016-11-13T05:32:49.377Z'
-            },
-        ]
+        'name': 'folders/111111111111',
+        'displayName': 'Folder1',
+        'lifecycleState': 'ACTIVE',
+        'parent': 'organizations/7777',
+        'createTime': '2016-10-22T16:57:36.096Z'
     },
     {
-        'folders': [
-            {
-                'name': 'folders/444444444444',
-                'displayName': 'Folder4',
-                'lifecycleState': 'ACTIVE',
-                'createTime': '2016-10-22T16:57:36.066Z'
-            },
-            {
-                'name': 'folders/555555555555',
-                'displayName': 'Folder5',
-                'lifecycleState': 'ACTIVE',
-                'createTime': '2016-11-13T05:32:10.977Z'
-            }
-        ]
+        'name': 'folders/222222222222',
+        'displayName': 'Folder2',
+        'lifecycleState': 'ACTIVE',
+        'parent': 'folders/111111111111',
+        'createTime': '2016-11-13T05:32:10.930Z'
+    },
+    {
+        'name': 'folders/333333333333',
+        'displayName': 'Folder3',
+        'lifecycleState': 'ACTIVE',
+        'createTime': '2016-11-13T05:32:49.377Z'
+    },
+    {
+        'name': 'folders/444444444444',
+        'displayName': 'Folder4',
+        'lifecycleState': 'ACTIVE',
+        'createTime': '2016-10-22T16:57:36.066Z'
+    },
+    {
+        'name': 'folders/555555555555',
+        'displayName': 'Folder5',
+        'lifecycleState': 'ACTIVE',
+        'createTime': '2016-11-13T05:32:10.977Z'
     }
 ]
 

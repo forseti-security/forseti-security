@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,10 +32,9 @@ from tests.inventory.pipelines.test_data import fake_orgs
 
 
 def _setup_raw_orgs():
-    fakes = [o for res in fake_orgs.FAKE_ORGS \
-        for o in res.get('organizations', [])]
     for (i, o) in enumerate(fake_orgs.EXPECTED_LOADABLE_ORGS):
-        fake_orgs.EXPECTED_LOADABLE_ORGS[i]['raw_org'] = json.dumps(fakes[i])
+        fake_orgs.EXPECTED_LOADABLE_ORGS[i]['raw_org'] = json.dumps(
+            fake_orgs.FAKE_ORGS[i])
 
 
 class LoadOrgsPipelineTest(ForsetiTestCase):
@@ -73,14 +72,17 @@ class LoadOrgsPipelineTest(ForsetiTestCase):
         self.pipeline.api_client.get_organizations.assert_called_once_with(
             self.pipeline.RESOURCE_NAME)
 
-    def test_retrieve_errors_are_handled(self):
+    @mock.patch(
+        'google.cloud.security.inventory.pipelines.base_pipeline.LOGGER')
+    def test_retrieve_errors_are_handled(self, mock_logger):
         """Test that errors are handled when retrieving."""
 
         self.pipeline.api_client.get_organizations.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve()
+        results = self.pipeline._retrieve()
+        self.assertEqual(None, results)
+        self.assertEqual(1, mock_logger.error.call_count)
 
     @mock.patch.object(
         load_orgs_pipeline.LoadOrgsPipeline,

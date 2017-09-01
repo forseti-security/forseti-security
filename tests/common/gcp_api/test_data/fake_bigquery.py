@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,23 +18,27 @@ PROJECT_IDS = ['bq-test','bq-test2']
 
 DATASET_ID = 'test'
 
-DATASETS_GET_REQUEST_RESPONSE = [
-    {'access': [
-        {'role': 'WRITER', 'specialGroup': 'projectWriters'},
-        {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-        {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
-        {'role': 'READER', 'specialGroup': 'projectReaders'}
-    ],
-        'creationTime': '1',
-        'datasetReference': {'datasetId': 'test',
-                             'projectId': 'bq-test'},
-          'etag': '"T"',
-          'id': 'bq-test:test',
-          'kind': 'bigquery#dataset',
-          'lastModifiedTime': '1',
-          'location': 'US',
-          'selfLink': ''}
-]
+DATASETS_GET_REQUEST_RESPONSE = """
+{
+ "access": [
+  {"role": "WRITER", "specialGroup": "projectWriters"},
+  {"role": "OWNER", "specialGroup": "projectOwners"},
+  {"role": "OWNER", "userByEmail": "user@domain.com"},
+  {"role": "READER", "specialGroup": "projectReaders"}
+ ],
+ "creationTime": "1",
+ "datasetReference": {
+  "datasetId": "test",
+  "projectId": "bq-test"
+ },
+ "etag": "T",
+ "id": "bq-test:test",
+ "kind": "bigquery#dataset",
+ "lastModifiedTime": "1",
+ "location": "US",
+ "selfLink": ""
+}
+"""
 
 DATASETS_GET_EXPECTED = [
     {'role': 'WRITER', 'specialGroup': 'projectWriters'},
@@ -81,19 +85,29 @@ PROJECTS_LIST_REQUEST_RESPONSE = [
 
 PROJECTS_LIST_EXPECTED = PROJECT_IDS
 
-DATASETS_LIST_REQUEST_RESPONSE = [
-    {'datasets': [
-        {'datasetReference': {
-            'datasetId': 'test',
-            'projectId': 'bq-test'
-            },
-            'id': 'bq-test:test',
-            'kind': 'bigquery#dataset'
-        }
-    ],
-        'etag': '"T"',
-        'kind': 'bigquery#datasetList'
-    }
-]
+DATASETS_LIST_REQUEST_RESPONSE = """
+{
+ "datasets": [{
+  "datasetReference": {
+   "datasetId": "test",
+   "projectId": "bq-test"
+  },
+  "id": "bq-test:test",
+  "kind": "bigquery#dataset"
+ }],
+ "etag": "T",
+ "kind": "bigquery#datasetList"
+}
+"""
 
 DATASETS_LIST_EXPECTED = [{'datasetId': 'test', 'projectId': 'bq-test'}]
+
+PERMISSION_DENIED = """
+{
+ "error": {
+  "code": 403,
+  "message": "The caller does not have permission",
+  "status": "PERMISSION_DENIED"
+ }
+}
+"""

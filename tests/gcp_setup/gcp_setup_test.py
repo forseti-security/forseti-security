@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -243,7 +243,46 @@ class GcloudEnvTest(ForsetiTestCase):
             output = out.getvalue()[:len(output_head)]
             self.assertEqual(output_head, output)
 
-    # TODO: test get_organization()
+    def test_get_organization(self):
+        """Test get_organization().
+
+        Find organization from a project nested inside 3 folders.
+        """
+        project_desc = json.dumps({
+            'name': 'project-1',
+            'parent': {
+                'id': '12345',
+                'type': 'folder'
+            },
+        })
+        folder_12345_desc = json.dumps({
+            'name': 'folders/12345',
+            'parent': 'folders/23456'
+        })
+        folder_23456_desc = json.dumps({
+            'name': 'folders/23456',
+            'parent': 'folders/34567'
+        })
+        folder_34567_desc = json.dumps({
+            'name': 'folders/34567',
+            'parent': 'organizations/1111122222'
+        })
+        self.gcp_setup.project_id = FAKE_PROJECT
+        self.gcp_setup._run_command.side_effect = [
+            [0, project_desc, None],
+            [0, folder_12345_desc, None],
+            [0, folder_23456_desc, None],
+            [0, folder_34567_desc, None],
+        ]
+
+        output_head = 'Organization id'
+        with captured_output() as (out, err):
+            self.gcp_setup.get_organization()
+            # collect all the output, the last line (excluding blank line)
+            # should be 'Organization id: ...'
+            all_output = [s for s in out.getvalue().split('\n') if len(s)]
+            output = all_output[-1][:len(output_head)]
+            self.assertEqual(output_head, output)
 
     def test_has_roles(self):
         """Test _has_roles()."""
