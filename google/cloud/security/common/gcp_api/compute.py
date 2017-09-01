@@ -641,7 +641,6 @@ class ComputeClient(object):
         return _flatten_aggregated_list_results(project_id, paged_results,
                                                 'instanceGroupManagers')
 
-    # pylint: disable=bad-indentation
     def get_project(self, project_id):
         """Returns the specified Project resource.
 
