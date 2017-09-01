@@ -254,6 +254,41 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(expected_exception):
             self.gce_api_client.get_instance_group_managers(self.project_id)
 
+    def test_get_project(self):
+        """Test get project."""
+        http_mocks.mock_http_response(
+            fake_compute.GET_PROJECT_RESPONSE)
+
+        results = self.gce_api_client.get_project(self.project_id)
+        self.assertEquals(self.project_id, results.get('name'))
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_project_errors(self, name, response, status,
+                                            expected_exception):
+        """Verify error conditions for get instance templates."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.get_project(self.project_id)
+
+    def test_is_api_enabled_true(self):
+        """Verify that a positive response from the API returns True."""
+        http_mocks.mock_http_response(
+            fake_compute.GET_PROJECT_NAME_RESPONSE)
+        results = self.gce_api_client.is_api_enabled(self.project_id)
+        self.assertTrue(results)
+
+    def test_is_api_enabled_false(self):
+        """Verify that a positive response from the API returns True."""
+        http_mocks.mock_http_response(fake_compute.API_NOT_ENABLED, '403')
+        results = self.gce_api_client.is_api_enabled(self.project_id)
+        self.assertFalse(results)
+
+    def test_is_api_enabled_error(self):
+        """Verify that a positive response from the API returns True."""
+        http_mocks.mock_http_response(fake_compute.ACCESS_DENIED, '403')
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.gce_api_client.is_api_enabled(self.project_id)
+
 
 if __name__ == '__main__':
     unittest.main()
