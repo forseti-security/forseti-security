@@ -13,7 +13,7 @@ certain resource, or offer possible strategies for how to grant access.
 In the latest version, IAM Explain is functional complete without a Forseti
 deployment (see below for steps).
 When you deploy IAM Explain, it creates a GCE instance and a MySQL database.
-In order to use IAM Explain you login to the GCE instance and use the command line
+In order to use IAM Explain, you can login to the GCE instance and use the command line
 tool `forseti_iam`. See below for usage examples.
 
 Because IAM Explain and its API are still in early development, third party
@@ -25,6 +25,13 @@ line is currently supported.
 Before you set up and deploy IAM Explain, you need to perform the following steps:
 
   - Create a new project in your organization so IAM Explain's data will be protected from other users in the organization. Note that individuals with access on an organization or folder level might still have access though.
+  - Activate Google Cloud Shell, clone the master branch of [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security) and switch to the forseti-security directory.
+
+  ```bash
+  $ git clone -b master https://github.com/GoogleCloudPlatform/forseti-security.git
+  $ cd ./forseti-security/
+  ```
+
   - Setup a service account with [group collection enabled]({% link _docs/howto/configure/gsuite-group-collection.md %})
   - Create a service account with the following roles
     - Organization level:
@@ -41,13 +48,19 @@ Before you set up and deploy IAM Explain, you need to perform the following step
 
 ## Customizing the deployment template
 
-You can use the provided
-[sample IAM Explain deployment file](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/deployment-templates/deploy-explain.yaml.sample)
-to customize your deployment. The following values are mandatory to configure
+You can use the provided sample IAM Explain deployment file, `/forseti-security/deployment-templates/deploy-explain.yaml.sample` to customize your deployment.
+
+  ```bash
+  $ cp ./deployment-templates/deploy-explain.yaml.sample deploy-explain.yaml
+  $ vim deploy-explain.yaml
+  ```
+
+The following values are mandatory to configure
 
   - `GSUITE_ADMINISTRATOR`: The email address of one of your Gsuite administrators. IAM Explain will assume the administrator's identity using OAuth2 temporarily while creating the inventory when figuring out what groups and users are in your Gsuite domain. Since you restricted the service account scope to user/group readonly, the service account cannot perform any other actions on your Gsuite domain than reading user & group data. This data is important to figure out effective IAM access when groups are assigned in IAM policies.
 
   - `ORGANIZATION_ID`: This is the id of your GCP organization.
+
   - `YOUR_SERVICE_ACCOUNT`: This is the service account holding the securityReviewer role from above. This is NOT the service account you set up for Gsuite domain wide delegation. If you choose to use a single service account for both purposes, put in that service account's ID.
 
 
@@ -56,16 +69,18 @@ command to create a new deployment:
 
   ```bash
   $ gcloud deployment-manager deployments create iam-explain \
-  --config path/to/deploy-explain.yaml
+  --config deploy-explain.yaml
   ```
 
 ## Provisioning the Gsuite service account
 
 As of today, the IAM Explain requires access to the Gsuite domain wide delegation enabled service account file. If you downloaded the json key file, you can upload it with:
-```bash
-$ gcloud compute scp groups.json ubuntu@host:/home/ubuntu/gsuite.json
-```
-Note that you have to substitute `groups.json` with the proper local filename. If you changed the path to the gsuite service account to something other than `/home/ubuntu/gsuite.json`, you need to change that path as well.
+
+  ```bash
+  $ gcloud compute scp groups.json ubuntu@host:/home/ubuntu/gsuite.json
+  ```
+
+Note that you have to substitute `groups.json` with the proper local json key filename. If you changed the path to the gsuite service account to something other than `/home/ubuntu/gsuite.json`, you need to change that path in the deployment yaml file as well.
 
 ## Using IAM Explain
 
