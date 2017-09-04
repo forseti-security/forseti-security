@@ -59,10 +59,10 @@ class LoadFolderIamPoliciesPipeline(base_pipeline.BasePipeline):
                         role = role.replace('roles/', '')
                     yield {'resource_key': folder_policy_map['folder_id'],
                            'resource_type': 'FOLDER_IAM_POLICIES',
-                           'resource_data': {"role": role,
+                           'resource_data': parser.json_stringify({"role": role,
                                 "member_type": member_type,
                                 "member_name": member_name,
-                                "member_domain": member_domain}
+                                "member_domain": member_domain})
                            }
 
     def _retrieve(self):

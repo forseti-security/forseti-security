@@ -83,7 +83,7 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
                 yield {
                     'resource_key': item.get('id'),
                     'resource_type': 'PROJECT_BUCKETS',
-                    'resource_data': item
+                    'resource_data': parser.json_stringify(item)
                     }
 
     def _retrieve(self):

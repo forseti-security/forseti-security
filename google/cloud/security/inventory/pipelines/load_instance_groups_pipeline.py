@@ -47,7 +47,7 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
             for instance_group in instance_groups:
                 yield {'resource_key': instance_group.get('id'),
                        'resource_type': 'INSTANCE_GROUP',
-                       'resource_data': instance_group
+                       'resource_data': parser.json_stringify(instance_group)
                        }
 
 

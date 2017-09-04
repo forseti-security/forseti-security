@@ -54,7 +54,7 @@ class LoadForwardingRulesPipeline(base_pipeline.BasePipeline):
             for rule in forwarding_rules:
                 yield {'resource_key': project_id,
                        'resource_type': 'FORWARDING_RULES',
-                       'resource_data': rule
+                       'resource_data': parser.json_stringify(rule)
                        }
 
     def _retrieve(self):

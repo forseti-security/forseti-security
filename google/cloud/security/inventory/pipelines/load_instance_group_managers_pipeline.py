@@ -47,7 +47,7 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
             for igm in igms:
                 yield {'resource_key': igm.get('id'),
                        'resource_type': 'INSTANCE_GROUP_MANAGERS',
-                       'resource_data': igm
+                       'resource_data': parser.json_stringify(igm)
                        }
 
     def _retrieve(self):

@@ -142,7 +142,7 @@ class LoadBigqueryDatasetsPipeline(base_pipeline.BasePipeline):
                 yield {
                     'resource_key': project_id,
                     'resource_type': 'BIGQUERY_DATASETS',
-                    'resource_data': acl
+                    'resource_data': parser.json_stringify(acl)
                 }
 
     def _retrieve(self):

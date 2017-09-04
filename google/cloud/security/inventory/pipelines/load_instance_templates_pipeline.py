@@ -47,7 +47,7 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
             for instance_template in instance_templates:
                 yield {'resource_key': instance_template.get('id'),
                         'resource_type': 'INSTANCE_TEMPLATE',
-                        'resource_data': instance_templates
+                        'resource_data': parser.json_stringify(instance_templates)
                        }
 
     def _retrieve(self):

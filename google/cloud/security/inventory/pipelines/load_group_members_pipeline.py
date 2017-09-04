@@ -64,7 +64,7 @@ class LoadGroupMembersPipeline(base_pipeline.BasePipeline):
             for member in group_member:
                 yield {'resource_key': group,
                         'resource_type': 'GROUP_MEMBER',
-                        'resource_data': member
+                        'resource_data': parser.json_stringify(member)
                         }
 
 

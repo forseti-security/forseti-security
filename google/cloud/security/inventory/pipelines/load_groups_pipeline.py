@@ -43,7 +43,7 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             yield {
                    'resource_key': group.get('email'),
                    'resource_type': 'GROUPS',
-                   'resource_data': group
+                   'resource_data': parser.json_stringify(group)
                    }
 
     def _retrieve(self):

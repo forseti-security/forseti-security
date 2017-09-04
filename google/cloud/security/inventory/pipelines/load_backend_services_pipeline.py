@@ -47,7 +47,7 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
             for backend_service in backend_services:
                 yield {'resource_key': project_id,
                        'resource_type': 'BACKEND_SERVICE',
-                       'resource_data': backend_services
+                       'resource_data': parser.json_stringify(backend_services)
                        }
 
     def _retrieve(self):

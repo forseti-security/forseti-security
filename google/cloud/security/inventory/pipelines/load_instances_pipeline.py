@@ -47,7 +47,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
             for instance in instances:
                 yield {'resource_key': instance.get('id'),
                        'resource_type': 'INSTANCE',
-                       'resource_data': instance
+                       'resource_data': parser.json_stringify(instance)
 
                        }
 

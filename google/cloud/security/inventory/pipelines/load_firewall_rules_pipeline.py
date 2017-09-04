@@ -53,7 +53,7 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                 yield {'project_id': project_id,
                        'resource_key': firewall_rule.get('name'),
                        'resource_type': 'FIREWALL_RULES',
-                       'resource_data': firewall_rule}
+                       'resource_data': parser.json_stringify(firewall_rule)}
 
     def _retrieve(self):
         """Retrieve firewall rules from GCP.

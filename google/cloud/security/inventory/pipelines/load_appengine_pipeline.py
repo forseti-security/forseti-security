@@ -63,7 +63,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
             yield {
                    'resource_key': app.get('name'),
                    'resource_type': 'APPENGINE_PIPELINE',
-                   'resource_data': app}
+                   'resource_data': parser.json_stringify(app)}
 
     def run(self):
         """Run the pipeline."""
