@@ -200,28 +200,28 @@ class Inventory(BASE):
         if iam_policy:
             rows.append(
                 Inventory(
-                        index=index.id,
-                        type_class=InventoryTypeClass.IAM_POLICY,
-                        key=resource.key(),
-                        type=resource.type(),
-                        data=json.dumps(iam_policy),
-                        parent_key=resource.key(),
-                        parent_type=resource.type(),
-                        other=None,
-                        error=None))
+                    index=index.id,
+                    type_class=InventoryTypeClass.IAM_POLICY,
+                    key=resource.key(),
+                    type=resource.type(),
+                    data=json.dumps(iam_policy),
+                    parent_key=resource.key(),
+                    parent_type=resource.type(),
+                    other=None,
+                    error=None))
 
         if gcs_policy:
             rows.append(
                 Inventory(
-                        index=index.id,
-                        type_class=InventoryTypeClass.GCS_POLICY,
-                        key=resource.key(),
-                        type=resource.type(),
-                        data=json.dumps(gcs_policy),
-                        parent_key=resource.key(),
-                        parent_type=resource.type(),
-                        other=None,
-                        error=None))
+                    index=index.id,
+                    type_class=InventoryTypeClass.GCS_POLICY,
+                    key=resource.key(),
+                    type=resource.type(),
+                    data=json.dumps(gcs_policy),
+                    parent_key=resource.key(),
+                    parent_type=resource.type(),
+                    other=None,
+                    error=None))
         return rows
 
     def __repr__(self):
@@ -293,6 +293,8 @@ class Inventory(BASE):
         Returns:
             str: row's error data.
         """
+
+        return self.error
 
 
 class BufferedDbWriter(object):

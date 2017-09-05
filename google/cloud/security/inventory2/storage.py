@@ -39,7 +39,7 @@ class Storage(object):
         """
         raise NotImplementedError()
 
-    def read(self, resource_key):
+    def read(self, key):
         """Not Implemented.
 
         Raises:
@@ -106,9 +106,9 @@ class Memory(Storage):
         """Write a resource object into storage"""
         self.mem[resource.key()] = resource
 
-    def read(self, resource_key):
+    def read(self, key):
         """Read a resource object from storage"""
-        return self.mem[resource_key]
+        return self.mem[key]
 
     def error(self, message):
         """Ingore the error message"""
