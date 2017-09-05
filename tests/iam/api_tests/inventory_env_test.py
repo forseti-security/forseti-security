@@ -25,14 +25,16 @@ from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
 from google.cloud.security.iam.dao import ModelManager
 from google.cloud.security.iam.client import ClientComposition
 from google.cloud.security.iam import db
+from google.cloud.security.iam.inventory.storage import Storage
 
 from tests.iam.api_tests.api_tester import ApiTestRunner
 from tests.iam.utils.db import create_test_engine, cleanup
 from tests.iam.utils.gcp_env import gcp_configured, gcp_env
+from tests.iam.utils.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
 
 
-class TestServiceConfig(object):
+class TestServiceConfig(MockServerConfig):
     """ServiceConfig Stub."""
 
     def __init__(self):
@@ -67,6 +69,9 @@ class TestServiceConfig(object):
     def run_in_background(self, function):
         """Stub."""
         self.workers.add_func(function)
+
+    def get_storage_class(self):
+        return Storage
 
     def get_engine(self):
         return self.engine
