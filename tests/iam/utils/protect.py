@@ -37,4 +37,4 @@ def copy_file_decrypt(dst_filename, src_filename, passphrase):
 
 
 if __name__ == '__main__':
-    copy_file_decrypt(sys.argv[1], sys.argv[2], sys.argv[3])
+    copy_file_encrypt(sys.argv[1], sys.argv[2], sys.argv[3])
