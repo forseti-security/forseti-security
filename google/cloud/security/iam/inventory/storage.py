@@ -54,12 +54,6 @@ class InventoryTypeClass(object):
     """Inventory Type Classes."""
 
     RESOURCE = 'resource'
-    POLICY = 'policy'
-
-
-class InventoryPolicyType(object):
-    """Inventory policy types."""
-
     IAM_POLICY = 'iam_policy'
     GCS_POLICY = 'gcs_policy'
 
@@ -207,9 +201,9 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                         index=index.id,
-                        type_class=InventoryTypeClass.POLICY,
+                        type_class=InventoryTypeClass.IAM_POLICY,
                         key=resource.key(),
-                        type=InventoryPolicyType.IAM_POLICY,
+                        type=resource.type(),
                         data=json.dumps(iam_policy),
                         parent_key=resource.key(),
                         parent_type=resource.type(),
@@ -220,9 +214,9 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                         index=index.id,
-                        type_class=InventoryTypeClass.POLICY,
+                        type_class=InventoryTypeClass.GCS_POLICY,
                         key=resource.key(),
-                        type=InventoryPolicyType.GCS_POLICY,
+                        type=resource.type(),
                         data=json.dumps(gcs_policy),
                         parent_key=resource.key(),
                         parent_type=resource.type(),
@@ -236,8 +230,8 @@ class Inventory(BASE):
         return """<{}(index='{}', key='{}', type='{}')>""".format(
             self.__class__.__name__,
             self.index,
-            self.resource_key,
-            self.resource_type)
+            self.key,
+            self.type)
 
     def get_key(self):
         """Get the row's resource key.
@@ -546,11 +540,11 @@ class Storage(BaseStorage):
 
         self.index.counter += len(rows)
 
-    def read(self, resource_key):
+    def read(self, key):
         """Read a resource from the storage.
 
         Args:
-            resource_key (str): Key of the object to read.
+            key (str): Key of the object to read.
 
         Returns:
             object: Row object read from database.
@@ -560,7 +554,7 @@ class Storage(BaseStorage):
         return (
             self.session.query(Inventory)
             .filter(Inventory.index == self.index.id)
-            .filter(Inventory.resource_key == resource_key)
+            .filter(Inventory.key == key)
             .one())
 
     def error(self, message):
@@ -594,6 +588,7 @@ class Storage(BaseStorage):
     def iter(self,
              type_list=None,
              fetch_iam_policy=False,
+             fetch_gcs_policy=False,
              with_parent=False):
         """Iterate the objects in the storage.
 
@@ -611,22 +606,29 @@ class Storage(BaseStorage):
 
         if fetch_iam_policy:
             filters.append(
-                (and_(Inventory.type_class == InventoryTypeClass.POLICY,
-                      Inventory.type == InventoryPolicyType.IAM_POLICY)))
+                Inventory.type_class == InventoryTypeClass.IAM_POLICY)
+
+        elif fetch_gcs_policy:
+            filters.append(
+                Inventory.type_class == InventoryTypeClass.GCS_POLICY)
+
+        else:
+            filters.append(
+                Inventory.type_class == InventoryTypeClass.RESOURCE)
 
         if type_list:
-            filters.append(Inventory.resource_type.in_(type_list))
+            filters.append(Inventory.type.in_(type_list))
 
         if with_parent:
             parent_inventory = aliased(Inventory)
-            p_resource_key = parent_inventory.resource_key
-            p_resource_type = parent_inventory.resource_type
+            p_key = parent_inventory.key
+            p_type = parent_inventory.type
             base_query = (
                 self.session.query(Inventory, parent_inventory)
                 .filter(
                     and_(
-                        Inventory.parent_resource_key == p_resource_key,
-                        Inventory.parent_resource_type == p_resource_type,
+                        Inventory.parent_key == p_key,
+                        Inventory.parent_type == p_type,
                         parent_inventory.index == self.index.id)))
 
         else:

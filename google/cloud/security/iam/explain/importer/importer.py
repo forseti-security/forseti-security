@@ -360,13 +360,13 @@ class InventoryImporter(object):
         gsuite_type = principal.get_type()
         data = principal.get_data()
         if gsuite_type == 'gsuite_user':
-            member = 'user:{}'.format(data['primaryEmail'])
+            member = 'user/{}'.format(data['primaryEmail'])
         elif gsuite_type == 'gsuite_group':
-            member = 'group:{}'.format(data['email'])
+            member = 'group/{}'.format(data['email'])
         else:
             raise Exception('Unknown gsuite principal: {}'.format(gsuite_type))
         if member not in self.member_cache:
-            m_type, name = member.split(':', 1)
+            m_type, name = member.split('/', 1)
             self.member_cache[member] = self.dao.TBL_MEMBER(
                 name=member,
                 type=m_type,
@@ -415,8 +415,9 @@ class InventoryImporter(object):
             Returns:
                 str: type:name representation of the member.
             """
+
             data = child.get_data()
-            return '{}:{}'.format(data['type'].lower(),
+            return '{}/{}'.format(data['type'].lower(),
                                   data['email'])
 
         def group_name(parent):
@@ -430,14 +431,14 @@ class InventoryImporter(object):
             """
 
             data = parent.get_data()
-            return 'group:{}'.format(data['email'])
+            return 'group/{}'.format(data['email'])
 
         # Gsuite group members don't have to be part
         # of this domain, so we might see them for
         # the first time here.
         member = member_name(child)
         if member not in self.member_cache:
-            m_type, name = member.split(':', 1)
+            m_type, name = member.split('/', 1)
             self.member_cache[member] = self.dao.TBL_MEMBER(
                 name=member,
                 type=m_type,
@@ -469,10 +470,7 @@ class InventoryImporter(object):
             KeyError: if member could not be found in any cache.
         """
 
-        # TODO: Remove this once inventory test db is updated.
-        if 'bindings' not in policy:
-            policy = policy['iam_policy']
-        bindings = policy['bindings']
+        bindings = policy.get_data()['bindings']
         for binding in bindings:
             role = binding['role']
             if role not in self.role_cache:
@@ -480,12 +478,13 @@ class InventoryImporter(object):
                 self.model.add_warning(msg)
                 continue
             for member in binding['members']:
+                member = member.replace(':', '/', 1)
 
                 # We still might hit external users or groups
                 # that we haven't seen in gsuite.
                 if member not in self.member_cache and \
                    member not in self.member_cache_policies:
-                    m_type, name = member.split(':', 1)
+                    m_type, name = member.split('/', 1)
                     self.member_cache_policies[member] = self.dao.TBL_MEMBER(
                         name=member,
                         type=m_type,
@@ -496,6 +495,7 @@ class InventoryImporter(object):
             # in the binding row
             db_members = []
             for member in binding['members']:
+                member = member.replace(':', '/', 1)
                 if member not in self.member_cache:
                     if member not in self.member_cache_policies:
                         raise KeyError(member)
