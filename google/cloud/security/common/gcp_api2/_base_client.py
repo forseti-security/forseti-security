@@ -61,7 +61,6 @@ def record(function):
             Exception: Whatever the GCP API raised.
         """
 
-        print 'triggering record wrapper with request: {}'.format(request.uri)
         record_file = self.global_configs.get('record_file', None)
         if not record_file:
             return function(self, request, rate_limiter)

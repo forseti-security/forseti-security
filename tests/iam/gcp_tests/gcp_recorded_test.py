@@ -14,6 +14,7 @@
 
 """ Unit Tests: Inventory crawler for IAM Explain. """
 
+import tempfile
 import unittest
 import os
 
@@ -24,6 +25,7 @@ from google.cloud.security.iam.inventory.crawler import run_crawler
 from google.cloud.security.iam.server import InventoryConfig
 
 from tests.iam.utils.gcp_env import gcp_configured, gcp_env
+from tests.iam.utils.protect import copy_file_decrypt
 
 
 class NullProgresser(Progresser):
@@ -48,9 +50,15 @@ class NullProgresser(Progresser):
         pass
 
 
-def get_api_file_path(filename):
-    module_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(module_dir, 'test_data', filename)
+def get_api_file_path(filename, passphrase):
+    """Return the decrypted API recording."""
+    fd, dstfilename = tempfile.mkstemp()
+    try:
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        encrypted_filename = os.path.join(module_dir, 'test_data', filename)
+        return copy_file_decrypt(dstfilename, encrypted_filename, passphrase)
+    finally:
+        os.close(fd)
 
 
 class CrawlerTest(ForsetiTestCase):
@@ -66,12 +74,15 @@ class CrawlerTest(ForsetiTestCase):
 
         ForsetiTestCase.tearDown(self)
 
-    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
+    @unittest.skipUnless(False,
+                         "We run this test manually to record API calls")
     def test_record_gcp_api2(self):
         """Crawl an environment, test that there are items in storage."""
 
         gcp = gcp_env()
-        test_file = get_api_file_path('henry_gbiz_08282017.pickled')
+        test_file = get_api_file_path('henry_gbiz_08282017.pickled',
+                                      gcp.passphrase)
+
         config = InventoryConfig(gcp.organization_id,
                                  gcp.gsuite_sa,
                                  gcp.gsuite_admin_email,
@@ -93,7 +104,7 @@ class CrawlerTest(ForsetiTestCase):
         self.assertEqual(len(types), 16, msg.format(len(types)))
 
     @unittest.skipIf(os.environ.get('DOCKER_ENV'), None)
-    @unittest.skipIf(gcp_configured(), "Don't replay when recordings run")
+    @unittest.skipUnless(gcp_configured(), "Don't replay when recordings run")
     def test_replay_gcp_api2(self):
         """Replay recorded GCP API responses to emulate a GCP environment."""
 
@@ -101,7 +112,10 @@ class CrawlerTest(ForsetiTestCase):
         gsuite_admin_email = ""
         organization_id = "660570133860"
 
-        test_file = get_api_file_path('henry_gbiz_08282017.pickled')
+        env = gcp_env()
+
+        test_file = get_api_file_path('henry_gbiz_08282017.pickled',
+                                      env.passphrase)
         config = InventoryConfig(organization_id,
                                  gsuite_sa,
                                  gsuite_admin_email,

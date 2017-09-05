@@ -15,7 +15,8 @@
 """Utils for IAM Explain testing."""
 
 import logging
-import uuid
+import os
+import tempfile
 
 from google.cloud.security.iam.dao import create_engine
 
@@ -30,11 +31,14 @@ def create_test_engine(enforce_fks=True):
 def create_test_engine_with_file(enforce_fks=True):
     """Create a test engine with a db file in /tmp/."""
 
-    tmpfile = '/tmp/{}.db'.format(uuid.uuid4())
-    logging.info('Creating database at %s', tmpfile)
-    engine = create_engine('sqlite:///{}'.format(tmpfile),
-                           sqlite_enforce_fks=enforce_fks)
-    return engine, tmpfile
+    fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
+    try:
+        logging.info('Creating database at %s', tmpfile)
+        engine = create_engine('sqlite:///{}'.format(tmpfile),
+                               sqlite_enforce_fks=enforce_fks)
+        return engine, tmpfile
+    finally:
+        os.close(fd)
 
 
 def cleanup(test_callback):

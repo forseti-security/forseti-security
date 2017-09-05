@@ -21,6 +21,7 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.inventory2.storage import Memory as MemoryStorage
 from google.cloud.security.inventory2.progress import Progresser
 from google.cloud.security.iam.inventory.crawler import run_crawler
+from google.cloud.security.iam.server import InventoryConfig
 from tests.iam.utils.gcp_env import gcp_configured, gcp_env
 
 
@@ -64,24 +65,23 @@ class CrawlerTest(ForsetiTestCase):
         """Crawl an environment, test that there are items in storage."""
 
         gcp = gcp_env()
-        gsuite_sa = gcp.gsuite_sa
-        gsuite_admin_email = gcp.gsuite_admin_email
-        organization_id = gcp.organization_id
+        config = InventoryConfig(
+            gcp.organization_id,
+            gcp.gsuite_sa,
+            gcp.gsuite_admin_email)
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
             run_crawler(storage,
                         progresser,
-                        gsuite_sa,
-                        gsuite_admin_email,
-                        organization_id)
+                        config)
 
             self.assertEqual(0,
                              progresser.errors,
                              'No errors should have occurred')
 
         types = set([item.type() for item in storage.mem.values()])
-        self.assertEqual(len(types), 17, """"The inventory crawl 18 types of
+        self.assertEqual(len(types), 16, """"The inventory crawl 16 types of
         resources in a well populated organization, howevever, there is: """
         +str(len(types)))
 

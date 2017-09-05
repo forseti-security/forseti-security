@@ -330,9 +330,9 @@ class InventoryImporter(object):
                 self.dao.denorm_group_in_group(self.session)
 
                 self._store_iam_policy_pre()
-                for resource in inventory.iter(gcp_type_list,
-                                               require_iam_policy=True):
-                    self._store_iam_policy(resource)
+                for policy in inventory.iter(gcp_type_list,
+                                             fetch_iam_policy=True):
+                    self._store_iam_policy(policy)
                 self._store_iam_policy_post()
 
         except Exception:  # pylint: disable=broad-except
@@ -459,17 +459,15 @@ class InventoryImporter(object):
         self.session.add_all(self.member_cache_policies.values())
         self.session.flush()
 
-    def _store_iam_policy(self, resource):
+    def _store_iam_policy(self, policy):
         """Store the iam policy of the resource.
 
         Args:
-            resource (object): Object whose policy to store.
+            policy (object): IAM policy to store.
 
         Raises:
             KeyError: if member could not be found in any cache.
         """
-
-        policy = resource.get_iam_policy()
 
         # TODO: Remove this once inventory test db is updated.
         if 'bindings' not in policy:
@@ -507,7 +505,7 @@ class InventoryImporter(object):
 
             self.session.add(
                 self.dao.TBL_BINDING(
-                    resource_type_name=self._type_name(resource),
+                    resource_type_name=self._type_name(policy),
                     role_name=role,
                     members=db_members))
 
