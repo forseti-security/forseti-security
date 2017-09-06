@@ -156,7 +156,7 @@ gcloud iam service-accounts keys create \
 # Service Accounts role assignment
 echo "Assigning roles to the gcp scrapping service account"
 echo "Following roles need to be assigned to the gcp scrapping service account"
-echo "$SCRAPPINGSA"
+echo "    $SCRAPPINGSA"
 echo "to run IAM Explain:"
 echo "    - Organization level:"
 echo "        - 'roles/browser',"
@@ -291,14 +291,14 @@ done
 if [[ -$cpResponse != "SUCCESS" ]]; then
 	echo "Service account key copy failed."
 	echo "Please try to manually copy ~/gsuite.json to /home/ubuntu/gsuite.json on your vm:"
-	echo "$VMNAME"
+	echo "    $VMNAME"
 	exit 1
 fi
 
 # Ask to setup the gsuite service account
 echo "Please complete the deployment by enabling GSuite google \
 groups collection on your gsuite service account:"
-echo "$GSUITESA"
+echo "    $GSUITESA"
 echo "with the manual on:"
 echo "http://forsetisecurity.org/docs/howto/configure/gsuite-group-collection"
  
