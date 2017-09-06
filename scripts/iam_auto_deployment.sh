@@ -176,16 +176,21 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 
 # Prepare the deployment template yaml file
-cp ~/forseti-security/deployment-templates/deploy-explain.yaml.sample ~/deploy-explain.yaml
-sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' ~/deploy-explain.yaml
-sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$GSUITESA'/g' ~/deploy-explain.yaml
-sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' ~/deploy-explain.yaml
+cp ~/forseti-security/deployment-templates/deploy-explain.yaml.sample \
+~/forseti-security/deployment-templates/deploy-explain.yaml
+sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' \
+~/forseti-security/deployment-templates/deploy-explain.yaml
+sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$GSUITESA'/g' \
+~/forseti-security/deployment-templates/deploy-explain.yaml
+sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
+~/forseti-security/deployment-templates/deploy-explain.yaml
 
 echo "Here are existing sql instances in this project:"
 gcloud sql instances list
-echo "Choose a deployment name that is not used above"
+echo "Choose a sql instance name that is not used above"
 read SQLINSTANCE
-sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' ~/deploy-explain.yaml
+sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
+~/forseti-security/deployment-templates/deploy-explain.yaml
 
 echo "Here are existing deployments in this project:"
 gcloud deployment-manager deployments list
@@ -195,7 +200,7 @@ read DEPLOYMENTNAME
 
 # Deploy the IAM Explain
 response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
-	--config ~/deploy-explain.yaml)
+	--config ~/forseti-security/deployment-templates/deploy-explain.yaml)
 if [[ -z $response ]]; then
 	exit 1
 fi
