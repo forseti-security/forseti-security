@@ -199,7 +199,8 @@ sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 
 echo "Here are existing sql instances in this project:"
 gcloud sql instances list
-echo "Choose a sql instance name that is not used above"
+echo "Choose a sql instance name that is not used above, please notice that recent deleted \
+	sql instance can still occupy the name space, even though they are not shown above:"
 read SQLINSTANCE
 sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
