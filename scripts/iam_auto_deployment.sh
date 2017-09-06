@@ -171,18 +171,39 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
  --role=roles/cloudsql.client
 
 
-# Deploy the IAM Explain
+# Prepare the deployment template yaml file
 cp ~/forseti-security/deployment-templates/deploy-explain.yaml.sample ~/deploy-explain.yaml
 sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' ~/deploy-explain.yaml
 sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$GSUITESA'/g' ~/deploy-explain.yaml
 sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' ~/deploy-explain.yaml
 
-gcloud deployment-manager deployments create iam-explain \
-	--config ~/deploy-explain.yaml
+echo "Please double check the sql instance-name in deploy-explain.yaml is not occupied."
+read -p "Do you want to change it? (y/n)" -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	echo "Please type in a new sql instance name:"
+	read SQLINSTANCE
+fi
+sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' ~/deploy-explain.yaml
+
+echo "Choose a deployment name that is not used below"
+gcloud deployment-manager deployments list
+read DEPLOYMENTNAME
+
+
+# Deploy the IAM Explain
+response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
+	--config ~/deploy-explain.yaml)
+if [[ -z $response ]]; then
+	exit 1
+fi
  
-gcloud compute scp ~/gsuite.json \
+response=$(gcloud compute scp ~/gsuite.json \
 	ubuntu@explain-instance-vm:/home/ubuntu/gsuite.json \
-	--zone=us-central1-c
+	--zone=us-central1-c)
+if [[ -z $response ]]; then
+	exit 1
+fi
 
 # Ask to setup the gsuite service account
 echo "Please complete the deployment by enabling GSuite google \
