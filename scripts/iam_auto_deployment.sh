@@ -219,7 +219,7 @@ cp ~/forseti-security/deployment-templates/deploy-explain.yaml.sample \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
 sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
-sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$GSUITESA'/g' \
+sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPPINGSA'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
 sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
@@ -257,6 +257,7 @@ fi
 
 
 # Deploy the IAM Explain
+echo " Start to deploy"
 response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
 	--config ~/forseti-security/deployment-templates/deploy-explain.yaml)\
 || exit 1
@@ -288,7 +289,7 @@ do
 		break
 	fi
 done
-if [[ -$cpResponse != "SUCCESS" ]]; then
+if [[ $cpResponse != "SUCCESS" ]]; then
 	echo "Service account key copy failed."
 	echo "Please try to manually copy ~/gsuite.json to /home/ubuntu/gsuite.json on your vm:"
 	echo "    $VMNAME"
@@ -301,16 +302,4 @@ groups collection on your gsuite service account:"
 echo "    $GSUITESA"
 echo "with the manual on:"
 echo "http://forsetisecurity.org/docs/howto/configure/gsuite-group-collection"
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
  
