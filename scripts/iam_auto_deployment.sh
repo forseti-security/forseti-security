@@ -197,18 +197,32 @@ sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$GSUITESA'/g' \
 sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
 
-echo "Here are existing sql instances in this project:"
-gcloud sql instances list
-echo "Choose a sql instance name that is not used above, please notice that recent deleted \
-	sql instance can still occupy the name space, even though they are not shown above:"
-read SQLINSTANCE
+# sql instance name
+timestamp=$(date --utc +%FT%TZ)
+SQLINSTANCE="iam-explain-no-external-"$timestamp
+read -p "Do you want to use the generated sql instance name for this deployment? (y/n)" -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+	echo "Here are the existing sql instances in this project:"
+	gcloud sql instances list
+	echo "Choose a sql instance name that is not used above, please notice that recent deleted \
+		sql instance can still occupy the name space, even though they are not shown above:"
+	read SQLINSTANCE
+fi
 sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
 
-echo "Here are existing deployments in this project:"
-gcloud deployment-manager deployments list
-echo "Choose a deployment name that is not used above"
-read DEPLOYMENTNAME
+DEPLOYMENTNAME="iam-explain-"$timestamp
+read -p "Do you want to use the generated deployment name for this deployment? (y/n)" -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+	echo "Here are existing deployments in this project:"
+	gcloud deployment-manager deployments list
+	echo "Choose a deployment name that is not used above"
+	read DEPLOYMENTNAME
+fi
 
 
 # Deploy the IAM Explain
@@ -219,6 +233,39 @@ if [[ -z $response ]]; then
 fi
 VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
  
+
+for (( TRIAL=1; TRIAL<=5; TRIAL++ ))
+do
+	if [[ TRIAL !=1 ]]; then
+		echo "Service account key copy not successful."
+		read -p "Shall we keep trying? (y/n)" -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			break
+		fi
+	fi
+	for (( trial=1; trial<=10; trial++ ))
+	do
+		sleep 2
+		response=$(gcloud compute scp ~/gsuite.json \
+			ubuntu@$VMNAME:/home/ubuntu/gsuite.json \
+			--zone=us-central1-c)
+		if [[ -n $response ]]; then
+			break
+		fi
+	done
+	if [[ -n $response ]]; then
+		break
+	fi
+done
+if [[ -n $response ]]; then
+	echo "Service account key copy failed."
+	echo "Please try to manually copy ~/gsuite.json to /home/ubuntu/gsuite.json on your vm:"
+	echo "$VMNAME"
+	exit 1
+fi
+
+
 response=$(gcloud compute scp ~/gsuite.json \
 	ubuntu@$VMNAME:/home/ubuntu/gsuite.json \
 	--zone=us-central1-c)
