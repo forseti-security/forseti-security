@@ -298,14 +298,6 @@ if [[ -$cpResponse != "SUCCESS" ]]; then
 	exit 1
 fi
 
-
-response=$(gcloud compute scp ~/gsuite.json \
-	ubuntu@$VMNAME:/home/ubuntu/gsuite.json \
-	--zone=us-central1-c)
-if [[ -z $response ]]; then
-	exit 1
-fi
-
 # Ask to setup the gsuite service account
 echo "Please complete the deployment by enabling GSuite google \
 groups collection on your gsuite service account:"
