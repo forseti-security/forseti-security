@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ class CrawlerTest(ForsetiTestCase):
 
         ForsetiTestCase.tearDown(self)
 
+    @unittest.skip("Current recording does not work for import hierarchy")
     @unittest.skipUnless(False,
                          "We run this test manually to record API calls")
     def test_record_gcp_api2(self):
@@ -103,6 +104,7 @@ class CrawlerTest(ForsetiTestCase):
         organization, howevever, there is: {}"
         self.assertEqual(len(types), 16, msg.format(len(types)))
 
+    @unittest.skip("Current recording does not work for import hierarchy")
     @unittest.skipIf(os.environ.get('DOCKER_ENV'), None)
     @unittest.skipUnless(gcp_configured(), "Don't replay when recordings run")
     def test_replay_gcp_api2(self):

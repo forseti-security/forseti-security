@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ from google.cloud.security.iam.dao import ModelManager
 from google.cloud.security.iam.client import ClientComposition
 from google.cloud.security.iam import db
 from google.cloud.security.iam.inventory.storage import Storage
+from google.cloud.security.iam.server import InventoryConfig
 
 from tests.iam.api_tests.api_tester import ApiTestRunner
 from tests.iam.utils.db import create_test_engine
@@ -43,28 +44,9 @@ class TestServiceConfig(MockServerConfig):
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.workers = ThreadPool(10)
         self.env = gcp_env()
-
-        @event.listens_for(self.engine, "connect")
-        def do_connect(dbapi_connection, connection_record):
-            # disable pysqlite's emitting of the BEGIN statement entirely.
-            # also stops it from emitting COMMIT before any DDL.
-            dbapi_connection.isolation_level = None
-
-        @event.listens_for(self.engine, "begin")
-        def do_begin(conn):
-            # emit our own BEGIN
-            conn.execute("BEGIN")
-
-        self.listeners = [do_begin, do_connect]
-
-    def get_organization_id(self):
-        return self.env.organization_id
-
-    def get_gsuite_sa_path(self):
-        return self.env.gsuite_sa
-
-    def get_gsuite_admin_email(self):
-        return self.env.gsuite_admin_email
+        self.inventory_config = InventoryConfig(self.env.organization_id,
+                                                self.env.gsuite_sa,
+                                                self.env.gsuite_admin_email)
 
     def run_in_background(self, function):
         """Stub."""
@@ -83,7 +65,7 @@ class TestServiceConfig(MockServerConfig):
         return Storage
 
     def get_inventory_config(self):
-        pass
+        return self.inventory_config
 
 
 def create_tester():
