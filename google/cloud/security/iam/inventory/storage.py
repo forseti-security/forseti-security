@@ -27,8 +27,8 @@ from sqlalchemy.orm import aliased
 
 
 from sqlalchemy.ext.declarative import declarative_base
-
-from google.cloud.security.inventory2.storage import Storage as BaseStorage
+from google.cloud.security.iam.inventory.inventory2.storage import \
+    Storage as BaseStorage
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -42,12 +42,20 @@ PER_YIELD = 1024
 class InventoryState(object):
     """Possible states for inventory."""
 
-    SUCCESS = "SUCCESS"
-    RUNNING = "RUNNING"
-    FAILURE = "FAILURE"
-    PARTIAL_SUCCESS = "PARTIAL_SUCCESS"
-    TIMEOUT = "TIMEOUT"
-    CREATED = "CREATED"
+    SUCCESS = 'SUCCESS'
+    RUNNING = 'RUNNING'
+    FAILURE = 'FAILURE'
+    PARTIAL_SUCCESS = 'PARTIAL_SUCCESS'
+    TIMEOUT = 'TIMEOUT'
+    CREATED = 'CREATED'
+
+
+class InventoryTypeClass(object):
+    """Inventory Type Classes."""
+
+    RESOURCE = 'resource'
+    IAM_POLICY = 'iam_policy'
+    GCS_POLICY = 'gcs_policy'
 
 
 class InventoryIndex(BASE):
@@ -151,14 +159,14 @@ class Inventory(BASE):
     # Order is used to resemble the order of insert for a given inventory
     order = Column(Integer, primary_key=True, autoincrement=True)
     index = Column(Integer)
-    resource_key = Column(String(2048))
-    resource_type = Column(String(256))
-    resource_data = Column(Text())
-    parent_resource_key = Column(String(2048))
-    parent_resource_type = Column(String(256))
-    iam_policy = Column(Text())
-    gcs_policy = Column(Text())
+    type_class = Column(String(128))
+    key = Column(String(2048))
+    type = Column(String(256))
+    data = Column(Text())
+    parent_key = Column(String(2048))
+    parent_type = Column(String(256))
     other = Column(Text())
+    error = Column(Text())
 
     @classmethod
     def from_resource(cls, index, resource):
@@ -175,16 +183,46 @@ class Inventory(BASE):
         parent = resource.parent()
         iam_policy = resource.getIamPolicy()
         gcs_policy = resource.getGCSPolicy()
-        return Inventory(
-            index=index.id,
-            resource_key=resource.key(),
-            resource_type=resource.type(),
-            resource_data=json.dumps(resource.data()),
-            parent_resource_key=None if not parent else parent.key(),
-            parent_resource_type=None if not parent else parent.type(),
-            iam_policy=None if not iam_policy else json.dumps(iam_policy),
-            gcs_policy=None if not gcs_policy else json.dumps(gcs_policy),
-            other=None)
+
+        rows = []
+        rows.append(
+            Inventory(
+                index=index.id,
+                type_class=InventoryTypeClass.RESOURCE,
+                key=resource.key(),
+                type=resource.type(),
+                data=json.dumps(resource.data()),
+                parent_key=None if not parent else parent.key(),
+                parent_type=None if not parent else parent.type(),
+                other=None,
+                error=None))
+
+        if iam_policy:
+            rows.append(
+                Inventory(
+                    index=index.id,
+                    type_class=InventoryTypeClass.IAM_POLICY,
+                    key=resource.key(),
+                    type=resource.type(),
+                    data=json.dumps(iam_policy),
+                    parent_key=resource.key(),
+                    parent_type=resource.type(),
+                    other=None,
+                    error=None))
+
+        if gcs_policy:
+            rows.append(
+                Inventory(
+                    index=index.id,
+                    type_class=InventoryTypeClass.GCS_POLICY,
+                    key=resource.key(),
+                    type=resource.type(),
+                    data=json.dumps(gcs_policy),
+                    parent_key=resource.key(),
+                    parent_type=resource.type(),
+                    other=None,
+                    error=None))
+        return rows
 
     def __repr__(self):
         """String representation of the database row object."""
@@ -192,8 +230,8 @@ class Inventory(BASE):
         return """<{}(index='{}', key='{}', type='{}')>""".format(
             self.__class__.__name__,
             self.index,
-            self.resource_key,
-            self.resource_type)
+            self.key,
+            self.type)
 
     def get_key(self):
         """Get the row's resource key.
@@ -202,7 +240,7 @@ class Inventory(BASE):
             str: resource key.
         """
 
-        return self.resource_key
+        return self.key
 
     def get_type(self):
         """Get the row's resource type.
@@ -211,7 +249,7 @@ class Inventory(BASE):
             str: resource type.
         """
 
-        return self.resource_type
+        return self.type
 
     def get_parent_key(self):
         """Get the row's parent key.
@@ -220,7 +258,7 @@ class Inventory(BASE):
             str: parent key.
         """
 
-        return self.parent_resource_key
+        return self.parent_key
 
     def get_parent_type(self):
         """Get the row's parent type.
@@ -229,7 +267,7 @@ class Inventory(BASE):
             str: parent type.
         """
 
-        return self.parent_resource_type
+        return self.parent_type
 
     def get_data(self):
         """Get the row's raw data.
@@ -238,7 +276,7 @@ class Inventory(BASE):
             dict: row's raw data.
         """
 
-        return json.loads(self.resource_data)
+        return json.loads(self.data)
 
     def get_other(self):
         """Get the row's other data.
@@ -249,27 +287,14 @@ class Inventory(BASE):
 
         return json.loads(self.other)
 
-    def get_iam_policy(self):
-        """Get the associated iam policy if any.
+    def get_error(self):
+        """Get the row's error data.
 
         Returns:
-            dict: row's iam policy if any.
+            str: row's error data.
         """
 
-        if not self.iam_policy:
-            return None
-        return json.loads(self.iam_policy)
-
-    def get_gcs_policy(self):
-        """Get the associated gcs policy if any.
-
-        Returns:
-            dict: row's gcs policy if any.
-        """
-
-        if not self.gcs_policy:
-            return None
-        return json.loads(self.gcs_policy)
+        return self.error
 
 
 class BufferedDbWriter(object):
@@ -510,17 +535,18 @@ class Storage(BaseStorage):
 
         if self.readonly:
             raise Exception('Opened storage readonly')
-        self.buffer.add(
-            Inventory.from_resource(
-                self.index,
-                resource))
-        self.index.counter += 1
 
-    def read(self, resource_key):
+        rows = Inventory.from_resource(self.index, resource)
+        for row in rows:
+            self.buffer.add(row)
+
+        self.index.counter += len(rows)
+
+    def read(self, key):
         """Read a resource from the storage.
 
         Args:
-            resource_key (str): Key of the object to read.
+            key (str): Key of the object to read.
 
         Returns:
             object: Row object read from database.
@@ -530,7 +556,7 @@ class Storage(BaseStorage):
         return (
             self.session.query(Inventory)
             .filter(Inventory.index == self.index.id)
-            .filter(Inventory.resource_key == resource_key)
+            .filter(Inventory.key == key)
             .one())
 
     def error(self, message):
@@ -563,15 +589,14 @@ class Storage(BaseStorage):
 
     def iter(self,
              type_list=None,
-             require_iam_policy=False,
-             require_gcs_policy=False,
+             fetch_iam_policy=False,
+             fetch_gcs_policy=False,
              with_parent=False):
         """Iterate the objects in the storage.
 
         Args:
             type_list (list): List of types to iterate over, or [] for all.
-            require_iam_policy (bool): Yield only objects with iam policy.
-            require_gcs_policy (bool): Yield only objects with gcs policy.
+            fetch_iam_policy (bool): Yield iam policies.
             with_parent (bool): Join parent with results, yield tuples.
 
         Yields:
@@ -581,29 +606,31 @@ class Storage(BaseStorage):
         filters = []
         filters.append(Inventory.index == self.index.id)
 
-        if require_iam_policy:
+        if fetch_iam_policy:
             filters.append(
-                (and_(Inventory.iam_policy != 'null',
-                      Inventory.iam_policy != None)))
+                Inventory.type_class == InventoryTypeClass.IAM_POLICY)
 
-        if require_gcs_policy:
+        elif fetch_gcs_policy:
             filters.append(
-                (and_(Inventory.gcs_policy != 'null',
-                      Inventory.gcs_policy != None)))
+                Inventory.type_class == InventoryTypeClass.GCS_POLICY)
+
+        else:
+            filters.append(
+                Inventory.type_class == InventoryTypeClass.RESOURCE)
 
         if type_list:
-            filters.append(Inventory.resource_type.in_(type_list))
+            filters.append(Inventory.type.in_(type_list))
 
         if with_parent:
             parent_inventory = aliased(Inventory)
-            p_resource_key = parent_inventory.resource_key
-            p_resource_type = parent_inventory.resource_type
+            p_key = parent_inventory.key
+            p_type = parent_inventory.type
             base_query = (
                 self.session.query(Inventory, parent_inventory)
                 .filter(
                     and_(
-                        Inventory.parent_resource_key == p_resource_key,
-                        Inventory.parent_resource_type == p_resource_type,
+                        Inventory.parent_key == p_key,
+                        Inventory.parent_type == p_type,
                         parent_inventory.index == self.index.id)))
 
         else:

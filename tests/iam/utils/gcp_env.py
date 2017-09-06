@@ -24,10 +24,12 @@ class GcpEnvironment(object):
         self.gsuite_sa = os.environ.get('EXPLAIN_GCP_GROUPS_SA')
         self.crawling_sa = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
         self.gsuite_admin_email = os.environ.get('EXPLAIN_GCP_CRAWLING_SA')
+        self.passphrase = os.environ.get('EXPLAIN_GCP_PASSPHRASE')
         if not all([self.organization_id,
                     self.gsuite_sa,
                     self.crawling_sa,
-                    self.gsuite_admin_email]):
+                    self.gsuite_admin_email,
+                    self.passphrase]):
             raise Exception('Missing configuration items')
 
 
