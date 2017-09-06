@@ -71,14 +71,28 @@ fi
 
 # Enable API
 echo "Enabling APIs"
-
-gcloud beta service-management enable admin.googleapis.com
-gcloud beta service-management enable appengine.googleapis.com
-gcloud beta service-management enable cloudresourcemanager.googleapis.com
-gcloud beta service-management enable sqladmin.googleapis.com
-gcloud beta service-management enable sql-component.googleapis.com
-gcloud beta service-management enable compute.googleapis.com
-gcloud beta service-management enable deploymentmanager.googleapis.com
+echo "Following APIs need to be enabled in this project to run IAM Explain:"
+echo "    Admin SDK API: admin.googleapis.com"
+echo "    AppEngine Admin API: appengine.googleapis.com"
+echo "    Cloud Resource Manager API: cloudresourcemanager.googleapis.com"
+echo "    Cloud SQL Admin API: sqladmin.googleapis.com"
+echo "    Cloud SQL API: sql-component.googleapis.com"
+echo "    Compute Engine API: compute.googleapis.com"
+echo "    Deployment Manager API: deploymentmanager.googleapis.com"
+read -p "Do you want to use the script to enable them? (y/n)" -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	gcloud beta service-management enable admin.googleapis.com
+	gcloud beta service-management enable appengine.googleapis.com
+	gcloud beta service-management enable cloudresourcemanager.googleapis.com
+	gcloud beta service-management enable sqladmin.googleapis.com
+	gcloud beta service-management enable sql-component.googleapis.com
+	gcloud beta service-management enable compute.googleapis.com
+	gcloud beta service-management enable deploymentmanager.googleapis.com
+else
+	echo "API Enabling skipped, if you haven't enable them, you can done so in cloud console."
+fi
 
 # Creating Service Account
 echo "Setting up service accounts"
@@ -145,47 +159,64 @@ gcloud iam service-accounts keys create \
 
 # Service Accounts role assignment
 echo "Assigning roles to the gcp scrapping service account"
-
-gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/browser
-
-gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/compute.networkViewer
-
-gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/iam.securityReviewer
-
-gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/appengine.appViewer
-
-gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/servicemanagement.quotaViewer
-
-gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/cloudsql.viewer
-
-gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/compute.securityAdmin
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/storage.objectViewer
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/storage.objectCreator
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
- --member=serviceAccount:$SCRAPPINGSA \
- --role=roles/cloudsql.client
-
+echo "Following roles need to be assigned to the gcp scrapping service account
+echo "$SCRAPPINGSA"
+echo "to run IAM Explain:"
+echo "    - Organization level:"
+echo "        - 'roles/browser',"
+echo "        - 'roles/iam.securityReviewer',"
+echo "        - 'roles/appengine.appViewer',"
+echo "        - 'roles/servicemanagement.quotaViewer',"
+echo "        - 'roles/cloudsql.viewer',"
+echo "        - 'roles/compute.securityAdmin',"
+echo "    - Project level:"
+echo "        - 'roles/cloudsql.client'"
+read -p "Do you want to use the script to assign the roles? (y/n)" -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/browser
+	
+	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/compute.networkViewer
+	
+	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/iam.securityReviewer
+	
+	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/appengine.appViewer
+	
+	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/servicemanagement.quotaViewer
+	
+	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/cloudsql.viewer
+	
+	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/compute.securityAdmin
+	
+	gcloud projects add-iam-policy-binding $PROJECT_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/storage.objectViewer
+	
+	gcloud projects add-iam-policy-binding $PROJECT_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/storage.objectCreator
+	
+	gcloud projects add-iam-policy-binding $PROJECT_ID \
+	 --member=serviceAccount:$SCRAPPINGSA \
+	 --role=roles/cloudsql.client
+else
+	echo "Roles assigning skipped, if you haven't done it, you can done so in cloud console."
+fi
 
 # Prepare the deployment template yaml file
 cp ~/forseti-security/deployment-templates/deploy-explain.yaml.sample \
@@ -200,7 +231,9 @@ sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 # sql instance name
 timestamp=$(date --utc +%FT%TZ)
 SQLINSTANCE="iam-explain-no-external-"$timestamp
-read -p "Do you want to use the generated sql instance name for this deployment? (y/n)" -n 1 -r
+echo "Do you want to use the generated sql instance name:"
+echo "$SQLINSTANCE"
+read -p "for this deployment? (y/n)" -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
@@ -214,7 +247,9 @@ sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
 
 DEPLOYMENTNAME="iam-explain-"$timestamp
-read -p "Do you want to use the generated deployment name for this deployment? (y/n)" -n 1 -r
+echo "Do you want to use the generated deployment name:"
+echo "$DEPLOYMENTNAME"
+read -p "for this deployment? (y/n)" -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
@@ -258,7 +293,7 @@ do
 		break
 	fi
 done
-if [[ -n $response ]]; then
+if [[ -z $response ]]; then
 	echo "Service account key copy failed."
 	echo "Please try to manually copy ~/gsuite.json to /home/ubuntu/gsuite.json on your vm:"
 	echo "$VMNAME"
