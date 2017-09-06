@@ -25,37 +25,38 @@ https://github.com/google/google-apputils/blob/master/google/apputils/run_script
 
 from google.apputils import run_script_module
 
+
 def RunForsetiInventory():
     """Run Forseti Inventory module."""
     import google.cloud.security.inventory.inventory_loader as forseti_inventory
     run_script_module.RunScriptModule(forseti_inventory)
+
 
 def RunForsetiScanner():
     """Run Forseti Scanner module."""
     import google.cloud.security.scanner.scanner as forseti_scanner
     run_script_module.RunScriptModule(forseti_scanner)
 
+
 def RunForsetiEnforcer():
     """Run Forseti Enforcer module."""
     import google.cloud.security.enforcer.enforcer as forseti_enforcer
     run_script_module.RunScriptModule(forseti_enforcer)
+
 
 def RunForsetiNotifier():
     """Run Forseti Notifier module."""
     import google.cloud.security.notifier.notifier as forseti_notifier
     run_script_module.RunScriptModule(forseti_notifier)
 
+
 def RunForsetiApi():
     """Run Forseti API server."""
     import google.cloud.security.iam.server as forseti_api
     run_script_module.RunScriptModule(forseti_api)
 
+
 def RunExplainCli():
     """Run Explain CLI."""
     import google.cloud.security.iam.cli as iam_cli
     run_script_module.RunScriptModule(iam_cli)
-
-def RunInventory2():
-    """Run Inventory2."""
-    import google.cloud.security.inventory2.crawler as crawler
-    run_script_module.RunScriptModule(crawler)

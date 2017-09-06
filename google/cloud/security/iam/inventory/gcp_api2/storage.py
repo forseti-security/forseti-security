@@ -20,8 +20,8 @@ from googleapiclient import errors
 from googleapiclient import http
 from httplib2 import HttpLib2Error
 
-from google.cloud.security.common.gcp_api2 import _base_client
-from google.cloud.security.common.gcp_api2 import errors as api_errors
+from google.cloud.security.iam.inventory.gcp_api2 import _base_client
+from google.cloud.security.iam.inventory.gcp_api2 import errors as api_errors
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)

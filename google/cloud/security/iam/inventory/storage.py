@@ -27,8 +27,8 @@ from sqlalchemy.orm import aliased
 
 
 from sqlalchemy.ext.declarative import declarative_base
-
-from google.cloud.security.inventory2.storage import Storage as BaseStorage
+from google.cloud.security.iam.inventory.inventory2.storage import \
+    Storage as BaseStorage
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc

@@ -16,7 +16,7 @@
 
 from ratelimiter import RateLimiter
 
-from google.cloud.security.common.gcp_api2 import _base_client
+from google.cloud.security.iam.inventory.gcp_api2 import _base_client
 from google.cloud.security.common.util import log_util
 
 

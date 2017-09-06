@@ -19,13 +19,13 @@
 # pylint: disable=missing-param-doc,invalid-name,too-many-instance-attributes
 # pylint: disable=too-many-public-methods,arguments-differ
 
-from google.cloud.security.common.gcp_api2 import admin_directory
-from google.cloud.security.common.gcp_api2 import bigquery
-from google.cloud.security.common.gcp_api2 import cloud_resource_manager
-from google.cloud.security.common.gcp_api2 import cloudsql
-from google.cloud.security.common.gcp_api2 import compute
-from google.cloud.security.common.gcp_api2 import iam
-from google.cloud.security.common.gcp_api2 import storage
+from google.cloud.security.iam.inventory.gcp_api2 import admin_directory
+from google.cloud.security.iam.inventory.gcp_api2 import bigquery
+from google.cloud.security.iam.inventory.gcp_api2 import cloud_resource_manager
+from google.cloud.security.iam.inventory.gcp_api2 import cloudsql
+from google.cloud.security.iam.inventory.gcp_api2 import compute
+from google.cloud.security.iam.inventory.gcp_api2 import iam
+from google.cloud.security.iam.inventory.gcp_api2 import storage
 
 
 class ApiClient(object):

@@ -27,8 +27,8 @@ from oauth2client.client import GoogleCredentials
 from retrying import retry
 
 from google.cloud import security as forseti_security
-from google.cloud.security.common.gcp_api2 import _supported_apis
-from google.cloud.security.common.gcp_api2 import errors as api_errors
+from google.cloud.security.iam.inventory.gcp_api2 import _supported_apis
+from google.cloud.security.iam.inventory.gcp_api2 import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
