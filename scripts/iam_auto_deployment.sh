@@ -262,10 +262,8 @@ fi
 
 # Deploy the IAM Explain
 response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
-	--config ~/forseti-security/deployment-templates/deploy-explain.yaml)
-if [[ -z $response ]]; then
-	exit 1
-fi
+	--config ~/forseti-security/deployment-templates/deploy-explain.yaml)\
+|| exit 1
 VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
  
 
@@ -282,18 +280,18 @@ do
 	for (( trial=1; trial<=10; trial++ ))
 	do
 		sleep 2
-		response=$(gcloud compute scp ~/gsuite.json \
+		{gcloud compute scp ~/gsuite.json \
 			ubuntu@$VMNAME:/home/ubuntu/gsuite.json \
-			--zone=us-central1-c)
-		if [[ -n $response ]]; then
-			break
-		fi
+			--zone=us-central1-c &&
+		{cpResponse="SUCCESS"
+			}
+		}
 	done
-	if [[ -n $response ]]; then
+	if [[ $cpResponse == "SUCCESS" ]]; then
 		break
 	fi
 done
-if [[ -z $response ]]; then
+if [[ -$cpResponse != "SUCCESS" ]]; then
 	echo "Service account key copy failed."
 	echo "Please try to manually copy ~/gsuite.json to /home/ubuntu/gsuite.json on your vm:"
 	echo "$VMNAME"
