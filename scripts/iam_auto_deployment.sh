@@ -159,7 +159,7 @@ gcloud iam service-accounts keys create \
 
 # Service Accounts role assignment
 echo "Assigning roles to the gcp scrapping service account"
-echo "Following roles need to be assigned to the gcp scrapping service account
+echo "Following roles need to be assigned to the gcp scrapping service account"
 echo "$SCRAPPINGSA"
 echo "to run IAM Explain:"
 echo "    - Organization level:"
