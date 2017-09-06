@@ -204,9 +204,10 @@ response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
 if [[ -z $response ]]; then
 	exit 1
 fi
+VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
  
 response=$(gcloud compute scp ~/gsuite.json \
-	ubuntu@explain-instance-vm:/home/ubuntu/gsuite.json \
+	ubuntu@$VMNAME:/home/ubuntu/gsuite.json \
 	--zone=us-central1-c)
 if [[ -z $response ]]; then
 	exit 1
