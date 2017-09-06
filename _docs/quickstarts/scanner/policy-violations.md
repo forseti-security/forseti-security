@@ -5,10 +5,11 @@ order: 105
 
 # {{ page.title }}
 
-This page describes how Scanner outputs violations. When Scanner finds a
-violation, it always outputs the data to a Cloud SQL database. You
-can also configure Scanner to save to save the CSV to a Cloud Storage bucket,
-save locally, or send an email notification. To specify a local or Cloud Storage
+When Scanner finds a rule violation, it outputs the data to a Cloud SQL database.
+
+Some Scanners provide the capability to save violations as a CSV. This CSV can be
+just a local file, uploaded automatically to a Cloud Storage bucket, or sent as an 
+email notification. To specify a local or Cloud Storage
 output location for the CSV, edit the `forseti_conf.yaml` file as follows:
 
 ```
