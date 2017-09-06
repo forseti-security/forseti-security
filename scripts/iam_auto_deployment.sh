@@ -232,7 +232,7 @@ sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 timestamp=$(date --utc +%Ft%Tz | sed -e 's/:/-/g')
 SQLINSTANCE="iam-explain-no-external-"$timestamp
 echo "Do you want to use the generated sql instance name:"
-echo "$SQLINSTANCE"
+echo "    $SQLINSTANCE"
 read -p "for this deployment? (y/n)" -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]
@@ -248,7 +248,7 @@ sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
 
 DEPLOYMENTNAME="iam-explain-"$timestamp
 echo "Do you want to use the generated deployment name:"
-echo "$DEPLOYMENTNAME"
+echo "    $DEPLOYMENTNAME"
 read -p "for this deployment? (y/n)" -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]
@@ -271,7 +271,7 @@ VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
 
 for (( TRIAL=1; TRIAL<=5; TRIAL++ ))
 do
-	if [[ TRIAL !=1 ]]; then
+	if [[ $TRIAL != 1 ]]; then
 		echo "Service account key copy not successful."
 		read -p "Shall we keep trying? (y/n)" -n 1 -r
 		echo
