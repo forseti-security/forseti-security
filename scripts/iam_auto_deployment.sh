@@ -82,6 +82,8 @@ gcloud beta service-management enable deploymentmanager.googleapis.com
 
 # Creating Service Account
 echo "Setting up service accounts"
+echo "Here are the existing service accounts within this project:"
+gcloud iam service-accounts list
 read -p "Do you want to use a existing service account for gcp resources and policies scrapping? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
@@ -102,6 +104,11 @@ else
 		--display-name "scrapping service account for IAM Explain" \
 		--format flattened \
 		| grep -- 'email:' | sed -e 's/^email: *//g')
+	if [[ -z $SCRAPPINGSA ]]
+	then
+		echo "Creating "$SCRAPPINGSA" failed"
+		exit 1
+	fi
 fi
 
 read -p "Do you want to use a existing service account for gsuite crawling? (y/n)" -n 1 -r
@@ -124,6 +131,11 @@ else
 		--display-name "gsuite service account for IAM Explain" \
 		--format flattened \
 		| grep -- 'email:' | sed -e 's/^email: *//g')
+	if [[ -z $GSUITESA ]]
+	then
+		echo "Creating "$GSUITESA" failed"
+		exit 1
+	fi
 fi
 
 # Creating gsuite service account key
