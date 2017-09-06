@@ -79,6 +79,8 @@ echo "    Cloud SQL Admin API: sqladmin.googleapis.com"
 echo "    Cloud SQL API: sql-component.googleapis.com"
 echo "    Compute Engine API: compute.googleapis.com"
 echo "    Deployment Manager API: deploymentmanager.googleapis.com"
+echo "    Google Identity and Access Management (IAM) API: iam.googleapis.com"
+echo "    Google App Engine Admin API: appengine.googleapis.com"
 read -p "Do you want to use the script to enable them? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
@@ -90,6 +92,8 @@ then
 	gcloud beta service-management enable sql-component.googleapis.com
 	gcloud beta service-management enable compute.googleapis.com
 	gcloud beta service-management enable deploymentmanager.googleapis.com
+	gcloud beta service-management enable iam.googleapis.com
+	gcloud beta service-management enable appengine.googleapis.com
 else
 	echo "API Enabling skipped, if you haven't enable them, you can done so in cloud console."
 fi
