@@ -104,12 +104,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
 	echo "Please type in the service account email address you want to use:"
 	read SCRAPPINGSA
-	resp=$(gcloud iam service-accounts describe $SCRAPPINGSA)
-	if [[ -z $resp ]]
-	then
+	gcloud iam service-accounts describe $SCRAPPINGSA ||
+	{
 		echo "The existence of "$SCRAPPINGSA" cannot be verified"
 		exit 1
-	fi
+	}
 else
 	echo "Please type in the service account name you want to create:"
 	read scrappingname
@@ -117,12 +116,11 @@ else
 		$scrappingname \
 		--display-name "scrapping service account for IAM Explain" \
 		--format flattened \
-		| grep -- 'email:' | sed -e 's/^email: *//g')
-	if [[ -z $SCRAPPINGSA ]]
-	then
+		| grep -- 'email:' | sed -e 's/^email: *//g') ||
+	{
 		echo "Creating "$SCRAPPINGSA" failed"
 		exit 1
-	fi
+	}
 fi
 
 read -p "Do you want to use a existing service account for gsuite crawling? (y/n)" -n 1 -r
@@ -131,12 +129,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
 	echo "Please type in the service account email address you want to use:"
 	read GSUITESA
-	resp=$(gcloud iam service-accounts describe $GSUITESA)
-	if [[ -z $resp ]]
-	then
+	gcloud iam service-accounts describe $GSUITESA ||
+	{ 
 		echo "The existence of "$GSUITESA" cannot be verified"
 		exit 1
-	fi
+	}
 else
 	echo "Please type in the service account name you want to create:"
 	read gsuitename
@@ -144,12 +141,11 @@ else
 		$gsuitename \
 		--display-name "gsuite service account for IAM Explain" \
 		--format flattened \
-		| grep -- 'email:' | sed -e 's/^email: *//g')
-	if [[ -z $GSUITESA ]]
-	then
+		| grep -- 'email:' | sed -e 's/^email: *//g') ||
+	{
 		echo "Creating "$GSUITESA" failed"
 		exit 1
-	fi
+	}
 fi
 
 # Creating gsuite service account key
@@ -280,11 +276,12 @@ do
 	for (( trial=1; trial<=10; trial++ ))
 	do
 		sleep 2
-		{gcloud compute scp ~/gsuite.json \
+		gcloud compute scp ~/gsuite.json \
 			ubuntu@$VMNAME:/home/ubuntu/gsuite.json \
 			--zone=us-central1-c &&
-		{cpResponse="SUCCESS"
-			}
+		{
+			cpResponse="SUCCESS"
+			break
 		}
 	done
 	if [[ $cpResponse == "SUCCESS" ]]; then
