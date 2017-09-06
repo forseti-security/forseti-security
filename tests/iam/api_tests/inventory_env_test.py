@@ -44,19 +44,6 @@ class TestServiceConfig(MockServerConfig):
         self.workers = ThreadPool(10)
         self.env = gcp_env()
 
-        @event.listens_for(self.engine, "connect")
-        def do_connect(dbapi_connection, connection_record):
-            # disable pysqlite's emitting of the BEGIN statement entirely.
-            # also stops it from emitting COMMIT before any DDL.
-            dbapi_connection.isolation_level = None
-
-        @event.listens_for(self.engine, "begin")
-        def do_begin(conn):
-            # emit our own BEGIN
-            conn.execute("BEGIN")
-
-        self.listeners = [do_begin, do_connect]
-
     def get_organization_id(self):
         return self.env.organization_id
 

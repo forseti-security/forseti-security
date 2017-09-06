@@ -60,7 +60,7 @@ class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
         expected_subject = ('Inventory Snapshot Complete: '
                             '20001225T010000Z SUCCESS')
         expected_content = (
-            u'<!--\nCopyright 2017 The Forseti Security Authors. All rights reserved.\n\nLicensed under the Apache '
+            u'<!--\nCopyright 2017 Google Inc.\n\nLicensed under the Apache '
             'License, Version 2.0 (the \"License\");\nyou may not use this '
             'file except in compliance with the License.\nYou may obtain a '
             'copy of the License at\n\n    '

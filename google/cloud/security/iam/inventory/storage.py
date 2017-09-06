@@ -18,7 +18,6 @@ import datetime
 import json
 
 from sqlalchemy import Column
-from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
@@ -159,14 +158,14 @@ class Inventory(BASE):
     # Order is used to resemble the order of insert for a given inventory
     order = Column(Integer, primary_key=True, autoincrement=True)
     index = Column(Integer)
-    type_class = Column(String(128))
-    key = Column(String(2048))
-    type = Column(String(256))
-    data = Column(Text())
-    parent_key = Column(String(2048))
-    parent_type = Column(String(256))
-    other = Column(Text())
-    error = Column(Text())
+    type_class = Column(Text)
+    key = Column(Text)
+    type = Column(Text)
+    data = Column(Text)
+    parent_key = Column(Text)
+    parent_type = Column(Text)
+    other = Column(Text)
+    error = Column(Text)
 
     @classmethod
     def from_resource(cls, index, resource):
