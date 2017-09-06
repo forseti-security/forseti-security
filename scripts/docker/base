@@ -34,8 +34,8 @@ RUN pip install -q --upgrade \
     coverage \
     codecov \
     google-apputils \
-    grpcio \
-    grpcio-tools \
+    grpcio==1.4.0 \
+    grpcio-tools==1.4.0 \
     mock \
     parameterized \
     pylint \

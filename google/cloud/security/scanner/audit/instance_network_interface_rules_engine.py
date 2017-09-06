@@ -223,7 +223,7 @@ class Rule(object):
         """
         for instance_network_interface in instance_network_interface_list:
             network_and_project = re.search(
-                r'compute/v1/projects/([^/]*).*networks/([^/]*)',
+                r'compute/.*/projects/([^/]*).*networks/([^/]*)',
                 instance_network_interface.network)
             project = network_and_project.group(1)
             network = network_and_project.group(2)
