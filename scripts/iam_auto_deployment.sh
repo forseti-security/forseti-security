@@ -229,7 +229,7 @@ sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
 
 # sql instance name
-timestamp=$(date --utc +%FT%TZ | sed -e 's/:/-/g')
+timestamp=$(date --utc +%Ft%Tz | sed -e 's/:/-/g')
 SQLINSTANCE="iam-explain-no-external-"$timestamp
 echo "Do you want to use the generated sql instance name:"
 echo "$SQLINSTANCE"
