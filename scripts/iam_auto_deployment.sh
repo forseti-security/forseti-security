@@ -39,6 +39,7 @@ else
 	echo "There is only one organization your account has access to:"
 	echo "    $orgs"
 	read -p "Shall we proceed? (y/n)" -n 1 -r
+	echo
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
 		ORGANIZATION_ID=$orgs
@@ -61,6 +62,7 @@ read GSUITE_ADMINISTRATOR
 echo "Please verify the email address of the gsuite administrator:"
 echo "$GSUITE_ADMINISTRATOR"
 read -p "Is it correct? (y/n)" -n 1 -r
+echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	echo "Wrong email address of the gsuite administrator!"
@@ -81,6 +83,7 @@ gcloud beta service-management enable deploymentmanager.googleapis.com
 # Creating Service Account
 echo "Setting up service accounts"
 read -p "Do you want to use a existing service account for gcp resources and policies scrapping? (y/n)" -n 1 -r
+echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
 	echo "Please type in the service account email address you want to use:"
@@ -102,6 +105,7 @@ else
 fi
 
 read -p "Do you want to use a existing service account for gsuite crawling? (y/n)" -n 1 -r
+echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
 	echo "Please type in the service account email address you want to use:"
@@ -162,7 +166,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
  --member=serviceAccount:$SCRAPPINGSA \
  --role=roles/storage.objectViewer
 
-gcloud rpojects add-iam-policy-binding $PROJECT_ID \
+gcloud projects add-iam-policy-binding $PROJECT_ID \
  --member=serviceAccount:$SCRAPPINGSA \
  --role=roles/storage.objectCreator
 
@@ -177,17 +181,15 @@ sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' ~/deploy-explain.yaml
 sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$GSUITESA'/g' ~/deploy-explain.yaml
 sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' ~/deploy-explain.yaml
 
-echo "Please double check the sql instance-name in deploy-explain.yaml is not occupied."
-read -p "Do you want to change it? (y/n)" -n 1 -r
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
-	echo "Please type in a new sql instance name:"
-	read SQLINSTANCE
-fi
+echo "Here are existing sql instances in this project:"
+gcloud sql instances list
+echo "Choose a deployment name that is not used above"
+read SQLINSTANCE
 sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' ~/deploy-explain.yaml
 
-echo "Choose a deployment name that is not used below"
+echo "Here are existing deployments in this project:"
 gcloud deployment-manager deployments list
+echo "Choose a deployment name that is not used above"
 read DEPLOYMENTNAME
 
 
