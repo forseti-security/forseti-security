@@ -32,7 +32,7 @@ from google.cloud.security.common.util import log_util
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc
+# pylint: disable=missing-param-doc,missing-raises-doc,too-many-lines
 
 # The name of the GCE API.
 API_NAME = 'compute'
@@ -174,12 +174,12 @@ class ComputeFirewallAPI(object):
         wait_exponential_multiplier=1000,
         stop_max_attempt_number=4)
 
-
+    # pylint: disable=no-self-use
     def _execute(self, request):
         """Execute the request and retry logic."""
 
         return request.execute(num_retries=4)
-
+    # pylint: enable=no-self-use
 
     def list_networks(self, project, fields=None):
         """List the networks associated with a GCE project.
@@ -704,6 +704,8 @@ class FirewallRules(object):
                 sorted_rule[key] = value
         return sorted_rule
 
+    # TODO: clean up break up into additional methods
+    # pylint: disable=too-many-branches
     def _check_rule_before_adding(self, rule):
         """Validates that a rule is valid and not a duplicate.
 
@@ -821,6 +823,7 @@ class FirewallRules(object):
                 return False
 
         return True
+    # pylint: enable=too-many-branches
 
 # pylint: disable=too-many-instance-attributes
 # TODO: Investigate improving so we can avoid the pylint disable.
