@@ -42,7 +42,7 @@ You can run the bash script for automatic IAM Explain deployment and follow its 
   $ bash forseti-security/scripts/iam_auto_deployment.sh
   ```
 
-After the automatic deployment script ends, please follow the [instruction to enable group collection]({% link _docs/howto/explain/explain-gsuite-setup.md %}) on the GSuite crawling service account to complete the deployment.
+After the automatic deployment script ends, please follow the [instruction to enable group collection]({% link _docs/howto/explain/explain-gsuite-setup.md %}#enable-domain-wide-delegation-in-g-suite) on the GSuite crawling service account to complete the deployment.
 
 ## Using IAM Explain
 
