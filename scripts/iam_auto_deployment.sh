@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Define text color
+TRED='\033[0;31m'
+TNC='\033[0m'
 
 # Set Organization ID
 echo "Setting up organization ID"
@@ -296,6 +299,7 @@ if [[ $cpResponse != "SUCCESS" ]]; then
 fi
 
 # Ask to setup the gsuite service account
+echo -e "${TRED}WE ARE NOT FINISHED YET${TNC}"
 echo "Please complete the deployment by enabling GSuite google \
 groups collection on your gsuite service account:"
 echo "    $GSUITESA"
