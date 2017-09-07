@@ -197,8 +197,9 @@ EXPECTED_FIREWALL_RULES = {
             u"test-network-allow-internal-1",
         "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
-        "sourceRanges": [u"10.8.0.0/24"]
-    },
+        "sourceRanges": [u"10.8.0.0/24"],
+        "priority": 1000,
+        "direction": "INGRESS"},
     "test-network-allow-internal-0": {
         "allowed": [{
             "IPProtocol": u"icmp"
@@ -215,8 +216,9 @@ EXPECTED_FIREWALL_RULES = {
             u"test-network-allow-internal-0",
         "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
-        "sourceRanges": [u"10.0.0.0/8"]
-    },
+        "sourceRanges": [u"10.0.0.0/8"],
+        "priority": 1000,
+        "direction": "INGRESS"},
     "test-network-allow-public-0": {
         "allowed": [{
             "IPProtocol": u"ah"
@@ -235,9 +237,11 @@ EXPECTED_FIREWALL_RULES = {
             u"test-network-allow-public-0",
         "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
-        "sourceRanges": [u"127.0.0.1/32", u"127.0.0.2/32"]
-    }
+        "sourceRanges": [u"127.0.0.1/32", u"127.0.0.2/32"],
+        "priority": 1000,
+        "direction": "INGRESS"},
 }
+
 
 RAW_DEFAULT_JSON_POLICY = """
     [
