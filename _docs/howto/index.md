@@ -16,3 +16,8 @@ hide:
 - [Enabling Email Notifications]({% link _docs/howto/configure/email-notification.md %})
 - [Enabling GSuite Google Groups Collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
 - [Collecting and Storing New Data in Forseti Inventory]({% link _docs/howto/configure/inventory-new-data.md %})
+
+[How to deploy and setup IAM Explain]({% link _docs/howto/explain/index.md %})
+
+- [Manually Deploying IAM Explain on GCP]({% link _docs/howto/explain/manual-deploy.md %})
+- [Enabling GSuite Google Groups Collection for IAM Explain]({% link _docs/howto/explain/explain-gsuite-setup.md %})
