@@ -90,10 +90,10 @@ class PipelineBuilder(object):
                 else:
                     api = api_class(self.global_configs,
                                     version=api_version)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error('Failed to execute API %s, v=%s\n%s',
+            except api_errors.ApiInitializationError as e:
+                LOGGER.error('Failed to initialize API %s, v=%s\n%s',
                              api_class_name, api_version, e)
-                raise api_errors.ApiInitializationError(e)
+                raise api_errors.ApiInitializationError(api_class_name, e)
 
             self.initialized_api_map[api_name] = api
 
