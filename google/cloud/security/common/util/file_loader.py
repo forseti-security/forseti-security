@@ -17,6 +17,7 @@
 import json
 import os
 import yaml
+from oauth2client import client
 
 from google.cloud.security.common.gcp_api import storage
 from google.cloud.security.common.util import errors as util_errors
@@ -84,7 +85,9 @@ def _read_file_from_gcs(file_path):
     Returns:
         dict: The parsed dict from the loaded file.
     """
-    storage_client = storage.StorageClient()
+    # Pass credential in explicitly so that cached credentials are not used.
+    credential = client.GoogleCredentials.get_application_default()
+    storage_client = storage.StorageClient(credential=credential)
 
     file_content = storage_client.get_text_file(full_bucket_path=file_path)
 
