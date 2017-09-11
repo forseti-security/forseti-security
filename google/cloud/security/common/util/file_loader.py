@@ -86,8 +86,8 @@ def _read_file_from_gcs(file_path):
         dict: The parsed dict from the loaded file.
     """
     # Pass credential in explicitly so that cached credentials are not used.
-    credential = client.GoogleCredentials.get_application_default()
-    storage_client = storage.StorageClient(credential=credential)
+    credentials = client.GoogleCredentials.get_application_default()
+    storage_client = storage.StorageClient(credentials=credentials)
 
     file_content = storage_client.get_text_file(full_bucket_path=file_path)
 
