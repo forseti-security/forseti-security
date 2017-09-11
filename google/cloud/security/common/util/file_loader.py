@@ -169,7 +169,12 @@ def _parse_yaml(data):
 
 
 def _get_storage_client():
-    """Returns a new storage API client with explicit credentials."""
+    """Returns a new storage API client with explicit credentials.
+
+    Returns:
+        storage.StorageClient: A new Storage API client with explicit
+            credentials.
+    """
     # Pass credential in explicitly so that cached credentials are not used.
     credentials = client.GoogleCredentials.get_application_default()
     storage_client = storage.StorageClient(credentials=credentials)
