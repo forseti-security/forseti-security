@@ -70,13 +70,13 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
         """Constructor.
 
         Args:
+            credentials (GoogleCredentials): An optional GoogleCredentials
+                object to use.
             quota_max_calls (int): Allowed requests per <quota_period> for the
                 API.
             quota_period (float): The time period to limit the requests within.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
-            credentials (GoogleCredentials): An optional GoogleCredentials
-                object to use.
         """
         if not quota_max_calls:
             use_rate_limiter = False
