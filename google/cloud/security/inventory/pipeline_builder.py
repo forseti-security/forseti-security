@@ -61,6 +61,9 @@ class PipelineBuilder(object):
 
         Returns:
             object: Instance of the API.
+
+        Raises:
+            ApiInitializationError: The api client can not be created.
         """
         api = self.initialized_api_map.get(api_name)
         if api is None:
