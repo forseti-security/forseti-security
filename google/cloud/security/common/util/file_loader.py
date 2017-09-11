@@ -27,7 +27,6 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=bad-indentation
 def read_and_parse_file(file_path):
     """Parse a json or yaml formatted file from a local path or GCS.
 
