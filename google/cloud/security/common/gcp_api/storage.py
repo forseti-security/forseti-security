@@ -63,12 +63,15 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
     """Storage API Respository."""
 
     def __init__(self,
+                 credentials=None,
                  quota_max_calls=None,
                  quota_period=1.0,
                  use_rate_limiter=True):
         """Constructor.
 
         Args:
+            credentials (GoogleCredentials): An optional GoogleCredentials
+                object to use.
             quota_max_calls (int): Allowed requests per <quota_period> for the
                 API.
             quota_period (float): The time period to limit the requests within.
@@ -83,6 +86,7 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
 
         super(StorageRepositoryClient, self).__init__(
             'storage', versions=['v1'],
+            credentials=credentials,
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
@@ -209,7 +213,7 @@ class _StorageObjectsRepository(
             downloader = http.MediaIoBaseDownload(out_stream, media_request)
             done = False
             while not done:
-                _, done = downloader.next_chunk()
+                _, done = downloader.next_chunk(num_retries=self._num_retries)
             file_content = out_stream.getvalue()
         finally:
             out_stream.close()
@@ -251,9 +255,10 @@ class StorageClient(object):
                 the StorageClient.
             **kwargs (dict): The kwargs.
         """
-        del args, kwargs
+        del args
         # Storage API has unlimited rate.
         self.repository = StorageRepositoryClient(
+            credentials=kwargs.get('credentials'),
             quota_max_calls=0,
             use_rate_limiter=False)
 
