@@ -39,17 +39,32 @@ configured on the project. The network name is prepended to the rule name.
 Following is an example rule that allows SSH from anywhere:
 
   ```json
-  {
-      "sourceRanges": ["0.0.0.0/0"],
-      "description": "Allow SSH from anywhere",
-      "allowed": [
-          {
-              "IPProtocol": "tcp",
-              "ports": ["22"]
-          }
-      ],
-      "name": "allow-ssh"
-  }
+  [{
+        "sourceRanges": ["0.0.0.0/0"],
+        "description": "Allow SSH from anywhere",
+        "allowed": [
+            {
+                "IPProtocol": "tcp",
+                "ports": ["22"]
+            }
+        ],
+        "name": "allow-ssh"
+   },
+   {
+        "sourceRanges": ["10.128.0.0/9"],
+        "description": "Allow internal only",
+        "allowed": [
+            {
+                "IPProtocol": "tcp",
+                "ports": ["0-65535"]
+            },
+            {
+                "IPProtocol": "udp",
+                "ports": ["0-65535"]
+            }
+        ],
+        "name": "default-allow-internal"
+  }]
   ```
 
 ## Running Forseti Enforcer
