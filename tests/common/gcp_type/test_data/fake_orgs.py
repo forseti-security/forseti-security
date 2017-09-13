@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ FAKE_ORGS_RESPONSE = {
     ]
 }
 
-EXPECTED_FAKE_ORGS_FROM_API = [FAKE_ORGS_RESPONSE]
+EXPECTED_FAKE_ORGS_FROM_API = FAKE_ORGS_RESPONSE['organizations']
 
 FAKE_ORGS_OK_IAM_DB_ROWS = [
     {'org_id': '1111111111',

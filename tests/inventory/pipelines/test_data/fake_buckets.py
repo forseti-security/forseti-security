@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 FAKE_BUCKETS_MAP = [{
     'project_number': 11111,
-    'buckets': {
-        'items': [{
+    'buckets': [{
             'kind': 'storage#bucket',
             'name': 'fakebucket1',
             'timeCreated': '2016-07-21T12:57:04.604Z',
@@ -30,9 +29,7 @@ FAKE_BUCKETS_MAP = [{
             'selfLink': 'https://www.googleapis.com/storage/v1/b/fakebucket1',
             'storageClass': 'STANDARD',
             'lifecycle': {}
-        }
-        ]
-    }
+    }]
 }]
 
 EXPECTED_LOADABLE_BUCKETS = [{

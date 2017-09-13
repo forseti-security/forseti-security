@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test OrgRuleBook."""
+"""Test Utils for Forseti unit tests."""
 
+import collections
+import contextlib
 import json
 import os
+import tempfile
 import unittest
-import collections
+
+
+@contextlib.contextmanager
+def create_temp_file(data):
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp.write(data)
+    temp.close()
+    try:
+        yield temp.name
+    finally:
+        os.unlink(temp.name)
+
 
 class ForsetiTestCase(unittest.TestCase):
     """Forseti base class for tests."""

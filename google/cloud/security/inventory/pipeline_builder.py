@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,6 +61,9 @@ class PipelineBuilder(object):
 
         Returns:
             object: Instance of the API.
+
+        Raises:
+            ApiInitializationError: The api client can not be created.
         """
         api = self.initialized_api_map.get(api_name)
         if api is None:
@@ -90,10 +93,10 @@ class PipelineBuilder(object):
                 else:
                     api = api_class(self.global_configs,
                                     version=api_version)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error('Failed to execute API %s, v=%s\n%s',
+            except api_errors.ApiInitializationError as e:
+                LOGGER.error('Failed to initialize API %s, v=%s\n%s',
                              api_class_name, api_version, e)
-                raise api_errors.ApiInitializationError(e)
+                raise
 
             self.initialized_api_map[api_name] = api
 
