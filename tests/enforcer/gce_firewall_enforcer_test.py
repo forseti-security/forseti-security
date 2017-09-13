@@ -236,7 +236,7 @@ class FirewallRulesTest(ForsetiTestCase):
         # network URLs match the expected values.
         self.mock_api_version = mock.patch(
             'google.cloud.security.enforcer.gce_firewall_enforcer'
-            '.API_VERSION', 'v1').start()
+            '.API_VERSION', 'beta').start()
 
         self.firewall_api = fe.ComputeFirewallAPI(
             self.gce_service)
@@ -1038,7 +1038,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
                 u'Allow communication between instances.',
             'name':
                 u'unknown-rule-doesnt-match',
-            'network': (u'https://www.googleapis.com/compute/v1/projects/'
+            'network': (u'https://www.googleapis.com/compute/beta/projects/'
                         'google.com:secops-testing/global/networks/test-net'),
             'sourceRanges': [u'10.2.3.4/32'],
         }
