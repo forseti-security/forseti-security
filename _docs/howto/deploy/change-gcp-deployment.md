@@ -38,7 +38,7 @@ is out of sync with the deployed release.
    # release-version: ...
    ```
    
-   "I want to deploy Release 1.1.3:":
+   "I want to deploy Release 1.1.3":
    
    ```yaml
    # branch-name: ...
