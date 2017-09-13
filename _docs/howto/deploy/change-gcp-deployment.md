@@ -1,50 +1,48 @@
 ---
-title: Updating Forseti
+title: Updating Forseti GCP Deployment
 order: 104
 ---
 #  {{ page.title }}
 
-### Update local installation
-If you want to update your local version of Forseti, pull in the latest changes from
-git:
+### Update Forseti version
+If you need to change the `release-version` for your Forseti deployment, you MUST 
+get the correct version of the deployment template. The deployment template's startup 
+script has release-specific code, so things will break if you use a startup script that 
+is out of sync with the deployed release.
 
-```bash
-$ cd forseti-security
-$ git pull
-```
+1. Sync master branch:
 
-And then run the python installation:
+   ```bash
+   $ git checkout master
+   $ git pull
+   ```
 
-```bash
-$ python setup.py install
-```
+2. Checkout the version you want to deploy. (It is NOT recommended to get a previous 
+   version.) If you want the latest release, you don't have to do this step; `master` 
+   points to the latest release. If you want to get a specific release, e.g. Release 1.1.3:
+   
+   ```bash
+   $ git checkout v1.1.3
+   ```
 
 ### Change deployment properties
-If you need to change any of the properties for your Forseti deployment, such as the
-`release-version`, follow the process below:
+1. Check `deploy-forseti.yaml.sample` to see if there are any new properties 
+   that you need to copy over to your previous `deploy-forseti.yaml`. You can use
+   `git diff` to compare what changed. For example, to see the diff between the latest 
+   (HEAD) and one revision ago:
 
-  1. If you **do not** need to update your Forseti version, continue on to step 3.
-     Sync your local git code (where you ran Deployment Manager) so you get the latest 
-     deployment templates. This is important because a newer version of Forseti might 
-     also require an updated startup script on the GCE instance.
-     
-     To get the latest version of Forseti, sync your master branch:
-     
-     ```bash
-     $ git checkout master
-     $ git pull
-     ```
-     
-  1. Check `deploy-forseti.yaml.sample` to see if there are any new properties 
-     that you need to copy over to your previous `deploy-forseti.yaml`.
-  1. Edit `deploy-forseti.yaml` and update the values you want to change. If you 
-     previously deployed the `master` branch, you don't need to change it.
-  1. Run the following update command:
+   ```bash
+   $ git diff origin..HEAD~1 -- deploy-forseti.yaml.sample
+   ```
 
-      ```bash
-      $ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
-       --config path/to/deploy-forseti.yaml
-      ```
+1. Edit `deploy-forseti.yaml` and update the values you want to change. If you 
+   previously deployed the `master` branch, you don't need to change it.
+1. Run the following update command:
+
+    ```bash
+    $ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
+     --config path/to/deploy-forseti.yaml
+    ```
 
 If you changed the properties in the `deploy-forseti.yaml` "Compute Engine" 
 section or the startup script in `forseti-instance.py`, you need to reset 
@@ -54,11 +52,10 @@ the instance for changes to take effect:
   $ gcloud compute instances reset COMPUTE_ENGINE_INSTANCE_NAME
   ```
 
-The GCE instance will restart and perform a fresh installation of Forseti, so you do 
+The Compute Engine instance will restart and perform a fresh installation of Forseti, so you do 
 not need to ssh to the instance to run all the git clone/python install commands.
 
-There are limitations as to what resources you can update in your deployment. If you 
-see an error that you cannot change a certain resources, it's likely that you will need 
-to create a new deployment instead.
+Some resources can't be updated in a deployment. If you see an error that you can't 
+change a certain resource, you'll need to create a new deployment of Forseti.
 
 Learn more about [Updating a Deployment](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments).
