@@ -27,6 +27,14 @@ from google.cloud.security.common.util import file_loader
 class FileLoaderTest(ForsetiTestCase):
     """Test the file loader utility."""
 
+    @classmethod
+    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
+    def setUpClass(cls, mock_google_credential):
+        """Set up."""
+        cls.storage_client = file_loader._get_storage_client()
+        # Enable cached HTTP for mock HTTP response object.
+        cls.storage_client.repository._use_cached_http = True
+
     def test_get_filetype_parser_works(self):
         """Test get_filetype_parser() works."""
         self.assertIsNotNone(
@@ -48,29 +56,29 @@ class FileLoaderTest(ForsetiTestCase):
         with self.assertRaises(errors.InvalidParserTypeError):
             file_loader._get_filetype_parser('path/to/file.yaml', 'asdf')
 
-    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
-    def test_read_file_from_gcs_json(self, mock_default_credential):
+    def test_read_file_from_gcs_json(self):
         """Test read_file_from_gcs for json."""
         mock_responses = [
             ({'status': '200',
               'content-range': '0-10/11'}, b'{"test": 1}')
         ]
         http_mocks.mock_http_response_sequence(mock_responses)
-        expected_dict = {"test": 1}
-        return_dict = file_loader._read_file_from_gcs('gs://fake/file.json')
+        expected_dict = {'test': 1}
+        return_dict = file_loader._read_file_from_gcs(
+            'gs://fake/file.json', storage_client=self.storage_client)
 
         self.assertEqual(expected_dict, return_dict)
 
-    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
-    def test_read_file_from_gcs_yaml(self, mock_default_credential):
+    def test_read_file_from_gcs_yaml(self):
         """Test read_file_from_gcs for yaml."""
         mock_responses = [
             ({'status': '200',
               'content-range': '0-6/7'}, b'test: 1')
         ]
         http_mocks.mock_http_response_sequence(mock_responses)
-        expected_dict = {"test": 1}
-        return_dict = file_loader._read_file_from_gcs('gs://fake/file.yaml')
+        expected_dict = {'test': 1}
+        return_dict = file_loader._read_file_from_gcs(
+            'gs://fake/file.yaml', storage_client=self.storage_client)
 
         self.assertEqual(expected_dict, return_dict)
 
@@ -82,4 +90,3 @@ class FileLoaderTest(ForsetiTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
