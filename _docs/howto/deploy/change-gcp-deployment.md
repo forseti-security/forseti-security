@@ -5,7 +5,7 @@ order: 104
 #  {{ page.title }}
 
 ### Get a particular deployment template version
-**This step is optional**.
+This step is **optional**.
 
 If you need to change the `release-version` for your Forseti deployment, you MUST 
 get the correct version of Forseti. The deployment template's startup 
