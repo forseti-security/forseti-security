@@ -63,7 +63,6 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
         Returns:
             webhook_payload: a string formatted violation
         """
-
         violation = kwargs.get('violation')
 
         payload = {
