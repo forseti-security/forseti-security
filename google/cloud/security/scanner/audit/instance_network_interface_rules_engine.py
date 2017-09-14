@@ -15,6 +15,7 @@
 """Rules engine for NetworkInterface."""
 from collections import namedtuple
 import itertools
+import json
 import re
 
 from google.cloud.security.common.util.regex_util import escape_and_globify
@@ -230,11 +231,11 @@ class Rule(object):
             is_external_network = (instance_network_interface.access_configs is
                                    not None)
             ips = None
-            if is_external_network:
-                ips = [config.get('natIP', '') for config in
-                       instance_network_interface.access_configs]
             if (network not in self.rules['whitelist'].get(project, []) and
                     is_external_network):
+                ips = [config['natIP']
+                       for config in instance_network_interface.access_configs
+                       if 'natIP' in config]
                 yield self.RuleViolation(
                     resource_type='instance',
                     rule_name=self.rule_name,
@@ -243,7 +244,7 @@ class Rule(object):
                     project=project,
                     network=network,
                     ip=ips,
-                    raw_data=repr(instance_network_interface))
+                    raw_data=json.dumps(instance_network_interface, indent=2))
 
     # Rule violation.
     # resource_type: string
