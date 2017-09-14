@@ -14,9 +14,10 @@
 
 """Writes the csv files for upload to Cloud SQL."""
 from contextlib import contextmanager
-import csv
 import os
 import tempfile
+
+import unicodecsv as csv
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
