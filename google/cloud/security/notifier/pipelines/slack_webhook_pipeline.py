@@ -48,7 +48,7 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
             output += '\t' * indent + '*' + str(key) + '*:'
             if isinstance(value, dict):
                 output += '\n' + self._dump_slack_output(value,
-                                                   indent + 1) + '\n'
+                                                         indent + 1) + '\n'
             else:
                 if not value:
                     value = 'n/a'
