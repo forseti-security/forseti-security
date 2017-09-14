@@ -27,14 +27,6 @@ from google.cloud.security.common.util import file_loader
 class FileLoaderTest(ForsetiTestCase):
     """Test the file loader utility."""
 
-    @classmethod
-    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
-    def setUpClass(cls, mock_google_credential):
-        """Set up."""
-        cls.storage_client = file_loader._get_storage_client()
-        # Enable cached HTTP for mock HTTP response object.
-        cls.storage_client.repository._use_cached_http = True
-
     def test_get_filetype_parser_works(self):
         """Test get_filetype_parser() works."""
         self.assertIsNotNone(
@@ -64,8 +56,7 @@ class FileLoaderTest(ForsetiTestCase):
         ]
         http_mocks.mock_http_response_sequence(mock_responses)
         expected_dict = {'test': 1}
-        return_dict = file_loader._read_file_from_gcs(
-            'gs://fake/file.json', storage_client=self.storage_client)
+        return_dict = file_loader._read_file_from_gcs('gs://fake/file.json')
 
         self.assertEqual(expected_dict, return_dict)
 
@@ -77,8 +68,7 @@ class FileLoaderTest(ForsetiTestCase):
         ]
         http_mocks.mock_http_response_sequence(mock_responses)
         expected_dict = {'test': 1}
-        return_dict = file_loader._read_file_from_gcs(
-            'gs://fake/file.yaml', storage_client=self.storage_client)
+        return_dict = file_loader._read_file_from_gcs('gs://fake/file.yaml')
 
         self.assertEqual(expected_dict, return_dict)
 

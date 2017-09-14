@@ -37,6 +37,8 @@ NUM_HTTP_RETRIES = 5
 # Per thread storage.
 LOCAL_THREAD = threading.local()
 
+CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
+
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -95,6 +97,9 @@ def _set_user_agent(credentials):
                     httplib2.__version__,
                     forseti_security.__package_name__,
                     forseti_security.__version__))
+        if (isinstance(credentials, client.GoogleCredentials) and
+                credentials.create_scoped_required()):
+            credentials = credentials.create_scoped(list(CLOUD_SCOPES))
     return credentials
 
 
