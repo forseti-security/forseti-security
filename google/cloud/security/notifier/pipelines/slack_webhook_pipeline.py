@@ -1,5 +1,4 @@
-
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,6 +33,29 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
     """Slack webhook pipeline to perform notifications"""
 
+    def _dump_slack_output(self, data, indent=0):
+        """Iterate over a dictionary and output a custom formatted string
+
+        Args:
+            data (dict): a dictionary of violation data
+            indent (int): number of spaces for indentation
+
+        Returns:
+            output: a string formatted violation
+        """
+        output = ''
+        for key, value in data.iteritems():
+            output += '\t' * indent + '*' + str(key) + '*:'
+            if isinstance(value, dict):
+                output += '\n' + self._dump_slack_output(value,
+                                                   indent + 1) + '\n'
+            else:
+                if not value:
+                    value = 'n/a'
+                output += '\t' * (indent + 1) + '`' + str(value) + '`\n'
+
+        return output
+
     def _compose(self, **kwargs):
         """Composes the slack webhook content
 
@@ -44,29 +66,6 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
             webhook_payload: a string formatted violation
         """
 
-        def slack_output_dump(data, indent=0):
-            """Iterate over a dictionary and output a custom formatted string
-
-            Args:
-                data (dict): a dictionary of violation data
-                indent (int): number of spaces for indentation
-
-            Returns:
-                output: a string formatted violation
-            """
-            output = ''
-            for key, value in data.iteritems():
-                output += '\t' * indent + '*' + str(key) + '*:'
-                if isinstance(value, dict):
-                    output += '\n' + slack_output_dump(value,
-                                                       indent + 1) + '\n'
-                else:
-                    if not value:
-                        value = 'n/a'
-                    output += '\t' * (indent + 1) + '`' + str(value) + '`\n'
-
-            return output
-
         violation = kwargs.get('violation')
 
         payload = {
@@ -74,7 +73,7 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
             'details': json.loads(violation.get('violation_data'))
         }
 
-        return slack_output_dump(payload)
+        return self._dump_slack_output(payload)
 
     def _send(self, **kwargs):
         """Sends a post to a Slack webhook url
