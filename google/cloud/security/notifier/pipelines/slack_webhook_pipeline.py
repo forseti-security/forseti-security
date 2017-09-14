@@ -22,7 +22,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines import base_notification_pipeline as bnp
 # pylint: enable=line-too-long
 
-
 LOGGER = log_util.get_logger(__name__)
 
 TEMP_DIR = '/tmp'
