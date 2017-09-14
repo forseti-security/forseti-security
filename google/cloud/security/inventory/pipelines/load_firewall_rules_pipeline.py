@@ -71,8 +71,8 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                            parser.json_stringify(
                                firewall_rule.get('targetTags')),
                        'firewall_rule_target_service_accounts':
-                            parser.json_stringify(
-                                firewall_rule.get('targetServiceAccounts')),
+                           parser.json_stringify(
+                               firewall_rule.get('targetServiceAccounts')),
                        'firewall_rule_allowed':
                            parser.json_stringify(
                                firewall_rule.get('allowed')),
