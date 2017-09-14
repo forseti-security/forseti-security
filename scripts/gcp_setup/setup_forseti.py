@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,14 +21,20 @@ import argparse
 
 from environment import gcloud_env
 
+
 def run():
     """Run the steps for the gcloud setup."""
     parser = argparse.ArgumentParser()
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--branch',
-                       help='Which Forseti branch to deploy')
-    group.add_argument('--version',
-                       help='Which Forseti release to deploy')
+    parser.add_argument('--no-cloudshell',
+                        action='store_true',
+                        help='Bypass Cloud Shell requirement')
+    parser.add_argument('--branch',
+                        help='Which Forseti branch to deploy')
+    group = parser.add_argument_group(title='regions')
+    group.add_argument('--gcs-location',
+                       help='The GCS bucket location')
+    group.add_argument('--cloudsql-region',
+                       help='The Cloud SQL region')
 
     args = vars(parser.parse_args())
     forseti_setup = gcloud_env.ForsetiGcpSetup(**args)

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,13 +54,9 @@ class BucketDao(project_dao.ProjectDao):
         Raises:
             MySQLError: An error with MySQL has occurred.
         """
-        # TODO: fix this not to use .format() for string-replacing
-        # the project id.
-        buckets_sql = select_data.BUCKETS_BY_PROJECT_ID.format(
-            timestamp,
-            project_number)
+        buckets_sql = select_data.BUCKETS_BY_PROJECT_ID.format(timestamp)
         rows = self.execute_sql_with_fetch(
-            resource_name, buckets_sql, None)
+            resource_name, buckets_sql, (project_number,))
         return [row['bucket_name'] for row in rows]
 
     def get_buckets_acls(self, resource_name, timestamp):

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ class BucketDaoTest(ForsetiTestCase):
             self.FAKE_PROJECT_NUMBERS[0])
 
         self.fetch_mock.assert_called_once_with(
-            self.resource_name, fake_query, None)
+            self.resource_name, fake_query, (self.FAKE_PROJECT_NUMBERS[0],))
 
     def test_get_project_numbers_raises_error(self):
         """Test get_project_numbers() raises a MySQLError."""

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,10 +21,12 @@ imports:
   name: cloudsql-instance.py
 - path: cloudsql/cloudsql-database.py
   name: cloudsql-database.py
-- path: storage/bucket.py
-  name: bucket.py
 - path: compute-engine/forseti-instance.py
   name: forseti-instance.py
+- path: iam/service_acct.py
+  name: service_acct.py
+- path: storage/bucket.py
+  name: bucket.py
 
 resources:
 
@@ -41,7 +43,7 @@ resources:
 - name: {SCANNER_BUCKET}
   type: bucket.py
   properties:
-    location: {BUCKET_REGION}
+    location: {BUCKET_LOCATION}
 
 # Compute Engine
 - name: forseti-instance
@@ -51,9 +53,9 @@ resources:
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1604-lts
     instance-type: n1-standard-2
-    zone: $(ref.cloudsql-instance.region)-b
+    zone: $(ref.cloudsql-instance.region)-c
 
-    service-account: {GCP_SERVICE_ACCOUNT}
+    service-account: $(ref.forseti-gcp-reader.email)
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
     scanner-bucket: {SCANNER_BUCKET}
@@ -81,3 +83,16 @@ resources:
     # Cloud SQL
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
+
+# Service accounts
+- name: forseti-gcp-reader
+  type: service_acct.py
+  properties:
+    accountId: {SERVICE_ACCT_GCP_READER}
+    displayName: forseti-gcp-reader
+
+- name: forseti-gsuite-reader
+  type: service_acct.py
+  properties:
+    accountId: {SERVICE_ACCT_GSUITE_READER}
+    displayName: forseti-gsuite-reader

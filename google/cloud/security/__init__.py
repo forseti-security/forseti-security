@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 """Forseti Security."""
 
-__version__ = '1.1.0'
+__version__ = '1.1.3'
 __package_name__ = 'forseti-security'
 
 try:

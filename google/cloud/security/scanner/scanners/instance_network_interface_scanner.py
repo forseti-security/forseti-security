@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with azthe License.
@@ -96,12 +96,9 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
            Raises:
                MySQLError if a MySQL error occurs.
         """
-        instances = instance_dao.InstanceDao().get_instances(
+        instances = instance_dao.InstanceDao(self.global_configs).get_instances(
             self.snapshot_timestamp)
-        network_interfaces = []
-        for instance in instances:
-            network_interfaces += instance.create_network_interfaces()
-        return network_interfaces
+        return [instance.create_network_interfaces() for instance in instances]
 
     @staticmethod
     def parse_instance_network_instance(instance_object):
@@ -124,7 +121,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         project_policies = {}
         project_policies = (
             project_dao
-            .ProjectDao()
+            .ProjectDao(self.global_configs)
             .get_project_policies('projects',
                                   self.
                                   snapshot_timestamp))

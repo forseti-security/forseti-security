@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ class ViolationDao(dao.Dao):
         # TODO: Remove this exception handling by moving the check for
         # violations table outside of the scanners.
         except MySQLdb.OperationalError, e:
-            if 'already exists' in str(e):
+            if e[0] == 1050:
                 LOGGER.debug('Violations table already exists: %s', e)
                 snapshot_table = self._create_snapshot_table_name(
                     resource_name, snapshot_timestamp)

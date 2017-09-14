@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -157,7 +157,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """
         policies = itertools.chain(*policies)
         all_violations = []
-        LOGGER.info('Finding policy violations...')
+        LOGGER.info('Finding IAM policy violations...')
         for (resource, policy) in policies:
             LOGGER.debug('%s => %s', resource, policy)
             violations = self.rules_engine.find_policy_violations(

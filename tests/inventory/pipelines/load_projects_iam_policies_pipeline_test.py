@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
 
 """Tests the load_projects_iam_policies_pipeline."""
 
-from tests.unittest_utils import ForsetiTestCase
+import unittest
 import mock
 import ratelimiter
-import unittest
 
-# pylint: disable=line-too-long
+from tests.inventory.pipelines.test_data import fake_configs
+from tests.inventory.pipelines.test_data import fake_iam_policies
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
@@ -27,9 +28,6 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
-from tests.inventory.pipelines.test_data import fake_configs
-from tests.inventory.pipelines.test_data import fake_iam_policies
-# pylint: enable=line-too-long
 
 
 class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
@@ -92,25 +90,23 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve()
 
-    def test_api_error_is_handled_when_retrieving(self):
+    @mock.patch.object(
+        load_projects_iam_policies_pipeline.base_pipeline, 'LOGGER')
+    def test_api_error_is_handled_when_retrieving(self, mock_logger):
         """Test that exceptions are handled when retrieving.
 
         We don't want to fail the pipeline when any one project's policies
         can not be retrieved.  We just want to log the error, and continue
         with the other projects.
         """
-        load_projects_iam_policies_pipeline.LOGGER = (
-            mock.create_autospec(log_util).get_logger('foo'))
         self.pipeline.dao.get_project_numbers.return_value = (
             self.FAKE_PROJECT_NUMBERS)
         self.pipeline.api_client.get_project_iam_policies.side_effect = (
             api_errors.ApiExecutionError('error error', mock.MagicMock()))
 
-        self.pipeline._retrieve()
-
-        self.assertEquals(
-            2,
-            load_projects_iam_policies_pipeline.LOGGER.error.call_count)
+        results = self.pipeline._retrieve()
+        self.assertEqual([], results)
+        self.assertEqual(2, mock_logger.error.call_count)
 
     @mock.patch.object(
         load_projects_iam_policies_pipeline.LoadProjectsIamPoliciesPipeline,

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,129 +13,84 @@
 # limitations under the License.
 
 """Tests the Bigquery client."""
-
-import mock
-import httplib2
+import json
 import unittest
+import mock
+from oauth2client import client
 
-from googleapiclient.errors import HttpError
-
-from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import bigquery as bq
-from google.cloud.security.common.gcp_api import _base_client as _base_client
-from google.cloud.security.common.gcp_api import errors as api_errors
+from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_bigquery as fbq
+from tests.common.gcp_api.test_data import http_mocks
+from google.cloud.security.common.gcp_api import bigquery as bq
+from google.cloud.security.common.gcp_api import errors as api_errors
 
 
-class BigqueryTestCase(ForsetiTestCase):
+class BigqueryTestCase(unittest_utils.ForsetiTestCase):
     """Test the Bigquery API Client."""
 
-    MAX_BIGQUERY_API_CALLS_PER_100_SECONDS = 88888
-
-    @mock.patch('google.cloud.security.common.gcp_api._base_client.discovery')
-    @mock.patch('google.cloud.security.common.gcp_api._base_client.GoogleCredentials')
-    def setUp(self, mock_google_credential, mock_discovery):
+    @classmethod
+    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
-
         fake_global_configs = {
-            'max_bigquery_api_calls_per_100_seconds':
-                self.MAX_BIGQUERY_API_CALLS_PER_100_SECONDS}
-        self.bq_api_client = bq.BigQueryClient(
-            global_configs=fake_global_configs)
-        self.http_response = httplib2.Response(
-                {'status': '400', 'content-type': 'application/json'}
-        )
+            'max_bigquery_api_calls_per_100_seconds': 1000000}
+        cls.bq_api_client = bq.BigQueryClient(
+            global_configs=fake_global_configs, use_rate_limiter=False)
 
-    def test_api_client_is_initialized(self):
-        """Test that the api client is initialized."""
-
-        self.assertEquals(
-            self.MAX_BIGQUERY_API_CALLS_PER_100_SECONDS,
-            self.bq_api_client.rate_limiter.max_calls)
-        self.assertEquals(
-            bq.BigQueryClient.DEFAULT_QUOTA_TIMESPAN_PER_SECONDS,
-            self.bq_api_client.rate_limiter.period)
+    @mock.patch.object(client, 'GoogleCredentials')
+    def test_no_quota(self, mock_google_credential):
+        """Verify no rate limiter is used if the configuration is missing."""
+        bq_api_client = bq.BigQueryClient(global_configs={})
+        self.assertEqual(None, bq_api_client.repository._rate_limiter)
 
     def test_get_bigquery_projectids_raises(self):
-        """Test that get_bigquery_projectids raises when there is an HTTP
-           exception.
-        """
-        mock_bq_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.projects.return_value = mock_bq_stub
-
-        self.bq_api_client._execute = mock.MagicMock(
-            side_effect=HttpError(self.http_response, '{}')
-            )
+        """Test that get_bigquery_projectids raises on HTTP exception."""
+        http_mocks.mock_http_response(fbq.PERMISSION_DENIED, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.bq_api_client.get_bigquery_projectids()
 
     def test_get_bigquery_projectids_with_no_projects(self):
-        """Test that get_bigquery_projectids returns an emptly list with no
-           enabled bigquery projects.
-        """
-        mock_bq_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.projects.return_value = mock_bq_stub
-        self.bq_api_client._build_paged_result = mock.MagicMock(
-                return_value=fbq.PROJECTS_LIST_REQUEST_RESPONSE_EMPTY
-        )
+        """Test that get_bigquery_projectids returns an emptly list."""
+        mock_responses = []
+        for page in fbq.PROJECTS_LIST_REQUEST_RESPONSE_EMPTY:
+            mock_responses.append(({'status': '200'}, json.dumps(page)))
+        http_mocks.mock_http_response_sequence(mock_responses)
 
         return_value = self.bq_api_client.get_bigquery_projectids()
 
-        self.assertListEqual(return_value, [])
+        self.assertListEqual([], return_value)
 
     def test_get_bigquery_projectids(self):
         """Test get_bigquery_projectids returns a valid list of project ids."""
-        mock_bq_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.projects.return_value = mock_bq_stub
-        self.bq_api_client._build_paged_result = mock.MagicMock(
-            return_value=fbq.PROJECTS_LIST_REQUEST_RESPONSE
-            )
+        mock_responses = []
+        for page in fbq.PROJECTS_LIST_REQUEST_RESPONSE:
+            mock_responses.append(({'status': '200'}, json.dumps(page)))
+        http_mocks.mock_http_response_sequence(mock_responses)
 
         return_value = self.bq_api_client.get_bigquery_projectids()
 
-        self.assertListEqual(return_value, fbq.PROJECTS_LIST_EXPECTED)
+        self.assertListEqual(fbq.PROJECTS_LIST_EXPECTED, return_value)
 
     def test_get_datasets_for_projectid_raises(self):
-        """Test get_datasets_for_projectid raises when there is an HTTP
-            exception.
-        """
-        mock_bq_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.datasets.return_value = mock_bq_stub
-
-        self.bq_api_client._execute = mock.MagicMock(
-            side_effect=HttpError(self.http_response, '{}')
-        )
+        """Test get_datasets_for_projectid raises on HTTP exception."""
+        http_mocks.mock_http_response(fbq.PERMISSION_DENIED, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
              self.bq_api_client.get_datasets_for_projectid(fbq.PROJECT_IDS[0])
 
     def test_get_datasets_for_projectid(self):
         """Test get_datasets_for_projectid returns datasets properly."""
-        mock_bq_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.datasets.return_value = mock_bq_stub
-        self.bq_api_client._build_paged_result = mock.MagicMock(
-                return_value=fbq.DATASETS_LIST_REQUEST_RESPONSE
-        )
+        http_mocks.mock_http_response(fbq.DATASETS_LIST_REQUEST_RESPONSE)
+        project_id = fbq.PROJECT_IDS[0]
 
-        return_value = self.bq_api_client.get_datasets_for_projectid('')
+        return_value = self.bq_api_client.get_datasets_for_projectid(project_id)
 
         self.assertListEqual(return_value, fbq.DATASETS_LIST_EXPECTED)
 
     def test_get_dataset_access_raises(self):
         """Test get_dataset_access raises when there is an HTTP exception."""
-        mock_bq_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.datasets.return_value = mock_bq_stub
-
-        self.bq_api_client._execute = mock.MagicMock(
-                side_effect=HttpError(self.http_response, '{}')
-        )
+        http_mocks.mock_http_response(fbq.PERMISSION_DENIED, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.bq_api_client.get_dataset_access(fbq.PROJECT_IDS[0],
@@ -143,14 +98,10 @@ class BigqueryTestCase(ForsetiTestCase):
 
     def test_get_dataset_access(self):
         """Test get_dataset_access returns dataset ACLs properly."""
-        mock_bq_stub = mock.MagicMock()
-        self.bq_api_client.service = mock.MagicMock()
-        self.bq_api_client.service.datasets.return_value = mock_bq_stub
-        self.bq_api_client._build_paged_result = mock.MagicMock(
-                return_value=fbq.DATASETS_GET_REQUEST_RESPONSE
-        )
+        http_mocks.mock_http_response(fbq.DATASETS_GET_REQUEST_RESPONSE)
 
-        return_value = self.bq_api_client.get_dataset_access('','')
+        return_value = self.bq_api_client.get_dataset_access(fbq.PROJECT_IDS[0],
+                                                             fbq.DATASET_ID)
 
         self.assertListEqual(return_value, fbq.DATASETS_GET_EXPECTED)
 
