@@ -25,7 +25,6 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
 
     def test_can_compose_slack_message(self):
         """Test that the slack message is built correctly."""
-
         violation_data = """        
             {
                 "role": "READER",
