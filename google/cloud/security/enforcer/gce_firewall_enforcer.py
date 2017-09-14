@@ -169,12 +169,13 @@ class ComputeFirewallAPI(object):
         self.gce_service = gce_service
         self._dry_run = dry_run
 
+    # pylint: disable=no-self-use
+
     @retry(
         retry_on_exception=http_retry,
         wait_exponential_multiplier=1000,
         stop_max_attempt_number=4)
 
-    # pylint: disable=no-self-use
     def _execute(self, request):
         """Execute the request and retry logic."""
 
@@ -777,7 +778,7 @@ class FirewallRules(object):
         if (('allowed' not in rule and 'denied' not in rule) or
                 ('allowed' in rule and 'denied' in rule)):
             raise InvalidFirewallRuleError(
-                'Rule must contain oneof "allowed" or "denied" entries:'
+                'Rule must contain oneof "allowed" or "denied" entries: '
                 ' "%s".' % rule)
 
         if 'allowed' in rule:
@@ -1036,8 +1037,8 @@ class FirewallEnforcer(object):
                     rule_name not in self._rules_to_delete):
                 raise FirewallRuleValidationError(
                     'The rule %s is in the rules to insert set, but the same '
-                    'rule name already exists on project %s. It may be used on'
-                    ' a different network.' % (rule_name, self.project))
+                    'rule name already exists on project %s. It may be used on '
+                    'a different network.' % (rule_name, self.project))
 
         if networks:
             for rule_name in self._rules_to_update:
@@ -1080,9 +1081,9 @@ class FirewallEnforcer(object):
             if usage + insert_count > limit:
                 if usage - delete_count + insert_count > limit:
                     raise FirewallQuotaExceededError(
-                        'Firewall enforcement cannot update the policy for'
-                        'project %s without exceed the current firewalls quota:'
-                        '%u,' %(self.project, limit))
+                        'Firewall enforcement cannot update the policy for '
+                        'project %s without exceed the current firewalls '
+                        'quota: %u,' %(self.project, limit))
                 else:
                     LOGGER.info('Switching to "delete first" rule update order '
                                 'for project %s.', self.project)
@@ -1097,8 +1098,8 @@ class FirewallEnforcer(object):
     def _apply_change_set(self, delete_before_insert):
         """Updates project firewall rules based on the generated changeset.
 
-        Extends self._(deleted|inserted|updated)_rules with the rules changed by
-        these operations.
+           Extends self._(deleted|inserted|updated)_rules with the rules
+           changed by these operations.
 
         Args:
           delete_before_insert: If true, delete operations are completed before
@@ -1137,7 +1138,7 @@ class FirewallEnforcer(object):
             change_count += len(successes)
             if failures:
                 raise FirewallEnforcementInsertFailedError(
-                    'Firewall enforcement failed while inserting rules for'
+                    'Firewall enforcement failed while inserting rules for '
                     'project {}. The following errors were encountered: {}'
                     .format(self.project, change_errors))
 
@@ -1159,7 +1160,7 @@ class FirewallEnforcer(object):
             change_count += len(successes)
             if failures:
                 raise FirewallEnforcementDeleteFailedError(
-                    'Firewall enforcement failed while deleting rules for'
+                    'Firewall enforcement failed while deleting rules for '
                     'project {}. The following errors were encountered: {}'
                     .format(self.project, change_errors))
         return change_count
@@ -1180,7 +1181,7 @@ class FirewallEnforcer(object):
             change_count += len(successes)
             if failures:
                 raise FirewallEnforcementUpdateFailedError(
-                    'Firewall enforcement failed while deleting rules for'
+                    'Firewall enforcement failed while deleting rules for '
                     'project {}. The following errors were encountered: {}'
                     .format(self.project, change_errors))
 

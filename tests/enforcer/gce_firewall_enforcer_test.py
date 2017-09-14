@@ -41,12 +41,11 @@ class HelperFunctionTest(ForsetiTestCase):
 
     def test_build_network_url(self):
         """Verify that we can get a url from project and network name."""
-        self.assertEqual(
-            fe.build_network_url(
-                'example.com:testing', 'mytestnet'),
-            'https://www.googleapis.com/compute/{}/projects/'
-            'example.com:testing/global/networks/'
-            'mytestnet'.format(fe.API_VERSION))
+        self.assertEqual('https://www.googleapis.com/compute/{}/projects/'
+                         'example.com:testing/global/networks/'
+                         'mytestnet'.format(fe.API_VERSION),
+                         fe.build_network_url('example.com:testing',
+                                              'mytestnet'))
 
 
 class ComputeFirewallAPI(ForsetiTestCase):
@@ -232,8 +231,6 @@ class FirewallRulesTest(ForsetiTestCase):
         """Set up."""
         self.gce_service = mock.MagicMock()
 
-        # Force API_VERSION to always be v1 for these tests, to ensure the generated
-        # network URLs match the expected values.
         self.mock_api_version = mock.patch(
             'google.cloud.security.enforcer.gce_firewall_enforcer'
             '.API_VERSION', 'beta').start()
@@ -289,7 +286,7 @@ class FirewallRulesTest(ForsetiTestCase):
                                  self.firewall_rules.rules)
 
     def test_add_rules_from_api_add_rule_false(self):
-        """Validate that add_rules_from_api adds no rules when callback returns false.
+        """Validate function adds no rules when callback returns false.
 
         Setup:
           * Break the mock current firewall rules into two pages to validate
@@ -336,7 +333,8 @@ class FirewallRulesTest(ForsetiTestCase):
         (self.gce_service.firewalls().list().execute
          .side_effect) = [page_one, page_two]
 
-        callback = lambda rule: (rule['name'] == 'test-network-allow-internal-1')
+        callback = lambda rule: (rule['name'] ==
+                                 'test-network-allow-internal-1')
 
         self.firewall_rules._add_rule_callback = callback
         self.firewall_rules.add_rules_from_api(self.firewall_api)
@@ -532,7 +530,8 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
     def test_valid_callback_false(self):
         """Verify valid rules returns True."""
         self.firewall_rules._add_rule_callback = lambda _: False
-        self.assertFalse(self.firewall_rules._check_rule_before_adding(self.test_rule))
+        self.assertFalse(
+            self.firewall_rules._check_rule_before_adding(self.test_rule))
 
     def test_unknown_key(self):
         """A rule with an unknown key raises InvalidFirewallRuleError."""
@@ -570,7 +569,8 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
             self.firewall_rules._check_rule_before_adding(self.test_rule)
 
     def test_denied_missing_ip_protocol(self):
-      """A rule missing IPProtocol in an allow predicate raises an exception."""
+      """A rule missing IPProtocol in an denied predicate raises an
+         exception."""
       allowed = self.test_rule.pop('allowed')
       self.test_rule['denied'] = allowed
       self.test_rule['denied'][0].pop('IPProtocol')
@@ -606,7 +606,8 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
             self.firewall_rules._check_rule_before_adding(new_rule)
 
     def test_allowed_and_denied(self):
-      """A rule with allowed and denied ports raises InvalidFirewallRuleError."""
+      """A rule with allowed and denied ports raises
+         InvalidFirewallRuleError."""
       self.test_rule['denied'] = [{'IPProtocol': u'udp'}]
       with self.assertRaises(fe.InvalidFirewallRuleError):
         self.firewall_rules._check_rule_before_adding(self.test_rule)
@@ -615,32 +616,38 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
       """A rule with denied ports returns True."""
       allowed = self.test_rule.pop('allowed')
       self.test_rule['denied'] = allowed
-      self.assertTrue(self.firewall_rules._check_rule_before_adding(self.test_rule))
+      self.assertTrue(
+          self.firewall_rules._check_rule_before_adding(self.test_rule))
 
     def test_direction_ingress(self):
       """A rule with direction set to INGRESS returns True."""
       self.test_rule['direction'] = 'INGRESS'
-      self.assertTrue(self.firewall_rules._check_rule_before_adding(self.test_rule))
+      self.assertTrue(
+          self.firewall_rules._check_rule_before_adding(self.test_rule))
 
     def test_direction_egress_source_ranges(self):
-      """Rule with direction set to EGRESS with sourceRanges raises exception."""
+      """Rule with direction set to EGRESS with sourceRanges raises
+         exception."""
       self.test_rule['direction'] = 'EGRESS'
       with self.assertRaises(fe.InvalidFirewallRuleError):
         self.firewall_rules._check_rule_before_adding(self.test_rule)
 
     def test_direction_egress_no_ranges(self):
-      """Rule with direction set to EGRESS with no IP ranges raises exception."""
+      """Rule with direction set to EGRESS with no IP ranges raises
+         exception."""
       self.test_rule['direction'] = 'EGRESS'
       self.test_rule.pop('sourceRanges')
       with self.assertRaises(fe.InvalidFirewallRuleError):
         self.firewall_rules._check_rule_before_adding(self.test_rule)
 
     def test_direction_egress_destination_ranges(self):
-      """Rule with direction set to EGRESS with destinationRanges returns True."""
+      """Rule with direction set to EGRESS with destinationRanges returns
+         True."""
       self.test_rule['direction'] = 'EGRESS'
       source_ranges = self.test_rule.pop('sourceRanges')
       self.test_rule['destinationRanges'] = source_ranges
-      self.assertTrue(self.firewall_rules._check_rule_before_adding(self.test_rule))
+      self.assertTrue(
+          self.firewall_rules._check_rule_before_adding(self.test_rule))
 
     def test_invalid_direction(self):
       """Rule with direction set to invalid raises exception."""
@@ -658,7 +665,8 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
     def test_priority(self):
       """Rule with priority set returns True."""
       self.test_rule['priority'] = '1000'
-      self.assertTrue(self.firewall_rules._check_rule_before_adding(self.test_rule))
+      self.assertTrue(
+          self.firewall_rules._check_rule_before_adding(self.test_rule))
 
     def test_invalid_priority(self):
       """Rule with priority set to invalid raises exception."""
@@ -834,7 +842,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
         rule_two = copy.deepcopy(
             constants.EXPECTED_FIREWALL_RULES['test-network-allow-public-0'])
 
-        # Rule three isn't part of EXPECTED_FIREWALL_RULES.  It should be removed.
+        # Rule three isn't part of EXPECTED_FIREWALL_RULES.It should be removed.
         rule_three = {
             'allowed': [{
                 'IPProtocol': u'icmp'
@@ -1039,7 +1047,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
             'name':
                 u'unknown-rule-doesnt-match',
             'network': (u'https://www.googleapis.com/compute/beta/projects/'
-                        'google.com:secops-testing/global/networks/test-net'),
+                        'forseti-system-test/global/networks/test-net'),
             'sourceRanges': [u'10.2.3.4/32'],
         }
         self.current_rules.add_rule(rule_two)
@@ -1356,8 +1364,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
 
       Expected Results:
         * _apply_change_set will return 3 for the number of rules changed
-        * The methods Get(Deleted|Inserted|Updated)Rules() will each return a list
-          containing the rules that were (deleted|inserted|updated) by
+        * The methods Get(Deleted|Inserted|Updated)Rules() will each return a
+          list containing the rules that were (deleted|inserted|updated) by
           _ApplyChanges.
       """
 
@@ -1413,8 +1421,10 @@ class FirewallEnforcerTest(ForsetiTestCase):
           * Mock the number of rules that would be inserted and/or deleted.
 
         Expected Results:
-          * When mock project does not have enough quota, an exception is raised.
-          * When mock project does not have enough quota to insert first and then
+          * When mock project does not have enough quota, an exception is
+            raised.
+          * When mock project does not have enough quota to insert first and
+            then
             delete, the method returns True.
           * When mock project does have enough quota, the method returns False.
         """
