@@ -18,37 +18,37 @@
 import copy
 import json
 import threading
-import mock
 import unittest
+import mock
+
+from parameterized import parameterized
 
 from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.security.enforcer import gce_firewall_enforcer as fe
 
-
 class HelperFunctionTest(ForsetiTestCase):
     """Unit tests for helper functions."""
 
     def test_get_network_name_from_url(self):
         """Verify that we can get the network name given a network url."""
-        url = ('https://www.googleapis.com/compute/v1/projects/%s/global/'
-               'networks/%s' % (constants.TEST_PROJECT, constants.TEST_NETWORK))
-        self.assertEquals(constants.TEST_NETWORK,
-                          fe.get_network_name_from_url(url))
+        url = ('https://www.googleapis.com/compute/{}/projects/'
+               'example.com:testing/global/networks/'
+               'expected-network').format(fe.API_VERSION)
+        self.assertEqual('expected-network',
+                         fe.get_network_name_from_url(url))
 
     def test_build_network_url(self):
         """Verify that we can get a url from project and network name."""
-        expected_url = ('https://www.googleapis.com/compute/v1/projects/'
-                        '%s/global/networks/%s' %
-                        (constants.TEST_PROJECT, constants.TEST_NETWORK))
-
-        self.assertEqual(expected_url,
-                         fe.build_network_url(constants.TEST_PROJECT,
-                                              constants.TEST_NETWORK))
+        self.assertEqual('https://www.googleapis.com/compute/{}/projects/'
+                         'example.com:testing/global/networks/'
+                         'mytestnet'.format(fe.API_VERSION),
+                         fe.build_network_url('example.com:testing',
+                                              'mytestnet'))
 
 
-class ComputeFirewallAPITest(ForsetiTestCase):
+class ComputeFirewallAPI(ForsetiTestCase):
     """Tests for the ComputeFirewallAPI class."""
 
     def setUp(self):
@@ -230,8 +230,17 @@ class FirewallRulesTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
         self.gce_service = mock.MagicMock()
-        self.firewall_api = fe.ComputeFirewallAPI(self.gce_service)
+
+        self.mock_api_version = mock.patch(
+            'google.cloud.security.enforcer.gce_firewall_enforcer'
+            '.API_VERSION', 'beta').start()
+
+        self.firewall_api = fe.ComputeFirewallAPI(
+            self.gce_service)
         self.firewall_rules = fe.FirewallRules(constants.TEST_PROJECT)
+
+    def tearDown(self):
+      mock.patch.stopall()
 
     def test_add_rule_for_an_invalid_rule_type(self):
         """Validate that invalid rules raises an exception.
@@ -275,6 +284,66 @@ class FirewallRulesTest(ForsetiTestCase):
 
         self.assertSameStructure(constants.EXPECTED_FIREWALL_RULES,
                                  self.firewall_rules.rules)
+
+    def test_add_rules_from_api_add_rule_false(self):
+        """Validate function adds no rules when callback returns false.
+
+        Setup:
+          * Break the mock current firewall rules into two pages to validate
+            nextPageToken works as expected
+          * Set compute.firewalls().list() to return to two pages of data
+          * Set _add_rule_callback to return False
+
+        Expected Results:
+          * No rules were added to the rules dictionary
+        """
+        page_one = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
+        page_one['items'] = page_one['items'][:1]
+        page_one['nextPageToken'] = 'token'
+
+        page_two = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
+        page_two['items'] = page_two['items'][1:]
+
+        (self.gce_service.firewalls().list().execute
+         .side_effect) = [page_one, page_two]
+
+        self.firewall_rules._add_rule_callback = lambda _: False
+        self.firewall_rules.add_rules_from_api(self.firewall_api)
+        self.assertEqual({}, self.firewall_rules.rules)
+
+    def test_add_rules_from_api_add_rule(self):
+        """Validate that add_rules_from_api adds appropriate rules.
+
+        Setup:
+          * Break the mock current firewall rules into two pages to validate
+            nextPageToken works as expected
+          * Set compute.firewalls().list() to return to two pages of data
+          * Set _add_rule_callback to only return True for specific rules.
+
+        Expected Results:
+          * Imported rules were successfully added to the rules dictionary
+        """
+        page_one = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
+        page_one['items'] = page_one['items'][:1]
+        page_one['nextPageToken'] = 'token'
+
+        page_two = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
+        page_two['items'] = page_two['items'][1:]
+
+        (self.gce_service.firewalls().list().execute
+         .side_effect) = [page_one, page_two]
+
+        callback = lambda rule: (rule['name'] ==
+                                 'test-network-allow-internal-1')
+
+        self.firewall_rules._add_rule_callback = callback
+        self.firewall_rules.add_rules_from_api(self.firewall_api)
+        expected = {'test-network-allow-internal-1':
+                    constants.EXPECTED_FIREWALL_RULES[
+                        'test-network-allow-internal-1']}
+        self.assertSameStructure(
+            expected,
+            self.firewall_rules.rules)
 
     def test_add_rules_for_network(self):
         """Validate adding rules for a specific network.
@@ -458,6 +527,12 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
         self.assertTrue(
             self.firewall_rules._check_rule_before_adding(self.test_rule))
 
+    def test_valid_callback_false(self):
+        """Verify valid rules returns True."""
+        self.firewall_rules._add_rule_callback = lambda _: False
+        self.assertFalse(
+            self.firewall_rules._check_rule_before_adding(self.test_rule))
+
     def test_unknown_key(self):
         """A rule with an unknown key raises InvalidFirewallRuleError."""
         self.test_rule['unknown'] = True
@@ -493,6 +568,15 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
         with self.assertRaises(fe.InvalidFirewallRuleError):
             self.firewall_rules._check_rule_before_adding(self.test_rule)
 
+    def test_denied_missing_ip_protocol(self):
+      """A rule missing IPProtocol in an denied predicate raises an
+         exception."""
+      allowed = self.test_rule.pop('allowed')
+      self.test_rule['denied'] = allowed
+      self.test_rule['denied'][0].pop('IPProtocol')
+      with self.assertRaises(fe.InvalidFirewallRuleError):
+        self.firewall_rules._check_rule_before_adding(self.test_rule)
+
     def test_long_name(self):
         """A rule with a very long name raises InvalidFirewallRuleError."""
         # Make rule name 64 characters long
@@ -521,6 +605,100 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
         with self.assertRaises(fe.DuplicateFirewallRuleNameError):
             self.firewall_rules._check_rule_before_adding(new_rule)
 
+    def test_allowed_and_denied(self):
+      """A rule with allowed and denied ports raises
+         InvalidFirewallRuleError."""
+      self.test_rule['denied'] = [{'IPProtocol': u'udp'}]
+      with self.assertRaises(fe.InvalidFirewallRuleError):
+        self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_denied_rule(self):
+      """A rule with denied ports returns True."""
+      allowed = self.test_rule.pop('allowed')
+      self.test_rule['denied'] = allowed
+      self.assertTrue(
+          self.firewall_rules._check_rule_before_adding(self.test_rule))
+
+    def test_direction_ingress(self):
+      """A rule with direction set to INGRESS returns True."""
+      self.test_rule['direction'] = 'INGRESS'
+      self.assertTrue(
+          self.firewall_rules._check_rule_before_adding(self.test_rule))
+
+    def test_direction_egress_source_ranges(self):
+      """Rule with direction set to EGRESS with sourceRanges raises
+         exception."""
+      self.test_rule['direction'] = 'EGRESS'
+      with self.assertRaises(fe.InvalidFirewallRuleError):
+        self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_direction_egress_no_ranges(self):
+      """Rule with direction set to EGRESS with no IP ranges raises
+         exception."""
+      self.test_rule['direction'] = 'EGRESS'
+      self.test_rule.pop('sourceRanges')
+      with self.assertRaises(fe.InvalidFirewallRuleError):
+        self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_direction_egress_destination_ranges(self):
+      """Rule with direction set to EGRESS with destinationRanges returns
+         True."""
+      self.test_rule['direction'] = 'EGRESS'
+      source_ranges = self.test_rule.pop('sourceRanges')
+      self.test_rule['destinationRanges'] = source_ranges
+      self.assertTrue(
+          self.firewall_rules._check_rule_before_adding(self.test_rule))
+
+    def test_invalid_direction(self):
+      """Rule with direction set to invalid raises exception."""
+      self.test_rule['direction'] = 'INVALID'
+      with self.assertRaises(fe.InvalidFirewallRuleError):
+        self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_source_and_destination_ranges(self):
+      """Rule with sourceRanges and destinationRanges raises exception."""
+      self.test_rule['destinationRanges'] = copy.deepcopy(
+          self.test_rule['sourceRanges'])
+      with self.assertRaises(fe.InvalidFirewallRuleError):
+        self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_priority(self):
+      """Rule with priority set returns True."""
+      self.test_rule['priority'] = '1000'
+      self.assertTrue(
+          self.firewall_rules._check_rule_before_adding(self.test_rule))
+
+    def test_invalid_priority(self):
+      """Rule with priority set to invalid raises exception."""
+      self.test_rule['priority'] = 'INVALID'
+      with self.assertRaises(fe.InvalidFirewallRuleError):
+        self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_invalid_priority_out_of_range(self):
+      """Rule with priority set to an out of range value raises exception."""
+      invalid_values = ['-1', '65536']
+      for priority in invalid_values:
+        self.test_rule['priority'] = priority
+        with self.assertRaises(fe.InvalidFirewallRuleError):
+          self.firewall_rules._check_rule_before_adding(self.test_rule)
+
+    def test_keys_with_more_than_256_values(self):
+      """Rule entries with more than 256 values raises an exception."""
+      ingress_keys = set(['sourceRanges', 'sourceTags', 'targetTags'])
+      for key in ingress_keys:
+        new_rule = copy.deepcopy(self.test_rule)
+        new_rule['direction'] = 'INGRESS'
+        new_rule[key] = range(257)
+        with self.assertRaises(fe.InvalidFirewallRuleError):
+          self.firewall_rules._check_rule_before_adding(new_rule)
+
+      egress_keys = set(['destinationRanges'])
+      for key in egress_keys:
+        new_rule = copy.deepcopy(self.test_rule)
+        new_rule['direction'] = 'EGRESS'
+        new_rule[key] = range(257)
+        with self.assertRaises(fe.InvalidFirewallRuleError):
+          self.firewall_rules._check_rule_before_adding(new_rule)
 
 class FirewallEnforcerTest(ForsetiTestCase):
     """Tests for the FirewallEnforcer class."""
@@ -555,7 +733,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
 
     def test_apply_firewall_no_rules(self):
         """Raises exception if no expected_rules defined."""
-        with self.assertRaises(fe.FirewallEnforcementFailedError):
+        with self.assertRaises(fe.EmptyProposedFirewallRuleSetError):
             self.enforcer.apply_firewall()
 
     def test_apply_firewall_allow_empty_ruleset(self):
@@ -664,7 +842,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
         rule_two = copy.deepcopy(
             constants.EXPECTED_FIREWALL_RULES['test-network-allow-public-0'])
 
-        # Rule three isn't part of EXPECTED_FIREWALL_RULES.  It should be removed.
+        # Rule three isn't part of EXPECTED_FIREWALL_RULES.It should be removed.
         rule_three = {
             'allowed': [{
                 'IPProtocol': u'icmp'
@@ -676,9 +854,12 @@ class FirewallEnforcerTest(ForsetiTestCase):
                 u'Allow communication between instances.',
             'name':
                 u'unknown-rule-doesnt-match',
-            'network': (u'https://www.googleapis.com/compute/v1/projects/'
-                        'test-project/global/networks/test-network'),
+            'network': (u'https://www.googleapis.com/compute/{}/projects/'
+                        'example.com:testing/global/networks/'
+                        'test-net').format(fe.API_VERSION),
             'sourceRanges': [u'10.2.3.4/32'],
+            'priority': 1000,
+            'direction': u'INGRESS'
         }
         self.current_rules.add_rule(rule_three)
 
@@ -865,8 +1046,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
                 u'Allow communication between instances.',
             'name':
                 u'unknown-rule-doesnt-match',
-            'network': (u'https://www.googleapis.com/compute/v1/projects/'
-                        'google.com:secops-testing/global/networks/test-net'),
+            'network': (u'https://www.googleapis.com/compute/beta/projects/'
+                        'forseti-system-test/global/networks/test-net'),
             'sourceRanges': [u'10.2.3.4/32'],
         }
         self.current_rules.add_rule(rule_two)
@@ -899,8 +1080,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
 
         # Insert a rule that is already defined in current_rules and not deleted
         self.enforcer._rules_to_insert.append('test-network-allow-internal-0')
-
-        with self.assertRaises(fe.FirewallEnforcementFailedError):
+        with self.assertRaises(fe.FirewallRuleValidationError):
             # ValidateChangeSet only checks rules if networks is not None
             self.enforcer._validate_change_set(
                 networks=[constants.TEST_NETWORK])
@@ -930,7 +1110,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
 
         # Update a rule that is defined in current_rules on a different network
         self.enforcer._rules_to_update.append('default-allow-internal-0')
-        with self.assertRaises(fe.FirewallEnforcementFailedError):
+        with self.assertRaises(fe.NetworkImpactValidationError):
             self.enforcer._validate_change_set(
                 networks=[constants.TEST_NETWORK])
 
@@ -1017,7 +1197,9 @@ class FirewallEnforcerTest(ForsetiTestCase):
             insert_function, test_rules)
         self.assertSameStructure(test_rules, failures)
         self.assertListEqual([], successes)
-        error_str = 'Rule: %s\nError: %s' % (test_rules[0], error_409)
+        error_str = 'Rule: %s\nError: %s' % (
+            test_rules[0].get('name', ''),
+            error_409)
         self.assertListEqual([error_str], change_errors)
 
     def test_apply_change_operation_status_error(self):
@@ -1105,9 +1287,9 @@ class FirewallEnforcerTest(ForsetiTestCase):
         self.enforcer._rules_to_insert = ['test-network-allow-internal-0']
         self.enforcer._rules_to_update = ['test-network-allow-public-0']
 
-        changed_count = self.enforcer._apply_change_set()
+        delete_before_insert = False
 
-        self.assertEqual(3, changed_count)
+        changed_count = self.enforcer._apply_change_set(delete_before_insert)
 
         self.assertSameStructure([
             constants.EXPECTED_FIREWALL_RULES['test-network-allow-internal-1']
@@ -1151,23 +1333,119 @@ class FirewallEnforcerTest(ForsetiTestCase):
             'name': 'test'
         }
 
+        delete_before_insert = False
+
         self.enforcer._rules_to_delete = ['test-network-allow-internal-0']
         with self.assertRaises(fe.FirewallEnforcementFailedError):
-            self.enforcer._apply_change_set()
+            self.enforcer._apply_change_set(delete_before_insert)
         self.assertEqual([], self.enforcer.get_deleted_rules())
         self.enforcer._rules_to_delete = []
 
         self.enforcer._rules_to_insert = ['test-network-allow-internal-0']
         with self.assertRaises(fe.FirewallEnforcementFailedError):
-            self.enforcer._apply_change_set()
+            self.enforcer._apply_change_set(delete_before_insert)
         self.assertEqual([], self.enforcer.get_inserted_rules())
         self.enforcer._rules_to_insert = []
 
         self.enforcer._rules_to_update = ['test-network-allow-internal-0']
         with self.assertRaises(fe.FirewallEnforcementFailedError):
-            self.enforcer._apply_change_set()
+            self.enforcer._apply_change_set(delete_before_insert)
         self.assertEqual([], self.enforcer.get_updated_rules())
         self.enforcer._rules_to_update = []
+
+    def testApplyChangesDeleteFirst(self):
+      """Validate _ApplyChanges works with no errors.
+
+      Setup:
+        * Set current and expected rules to EXPECTED_CORP_FIREWALL_RULES
+        * Add one rule each to rules_to_(delete|insert|update)
+        * Set _delete_first to True
+        * Run _apply_change_set
+
+      Expected Results:
+        * _apply_change_set will return 3 for the number of rules changed
+        * The methods Get(Deleted|Inserted|Updated)Rules() will each return a
+          list containing the rules that were (deleted|inserted|updated) by
+          _ApplyChanges.
+      """
+
+      self.current_rules.rules = constants.EXPECTED_FIREWALL_RULES
+      self.expected_rules.rules = constants.EXPECTED_FIREWALL_RULES
+
+      self.enforcer._rules_to_delete = ['test-network-allow-internal-1']
+      self.enforcer._rules_to_insert = ['test-network-allow-internal-0']
+      self.enforcer._rules_to_update = ['test-network-allow-public-0']
+
+      delete_before_insert = True
+      changed_count = self.enforcer._apply_change_set(delete_before_insert)
+
+      self.assertEqual(3, changed_count)
+
+      self.assertSameStructure(self.enforcer.get_deleted_rules(),
+                               [constants.EXPECTED_FIREWALL_RULES[
+                                   'test-network-allow-internal-1']])
+
+      self.assertSameStructure(self.enforcer.get_inserted_rules(),
+                               [constants.EXPECTED_FIREWALL_RULES[
+                                   'test-network-allow-internal-0']])
+
+      self.assertSameStructure(self.enforcer.get_updated_rules(),
+                               [constants.EXPECTED_FIREWALL_RULES[
+                                   'test-network-allow-public-0']])
+
+    @parameterized.expand([
+        ('no_quota', 0, 0, 1, 0, True, False),
+        ('low_quota_1', 1, 1, 1, 0, True, False),
+        ('low_quota_2', 10, 8, 4, 1, True, False),
+        ('low_quota_3', 10, 8, 4, 2, False, True),
+        ('high_quota_1', 100, 6, 10, 6, False, False),
+        ('high_quota_2', 100, 85, 30, 50, False, True),
+        ('unknown_quota', None, None, 1, 0, False, True)])
+    def testCheckChangeOperationOrder(self, name, quota, usage,
+                                      insert_rule_count, delete_rule_count,
+                                      expect_exception,
+                                      expect_delete_before_insert):
+
+        """Validate CheckChangeOperationOrder has expected behavior.
+
+        Args:
+          quota: The mocked firewall quota limit.
+          usage: The mocked current firewall quota usage.
+          insert_rule_count: The number of rules that would be inserted.
+          delete_rule_count: The number of rules that would be deleted.
+          expect_exception: True if an exception should be raised.
+          expect_delete_before_insert: The expected return value from the check.
+
+        Setup:
+          * Mock project.get() to return a FIREWALLS quota with specific limits.
+          * Mock the number of rules that would be inserted and/or deleted.
+
+        Expected Results:
+          * When mock project does not have enough quota, an exception is
+            raised.
+          * When mock project does not have enough quota to insert first and
+            then
+            delete, the method returns True.
+          * When mock project does have enough quota, the method returns False.
+        """
+        if quota is not None:
+          self.gce_service.projects().get().execute.return_value = {
+              'quotas': [{'metric': 'FIREWALLS',
+                          'limit': quota,
+                          'usage': usage}]}
+        else:
+          self.gce_service.projects().get().execute.return_value = {
+              'quotas': []}
+
+        if expect_exception:
+          with self.assertRaises(fe.FirewallQuotaExceededError):
+            self.enforcer._check_change_operation_order(
+                insert_rule_count, delete_rule_count)
+        else:
+          delete_before_insert = self.enforcer._check_change_operation_order(
+              insert_rule_count, delete_rule_count)
+
+          self.assertEqual(expect_delete_before_insert, delete_before_insert)
 
 
 class FirewallRulesAreEqualTest(ForsetiTestCase):
@@ -1179,9 +1457,9 @@ class FirewallRulesAreEqualTest(ForsetiTestCase):
         self.firewall_rules_2 = fe.FirewallRules(constants.TEST_PROJECT)
 
         self.rule_one = {
-            'network': ('https://www.googleapis.com/compute/v1/'
-                        'projects/test-project/global/'
-                        'networks/test-network'),
+            'network': ('https://www.googleapis.com/compute/{}/'
+                        'projects/example.com:testing/global/networks/'
+                        'default').format(fe.API_VERSION),
             'sourceRanges': ['10.240.0.0/16', '10.8.129.0/24'],
             'sourceTags': ['example-source-tag'],
             'allowed': [{
@@ -1239,7 +1517,7 @@ class FirewallRulesAreEqualTest(ForsetiTestCase):
     def test_inequal_network(self):
         """Test that inequal networks cause inequality."""
         self.rule_two['network'] = self.rule_two['network'].replace(
-            'test-network', 'other')
+            'default', 'other')
         self.firewall_rules_1.add_rule(self.rule_one)
         self.firewall_rules_2.add_rule(self.rule_two)
         self.assertNotEqual(self.firewall_rules_1, self.firewall_rules_2)

@@ -65,6 +65,9 @@ class ProjectEnforcerTest(ForsetiTestCase):
         response_403.reason = 'Failed'
         self.error_403 = project_enforcer.errors.HttpError(response_403, '', '')
 
+        # used in get_firewalls_quota
+        self.gce_service.projects().get().execute.return_value = {}
+
         self.addCleanup(mock.patch.stopall)
 
     def set_expected_audit_log(self,
@@ -262,7 +265,6 @@ class ProjectEnforcerTest(ForsetiTestCase):
         extra_rules = copy.deepcopy(self.expected_rules)
         extra_rules.extend(
             constants.DEFAULT_FIREWALL_API_RESPONSE['items'][:1])
-
         self.gce_service.firewalls().list().execute.side_effect = [
             constants.DEFAULT_FIREWALL_API_RESPONSE,
             {'items': extra_rules},
@@ -271,7 +273,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
 
         result = self.enforcer.enforce_firewall_policy(
             self.policy, compute_service=self.gce_service,
-            retry_on_dry_run = True)
+            retry_on_dry_run=True)
 
         self.expected_proto.status = project_enforcer.STATUS_SUCCESS
         self.expected_proto.gce_firewall_enforcement.all_rules_changed = True
