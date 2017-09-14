@@ -43,6 +43,7 @@ INSTALL_REQUIRES = [
     'PyYAML==3.12',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
+    'requests==2.18.4',
     'sendgrid==3.6.3',
     'SQLAlchemy==1.1.9',
     'pygraph>=0.2.1',
