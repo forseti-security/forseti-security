@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,9 +33,10 @@ global:
 
     # quota
     # The pre-populated values are the defaults from GCP.
-    max_admin_api_calls_per_day: 150000
+    max_admin_api_calls_per_100_seconds: 1500
     max_appengine_api_calls_per_second: 20
     max_bigquery_api_calls_per_100_seconds: 17000
+    max_cloudbilling_api_calls_per_60_seconds: 300
     max_compute_api_calls_per_second: 20
     max_crm_api_calls_per_100_seconds: 400
     max_iam_api_calls_per_second: 20
@@ -142,3 +143,10 @@ notifier:
                 sendgrid_api_key: ''
                 sender: ''
                 recipient: ''
+            # Slack webhook pipeline
+            # Create an incoming webhook in your organization's Slack setting, located at:
+            # https://[your_org].slack.com/apps/manage/custom-integrations
+            # Add the provided URL in the configuration below in `webhook_url`.
+            - name: slack_webhook_pipeline
+              configuration:
+                webhook_url: ''

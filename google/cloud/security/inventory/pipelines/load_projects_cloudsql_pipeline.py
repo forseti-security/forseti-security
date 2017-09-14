@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,15 +18,11 @@ import json
 
 from dateutil import parser as dateutil_parser
 
-# pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -59,8 +55,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
 
         for instances_map in cloudsql_instances_map:
             instances = instances_map['instances']
-            items = instances.get('items', [])
-            for item in items:
+            for item in instances:
                 yield {
                     'project_number': instances_map['project_number'],
                     'name': item.get('name'),
@@ -179,8 +174,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
 
         for instances_map in cloudsql_instances_map:
             instances = instances_map['instances']
-            items = instances.get('items', [])
-            for item in items:
+            for item in instances:
                 authorizednetworks = item.get('settings', {})\
                     .get('ipConfiguration', {}).get('authorizedNetworks', [{}])
                 for network in authorizednetworks:
@@ -224,8 +218,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
 
         for instances_map in cloudsql_instances_map:
             instances = instances_map['instances']
-            items = instances.get('items', [])
-            for item in items:
+            for item in instances:
                 ipaddresses = item.get('ipAddresses', [{}])
                 for ipaddress in ipaddresses:
                     if ipaddress.get('timeToRetire') is not None:
@@ -291,21 +284,16 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
         try:
             project_numbers = self.dao.get_project_numbers(
                 self.PROJECTS_RESOURCE_NAME, self.cycle_timestamp)
-        except data_access_errors.MySQLError as e:
+        except dao_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
         instances_maps = []
         for project_number in project_numbers:
-            try:
-                instances = self.api_client.get_instances(
-                    project_number)
+            instances = self.safe_api_call('get_instances', project_number)
+            if instances:
                 instances_map = {'project_number': project_number,
                                  'instances': instances}
                 instances_maps.append(instances_map)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(
-                    'Unable to get cloudsql instances for project %s:\n%s',
-                    project_number, e)
         return instances_maps
 
     def _get_loaded_count(self):
@@ -314,7 +302,7 @@ class LoadProjectsCloudsqlPipeline(base_pipeline.BasePipeline):
             self.count = self.dao.select_record_count(
                 self.RESOURCE_NAME_INSTANCES,
                 self.cycle_timestamp)
-        except data_access_errors.MySQLError as e:
+        except dao_errors.MySQLError as e:
             LOGGER.error('Unable to retrieve record count for %s_%s:\n%s',
                          self.RESOURCE_NAME_INSTANCES, self.cycle_timestamp, e)
 

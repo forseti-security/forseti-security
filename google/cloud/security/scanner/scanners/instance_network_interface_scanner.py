@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with azthe License.
@@ -66,6 +66,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             violation_data['project'] = violation.project
             violation_data['network'] = violation.network
             violation_data['ip'] = violation.ip
+            violation_data['raw_data'] = violation.raw_data
             yield {
                 'resource_id': 'instance_network_interface',
                 'resource_type': violation.resource_type,

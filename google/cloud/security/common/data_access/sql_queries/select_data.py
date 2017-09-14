@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -161,7 +161,7 @@ RAW_BUCKETS = """
 BUCKETS_BY_PROJECT_ID = """
     SELECT bucket_name
     FROM buckets_{0}
-    WHERE project_number = {1};
+    WHERE project_number = %s;
 """
 
 # TODO: reduce these sql to a generic statement

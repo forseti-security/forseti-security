@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,27 +20,39 @@ discovery.get()).
 
 SUPPORTED_APIS = {
     'admin': {
-        'version': 'directory_v1'
+        'default_version': 'directory_v1',
+        'supported_versions': ['directory_v1']
     },
     'appengine': {
-        'version': 'v1'
+        'default_version': 'v1',
+        'supported_versions': ['v1']
     },
     'bigquery': {
-        'version': 'v2'
+        'default_version': 'v2',
+        'supported_versions': ['v2']
+    },
+    'cloudbilling': {
+        'default_version': 'v1',
+        'supported_versions': ['v1']
     },
     'cloudresourcemanager': {
-        'version': 'v1'
+        'default_version': 'v1',
+        'supported_versions': ['v1', 'v2']
     },
     'compute': {
-        'version': 'v1'
+        'default_version': 'beta',
+        'supported_versions': ['v1', 'beta']
     },
     'iam': {
-        'version': 'v1'
+        'default_version': 'v1',
+        'supported_versions': ['v1']
     },
     'sqladmin': {
-        'version': 'v1beta4'
+        'default_version': 'v1beta4',
+        'supported_versions': ['v1beta4']
     },
     'storage': {
-        'version': 'v1'
+        'default_version': 'v1',
+        'supported_versions': ['v1']
     }
 }

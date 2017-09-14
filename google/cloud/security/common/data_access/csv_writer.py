@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
 
 """Writes the csv files for upload to Cloud SQL."""
 from contextlib import contextmanager
-import csv
 import os
 import tempfile
+
+import unicodecsv as csv
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 

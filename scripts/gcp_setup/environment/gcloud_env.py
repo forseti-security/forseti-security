@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ ORG_IAM_ROLES = [
 PROJECT_IAM_ROLES = [
     'roles/storage.objectViewer',
     'roles/storage.objectCreator',
-    'roles/cloudsql.client'
+    'roles/cloudsql.client',
+    'roles/logging.logWriter',
 ]
 
 REQUIRED_APIS = [
@@ -134,6 +135,7 @@ class ForsetiGcpSetup(object):
         self.deploy_tpl_path = None
         self.forseti_conf_path = None
 
+        self.skip_email = False
         self.sendgrid_api_key = '""'
         self.notification_sender_email = '""'
         self.notification_recipient_email = '""'
@@ -147,6 +149,7 @@ class ForsetiGcpSetup(object):
         self.get_authed_user()
         self.get_project()
         self.get_organization()
+        self.check_billing_enabled()
         self.has_permissions()
 
         self.enable_apis()
@@ -302,6 +305,34 @@ class ForsetiGcpSetup(object):
             sys.exit(1)
         print('Project id: %s' % self.project_id)
 
+    def check_billing_enabled(self):
+        """Check if billing is enabled."""
+        return_code, out, err = self._run_command(
+            ['gcloud', 'alpha', 'billing', 'projects', 'describe',
+             self.project_id, '--format=json'])
+        if return_code:
+            print(err)
+            self._billing_not_enabled()
+        try:
+            billing_info = json.loads(out)
+            if billing_info.get('billingEnabled'):
+                print('Billing IS enabled.')
+            else:
+                self._billing_not_enabled()
+        except ValueError:
+            self._billing_not_enabled()
+
+    def _billing_not_enabled(self):
+        """Print message and exit."""
+        print('\nIt seems that billing is not enabled for your project. '
+              'You can check whether billing has been enabled in the '
+              'Cloud Platform Console:\n\n'
+              '    https://console.cloud.google.com/billing/linkedaccount?'
+              'project={}&organizationId={}\n\n'
+              'Once you have enabled billing, re-run this setup.\n'.format(
+                  self.project_id, self.organization_id))
+        sys.exit(1)
+
     def get_organization(self):
         """Infer the organization from the project's parent."""
         return_code, out, err = self._run_command(
@@ -347,17 +378,19 @@ class ForsetiGcpSetup(object):
         Args:
             folder_id (str): The folder id, just a number.
         """
-        parent_type = 'folder'
+        parent_type = 'folders'
+        parent_id = folder_id
         while parent_type != 'organizations':
             return_code, out, err = self._run_command(
                 ['gcloud', 'alpha', 'resource-manager', 'folders',
-                 'describe', folder_id, '--format=json'])
+                 'describe', parent_id, '--format=json'])
             if return_code:
                 print(err)
                 self._no_organization()
             try:
                 folder = json.loads(out)
                 parent_type, parent_id = folder['parent'].split('/')
+                print('Check parent: %s' % folder['parent'])
             except ValueError as verr:
                 print(verr)
                 self._no_organization()
@@ -484,7 +517,7 @@ class ForsetiGcpSetup(object):
 
     def download_gsuite_svc_acct_key(self):
         """Download the service account key."""
-        print('Downloading GSuite service account key for %s'
+        print('\nDownloading GSuite service account key for %s'
               % self.gsuite_service_account)
         proc = subprocess.Popen(
             ['gcloud', 'iam', 'service-accounts', 'keys',
@@ -610,6 +643,9 @@ class ForsetiGcpSetup(object):
                 ROOT_DIR_PATH, 'configs', 'forseti_conf_dm.yaml'))
 
         # Ask for SendGrid API Key
+        print('Forseti can send email notifications through SendGrid '
+              'via an API key. '
+              'This step is optional and can be configured later.')
         sendgrid_api_key = raw_input(
             'What is your SendGrid API key? (press [enter] to skip) ').strip()
         if sendgrid_api_key:
@@ -624,6 +660,8 @@ class ForsetiGcpSetup(object):
                 '(press [enter] to skip) ').strip()
             if notification_recipient_email:
                 self.notification_recipient_email = notification_recipient_email
+        else:
+            self.skip_email = True
 
         conf_values = {
             'EMAIL_RECIPIENT': self.notification_recipient_email,
@@ -654,7 +692,7 @@ class ForsetiGcpSetup(object):
                 the deployment.
         """
         self._print_banner('Create Forseti deployment')
-        print ('This may take awhile.')
+        print ('This may take a few minutes.')
         self.deployment_name = 'forseti-security-{}'.format(self.timestamp)
         print('Deployment name: %s' % self.deployment_name)
         print('Deployment Manager Dashboard: '
@@ -715,9 +753,9 @@ class ForsetiGcpSetup(object):
         Use 2**<attempt #> seconds of sleep() between attempts.
         """
         self._print_banner('Copy G Suite key to Forseti VM')
+        print('scp-ing your gsuite_key.json to your Forseti GCE instance...')
         for i in range(1, GSUITE_KEY_SCP_ATTEMPTS+1):
-            print('Attempt #{} to copy gsuite_key.json to your Forseti GCE '
-                  'instance...'.format(i))
+            print('Attempt {} of {} ...'.format(i, GSUITE_KEY_SCP_ATTEMPTS))
             return_code, out, err = self._run_command(
                 ['gcloud',
                  'compute',
@@ -751,7 +789,7 @@ class ForsetiGcpSetup(object):
         self._print_banner('Post-setup instructions')
 
         print('Your generated Deployment Manager template can be '
-              'found here:\n\n    {}\n'.format(self.deploy_tpl_path))
+              'found here:\n\n    {}\n\n'.format(self.deploy_tpl_path))
 
         if not deploy_success:
             print ('Your deployment had some issues. Please review the error '
@@ -762,21 +800,30 @@ class ForsetiGcpSetup(object):
         print('You can see the details of your deployment in the '
               'Cloud Console:\n\n    '
               'https://console.cloud.google.com/deployments/details/'
-              '{}?project={}&organizationId={}\n'.format(
+              '{}?project={}&organizationId={}\n\n'.format(
                   self.deployment_name, self.project_id, self.organization_id))
 
-        print('A forseti_conf_dm.yaml file has been generated. '
-              'If you change your forseti_conf.yaml or Forseti rules, '
-              'copy the following files from the root directory of '
-              'forseti-security to your Forseti bucket:\n\n'
-              '    gsutil cp configs/forseti_conf_dm.yaml '
-              '{}/configs/forseti_conf.yaml\n'
-              '    gsutil cp -r rules {}\n\n'.format(
-                  self.bucket_name,
-                  self.bucket_name))
+        if self.skip_email:
+            print('If you would like to enable email notifications via '
+                  'SendGrid, please refer to:\n\n    '
+                  'http://forsetisecurity.org/docs/howto/configure/'
+                  'email-notification\n\n')
 
         print('Finalize your installation by enabling G Suite Groups '
               'collection in Forseti:\n\n'
               '    '
               'http://forsetisecurity.org/docs/howto/configure/'
               'gsuite-group-collection\n\n')
+
+        print('A default configuration file '
+              '(configs/forseti_conf_dm.yaml) '
+              'has been generated. If you wish to change your '
+              'Forseti configuration or rules, e.g. enabling G Suite '
+              'Groups collection, copy the changed files '
+              'from the root directory of forseti-security/ to '
+              'your Forseti bucket:\n\n'
+              '    gsutil cp configs/forseti_conf_dm.yaml '
+              '{}/configs/forseti_conf.yaml\n\n'
+              '    gsutil cp -r rules {}\n\n'.format(
+                  self.bucket_name,
+                  self.bucket_name))
