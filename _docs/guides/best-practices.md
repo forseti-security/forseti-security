@@ -6,7 +6,7 @@ order: 004
 
 ## Service accounts
 When you use multiple service accounts with your Forseti Security deployments,
-you fulfill the security best practice of privilege separation. Following are the
+you implement the security best practice of privilege separation. Following are the
 scenarios for which it's best to use separate service accounts:
 
  * **[Forseti Security service account](#forseti-security-service-account)**
@@ -18,7 +18,7 @@ scenarios for which it's best to use separate service accounts:
  * **[Forseti Explain service account](#forseti-explain-service-account)**
  (optional): Used to provide IAM Explain functionality.
 
-When you name service accounts, it's best to use a descriptive name like
+When naming service accounts, it's best to use a descriptive name like
 `forseti-security` or `forseti-security-gsuite`.
 
 ### Forseti Security service account
@@ -59,8 +59,8 @@ It's important to know that if you don't plan to execute a particular piece of
 Forseti, such as `forseti_enforcer`, you don't need to create that service account
 or grant those permissions.
 
-Learn more about GCP IAM roles
-[here](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles).
+* Learn more about [GCP IAM roles](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles).
+* Learn more about [Using IAM securely](https://cloud.google.com/iam/docs/using-iam-securely).
 
 ### Service account for Forseti Security
 Forseti Security needs the following roles for `forseti_inventory` and/or
@@ -82,3 +82,4 @@ to read from the inventory stored in Cloud SQL.
 **Granted on the project where Forseti Explain is deployed**
 
  * `roles/cloudsql.client`
+ 

@@ -61,3 +61,22 @@ pre.highlight {
     padding: 9.5px;
   }
 }
+
+// Body
+#documentation {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+// Rouge inline highlight
+code.highlighter-rouge {
+  color: $grey-800;
+  background-color: $white-alpha-90;
+}
+
+// Left sidebar heading
+.left-sidebar > h4 > a,
+.left-sidebar > h4 > a:active,
+.left-sidebar > h4 > a:hover {
+  color: $grey-800;
+}

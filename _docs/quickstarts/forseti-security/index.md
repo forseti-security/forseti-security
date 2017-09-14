@@ -4,33 +4,42 @@ order: 002
 ---
 # {{ page.title }}
 
-This quickstart explains how to use the Forseti setup wizard to get started
-quickly with Forseti Security for Google Cloud Platform (GCP) projects.
+This quickstart explains how to use the Forseti setup wizard, which helps to 
+automate some of the Forseti installation and setup process.
+
+Setup wizard is not available prior to version 1.1.0.
 
 ## Before you begin
 
-To complete this quickstart, you will need:
+Prior to running the setup wizard, you will need:
 
   - A GCP organization for which you want to deploy Forseti.
   - Org Admin IAM role in order for the script to assign the Forseti 
   service account roles on the organization IAM policy.
+  - A GCP project dedicated to Forseti.
+  - Enable billing on the project.
+
 
 ## Setting up Forseti Security
 
-The setup wizard presents a series of prompts to guide you through setting
-up a Forseti deployment, then generates a deployment template and configuration
-file based on your input.
+The setup wizard automatically determines setup information, generates a 
+deployment template, and creates a Forseti deployment.
 
-  1. First, download Forseti. The setup wizard is included:
+## Activate Google Cloud Shell
+
+It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
+
+  1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
+  1. In the **Select a project** drop-down list at the top of the console, select the project where you want to deploy Forseti.
+  1. On the top right of the console, click the icon to **Activate Google Cloud Shell**. The Cloud Shell panel opens at the bottom of the page.
+
+### Running setup
+  
+  1. Once you've started Cloud Shell, download Forseti. The setup wizard is included:
   
       ```bash
-      git clone https://github.com/GoogleCloudPlatform/forseti-security
-      ```
-      
-      If you want to deploy a particular release:
-      
-      ```
-      git checkout <release version>
+      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security
+
       ```
 
   1. Navigate to the setup wizard directory:
@@ -39,71 +48,36 @@ file based on your input.
       cd forseti-security/scripts/gcp_setup
       ```
 
-  1. Start the setup process:
-  
-      If you downloaded a certain release of Forseti, specify the release version
-      to the setup wizard.
-
-      Setup wizard is not available prior to 1.1.0.
-      
-      _e.g. Deploy 1.1.0:_
-      
-      ```bash
-      python setup_forseti.py --version 1.1.0
-      ```
-  
-     _Default: runs master branch_
+  1. Invoke the setup:
      
       ```bash
       python setup_forseti.py
       ```
       
-      _Run a certain branch:_
-      
+      To see additional configurations for the setup:
+
       ```bash
-      python setup_forseti.py --branch develop
+      python setup_forseti.py -h
       ```
 
-  1. Follow the prompts to download and install the
-  [gcloud command-line tool](https://cloud.google.com/sdk/gcloud/).
-  1. Follow the prompts to authenticate your GCP account in a web browser,
-  then return to the command-line.
-  1. Enter the organization for which you want to deploy Forseti, if prompted.
-  1. Create a new project or enter an existing project ID you want to use for
-  Forseti Security. Note that it's best to use a project dedicated to running
-  Forseti.
-  1. The setup wizard checks for valid configurations or creates a new one,
-  then it checks if billing is enabled for your project.
-      * If billing isn't enabled, follow the prompts to enable billing, then
-    return to the command-line.
-  1. Next, the setup wizard automatically enables required APIs:
-  
-  {% include docs/required_apis.md %}
-  
-  1. Create a new service account or enter an existing service account for
-  accessing GCP.
-  1. Optionally create a new service account or enter an existing service
-  account for getting GSuite groups.
-  1. Next, the setup wizard automatically assigns the required roles to the GCP service
-  account. For details about the required roles, see [Forseti Security Best Practices Guide]({% link _docs/guides/best-practices.md %})
-  1. Enter a name for your bucket and Cloud SQL instance.
-  1. Setup wizard will create a Deployment Manager template based on your input
-  as well as ask whether you want to create the deployment.
-  1. Optionally create the bucket and a Cloud SQL instance. Only do this if you 
-  do not plan to create a deployment via Deployment Manager.
-  1. If you set up a service account to retrieve GSuite groups, follow the
-  post-setup instructions to enable your GSuite service account for domain-wide delegation.
+  1. Setup will infer the necessary information to install Forseti. You will be 
+     prompted to enter a SendGrid API key, which is optional. (More information 
+     on setting up  [email notifications]({% link _docs/howto/configure/email-notification.md %}))
+     
+  1. If you previously used Cloud Shell to SSH to a Compute Engine instance and 
+     you set an SSH passphrase, setup prompts you to enter the passphrase. 
+     The Forseti setup uses secure copy (SCP) to copy the auto-generated G Suite 
+     service account key to the Forseti Compute Engine instance.
 
-Forseti Security is now set up for your project and you can enable modules
-to use for your resources.
+  1. After the setup wizard successfully completes Forseti setup and deployment, 
+     complete the steps to [enable G Suite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %}). This is a **required** step if you also plan to deploy IAM Explain.
 
 ## What's next
 
-  - Set up [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
+  - Configure [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
   [Scanner]({% link _docs/quickstarts/scanner/index.md %}),
   and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %}).
-  - Set up Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
+  - Configure Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
   - Enable [GSuite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
   for processing by Forseti.
   - Learn how to [change a deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
-
