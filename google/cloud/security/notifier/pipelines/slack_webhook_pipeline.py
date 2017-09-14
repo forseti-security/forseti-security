@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Slack webhook pipeline to perform notifications"""
+"""Slack webhook pipeline to perform notifications."""
 import json
 import requests
 
