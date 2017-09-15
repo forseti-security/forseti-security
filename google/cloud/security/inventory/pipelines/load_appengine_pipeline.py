@@ -27,6 +27,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
 
     RESOURCE_NAME = 'appengine'
 
+
     def _retrieve(self):
         """Retrieve AppEngine applications from GCP.
 
@@ -46,6 +47,16 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
             app = self.safe_api_call('get_app', project.id)
             if app:
                 apps[project.id] = app
+
+                services = self.safe_api_call('list_services', project.id)
+                if services:
+                    for service in services:
+                        versions = self.safe_api_call(
+                            'list_versions', project.id, service.get('id'))
+                        if versions:
+                            service['versions'] = versions
+                    app['services'] = services
+        
         return apps
 
     def _transform(self, resource_from_api):
@@ -74,11 +85,15 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
                    'default_bucket': app.get('defaultBucket'),
                    'iap': parser.json_stringify(app.get('iap', {})),
                    'gcr_domain': app.get('gcrDomain'),
+                   'services': parser.json_stringify(app.get('services')),
                    'raw_application': parser.json_stringify(app)}
 
     def run(self):
         """Run the pipeline."""
         apps = self._retrieve()
+        if not apps:
+            return
+            
         loadable_apps = self._transform(apps)
         self._load(self.RESOURCE_NAME, loadable_apps)
         self._get_loaded_count()

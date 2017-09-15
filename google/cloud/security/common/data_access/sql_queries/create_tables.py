@@ -30,6 +30,7 @@ CREATE_APPENGINE_TABLE = """
         `default_bucket` varchar(255) DEFAULT NULL,
         `iap` json DEFAULT NULL,
         `gcr_domain` varchar(255) DEFAULT NULL,
+        `services` json DEFAULT NULL,
         `raw_application` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
