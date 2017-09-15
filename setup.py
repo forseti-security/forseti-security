@@ -51,8 +51,8 @@ INSTALL_REQUIRES = [
 SETUP_REQUIRES = [
     'google-apputils==0.4.2',
     'python-gflags==3.1.1',
-    'grpcio==1.4.0',
-    'grpcio-tools==1.4.0',
+    'grpcio<=1.4.0',
+    'grpcio-tools<=1.4.0',
     'protobuf>=3.2.0',
 ]
 
