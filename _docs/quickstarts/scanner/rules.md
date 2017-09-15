@@ -102,17 +102,95 @@ For more information, refer to the [BucketAccessControls](https://cloud.google.c
 
 ## Cloud SQL rules
 
-Coming soon.
+```yaml
+rules:
+  - name: sample cloudsql rule to search for publicly exposed instances
+    instance_name: '*'
+    authorized_networks: '0.0.0.0/0'
+    ssl_enabled: 'False'
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
+ ```
+ - **name**: The description of your rule.
+ - **instance_name**: The Cloud SQL instance to which you want to apply the rule.
+ - **authorized_networks**: The allowed network.
+ - **ssl_enabled**: Whether SSL should be enabled (true or false)
+ - **resource**: The resource under which the instance resides.
 
 ## BigQuery rules
 
-Coming soon.
+BigQuery scanner rules serve as blacklists.
+
+```yaml
+rules:
+  - name: sample BigQuery rule to search for public datasets
+    dataset_id: '*'
+    special_group: '*'
+    user_email: '*'
+    domain: '*'
+    group_email: '*'
+    role: 'allAuthenticatedUsers'
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
+```
+- **name**: The description of your rule.
+- **dataset_id**: The BigQuery dataset to which you want to apply the rule. A value of `'*'` applies the rule to all your datasets.
+- **resource**: The resource under which the dataset resides.
+
+The BigQuery Scanner rules specify entities that aren't allowed to access your datasets. When you set a value of `'*'` for `special_group`, `user_email`, `domain`, and `group_email`, Scanner checks to make sure that no entities can access your datasets. If you specify any other value, Scanner only checks to make sure that the entity you specified doesn't have access.
 
 ## Forwarding rules
 
-Coming soon.
+```yaml
+rules:
+  - name: Rule Name Example
+    target: Forwarding Rule Target Example
+    mode: whitelist
+    load_balancing_scheme: EXTERNAL
+    ip_protocol: ESP
+    ip_address: "198.51.100.46"
+```
+- **name**: The description of your rule.
+- **target**: The URL of the target resource to receive the matched traffic.
+- **mode**: Rule matching mode. Currently just "whitelist".
+- **load_balancing_scheme**: What the ForwardingRule will be used for, either "INTERNAL" or "EXTERNAL".
+- **ip_protocol**: The IP protocol to which this rule applies. Valid options are TCP, UDP, ESP, AH, SCTP or ICMP.
+- **ip_address**: The IP address for which this forwarding rule serves.
+
+To learn more, see the [ForwardingRules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules) documentation.
 
 ## IAP rules
 
 Coming soon.
 
+## Instance Network Interface rules
+```yaml
+rules:
+  # This rule helps with:
+  # #1 Ensure instances with external IPs are only running 
+  # on whitelisted networks
+  # #2 Ensure instances are only running on networks created in allowed 
+  # projects (using XPN)
+  - name: all networks covered in whitelist
+    project: '*'
+    network: '*'
+    is_external_network: True
+    # this would be a custom list of your networks/projects.
+    whitelist:
+      master: 
+        - master-1
+      network: 
+        - network-1 
+        - network-2
+      default:
+        - default-1
+```
+- **name**: The description of your rule.
+- **whitelist**: The whitelist describes which projects and networks for which VM instances can have external IPs. For example, the following values would specify that VM instances in project_01’s network_01 can have external IP addresses:
+        
+          project_01:
+            - network_01
