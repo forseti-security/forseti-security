@@ -56,7 +56,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
                         if versions:
                             service['versions'] = versions
                     app['services'] = services
-        
+
         return apps
 
     def _transform(self, resource_from_api):
@@ -91,9 +91,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
     def run(self):
         """Run the pipeline."""
         apps = self._retrieve()
-        if not apps:
-            return
-            
-        loadable_apps = self._transform(apps)
-        self._load(self.RESOURCE_NAME, loadable_apps)
+        if apps:
+            loadable_apps = self._transform(apps)
+            self._load(self.RESOURCE_NAME, loadable_apps)
         self._get_loaded_count()
