@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Define text color
+TRED='\033[0;31m'
+TNC='\033[0m'
 
 # Set Organization ID
 echo "Setting up organization ID"
@@ -80,7 +83,6 @@ echo "    Cloud SQL API: sql-component.googleapis.com"
 echo "    Compute Engine API: compute.googleapis.com"
 echo "    Deployment Manager API: deploymentmanager.googleapis.com"
 echo "    Google Identity and Access Management (IAM) API: iam.googleapis.com"
-echo "    Google App Engine Admin API: appengine.googleapis.com"
 read -p "Do you want to use the script to enable them? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
@@ -93,7 +95,6 @@ then
 	gcloud beta service-management enable compute.googleapis.com
 	gcloud beta service-management enable deploymentmanager.googleapis.com
 	gcloud beta service-management enable iam.googleapis.com
-	gcloud beta service-management enable appengine.googleapis.com
 else
 	echo "API Enabling skipped, if you haven't enable them, you can done so in cloud console."
 fi
@@ -102,27 +103,27 @@ fi
 echo "Setting up service accounts"
 echo "Here are the existing service accounts within this project:"
 gcloud iam service-accounts list
-read -p "Do you want to use a existing service account for gcp resources and policies scrapping? (y/n)" -n 1 -r
+read -p "Do you want to use a existing service account for gcp resources and policies scraping? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
 	echo "Please type in the service account email address you want to use:"
-	read SCRAPPINGSA
-	gcloud iam service-accounts describe $SCRAPPINGSA ||
+	read SCRAPINGSA
+	gcloud iam service-accounts describe $SCRAPINGSA ||
 	{
-		echo "The existence of "$SCRAPPINGSA" cannot be verified"
+		echo "The existence of "$SCRAPINGSA" cannot be verified"
 		exit 1
 	}
 else
 	echo "Please type in the service account name you want to create:"
-	read scrappingname
-	SCRAPPINGSA=$(gcloud iam service-accounts create \
-		$scrappingname \
-		--display-name "scrapping service account for IAM Explain" \
+	read scrapingname
+	SCRAPINGSA=$(gcloud iam service-accounts create \
+		$scrapingname \
+		--display-name "scraping service account for IAM Explain" \
 		--format flattened \
 		| grep -- 'email:' | sed -e 's/^email: *//g') ||
 	{
-		echo "Creating "$SCRAPPINGSA" failed"
+		echo "Creating "$SCRAPINGSA" failed"
 		exit 1
 	}
 fi
@@ -158,17 +159,19 @@ gcloud iam service-accounts keys create \
     --iam-account $GSUITESA
 
 # Service Accounts role assignment
-echo "Assigning roles to the gcp scrapping service account"
-echo "Following roles need to be assigned to the gcp scrapping service account"
-echo "    $SCRAPPINGSA"
+echo "Assigning roles to the gcp scraping service account"
+echo "Following roles need to be assigned to the gcp scraping service account"
+echo "    $SCRAPINGSA"
 echo "to run IAM Explain:"
 echo "    - Organization level:"
 echo "        - 'roles/browser',"
+echo "        - 'roles/compute.networkViewer',"
 echo "        - 'roles/iam.securityReviewer',"
 echo "        - 'roles/appengine.appViewer',"
 echo "        - 'roles/servicemanagement.quotaViewer',"
 echo "        - 'roles/cloudsql.viewer',"
 echo "        - 'roles/compute.securityAdmin',"
+echo "        - 'roles/storage.admin',"
 echo "    - Project level:"
 echo "        - 'roles/cloudsql.client'"
 read -p "Do you want to use the script to assign the roles? (y/n)" -n 1 -r
@@ -176,43 +179,39 @@ echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
 	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
+	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/browser
 	
 	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
+	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/compute.networkViewer
 	
 	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
+	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/iam.securityReviewer
 	
 	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
+	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/appengine.appViewer
 	
 	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
+	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/servicemanagement.quotaViewer
 	
 	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
+	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/cloudsql.viewer
 	
 	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
+	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/compute.securityAdmin
+
+	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	 --member=serviceAccount:$SCRAPINGSA \
+	 --role=roles/storage.admin
 	
 	gcloud projects add-iam-policy-binding $PROJECT_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
-	 --role=roles/storage.objectViewer
-	
-	gcloud projects add-iam-policy-binding $PROJECT_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
-	 --role=roles/storage.objectCreator
-	
-	gcloud projects add-iam-policy-binding $PROJECT_ID \
-	 --member=serviceAccount:$SCRAPPINGSA \
+	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/cloudsql.client
 else
 	echo "Roles assigning skipped, if you haven't done it, you can done so in cloud console."
@@ -223,7 +222,7 @@ cp ~/forseti-security/deployment-templates/deploy-explain.yaml.sample \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
 sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
-sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPPINGSA'/g' \
+sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPINGSA'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
 sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 ~/forseti-security/deployment-templates/deploy-explain.yaml
@@ -301,6 +300,7 @@ if [[ $cpResponse != "SUCCESS" ]]; then
 fi
 
 # Ask to setup the gsuite service account
+echo -e "${TRED}WE ARE NOT FINISHED YET${TNC}"
 echo "Please complete the deployment by enabling GSuite google \
 groups collection on your gsuite service account:"
 echo "    $GSUITESA"
