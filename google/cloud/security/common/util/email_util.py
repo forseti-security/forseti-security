@@ -73,6 +73,23 @@ class EmailUtil(object):
         """
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
+    def _add_recipient(self, email, email_recipients):
+        """Add multiple recipients to the sendgrid email object.
+        
+        Args:
+            email (SendGrid): SendGrid mail object
+            email_recipients (Str): comma-separated text of the email recipients
+
+        Returns:
+            SendGrid mail object with mulitiple recipients.
+        """
+        personalization = mail.Personalization()
+        recipients = email_recipients.split(',')
+        for recipient in recipients:
+            personalization.add_to(mail.Email(recipient))
+        email.add_personalization(personalization)
+        return email
+
     def send(self, email_sender=None, email_recipient=None,
              email_subject=None, email_content=None, content_type=None,
              attachment=None):
@@ -100,12 +117,12 @@ class EmailUtil(object):
                         email_sender, email_recipient)
             raise util_errors.EmailSendError
 
-        email = mail.Mail(
-            mail.Email(email_sender),
-            email_subject,
-            mail.Email(email_recipient),
-            mail.Content(content_type, email_content)
-        )
+        email = mail.Mail()
+        email.from_email = mail.Email(email_sender)
+        email.subject = email_subject
+        email.add_content(mail.Content(content_type, email_content))
+
+        email = self._add_recipient(email, email_recipient)
 
         if attachment:
             email.add_attachment(attachment)
