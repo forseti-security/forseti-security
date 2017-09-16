@@ -64,9 +64,9 @@ PROJECT_ID=$(gcloud info | grep "project: \[" | sed -e 's/^ *project: \[//' -e  
 adminNotChoose=true
 while $adminNotChoose
 do
-	echo "Please type in the full email address of a gsuite administrator. \
-	IAM Explain Inventory will assume the administrator's authority \
-	in order to enumerate users, groups and group membership:"
+	echo "Please type in the full email address of a gsuite administrator."\
+	"IAM Explain Inventory will assume the administrator's authority"\
+	"in order to enumerate users, groups and group membership:"
 	read GSUITE_ADMINISTRATOR
 	echo "Please verify the email address of the gsuite administrator:"
 	echo "$GSUITE_ADMINISTRATOR"
@@ -274,8 +274,8 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	echo "Here are the existing sql instances in this project:"
 	gcloud sql instances list
-	echo "Choose a sql instance name that is not used above, please notice that recent deleted \
-		sql instance can still occupy the name space, even though they are not shown above:"
+	echo "Choose a sql instance name that is not used above, please notice that recent deleted"\
+		"sql instance can still occupy the name space, even though they are not shown above:"
 	read SQLINSTANCE
 fi
 sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
@@ -337,16 +337,16 @@ fi
 
 # Ask to setup the gsuite service account
 echo -e "${TRED}WE ARE NOT FINISHED YET${TNC}"
-echo "Please complete the deployment by enabling GSuite google \
-groups collection on your gsuite service account:"
+echo "Please complete the deployment by enabling GSuite google"\
+"groups collection on your gsuite service account:"
 echo "Go to Cloud Platform Console:"
 echo "https://console.cloud.google.com/iam-admin/serviceaccounts"
 echo "  1. Locate the service account to enable Domain-Wide Delegation"
 echo "      $GSUITESA"
 echo "  2. Select Edit and then the Enable G Suite Domain-wide Delegation checkbox. Save."
-echo "  3. On the service account row, click View Client ID. On the Client \
-ID for Service account client panel that appears, copy the Client ID value, \
-which will be a large number."
+echo "  3. On the service account row, click View Client ID. On the Client"\
+"ID for Service account client panel that appears, copy the Client ID value,"\
+"which will be a large number."
 read -p "Press any key to proceed" -n 1 -r
 
 echo "Enable the service account in your G Suite admin control panel."
