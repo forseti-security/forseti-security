@@ -65,7 +65,7 @@ PROJECT_ID=$(gcloud info | grep "project: \[" | sed -e 's/^ *project: \[//' -e  
 adminNotChoose=true
 while $adminNotChoose
 do
-	echo -e "Please type in the full ${TYELLOW} email address of a gsuite administrator${TNC}."\
+	echo -e "Please type in the full ${TYELLOW}email address of a gsuite administrator${TNC}."\
 	"IAM Explain Inventory will assume the administrator's authority"\
 	"in order to enumerate users, groups and group membership:"
 	read GSUITE_ADMINISTRATOR
@@ -113,7 +113,7 @@ fi
 echo -e "${TYELLOW}Setting up service accounts${TNC}"
 echo "Here are the existing service accounts within this project:"
 gcloud iam service-accounts list
-read -p "Do you want to use a existing service account for ${TYELLOW}gcp resources and policies scraping${TNC}? (y/n)" -n 1 -r
+read -p $'Do you want to use a existing service account for \e[93mgcp resources and policies scraping\033[0m? (y/n)' -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -138,7 +138,7 @@ else
 	}
 fi
 
-read -p "Do you want to use a existing service account for ${TYELLOW}gsuite crawling${TNC}? (y/n)" -n 1 -r
+read -p $'Do you want to use a existing service account for \e[93mgsuite crawling\033[0m? (y/n)' -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
