@@ -148,7 +148,6 @@ notifier:
             # Create an incoming webhook in your organization's Slack setting, located at:
             # https://[your_org].slack.com/apps/manage/custom-integrations
             # Add the provided URL in the configuration below in `webhook_url`.
-            # Uncomment the following yaml section to enable.
             - name: slack_webhook_pipeline
               configuration:
                 webhook_url: ''
