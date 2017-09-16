@@ -14,12 +14,13 @@
 # limitations under the License.
 
 # Preparation
-TRED='\033[0;31m'
+TRED='\e[91m'
+TYELLOW='\e[93m'
 TNC='\033[0m'
 repodir="/home/$USER/forseti-security"
 
 # Set Organization ID
-echo "Setting up organization ID"
+echo -e "${TYELLOW}Setting up organization ID${TNC}"
 
 orgs=$(gcloud organizations list --format=flattened \
 	| grep "organizations/" | sed -e 's/^name: *organizations\///g')
@@ -64,7 +65,7 @@ PROJECT_ID=$(gcloud info | grep "project: \[" | sed -e 's/^ *project: \[//' -e  
 adminNotChoose=true
 while $adminNotChoose
 do
-	echo "Please type in the full email address of a gsuite administrator."\
+	echo -e "Please type in the full ${TYELLOW} email address of a gsuite administrator${TNC}."\
 	"IAM Explain Inventory will assume the administrator's authority"\
 	"in order to enumerate users, groups and group membership:"
 	read GSUITE_ADMINISTRATOR
@@ -82,7 +83,7 @@ done
 
 
 # Enable API
-echo "Enabling APIs"
+echo -e "${TYELLOW}Enabling APIs${TNC}"
 echo "Following APIs need to be enabled in this project to run IAM Explain:"
 echo "    Admin SDK API: admin.googleapis.com"
 echo "    AppEngine Admin API: appengine.googleapis.com"
@@ -105,14 +106,14 @@ then
 	gcloud beta service-management enable deploymentmanager.googleapis.com
 	gcloud beta service-management enable iam.googleapis.com
 else
-	echo "API Enabling skipped, if you haven't enable them, you can done so in cloud console."
+	echo "API Enabling skipped, if you haven't enable them, you can do so in cloud console."
 fi
 
 # Creating Service Account
-echo "Setting up service accounts"
+echo -e "${TYELLOW}Setting up service accounts${TNC}"
 echo "Here are the existing service accounts within this project:"
 gcloud iam service-accounts list
-read -p "Do you want to use a existing service account for gcp resources and policies scraping? (y/n)" -n 1 -r
+read -p "Do you want to use a existing service account for ${TYELLOW}gcp resources and policies scraping${TNC}? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -137,7 +138,7 @@ else
 	}
 fi
 
-read -p "Do you want to use a existing service account for gsuite crawling? (y/n)" -n 1 -r
+read -p "Do you want to use a existing service account for ${TYELLOW}gsuite crawling${TNC}? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -168,7 +169,7 @@ gcloud iam service-accounts keys create \
     --iam-account $GSUITESA
 
 # Service Accounts role assignment
-echo "Assigning roles to the gcp scraping service account"
+echo -e "${TYELLOW}Assigning roles to the gcp scraping service account${TNC}"
 echo "Following roles need to be assigned to the gcp scraping service account"
 echo "    $SCRAPINGSA"
 echo "to run IAM Explain:"
@@ -223,7 +224,7 @@ then
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/cloudsql.client
 else
-	echo "Roles assigning skipped, if you haven't done it, you can done so in cloud console."
+	echo "Roles assigning skipped, if you haven't done it, you can do so in cloud console."
 fi
 
 # Prepare the deployment template yaml file
@@ -238,6 +239,7 @@ sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
 
 #Choose deployment branch
+echo -e "${TYELLOW}Choosing Github Branch${TNC}"
 echo "By default, master branch of IAM Explain will be deployed."
 read -p "Do you want to change to another one? (y/n)" -n 1 -r
 echo
@@ -265,6 +267,7 @@ sed -i -e 's/BRANCHNAME/'$BRANCHNAME'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
 
 # sql instance name
+echo -e "${TYELLOW}Choosing SQL Instance name${TNC}"
 timestamp=$(date --utc +%Ft%Tz | sed -e 's/:/-/g')
 SQLINSTANCE="iam-explain-no-external-"$timestamp
 echo "Do you want to use the generated sql instance name:"
@@ -282,6 +285,8 @@ fi
 sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
 
+# Deployment name
+echo -e "${TYELLOW}Choosing deployment name${TNC}"
 DEPLOYMENTNAME="iam-explain-"$timestamp
 echo "Do you want to use the generated deployment name:"
 echo "    $DEPLOYMENTNAME"
@@ -297,13 +302,13 @@ fi
 
 
 # Deploy the IAM Explain
-echo " Start to deploy"
+echo -e "${TYELLOW}Start to deploy${TNC}"
 response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
 	--config $repodir/deployment-templates/deploy-explain.yaml)\
 || exit 1
 VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
  
-
+echo -e "${TYELLOW}Copy the gsuite service account key file${TNC}"
 for (( TRIAL=1; TRIAL<=5; TRIAL++ ))
 do
 	if [[ $TRIAL != 1 ]]; then
@@ -349,8 +354,9 @@ echo "  3. On the service account row, click View Client ID. On the Client"\
 "ID for Service account client panel that appears, copy the Client ID value,"\
 "which will be a large number."
 read -p "Press any key to proceed" -n 1 -r
+echo
 
-echo "Enable the service account in your G Suite admin control panel."
+echo -e "${TYELLOW}Enable the service account in your G Suite admin control panel.${TNC}"
 echo "https://admin.google.com/ManageOauthClients"
 echo "You must have the super admin role in admin.google.com to complete these steps:"
 echo "  1. In the Client Name box, paste the Client ID you copied above."
@@ -359,5 +365,6 @@ echo "        https://www.googleapis.com/auth/admin.directory.group.readonly, "
 echo "        https://www.googleapis.com/auth/admin.directory.user.readonly"
 echo "  3. Click Authorize"
 read -p "Press any key to proceed" -n 1 -r
+echo
 echo "Now we have finished."
  
