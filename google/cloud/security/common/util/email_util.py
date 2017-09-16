@@ -74,7 +74,7 @@ class EmailUtil(object):
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
     @staticmethod
-    def _add_recipient(email, email_recipients):
+    def _add_recipients(email, email_recipients):
         """Add multiple recipients to the sendgrid email object.
 
         Args:
@@ -123,7 +123,7 @@ class EmailUtil(object):
         email.subject = email_subject
         email.add_content(mail.Content(content_type, email_content))
 
-        email = self._add_recipient(email, email_recipient)
+        email = self._add_recipients(email, email_recipient)
 
         if attachment:
             email.add_attachment(attachment)
