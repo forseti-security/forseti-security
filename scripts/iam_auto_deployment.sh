@@ -239,7 +239,7 @@ $repodir/deployment-templates/deploy-explain.yaml
 
 #Choose deployment branch
 echo "By default, master branch of IAM Explain will be deployed."
-read -p "Do you want to change to another one? (y/n)" -n 2 -r
+read -p "Do you want to change to another one? (y/n)" -n 1 -r
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	branches=$( cd $repodir; git branch -r | grep -v " -> " | sed -e 's/^  origin\///g' )
