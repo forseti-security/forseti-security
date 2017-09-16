@@ -73,15 +73,16 @@ class EmailUtil(object):
         """
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
-    def _add_recipient(self, email, email_recipients):
+    @staticmethod
+    def _add_recipient(email, email_recipients):
         """Add multiple recipients to the sendgrid email object.
-        
+
         Args:
             email (SendGrid): SendGrid mail object
             email_recipients (Str): comma-separated text of the email recipients
 
         Returns:
-            SendGrid mail object with mulitiple recipients.
+            SendGrid: SendGrid mail object with mulitiple recipients.
         """
         personalization = mail.Personalization()
         recipients = email_recipients.split(',')
