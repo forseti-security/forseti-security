@@ -74,7 +74,7 @@ resources:
     # on GCP.
     # Use either branch-name or release-version.
     # This configuration deploys the 'crawling' branch
-    branch-name: "master"
+    branch-name: "BRANCHNAME"
     #release-version: "1.0.2"
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
 

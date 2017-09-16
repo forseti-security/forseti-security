@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Define text color
+# Preparation
 TRED='\033[0;31m'
 TNC='\033[0m'
+repodir="/home/$USER/forseti-security"
 
 # Set Organization ID
 echo "Setting up organization ID"
@@ -25,19 +26,21 @@ orgs=$(gcloud organizations list --format=flattened \
 
 if [ "$(echo "$orgs" | wc -l)" -gt "1" ]
 then
-	echo "There are multiple organizations your account has access to:"
-	echo "$orgs" | sed -e 's/^/    /g'
-	orgs=$'\n'$orgs$'\n'
-	echo "Choose one to deploy IAM Explain?"
-	read REPLY
-	match=$'\n'$REPLY$'\n'
-	if [[ "$orgs" == *"$match"* ]]
-	then
-		ORGANIZATION_ID=$REPLY
-	else
-		echo "organization id not set"
-		exit 1
-	fi
+	orgNotChoose=true
+	while $orgNotChoose
+	do
+		echo "There are multiple organizations your account has access to:"
+		echo "$orgs" | sed -e 's/^/    /g'
+		echo "Choose one to deploy IAM Explain?"
+		read REPLY
+		if [[ $'\n'$orgs$'\n' == *$'\n'$REPLY$'\n'* ]]
+		then
+			ORGANIZATION_ID=$REPLY
+			orgNotChoose=false
+		else
+			echo "The organization you choose doesn't exist. Please try again..."
+		fi
+	done
 else
 	echo "There is only one organization your account has access to:"
 	echo "    $orgs"
@@ -47,7 +50,7 @@ else
 	then
 		ORGANIZATION_ID=$orgs
 	else
-		echo "organization id not set"
+		echo "Organization not confirmed"
 		exit 1
 	fi
 fi
@@ -58,19 +61,25 @@ echo "Fetching project ID"
 PROJECT_ID=$(gcloud info | grep "project: \[" | sed -e 's/^ *project: \[//' -e  's/\]$//g')
 
 # Get the email address of a gsuite administrator
-echo "Please type in the full email address of a gsuite administrator. \
-IAM Explain Inventory will assume the administrator's authority \
-in order to enumerate users, groups and group membership:"
-read GSUITE_ADMINISTRATOR
-echo "Please verify the email address of the gsuite administrator:"
-echo "$GSUITE_ADMINISTRATOR"
-read -p "Is it correct? (y/n)" -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
-	echo "Wrong email address of the gsuite administrator!"
-	exit 1
-fi
+adminNotChoose=true
+while $adminNotChoose
+do
+	echo "Please type in the full email address of a gsuite administrator. \
+	IAM Explain Inventory will assume the administrator's authority \
+	in order to enumerate users, groups and group membership:"
+	read GSUITE_ADMINISTRATOR
+	echo "Please verify the email address of the gsuite administrator:"
+	echo "$GSUITE_ADMINISTRATOR"
+	read -p "Is it correct? (y/n)" -n 1 -r
+	echo
+	if [[ $REPLY =~ ^[Yy]$ ]]
+	then
+		adminNotChoose=false
+	else
+		echo "You chose not to use this email address as the gsuite administrator. Try again..."
+	fi
+done
+
 
 # Enable API
 echo "Enabling APIs"
@@ -218,14 +227,41 @@ else
 fi
 
 # Prepare the deployment template yaml file
-cp ~/forseti-security/deployment-templates/deploy-explain.yaml.sample \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+echo "Customizing deployment template..."
+cp $repodir/deployment-templates/deploy-explain.yaml.sample \
+$repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+$repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPINGSA'/g' \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+$repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+$repodir/deployment-templates/deploy-explain.yaml
+
+#Choose deployment branch
+echo "By default, master branch of IAM Explain will be deployed."
+read -p "Do you want to change to another one? (y/n)" -n 2 -r
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+	branches=$( cd $repodir; git branch -r | grep -v " -> " | sed -e 's/^  origin\///g' )
+	branchNotChoose=true
+	while $branchNotChoose
+	do
+		echo "Here are all branches available:"
+		echo "$branches" | sed -e 's/^/    /g'
+		echo "Please specify which branch do you want to deploy:"
+		read BRANCHNAME
+		if [[ $'\n'$branches$'\n' == *$'\n'$BRANCHNAME$'\n'* ]]
+		then
+			branchNotChoose=false
+		else
+			echo "The branch you choose doesn't exists. Please try again..."
+		fi
+	done
+else
+	BRANCH="master"
+fi
+sed -i -e 's/BRANCHNAME/'$BRANCHNAME'/g' \
+$repodir/deployment-templates/deploy-explain.yaml
 
 # sql instance name
 timestamp=$(date --utc +%Ft%Tz | sed -e 's/:/-/g')
@@ -243,7 +279,7 @@ then
 	read SQLINSTANCE
 fi
 sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+$repodir/deployment-templates/deploy-explain.yaml
 
 DEPLOYMENTNAME="iam-explain-"$timestamp
 echo "Do you want to use the generated deployment name:"
@@ -262,7 +298,7 @@ fi
 # Deploy the IAM Explain
 echo " Start to deploy"
 response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
-	--config ~/forseti-security/deployment-templates/deploy-explain.yaml)\
+	--config $repodir/deployment-templates/deploy-explain.yaml)\
 || exit 1
 VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
  
@@ -303,7 +339,24 @@ fi
 echo -e "${TRED}WE ARE NOT FINISHED YET${TNC}"
 echo "Please complete the deployment by enabling GSuite google \
 groups collection on your gsuite service account:"
-echo "    $GSUITESA"
-echo "with the manual on:"
-echo "http://forsetisecurity.org/docs/howto/configure/gsuite-group-collection"
+echo "Go to Cloud Platform Console:"
+echo "https://console.cloud.google.com/iam-admin/serviceaccounts"
+echo "  1. Locate the service account to enable Domain-Wide Delegation"
+echo "      $GSUITESA"
+echo "  2. Select Edit and then the Enable G Suite Domain-wide Delegation checkbox. Save."
+echo "  3. On the service account row, click View Client ID. On the Client \
+ID for Service account client panel that appears, copy the Client ID value, \
+which will be a large number."
+read -p "Press any key to proceed" -n 1 -r
+
+echo "Enable the service account in your G Suite admin control panel."
+echo "https://admin.google.com/ManageOauthClients"
+echo "You must have the super admin role in admin.google.com to complete these steps:"
+echo "  1. In the Client Name box, paste the Client ID you copied above."
+echo "  2. In the One or More API Scopes box, paste the following scope:"
+echo "        https://www.googleapis.com/auth/admin.directory.group.readonly, "
+echo "        https://www.googleapis.com/auth/admin.directory.user.readonly"
+echo "  3. Click Authorize"
+read -p "Press any key to proceed" -n 1 -r
+echo "Now we have finished."
  
