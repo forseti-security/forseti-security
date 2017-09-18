@@ -36,8 +36,8 @@ documentation.
 If a rule doesn't include a network name, then it's applied to all networks
 configured on the project. The network name is prepended to the rule name.
 
-The following is an example rule that allows SSH from anywhere but blocks
-any external tcp, udp, and icmp traffic:
+The following is an example rule that allows SSH from anywhere and
+only internally allows tcp, udp, and icmp traffic:
 
   ```json
   [{
