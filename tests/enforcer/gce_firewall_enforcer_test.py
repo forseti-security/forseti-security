@@ -21,7 +21,7 @@ import threading
 import unittest
 import mock
 
-from parameterized import parameterized
+import parameterized
 
 from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import ForsetiTestCase
@@ -1393,7 +1393,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
                                [constants.EXPECTED_FIREWALL_RULES[
                                    'test-network-allow-public-0']])
 
-    @parameterized.expand([
+    @parameterized.parameterized.expand([
         ('no_quota', 0, 0, 1, 0, True, False),
         ('low_quota_1', 1, 1, 1, 0, True, False),
         ('low_quota_2', 10, 8, 4, 1, True, False),
