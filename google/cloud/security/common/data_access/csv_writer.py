@@ -385,6 +385,13 @@ RAW_PROJECT_IAM_POLICIES_FIELDNAMES = [
     'iam_policy'
 ]
 
+INVENTORY_FIELDNAMES = [
+    'resource_key',
+    'parent_resource_key',
+    'resource_type',
+    'resource_data',
+]
+
 SERVICE_ACCOUNTS_FIELDNAMES = [
     'project_id',
     'name',
@@ -395,6 +402,7 @@ SERVICE_ACCOUNTS_FIELDNAMES = [
 ]
 
 CSV_FIELDNAME_MAP = {
+    'inventory': INVENTORY_FIELDNAMES,
     'appengine': APPENGINE_SERVICES_FIELDNAMES,
 
     'backend_services': BACKEND_SERVICES_FIELDNAMES,
@@ -459,7 +467,7 @@ def write_csv(resource_name, data, write_header=False):
     try:
         writer = csv.DictWriter(csv_file, doublequote=False, escapechar='\\',
                                 quoting=csv.QUOTE_NONE,
-                                fieldnames=CSV_FIELDNAME_MAP[resource_name])
+                                fieldnames=INVENTORY_FIELDNAMES)
         if write_header:
             writer.writeheader()
 

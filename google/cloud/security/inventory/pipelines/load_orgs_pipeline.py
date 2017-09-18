@@ -43,15 +43,14 @@ class LoadOrgsPipeline(base_pipeline.BasePipeline):
             # "organizations/<organization_id>".
             org_name = org.get('name')
             org_id = org_name[len('%s/' % self.RESOURCE_NAME):]
-
-            yield {'org_id': org_id,
-                   'name': org_name,
-                   'display_name': org.get('displayName'),
-                   'lifecycle_state': org.get('lifecycleState'),
-                   'raw_org': parser.json_stringify(org),
-                   'creation_time': parser.format_timestamp(
-                       org.get('creationTime'),
-                       self.MYSQL_DATETIME_FORMAT)}
+            print("||||||||||||||||||")
+            print("resource data resouce:")
+            print(org)
+            print("||||||||||||||||||")
+            yield {'resource_key': org_name,
+                   'resource_type': self.RESOURCE_NAME,
+                   'resource_data': parser.json_stringify(org)
+                   }
 
     def _retrieve(self):
         """Retrieve the organizations resources from GCP.

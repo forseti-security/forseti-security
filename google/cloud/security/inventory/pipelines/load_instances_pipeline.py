@@ -42,32 +42,11 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         """
         for (project_id, instances) in resource_from_api.iteritems():
             for instance in instances:
-                yield {'project_id': project_id,
-                       'id': instance.get('id'),
-                       'creation_timestamp': parser.format_timestamp(
-                           instance.get('creationTimestamp'),
-                           self.MYSQL_DATETIME_FORMAT),
-                       'name': instance.get('name'),
-                       'description': instance.get('description'),
-                       'can_ip_forward': self._to_bool(
-                           instance.get('canIpForward')),
-                       'cpu_platform': instance.get('cpuPlatform'),
-                       'disks': parser.json_stringify(
-                           instance.get('disks', [])),
-                       'machine_type': instance.get('machineType'),
-                       'metadata': parser.json_stringify(
-                           instance.get('metadata', {})),
-                       'network_interfaces': parser.json_stringify(
-                           instance.get('networkInterfaces', [])),
-                       'scheduling': parser.json_stringify(
-                           instance.get('scheduling', {})),
-                       'service_accounts': parser.json_stringify(
-                           instance.get('serviceAccounts', [])),
-                       'status': instance.get('status'),
-                       'status_message': instance.get('statusMessage'),
-                       'tags': parser.json_stringify(instance.get('tags')),
-                       'zone': instance.get('zone'),
-                       'raw_instance': parser.json_stringify(instance)}
+                yield {'resource_key': instance.get('id'),
+                       'resource_type': 'INSTANCE',
+                       'resource_data': parser.json_stringify(instance)
+
+                       }
 
     def _retrieve(self):
         """Retrieve instances from GCP.

@@ -35,6 +35,9 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
+    #inventory table
+    'inventory': create_tables.CREATE_INVENTORY_TABLE,
+
     # appengine
     'appengine': create_tables.CREATE_APPENGINE_TABLE,
 
@@ -193,12 +196,14 @@ class Dao(_db_connector.DbConnector):
         """
         with csv_writer.write_csv(resource_name, data) as csv_file:
             try:
-                snapshot_table_name = self._create_snapshot_table_name(
-                    resource_name, timestamp)
                 load_data_sql = load_data_sql_provider.provide_load_data_sql(
-                    resource_name, csv_file.name, snapshot_table_name)
+                    'inventory', csv_file.name, 'inventory_' + timestamp)
                 LOGGER.debug('SQL: %s', load_data_sql)
                 cursor = self.conn.cursor()
+                print("~~~~~~~~~load-data_sql~~~~~~~~~~")
+                print(load_data_sql)
+                print("~~~~~~~~~load-data_sql~~~~~~~~~~")
+
                 cursor.execute(load_data_sql)
                 self.conn.commit()
                 # TODO: Return the snapshot table name so that it can be tracked

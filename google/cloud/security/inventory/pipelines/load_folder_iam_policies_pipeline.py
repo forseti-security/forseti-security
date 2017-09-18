@@ -55,11 +55,13 @@ class LoadFolderIamPoliciesPipeline(base_pipeline.BasePipeline):
                     role = binding.get('role', '')
                     if role.startswith('roles/'):
                         role = role.replace('roles/', '')
-                    yield {'folder_id': folder_policy_map['folder_id'],
-                           'role': role,
-                           'member_type': member_type,
-                           'member_name': member_name,
-                           'member_domain': member_domain}
+                    yield {'resource_key': folder_policy_map['folder_id'],
+                           'resource_type': 'FOLDER_IAM_POLICIES',
+                           'resource_data': parser.json_stringify({"role": role,
+                                "member_type": member_type,
+                                "member_name": member_name,
+                                "member_domain": member_domain})
+                           }
 
     def _retrieve(self):
         """Retrieve the folder IAM policies from GCP.

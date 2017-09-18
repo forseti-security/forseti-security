@@ -42,17 +42,10 @@ class LoadInstanceTemplatesPipeline(base_pipeline.BasePipeline):
         """
         for (project_id, instance_templates) in resource_from_api.iteritems():
             for instance_template in instance_templates:
-                yield {'project_id': project_id,
-                       'id': instance_template.get('id'),
-                       'creation_timestamp': parser.format_timestamp(
-                           instance_template.get('creationTimestamp'),
-                           self.MYSQL_DATETIME_FORMAT),
-                       'name': instance_template.get('name'),
-                       'description': instance_template.get('description'),
-                       'properties': parser.json_stringify(
-                           instance_template.get('properties', {})),
-                       'raw_instance_template':
-                           parser.json_stringify(instance_template)}
+                yield {'resource_key': instance_template.get('id'),
+                        'resource_type': 'INSTANCE_TEMPLATE',
+                        'resource_data': parser.json_stringify(instance_templates)
+                       }
 
     def _retrieve(self):
         """Retrieve instance templates from GCP.

@@ -76,17 +76,10 @@ class LoadProjectsBucketsPipeline(base_pipeline.BasePipeline):
                 lifecycle = json.dumps(item.get('lifecycle', []))
 
                 yield {
-                    'project_number': buckets_map['project_number'],
-                    'bucket_id': item.get('id'),
-                    'bucket_name': item.get('name'),
-                    'bucket_kind': item.get('kind'),
-                    'bucket_storage_class': item.get('storageClass'),
-                    'bucket_location': item.get('location'),
-                    'bucket_create_time': formatted_project_create_time,
-                    'bucket_update_time': formatted_project_updated_time,
-                    'bucket_selflink': item.get('selfLink'),
-                    'bucket_lifecycle_raw': lifecycle,
-                    'raw_bucket': bucket_json}
+                    'resource_key': item.get('id'),
+                    'resource_type': 'PROJECT_BUCKETS',
+                    'resource_data': parser.json_stringify(item)
+                    }
 
     def _retrieve(self):
         """Retrieve the project buckets from GCP.

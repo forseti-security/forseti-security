@@ -42,27 +42,10 @@ class LoadInstanceGroupManagersPipeline(base_pipeline.BasePipeline):
         """
         for (project_id, igms) in resource_from_api.iteritems():
             for igm in igms:
-                yield {'project_id': project_id,
-                       'id': igm.get('id'),
-                       'creation_timestamp': parser.format_timestamp(
-                           igm.get('creationTimestamp'),
-                           self.MYSQL_DATETIME_FORMAT),
-                       'name': igm.get('name'),
-                       'description': igm.get('description'),
-                       'base_instance_name': igm.get('baseInstanceName'),
-                       'current_actions': parser.json_stringify(
-                           igm.get('currentActions', {})),
-                       'instance_group': igm.get('instanceGroup'),
-                       'instance_template': igm.get('instanceTemplate'),
-                       'named_ports': parser.json_stringify(
-                           igm.get('namedPorts', [])),
-                       'region': igm.get('region'),
-                       'target_pools': parser.json_stringify(
-                           igm.get('targetPools', [])),
-                       'target_size': igm.get('targetSize'),
-                       'zone': igm.get('zone'),
-                       'raw_instance_group_manager':
-                           parser.json_stringify(igm)}
+                yield {'resource_key': igm.get('id'),
+                       'resource_type': 'INSTANCE_GROUP_MANAGERS',
+                       'resource_data': parser.json_stringify(igm)
+                       }
 
     def _retrieve(self):
         """Retrieve instance group managers from GCP.

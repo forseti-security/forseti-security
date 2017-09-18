@@ -14,9 +14,9 @@
 
 """Tests the load_projects_pipeline."""
 
+import unittest
 from tests.unittest_utils import ForsetiTestCase
 import mock
-import unittest
 
 # pylint: disable=line-too-long
 from google.cloud.security.common.data_access import errors as data_access_errors
@@ -86,7 +86,7 @@ class LoadProjectsPipelineTest(ForsetiTestCase):
         load_projects_pipeline.LoadProjectsPipeline,
         '_retrieve')
     def test_subroutines_are_called_by_run(self, mock_retrieve, mock_transform,
-            mock_load, mock_get_loaded_count):
+                                           mock_load, mock_get_loaded_count):
         """Test that the subroutines are called by run."""
 
         mock_retrieve.return_value = fake_projects.FAKE_PROJECTS
@@ -105,4 +105,4 @@ class LoadProjectsPipelineTest(ForsetiTestCase):
 
 
 if __name__ == '__main__':
-      unittest.main()
+    unittest.main()

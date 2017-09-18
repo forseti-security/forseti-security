@@ -49,11 +49,11 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
                 self.configs,
                 self.mock_appengine,
                 self.mock_dao))
-        self.project_ids = fake_appengine_applications \
+        self.indexs = fake_appengine_applications \
             .FAKE_PROJECT_APPLICATIONS_MAP.keys()
         self.projects = [project_dao.ProjectDao.map_row_to_object(p)
              for p in fake_projects.EXPECTED_LOADABLE_PROJECTS
-             if p['project_id'] in self.project_ids]
+             if p['index'] in self.indexs]
 
     def test_can_transform_applications(self):
         """Test transform function works."""
@@ -71,7 +71,7 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
         mock_get_projects.return_value = self.projects
         self.pipeline._retrieve()
         self.assertEqual(
-            len(self.project_ids),
+            len(self.indexs),
             self.pipeline.api_client.get_app.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
@@ -81,7 +81,7 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
         """Test _retrieve() data is correct."""
         mock_get_projects.return_value = self.projects
         apps = [fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP[p]
-                for p in self.project_ids]
+                for p in self.indexs]
 
         self.pipeline.api_client.get_app = mock.MagicMock(
             side_effect=apps)

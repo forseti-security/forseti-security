@@ -48,45 +48,12 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
         """
         for project_id, firewall_rules in resource_from_api.iteritems():
             for firewall_rule in firewall_rules:
-                yield {'firewall_rule_id': firewall_rule.get('id'),
-                       'project_id': project_id,
-                       'firewall_rule_name': firewall_rule.get('name'),
-                       'firewall_rule_description':
-                           firewall_rule.get('description'),
-                       'firewall_rule_kind': firewall_rule.get('kind'),
-                       'firewall_rule_network': firewall_rule.get('network'),
-                       'firewall_rule_priority': firewall_rule.get('priority'),
-                       'firewall_rule_direction':
-                           firewall_rule.get('direction'),
-                       'firewall_rule_source_ranges':
-                           parser.json_stringify(
-                               firewall_rule.get('sourceRanges')),
-                       'firewall_rule_destination_ranges':
-                           parser.json_stringify(
-                               firewall_rule.get('destinationRanges')),
-                       'firewall_rule_source_tags':
-                           parser.json_stringify(
-                               firewall_rule.get('sourceTags')),
-                       'firewall_rule_target_tags':
-                           parser.json_stringify(
-                               firewall_rule.get('targetTags')),
-                       'firewall_rule_target_service_accounts':
-                           parser.json_stringify(
-                               firewall_rule.get('targetServiceAccounts')),
-                       'firewall_rule_allowed':
-                           parser.json_stringify(
-                               firewall_rule.get('allowed')),
-                       'firewall_rule_denied':
-                           parser.json_stringify(
-                               firewall_rule.get('denied')),
-                       'firewall_rule_self_link': firewall_rule.get('selfLink'),
-                       'firewall_rule_create_time': parser.format_timestamp(
-                           firewall_rule.get('creationTimestamp'),
-                           self.MYSQL_DATETIME_FORMAT),
-                       'raw_firewall_rule':
-                           parser.json_stringify(firewall_rule)}
+                yield {'project_id': project_id,
+                       'resource_key': firewall_rule.get('name'),
+                       'resource_type': 'FIREWALL_RULES',
+                       'resource_data': parser.json_stringify(firewall_rule)}
 
-    def _retrieve(self):
+   def _retrieve(self):
         """Retrieve firewall rules from GCP.
 
         Get all the projects in the current snapshot and retrieve the

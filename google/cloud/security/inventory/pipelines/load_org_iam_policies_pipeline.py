@@ -55,11 +55,16 @@ class LoadOrgIamPoliciesPipeline(base_pipeline.BasePipeline):
                     role = binding.get('role', '')
                     if role.startswith('roles/'):
                         role = role.replace('roles/', '')
-                    yield {'org_id': org_policy_map['org_id'],
+                    yield {
+                            'resource_key': org_policy_map['org_id'],
+                            'resource_type': 'ORG_IAM_POLICY',
+                            'resource_data': {
+                            'org_id': org_policy_map['org_id'],
                            'role': role,
                            'member_type': member_type,
                            'member_name': member_name,
                            'member_domain': member_domain}
+                           }
 
     def _retrieve(self):
         """Retrieve the org IAM policies from GCP.

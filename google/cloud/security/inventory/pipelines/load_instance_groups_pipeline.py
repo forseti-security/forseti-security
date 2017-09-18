@@ -42,24 +42,11 @@ class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
         """
         for (project_id, instance_groups) in resource_from_api.iteritems():
             for instance_group in instance_groups:
-                yield {'project_id': project_id,
-                       'id': instance_group.get('id'),
-                       'creation_timestamp': parser.format_timestamp(
-                           instance_group.get('creationTimestamp'),
-                           self.MYSQL_DATETIME_FORMAT),
-                       'name': instance_group.get('name'),
-                       'description': instance_group.get('description'),
-                       'instance_urls': parser.json_stringify(
-                           instance_group.get('instance_urls', [])),
-                       'named_ports': parser.json_stringify(
-                           instance_group.get('namedPorts', [])),
-                       'network': instance_group.get('network'),
-                       'region': instance_group.get('region'),
-                       'size': self._to_int(instance_group.get('size')),
-                       'subnetwork': instance_group.get('subnetwork'),
-                       'zone': instance_group.get('zone'),
-                       'raw_instance_group':
-                           parser.json_stringify(instance_group)}
+                yield {'resource_key': instance_group.get('id'),
+                       'resource_type': 'INSTANCE_GROUP',
+                       'resource_data': parser.json_stringify(instance_group)
+                       }
+
 
     def _retrieve(self):
         """Retrieve instance groups from GCP.

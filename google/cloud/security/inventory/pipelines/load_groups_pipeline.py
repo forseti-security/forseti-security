@@ -39,11 +39,11 @@ class LoadGroupsPipeline(base_pipeline.BasePipeline):
             iterable: Loadable groups as a per-group dictionary.
         """
         for group in resource_from_api:
-            yield {'group_id': group.get('id'),
-                   'group_email': group.get('email'),
-                   'group_kind': group.get('kind'),
-                   'direct_member_count': group.get('directMembersCount'),
-                   'raw_group': json.dumps(group)}
+            yield {
+                   'resource_key': group.get('email'),
+                   'resource_type': 'GROUPS',
+                   'resource_data': parser.json_stringify(group)
+                   }
 
     def _retrieve(self):
         """Retrieve the groups from GSuite.

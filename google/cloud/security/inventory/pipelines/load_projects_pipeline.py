@@ -40,16 +40,11 @@ class LoadProjectsPipeline(base_pipeline.BasePipeline):
         """
         for project in (project for d in resource_from_api\
                         for project in d.get('projects', [])):
-            yield {'project_number': project.get('projectNumber'),
-                   'project_id': project.get('projectId'),
-                   'project_name': project.get('name'),
-                   'lifecycle_state': project.get('lifecycleState'),
-                   'parent_type': project.get('parent', {}).get('type'),
-                   'parent_id': project.get('parent', {}).get('id'),
-                   'raw_project': parser.json_stringify(project),
-                   'create_time': parser.format_timestamp(
-                       project.get('createTime'),
-                       self.MYSQL_DATETIME_FORMAT)}
+            yield {'resource_key': project.get('projectId'),
+                   'resource_type': 'LOAD_PROJECTS',
+                   'parent_resource_key': project.get('parent', {}).get('id'),
+                   'resource_data': parser.json_stringify(project)
+                  }
 
     def _retrieve(self):
         """Retrieve the project resources from GCP.
