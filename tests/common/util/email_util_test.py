@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the Email utility."""
+"""Tests for the Email utility."""
 import unittest
 
 from sendgrid.helpers import mail
@@ -22,10 +22,10 @@ from google.cloud.security.common.util import email_util
 
 
 class EmailUtilTest(ForsetiTestCase):
-    """Test the Email utility."""
+    """Tests for the Email utility."""
 
     def test_can_send_email_to_single_recipient(self):
-        """Test if loggers instantiated before set_logger_level will be affected."""
+        """Test can send email to single recipient."""
 
         email = mail.Mail()
         email_recipient='foo@company.com'
@@ -40,7 +40,7 @@ class EmailUtilTest(ForsetiTestCase):
 
 
     def test_can_send_email_to_multiple_recipients(self):
-        """Test if loggers instantiated before set_logger_level will be affected."""
+        """Test can send email to multiple recipients."""
 
         email = mail.Mail()
         email_recipient='foo@company.com,bar@company.com'
