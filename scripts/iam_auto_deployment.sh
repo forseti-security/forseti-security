@@ -61,6 +61,28 @@ echo "Fetching project ID"
 
 PROJECT_ID=$(gcloud info | grep "project: \[" | sed -e 's/^ *project: \[//' -e  's/\]$//g')
 
+# Checking user authority
+echo -e "${TYELLOW}Please make sure you have adequate permissions on GCP and GSuite in order to deploy IAM Explain ${TNC}"
+read -p "Press any key to proceed" -n 1 -r
+echo
+
+# Checking billing of the project
+echo -e "${TYELLOW}Checking if billing is enabled on this project${TNC}"
+BillingNotConfirmed=true
+while $BillingNotConfirmed
+do
+	BillingState=$(gcloud beta billing projects describe $PROJECT_ID | grep "billingEnabled: " | sed -e 's/^billingEnabled://g')
+	if [[ $BillingState == "true" ]]
+	then
+		BillingNotConfirmed=false
+	else
+		echo "In order to deploy IAM Explain, please enable billing on this project: "
+		echo "    $PROJECT_ID"
+		read -p "Press any key to proceed" -n 1 -r
+		echo
+	fi
+done
+
 # Get the email address of a gsuite administrator
 adminNotChoose=true
 while $adminNotChoose
@@ -345,10 +367,10 @@ fi
 echo -e "${TRED}WE ARE NOT FINISHED YET${TNC}"
 echo "Please complete the deployment by enabling GSuite google"\
 "groups collection on your gsuite service account:"
-echo "Go to Cloud Platform Console:"
-echo "https://console.cloud.google.com/iam-admin/serviceaccounts"
+echo -e "${TYELLOW}Enable Domain Wide Delegation at Cloud Platform Console:${TNC}"
+echo "https://console.cloud.google.com/iam-admin/serviceaccounts/project?project="$PROJECT_ID"&organizationId="$ORGANIZATION_ID
 echo "  1. Locate the service account to enable Domain-Wide Delegation"
-echo "      $GSUITESA"
+echo -e "      ${TYELLOW}$GSUITESA${TNC}"
 echo "  2. Select Edit and then the Enable G Suite Domain-wide Delegation checkbox. Save."
 echo "  3. On the service account row, click View Client ID. On the Client"\
 "ID for Service account client panel that appears, copy the Client ID value,"\
