@@ -136,9 +136,9 @@ IAP scanner depends on the following Forseti Inventory pipelines:
 ## Instance Network Interface scanner
 
 VM instances with external IP addresses expose your environment to an
-additional attack surface area.  The instance network interface scanner will
-audit all your VM instances in your environment, and determine if there are any
-VMs with external IP addresses that are outside of the trusted networks.
+additional attack surface area. The instance network interface scanner audits
+all your VM instances in your environment, and determines if any VMs with
+external IP addresses are outside of the trusted networks.
 
 For examples of how to define scanner rules for network interfaces, see the
 [instance_network_interface_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/instance_network_interface_rules.yaml)
