@@ -48,7 +48,8 @@ class FileLoaderTest(ForsetiTestCase):
         with self.assertRaises(errors.InvalidParserTypeError):
             file_loader._get_filetype_parser('path/to/file.yaml', 'asdf')
 
-    def test_read_file_from_gcs_json(self):
+    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
+    def test_read_file_from_gcs_json(self, mock_default_credential):
         """Test read_file_from_gcs for json."""
         mock_responses = [
             ({'status': '200',
@@ -60,7 +61,8 @@ class FileLoaderTest(ForsetiTestCase):
 
         self.assertEqual(expected_dict, return_dict)
 
-    def test_read_file_from_gcs_yaml(self):
+    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
+    def test_read_file_from_gcs_yaml(self, mock_default_credential):
         """Test read_file_from_gcs for yaml."""
         mock_responses = [
             ({'status': '200',

@@ -65,7 +65,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
 
         self.assertEqual('', credentials.user_agent)
 
-        base._set_user_agent(credentials)
+        base._set_ua_and_scopes(credentials)
 
         self.assertTrue(
             forseti_security.__package_name__ in credentials.user_agent)
@@ -84,7 +84,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
     def test_set_scopes(self):
         credentials = self.get_test_service_account()
         self.assertTrue(credentials.create_scoped_required())
-        credentials = base._set_user_agent(credentials)
+        credentials = base._set_ua_and_scopes(credentials)
         self.assertFalse(credentials.create_scoped_required())
 
     @mock.patch.object(discovery, 'build', autospec=True)
