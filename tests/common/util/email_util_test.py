@@ -30,7 +30,7 @@ class EmailUtilTest(ForsetiTestCase):
         email = mail.Mail()
         email_recipient='foo@company.com'
         util = email_util.EmailUtil('fake_sendgrid_key')
-        email = util._add_recipient(email, email_recipient)
+        email = util._add_recipients(email, email_recipient)
 
         self.assertEquals(1, len(email.personalizations))
 
@@ -45,7 +45,7 @@ class EmailUtilTest(ForsetiTestCase):
         email = mail.Mail()
         email_recipient='foo@company.com,bar@company.com'
         util = email_util.EmailUtil('fake_sendgrid_key')
-        email = util._add_recipient(email, email_recipient)
+        email = util._add_recipients(email, email_recipient)
 
         self.assertEquals(1, len(email.personalizations))
 

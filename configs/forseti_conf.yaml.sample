@@ -26,7 +26,6 @@ global:
     # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-    # Multiple recipients can be specified as comma-separated text.
     email_recipient: EMAIL_RECIPIENT1,EMAIL_RECIPIENT2
     email_sender: EMAIL_SENDER
     sendgrid_api_key: SENDGRID_API_KEY
