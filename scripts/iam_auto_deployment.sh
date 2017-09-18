@@ -71,9 +71,10 @@ echo -e "${TYELLOW}Checking if billing is enabled on this project${TNC}"
 BillingNotConfirmed=true
 while $BillingNotConfirmed
 do
-	BillingState=$(gcloud beta billing projects describe $PROJECT_ID | grep "billingEnabled: " | sed -e 's/^billingEnabled://g')
+	BillingState=$(gcloud beta billing projects describe $PROJECT_ID | grep "billingEnabled: " | sed -e 's/^billingEnabled: //g')
 	if [[ $BillingState == "true" ]]
 	then
+	echo "Billing is confirmed"
 		BillingNotConfirmed=false
 	else
 		echo "In order to deploy IAM Explain, please enable billing on this project: "
