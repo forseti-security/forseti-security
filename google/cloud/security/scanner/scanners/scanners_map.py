@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ RESOURCE_MAP = {
     'bigquery_acl_violations': 'violations',
     'buckets_acl_violations': 'violations',
     'cloudsql_acl_violations': 'violations',
-    'forwarding_rule_violations' : 'violations',
+    'forwarding_rule_violations': 'violations',
     'groups_violations': 'groups_violations',
     'instance_network_interface_violations': 'violations',
     'policy_violations': 'violations',

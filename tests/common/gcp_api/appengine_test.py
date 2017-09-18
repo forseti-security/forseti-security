@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,38 +13,186 @@
 # limitations under the License.
 
 """Tests the AppEngine client."""
-
-import mock
 import unittest
+import mock
+from oauth2client import client
 
-from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import _base_client
-from google.cloud.security.common.gcp_api import appengine
+from tests import unittest_utils
+from tests.common.gcp_api.test_data import fake_appengine_responses as fae
+from tests.common.gcp_api.test_data import http_mocks
+from google.cloud.security.common.gcp_api import appengine as ae
+from google.cloud.security.common.gcp_api import errors as api_errors
 
-class AppEngineTest(ForsetiTestCase):
+
+class AppEngineTest(unittest_utils.ForsetiTestCase):
     """Test the AppEngine client."""
 
-    @mock.patch('google.cloud.security.common.gcp_api._base_client.discovery')
-    @mock.patch('google.cloud.security.common.gcp_api._base_client.GoogleCredentials')
-    def setUp(self, mock_google_credential, mock_discovery):
+    @classmethod
+    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
-
         fake_global_configs = {
             'max_appengine_api_calls_per_second': 20}
-        self.client = appengine.AppEngineClient(fake_global_configs)
+        cls.ae_api_client = ae.AppEngineClient(fake_global_configs,
+                                               use_rate_limiter=False)
+
+    @mock.patch.object(client, 'GoogleCredentials')
+    def test_no_quota(self, mock_google_credential):
+        """Verify no rate limiter is used if the configuration is missing."""
+        ae_api_client = ae.AppEngineClient(global_configs={})
+        self.assertEqual(None, ae_api_client.repository._rate_limiter)
 
     def test_get_app(self):
-        self.client.service = mock.MagicMock()
-        apps = mock.MagicMock()
-        apps.get = mock.MagicMock()
-        self.client.service.apps = mock.MagicMock(return_value=apps)
-        self.client.rate_limiter = mock.MagicMock()
-        self.client._execute = mock.MagicMock()
+        http_mocks.mock_http_response(fae.FAKE_APP_GET_RESPONSE)
+        response = self.ae_api_client.get_app(fae.FAKE_PROJECT_ID)
 
-        app = self.client.get_app('aaaaa')
+        self.assertEqual(fae.FAKE_APP_NAME, response.get('name'))
 
-        self.assertTrue(self.client.service.apps.called)
-        apps.get.assert_called_with(appsId='aaaaa')
+    def test_get_app_not_found(self):
+        http_mocks.mock_http_response(fae.APP_NOT_FOUND, '404')
+        response = self.ae_api_client.get_app(fae.FAKE_PROJECT_ID)
+
+        self.assertEqual({}, response)
+
+    def test_get_app_raises(self):
+        http_mocks.mock_http_response(fae.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ae_api_client.get_app(fae.FAKE_PROJECT_ID)
+
+    def test_get_service(self):
+        http_mocks.mock_http_response(fae.GET_SERVICE_RESPONSE)
+        response = self.ae_api_client.get_service(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID)
+
+        self.assertEqual(fae.EXPECTED_SERVICE_NAMES[0], response.get('name'))
+
+    def test_get_service_not_found(self):
+        http_mocks.mock_http_response(fae.APP_NOT_FOUND, '404')
+        response = self.ae_api_client.get_service(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID)
+
+        self.assertEqual({}, response)
+
+    def test_get_service_raises(self):
+        http_mocks.mock_http_response(fae.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ae_api_client.get_service(
+                fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID)
+
+    def test_list_services(self):
+        http_mocks.mock_http_response(fae.LIST_SERVICES_RESPONSE)
+        response = self.ae_api_client.list_services(fae.FAKE_PROJECT_ID)
+
+        self.assertEquals(fae.EXPECTED_SERVICE_NAMES,
+                          [r.get('name') for r in response])
+
+    def test_list_services_not_found(self):
+        http_mocks.mock_http_response(fae.APP_NOT_FOUND, '404')
+        response = self.ae_api_client.list_services(fae.FAKE_PROJECT_ID)
+
+        self.assertEqual([], response)
+
+    def test_list_services_raises(self):
+        http_mocks.mock_http_response(fae.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ae_api_client.list_services(fae.FAKE_PROJECT_ID)
+
+    def test_get_version(self):
+        http_mocks.mock_http_response(fae.GET_VERSION_RESPONSE)
+        response = self.ae_api_client.get_version(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID)
+
+        self.assertEqual(fae.EXPECTED_VERSION_NAMES[0], response.get('name'))
+
+    def test_get_version_not_found(self):
+        http_mocks.mock_http_response(fae.APP_NOT_FOUND, '404')
+        response = self.ae_api_client.get_version(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID)
+
+        self.assertEqual({}, response)
+
+    def test_get_version_raises(self):
+        http_mocks.mock_http_response(fae.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ae_api_client.get_version(
+                fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID)
+
+    def test_list_versions(self):
+        mock_responses = []
+        for page in fae.LIST_VERSIONS_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        response = self.ae_api_client.list_versions(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID)
+
+        self.assertEquals(fae.EXPECTED_VERSION_NAMES,
+                          [r.get('name') for r in response])
+
+    def test_list_versions_not_found(self):
+        http_mocks.mock_http_response(fae.APP_NOT_FOUND, '404')
+        response = self.ae_api_client.list_versions(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID)
+
+        self.assertEqual([], response)
+
+    def test_list_versions_raises(self):
+        http_mocks.mock_http_response(fae.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ae_api_client.list_versions(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID)
+
+    def test_get_instance(self):
+        http_mocks.mock_http_response(fae.GET_INSTANCE_RESPONSE)
+        response = self.ae_api_client.get_instance(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID,
+            fae.FAKE_INSTANCE_ID)
+
+        self.assertEqual(fae.EXPECTED_INSTANCE_NAMES[0], response.get('name'))
+
+    def test_get_instance_not_found(self):
+        http_mocks.mock_http_response(fae.APP_NOT_FOUND, '404')
+        response = self.ae_api_client.get_instance(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID,
+            fae.FAKE_INSTANCE_ID)
+
+        self.assertEqual({}, response)
+
+    def test_get_instance_raises(self):
+        http_mocks.mock_http_response(fae.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ae_api_client.get_instance(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID,
+            fae.FAKE_INSTANCE_ID)
+
+    def test_list_instances(self):
+        http_mocks.mock_http_response(fae.LIST_INSTANCES_RESPONSE)
+
+        response = self.ae_api_client.list_instances(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID)
+
+        self.assertEquals(fae.EXPECTED_INSTANCE_NAMES,
+                          [r.get('name') for r in response])
+
+    def test_list_instances_not_found(self):
+        http_mocks.mock_http_response(fae.APP_NOT_FOUND, '404')
+        response = self.ae_api_client.list_instances(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID)
+
+        self.assertEqual([], response)
+
+    def test_list_instances_raises(self):
+        http_mocks.mock_http_response(fae.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ae_api_client.list_instances(
+            fae.FAKE_PROJECT_ID, fae.FAKE_SERVICE_ID, fae.FAKE_VERSION_ID)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,13 +17,10 @@
 This pipeline depends on the LoadProjectsPipeline.
 """
 
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
-from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -65,13 +62,11 @@ class LoadBackendServicesPipeline(base_pipeline.BasePipeline):
                     .get_projects(self.cycle_timestamp))
         backend_services = {}
         for project in projects:
-            try:
-                project_backend_services = self.api_client.get_backend_services(
-                    project.id)
-                if project_backend_services:
-                    backend_services[project.id] = project_backend_services
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(inventory_errors.LoadDataPipelineError(e))
+            project_backend_services = self.safe_api_call(
+                'get_backend_services', project.id)
+            if project_backend_services:
+                backend_services[project.id] = project_backend_services
+
         return backend_services
 
     def run(self):

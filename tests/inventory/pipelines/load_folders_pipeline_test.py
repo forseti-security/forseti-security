@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,11 +32,9 @@ from tests.inventory.pipelines.test_data import fake_folders
 
 
 def _setup_raw_folders():
-    fakes = [o for res in fake_folders.FAKE_FOLDERS \
-        for o in res.get('folders', [])]
     for (i, o) in enumerate(fake_folders.EXPECTED_LOADABLE_FOLDERS):
         fake_folders.EXPECTED_LOADABLE_FOLDERS[i]['raw_folder'] = \
-            json.dumps(fakes[i])
+            json.dumps(fake_folders.FAKE_FOLDERS[i])
 
 
 class LoadFoldersPipelineTest(ForsetiTestCase):
@@ -80,8 +78,8 @@ class LoadFoldersPipelineTest(ForsetiTestCase):
         self.pipeline.api_client.get_folders.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve()
+        results = self.pipeline._retrieve()
+        self.assertEqual(None, results)
 
     @mock.patch.object(
         load_folders_pipeline.LoadFoldersPipeline,

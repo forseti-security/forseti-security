@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -76,25 +76,23 @@ class LoadProjectsBucketsPipelineTest(ForsetiTestCase):
         self.assertEquals(
             1, self.pipeline.api_client.get_buckets.call_count)
 
-    def test_api_error_is_handled_when_retrieving(self):
+    @mock.patch(
+        'google.cloud.security.inventory.pipelines.base_pipeline.LOGGER')
+    def test_api_error_is_handled_when_retrieving(self, mock_logger):
         """Test that exceptions are handled when retrieving.
 
         We don't want to fail the pipeline when any one project's buckets
     can not be retrieved.  We just want to log the error, and continue
     with the other projects.
         """
-        load_projects_buckets_pipeline.LOGGER = (
-            mock.create_autospec(log_util).get_logger('foo'))
         self.pipeline.dao.get_project_numbers.return_value = (
             self.FAKE_PROJECT_NUMBERS)
         self.pipeline.api_client.get_buckets.side_effect = (
             api_errors.ApiExecutionError('error error', mock.MagicMock()))
 
-        self.pipeline._retrieve()
-
-        self.assertEquals(
-            1,
-            load_projects_buckets_pipeline.LOGGER.error.call_count)
+        results = self.pipeline._retrieve()
+        self.assertEqual([], results)
+        self.assertEqual(1, mock_logger.error.call_count)
 
     @mock.patch.object(
         load_projects_buckets_pipeline.LoadProjectsBucketsPipeline,

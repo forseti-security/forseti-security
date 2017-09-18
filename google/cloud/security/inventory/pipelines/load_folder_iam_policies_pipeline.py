@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@
 import json
 
 from google.cloud.security.common.data_access import errors as da_errors
-from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -84,14 +82,11 @@ class LoadFolderIamPoliciesPipeline(base_pipeline.BasePipeline):
 
         iam_policies = []
         for folder in folders:
-            try:
-                iam_policy = self.api_client.get_folder_iam_policies(
-                    self.RESOURCE_NAME, folder.id)
+            iam_policy = self.safe_api_call('get_folder_iam_policies',
+                                            self.RESOURCE_NAME,
+                                            folder.id)
+            if iam_policy:
                 iam_policies.append(iam_policy)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(
-                    'Unable to get IAM policies for folder %s:\n%s',
-                    folder.id, e)
         return iam_policies
 
     def run(self):

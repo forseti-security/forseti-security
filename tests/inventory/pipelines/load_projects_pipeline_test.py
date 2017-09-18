@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,8 +70,8 @@ class LoadProjectsPipelineTest(ForsetiTestCase):
         self.pipeline.api_client.get_projects.side_effect = (
             api_errors.ApiExecutionError('11111', mock.MagicMock()))
 
-        with self.assertRaises(inventory_errors.LoadDataPipelineError):
-            self.pipeline._retrieve()
+        projects = self.pipeline._retrieve()
+        self.assertEqual(None, projects)
 
     @mock.patch.object(
         load_projects_pipeline.LoadProjectsPipeline,

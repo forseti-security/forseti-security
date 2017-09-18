@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -154,6 +154,7 @@ def _start_snapshot_cycle(inventory_dao):
     LOGGER.info('Inventory snapshot cycle started: %s', cycle_timestamp)
     return cycle_time, cycle_timestamp
 
+# pylint: disable=broad-except
 def _run_pipelines(pipelines):
     """Run the pipelines to load data.
 
@@ -172,11 +173,16 @@ def _run_pipelines(pipelines):
             pipeline.run()
             pipeline.status = 'SUCCESS'
             LOGGER.info('Finished running %s', pipeline.__class__.__name__)
+
         except (api_errors.ApiInitializationError,
                 inventory_errors.LoadDataPipelineError) as e:
-            LOGGER.error('Encountered error loading data.\n%s', e)
+            LOGGER.error('Encountered API error loading data.\n%s', e,
+                         exc_info=True)
             pipeline.status = 'FAILURE'
-            LOGGER.info('Continuing on.')
+        except Exception as e:
+            LOGGER.error('Encountered error loading data.\n%s', e,
+                         exc_info=True)
+            pipeline.status = 'FAILURE'
         run_statuses.append(pipeline.status == 'SUCCESS')
     return run_statuses
 

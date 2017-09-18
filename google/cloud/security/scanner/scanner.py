@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,9 @@
 
 Usage:
 
-  List rules engines:
-  $ forseti_scanner --list_engines
-
   Run scanner:
   $ forseti_scanner \\
-      --forseti_config (optional) \\
+      --forseti_config (optional)
 """
 import sys
 
@@ -32,7 +29,6 @@ from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.scanner import scanner_builder
-from google.cloud.security.scanner.audit import engine_map as em
 
 
 # Setup flags
@@ -54,18 +50,11 @@ try:
 except flags.DuplicateFlagError:
     pass
 
-flags.DEFINE_boolean('list_engines', False, 'List all rule engines')
-
 
 LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
-
-def _list_rules_engines():
-    """List rules engines."""
-    for engine in em.ENGINE_TO_DATA_MAP:
-        print engine
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
@@ -92,10 +81,6 @@ def main(_):
     Args:
         _ (list): argv, unused due to apputils.
     """
-    if FLAGS.list_engines is True:
-        _list_rules_engines()
-        sys.exit(1)
-
     forseti_config = FLAGS.forseti_config
     if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')

@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,16 +16,11 @@
 
 import json
 
-# TODO: Investigate improving so the pylint disable isn't needed.
-# pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.security.common.data_access import errors as dao_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
 from google.cloud.security.inventory import errors as inventory_errors
 from google.cloud.security.inventory.pipelines import base_pipeline
-# pylint: enable=line-too-long
-
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -86,23 +81,20 @@ class LoadProjectsIamPoliciesPipeline(base_pipeline.BasePipeline):
         try:
             project_numbers = self.dao.get_project_numbers(
                 self.RESOURCE_NAME, self.cycle_timestamp)
-        except data_access_errors.MySQLError as e:
+        except dao_errors.MySQLError as e:
             raise inventory_errors.LoadDataPipelineError(e)
 
         # Retrieve data from GCP.
         # Not using iterator since we will use the iam_policy_maps twice.
         iam_policy_maps = []
         for project_number in project_numbers:
-            try:
-                iam_policy = self.api_client.get_project_iam_policies(
-                    self.RESOURCE_NAME, project_number)
+            iam_policy = self.safe_api_call('get_project_iam_policies',
+                                            self.RESOURCE_NAME,
+                                            project_number)
+            if iam_policy:
                 iam_policy_map = {'project_number': project_number,
                                   'iam_policy': iam_policy}
                 iam_policy_maps.append(iam_policy_map)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.error(
-                    'Unable to get IAM policies for project %s:\n%s',
-                    project_number, e)
         return iam_policy_maps
 
     def run(self):
