@@ -134,10 +134,11 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
         if apps:
             loadable_apps = self._transform(apps)
             self._load(self.RESOURCE_NAME, loadable_apps)
-        self._get_loaded_count()
+            # TODO: Make _get_loaded_count() support multiple resources
+            # in a single pipeline.  This will be resolved when tackling
+            # Inventory v2.
+            self._load(self.SERVICES_RESOURCE_NAME, loadable_services)
+            self._load(self.VERSIONS_RESOURCE_NAME, loadable_versions)
+            self._load(self.INSTANCES_RESOURCE_NAME, loadable_instances)
 
-        # TODO: Make _get_loaded_count() support multiple resources in a single
-        # pipeline.  This will be resolved when tackling Inventory v2.
-        self._load(self.SERVICES_RESOURCE_NAME, loadable_services)
-        self._load(self.VERSIONS_RESOURCE_NAME, loadable_versions)
-        self._load(self.INSTANCES_RESOURCE_NAME, loadable_instances)
+        self._get_loaded_count()
