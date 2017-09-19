@@ -212,6 +212,7 @@ CREATE_FIREWALL_RULES_TABLE = """
         `firewall_rule_source_ranges` json DEFAULT NULL,
         `firewall_rule_destination_ranges` json DEFAULT NULL,
         `firewall_rule_source_tags` json DEFAULT NULL,
+        `firewall_rule_target_service_accounts` json DEFAULT NULL,
         `firewall_rule_target_tags` json DEFAULT NULL,
         `firewall_rule_allowed` json DEFAULT NULL,
         `firewall_rule_denied` json DEFAULT NULL,

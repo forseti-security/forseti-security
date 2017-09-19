@@ -191,6 +191,7 @@ FIREWALL_RULES_FIELDNAMES = [
     'firewall_rule_destination_ranges',
     'firewall_rule_source_tags',
     'firewall_rule_target_tags',
+    'firewall_rule_target_service_accounts', 
     'firewall_rule_allowed',
     'firewall_rule_denied',
     'firewall_rule_self_link',
