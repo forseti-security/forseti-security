@@ -75,22 +75,38 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
             self.pipeline.api_client.get_app.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
+    @mock.patch('google.cloud.security.inventory.pipelines.base_pipeline.BasePipeline.safe_api_call')
     @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
     def test_retrieve_data_is_correct(
-            self, mock_get_projects, mock_conn):
+            self, mock_get_projects, mock_safe_api_call, mock_conn):
         """Test _retrieve() data is correct."""
         mock_get_projects.return_value = self.projects
         apps = [fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP[p]
                 for p in self.project_ids]
 
-        self.pipeline.api_client.get_app = mock.MagicMock(
-            side_effect=apps)
+        mock_safe_api_call.side_effect = [
+            apps[0],
+            fake_appengine_applications.FAKE_SERVICES,
+            fake_appengine_applications.FAKE_VERSIONS,
+            fake_appengine_applications.FAKE_INSTANCES
+        ]
 
-        actual = self.pipeline._retrieve()
+        actual_apps, loadable_services, loadable_versions, loadable_instances = (
+            self.pipeline._retrieve())
 
         self.assertEquals(
             fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP,
-            actual)
+            actual_apps)
+
+        self.assertEquals(
+            fake_appengine_applications.EXPECTED_LOADABLE_SERVICES,
+            loadable_services)
+        self.assertEquals(
+            fake_appengine_applications.EXPECTED_LOADABLE_VERSIONS,
+            loadable_versions)
+        self.assertEquals(
+            fake_appengine_applications.EXPECTED_LOADABLE_INSTANCES,
+            loadable_instances)
 
     @mock.patch.object(
         load_appengine_pipeline.LoadAppenginePipeline,
@@ -112,7 +128,7 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
             mock_get_loaded_count):
         """Test that the subroutines are called by run."""
         mock_retrieve.return_value = (
-            fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP)
+            fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP, '', '', '')
         mock_transform.return_value = (
             fake_appengine_applications.EXPECTED_LOADABLE_APPLICATIONS)
         self.pipeline.run()
@@ -120,7 +136,7 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
         mock_transform.assert_called_once_with(
             fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP)
 
-        self.assertEquals(1, mock_load.call_count)
+        self.assertEquals(4, mock_load.call_count)
 
         # The regular data is loaded.
         called_args, called_kwargs = mock_load.call_args_list[0]

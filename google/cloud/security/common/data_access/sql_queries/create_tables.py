@@ -30,9 +30,48 @@ CREATE_APPENGINE_TABLE = """
         `default_bucket` varchar(255) DEFAULT NULL,
         `iap` json DEFAULT NULL,
         `gcr_domain` varchar(255) DEFAULT NULL,
-        `services` json DEFAULT NULL,
         `raw_application` json DEFAULT NULL,
         PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_APPENGINE_SERVICES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `app_id` varchar(255) DEFAULT NULL,
+        `service_id` varchar(255) DEFAULT NULL,
+        `service` json DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `service_key` (`app_id`, `service_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_APPENGINE_VERSIONS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `app_id` varchar(255) DEFAULT NULL,
+        `service_id` varchar(255) DEFAULT NULL,
+        `version_id` varchar(255) DEFAULT NULL,
+        `version` json DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `version_key` (`app_id`, `service_id`, `version_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_APPENGINE_INSTANCES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `app_id` varchar(255) DEFAULT NULL,
+        `service_id` varchar(255) DEFAULT NULL,
+        `version_id` varchar(255) DEFAULT NULL,
+        `instance_id` varchar(255) DEFAULT NULL,
+        `instance` json DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `instance_key` (`app_id`, `service_id`, `version_id`,
+                   `instance_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
