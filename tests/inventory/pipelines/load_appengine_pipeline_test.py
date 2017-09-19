@@ -128,7 +128,8 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
             mock_get_loaded_count):
         """Test that the subroutines are called by run."""
         mock_retrieve.return_value = (
-            fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP, '', '', '')
+            fake_appengine_applications.FAKE_PROJECT_APPLICATIONS_MAP, '', '',
+            '')
         mock_transform.return_value = (
             fake_appengine_applications.EXPECTED_LOADABLE_APPLICATIONS)
         self.pipeline.run()
