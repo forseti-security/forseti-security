@@ -137,7 +137,7 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
         self._get_loaded_count()
 
         # TODO: Make _get_loaded_count() support multiple resources in a single
-        # pipeline.
+        # pipeline.  This will be resolved when tackling Inventory v2.
         self._load(self.SERVICES_RESOURCE_NAME, loadable_services)
         self._load(self.VERSIONS_RESOURCE_NAME, loadable_versions)
         self._load(self.INSTANCES_RESOURCE_NAME, loadable_instances)
