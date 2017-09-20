@@ -87,20 +87,54 @@ class ApiClient(object):
         raise NotImplementedError()
 
 
+def create_on_demand(attribute, factory):
+    def f_wrapper(function):
+        def wrapper(*args, **kwargs):
+            this = args[0]
+            if not hasattr(this, attribute) or not getattr(this, attribute):
+                setattr(this, attribute, factory(this))
+            return function(*args, **kwargs)
+        return wrapper
+    return f_wrapper
+
+
 class ApiClientImpl(ApiClient):
     """The gcp api client Implementation"""
     def __init__(self, config):
-        self.ad = admin_directory.AdminDirectoryClient(config)
-        self.bigquery = bigquery.BigQueryClient(config)
-        self.crm = cloud_resource_manager.CloudResourceManagerClient(config)
-        self.cloudsql = cloudsql.CloudsqlClient(config)
-        self.compute = compute.ComputeClient(config)
-        self.iam = iam.IAMClient(config)
-        self.storage = storage.StorageClient(config)
+        self.ad = None
+        self.bigquery = None
+        self.crm = None
+        self.cloudsql = None
+        self.compute = None
+        self.iam = None
+        self.storage = None
 
+        self.config = config
         self.cached_folders = None
         self.cached_projects = None
 
+    def _create_ad(self):
+        return admin_directory.AdminDirectoryClient(self.config)
+
+    def _create_bq(self):
+        return bigquery.BigQueryClient(self.config)
+
+    def _create_crm(self):
+        return cloud_resource_manager.CloudResourceManagerClient(self.config)
+
+    def _create_cloudsql(self):
+        return cloudsql.CloudsqlClient(self.config)
+
+    def _create_compute(self):
+        return compute.ComputeClient(self.config)
+
+    def _create_iam(self):
+        return iam.IAMClient(self.config)
+
+    def _create_storage(self):
+        return storage.StorageClient(self.config)
+
+    @create_on_demand('ad', _create_ad)
     def iter_users(self, gsuite_id):
         """Gsuite user Iterator from gcp API call
 
@@ -110,6 +144,7 @@ class ApiClientImpl(ApiClient):
         for user in self.ad.get_users(gsuite_id):
             yield user
 
+    @create_on_demand('ad', _create_ad)
     def iter_groups(self, gsuite_id):
         """Gsuite group Iterator from gcp API call
 
@@ -120,6 +155,7 @@ class ApiClientImpl(ApiClient):
         for group in result:
             yield group
 
+    @create_on_demand('ad', _create_ad)
     def iter_group_members(self, group_key):
         """Gsuite group_memeber Iterator from gcp API call
 
@@ -129,6 +165,7 @@ class ApiClientImpl(ApiClient):
         for member in self.ad.get_group_members(group_key):
             yield member
 
+    @create_on_demand('crm', _create_crm)
     def fetch_organization(self, orgid):
         """Organization data from gcp API call
 
@@ -137,6 +174,25 @@ class ApiClientImpl(ApiClient):
         """
         return self.crm.get_organization(orgid)
 
+    @create_on_demand('crm', _create_crm)
+    def fetch_folder(self, folderid):
+        """Folder data from gcp API call
+
+        Returns:
+            dict: Generator of folder
+        """
+        return self.crm.get_folder(folderid)
+
+    @create_on_demand('crm', _create_crm)
+    def fetch_project(self, projectid):
+        """Project data from gcp API call
+
+        Returns:
+            dict: Generator of project
+        """
+        return self.crm.get_project(projectid)
+
+    @create_on_demand('crm', _create_crm)
     def iter_projects(self, parent_type, parent_id):
         """Project Iterator from gcp API call
 
@@ -155,6 +211,7 @@ class ApiClientImpl(ApiClient):
                parent_info['id'] == parent_id:
                 yield project
 
+    @create_on_demand('crm', _create_crm)
     def iter_folders(self, parent_id):
         """Folder Iterator from gcp API call
 
@@ -172,6 +229,7 @@ class ApiClientImpl(ApiClient):
             if folder['parent'] == parent_id:
                 yield folder
 
+    @create_on_demand('storage', _create_storage)
     def iter_buckets(self, projectid):
         """Bucket Iterator from gcp API call
 
@@ -185,6 +243,7 @@ class ApiClientImpl(ApiClient):
         for bucket in response['items']:
             yield bucket
 
+    @create_on_demand('storage', _create_storage)
     def iter_objects(self, bucket_id):
         """Object Iterator from gcp API call
 
@@ -194,6 +253,7 @@ class ApiClientImpl(ApiClient):
         for object_ in self.storage.get_objects(bucket_name=bucket_id):
             yield object_
 
+    @create_on_demand('bigquery', _create_bq)
     def iter_datasets(self, projectid):
         """Dataset Iterator from gcp API call
 
@@ -204,6 +264,7 @@ class ApiClientImpl(ApiClient):
         for dataset in response:
             yield dataset
 
+    @create_on_demand('cloudsql', _create_cloudsql)
     def iter_cloudsqlinstances(self, projectid):
         """Cloudsqlinstance Iterator from gcp API call
 
@@ -216,6 +277,7 @@ class ApiClientImpl(ApiClient):
         for item in result['items']:
             yield item
 
+    @create_on_demand('compute', _create_compute)
     def iter_computeinstances(self, projectid):
         """Compute Engine Instance Iterator from gcp API call
 
@@ -226,6 +288,7 @@ class ApiClientImpl(ApiClient):
         for instance in result:
             yield instance
 
+    @create_on_demand('compute', _create_compute)
     def iter_computefirewalls(self, projectid):
         """Compute Engine Firewall Iterator from gcp API call
 
@@ -236,6 +299,7 @@ class ApiClientImpl(ApiClient):
         for rule in result:
             yield rule
 
+    @create_on_demand('compute', _create_compute)
     def iter_computeinstancegroups(self, projectid):
         """Compute Engine group Iterator from gcp API call
 
@@ -246,6 +310,7 @@ class ApiClientImpl(ApiClient):
         for instancegroup in result:
             yield instancegroup
 
+    @create_on_demand('compute', _create_compute)
     def iter_backendservices(self, projectid):
         """Backend service Iterator from gcp API call
 
@@ -256,6 +321,7 @@ class ApiClientImpl(ApiClient):
         for backendservice in result:
             yield backendservice
 
+    @create_on_demand('iam', _create_iam)
     def iter_serviceaccounts(self, projectid):
         """Service Account Iterator in a project from gcp API call
 
@@ -265,6 +331,7 @@ class ApiClientImpl(ApiClient):
         for serviceaccount in self.iam.get_serviceaccounts(projectid):
             yield serviceaccount
 
+    @create_on_demand('iam', _create_iam)
     def iter_project_roles(self, projectid):
         """Project role Iterator in a project from gcp API call
 
@@ -274,6 +341,7 @@ class ApiClientImpl(ApiClient):
         for role in self.iam.get_project_roles(projectid):
             yield role
 
+    @create_on_demand('iam', _create_iam)
     def iter_organization_roles(self, orgid):
         """Organization role Iterator from gcp API call
 
@@ -283,6 +351,7 @@ class ApiClientImpl(ApiClient):
         for role in self.iam.get_organization_roles(orgid):
             yield role
 
+    @create_on_demand('iam', _create_iam)
     def iter_curated_roles(self, orgid):
         """Curated role Iterator in an organization from gcp API call
 
@@ -292,6 +361,7 @@ class ApiClientImpl(ApiClient):
         for role in self.iam.get_curated_roles(orgid):
             yield role
 
+    @create_on_demand('crm', _create_crm)
     def get_folder_iam_policy(self, folderid):
         """Folder IAM policy in a folder from gcp API call
 
@@ -300,6 +370,7 @@ class ApiClientImpl(ApiClient):
         """
         return self.crm.get_folder_iam_policies(folderid)
 
+    @create_on_demand('crm', _create_crm)
     def get_organization_iam_policy(self, orgid):
         """Organization IAM policy from gcp API call
 
@@ -308,6 +379,7 @@ class ApiClientImpl(ApiClient):
         """
         return self.crm.get_org_iam_policies(orgid, orgid)
 
+    @create_on_demand('crm', _create_crm)
     def get_project_iam_policy(self, projectid):
         """Project IAM policy from gcp API call
 
@@ -316,6 +388,7 @@ class ApiClientImpl(ApiClient):
         """
         return self.crm.get_project_iam_policies(projectid, projectid)
 
+    @create_on_demand('storage', _create_storage)
     def get_bucket_gcs_policy(self, bucketid):
         """Bucket GCS policy from gcp API call
 
@@ -327,6 +400,7 @@ class ApiClientImpl(ApiClient):
             return []
         return result['items']
 
+    @create_on_demand('storage', _create_storage)
     def get_bucket_iam_policy(self, bucketid):
         """Bucket IAM policy Iterator from gcp API call
 
@@ -335,6 +409,7 @@ class ApiClientImpl(ApiClient):
         """
         return self.storage.get_bucket_iam_policy(bucketid)
 
+    @create_on_demand('storage', _create_storage)
     def get_object_gcs_policy(self, bucket_name, object_name):
         """Object GCS policy for an object from gcp API call
 
@@ -346,6 +421,7 @@ class ApiClientImpl(ApiClient):
             return []
         return result['items']
 
+    @create_on_demand('storage', _create_storage)
     def get_object_iam_policy(self, bucket_name, object_name):
         """Object IAM policy Iterator for an object from gcp API call
 
@@ -354,6 +430,7 @@ class ApiClientImpl(ApiClient):
         """
         return self.storage.get_object_iam_policy(bucket_name, object_name)
 
+    @create_on_demand('bigquery', _create_bq)
     def get_dataset_dataset_policy(self, projectid, datasetid):
         """Dataset policy Iterator for a dataset from gcp API call
 

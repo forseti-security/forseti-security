@@ -41,10 +41,10 @@ class ResourceFactory(object):
     def __init__(self, attributes):
         self.attributes = attributes
 
-    def create_new(self, data):
+    def create_new(self, data, root=False):
         attrs = self.attributes
         cls = attrs['cls']
-        return cls(data, **attrs)
+        return cls(data, root, **attrs)
 
 
 class ResourceKey(object):
@@ -54,8 +54,9 @@ class ResourceKey(object):
 
 
 class Resource(object):
-    def __init__(self, data, contains=None, **kwargs):
+    def __init__(self, data, root=False, contains=None, **kwargs):
         self._data = data
+        self._root = root
         self._stack = None
         self._leaf = contains is None
         self._contains = [] if contains is None else contains
@@ -79,6 +80,8 @@ class Resource(object):
         return self._data
 
     def parent(self):
+        if self._root:
+            return self
         try:
             return self._stack[-1]
         except IndexError:
@@ -148,7 +151,7 @@ class Organization(Resource):
     @classmethod
     def fetch(cls, client, resource_key):
         data = client.fetch_organization(resource_key)
-        return FACTORIES['organization'].create_new(data)
+        return FACTORIES['organization'].create_new(data, root=True)
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
@@ -160,11 +163,14 @@ class Organization(Resource):
     def type(self):
         return 'organization'
 
-    def parent(self):
-        return self
-
 
 class Folder(Resource):
+    @classmethod
+    def fetch(cls, client, resource_key):
+        data = client.fetch_folder(resource_key)
+        folder = FACTORIES['folder'].create_new(data, root=True)
+        return folder
+
     def key(self):
         return self['name'].split('/', 1)[-1]
 
@@ -177,6 +183,10 @@ class Folder(Resource):
 
 
 class Project(Resource):
+    @classmethod
+    def fetch(cls, client, resource_key):
+        data = client.fetch_project(resource_key)
+        return FACTORIES['project'].create_new(data, root=True)
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
@@ -508,7 +518,7 @@ FACTORIES = {
             FolderIterator,
             OrganizationRoleIterator,
             OrganizationCuratedRoleIterator,
-            ProjectIterator
+            ProjectIterator,
             ]}),
 
     'folder': ResourceFactory({
