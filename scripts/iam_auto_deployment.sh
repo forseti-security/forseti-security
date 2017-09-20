@@ -186,11 +186,6 @@ else
 	}
 fi
 
-# Creating gsuite service account key
-gcloud iam service-accounts keys create \
-    ~/gsuite.json \
-    --iam-account $GSUITESA
-
 # Service Accounts role assignment
 echo -e "${TYELLOW}Assigning roles to the gcp scraping service account${TNC}"
 echo "Following roles need to be assigned to the gcp scraping service account"
@@ -330,8 +325,14 @@ response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
 	--config $repodir/deployment-templates/deploy-explain.yaml)\
 || exit 1
 VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
- 
-echo -e "${TYELLOW}Copy the gsuite service account key file${TNC}"
+
+
+echo -e "${TYELLOW}Generate and copy the gsuite service account key file${TNC}"
+# Creating gsuite service account key
+gcloud iam service-accounts keys create \
+    ~/gsuite.json \
+    --iam-account $GSUITESA
+
 for (( TRIAL=1; TRIAL<=5; TRIAL++ ))
 do
 	if [[ $TRIAL != 1 ]]; then
@@ -357,6 +358,9 @@ do
 		break
 	fi
 done
+echo "Destroying the gsuite service account key..."
+shred -vzn 3 gsuite.json
+
 if [[ $cpResponse != "SUCCESS" ]]; then
 	echo "Service account key copy failed."
 	echo "Please try to manually copy ~/gsuite.json to /home/ubuntu/gsuite.json on your vm:"
