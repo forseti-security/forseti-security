@@ -21,7 +21,10 @@ import logging
 import logging.handlers
 
 
-LOG_FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(funcName)s %(message)s'
+DEFAULT_LOG_FMT = ('%(asctime)s %(name)-12s %(levelname)-8s '
+                   '%(funcName)s %(message)s')
+SYSLOG_LOG_FMT = ('[forseti-security] %(name)-12s %(levelname)-8s '
+                  '%(funcName)s %(message)s')
 LOGGERS = {}
 LOGLEVELS = {
     'debug': logging.DEBUG,
@@ -42,11 +45,12 @@ def get_logger(module_name):
         logger: An instance of the configured logger.
     """
     # TODO: Move this into a configuration file.
-    formatter = logging.Formatter(LOG_FORMAT)
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
+    console_handler.setFormatter(logging.Formatter(DEFAULT_LOG_FMT))
+
     syslog_handler = logging.handlers.SysLogHandler()
-    syslog_handler.setFormatter(formatter)
+    syslog_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
+
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(console_handler)
     logger_instance.addHandler(syslog_handler)
