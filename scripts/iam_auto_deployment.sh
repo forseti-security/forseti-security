@@ -360,6 +360,7 @@ do
 done
 echo "Destroying the gsuite service account key..."
 shred -vzn 3 gsuite.json
+rm -f gsuite.json
 
 if [[ $cpResponse != "SUCCESS" ]]; then
 	echo "Service account key copy failed."
