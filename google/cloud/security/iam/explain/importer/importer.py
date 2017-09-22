@@ -814,7 +814,7 @@ class InventoryImporter(object):
                     permission = self.dao.TBL_PERMISSION(
                         name=perm_name)
                     self.permission_cache[perm_name] = permission
-                db_permissions.append(permission)
+                db_permissions.append(self.permission_cache[perm_name])
 
         dbrole = self.dao.TBL_ROLE(
             name=data['name'],
