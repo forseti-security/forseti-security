@@ -46,7 +46,7 @@ class FirewallRule(object):
             kwargs.get('firewall_rule_source_tags'))
         self.target_tags = parser.json_unstringify(
             kwargs.get('firewall_rule_target_tags'))
-        self.target_tags = parser.json_unstringify(
+        self.target_service_accounts = parser.json_unstringify(
             kwargs.get('firewall_rule_target_service_accounts'))
         self.allowed = parser.json_unstringify(
             kwargs.get('firewall_rule_allowed'))
