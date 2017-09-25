@@ -1,7 +1,5 @@
 [![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security) [![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)
 
-|TOC|
-
 # Forseti Security
 A community-driven collection of open source tools to improve the security
 of your Google Cloud Platform environments.
