@@ -23,6 +23,21 @@
 import json
 
 
+def from_root_id(client, root_id):
+    root_map = {
+        'organizations': Organization.fetch,
+        'projects': Project.fetch,
+        'folders': Folder.fetch,
+        }
+
+    for prefix, func in root_map.iteritems():
+        if root_id.startswith(prefix):
+            return func(client, root_id)
+    raise Exception(
+        'Unsupported root id, must be one of {}'.format(
+            ','.join(root_map.keys())))
+
+
 def cached(field_name):
     field_name = '__cached_{}'.format(field_name)
 
@@ -185,7 +200,8 @@ class Folder(Resource):
 class Project(Resource):
     @classmethod
     def fetch(cls, client, resource_key):
-        data = client.fetch_project(resource_key)
+        project_id = resource_key.split('/', 1)[-1]
+        data = client.fetch_project(project_id)
         return FACTORIES['project'].create_new(data, root=True)
 
     @cached('iam_policy')

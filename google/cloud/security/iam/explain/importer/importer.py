@@ -269,7 +269,6 @@ class InventoryImporter(object):
         self.member_cache = {}
         self.member_cache_policies = {}
 
-
     def run(self):
         """Runs the import.
 

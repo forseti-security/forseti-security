@@ -66,7 +66,7 @@ class CrawlerTest(ForsetiTestCase):
 
         gcp = gcp_env()
         config = InventoryConfig(
-            gcp.organization_id,
+            gcp.root_id,
             gcp.gsuite_sa,
             gcp.gsuite_admin_email)
 

@@ -31,11 +31,11 @@ class InventoryConfig(AbstractInventoryConfig):
 
         super(InventoryConfig, self).__init__(*args, **kwargs)
 
-    def get_organization_id(self):
+    def get_root_resource_id(self):
         """Return the configured organization id.
 
         Returns:
-            str: Organization ID.
+            str: root resource ID.
         """
 
         raise NotImplementedError()
