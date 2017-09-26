@@ -148,7 +148,6 @@ class Key(key.Key):
         return self._path_component('name')
 
 
-# pylint: disable=too-few-public-methods
 class InstanceNetworkInterface(object):
     """InstanceNetworkInterface Resource."""
 
@@ -218,5 +217,9 @@ class InstanceNetworkInterface(object):
 
     # TODO: Add this as a base method for all gcp_type objects.
     def as_json(self):
-        """Returns the attributes as json formatted string."""
+        """Returns the attributes as json formatted string.
+
+        Returns:
+            string: json formatted attribute of the instance network interface
+        """
         return self._json
