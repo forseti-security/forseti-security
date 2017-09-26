@@ -15,7 +15,6 @@
 """Rules engine for NetworkInterface."""
 from collections import namedtuple
 import itertools
-import json
 import re
 
 from google.cloud.security.common.util.regex_util import escape_and_globify
@@ -244,8 +243,7 @@ class Rule(object):
                     project=project,
                     network=network,
                     ip=ips,
-                    raw_data=json.dumps(instance_network_interface.__dict__,
-                                        indent=2))
+                    raw_data=instance_network_interface.as_json())
 
     # Rule violation.
     # resource_type: string

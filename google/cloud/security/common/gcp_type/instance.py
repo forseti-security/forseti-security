@@ -17,7 +17,9 @@
 See: https://cloud.google.com/compute/docs/reference/latest/instances
 """
 
+import json
 import os
+
 from google.cloud.security.common.gcp_type import key
 from google.cloud.security.common.util import parser
 
@@ -163,6 +165,7 @@ class InstanceNetworkInterface(object):
         self.name = kwargs.get('name')
         self.access_configs = kwargs.get('accessConfigs')
         self.alias_ip_ranges = kwargs.get('aliasIpRanges')
+        self._json = json.dumps(kwargs, sort_keys=True, indent=2)
 
     def __repr__(self):
         """Repr
@@ -212,3 +215,8 @@ class InstanceNetworkInterface(object):
                     (self.access_configs == other.access_configs) and
                     (self.alias_ip_ranges == other.alias_ip_ranges))
         return False
+
+    # TODO: Add this as a base method for all gcp_type objects.
+    def as_json(self):
+        """Returns the attributes as json formatted string."""
+        return self._json
