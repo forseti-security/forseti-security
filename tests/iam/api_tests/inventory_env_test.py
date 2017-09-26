@@ -44,8 +44,8 @@ class TestServiceConfig(MockServerConfig):
         self.workers = ThreadPool(10)
         self.env = gcp_env()
 
-    def get_organization_id(self):
-        return self.env.organization_id
+    def get_root_resource_id(self):
+        return self.env.root_id
 
     def get_gsuite_sa_path(self):
         return self.env.gsuite_sa
