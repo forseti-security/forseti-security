@@ -244,7 +244,8 @@ class Rule(object):
                     project=project,
                     network=network,
                     ip=ips,
-                    raw_data=json.dumps(instance_network_interface, indent=2))
+                    raw_data=json.dumps(instance_network_interface.__dict__,
+                                        indent=2))
 
     # Rule violation.
     # resource_type: string
