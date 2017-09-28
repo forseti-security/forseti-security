@@ -65,7 +65,7 @@ echo "The inventory can be built starting from:"
 echo "1. organizations"
 echo "2. folders"
 echo "3. projects"
-echo -e "${TRED} But explainability is only supported for inventory built from an organization${TNC}"
+echo -e "${TRED} Right now explainability is only supported for inventory built from an organization${TNC}"
 scopeNotChoose=true
 while $scopeNotChoose
 do
@@ -88,11 +88,11 @@ do
 	fi
 done
 
-if [[ ROOTTYPE == "organizations" ]]
+if [[ $ROOTTYPE == "organizations" ]]
 then
 	ROOTID=$ORGANIZATION_ID
-	CmdPrefix= "gcloud organizations"
-elif [[ ROOTTYPE == "folders" ]]
+	CmdPrefix="gcloud organizations"
+elif [[ $ROOTTYPE == "folders" ]]
 then
 # Set folder ID
 	echo "Here are folders in your organization:"
@@ -108,13 +108,13 @@ then
 		if [[ $REPLY == "y" ]]
 		then
 			ROOTID=$FOLDER_ID
-			CmdPrefix= "gcloud alpha resource-manager folders"
+			CmdPrefix="gcloud alpha resource-manager folders"
 			folderNotChoose=false
 		else
 			echo "Folder ID not confirmed. Please try again..."
 		fi
 	done
-elif [[ ROOTTYPE == "projects" ]]
+elif [[ $ROOTTYPE == "projects" ]]
 then
 # Set projects ID
 	echo "Here are all projects you have access to:"
@@ -123,12 +123,12 @@ then
 	projectNotChoose=true
 	while $projectNotChoose
 	do
-		echo "Choose one to build IAM Explain Inventory using PROJECT_ID. 
+		echo "Choose one to build IAM Explain Inventory using PROJECT_ID:" 
 		read PROJECT_ID
 		if [[ $project_list == *$'\n'$PROJECT_ID$' '* ]]
 		then
 			ROOTID=$PROJECT_ID
-			CmdPrefix= "gcloud projects"
+			CmdPrefix="gcloud projects"
 			projectNotChoose=false
 		else
 			echo "The project you choose doesn't exist or you don't have access to. Please try again..."
@@ -137,7 +137,7 @@ then
 fi
 
 # Get project information
-echo "Fetching project ID"
+echo "Fetching deployment project ID"
 
 PROJECT_ID=$(gcloud info | grep "project: \[" | sed -e 's/^ *project: \[//' -e  's/\]$//g')
 
@@ -329,7 +329,7 @@ fi
 echo "Customizing deployment template..."
 cp $repodir/deployment-templates/deploy-explain.yaml.sample \
 $repodir/deployment-templates/deploy-explain.yaml
-sed -i -e 's/ROOT_RESOURCE_ID/'$ROOTTYPE$"/"$ROOTID'/g' \
+sed -i -e 's/ROOT_RESOURCE_ID/'$ROOTTYPE$"\/"$ROOTID'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPINGSA'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
