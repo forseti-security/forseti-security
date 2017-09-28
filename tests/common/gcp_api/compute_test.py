@@ -248,7 +248,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_get_instance_group_managers_errors(self, name, response, status,
-                                            expected_exception):
+                                                expected_exception):
         """Verify error conditions for get instance templates."""
         http_mocks.mock_http_response(response, status)
         with self.assertRaises(expected_exception):
@@ -264,7 +264,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_get_project_errors(self, name, response, status,
-                                            expected_exception):
+                                expected_exception):
         """Verify error conditions for get instance templates."""
         http_mocks.mock_http_response(response, status)
         with self.assertRaises(expected_exception):

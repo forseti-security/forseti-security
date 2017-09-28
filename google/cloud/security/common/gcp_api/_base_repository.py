@@ -76,16 +76,16 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     return discovery.build(**discovery_kwargs)
 
 
-def _set_user_agent(credentials):
-    """Set custom Forseti user agent for all authenticated requests.
+def _set_ua_and_scopes(credentials):
+    """Set custom Forseti user agent and add cloud scopes on credential object.
 
     Args:
-        credentials (OAuth2Credentials): The credentials object used to
+        credentials (client.OAuth2Credentials): The credentials object used to
             authenticate all http requests.
 
     Returns:
-        OAuth2Credentials: The credentials object with the user agent attribute
-            set or updated.
+        client.OAuth2Credentials: The credentials object with the user agent
+            attribute set or updated.
     """
     if isinstance(credentials, client.OAuth2Credentials):
         user_agent = credentials.user_agent
@@ -133,7 +133,7 @@ class BaseRepositoryClient(object):
             # Only share the http object when using the default credentials.
             self._use_cached_http = True
             credentials = client.GoogleCredentials.get_application_default()
-        self._credentials = _set_user_agent(credentials)
+        self._credentials = _set_ua_and_scopes(credentials)
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()

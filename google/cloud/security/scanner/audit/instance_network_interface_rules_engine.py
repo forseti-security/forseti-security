@@ -243,7 +243,7 @@ class Rule(object):
                     project=project,
                     network=network,
                     ip=ips,
-                    raw_data=repr(instance_network_interface))
+                    raw_data=instance_network_interface.as_json())
 
     # Rule violation.
     # resource_type: string
