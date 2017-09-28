@@ -329,7 +329,7 @@ fi
 echo "Customizing deployment template..."
 cp $repodir/deployment-templates/deploy-explain.yaml.sample \
 $repodir/deployment-templates/deploy-explain.yaml
-sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' \
+sed -i -e 's/ROOT_RESOURCE_ID/'$ROOTTYPE$"/"$ROOTID'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPINGSA'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
