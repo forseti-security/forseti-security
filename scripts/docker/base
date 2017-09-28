@@ -38,5 +38,6 @@ RUN pip install -q --upgrade \
     grpcio-tools==1.4.0 \
     mock \
     parameterized \
-    pylint
+    pylint \
+    simple-crypt
 
