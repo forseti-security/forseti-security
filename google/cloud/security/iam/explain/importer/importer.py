@@ -269,6 +269,8 @@ class InventoryImporter(object):
         self.member_cache = {}
         self.member_cache_policies = {}
 
+        self.found_root = False
+
     def run(self):
         """Runs the import.
 
@@ -308,6 +310,12 @@ class InventoryImporter(object):
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_id, True) as inventory:
+
+                for resource in inventory.iter('organization'):
+                    self.found_root = True
+                if not self.found_root:
+                    raise Exception(
+                        'Cannot import inventory without organization root')
 
                 for resource in inventory.iter(gcp_type_list):
                     item_counter += 1
@@ -378,6 +386,9 @@ class InventoryImporter(object):
 
     def _store_gsuite_membership_post(self):
         """Flush storing gsuite memberships."""
+
+        if not self.member_cache:
+            return
 
         # Store all members before we flush the memberships
         self.session.add_all(self.member_cache.values())
@@ -752,7 +763,12 @@ class InventoryImporter(object):
         """
 
         data = folder.get_data()
-        parent, full_res_name, type_name = self._full_resource_name(folder)
+        if self._is_root(folder):
+            parent, type_name = None, self._type_name(folder)
+            full_res_name = type_name
+        else:
+            parent, full_res_name, type_name = self._full_resource_name(
+                folder)
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -771,7 +787,12 @@ class InventoryImporter(object):
         """
 
         data = project.get_data()
-        parent, full_res_name, type_name = self._full_resource_name(project)
+        if self._is_root(project):
+            parent, type_name = None, self._type_name(project)
+            full_res_name = type_name
+        else:
+            parent, full_res_name, type_name = self._full_resource_name(
+                project)
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -842,6 +863,8 @@ class InventoryImporter(object):
             organization (object): Organization to store.
         """
 
+        # Under current assumptions, organization is always root
+        self.found_root = True
         data = organization.get_data()
         type_name = self._type_name(organization)
         org = self.dao.TBL_RESOURCE(
@@ -924,6 +947,24 @@ class InventoryImporter(object):
             full_res_name,
             type_name)
         return parent, full_resource_name, type_name
+
+    def _is_root(self, resource):
+        """Checks if the resource is an inventory root. Result is cached.
+
+        Args:
+            resource (object): Resource to check.
+
+        Returns:
+            bool: Whether the resource is root or not
+        """
+        if not self.found_root:
+            is_root = \
+                resource.get_type() == resource.get_parent_type() and \
+                resource.get_key() == resource.get_parent_key()
+            if is_root:
+                self.found_root = True
+            return is_root
+        return False
 
 
 class ForsetiImporter(object):
