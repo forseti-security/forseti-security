@@ -16,12 +16,15 @@
 # Preparation
 TRED='\e[91m'
 TYELLOW='\e[93m'
+TGREEN='\e[92m'
 TNC='\033[0m'
 repodir="/home/$USER/forseti-security"
 
+echo -e "${TGREEN}Welcome to IAM Explain${TNC}"
+
 # Set Organization ID
 echo -e "${TYELLOW}Setting up organization ID${TNC}"
-
+	
 orgs=$(gcloud organizations list --format=flattened \
 	| grep "organizations/" | sed -e 's/^name: *organizations\///g')
 
@@ -54,6 +57,83 @@ else
 		echo "Organization not confirmed"
 		exit 1
 	fi
+fi
+
+# Set Inventory target ID
+echo -e "${TYELLOW}Setting up Inventory scope${TNC}"
+echo "The inventory can be built starting from:"
+echo "1. organizations"
+echo "2. folders"
+echo "3. projects"
+echo -e "${TRED} But explainability is only supported for inventory built from an organization${TNC}"
+scopeNotChoose=true
+while $scopeNotChoose
+do
+	read -p "Please choose one scope? (1/2/3)" -n 1 -r
+	echo
+	if [[ $REPLY == "1" ]]
+	then
+		ROOTTYPE="organizations"
+		scopeNotChoose=false
+	elif [[ $REPLY == "2" ]]
+	then
+		ROOTTYPE="folders"
+		scopeNotChoose=false
+	elif [[ $REPLY == "3" ]]
+	then
+		ROOTTYPE="projects"
+		scopeNotChoose=false
+	else
+		echo "Invalid input, try again..."
+	fi
+done
+
+if [[ ROOTTYPE == "organizations" ]]
+then
+	ROOTID=$ORGANIZATION_ID
+	CmdPrefix= "gcloud organizations"
+elif [[ ROOTTYPE == "folders" ]]
+then
+# Set folder ID
+	echo "Here are folders in your organization:"
+	gcloud alpha resource-manager folders list --organization=$ORGANIZATION_ID
+	folderNotChoose=true
+	while $folderNotChoose
+	do
+		echo "Choose one to build IAM Explain Inventory using the folder ID. Notice you can choose folders not listed above if you have access to."
+		read FOLDER_ID
+		echo -e "Please confirm ${TRED}$FOLDER_ID${TNC} is the folder you want to build your IAM Explain inventory."
+		read -p "Is it correct?(y/n)" -n 1 -r
+		echo
+		if [[ $REPLY == "y" ]]
+		then
+			ROOTID=$FOLDER_ID
+			CmdPrefix= "gcloud alpha resource-manager folders"
+			folderNotChoose=false
+		else
+			echo "Folder ID not confirmed. Please try again..."
+		fi
+	done
+elif [[ ROOTTYPE == "projects" ]]
+then
+# Set projects ID
+	echo "Here are all projects you have access to:"
+	project_list=$(gcloud projects list)
+	echo "$project_list"
+	projectNotChoose=true
+	while $projectNotChoose
+	do
+		echo "Choose one to build IAM Explain Inventory using PROJECT_ID. 
+		read PROJECT_ID
+		if [[ $project_list == *$'\n'$PROJECT_ID$' '* ]]
+		then
+			ROOTID=$PROJECT_ID
+			CmdPrefix= "gcloud projects"
+			projectNotChoose=false
+		else
+			echo "The project you choose doesn't exist or you don't have access to. Please try again..."
+		fi
+	done
 fi
 
 # Get project information
@@ -191,7 +271,7 @@ echo -e "${TYELLOW}Assigning roles to the gcp scraping service account${TNC}"
 echo "Following roles need to be assigned to the gcp scraping service account"
 echo "    $SCRAPINGSA"
 echo "to run IAM Explain:"
-echo "    - Organization level:"
+echo "    - Inventory scope ($ROOTTYPE) level:"
 echo "        - 'roles/browser',"
 echo "        - 'roles/compute.networkViewer',"
 echo "        - 'roles/iam.securityReviewer',"
@@ -206,35 +286,35 @@ read -p "Do you want to use the script to assign the roles? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/browser
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/compute.networkViewer
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/iam.securityReviewer
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/appengine.appViewer
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/servicemanagement.quotaViewer
-	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/cloudsql.viewer
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/compute.securityAdmin
 
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/storage.admin
 	
