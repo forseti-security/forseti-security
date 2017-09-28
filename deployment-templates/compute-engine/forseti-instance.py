@@ -154,7 +154,7 @@ pip install grpcio==1.4.0 grpcio-tools==1.4.0 google-apputils
 cd forseti-security
 
 # Set ownership of config and rules to $USER
-chown -R $USER {} {}/rules
+chown -R $USER {}/configs {}/rules
 
 # Build protos.
 {}
@@ -196,7 +196,7 @@ chmod +x $USER_HOME/run_forseti.sh
     DOWNLOAD_FORSETI,
 
     # Set ownership for Forseti conf and rules dirs
-    FORSETI_CONF,
+    FORSETI_HOME,
     FORSETI_HOME,
 
     # New style build protos.
