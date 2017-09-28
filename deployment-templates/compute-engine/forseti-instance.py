@@ -195,12 +195,12 @@ chmod +x $USER_HOME/run_forseti.sh
     # Install Forseti.
     DOWNLOAD_FORSETI,
 
-    # New style build protos.
-    NEW_BUILD_PROTOS,
-
     # Set ownership for Forseti conf and rules dirs
     FORSETI_CONF,
     FORSETI_HOME,
+
+    # New style build protos.
+    NEW_BUILD_PROTOS,
 
     # Download the Forseti conf and rules.
     SCANNER_BUCKET,
