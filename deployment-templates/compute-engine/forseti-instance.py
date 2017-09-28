@@ -120,6 +120,7 @@ sudo apt-get install -y git unzip
 # Forseti dependencies
 sudo apt-get install -y libmysqlclient-dev python-pip python-dev
 
+USER=ubuntu
 USER_HOME=/home/ubuntu
 
 # Install fluentd if necessary.
@@ -152,6 +153,9 @@ pip install grpcio==1.4.0 grpcio-tools==1.4.0 google-apputils
 {}
 cd forseti-security
 
+# Set ownership of config and rules to $USER
+chown -R $USER {} {}/rules
+
 # Build protos.
 {}
 
@@ -180,7 +184,7 @@ echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
 chmod +x $USER_HOME/run_forseti.sh
 /bin/sh $USER_HOME/run_forseti.sh
 
-(echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -
+(echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -u $USER -
 """.format(
     # cloud_sql_proxy properties.
     context.properties['cloudsqlproxy-os-arch'],
@@ -193,6 +197,10 @@ chmod +x $USER_HOME/run_forseti.sh
 
     # New style build protos.
     NEW_BUILD_PROTOS,
+
+    # Set ownership for Forseti conf and rules dirs
+    FORSETI_CONF,
+    FORSETI_HOME,
 
     # Download the Forseti conf and rules.
     SCANNER_BUCKET,
