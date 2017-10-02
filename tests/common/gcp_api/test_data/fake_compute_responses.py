@@ -1095,7 +1095,7 @@ NETWORKS_LIST_PAGE1 = """
    "creationTimestamp": "2017-09-25T12:33:24.312-07:00",
    "name": "default1",
    "description": "Default network for the project",
-   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
    "autoCreateSubnetworks": true,
    "subnetworks": [
     "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west1/subnetworks/default",
@@ -1128,7 +1128,7 @@ NETWORKS_LIST_PAGE2 = """
    "id": "1234",
    "creationTimestamp": "2017-09-25T12:41:09.416-07:00",
    "name": "default2",
-   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/thisisatest",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default2",
    "autoCreateSubnetworks": true,
    "subnetworks": [
     "https://www.googleapis.com/compute/v1/projects/project1/regions/southamerica-east1/subnetworks/thisisatest",
