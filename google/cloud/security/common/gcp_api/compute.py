@@ -201,7 +201,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         # TODO: Remove beta when it becomes GA.
         if not self._networks:
             self._networks = self._init_repository(
-                _ComputeNetworksRepository, version='beta')
+                _ComputeNetworksRepository, version='v1')
         return self._networks
 
     @property

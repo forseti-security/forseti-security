@@ -128,14 +128,6 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         self.assertEquals(fake_compute.EXPECTED_NETWORK_NAME,
                           [r.get('name') for r in results])
 
-    def test_get_subnetworks(self,response):
-        """Test get subnetworks."""
-        http_mocks.mock_http_response_sequence(response)
-
-        results = self.gce_api_client.get_networks(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_SUBNETWORKS,
-                          [r.get('subnetworks') for r in results])
-
     def test_get_instances(self):
         """Test get instances."""
         http_mocks.mock_http_response(fake_compute.INSTANCES_AGGREGATED_LIST)
