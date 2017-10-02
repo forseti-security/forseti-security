@@ -50,7 +50,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
                        'name': instance.get('name'),
                        'description': instance.get('description'),
                        'can_ip_forward': self._to_bool(
-                           instance.get('canIpForward')),
+                           instance.get('canIpForward', 0)),
                        'cpu_platform': instance.get('cpuPlatform'),
                        'disks': parser.json_stringify(
                            instance.get('disks', [])),
@@ -91,22 +91,7 @@ class LoadInstancesPipeline(base_pipeline.BasePipeline):
         return instances
 
     def run(self):
-        """Run the pipeline.
-
-        Sometimes, can_forward_ip will be a None value, instead of strictly
-        boolean.  This will cause MySQL to display the warning message:
-        "Incorrect integer value: '' for column 'can_ip_forward at row N"
-        on loading the data.  This can be safely ignored as the row will
-        still be loaded with the can_ip_forward as 0 value.
-
-        There is a fix for this here:
-        https://stackoverflow.com/a/5968530/2830207
-        But it will be hacky to implement, essentially a customized SQL
-        statement and condition checking.  So, leaving the warning as is.
-
-        Alternatively, can change this column type to varchar.  Then, cast it
-        to boolean when retrieved on the forseti application side.
-        """
+        """Run the pipeline."""
         instances = self._retrieve()
         loadable_instances = self._transform(instances)
         self._load(self.RESOURCE_NAME, loadable_instances)
