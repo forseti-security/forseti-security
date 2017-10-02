@@ -150,6 +150,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._backend_services = None
         self._forwarding_rules = None
         self._firewalls = None
+        self._networks = None
         self._instance_group_managers = None
         self._instance_groups = None
         self._instances = None
@@ -192,6 +193,16 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             self._firewalls = self._init_repository(
                 _ComputeFirewallsRepository, version='beta')
         return self._firewalls
+
+    @property
+    def networks(self):
+        """Returns a _ComputeNetworksRepository instance."""
+        # The beta api provides more complete gcp networks data.
+        # TODO: Remove beta when it becomes GA.
+        if not self._networks:
+            self._networks = self._init_repository(
+                _ComputeNetworksRepository, version='beta')
+        return self._networks
 
     @property
     def instance_group_managers(self):
@@ -306,6 +317,20 @@ class _ComputeFirewallsRepository(
         """
         super(_ComputeFirewallsRepository, self).__init__(
             component='firewalls', **kwargs)
+
+class _ComputeNetworksRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Networks repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeNetworksRepository, self).__init__(
+            component='networks', **kwargs)
 
 
 class _ComputeInstanceGroupManagersRepository(
@@ -525,6 +550,18 @@ class ComputeClient(object):
             list: A list of firewall rules for this project id.
         """
         paged_results = self.repository.firewalls.list(project_id)
+        return _flatten_list_results(project_id, paged_results, 'items')
+
+    def get_networks(self, project_id):
+        """Get the networks list for a given project id.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            list: A list of networks for this project id.
+        """
+        paged_results = self.repository.networks.list(project_id)
         return _flatten_list_results(project_id, paged_results, 'items')
 
     def get_instances(self, project_id, zone=None):
