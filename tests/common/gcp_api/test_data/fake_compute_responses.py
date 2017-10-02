@@ -1153,17 +1153,3 @@ NETWORKS_LIST_PAGE2 = """
 LIST_NETWORKS_RESPONSES = [NETWORKS_LIST_PAGE1, NETWORKS_LIST_PAGE2]
 
 EXPECTED_NETWORK_NAME = [u'default1', u'default2']
-
-EXPECTED_SUBNETWORKS = [
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/southamerica-east1/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/us-west1/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-southeast1/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east4/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west2/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-east1/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west3/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east1/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/australia-southeast1/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-northeast1/subnetworks/default2",
-        "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west1/subnetworks/default2"]
