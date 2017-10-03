@@ -68,9 +68,9 @@ Forseti Security needs the following roles for `forseti_inventory` and/or
 
 {% include docs/required_roles.md %}
 
-### Service account for GSuite Groups
-To inventory GSuite Groups and their members, Forseti Security uses a service
-account enabled for GSuite domain-wide delegation. The only permission this
+### Service account for G Suite Groups
+To inventory G Suite Groups and their members, Forseti Security uses a service
+account enabled for G Suite domain-wide delegation. The only permission this
 service account needs is read-access on the Groups and Group Members services.
 
  * `https://www.googleapis.com/auth/admin.directory.group.readonly`
