@@ -163,6 +163,115 @@ LIST_BACKEND_SERVICES_RESPONSES = [LIST_BACKEND_SERVICES_RESPONSE_PAGE1,
 
 EXPECTED_BACKEND_SERVICES_NAMES = ["bs-1", "iap-bs"]
 
+DISKS_AGGREGATED_LIST = """
+{
+ "kind": "compute#diskAggregatedList",
+ "id": "projects/project1/aggregated/disks",
+ "items": {
+  "zones/us-west1-a": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-west1-a' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-west1-a"
+     }
+    ]
+   }
+  },
+  "zones/us-west1-b": {
+   "disks": [
+    {
+     "kind": "compute#disk",
+     "id": "3201737339334630938",
+     "creationTimestamp": "2017-08-07T10:18:45.802-07:00",
+     "name": "instance-1",
+     "sizeGb": "10",
+     "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b",
+     "status": "READY",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/disks/instance-1",
+     "sourceImage": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-9-stretch-v20170717",
+     "sourceImageId": "4214972497302618486",
+     "type": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/diskTypes/pd-standard",
+     "licenses": [
+      "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-9-stretch"
+     ],
+     "lastAttachTimestamp": "2017-08-07T10:18:45.806-07:00",
+     "users": [
+      "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instances/instance-1"
+     ],
+     "labelFingerprint": "42WmSpB8rSM="
+    }
+   ]
+  },
+  "zones/us-west1-c": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/us-west1-c' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/us-west1-c"
+     }
+    ]
+   }
+  },
+  "zones/southamerica-east1-a": {
+   "warning": {
+    "code": "NO_RESULTS_ON_PAGE",
+    "message": "There are no results for scope 'zones/southamerica-east1-a' on this page.",
+    "data": [
+     {
+      "key": "scope",
+      "value": "zones/southamerica-east1-a"
+     }
+    ]
+   }
+  }
+ },
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/aggregated/disks"
+}
+"""
+
+EXPECTED_DISKS_SELFLINKS = [
+    ("https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/"
+     "disks/instance-1")
+]
+
+FAKE_DISK_ZONE = "us-west1-b"
+
+DISKS_LIST = """
+{
+ "kind": "compute#diskList",
+ "id": "projects/project1/zones/us-west1-b/disks",
+ "items": [
+  {
+   "kind": "compute#disk",
+   "id": "3201737339334630938",
+   "creationTimestamp": "2017-08-07T10:18:45.802-07:00",
+   "name": "instance-1",
+   "sizeGb": "10",
+   "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b",
+   "status": "READY",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/disks/instance-1",
+   "sourceImage": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-9-stretch-v20170717",
+   "sourceImageId": "4214972497302618486",
+   "type": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/diskTypes/pd-standard",
+   "licenses": [
+    "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-9-stretch"
+   ],
+   "lastAttachTimestamp": "2017-08-07T10:18:45.806-07:00",
+   "users": [
+    "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instances/instance-1"
+   ],
+   "labelFingerprint": "42WmSpB8rSM="
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/disks"
+}
+"""
+
 
 FORWARDING_RULES_AGGREGATED_LIST = """
 {
