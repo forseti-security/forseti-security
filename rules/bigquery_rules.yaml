@@ -25,3 +25,25 @@ rules:
       - type: organization
         resource_ids:
           - YOUR_ORG_ID / YOUR_PROJECT_ID
+  - name: sample BigQuery rule to search for datasets accessible by users with gmail.com addresses
+    dataset_id: '*'
+    special_group: '*'
+    user_email: '*@gmail.com'
+    domain: '*'
+    group_email: '*'
+    role: '*'
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
+  - name: sample BigQuery rule to search for datasets accessible by groups with gmail.com addresses
+    dataset_id: '*'
+    special_group: '*'
+    user_email: '*'
+    domain: '*'
+    group_email: '*@gmail.com'
+    role: '*'
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
