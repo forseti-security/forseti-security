@@ -4,7 +4,6 @@ order: 004
 ---
 # {{ page.title }}
 
-## Service accounts
 When you use multiple service accounts with your Forseti Security deployments,
 you implement the security best practice of privilege separation. Following are the
 scenarios for which it's best to use separate service accounts:
