@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,31 +13,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Define text color
-TRED='\033[0;31m'
+# Preparation
+TRED='\e[91m'
+TYELLOW='\e[93m'
+TGREEN='\e[92m'
 TNC='\033[0m'
+repodir="/home/$USER/forseti-security"
+
+echo -e "${TGREEN}Welcome to IAM Explain${TNC}"
 
 # Set Organization ID
-echo "Setting up organization ID"
-
+echo -e "${TYELLOW}Setting up organization ID${TNC}"
+	
 orgs=$(gcloud organizations list --format=flattened \
 	| grep "organizations/" | sed -e 's/^name: *organizations\///g')
 
 if [ "$(echo "$orgs" | wc -l)" -gt "1" ]
 then
-	echo "There are multiple organizations your account has access to:"
-	echo "$orgs" | sed -e 's/^/    /g'
-	orgs=$'\n'$orgs$'\n'
-	echo "Choose one to deploy IAM Explain?"
-	read REPLY
-	match=$'\n'$REPLY$'\n'
-	if [[ "$orgs" == *"$match"* ]]
-	then
-		ORGANIZATION_ID=$REPLY
-	else
-		echo "organization id not set"
-		exit 1
-	fi
+	orgNotChoose=true
+	while $orgNotChoose
+	do
+		echo "There are multiple organizations your account has access to:"
+		echo "$orgs" | sed -e 's/^/    /g'
+		echo "Choose one to deploy IAM Explain?"
+		read REPLY
+		if [[ $'\n'$orgs$'\n' == *$'\n'$REPLY$'\n'* ]]
+		then
+			ORGANIZATION_ID=$REPLY
+			orgNotChoose=false
+		else
+			echo "The organization you choose doesn't exist. Please try again..."
+		fi
+	done
 else
 	echo "There is only one organization your account has access to:"
 	echo "    $orgs"
@@ -47,33 +54,139 @@ else
 	then
 		ORGANIZATION_ID=$orgs
 	else
-		echo "organization id not set"
+		echo "Organization not confirmed"
 		exit 1
 	fi
 fi
 
+# Set Inventory target ID
+echo -e "${TYELLOW}Setting up Inventory scope${TNC}"
+echo "The inventory can be built starting from:"
+echo "1. organizations"
+echo "2. folders"
+echo "3. projects"
+echo -e "${TRED} Right now explainability is only supported for inventory built from an organization${TNC}"
+scopeNotChoose=true
+while $scopeNotChoose
+do
+	read -p "Please choose one scope? (1/2/3)" -n 1 -r
+	echo
+	if [[ $REPLY == "1" ]]
+	then
+		ROOTTYPE="organizations"
+		scopeNotChoose=false
+	elif [[ $REPLY == "2" ]]
+	then
+		ROOTTYPE="folders"
+		scopeNotChoose=false
+	elif [[ $REPLY == "3" ]]
+	then
+		ROOTTYPE="projects"
+		scopeNotChoose=false
+	else
+		echo "Invalid input, try again..."
+	fi
+done
+
+if [[ $ROOTTYPE == "organizations" ]]
+then
+	ROOTID=$ORGANIZATION_ID
+	CmdPrefix="gcloud organizations"
+elif [[ $ROOTTYPE == "folders" ]]
+then
+# Set folder ID
+	echo "Here are folders in your organization:"
+	gcloud alpha resource-manager folders list --organization=$ORGANIZATION_ID
+	folderNotChoose=true
+	while $folderNotChoose
+	do
+		echo "Choose one to build IAM Explain Inventory using the folder ID. Notice you can choose folders not listed above if you have access to."
+		read FOLDER_ID
+		echo -e "Please confirm ${TRED}$FOLDER_ID${TNC} is the folder you want to build your IAM Explain inventory."
+		read -p "Is it correct?(y/n)" -n 1 -r
+		echo
+		if [[ $REPLY == "y" ]]
+		then
+			ROOTID=$FOLDER_ID
+			CmdPrefix="gcloud alpha resource-manager folders"
+			folderNotChoose=false
+		else
+			echo "Folder ID not confirmed. Please try again..."
+		fi
+	done
+elif [[ $ROOTTYPE == "projects" ]]
+then
+# Set projects ID
+	echo "Here are all projects you have access to:"
+	project_list=$(gcloud projects list)
+	echo "$project_list"
+	projectNotChoose=true
+	while $projectNotChoose
+	do
+		echo "Choose one to build IAM Explain Inventory using PROJECT_ID:" 
+		read PROJECT_ID
+		if [[ $project_list == *$'\n'$PROJECT_ID$' '* ]]
+		then
+			ROOTID=$PROJECT_ID
+			CmdPrefix="gcloud projects"
+			projectNotChoose=false
+		else
+			echo "The project you choose doesn't exist or you don't have access to. Please try again..."
+		fi
+	done
+fi
+
 # Get project information
-echo "Fetching project ID"
+echo "Fetching deployment project ID"
 
 PROJECT_ID=$(gcloud info | grep "project: \[" | sed -e 's/^ *project: \[//' -e  's/\]$//g')
 
-# Get the email address of a gsuite administrator
-echo "Please type in the full email address of a gsuite administrator. \
-IAM Explain Inventory will assume the administrator's authority \
-in order to enumerate users, groups and group membership:"
-read GSUITE_ADMINISTRATOR
-echo "Please verify the email address of the gsuite administrator:"
-echo "$GSUITE_ADMINISTRATOR"
-read -p "Is it correct? (y/n)" -n 1 -r
+# Checking user authority
+echo -e "${TYELLOW}Please make sure you have adequate permissions on GCP and GSuite in order to deploy IAM Explain ${TNC}"
+read -p "Press any key to proceed" -n 1 -r
 echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
-	echo "Wrong email address of the gsuite administrator!"
-	exit 1
-fi
+
+# Checking billing of the project
+echo -e "${TYELLOW}Checking if billing is enabled on this project${TNC}"
+BillingNotConfirmed=true
+while $BillingNotConfirmed
+do
+	BillingState=$(gcloud beta billing projects describe $PROJECT_ID | grep "billingEnabled: " | sed -e 's/^billingEnabled: //g')
+	if [[ $BillingState == "true" ]]
+	then
+	echo "Billing is confirmed"
+		BillingNotConfirmed=false
+	else
+		echo "In order to deploy IAM Explain, please enable billing on this project: "
+		echo "    $PROJECT_ID"
+		read -p "Press any key to proceed" -n 1 -r
+		echo
+	fi
+done
+
+# Get the email address of a gsuite administrator
+adminNotChoose=true
+while $adminNotChoose
+do
+	echo -e "Please type in the full ${TYELLOW}email address of a gsuite administrator${TNC}."\
+	"IAM Explain Inventory will assume the administrator's authority"\
+	"in order to enumerate users, groups and group membership:"
+	read GSUITE_ADMINISTRATOR
+	echo "Please verify the email address of the gsuite administrator:"
+	echo "$GSUITE_ADMINISTRATOR"
+	read -p "Is it correct? (y/n)" -n 1 -r
+	echo
+	if [[ $REPLY =~ ^[Yy]$ ]]
+	then
+		adminNotChoose=false
+	else
+		echo "You chose not to use this email address as the gsuite administrator. Try again..."
+	fi
+done
+
 
 # Enable API
-echo "Enabling APIs"
+echo -e "${TYELLOW}Enabling APIs${TNC}"
 echo "Following APIs need to be enabled in this project to run IAM Explain:"
 echo "    Admin SDK API: admin.googleapis.com"
 echo "    AppEngine Admin API: appengine.googleapis.com"
@@ -96,14 +209,14 @@ then
 	gcloud beta service-management enable deploymentmanager.googleapis.com
 	gcloud beta service-management enable iam.googleapis.com
 else
-	echo "API Enabling skipped, if you haven't enable them, you can done so in cloud console."
+	echo "API Enabling skipped, if you haven't enable them, you can do so in cloud console."
 fi
 
 # Creating Service Account
-echo "Setting up service accounts"
+echo -e "${TYELLOW}Setting up service accounts${TNC}"
 echo "Here are the existing service accounts within this project:"
 gcloud iam service-accounts list
-read -p "Do you want to use a existing service account for gcp resources and policies scraping? (y/n)" -n 1 -r
+read -p $'Do you want to use a existing service account for \e[93mgcp resources and policies scraping\033[0m? (y/n)' -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -128,7 +241,7 @@ else
 	}
 fi
 
-read -p "Do you want to use a existing service account for gsuite crawling? (y/n)" -n 1 -r
+read -p $'Do you want to use a existing service account for \e[93mgsuite crawling\033[0m? (y/n)' -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -153,17 +266,12 @@ else
 	}
 fi
 
-# Creating gsuite service account key
-gcloud iam service-accounts keys create \
-    ~/gsuite.json \
-    --iam-account $GSUITESA
-
 # Service Accounts role assignment
-echo "Assigning roles to the gcp scraping service account"
+echo -e "${TYELLOW}Assigning roles to the gcp scraping service account${TNC}"
 echo "Following roles need to be assigned to the gcp scraping service account"
 echo "    $SCRAPINGSA"
 echo "to run IAM Explain:"
-echo "    - Organization level:"
+echo "    - Inventory scope ($ROOTTYPE) level:"
 echo "        - 'roles/browser',"
 echo "        - 'roles/compute.networkViewer',"
 echo "        - 'roles/iam.securityReviewer',"
@@ -178,35 +286,35 @@ read -p "Do you want to use the script to assign the roles? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/browser
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/compute.networkViewer
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/iam.securityReviewer
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/appengine.appViewer
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/servicemanagement.quotaViewer
-	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/cloudsql.viewer
 	
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/compute.securityAdmin
 
-	gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/storage.admin
 	
@@ -214,20 +322,50 @@ then
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/cloudsql.client
 else
-	echo "Roles assigning skipped, if you haven't done it, you can done so in cloud console."
+	echo "Roles assigning skipped, if you haven't done it, you can do so in cloud console."
 fi
 
 # Prepare the deployment template yaml file
-cp ~/forseti-security/deployment-templates/deploy-explain.yaml.sample \
-~/forseti-security/deployment-templates/deploy-explain.yaml
-sed -i -e 's/ORGANIZATION_ID/'$ORGANIZATION_ID'/g' \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+echo "Customizing deployment template..."
+cp $repodir/deployment-templates/deploy-explain.yaml.sample \
+$repodir/deployment-templates/deploy-explain.yaml
+sed -i -e 's/ROOT_RESOURCE_ID/'$ROOTTYPE$"\/"$ROOTID'/g' \
+$repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPINGSA'/g' \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+$repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+$repodir/deployment-templates/deploy-explain.yaml
+
+#Choose deployment branch
+echo -e "${TYELLOW}Choosing Github Branch${TNC}"
+echo "By default, master branch of IAM Explain will be deployed."
+read -p "Do you want to change to another one? (y/n)" -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	branches=$( cd $repodir; git branch -r | grep -v " -> " | sed -e 's/^  origin\///g' )
+	branchNotChoose=true
+	while $branchNotChoose
+	do
+		echo "Here are all branches available:"
+		echo "$branches" | sed -e 's/^/    /g'
+		echo "Please specify which branch do you want to deploy:"
+		read BRANCHNAME
+		if [[ $'\n'$branches$'\n' == *$'\n'$BRANCHNAME$'\n'* ]]
+		then
+			branchNotChoose=false
+		else
+			echo "The branch you choose doesn't exists. Please try again..."
+		fi
+	done
+else
+	BRANCH="master"
+fi
+sed -i -e 's/BRANCHNAME/'$BRANCHNAME'/g' \
+$repodir/deployment-templates/deploy-explain.yaml
 
 # sql instance name
+echo -e "${TYELLOW}Choosing SQL Instance name${TNC}"
 timestamp=$(date --utc +%Ft%Tz | sed -e 's/:/-/g')
 SQLINSTANCE="iam-explain-no-external-"$timestamp
 echo "Do you want to use the generated sql instance name:"
@@ -238,13 +376,15 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
 	echo "Here are the existing sql instances in this project:"
 	gcloud sql instances list
-	echo "Choose a sql instance name that is not used above, please notice that recent deleted \
-		sql instance can still occupy the name space, even though they are not shown above:"
+	echo "Choose a sql instance name that is not used above, please notice that recent deleted"\
+		"sql instance can still occupy the name space, even though they are not shown above:"
 	read SQLINSTANCE
 fi
 sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
-~/forseti-security/deployment-templates/deploy-explain.yaml
+$repodir/deployment-templates/deploy-explain.yaml
 
+# Deployment name
+echo -e "${TYELLOW}Choosing deployment name${TNC}"
 DEPLOYMENTNAME="iam-explain-"$timestamp
 echo "Do you want to use the generated deployment name:"
 echo "    $DEPLOYMENTNAME"
@@ -260,12 +400,18 @@ fi
 
 
 # Deploy the IAM Explain
-echo " Start to deploy"
+echo -e "${TYELLOW}Start to deploy${TNC}"
 response=$(gcloud deployment-manager deployments create $DEPLOYMENTNAME \
-	--config ~/forseti-security/deployment-templates/deploy-explain.yaml)\
+	--config $repodir/deployment-templates/deploy-explain.yaml)\
 || exit 1
 VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
- 
+
+
+echo -e "${TYELLOW}Generate and copy the gsuite service account key file${TNC}"
+# Creating gsuite service account key
+gcloud iam service-accounts keys create \
+    ~/gsuite.json \
+    --iam-account $GSUITESA
 
 for (( TRIAL=1; TRIAL<=5; TRIAL++ ))
 do
@@ -292,6 +438,10 @@ do
 		break
 	fi
 done
+echo "Destroying the gsuite service account key..."
+shred -vzn 3 gsuite.json
+rm -f gsuite.json
+
 if [[ $cpResponse != "SUCCESS" ]]; then
 	echo "Service account key copy failed."
 	echo "Please try to manually copy ~/gsuite.json to /home/ubuntu/gsuite.json on your vm:"
@@ -301,9 +451,28 @@ fi
 
 # Ask to setup the gsuite service account
 echo -e "${TRED}WE ARE NOT FINISHED YET${TNC}"
-echo "Please complete the deployment by enabling GSuite google \
-groups collection on your gsuite service account:"
-echo "    $GSUITESA"
-echo "with the manual on:"
-echo "http://forsetisecurity.org/docs/howto/configure/gsuite-group-collection"
+echo "Please complete the deployment by enabling GSuite google"\
+"groups collection on your gsuite service account:"
+echo -e "${TYELLOW}Enable Domain Wide Delegation at Cloud Platform Console:${TNC}"
+echo "https://console.cloud.google.com/iam-admin/serviceaccounts/project?project="$PROJECT_ID"&organizationId="$ORGANIZATION_ID
+echo "  1. Locate the service account to enable Domain-Wide Delegation"
+echo -e "      ${TYELLOW}$GSUITESA${TNC}"
+echo "  2. Select Edit and then the Enable G Suite Domain-wide Delegation checkbox. Save."
+echo "  3. On the service account row, click View Client ID. On the Client"\
+"ID for Service account client panel that appears, copy the Client ID value,"\
+"which will be a large number."
+read -p "Press any key to proceed" -n 1 -r
+echo
+
+echo -e "${TYELLOW}Enable the service account in your G Suite admin control panel.${TNC}"
+echo "https://admin.google.com/ManageOauthClients"
+echo "You must have the super admin role in admin.google.com to complete these steps:"
+echo "  1. In the Client Name box, paste the Client ID you copied above."
+echo "  2. In the One or More API Scopes box, paste the following scope:"
+echo "        https://www.googleapis.com/auth/admin.directory.group.readonly, "
+echo "        https://www.googleapis.com/auth/admin.directory.user.readonly"
+echo "  3. Click Authorize"
+read -p "Press any key to proceed" -n 1 -r
+echo
+echo "Now we have finished."
  
