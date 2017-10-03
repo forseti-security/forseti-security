@@ -11,7 +11,7 @@ scenarios for which it's best to use separate service accounts:
  * **[Forseti Security service account](#forseti-security-service-account)**
  (required): Used by all core modules of the program to provide basic
  inventory, scanning, and enforcement actions.
- * **[G Suite Groups service account](#gsuite-groups-service-account)**
+ * **[G Suite Groups service account](#g-suite-groups-service-account)**
  (optional): Used to inventory G Suite Groups and their members.
  Forseti IAM Explain requires this to be enabled.
  * **[Forseti Explain service account](#forseti-explain-service-account)**
