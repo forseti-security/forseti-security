@@ -4,6 +4,9 @@ order: 104
 ---
 #  {{ page.title }}
 
+Note: If you used the Forseti setup wizard to deploy, your `deploy-forseti.yaml` 
+will have a timestamp suffix, e.g. `deploy-forseti-20171001000000.yaml`.
+
 ### Get a particular deployment template version
 This step is **optional**.
 
