@@ -157,6 +157,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._instance_templates = None
         self._projects = None
         self._region_instance_groups = None
+        self._subnetworks = None
 
         super(ComputeRepositoryClient, self).__init__(
             'compute', versions=['beta', 'v1'],
@@ -249,6 +250,14 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             self._region_instance_groups = self._init_repository(
                 _ComputeRegionInstanceGroupsRepository)
         return self._region_instance_groups
+
+    @property
+    def subnetworks(self):
+        """Returns a _ComputeSubnetworksRepository instance."""
+        if not self._subnetworks:
+            self._subnetworks = self._init_repository(
+                _ComputeSubnetworksRepository)
+        return self._subnetworks
     # pylint: enable=missing-return-doc, missing-return-type-doc
 # pylint: enable=too-many-instance-attributes
 
@@ -475,6 +484,39 @@ class _ComputeRegionInstanceGroupsRepository(
             self, resource, verb='listInstances', **kwargs)
 
 
+class _ComputeSubnetworksRepository(
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Subnetworks repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeSubnetworksRepository, self).__init__(
+            component='subnetworks', **kwargs)
+
+    # Extend the base list implementation to support the required region field.
+    # pylint: disable=arguments-differ
+    def list(self, resource, region, **kwargs):
+        """List subnetworks by region.
+
+        Args:
+            resource (str): The project to query resources for.
+            region (str): The region of the forwarding rules to query.
+            **kwargs (dict): Additional args to pass through to the base method.
+
+        Returns:
+            iterator: An iterator over each page of results from the API.
+        """
+        kwargs['region'] = region
+        return repository_mixins.ListQueryMixin.list(self, resource, **kwargs)
+    # pylint: enable=arguments-differ
+
+
 class ComputeClient(object):
     """Compute Client."""
 
@@ -675,6 +717,28 @@ class ComputeClient(object):
             project_id)
         return _flatten_aggregated_list_results(project_id, paged_results,
                                                 'instanceGroupManagers')
+
+    def get_subnetworks(self, project_id, region=None):
+        """Return the list of all subnetworks in the project.
+
+        Args:
+            project_id (str): The project id.
+            region (str): An optional region to query, if not provided then all
+                subnetworks in all regions are returned.
+
+        Returns:
+            list: A list of subnetwork resources for this project.
+        """
+        repository = self.repository.subnetworks
+        if region:
+            paged_results = repository.list(project_id, region)
+            results = _flatten_list_results(project_id, paged_results, 'items')
+        else:
+            paged_results = repository.aggregated_list(project_id)
+            results = _flatten_aggregated_list_results(project_id,
+                                                       paged_results,
+                                                       'subnetworks')
+        return results
 
     def get_project(self, project_id):
         """Returns the specified Project resource.

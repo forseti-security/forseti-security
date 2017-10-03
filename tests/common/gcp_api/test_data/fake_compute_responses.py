@@ -253,7 +253,7 @@ FIREWALLS_LIST_PAGE1 = """
    "kind": "compute#firewall",
    "id": "12345",
    "creationTimestamp": "2017-05-04T16:23:00.568-07:00",
-   "network": "https://www.googleapis.com/compute/beta/projects/project1/global/networks/default",
+   "network": "https://www.googleapis.com/compute/beta/projects/project1/global/networks/default1",
    "priority": 1000,
    "sourceRanges": ["0.0.0.0/0"],
    "description": "Allow ICMP from anywhere",
@@ -270,7 +270,7 @@ FIREWALLS_LIST_PAGE1 = """
    "kind": "compute#firewall",
    "id": "12346",
    "creationTimestamp": "2017-05-04T16:23:00.568-07:00",
-   "network": "https://www.googleapis.com/compute/beta/projects/project1/global/networks/default",
+   "network": "https://www.googleapis.com/compute/beta/projects/project1/global/networks/default1",
    "priority": 1000,
    "sourceRanges": ["0.0.0.0/0"],
    "description": "Allow RDP from anywhere",
@@ -299,7 +299,7 @@ FIREWALLS_LIST_PAGE2 = """
    "kind": "compute#firewall",
    "id": "12345",
    "creationTimestamp": "2017-05-04T16:23:00.568-07:00",
-   "network": "https://www.googleapis.com/compute/beta/projects/project1/global/networks/default",
+   "network": "https://www.googleapis.com/compute/beta/projects/project1/global/networks/default1",
    "priority": 1000,
    "sourceRanges": ["0.0.0.0/0"],
    "description": "Allow SSH from anywhere",
@@ -317,7 +317,7 @@ FIREWALLS_LIST_PAGE2 = """
    "kind": "compute#firewall",
    "id": "12346",
    "creationTimestamp": "2017-05-04T16:23:00.568-07:00",
-   "network": "https://www.googleapis.com/compute/beta/projects/project1/global/networks/default",
+   "network": "https://www.googleapis.com/compute/beta/projects/project1/global/networks/default1",
    "priority": 1000,
    "sourceRanges": ["10.0.0.0/8"],
    "description": "Allow internal traffic on the default network.",
@@ -397,8 +397,8 @@ INSTANCES_AGGREGATED_LIST = """
      "networkInterfaces": [
       {
        "kind": "compute#networkInterface",
-       "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
-       "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default",
+       "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+       "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default1",
        "networkIP": "10.128.0.2",
        "name": "nic0",
        "accessConfigs": [
@@ -492,8 +492,8 @@ INSTANCES_LIST = """
    "networkInterfaces": [
     {
      "kind": "compute#networkInterface",
-     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
-     "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default1",
      "networkIP": "10.128.0.2",
      "name": "nic0",
      "accessConfigs": [
@@ -619,12 +619,12 @@ INSTANCE_GROUPS_AGGREGATED_LIST = """
      "creationTimestamp": "2017-08-24T11:10:06.771-07:00",
      "name": "iap-ig-region",
      "description": "This instance group is controlled by Regional Instance Group Manager 'iap-ig-region'. To modify instances in this group, use the Regional Instance Group Manager API: https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers",
-     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
      "fingerprint": "42WmSpB8rSM=",
      "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/instanceGroups/iap-ig-region",
      "size": 3,
      "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1",
-     "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default"
+     "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default1"
     }
    ]
   },
@@ -672,12 +672,12 @@ INSTANCE_GROUPS_AGGREGATED_LIST = """
      "creationTimestamp": "2017-08-24T11:04:08.037-07:00",
      "name": "iap-ig",
      "description": "This instance group is controlled by Instance Group Manager 'iap-ig'. To modify instances in this group, use the Instance Group Manager API: https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers",
-     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
      "fingerprint": "42WmSpB8rSM=",
      "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c",
      "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instanceGroups/iap-ig",
      "size": 1,
-     "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default"
+     "subnetwork": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default1"
     }
    ]
   },
@@ -724,7 +724,7 @@ INSTANCE_TEMPLATES_LIST = """
     "networkInterfaces": [
      {
       "kind": "compute#networkInterface",
-      "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default",
+      "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
       "accessConfigs": [
        {
         "kind": "compute#accessConfig",
@@ -1098,18 +1098,18 @@ NETWORKS_LIST_PAGE1 = """
    "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
    "autoCreateSubnetworks": true,
    "subnetworks": [
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west1/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-east1/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-west1/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-northeast1/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/southamerica-east1/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west3/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east1/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east4/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west2/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-southeast1/subnetworks/default",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/australia-southeast1/subnetworks/default"
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west1/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-east1/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-west1/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-northeast1/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/southamerica-east1/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west3/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east1/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east4/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west2/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-southeast1/subnetworks/default1",
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/australia-southeast1/subnetworks/default1"
    ]
   }
  ],
@@ -1129,20 +1129,9 @@ NETWORKS_LIST_PAGE2 = """
    "creationTimestamp": "2017-09-25T12:41:09.416-07:00",
    "name": "default2",
    "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default2",
-   "autoCreateSubnetworks": true,
+   "autoCreateSubnetworks": false,
    "subnetworks": [
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/southamerica-east1/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-west1/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-southeast1/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east4/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west2/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-east1/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west3/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east1/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/australia-southeast1/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-northeast1/subnetworks/thisisatest",
-    "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west1/subnetworks/thisisatest"
+    "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default2"
    ]
   }
  ],
@@ -1152,4 +1141,291 @@ NETWORKS_LIST_PAGE2 = """
 
 LIST_NETWORKS_RESPONSES = [NETWORKS_LIST_PAGE1, NETWORKS_LIST_PAGE2]
 
-EXPECTED_NETWORK_NAME = [u'default1', u'default2']
+EXPECTED_NETWORK_NAME = [u"default1", u"default2"]
+
+SUBNETWORKS_AGGREGATED_LIST_PAGE1 = """
+{
+ "kind": "compute#subnetworkAggregatedList",
+ "id": "projects/project1/aggregated/subnetworks",
+ "items": {
+  "regions/us-central1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "1642482022657304820",
+     "creationTimestamp": "2017-03-27T15:45:47.874-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.128.0.0/20",
+     "gatewayAddress": "10.128.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    },
+    {
+     "kind": "compute#subnetwork",
+     "id": "1642482022657304820",
+     "creationTimestamp": "2017-05-22T13:03:40.235-07:00",
+     "name": "default2",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default2",
+     "ipCidrRange": "192.168.0.0/20",
+     "gatewayAddress": "192.168.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default2",
+     "privateIpGoogleAccess": true
+    }
+   ]
+  },
+  "regions/europe-west1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "1932934198276139252",
+     "creationTimestamp": "2017-03-27T15:45:47.919-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.132.0.0/20",
+     "gatewayAddress": "10.132.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/us-west1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "5444425302580406516",
+     "creationTimestamp": "2017-03-27T15:45:47.964-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.138.0.0/20",
+     "gatewayAddress": "10.138.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-west1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-west1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/asia-east1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "2025036026727377140",
+     "creationTimestamp": "2017-03-27T15:45:47.987-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.140.0.0/20",
+     "gatewayAddress": "10.140.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-east1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-east1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/us-east1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "894326937629239539",
+     "creationTimestamp": "2017-03-27T15:45:48.002-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.142.0.0/20",
+     "gatewayAddress": "10.142.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/asia-northeast1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "3985529683561425139",
+     "creationTimestamp": "2017-03-27T15:45:48.018-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.146.0.0/20",
+     "gatewayAddress": "10.146.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-northeast1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-northeast1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  }
+ },
+ "nextPageToken": "12345",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/aggregated/subnetworks"
+}
+"""
+
+SUBNETWORKS_AGGREGATED_LIST_PAGE2 = """
+{
+ "kind": "compute#subnetworkAggregatedList",
+ "id": "projects/project1/aggregated/subnetworks",
+ "items": {
+  "regions/asia-southeast1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "255819872288838938",
+     "creationTimestamp": "2017-04-12T15:36:37.651-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.148.0.0/20",
+     "gatewayAddress": "10.148.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-southeast1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/asia-southeast1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/us-east4": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "4231032200360879984",
+     "creationTimestamp": "2017-05-09T17:06:55.909-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.150.0.0/20",
+     "gatewayAddress": "10.150.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east4",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-east4/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/australia-southeast1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "1254575737741270738",
+     "creationTimestamp": "2017-06-20T19:55:57.803-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.152.0.0/20",
+     "gatewayAddress": "10.152.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/australia-southeast1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/australia-southeast1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/europe-west2": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "1056942392408910390",
+     "creationTimestamp": "2017-06-07T07:59:37.461-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.154.0.0/20",
+     "gatewayAddress": "10.154.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west2",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west2/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/europe-west3": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "3562686695833601682",
+     "creationTimestamp": "2017-08-02T04:33:17.768-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.156.0.0/20",
+     "gatewayAddress": "10.156.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west3",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/europe-west3/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  },
+  "regions/southamerica-east1": {
+   "subnetworks": [
+    {
+     "kind": "compute#subnetwork",
+     "id": "2103435213001651085",
+     "creationTimestamp": "2017-09-05T18:20:34.132-07:00",
+     "name": "default1",
+     "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+     "ipCidrRange": "10.158.0.0/20",
+     "gatewayAddress": "10.158.0.1",
+     "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/southamerica-east1",
+     "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/southamerica-east1/subnetworks/default1",
+     "privateIpGoogleAccess": false
+    }
+   ]
+  }
+ },
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/aggregated/subnetworks"
+}
+"""
+
+SUBNETWORKS_AGGREGATED_LIST = [SUBNETWORKS_AGGREGATED_LIST_PAGE1,
+                               SUBNETWORKS_AGGREGATED_LIST_PAGE2]
+
+BASE_URL = "https://www.googleapis.com/compute/v1/projects/project1"
+
+EXPECTED_SUBNETWORKS_AGGREGATEDLIST_SELFLINKS = frozenset([
+    "{}/regions/europe-west1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/asia-east1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/us-west1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/asia-northeast1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/us-central1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/southamerica-east1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/europe-west3/subnetworks/default1".format(BASE_URL),
+    "{}/regions/us-east1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/us-east4/subnetworks/default1".format(BASE_URL),
+    "{}/regions/europe-west2/subnetworks/default1".format(BASE_URL),
+    "{}/regions/asia-southeast1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/australia-southeast1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/us-central1/subnetworks/default2".format(BASE_URL)
+])
+
+FAKE_SUBNETWORK_REGION = "us-central1"
+
+SUBNETWORKS_LIST = """
+{
+ "kind": "compute#subnetworkList",
+ "id": "projects/project1/regions/us-central1/subnetworks",
+ "items": [
+  {
+   "kind": "compute#subnetwork",
+   "id": "1642482022657304820",
+   "creationTimestamp": "2017-03-27T15:45:47.874-07:00",
+   "name": "default1",
+   "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default1",
+   "ipCidrRange": "10.128.0.0/20",
+   "gatewayAddress": "10.128.0.1",
+   "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default1",
+   "privateIpGoogleAccess": false
+  },
+  {
+   "kind": "compute#subnetwork",
+   "id": "1642482022657304820",
+   "creationTimestamp": "2017-05-22T13:03:40.235-07:00",
+   "name": "default2",
+   "network": "https://www.googleapis.com/compute/v1/projects/project1/global/networks/default2",
+   "ipCidrRange": "192.168.0.0/20",
+   "gatewayAddress": "192.168.0.1",
+   "region": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1/subnetworks/default2",
+   "privateIpGoogleAccess": true
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/southamerica-east1/subnetworks"
+}
+"""
+
+EXPECTED_SUBNETWORKS_LIST_SELFLINKS = frozenset([
+    "{}/regions/us-central1/subnetworks/default1".format(BASE_URL),
+    "{}/regions/us-central1/subnetworks/default2".format(BASE_URL)
+])
