@@ -273,6 +273,38 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(expected_exception):
             self.gce_api_client.get_instance_group_managers(self.project_id)
 
+    def test_get_subnetworks(self):
+        """Test get subnetworks."""
+        mock_responses = []
+        for page in fake_compute.SUBNETWORKS_AGGREGATED_LIST:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        results = self.gce_api_client.get_subnetworks(self.project_id)
+        self.assertEquals(
+            fake_compute.EXPECTED_SUBNETWORKS_AGGREGATEDLIST_SELFLINKS,
+            frozenset([r.get('selfLink') for r in results]))
+
+    def test_get_subnetworks_by_zone(self):
+        """Test get subnetworks by zone."""
+        http_mocks.mock_http_response(fake_compute.SUBNETWORKS_LIST)
+
+        results = self.gce_api_client.get_subnetworks(
+            self.project_id, fake_compute.FAKE_SUBNETWORK_REGION)
+        self.assertEquals(fake_compute.EXPECTED_SUBNETWORKS_LIST_SELFLINKS,
+                          frozenset([r.get('selfLink') for r in results]))
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_subnetworks_errors(self, name, response, status,
+                                  expected_exception):
+        """Verify error conditions for get subnetworks."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_subnetworks(self.project_id))
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_subnetworks(
+                self.project_id, fake_compute.FAKE_SUBNETWORK_REGION))
+
     def test_get_project(self):
         """Test get project."""
         http_mocks.mock_http_response(
