@@ -17,9 +17,9 @@
 
 import copy
 import json
+import unittest
 import httplib2
 import mock
-import unittest
 
 from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import ForsetiTestCase
@@ -32,6 +32,7 @@ from google.cloud.security.enforcer import project_enforcer
 MOCK_TIMESTAMP = 1234567890
 
 
+# pylint: disable=bad-indentation
 class ProjectEnforcerTest(ForsetiTestCase):
     """Extended unit tests for ProjectEnforcer class."""
 
@@ -41,15 +42,14 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.gce_service.networks().list().execute.return_value = (
             constants.SAMPLE_TEST_NETWORK_SELFLINK)
 
+        self.mock_time = mock.patch.object(project_enforcer.datelib,
+                                           'Timestamp').start()
+        self.mock_time.now().AsMicroTimestamp.return_value = MOCK_TIMESTAMP
+
         self.project = constants.TEST_PROJECT
         self.policy = json.loads(constants.RAW_EXPECTED_JSON_POLICY)
         self.enforcer = project_enforcer.ProjectEnforcer(
-            self.project, dry_run=True)
-
-        self.mock_time = mock.patch.object(project_enforcer.datelib,
-                                           'Timestamp').start()
-
-        self.mock_time.now().AsMicroTimestamp.return_value = MOCK_TIMESTAMP
+            self.project, compute_service=self.gce_service, dry_run=True)
 
         self.expected_proto = enforcer_log_pb2.ProjectResult(
             timestamp_sec=MOCK_TIMESTAMP,
@@ -93,19 +93,30 @@ class ProjectEnforcerTest(ForsetiTestCase):
         if unchanged:
             results.rules_unchanged.extend(unchanged)
 
-        if results.rules_modified_count:
-            # Add previous and current firewall rules to the expected proto
-            results.rules_before.json = (
-                self.enforcer.rules_before_enforcement.as_json())
-            results.rules_before.hash = (
-                project_enforcer.hashlib.sha256(results.rules_before.json)
-                .hexdigest())
-            if hasattr(self.enforcer, 'rules_after_enforcement'):
-                results.rules_after.json = (
-                    self.enforcer.rules_after_enforcement.as_json())
-                results.rules_after.hash = (
-                    project_enforcer.hashlib.sha256(results.rules_after.json)
-                    .hexdigest())
+    def validate_results(self, expected_proto, actual_proto,
+                         expect_rules_before=False, expect_rules_after=False):
+        """Check that the expected proto matches the actual proto.
+
+        Removes the rules_before and rules_after messages from the actual_proto
+        before comparing.
+
+        Args:
+            expected_proto: The expected response.
+            actual_proto: The actual responses.
+            expect_rules_before: If actual response should contain a
+                rules_before message.
+            expect_rules_after: If actual response should contain a
+                rules_after message.
+        """
+        if expect_rules_before:
+            self.assertTrue(
+                actual_proto.gce_firewall_enforcement.HasField('rules_before'))
+            actual_proto.gce_firewall_enforcement.ClearField('rules_before')
+        if expect_rules_after:
+            self.assertTrue(
+                actual_proto.gce_firewall_enforcement.HasField('rules_after'))
+            actual_proto.gce_firewall_enforcement.ClearField('rules_after')
+        self.assertEqual(expected_proto, actual_proto)
 
     def test_enforce_policy_no_changes(self):
         """Validate results when there are no firewall policies changed.
@@ -126,10 +137,9 @@ class ProjectEnforcerTest(ForsetiTestCase):
         unchanged = get_rule_names(self.expected_rules)
         self.set_expected_audit_log(unchanged=unchanged)
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_all_rules_changed(self):
         """Validate results when all firewall policies are changed.
@@ -151,8 +161,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             },
         ]
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_SUCCESS
         self.expected_proto.gce_firewall_enforcement.all_rules_changed = True
@@ -162,7 +171,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
             constants.DEFAULT_FIREWALL_API_RESPONSE['items'])
         self.set_expected_audit_log(added=added, deleted=deleted)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_multiple_rules_changed(self):
         """Validate results when multiple firewall policies are changed.
@@ -203,8 +213,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             },
         ]
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_SUCCESS
         added = get_rule_names(self.expected_rules[-1:])  # Expected rule added
@@ -213,7 +222,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         unchanged = get_rule_names(current_fw_rules[1:2])  # Others unchanged
         self.set_expected_audit_log(added, deleted, updated, unchanged)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_one_rule_updated(self):
         """Validate results when a firewall rule is changed.
@@ -237,15 +247,15 @@ class ProjectEnforcerTest(ForsetiTestCase):
             {'items': current_fw_rules},
             {'items': self.expected_rules}]
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_SUCCESS
         updated = get_rule_names(current_fw_rules[:1])  # First rule updated
         unchanged = get_rule_names(current_fw_rules[1:])  # Others unchanged
         self.set_expected_audit_log(updated=updated, unchanged=unchanged)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_all_rules_changed_with_retry(self):
         """Validate results when a rule is added while the enforcer is running.
@@ -272,8 +282,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             {'items': self.expected_rules}]
 
         result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service,
-            retry_on_dry_run=True)
+            self.policy, retry_on_dry_run=True)
 
         self.expected_proto.status = project_enforcer.STATUS_SUCCESS
         self.expected_proto.gce_firewall_enforcement.all_rules_changed = True
@@ -286,7 +295,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
 
         self.set_expected_audit_log(added=added, deleted=sorted(deleted))
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_rules_changed_exceeds_maximum_retries(self):
         """Validate error status if rule is constantly readded while enforcing.
@@ -316,8 +326,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.gce_service.firewalls().list().execute.side_effect = firewall_list
 
         result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service,
-            retry_on_dry_run=True, maximum_retries=maximum_retries)
+            self.policy, retry_on_dry_run=True, maximum_retries=maximum_retries)
 
         self.expected_proto.status = project_enforcer.STATUS_ERROR
         self.expected_proto.status_reason = (
@@ -339,7 +348,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.set_expected_audit_log(added=added, deleted=sorted(deleted),
                                     unchanged=unchanged)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_rules_changed_no_retry_if_skipped(self):
         """Retry is not attempted when prechange callback returns false.
@@ -359,9 +369,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         prechange_callback_func = lambda *unused_args: False
 
         result = self.enforcer.enforce_firewall_policy(
-                self.policy, compute_service=self.gce_service,
-                prechange_callback=prechange_callback_func,
-                retry_on_dry_run=True)
+            self.policy, prechange_callback=prechange_callback_func,
+            retry_on_dry_run=True)
 
         self.expected_proto.status = project_enforcer.STATUS_SUCCESS
 
@@ -370,7 +379,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
 
         self.set_expected_audit_log(added=[], deleted=[], unchanged=unchanged)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_one_network(self):
         """Validate that running on a single network only changes that network.
@@ -402,9 +411,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         ]
 
         result = self.enforcer.enforce_firewall_policy(
-            self.policy,
-            compute_service=self.gce_service,
-            networks=[constants.TEST_NETWORK])
+            self.policy, networks=[constants.TEST_NETWORK])
 
         self.expected_proto.status = project_enforcer.STATUS_SUCCESS
         added = get_rule_names(expected_rules_page1['items'])
@@ -413,7 +420,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.set_expected_audit_log(
             added=added, deleted=deleted, unchanged=unchanged)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True, expect_rules_after=True)
 
     def test_project_enforcer_empty_firewall_policy_exception(self):
         """Verifies that an empty firewall policy raises exception.
@@ -432,8 +440,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             'items': self.expected_rules
         }
 
-        result = self.enforcer.enforce_firewall_policy(
-            firewall_policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(firewall_policy)
 
         self.expected_proto.status = project_enforcer.STATUS_ERROR
         self.expected_proto.status_reason = (
@@ -442,7 +449,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         unchanged = get_rule_names(self.expected_rules)
         self.set_expected_audit_log(unchanged=unchanged)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_project_enforcer_empty_firewall_policy_allowed(self):
         """Verifies that an empty firewall policy deletes all rules if allowed.
@@ -465,16 +472,15 @@ class ProjectEnforcerTest(ForsetiTestCase):
             {'items': []}]
 
         result = self.enforcer.enforce_firewall_policy(
-            firewall_policy,
-            compute_service=self.gce_service,
-            allow_empty_ruleset=True)
+            firewall_policy, allow_empty_ruleset=True)
 
         self.expected_proto.status = project_enforcer.STATUS_SUCCESS
         self.expected_proto.gce_firewall_enforcement.all_rules_changed = True
         deleted = get_rule_names(self.expected_rules)
         self.set_expected_audit_log(deleted=deleted)
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_firewall_enforcer_error(self):
         """Verifies that a firewall enforcer error returns a status=ERROR proto.
@@ -511,8 +517,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             'items': current_fw_rules
         }
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_ERROR
         unchanged = get_rule_names(self.expected_rules)
@@ -526,7 +531,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_failure_during_enforcement(self):
         """Forces an error in the middle of enforcing a policy.
@@ -587,8 +592,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             }
         }
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_ERROR
         added = get_rule_names(self.expected_rules[-1:])  # expected rule added
@@ -605,7 +609,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_error_fetching_updated_rules(self):
         """Forces an error when requesting firewall rules after enforcement.
@@ -636,8 +641,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             self.error_403,
         ]
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_ERROR
         updated = get_rule_names(current_fw_rules[:1])  # First rule updated
@@ -655,7 +659,9 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.assertEqual(
             self.expected_proto.gce_firewall_enforcement.rules_after.json, '')
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result,
+                              expect_rules_before=True,
+                              expect_rules_after=False)
 
     def test_enforce_policy_error_listing_networks(self):
         """Forces an error when listing project networks.
@@ -675,13 +681,12 @@ class ProjectEnforcerTest(ForsetiTestCase):
             'items': self.expected_rules
         }
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_ERROR
         self.expected_proto.status_reason = 'no networks found for project'
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_error_listing_firewalls(self):
         """Forces an error when listing project firewall rules.
@@ -695,8 +700,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         """
         self.gce_service.firewalls().list().execute.side_effect = self.error_403
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_ERROR
 
@@ -708,7 +712,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_error_adding_rules(self):
         """Forces an error when adding the expected firewall policy rules.
@@ -727,8 +731,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             'items': self.expected_rules
         }
 
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_ERROR
 
@@ -742,7 +745,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_firewall_enforcer_deleted_403(self):
         """Verifies that a deleted project returns status=PROJECT_DELETED.
@@ -769,8 +772,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
 
         self.gce_service.firewalls().list().execute.side_effect = (
             error_deleted_403)
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_DELETED
 
@@ -782,7 +784,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_firewall_enforcer_deleted_400(self):
         """Verifies that a deleted project returns a status=PROJECT_DELETED.
@@ -805,8 +807,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
 
         self.gce_service.firewalls().list().execute.side_effect = (
             error_deleted_400)
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_DELETED
 
@@ -818,7 +819,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_firewall_enforcer_gce_api_disabled(self):
         """Project returns a status=PROJECT_DELETED if GCE API is disabled.
@@ -833,7 +834,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         """
         api_disabled_403 = httplib2.Response(
             {'status': '403',
-            'content-type': 'application/json'})
+             'content-type': 'application/json'})
         api_disabled_403.reason = (
             'Access Not Configured. Compute Engine API has not been used in '
             'project 1 before or it is disabled. Enable it by visiting '
@@ -846,8 +847,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
 
         self.gce_service.firewalls().list().execute.side_effect = (
             error_api_disabled_403)
-        result = self.enforcer.enforce_firewall_policy(
-            self.policy, compute_service=self.gce_service)
+        result = self.enforcer.enforce_firewall_policy(self.policy)
 
         self.expected_proto.status = project_enforcer.STATUS_DELETED
 
@@ -859,7 +859,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         # error message, which would be ugly to replicate in the test.
         self.expected_proto.status_reason = result.status_reason
 
-        self.assertEqual(self.expected_proto, result)
+        self.validate_results(self.expected_proto, result)
 
 
 def get_rule_names(rules):
