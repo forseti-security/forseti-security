@@ -32,7 +32,6 @@ from google.cloud.security.enforcer import project_enforcer
 MOCK_TIMESTAMP = 1234567890
 
 
-# pylint: disable=bad-indentation
 class ProjectEnforcerTest(ForsetiTestCase):
     """Extended unit tests for ProjectEnforcer class."""
 
