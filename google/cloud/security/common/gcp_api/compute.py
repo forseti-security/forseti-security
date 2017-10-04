@@ -694,6 +694,45 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
 
+    def get_quota(self, project_id):
+        """Returns the quota for any metric
+
+        Args:
+            project_id (str): The project id.
+            metric
+
+        Returns:
+            dict: The quota of a requested metric in a dict.
+                Example:
+                {
+                  "metric": "FIREWALLS",
+                  "limit": 100.0,
+                  "usage": 9.0
+                }
+
+        Raises:
+            KeyError: Metric was not found in the project.
+        """
+        resource = self.get_project(project_id)
+        quotas = resource.get('quotas', [])
+        for quota in quotas:
+            if quota.get('metric', ' ') == metric:
+                return quota
+        raise KeyError(
+            "Passed in metric, %s, was not found for project id, %s." %
+            (quota, project_id))
+
+    def get_firewall_quota(self, project_id):
+        """Calls get_quota to request the firewall quota
+
+        Args:
+          project_id (str): The project id.
+
+        Returns:
+          The firewall quota
+
+        """
+
     def is_api_enabled(self, project_id):
         """Checks if the Compute API is enabled for the specified project.
 

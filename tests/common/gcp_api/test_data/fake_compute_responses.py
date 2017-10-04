@@ -1049,6 +1049,14 @@ GET_PROJECT_NAME_RESPONSE = """
 }
 """
 
+GET_QUOTA_RESPONSE = """
+{
+ "metric": "NETWORKS",
+ "limit": 5.0,
+ "usage": 1.0
+}
+"""
+
 # Errors
 
 API_NOT_ENABLED = """

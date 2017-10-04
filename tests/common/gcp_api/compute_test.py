@@ -117,6 +117,14 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(expected_exception):
             list(self.gce_api_client.get_firewall_rules(self.project_id))
 
+    def test_get_quota(self):
+        """Test get quota."""
+        mock_responses = []
+        http_mocks.mock_http_response_sequence(mock_responses)
+        results = self.gce_api_client.get_quota(self.project_id)
+        print results
+#        self.assertEquals(fake_compute.GET_QUOTA_RESPONSE, results.get('quota'))
+
     def test_get_networks(self):
         """Test get networks."""
         mock_responses = []
