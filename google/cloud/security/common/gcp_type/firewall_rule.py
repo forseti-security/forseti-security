@@ -42,19 +42,55 @@ class FirewallRule(object):
         self.network = kwargs.get('firewall_rule_network')
         self._priority = kwargs.get('firewall_rule_priority')
         self.direction = kwargs.get('firewall_rule_direction')
-        self.source_ranges = parser.json_unstringify(
-            kwargs.get('firewall_rule_source_ranges'))
-        self.destination_ranges = parser.json_unstringify(
-            kwargs.get('firewall_rule_destination_ranges'))
-        self.source_tags = parser.json_unstringify(
-            kwargs.get('firewall_rule_source_tags', '[]'))
-        self.target_tags = parser.json_unstringify(
-            kwargs.get('firewall_rule_target_tags', '[]'))
+        self._source_ranges = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_source_ranges', '[]')))
+        self._destination_ranges = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_destination_ranges', '[]')))
+        self._source_tags = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_source_tags', '[]')))
+        self._target_tags = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_target_tags', '[]')))
         self.allowed = parser.json_unstringify(
             kwargs.get('firewall_rule_allowed', '[]'))
         self.denied = parser.json_unstringify(
             kwargs.get('firewall_rule_denied', '[]'))
         self._firewall_action = None
+
+    @property
+    def source_ranges(self):
+        """The sorted source ranges for this policy.
+
+        Returns:
+          list: Sorted source ips ranges.
+        """
+        return sorted(self._source_ranges)
+
+    @property
+    def destination_ranges(self):
+        """The sorted destination ranges for this policy.
+
+        Returns:
+          list: Sorted destination ips ranges.
+        """
+        return sorted(self._destination_ranges)
+
+    @property
+    def source_tags(self):
+        """The sorted source tags for this policy.
+
+        Returns:
+          list: Sorted source tags.
+        """
+        return sorted(self._source_tags)
+
+    @property
+    def target_tags(self):
+        """The sorted target tags for this policy.
+
+        Returns:
+          list: Sorted target tags.
+        """
+        return sorted(self._target_tags)
 
     @property
     def priority(self):
@@ -146,8 +182,24 @@ class FirewallRule(object):
                 self.target_tags == other.target_tags and
                 self.source_ranges == other.source_ranges and
                 self.destination_ranges == other.destination_ranges and
-                self.allowed == other.allowed and
-                self.denied == other.denied)
+                self.firewall_action == other.firewall_action)
+
+    def is_equivalent(self, other):
+        """Test whether this policy is equivalent to the other policy.
+
+        Args:
+          other(FirewallRule): object to compare to
+
+        Returns:
+          bool: comparison result
+        """
+        return (self.direction == other.direction and
+                self.network == other.network and
+                self.source_tags == other.source_tags and
+                self.target_tags == other.target_tags and
+                self.source_ranges == other.source_ranges and
+                self.destination_ranges == other.destination_ranges and
+                self.firewall_action.is_equivalent(other.firewall_action))
 
 
 class FirewallAction(object):
@@ -171,10 +223,10 @@ class FirewallAction(object):
                     'Rule cannot have deny (%s) and allow (%s) actions' %
                     (firewall_rule_denied, firewall_rule_allowed))
             self.action = 'allow'
-            self.rules = firewall_rule_allowed
+            self.rules = sort_rules(firewall_rule_allowed)
         else:
             self.action = 'deny'
-            self.rules = firewall_rule_denied
+            self.rules = sort_rules(firewall_rule_denied)
 
         self._applies_to_all = None
 
@@ -193,9 +245,8 @@ class FirewallAction(object):
                 protocol = rule.get('IPProtocol')
                 if protocol == 'all':
                     self._applies_to_all = True
-                    return self._applies_to_all
+                    break
         return self._applies_to_all
-
 
     @property
     def expanded_rules(self):
@@ -259,13 +310,13 @@ class FirewallAction(object):
                 self.rules.keys() == other.rules.keys() and
                 all([
                     self.ports_are_equal(
-                        self.rules.get(protocol, []),
-                        other.rules.get(protocol, []))
+                        self.expanded_rules.get(protocol, []),
+                        other.expanded_rules.get(protocol, []))
                     for protocol in self.rules
                 ]))
 
     def __lt__(self, other):
-        """Less than
+        """Less than.
 
         Args:
           other (FirewallAction): The FirewallAction to compare to.
@@ -282,7 +333,7 @@ class FirewallAction(object):
                      for protocol in self.expanded_rules])))
 
     def __gt__(self, other):
-        """Greater than
+        """Greater than.
 
         Args:
           other (FirewallAction): The FirewallAction to compare to.
@@ -299,7 +350,7 @@ class FirewallAction(object):
                      for protocol in other.expanded_rules])))
 
     def __eq__(self, other):
-        """Equals
+        """Equals.
 
         Args:
           other (FirewallAction): The FirewallAction to compare to.
@@ -308,6 +359,25 @@ class FirewallAction(object):
           bool: If this action is the exact same as the other FirewallAction.
         """
         return self.action == other.action and self.rules == other.rules
+
+def sort_rules(rules):
+    """Sorts firewall rules by protocol and sorts ports.
+
+    Args:
+      rules (list): A list of firewall rule dictionaries.
+
+    Returns:
+      list: A list of sorted firewall rules.
+    """
+    sorted_rules = []
+    for rule in sorted(rules, key=lambda k: k.get('IPProtocol' '')):
+        if 'ports' in rule:
+            # Sort ports numerically handle ranges through sorting by start port
+            rule['ports'] = sorted(rule['ports'],
+                                   key=lambda k: int(k.split('-')[0]))
+        sorted_rules.append(rule)
+    return sorted_rules
+
 
 def ips_in_list(ips, ips_list):
     """Checks whether the ips and ranges are all in a list.
@@ -367,7 +437,7 @@ def expand_port_range(port_range):
       list: A list of string integers from number_1 to number_2.
     """
     start, end = port_range.split('-')
-    return [str(i) for i in range(int(start), int(end) + 1)]
+    return [str(i) for i in xrange(int(start), int(end) + 1)]
 
 def expand_ports(ports):
     """Expands all ports in a list.

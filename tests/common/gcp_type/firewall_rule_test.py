@@ -293,6 +293,53 @@ class FirewallRuleTest(ForsetiTestCase):
         ),
         (
             {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['22', '23']},
+                    ],
+            },
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['22', '21', '23']},
+                    ],
+            },
+            True,
+        ),
+        (
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['22', '23', '24']},
+                    ],
+            },
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['22', '21', '23']},
+                    ],
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['22-23']},
+                        {'IPProtocol': 'udp', 'ports': ['50', '55']},
+                    ],
+            },
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'udp', 'ports': ['49-55']},
+                        {'IPProtocol': 'tcp', 'ports': ['22', '21', '23']},
+                    ],
+            },
+            True,
+        ),
+        (
+            {
                 'firewall_rule_allowed': [{'IPProtocol': 'tcp'}],
             },
             {
@@ -370,6 +417,38 @@ class FirewallRuleTest(ForsetiTestCase):
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}],
             },
             False,
+        ),
+        (
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['22', '21', '20']},
+                    ],
+            },
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['21', '22', '23']},
+                    ],
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'udp', 'ports': ['49-55']},
+                        {'IPProtocol': 'tcp', 'ports': ['22', '21', '23']},
+                    ],
+            },
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['22-23']},
+                        {'IPProtocol': 'udp', 'ports': ['50', '55']},
+                    ],
+            },
+            True,
         ),
         (
             {
