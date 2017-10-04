@@ -25,8 +25,7 @@ Forseti Scanner has default rules that create a [violation]({% link _docs/quicks
  
 * Cloud IAM policies
   * Only Cloud IAM user and group members in my domain may be granted the role `Organization Admin`.
-  * Service accounts should not be granted the role `Folder Admin`.
- 
+
 * Cloud Identity Aware Proxy (IAP) bypass access
   * Forbid any IAP bypasses on all resources in my organization, when IAP is enabled.
   * Allow direct access from debug IPs and internal monitoring hosts.
