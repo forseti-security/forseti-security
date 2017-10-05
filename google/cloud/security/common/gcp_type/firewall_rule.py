@@ -307,12 +307,12 @@ class FirewallAction(object):
           bool: Whether these two FirewallActions are functionally equivalent.
         """
         return (self.action == other.action and
-                self.rules.keys() == other.rules.keys() and
+                self.expanded_rules.keys() == other.expanded_rules.keys() and
                 all([
                     self.ports_are_equal(
                         self.expanded_rules.get(protocol, []),
                         other.expanded_rules.get(protocol, []))
-                    for protocol in self.rules
+                    for protocol in self.expanded_rules
                 ]))
 
     def __lt__(self, other):

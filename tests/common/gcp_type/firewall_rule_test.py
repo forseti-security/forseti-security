@@ -256,6 +256,144 @@ class FirewallRuleTest(ForsetiTestCase):
     @parameterized.parameterized.expand([
         (
             {
+                'firewall_rule_direction': 'ingress',
+            },
+            {
+                'firewall_rule_direction': 'egress',
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+            },
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n2',
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_tags': json.dumps(['t1', 't2']),
+            },
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_tags': json.dumps(['t3', 't2']),
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_tags': json.dumps(['t1', 't2']),
+                'firewall_rule_target_tags': json.dumps(['t3', 't5']),
+            },
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_tags': json.dumps(['t1', 't2']),
+                'firewall_rule_target_tags': json.dumps(['t3', 't4']),
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_tags': json.dumps(['t1', 't2']),
+                'firewall_rule_target_tags': json.dumps(['t3', 't4']),
+                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
+            },
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_tags': json.dumps(['t1', 't2']),
+                'firewall_rule_target_tags': json.dumps(['t3', 't4']),
+                'firewall_rule_source_ranges': json.dumps(['10.0.0.0/24']),
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_tags': json.dumps(['t1', 't2']),
+                'firewall_rule_target_tags': json.dumps(['t3', 't4']),
+                'firewall_rule_destination_ranges': json.dumps(['0.0.0.0/0']),
+            },
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_tags': json.dumps(['t1', 't2']),
+                'firewall_rule_target_tags': json.dumps(['t3', 't4']),
+                'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+            {
+                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+            True,
+        ),
+        (
+            {
+                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['10', '11', '12', '13']}]),
+            },
+            {
+                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['10-13']}]),
+            },
+            True,
+        ),
+        (
+            {
+                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+            },
+            {
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+            },
+            False,
+        ),
+    ])
+    def test_firewall_rule_is_equivalent(
+        self, rule_1_dict, rule_2_dict, expected):
+        """Tests that rule 1 == rule 2 returns the correct value."""
+        rule_1 = firewall_rule.FirewallRule(**rule_1_dict)
+        rule_2 = firewall_rule.FirewallRule(**rule_2_dict)
+        self.assertEqual(expected, rule_1.is_equivalent(rule_2))
+
+    @parameterized.parameterized.expand([
+        (
+            {
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
                 'firewall_rule_denied': json.dumps(
@@ -507,6 +645,65 @@ class FirewallRuleTest(ForsetiTestCase):
         action_2 = firewall_rule.FirewallAction(**action_2_dict)
         self.assertEqual(expected, action_1 > action_2)
 
+    @parameterized.parameterized.expand([
+        (
+            {
+                'firewall_rule_allowed':
+                    [{'IPProtocol': 'tcp', 'ports': ['21-23']}],
+            },
+            {
+                'firewall_rule_denied':
+                    [{'IPProtocol': 'tcp', 'ports': ['22', '21', '23']}],
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_allowed':
+                    [{'IPProtocol': 'tcp'}],
+            },
+            {
+                'firewall_rule_allowed':
+                    [{'IPProtocol': 'tcp'}, {'IPProtocol': 'udp'}],
+            },
+            False,
+        ),
+        (
+            {
+                'firewall_rule_allowed':
+                    [{'IPProtocol': 'tcp', 'ports': ['21-23']}],
+            },
+            {
+                'firewall_rule_allowed':
+                    [{'IPProtocol': 'tcp', 'ports': ['22', '21', '23']}],
+            },
+            True,
+        ),
+        (
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'tcp', 'ports': ['21-23']},
+                        {'IPProtocol': 'udp', 'ports': ['55', '56', '58-60']},
+                    ],
+            },
+            {
+                'firewall_rule_allowed':
+                    [
+                        {'IPProtocol': 'udp', 'ports': [
+                            '55-56', '58', '59', '60']},
+                        {'IPProtocol': 'tcp', 'ports': ['22', '21', '23']}
+                    ],
+            },
+            True,
+        ),
+    ])
+    def test_firewall_action_is_equivalent(
+        self, action_1_dict, action_2_dict, expected):
+        """Tests that action 1 > action 2 returns the correct value."""
+        action_1 = firewall_rule.FirewallAction(**action_1_dict)
+        action_2 = firewall_rule.FirewallAction(**action_2_dict)
+        self.assertEqual(expected, action_1.is_equivalent(action_2))
 
 if __name__ == '__main__':
     unittest.main()
