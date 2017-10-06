@@ -1049,13 +1049,7 @@ GET_PROJECT_NAME_RESPONSE = """
 }
 """
 
-GET_QUOTA_RESPONSE = """
-{
- "metric": "NETWORKS",
- "limit": 5.0,
- "usage": 1.0
-}
-"""
+GET_QUOTA_RESPONSE = {u'usage': 0.0, u'metric': u'SNAPSHOTS', u'limit': 1000.0}
 
 # Errors
 
