@@ -257,8 +257,9 @@ class ApiClientImpl(ApiClient):
         if self.cached_projects is None:
             self.cached_projects = []
             for page in self.crm.get_projects(parent_id):
-                for project in page['projects']:
-                    self.cached_projects.append(project)
+                if 'projects' in page:
+                    for project in page['projects']:
+                        self.cached_projects.append(project)
 
         for project in self.cached_projects:
             parent_info = project['parent']
