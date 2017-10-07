@@ -153,6 +153,9 @@ class IAMClient(object):
     """IAM Client."""
 
     DEFAULT_QUOTA_PERIOD = 1.0
+    USER_MANAGED = 'USER_MANAGED'
+    SYSTEM_MANAGED = 'SYSTEM_MANAGED'
+    KEY_TYPES = frozenset([USER_MANAGED, SYSTEM_MANAGED])
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -201,18 +204,31 @@ class IAMClient(object):
             LOGGER.warn(api_errors.ApiExecutionError(name, e))
             raise api_errors.ApiExecutionError('serviceAccountIamPolicy', e)
 
-    def get_service_account_keys(self, name):
+    def get_service_account_keys(self, name, key_type=None):
         """Get keys associated with the given Service Account.
 
         Args:
             name (str): The service account name to query, must be in the format
                 projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+            key_type (str): Optional, the key type to include in the results.
+                Can be None, USER_MANAGED or SYSTEM_MANAGED. Defaults to
+                returning all key types.
 
         Returns:
             list: List with a dict for each key associated with the account.
+
+        Raises:
+            ValueError: Raised if an invalid key_type is specified.
         """
         try:
-            results = self.repository.projects_serviceaccounts_keys.list(name)
+            kwargs = {}
+            if key_type:
+                if key_type not in self.KEY_TYPES:
+                    raise ValueError(
+                        'Key type %s is not a valid key type.' % key_type)
+                kwargs['keyTypes'] = key_type
+            results = self.repository.projects_serviceaccounts_keys.list(
+                name, **kwargs)
             return api_helpers.flatten_list_results(results, 'keys')
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(name, e))

@@ -21,6 +21,7 @@ from googleapiclient import http
 import mock
 import oauth2client
 from oauth2client import client
+from oauth2client import service_account
 
 from tests import unittest_utils
 from google.cloud import security as forseti_security
@@ -44,13 +45,27 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             user_agent, revoke_uri=oauth2client.GOOGLE_REVOKE_URI,
             scopes='foo', token_info_uri=oauth2client.GOOGLE_TOKEN_INFO_URI)
 
+    @mock.patch('oauth2client.crypt.Signer.from_string',
+                return_value=object())
+    def get_test_service_account(self, mock_signer):
+        keyfile_dict = {
+            'type': 'service_account',
+            'client_email': 'test@service.account',
+            'private_key': '12345',
+            'private_key_id': '12345',
+            'client_id': '123'}
+        credentials = (
+            service_account.ServiceAccountCredentials.from_json_keyfile_dict(
+                keyfile_dict))
+        return credentials
+
     def test_set_user_agent(self):
         """Verify set user agent sets the user agent correctly."""
         credentials = self.get_test_credential()
 
         self.assertEqual('', credentials.user_agent)
 
-        base._set_user_agent(credentials)
+        base._set_ua_and_scopes(credentials)
 
         self.assertTrue(
             forseti_security.__package_name__ in credentials.user_agent)
@@ -65,6 +80,12 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         self.assertTrue(
             forseti_security.__package_name__ in
                 http_mock.headers.get('user-agent'))
+
+    def test_set_scopes(self):
+        credentials = self.get_test_service_account()
+        self.assertTrue(credentials.create_scoped_required())
+        credentials = base._set_ua_and_scopes(credentials)
+        self.assertFalse(credentials.create_scoped_required())
 
     @mock.patch.object(discovery, 'build', autospec=True)
     def test_forseti_supported_api_is_ok(

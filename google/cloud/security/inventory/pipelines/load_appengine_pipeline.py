@@ -26,7 +26,12 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
     """Load all AppEngine applications for all projects."""
 
     RESOURCE_NAME = 'appengine'
+    SERVICES_RESOURCE_NAME = 'appengine_services'
+    VERSIONS_RESOURCE_NAME = 'appengine_versions'
+    INSTANCES_RESOURCE_NAME = 'appengine_instances'
 
+
+    # pylint: disable=too-many-locals, too-many-nested-blocks
     def _retrieve(self):
         """Retrieve AppEngine applications from GCP.
 
@@ -42,11 +47,56 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
             .ProjectDao(self.global_configs)
             .get_projects(self.cycle_timestamp))
         apps = {}
+        loadable_services = []
+        loadable_versions = []
+        loadable_instances = []
         for project in projects:
             app = self.safe_api_call('get_app', project.id)
             if app:
                 apps[project.id] = app
-        return apps
+
+                services = self.safe_api_call(
+                    'list_services', project.id)
+                if services:
+                    for service in services:
+                        app_id = app.get('id')
+                        service_id = service.get('id')
+                        loadable_services.append(
+                            {'project_id': project.id,
+                             'app_id': app_id,
+                             'service_id': service_id,
+                             'service': parser.json_stringify(service)})
+
+                        versions = self.safe_api_call(
+                            'list_versions', project.id, service_id)
+                        if versions:
+                            for version in versions:
+                                version_id = version.get('id')
+                                loadable_versions.append(
+                                    {'project_id': project.id,
+                                     'app_id': app_id,
+                                     'service_id': service_id,
+                                     'version_id': version_id,
+                                     'version': parser.json_stringify(version)})
+
+                                instances = self.safe_api_call(
+                                    'list_instances', project.id,
+                                    service_id, version_id)
+                                if instances:
+                                    for instance in instances:
+                                        instance_id = instance.get('id')
+                                        parser.json_stringify(instance)
+                                        loadable_instances.append(
+                                            {'project_id': project.id,
+                                             'app_id': app_id,
+                                             'service_id': service_id,
+                                             'version_id': version_id,
+                                             'instance_id': instance_id,
+                                             'instance':
+                                                 parser.json_stringify(
+                                                     instance)})
+        return apps, loadable_services, loadable_versions, loadable_instances
+    # pylint: enable=too-many-locals, too-many-nested-blocks
 
     def _transform(self, resource_from_api):
         """Create an iterator of AppEngine applications to load into database.
@@ -78,7 +128,17 @@ class LoadAppenginePipeline(base_pipeline.BasePipeline):
 
     def run(self):
         """Run the pipeline."""
-        apps = self._retrieve()
-        loadable_apps = self._transform(apps)
-        self._load(self.RESOURCE_NAME, loadable_apps)
+        apps, loadable_services, loadable_versions, loadable_instances = (
+            self._retrieve())
+
+        if apps:
+            loadable_apps = self._transform(apps)
+            self._load(self.RESOURCE_NAME, loadable_apps)
+            # TODO: Make _get_loaded_count() support multiple resources
+            # in a single pipeline.  This will be resolved when tackling
+            # Inventory v2.
+            self._load(self.SERVICES_RESOURCE_NAME, loadable_services)
+            self._load(self.VERSIONS_RESOURCE_NAME, loadable_versions)
+            self._load(self.INSTANCES_RESOURCE_NAME, loadable_instances)
+
         self._get_loaded_count()

@@ -32,7 +32,7 @@ from google.cloud.security.common.util import log_util
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc
+# pylint: disable=missing-param-doc,missing-raises-doc,too-many-lines
 
 # The name of the GCE API.
 API_NAME = 'compute'
@@ -41,7 +41,7 @@ API_NAME = 'compute'
 API_ROOT = 'https://www.googleapis.com/'
 
 # The version of the GCE API to use.
-API_VERSION = 'v1'
+API_VERSION = 'beta'
 
 # The compute engine scope.
 SCOPE = 'https://www.googleapis.com/auth/compute'
@@ -53,35 +53,64 @@ RETRY_EXCEPTIONS = (httplib.ResponseNotReady, httplib.IncompleteRead,
                     httplib2.ServerNotFoundError, socket.error, ssl.SSLError,)
 
 # Allowed items in a firewall rule.
-ALLOWED_RULE_ITEMS = set(('allowed', 'description', 'name', 'network',
-                          'sourceRanges', 'sourceTags', 'targetTags'))
+ALLOWED_RULE_ITEMS = frozenset(('allowed', 'denied', 'description', 'direction',
+                                'name', 'network', 'priority', 'sourceRanges',
+                                'destinationRanges', 'sourceTags',
+                                'targetTags'))
 
 # Maximum time to allow an active API operation to wait for status=Done
-OPERATION_TIMEOUT = 300.0
+OPERATION_TIMEOUT = 600.0
 
 
 class Error(Exception):
     """Base error class for the module."""
 
 
-class FirewallEnforcementFailedError(Error):
-    """Updating firewall for project failed."""
-
-
 class InvalidFirewallRuleError(Error):
     """Raised if a firewall rule doesn't look like a firewall rule should."""
+
+
+class FirewallRuleValidationError(Error):
+    """Raised if a firewall rule fails validation."""
 
 
 class DuplicateFirewallRuleNameError(Error):
     """Raised if a rule name is reused in a policy, names must be unique."""
 
 
+class FirewallEnforcementFailedError(Error):
+    """Updating firewall for project failed."""
+
+
+class FirewallEnforcementInsertFailedError(FirewallEnforcementFailedError):
+    """Insertion of a firewall rule failed."""
+
+
+class FirewallEnforcementUpdateFailedError(FirewallEnforcementFailedError):
+    """Update of a firewall rule failed."""
+
+
+class FirewallEnforcementDeleteFailedError(FirewallEnforcementFailedError):
+    """Deletion of a firewall rule failed."""
+
+
+class NetworkImpactValidationError(FirewallEnforcementFailedError):
+    """Raised if a firewall rule is to be applied to a disallowed network."""
+
+
+class EmptyProposedFirewallRuleSetError(FirewallEnforcementFailedError):
+    """Raised if the proposed firewall rule set is empty."""
+
+
+class FirewallQuotaExceededError(FirewallEnforcementFailedError):
+    """Raised if the proposed changes would exceed firewall quota."""
+
+
 def http_retry(e):
     """retry_on_exception for retry. Returns True for exceptions to retry."""
-    if isinstance(e, errors.HttpError):
-        return e.resp.status in (429, 500, 502, 503)
     if isinstance(e, RETRY_EXCEPTIONS):
         return True
+
     return False
 
 
@@ -140,10 +169,19 @@ class ComputeFirewallAPI(object):
         self.gce_service = gce_service
         self._dry_run = dry_run
 
+    # pylint: disable=no-self-use
+
     @retry(
         retry_on_exception=http_retry,
         wait_exponential_multiplier=1000,
         stop_max_attempt_number=4)
+
+    def _execute(self, request):
+        """Execute the request and retry logic."""
+
+        return request.execute(num_retries=4)
+    # pylint: enable=no-self-use
+
     def list_networks(self, project, fields=None):
         """List the networks associated with a GCE project.
 
@@ -155,13 +193,10 @@ class ComputeFirewallAPI(object):
           The GCE response.
         """
         LOGGER.debug('Listing networks...')
-        return self.gce_service.networks().list(
-            project=project, fields=fields).execute()
+        request = self.gce_service.networks().list(
+            project=project, fields=fields)
+        return self._execute(request)
 
-    @retry(
-        retry_on_exception=http_retry,
-        wait_exponential_multiplier=1000,
-        stop_max_attempt_number=4)
     def list_firewalls(self, project, page_token=None):
         """List the firewalls of a given project.
 
@@ -174,13 +209,34 @@ class ComputeFirewallAPI(object):
           The GCE response.
         """
         LOGGER.debug('Listing firewalls...')
-        return self.gce_service.firewalls().list(
-            project=project, pageToken=page_token).execute()
+        request = self.gce_service.firewalls().list(
+            project=project, pageToken=page_token)
+        return self._execute(request)
 
-    @retry(
-        retry_on_exception=http_retry,
-        wait_exponential_multiplier=1000,
-        stop_max_attempt_number=4)
+    def get_firewalls_quota(self, project):
+        """Fetch the current FIREWALLS quota for the project.
+
+        Args:
+          project: The id of the project to query.
+
+        Returns:
+          A dictionary with three keys, metric, limit and usage.
+
+          Example:
+          {"metric": "FIREWALLS",
+           "limit": 100,
+           "usage": 9}
+        """
+        request = self.gce_service.projects().get(
+            project=project, fields='quotas')
+        response = self._execute(request)
+
+        for quota in response.get('quotas', []):
+            if quota.get('metric', '') == 'FIREWALLS':
+                return quota
+
+        return {}
+
     def delete_firewall_rule(self, project, rule):
         """Delete firewall rules.
 
@@ -195,13 +251,10 @@ class ComputeFirewallAPI(object):
                     rule['name'], project, json.dumps(rule))
         if self._dry_run:
             return self._create_dry_run_response(rule['name'])
-        return self.gce_service.firewalls().delete(
-            firewall=rule['name'], project=project).execute()
+        request = self.gce_service.firewalls().delete(
+            firewall=rule['name'], project=project)
+        return self._execute(request)
 
-    @retry(
-        retry_on_exception=http_retry,
-        wait_exponential_multiplier=1000,
-        stop_max_attempt_number=4)
     def insert_firewall_rule(self, project, rule):
         """Insert a firewall rule.
 
@@ -217,13 +270,10 @@ class ComputeFirewallAPI(object):
             rule['name'], project, json.dumps(rule))
         if self._dry_run:
             return self._create_dry_run_response(rule['name'])
-        return self.gce_service.firewalls().insert(
-            body=rule, project=project).execute()
+        request = self.gce_service.firewalls().insert(
+            body=rule, project=project)
+        return self._execute(request)
 
-    @retry(
-        retry_on_exception=http_retry,
-        wait_exponential_multiplier=1000,
-        stop_max_attempt_number=4)
     def update_firewall_rule(self, project, rule):
         """Update a firewall rule.
 
@@ -238,13 +288,10 @@ class ComputeFirewallAPI(object):
                     rule['name'], project, json.dumps(rule))
         if self._dry_run:
             return self._create_dry_run_response(rule['name'])
-        return self.gce_service.firewalls().update(
-            body=rule, firewall=rule['name'], project=project).execute()
+        request = self.gce_service.firewalls().update(
+            body=rule, firewall=rule['name'], project=project)
+        return self._execute(request)
 
-    @retry(
-        retry_on_exception=http_retry,
-        wait_exponential_multiplier=1000,
-        stop_max_attempt_number=4)
     # TODO: Investigate improving so we can avoid the pylint disable.
     # pylint: disable=too-many-locals
     def wait_for_any_to_complete(self, project, responses, timeout=0):
@@ -275,7 +322,7 @@ class ComputeFirewallAPI(object):
                 LOGGER.debug('Checking on operation %s', operation_name)
                 request = self.gce_service.globalOperations().get(
                     project=project, operation=operation_name)
-                response = request.execute()
+                response = self._execute(request)
                 status = response['status']
                 LOGGER.info('status of %s is %s', operation_name, status)
                 if response['status'] == 'DONE':
@@ -412,12 +459,18 @@ class ComputeFirewallAPI(object):
 class FirewallRules(object):
     """A collection of validated firewall rules."""
 
-    def __init__(self, project, rules=None):
+    DEFAULT_PRIORITY = 1000
+    DEFAULT_DIRECTION = 'INGRESS'
+
+    def __init__(self, project, rules=None, add_rule_callback=None):
         """Constructor.
 
         Args:
           project: The GCE project id the rules apply to.
           rules: A list of rule dicts to add to the object.
+          add_rule_callback: A callback function that checks whether a firewall
+            rule should be applied. If the callback returns False, that rule
+            will not be modified.
 
         Raises:
           DuplicateFirewallRuleNameError: Two or more rules have the same name.
@@ -425,6 +478,7 @@ class FirewallRules(object):
         """
         self._project = project
         self.rules = {}
+        self._add_rule_callback = add_rule_callback
         if rules:
             self.add_rules(rules)
 
@@ -551,6 +605,12 @@ class FirewallRules(object):
 
                     new_rule['name'] = new_name
 
+        if 'priority' not in new_rule:
+            new_rule['priority'] = self.DEFAULT_PRIORITY
+
+        if 'direction' not in new_rule:
+            new_rule['direction'] = self.DEFAULT_DIRECTION
+
         if self._check_rule_before_adding(new_rule):
             self.rules[new_rule['name']] = new_rule
 
@@ -645,17 +705,23 @@ class FirewallRules(object):
                 sorted_rule[key] = value
         return sorted_rule
 
+    # TODO: clean up break up into additional methods
+    # pylint: disable=too-many-branches
     def _check_rule_before_adding(self, rule):
         """Validates that a rule is valid and not a duplicate.
 
         Validation is based on reference:
-        https://cloud.google.com/compute/docs/reference/latest/firewalls/insert
+        https://cloud.google.com/compute/docs/reference/beta/firewalls and
+        https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table
+        If add_rule_callback is set, this will also confirm that
+        add_rule_callback returns True for the rule, otherwise it will not add
+        the rule.
 
         Args:
           rule: The rule to validate.
 
         Returns:
-          True if rule is valid.
+          True if rule is valid, False if the add_rule_callback returns False.
 
         Raises:
           DuplicateFirewallRuleNameError: Two or more rules have the same name.
@@ -669,22 +735,76 @@ class FirewallRules(object):
                 'An unexpected entry exists in a firewall rule dict: "%s".' %
                 ','.join(list(unknown_keys)))
 
-        for key in ['allowed', 'name', 'network']:
+        for key in ['name', 'network']:
             if key not in rule:
                 raise InvalidFirewallRuleError(
                     'Rule missing required field "%s": "%s".' % (key, rule))
 
-        if 'sourceRanges' not in rule and 'sourceTags' not in rule:
-            raise InvalidFirewallRuleError(
-                'Rule missing required field oneof "sourceRanges" or '
-                '"sourceTags": "%s".' % rule)
-
-        for allow in rule['allowed']:
-            if 'IPProtocol' not in allow:
+        if 'direction' not in rule or rule['direction'] == 'INGRESS':
+            if 'sourceRanges' not in rule and 'sourceTags' not in rule:
                 raise InvalidFirewallRuleError(
-                    'Allow rule in %s missing required field '
-                    '"IPProtocol": "%s".'
-                    % (rule['name'], allow))
+                    'Ingress rule missing required field oneof '
+                    '"sourceRanges" or "sourceTags": "%s".' % rule)
+
+            if 'destinationRanges' in rule:
+                raise InvalidFirewallRuleError(
+                    'Ingress rules cannot include "destinationRanges": "%s".'
+                    % rule)
+
+        elif rule['direction'] == 'EGRESS':
+            if 'sourceRanges' in rule or 'sourceTags' in rule:
+                raise InvalidFirewallRuleError(
+                    'Egress rules cannot include "sourceRanges", "sourceTags":'
+                    '"%s".' % rule)
+
+            if 'destinationRanges' not in rule:
+                raise InvalidFirewallRuleError(
+                    'Egress rule missing required field "destinationRanges":'
+                    '"%s".'% rule)
+
+        else:
+            raise InvalidFirewallRuleError(
+                'Rule "direction" must be either "INGRESS" or "EGRESS": "%s".'
+                % rule)
+
+        max_256_value_keys = set(
+            ['sourceRanges', 'sourceTags', 'targetTags', 'destinationRanges'])
+        for key in max_256_value_keys:
+            if key in rule and len(rule[key]) > 256:
+                raise InvalidFirewallRuleError(
+                    'Rule entry "%s" must contain 256 or fewer values: "%s".'
+                    % (key, rule))
+
+        if (('allowed' not in rule and 'denied' not in rule) or
+                ('allowed' in rule and 'denied' in rule)):
+            raise InvalidFirewallRuleError(
+                'Rule must contain oneof "allowed" or "denied" entries: '
+                ' "%s".' % rule)
+
+        if 'allowed' in rule:
+            for allow in rule['allowed']:
+                if 'IPProtocol' not in allow:
+                    raise InvalidFirewallRuleError(
+                        'Allow rule in %s missing required field '
+                        '"IPProtocol": "%s".' % (rule['name'], allow))
+
+        elif 'denied' in rule:
+            for deny in rule['denied']:
+                if 'IPProtocol' not in deny:
+                    raise InvalidFirewallRuleError(
+                        'Deny rule in %s missing required field '
+                        '"IPProtocol": "%s".' % (rule['name'], deny))
+
+        if 'priority' in rule:
+            try:
+                priority = int(rule['priority'])
+            except ValueError:
+                raise InvalidFirewallRuleError(
+                    'Rule "priority" could not be converted to an integer: '
+                    '"%s".' % rule)
+            if priority < 0 or priority > 65535:
+                raise InvalidFirewallRuleError(
+                    'Rule "priority" out of range 0-65535: "%s".' % rule)
 
         if len(rule['name']) > 63:
             raise InvalidFirewallRuleError(
@@ -699,7 +819,12 @@ class FirewallRules(object):
                 'Rule %s already defined in rules: %s' %
                 (rule['name'], ', '.join(sorted(self.rules.keys()))))
 
+        if self._add_rule_callback:
+            if not self._add_rule_callback(rule):
+                return False
+
         return True
+    # pylint: enable=too-many-branches
 
 # pylint: disable=too-many-instance-attributes
 # TODO: Investigate improving so we can avoid the pylint disable.
@@ -712,7 +837,8 @@ class FirewallEnforcer(object):
                  expected_rules,
                  current_rules=None,
                  project_sema=None,
-                 operation_sema=None):
+                 operation_sema=None,
+                 add_rule_callback=None):
         """Constructor.
 
         Args:
@@ -729,6 +855,9 @@ class FirewallEnforcer(object):
               of concurrent projects getting written to.
           operation_sema: An optional semaphore object, used to limit the number
               of concurrent write operations on project firewalls.
+          add_rule_callback: A callback function that checks whether a firewall
+              rule should be applied. If the callback returns False, that rule
+              will not be modified.
         """
         self.project = project
         self.firewall_api = firewall_api
@@ -741,6 +870,8 @@ class FirewallEnforcer(object):
 
         self.project_sema = project_sema
         self.operation_sema = operation_sema
+
+        self._add_rule_callback = add_rule_callback
 
         # Initialize private parameters
         self._rules_to_delete = []
@@ -798,10 +929,10 @@ class FirewallEnforcer(object):
           The total number of firewall rules deleted, inserted and updated.
 
         Raises:
-          FirewallEnforcementFailedError: An error occurred while updating the
-              firewall. The calling code should validate the current state of
-              the project firewall, and potentially revert to the old firewall
-              rules.
+          EmptyProposedFirewallRuleSetError: An error occurred while updating
+              the firewall. The calling code should validate the current state
+              of the project firewall, and potentially revert to the old
+              firewall rules.
 
               Any rules changed before the error occured can be retrieved by
               calling the Get(Deleted|Inserted|Updated)Rules methods.
@@ -815,7 +946,7 @@ class FirewallEnforcer(object):
             self.refresh_current_rules()
 
         if not self.expected_rules.rules and not allow_empty_ruleset:
-            raise FirewallEnforcementFailedError(
+            raise EmptyProposedFirewallRuleSetError(
                 'No rules defined in the expected rules.')
 
         # Check if current rules match expected rules, so no changes are needed
@@ -833,6 +964,8 @@ class FirewallEnforcer(object):
 
         self._build_change_set(networks)
         self._validate_change_set(networks)
+        delete_before_insert = self._check_change_operation_order(
+            len(self._rules_to_insert), len(self._rules_to_delete))
 
         if self.project_sema:
             self.project_sema.acquire()
@@ -843,10 +976,10 @@ class FirewallEnforcer(object):
                                           self._rules_to_insert,
                                           self._rules_to_update):
                     LOGGER.warn(
-                        'The callback returned False for project %s, changes '
-                        'will not be applied.', self.project)
+                        'The Prechange Callback returned False for project %s, '
+                        'changes will not be applied.', self.project)
                     return 0
-            changed_count = self._apply_change_set()
+            changed_count = self._apply_change_set(delete_before_insert)
         finally:
             if self.project_sema:
                 self.project_sema.release()
@@ -855,7 +988,8 @@ class FirewallEnforcer(object):
 
     def refresh_current_rules(self):
         """Updates the current rules for the project using the compute API."""
-        current_rules = FirewallRules(self.project)
+        current_rules = FirewallRules(self.project,
+                                      add_rule_callback=self._add_rule_callback)
         current_rules.add_rules_from_api(self.firewall_api)
 
         self.current_rules = current_rules
@@ -901,17 +1035,17 @@ class FirewallEnforcer(object):
         for rule_name in self._rules_to_insert:
             if (rule_name in self.current_rules.rules and
                     rule_name not in self._rules_to_delete):
-                raise FirewallEnforcementFailedError(
+                raise FirewallRuleValidationError(
                     'The rule %s is in the rules to insert set, but the same '
-                    'rule name already exists on project %s. It may be used on'
-                    ' a different network.' % (rule_name, self.project))
+                    'rule name already exists on project %s. It may be used on '
+                    'a different network.' % (rule_name, self.project))
 
         if networks:
             for rule_name in self._rules_to_update:
                 impacted_network = get_network_name_from_url(
                     self.current_rules.rules[rule_name]['network'])
                 if impacted_network not in networks:
-                    raise FirewallEnforcementFailedError(
+                    raise NetworkImpactValidationError(
                         'The rule %s is in the rules to update set, but it is '
                         'currently on a network, "%s", that is not in the '
                         'allowed networks list for project %s: "%s". Updating '
@@ -920,11 +1054,56 @@ class FirewallEnforcer(object):
                          ', '.join(networks),
                          self.expected_rules.rules[rule_name]))
 
-    def _apply_change_set(self):
+    def _check_change_operation_order(self, insert_count, delete_count):
+        """Check if enough quota to do the firewall changes insert first.
+
+        If current usage is near the limit, check if deleting current rules
+        before adding the new rules would allow the project to stay below quota.
+
+        Args:
+          insert_count: The number of rules that will be inserted.
+          delete_count: The number of rules that will be deleted.
+
+        Returns:
+          True if existing rules should be deleted before new rules are
+          inserted, otherwise false.
+
+        Raises:
+          FirewallQuotaExceededError: Raised if there is not enough quota for
+          the required policy to be applied.
+        """
+        delete_before_insert = False
+
+        firewalls_quota = self.firewall_api.get_firewalls_quota(self.project)
+        if firewalls_quota:
+            usage = firewalls_quota.get('usage', 0)
+            limit = firewalls_quota.get('limit', 0)
+            if usage + insert_count > limit:
+                if usage - delete_count + insert_count > limit:
+                    raise FirewallQuotaExceededError(
+                        'Firewall enforcement cannot update the policy for '
+                        'project %s without exceed the current firewalls '
+                        'quota: %u,' %(self.project, limit))
+                else:
+                    LOGGER.info('Switching to "delete first" rule update order '
+                                'for project %s.', self.project)
+                    delete_before_insert = True
+        else:
+            LOGGER.warn('Unknown firewall quota, switching to "delete first" '
+                        'rule update order for project %s.', self.project)
+            delete_before_insert = True
+
+        return delete_before_insert
+
+    def _apply_change_set(self, delete_before_insert):
         """Updates project firewall rules based on the generated changeset.
 
-        Extends self._(deleted|inserted|updated)_rules with the rules changed by
-        these operations.
+           Extends self._(deleted|inserted|updated)_rules with the rules
+           changed by these operations.
+
+        Args:
+          delete_before_insert: If true, delete operations are completed before
+          inserts. Otherwise insert operations are completed first.
 
         Returns:
           The total number of firewall rules deleted, inserted and updated.
@@ -933,7 +1112,19 @@ class FirewallEnforcer(object):
           FirewallEnforcementFailedError: Raised if one or more changes fails.
         """
         change_count = 0
+        if delete_before_insert:
+            change_count += self._delete_rules()
+            change_count += self._insert_rules()
+        else:
+            change_count += self._insert_rules()
+            change_count += self._delete_rules()
 
+        change_count += self._update_rules()
+        return change_count
+
+    def _insert_rules(self):
+        """Insert new rules into the project firewall."""
+        change_count = 0
         if self._rules_to_insert:
             LOGGER.info('Inserting rules: %s', ', '.join(self._rules_to_insert))
             rules = [
@@ -946,12 +1137,16 @@ class FirewallEnforcer(object):
             self._inserted_rules.extend(successes)
             change_count += len(successes)
             if failures:
-                raise FirewallEnforcementFailedError(
-                    'Firewall enforcement failed while inserting new rules for'
-                    ' project %s. The following rules had failures: '
-                    '%s\nErrors: %s' %
-                    (self.project, json.dumps(failures), str(change_errors)))
+                raise FirewallEnforcementInsertFailedError(
+                    'Firewall enforcement failed while inserting rules for '
+                    'project {}. The following errors were encountered: {}'
+                    .format(self.project, change_errors))
 
+        return change_count
+
+    def _delete_rules(self):
+        """Delete old rules from the project firewall."""
+        change_count = 0
         if self._rules_to_delete:
             LOGGER.info('Deleting rules: %s', ', '.join(self._rules_to_delete))
             rules = [
@@ -964,12 +1159,15 @@ class FirewallEnforcer(object):
             self._deleted_rules.extend(successes)
             change_count += len(successes)
             if failures:
-                raise FirewallEnforcementFailedError(
-                    'Firewall enforcement failed while deleting current rules '
-                    'for project %s. The following rules had failures: '
-                    '%s\nErrors: %s'
-                    % (self.project, json.dumps(failures), str(errors)))
+                raise FirewallEnforcementDeleteFailedError(
+                    'Firewall enforcement failed while deleting rules for '
+                    'project {}. The following errors were encountered: {}'
+                    .format(self.project, change_errors))
+        return change_count
 
+    def _update_rules(self):
+        """Update existing rules in the project firewall."""
+        change_count = 0
         if self._rules_to_update:
             LOGGER.info('Updating rules: %s', ', '.join(self._rules_to_update))
             rules = [
@@ -982,11 +1180,10 @@ class FirewallEnforcer(object):
             self._updated_rules.extend(successes)
             change_count += len(successes)
             if failures:
-                raise FirewallEnforcementFailedError(
-                    'Firewall enforcement failed while updating rules for '
-                    'project %s. The following rules had failures: %s\nErrors:'
-                    ' %s' %
-                    (self.project, json.dumps(failures), change_errors))
+                raise FirewallEnforcementUpdateFailedError(
+                    'Firewall enforcement failed while deleting rules for '
+                    'project {}. The following errors were encountered: {}'
+                    .format(self.project, change_errors))
 
         return change_count
 
@@ -1041,7 +1238,7 @@ class FirewallEnforcer(object):
                 LOGGER.error(
                     'Error changing firewall rule %s for project %s: %s',
                     rule.get('name', ''), self.project, e)
-                error_str = 'Rule: %s\nError: %s' % (rule, e)
+                error_str = 'Rule: %s\nError: %s' % (rule.get('name', ''), e)
                 change_errors.append(error_str)
                 failed_rules.append(rule)
                 if self.operation_sema:

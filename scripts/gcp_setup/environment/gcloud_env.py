@@ -43,6 +43,7 @@ ORG_IAM_ROLES = [
     'roles/compute.networkViewer',
     'roles/iam.securityReviewer',
     'roles/appengine.appViewer',
+    'roles/bigquery.dataViewer',
     'roles/servicemanagement.quotaViewer',
     'roles/cloudsql.viewer',
     'roles/compute.securityAdmin',

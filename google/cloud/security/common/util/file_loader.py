@@ -16,7 +16,6 @@
 
 import json
 import os
-from oauth2client import client
 import yaml
 
 from google.cloud.security.common.gcp_api import storage
@@ -90,7 +89,7 @@ def _read_file_from_gcs(file_path, storage_client=None):
         dict: The parsed dict from the loaded file.
     """
     if not storage_client:
-        storage_client = _get_storage_client()
+        storage_client = storage.StorageClient()
 
     file_content = storage_client.get_text_file(full_bucket_path=file_path)
 
@@ -166,16 +165,3 @@ def _parse_yaml(data):
     except yaml.YAMLError as yaml_error:
         LOGGER.error(yaml_error)
         raise yaml_error
-
-
-def _get_storage_client():
-    """Returns a new storage API client with explicit credentials.
-
-    Returns:
-        storage.StorageClient: A new Storage API client with explicit
-            credentials.
-    """
-    # Pass credential in explicitly so that cached credentials are not used.
-    credentials = client.GoogleCredentials.get_application_default()
-    storage_client = storage.StorageClient(credentials=credentials)
-    return storage_client
