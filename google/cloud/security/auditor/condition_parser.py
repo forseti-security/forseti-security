@@ -1,10 +1,16 @@
+"""Parser for simple Python expressions to reduce to boolean.
+
+From https://gist.github.com/cynici/5865326
+"""
+
+import logging
 import sys
 import traceback
-import logging
+
 from pyparsing import *
+
 ParserElement.enablePackrat()
 
-# from https://gist.github.com/cynici/5865326
 
 def EvalSignOp(s, l, t):
     """Evaluate expressions with a leading + or - sign"""
