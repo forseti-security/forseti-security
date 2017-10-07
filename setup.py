@@ -23,9 +23,9 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-import google.cloud.security
+execfile('google/cloud/security/version.py')
 
-FORSETI_VERSION = google.cloud.security.__version__
+FORSETI_VERSION = __version__
 
 NAMESPACE_PACKAGES = [
     'google',
@@ -41,6 +41,7 @@ INSTALL_REQUIRES = [
     'MySQL-python==1.2.5',
     'netaddr>=0.7.19',
     'protobuf>=3.2.0',
+    'pyparsing>=2.2.0',
     'PyYAML==3.12',
     'ratelimiter==1.1.0',
     'retrying==1.3.3',
