@@ -78,6 +78,6 @@ It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quicks
   [Scanner]({% link _docs/quickstarts/scanner/index.md %}),
   and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %}).
   - Configure Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
-  - Enable [GSuite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
+  - Enable [G Suite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
   for processing by Forseti.
   - Learn how to [change a deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
