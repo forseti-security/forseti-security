@@ -25,15 +25,15 @@ Prior to running the setup wizard, you will need:
 The setup wizard automatically determines setup information, generates a 
 deployment template, and creates a Forseti deployment.
 
-## Activate Google Cloud Shell
+### Activate Google Cloud Shell
 
-It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
+It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
 
   1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
   1. In the **Select a project** drop-down list at the top of the console, select the project where you want to deploy Forseti.
   1. On the top right of the console, click the icon to **Activate Google Cloud Shell**. The Cloud Shell panel opens at the bottom of the page.
 
-### Running setup
+### Run setup
   
   1. Once you've started Cloud Shell, download Forseti. The setup wizard is included:
   
