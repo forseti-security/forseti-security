@@ -826,7 +826,7 @@ class ComputeClient(object):
                 return quota
         raise KeyError(
             "Passed in metric, %s, was not found for project id, %s." %
-            (quota, project_id))
+            (metric, project_id))
 
     def get_firewall_quota(self, project_id):
         """Calls get_quota to request the firewall quota
@@ -834,7 +834,13 @@ class ComputeClient(object):
           project_id (str): The project id.
 
         Returns:
-          The firewall quota
+            dict: The quota of a requested metric in a dict.
+                Example:
+                {
+                  "metric": "FIREWALLS",
+                  "limit": 100.0,
+                  "usage": 9.0
+                }
 
         Raises:
             KeyError: Metric was not a firewall resource.
