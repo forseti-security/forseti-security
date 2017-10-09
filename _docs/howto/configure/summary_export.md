@@ -1,5 +1,6 @@
 ---
 title: Export Summary Emails 
+order: 205
 ---
 # {{ page.title }}
 This page describes how to create an AppScript to find, parse, and upload the
@@ -13,7 +14,7 @@ e.g. "forseti".
 1. Create an [AppScript](https://script.google.com/intro) with the following
 function.
 
-    ```jshint
+    ```js
     gmail_label = "forseti";
     message_subject = "Inventory Snapshot Complete";
     gcp_projectid = "" ;
@@ -58,7 +59,7 @@ function.
 1. Once saved obtain the project id from `Resources > Google Cloud Platform`
 project and use that for the value of the `gcp_projectid` variable in the script.
 
-    ```jshint
+    ```js
     ...
     gcp_projectid = "project-id-11111";
     ...
@@ -82,7 +83,7 @@ content below
 1. Insert the values from the just created Dataset and Tables into the
 `gcp_bigquery_datasetid` and `gcp_bigquery_projectid` variables of the script.
 
-    ```jshint
+    ```js
     ...
     gcp_bigquery_datasetid = "forseti";
     gcp_bigquery_tableid= "summaries";
