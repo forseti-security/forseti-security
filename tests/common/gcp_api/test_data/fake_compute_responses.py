@@ -1556,7 +1556,6 @@ GLOBAL_OPERATION_RESPONSE = """
       "progress": 0,
       "insertTime": "2017-08-08T10:37:55.413-07:00",
       "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/operations/operation-1234"
-}
 """
 
 FAKE_OPERATION_ID = "operation-1234"
