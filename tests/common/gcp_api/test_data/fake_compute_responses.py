@@ -1158,6 +1158,10 @@ GET_PROJECT_NAME_RESPONSE = """
 }
 """
 
+GET_QUOTA_RESPONSE = {u'usage': 0.0, u'metric': u'SNAPSHOTS', u'limit': 1000.0}
+
+GET_FIREWALL_QUOTA_RESPONSE = {u'usage': 9.0, u'metric': u'FIREWALLS', u'limit': 100.0}
+
 # Errors
 
 API_NOT_ENABLED = """
