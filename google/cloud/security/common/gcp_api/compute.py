@@ -847,9 +847,7 @@ class ComputeClient(object):
         """
         metric = 'FIREWALLS'
         resource = self.get_quota(project_id, metric)
-        if 'metric' in resource:
-            return resource
-        raise KeyError("The resouce %s is not a firewall resourse" % (metric))
+        return resource
 
     def get_subnetworks(self, project_id, region=None):
         """Return the list of all subnetworks in the project.
