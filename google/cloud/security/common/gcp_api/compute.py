@@ -825,8 +825,8 @@ class ComputeClient(object):
             if quota.get('metric', '') == metric:
                 return quota
         raise KeyError(
-                "Passed in metric, %s, was not found for project id, %s." %
-                (quota, project_id))
+            "Passed in metric, %s, was not found for project id, %s." %
+            (quota, project_id))
 
     def get_firewall_quota(self, project_id):
         """Calls get_quota to request the firewall quota
@@ -836,13 +836,15 @@ class ComputeClient(object):
         Returns:
           The firewall quota
 
+        Raises:
+            KeyError: Metric was not a firewall resource.
         """
         metric = 'FIREWALLS'
         resource = self.get_quota(project_id, metric)
         if 'metric' in resource:
             return resource
         raise KeyError("The resouce %s is not a firewall resourse" % (metric))
-        
+
     def get_subnetworks(self, project_id, region=None):
         """Return the list of all subnetworks in the project.
 
