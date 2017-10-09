@@ -54,6 +54,7 @@ class FirewallRule(object):
             kwargs.get('firewall_rule_allowed', '[]'))
         self.denied = parser.json_unstringify(
             kwargs.get('firewall_rule_denied', '[]'))
+        self._action = kwargs.get('firewall_rule_action', 'allow')
         self._firewall_action = None
 
     @property
@@ -123,6 +124,7 @@ class FirewallRule(object):
             action_dict = {
                 'firewall_rule_allowed': self.allowed,
                 'firewall_rule_denied': self.denied,
+                'firewall_rule_action': self._action,
             }
             self._firewall_action = FirewallAction(**action_dict)
         return self._firewall_action
@@ -139,8 +141,10 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
-        return (self.direction == other.direction and
-                self.network == other.network and
+        return ((self.direction == other.direction or
+                 self.direction is None or
+                 other.direction is None) and
+                (self.network == other.network or other.network is None) and
                 set(self.source_tags).issubset(other.source_tags) and
                 set(self.target_tags).issubset(other.target_tags) and
                 self.firewall_action < other.firewall_action and
@@ -159,14 +163,17 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
-        return (self.direction == other.direction and
-                self.network == other.network and
+        return ((self.direction is None or
+                 other.direction is None or
+                 self.direction == other.direction) and
+                (self.network is None or self.network == other.network) and
                 set(other.source_tags).issubset(self.source_tags) and
                 set(other.target_tags).issubset(self.target_tags) and
                 self.firewall_action > other.firewall_action and
                 ips_in_list(other.source_ranges, self.source_ranges) and
                 ips_in_list(other.destination_ranges, self.destination_ranges))
 
+    # pylint: disable=protected-access
     def __eq__(self, other):
         """Test whether this policy is the same as the other policy.
 
@@ -178,12 +185,13 @@ class FirewallRule(object):
         """
         return (self.direction == other.direction and
                 self.network == other.network and
-                self.source_tags == other.source_tags and
-                self.target_tags == other.target_tags and
+                self._source_tags == other._source_tags and
+                self._target_tags == other._target_tags and
                 self.source_ranges == other.source_ranges and
                 self.destination_ranges == other.destination_ranges and
                 self.firewall_action == other.firewall_action)
 
+    # pylint: disable=protected-access
     def is_equivalent(self, other):
         """Test whether this policy is equivalent to the other policy.
 
@@ -195,8 +203,8 @@ class FirewallRule(object):
         """
         return (self.direction == other.direction and
                 self.network == other.network and
-                self.source_tags == other.source_tags and
-                self.target_tags == other.target_tags and
+                self._source_tags == other._source_tags and
+                self._target_tags == other._target_tags and
                 self.source_ranges == other.source_ranges and
                 self.destination_ranges == other.destination_ranges and
                 self.firewall_action.is_equivalent(other.firewall_action))
@@ -205,7 +213,8 @@ class FirewallRule(object):
 class FirewallAction(object):
     """An association of allowed or denied ports and protocols."""
 
-    def __init__(self, firewall_rule_allowed=None, firewall_rule_denied=None):
+    def __init__(self, firewall_rule_allowed=None, firewall_rule_denied=None,
+                 firewall_rule_action='allow'):
         """Initialize.
 
         Args:
@@ -213,6 +222,7 @@ class FirewallAction(object):
             and protocols.
           firewall_rule_denied (list): A list of dictionaries of denied ports
             and protocols.
+          firewall_rule_action (str): The action, either allow or deny.
 
         Raises:
           ValueError: If there are both allow and deny rules.
@@ -224,9 +234,12 @@ class FirewallAction(object):
                     (firewall_rule_denied, firewall_rule_allowed))
             self.action = 'allow'
             self.rules = sort_rules(firewall_rule_allowed)
-        else:
+        elif firewall_rule_denied:
             self.action = 'deny'
             self.rules = sort_rules(firewall_rule_denied)
+        else:
+            self.action = firewall_rule_action
+            self.rules = []
 
         self._applies_to_all = None
 
@@ -325,7 +338,8 @@ class FirewallAction(object):
           bool: Whether this action is a subset of the other action.
         """
         return (self.action == other.action and
-                (other.applies_to_all or
+                (other.applies_to_all or not
+                 other.expanded_rules or
                  all([
                      self.ports_are_subset(
                          self.expanded_rules.get(protocol, []),
@@ -342,7 +356,8 @@ class FirewallAction(object):
           bool: Whether this action is a superset of the other action.
         """
         return (self.action == other.action and
-                (self.applies_to_all or
+                (self.applies_to_all or not
+                 self.expanded_rules or
                  all([
                      self.ports_are_subset(
                          other.expanded_rules.get(protocol, []),
@@ -396,7 +411,7 @@ def ips_in_list(ips, ips_list):
     Returns:
       bool: Whether the ips are all in the given ips_list.
     """
-    if not ips:
+    if not ips or not ips_list:
         return True
     for ip_addr in ips:
         if not ips_list:
