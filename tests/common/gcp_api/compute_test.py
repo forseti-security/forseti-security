@@ -125,6 +125,12 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                                                 metric='SNAPSHOTS')
         self.assertEquals(fake_compute.GET_QUOTA_RESPONSE, results)
 
+    def test_get_quota_no_metric(self):
+        """Test get quota with no metrics"""
+        http_mocks.mock_http_response(fake_compute.GET_PROJECT_RESPONSE)
+        with self.assertRaises(KeyError):
+            list(self.gce_api_client.get_quota(self.project_id, metric=' '))
+
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_get_quota_errors(self, name, response, status,
                                        expected_exception):
