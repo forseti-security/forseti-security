@@ -121,7 +121,8 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         """Test get quota."""
         http_mocks.mock_http_response(fake_compute.GET_PROJECT_RESPONSE)
 
-        results = self.gce_api_client.get_quota(self.project_id)
+        results = self.gce_api_client.get_quota(self.project_id,
+                                                metric='SNAPSHOTS')
         self.assertEquals(fake_compute.GET_QUOTA_RESPONSE, results)
 
     def test_get_firewall_quota(self):
@@ -129,7 +130,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_compute.GET_PROJECT_RESPONSE)
 
         results = self.gce_api_client.get_firewall_quota(self.project_id)
-        print results
+        self.assertEquals(fake_compute.GET_FIREWALL_QUOTA_RESPONSE, results)
 
     def test_get_networks(self):
         """Test get networks."""
