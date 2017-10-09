@@ -117,13 +117,20 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(expected_exception):
             list(self.gce_api_client.get_firewall_rules(self.project_id))
 
-    @parameterized.parameterized.expand(ERROR_TEST_CASES)
-    def test_get_global_operation(self, name, response, status,
-                                  expected_exception):
+    def test_get_global_operation(self):
         """Test get_global_operations"""
         http_mocks.mock_http_response(fake_compute.GLOBAL_OPERATION_RESPONSE)
         results = self.gce_api_client.get_global_operation(
             self.project_id, operation_id=fake_compute.FAKE_OPERATION_ID)
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_global_operation_errors(self, name, response, status,
+                                       expected_exception):
+        """Verify error conditions for get global operation."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_global_operation(
+                self.project_id, operation_id=fake_compute.FAKE_OPERATION_ID))
 
     def test_get_quota(self):
         """Test get quota."""
