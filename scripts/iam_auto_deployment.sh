@@ -372,7 +372,7 @@ then
 		fi
 	done
 else
-	BRANCH="master"
+	BRANCHNAME="master"
 fi
 sed -i -e 's/BRANCHNAME/'$BRANCHNAME'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
