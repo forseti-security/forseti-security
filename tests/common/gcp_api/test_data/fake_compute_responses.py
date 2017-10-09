@@ -1542,3 +1542,19 @@ EXPECTED_SUBNETWORKS_LIST_SELFLINKS = frozenset([
     "{}/regions/us-central1/subnetworks/default1".format(BASE_URL),
     "{}/regions/us-central1/subnetworks/default2".format(BASE_URL)
 ])
+
+GLOBAL_OPERATIONS_RESPONSE = """
+    {
+      "kind": "compute#operation",
+      "id": "1234",
+      "name": "operation-1234",
+      "operationType": "delete",
+      "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/global/firewalls/test-1234",
+      "targetId": "123456",
+      "status": "PENDING",
+      "user": "mock_data@example.com",
+      "progress": 0,
+      "insertTime": "2017-08-08T10:37:55.413-07:00",
+      "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/operations/operation-1234"
+}
+"""

@@ -151,6 +151,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._disks = None
         self._firewalls = None
         self._forwarding_rules = None
+        self._global_operations = None
         self._instance_group_managers = None
         self._instance_groups = None
         self._instance_templates = None
@@ -203,6 +204,14 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             self._forwarding_rules = self._init_repository(
                 _ComputeForwardingRulesRepository)
         return self._forwarding_rules
+
+    @property
+    def global_operations(self):
+        """Returns a _ComputeGlobalOperationsRepository instance."""
+        if not self._global_operations:
+            self._global_operations = self._init_repository(
+                _ComputeGlobalOperationsRepository)
+        return self._global_operations
 
     @property
     def instance_group_managers(self):
@@ -366,6 +375,19 @@ class _ComputeForwardingRulesRepository(
         return repository_mixins.ListQueryMixin.list(self, resource, **kwargs)
     # pylint: enable=arguments-differ
 
+class _ComputeGlobalOperationsRepository(
+        repository_mixins.GetQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Global Operations repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeGlobalOperationsRepository, self).__init__(
+            component='globalOperations', entity_field='operation', **kwargs)
 
 class _ComputeInstanceGroupManagersRepository(
         repository_mixins.AggregatedListQueryMixin,
@@ -655,6 +677,28 @@ class ComputeClient(object):
                                                        paged_results,
                                                        'forwardingRules')
         return results
+
+    def get_global_operations(self, project_id, operation_id):
+        """Get the Operations Status
+        Args:
+            project_id (str): The project id.
+            operation_id (str): The operation id.
+
+        Returns:
+            dict: Global Operation status and info.
+            https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+        Raises:
+            apiError: Returns if the api is not enabled or executable.
+        """
+        try:
+            return self.repository.global_operations.get(
+                project_id, operation_id)
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
 
     def get_instance_group_instances(self, project_id, instance_group_name,
                                      region=None, zone=None):
