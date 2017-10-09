@@ -17,12 +17,14 @@ package google.cloud.security.enforcer.enforcer_log;
 
 enum RunContext {
   // how was this result generated
+  RUN_CONTEXT_UNSPECIFIED = 0;
   ENFORCER_BATCH = 1;        // Standard enforcement run
   ENFORCER_ONE_PROJECT = 2;  // single-project enforcement
   ROLLBACK_ONE_PROJECT = 3;  // single-project rollback
 }
 
 enum EnforcementStatus {
+  ENFORCEMENT_STATUS_UNSPECIFIED = 0;
   SUCCESS = 1;
   ERROR = 2;
   SKIPPED = 3;
@@ -84,7 +86,7 @@ message ProjectResult {
   optional string project_id = 1;     // unique among non-deleted projects
   optional int64 project_number = 2;  // globally unique
 
-  optional int64 timestamp_sec = 3;  // Time project enforcement occured
+  optional int64 timestamp_sec = 3;  // Time project enforcement occurred
   optional int64 batch_id = 4;
 
   // How this entry was generated
@@ -103,4 +105,3 @@ message EnforcerLog {
   repeated ProjectResult results = 1;
   optional BatchResult summary = 2;
 }
-

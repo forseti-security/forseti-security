@@ -69,34 +69,34 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(expected_exception):
             list(self.gce_api_client.get_backend_services(self.project_id))
 
-    def test_get_forwarding_rules(self):
-        """Test get forwarding rules."""
+    def test_get_disks(self):
+        """Test get disks."""
         http_mocks.mock_http_response(
-            fake_compute.FORWARDING_RULES_AGGREGATED_LIST)
+            fake_compute.DISKS_AGGREGATED_LIST)
 
-        results = self.gce_api_client.get_forwarding_rules(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_FORWARDING_RULE_NAMES,
-                          [r.get('name') for r in results])
+        results = self.gce_api_client.get_disks(self.project_id)
+        self.assertEquals(fake_compute.EXPECTED_DISKS_SELFLINKS,
+                          [r.get('selfLink') for r in results])
 
-    def test_get_forwarding_rules_by_region(self):
-        """Test get forwarding rules by region."""
-        http_mocks.mock_http_response(fake_compute.FORWARDING_RULES_LIST)
+    def test_get_disks_by_zone(self):
+        """Test get disks rules by zone."""
+        http_mocks.mock_http_response(fake_compute.DISKS_LIST)
 
-        results = self.gce_api_client.get_forwarding_rules(
-            self.project_id, fake_compute.FAKE_FORWARDING_RULE_REGION)
-        self.assertEquals(fake_compute.EXPECTED_FORWARDING_RULE_NAMES,
-                          [r.get('name') for r in results])
+        results = self.gce_api_client.get_disks(
+            self.project_id, fake_compute.FAKE_DISK_ZONE)
+        self.assertEquals(fake_compute.EXPECTED_DISKS_SELFLINKS,
+                          [r.get('selfLink') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
-    def test_get_forwarding_rule_errors(self, name, response, status,
-                                        expected_exception):
-        """Verify error conditions for get forwarding rules."""
+    def test_get_disks_errors(self, name, response, status,
+                              expected_exception):
+        """Verify error conditions for get disks."""
         http_mocks.mock_http_response(response, status)
         with self.assertRaises(expected_exception):
-            list(self.gce_api_client.get_forwarding_rules(self.project_id))
+            list(self.gce_api_client.get_disks(self.project_id))
         with self.assertRaises(expected_exception):
-            list(self.gce_api_client.get_forwarding_rules(
-                self.project_id, fake_compute.FAKE_FORWARDING_RULE_REGION))
+            list(self.gce_api_client.get_disks(
+                self.project_id, fake_compute.FAKE_DISK_ZONE))
 
     def test_get_firewall_rules(self):
         """Test get firewall rules."""
@@ -132,25 +132,6 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         results = self.gce_api_client.get_firewall_quota(self.project_id)
         self.assertEquals(fake_compute.GET_FIREWALL_QUOTA_RESPONSE, results)
 
-    def test_get_networks(self):
-        """Test get networks."""
-        mock_responses = []
-        for page in fake_compute.LIST_NETWORKS_RESPONSES:
-            mock_responses.append(({'status': '200'}, page))
-        http_mocks.mock_http_response_sequence(mock_responses)
-
-        results = self.gce_api_client.get_networks(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_NETWORK_NAME,
-                          [r.get('name') for r in results])
-
-    @parameterized.parameterized.expand(ERROR_TEST_CASES)
-    def test_get_network_errors(self, name, response, status,
-                                       expected_exception):
-        """Verify error conditions for get networks."""
-        http_mocks.mock_http_response(response, status)
-        with self.assertRaises(expected_exception):
-            list(self.gce_api_client.get_networks(self.project_id))
-
     def test_get_instances(self):
         """Test get instances."""
         http_mocks.mock_http_response(fake_compute.INSTANCES_AGGREGATED_LIST)
@@ -178,6 +159,54 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(expected_exception):
             list(self.gce_api_client.get_instances(
                 self.project_id, fake_compute.FAKE_INSTANCE_ZONE))
+
+    def test_get_networks(self):
+        """Test get networks."""
+        mock_responses = []
+        for page in fake_compute.LIST_NETWORKS_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        results = self.gce_api_client.get_networks(self.project_id)
+        self.assertEquals(fake_compute.EXPECTED_NETWORK_NAME,
+                          [r.get('name') for r in results])
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_network_errors(self, name, response, status,
+                                       expected_exception):
+        """Verify error conditions for get networks."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_networks(self.project_id))
+
+    def test_get_forwarding_rules(self):
+        """Test get forwarding rules."""
+        http_mocks.mock_http_response(
+            fake_compute.FORWARDING_RULES_AGGREGATED_LIST)
+
+        results = self.gce_api_client.get_forwarding_rules(self.project_id)
+        self.assertEquals(fake_compute.EXPECTED_FORWARDING_RULE_NAMES,
+                          [r.get('name') for r in results])
+
+    def test_get_forwarding_rules_by_region(self):
+        """Test get forwarding rules by region."""
+        http_mocks.mock_http_response(fake_compute.FORWARDING_RULES_LIST)
+
+        results = self.gce_api_client.get_forwarding_rules(
+            self.project_id, fake_compute.FAKE_FORWARDING_RULE_REGION)
+        self.assertEquals(fake_compute.EXPECTED_FORWARDING_RULE_NAMES,
+                          [r.get('name') for r in results])
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_forwarding_rules_errors(self, name, response, status,
+                                         expected_exception):
+        """Verify error conditions for get forwarding rules."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_forwarding_rules(self.project_id))
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_forwarding_rules(
+                self.project_id, fake_compute.FAKE_FORWARDING_RULE_REGION))
 
     def test_get_instance_group_instances_by_zone(self):
         """Test get instances group instances by zone."""
@@ -228,6 +257,24 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                 self.project_id, fake_compute.FAKE_INSTANCE_GROUP,
                 region=fake_compute.FAKE_INSTANCE_GROUP_REGION))
 
+    def test_get_instance_group_managers(self):
+        """Test get instance group managers."""
+        http_mocks.mock_http_response(
+            fake_compute.INSTANCE_GROUP_MANAGERS_AGGREGATED_LIST)
+
+        results = self.gce_api_client.get_instance_group_managers(
+            self.project_id)
+        self.assertEquals(fake_compute.EXPECTED_INSTANCE_GROUP_MANAGER_NAMES,
+                          [r.get('name') for r in results])
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_instance_group_managers_errors(self, name, response, status,
+                                                expected_exception):
+        """Verify error conditions for get instance group managers."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.get_instance_group_managers(self.project_id)
+
     def test_get_instance_groups(self):
         """Test get instance groups."""
         mock_responses = [
@@ -263,30 +310,59 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
-    def test_get_instance_templatess_errors(self, name, response, status,
-                                            expected_exception):
+    def test_get_instance_templates_errors(self, name, response, status,
+                                           expected_exception):
         """Verify error conditions for get instance templates."""
         http_mocks.mock_http_response(response, status)
         with self.assertRaises(expected_exception):
             list(self.gce_api_client.get_instance_templates(self.project_id))
 
-    def test_get_instance_group_managers(self):
-        """Test get instance templates."""
-        http_mocks.mock_http_response(
-            fake_compute.INSTANCE_GROUP_MANAGERS_AGGREGATED_LIST)
+    def test_get_instances(self):
+        """Test get instances."""
+        http_mocks.mock_http_response(fake_compute.INSTANCES_AGGREGATED_LIST)
 
-        results = self.gce_api_client.get_instance_group_managers(
-            self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_GROUP_MANAGER_NAMES,
+        results = self.gce_api_client.get_instances(self.project_id)
+        self.assertEquals(fake_compute.EXPECTED_INSTANCE_NAMES,
+                          [r.get('name') for r in results])
+
+    def test_get_instances_by_zone(self):
+        """Test get instances by zone."""
+        http_mocks.mock_http_response(fake_compute.INSTANCES_LIST)
+
+        results = self.gce_api_client.get_instances(
+            self.project_id, fake_compute.FAKE_INSTANCE_ZONE)
+        self.assertEquals(fake_compute.EXPECTED_INSTANCE_NAMES,
                           [r.get('name') for r in results])
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
-    def test_get_instance_group_managers_errors(self, name, response, status,
-                                                expected_exception):
-        """Verify error conditions for get instance templates."""
+    def test_get_instances_errors(self, name, response, status,
+                                  expected_exception):
+        """Verify error conditions for get instances."""
         http_mocks.mock_http_response(response, status)
         with self.assertRaises(expected_exception):
-            self.gce_api_client.get_instance_group_managers(self.project_id)
+            list(self.gce_api_client.get_instances(self.project_id))
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_instances(
+                self.project_id, fake_compute.FAKE_INSTANCE_ZONE))
+
+    def test_get_networks(self):
+        """Test get networks."""
+        mock_responses = []
+        for page in fake_compute.LIST_NETWORKS_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        results = self.gce_api_client.get_networks(self.project_id)
+        self.assertEquals(fake_compute.EXPECTED_NETWORK_NAME,
+                          [r.get('name') for r in results])
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_networks_errors(self, name, response, status,
+                                 expected_exception):
+        """Verify error conditions for get networks."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_networks(self.project_id))
 
     def test_get_project(self):
         """Test get project."""
@@ -303,6 +379,38 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(response, status)
         with self.assertRaises(expected_exception):
             self.gce_api_client.get_project(self.project_id)
+
+    def test_get_subnetworks(self):
+        """Test get subnetworks."""
+        mock_responses = []
+        for page in fake_compute.SUBNETWORKS_AGGREGATED_LIST:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        results = self.gce_api_client.get_subnetworks(self.project_id)
+        self.assertEquals(
+            fake_compute.EXPECTED_SUBNETWORKS_AGGREGATEDLIST_SELFLINKS,
+            frozenset([r.get('selfLink') for r in results]))
+
+    def test_get_subnetworks_by_region(self):
+        """Test get subnetworks by region."""
+        http_mocks.mock_http_response(fake_compute.SUBNETWORKS_LIST)
+
+        results = self.gce_api_client.get_subnetworks(
+            self.project_id, fake_compute.FAKE_SUBNETWORK_REGION)
+        self.assertEquals(fake_compute.EXPECTED_SUBNETWORKS_LIST_SELFLINKS,
+                          frozenset([r.get('selfLink') for r in results]))
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_subnetworks_errors(self, name, response, status,
+                                    expected_exception):
+        """Verify error conditions for get subnetworks."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_subnetworks(self.project_id))
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_subnetworks(
+                self.project_id, fake_compute.FAKE_SUBNETWORK_REGION))
 
     def test_is_api_enabled_true(self):
         """Verify that a positive response from the API returns True."""

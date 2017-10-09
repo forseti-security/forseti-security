@@ -21,3 +21,12 @@ rules:
       - type: organization
         resource_ids:
           - YOUR_ORG_ID / YOUR_PROJECT_ID
+  - name: sample cloudsql rule to search for publicly exposed instances (SSL enabled)
+    instance_name: '*'
+    authorized_networks: '0.0.0.0/0'
+    ssl_enabled: 'True'
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
+
