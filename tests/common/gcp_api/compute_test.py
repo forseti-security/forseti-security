@@ -125,6 +125,14 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                                                 metric='SNAPSHOTS')
         self.assertEquals(fake_compute.GET_QUOTA_RESPONSE, results)
 
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_quota_errors(self, name, response, status,
+                                       expected_exception):
+        """Verify error conditions for get quota."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            list(self.gce_api_client.get_quota(self.project_id, metric=None))
+
     def test_get_firewall_quota(self):
         """Test get firewall quota"""
         http_mocks.mock_http_response(fake_compute.GET_PROJECT_RESPONSE)
