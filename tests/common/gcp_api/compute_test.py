@@ -132,53 +132,6 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         results = self.gce_api_client.get_firewall_quota(self.project_id)
         self.assertEquals(fake_compute.GET_FIREWALL_QUOTA_RESPONSE, results)
 
-    def test_get_instances(self):
-        """Test get instances."""
-        http_mocks.mock_http_response(fake_compute.INSTANCES_AGGREGATED_LIST)
-
-        results = self.gce_api_client.get_instances(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_NAMES,
-                          [r.get('name') for r in results])
-
-    def test_get_instances_by_zone(self):
-        """Test get instances by zone."""
-        http_mocks.mock_http_response(fake_compute.INSTANCES_LIST)
-
-        results = self.gce_api_client.get_instances(
-            self.project_id, fake_compute.FAKE_INSTANCE_ZONE)
-        self.assertEquals(fake_compute.EXPECTED_INSTANCE_NAMES,
-                          [r.get('name') for r in results])
-
-    @parameterized.parameterized.expand(ERROR_TEST_CASES)
-    def test_get_instances_errors(self, name, response, status,
-                                  expected_exception):
-        """Verify error conditions for get instances."""
-        http_mocks.mock_http_response(response, status)
-        with self.assertRaises(expected_exception):
-            list(self.gce_api_client.get_instances(self.project_id))
-        with self.assertRaises(expected_exception):
-            list(self.gce_api_client.get_instances(
-                self.project_id, fake_compute.FAKE_INSTANCE_ZONE))
-
-    def test_get_networks(self):
-        """Test get networks."""
-        mock_responses = []
-        for page in fake_compute.LIST_NETWORKS_RESPONSES:
-            mock_responses.append(({'status': '200'}, page))
-        http_mocks.mock_http_response_sequence(mock_responses)
-
-        results = self.gce_api_client.get_networks(self.project_id)
-        self.assertEquals(fake_compute.EXPECTED_NETWORK_NAME,
-                          [r.get('name') for r in results])
-
-    @parameterized.parameterized.expand(ERROR_TEST_CASES)
-    def test_get_network_errors(self, name, response, status,
-                                       expected_exception):
-        """Verify error conditions for get networks."""
-        http_mocks.mock_http_response(response, status)
-        with self.assertRaises(expected_exception):
-            list(self.gce_api_client.get_networks(self.project_id))
-
     def test_get_forwarding_rules(self):
         """Test get forwarding rules."""
         http_mocks.mock_http_response(
