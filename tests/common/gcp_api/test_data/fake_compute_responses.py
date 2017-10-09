@@ -1543,7 +1543,7 @@ EXPECTED_SUBNETWORKS_LIST_SELFLINKS = frozenset([
     "{}/regions/us-central1/subnetworks/default2".format(BASE_URL)
 ])
 
-GLOBAL_OPERATIONS_RESPONSE = """
+GLOBAL_OPERATION_RESPONSE = """
     {
       "kind": "compute#operation",
       "id": "1234",
@@ -1558,3 +1558,5 @@ GLOBAL_OPERATIONS_RESPONSE = """
       "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/operations/operation-1234"
 }
 """
+
+FAKE_OPERATION_ID = "operation-1234"

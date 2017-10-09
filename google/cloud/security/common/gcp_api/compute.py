@@ -678,7 +678,7 @@ class ComputeClient(object):
                                                        'forwardingRules')
         return results
 
-    def get_global_operations(self, project_id, operation_id):
+    def get_global_operation(self, project_id, operation_id):
         """Get the Operations Status
         Args:
             project_id (str): The project id.
@@ -689,7 +689,9 @@ class ComputeClient(object):
             https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
 
         Raises:
-            apiError: Returns if the api is not enabled or executable.
+            ApiNotEnabledError: Returns if the api is not enabled.
+            ApiExecutionError: Returns if the api is not executable.
+
         """
         try:
             return self.repository.global_operations.get(
