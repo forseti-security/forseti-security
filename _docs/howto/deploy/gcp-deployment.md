@@ -119,7 +119,7 @@ other deployments):
 
 ### Customize Forseti Rules
 
-Customize your Forseti rules by following [this guide](http://forsetisecurity.org/docs/quickstarts/scanner/rules).
+Customize your Forseti rules by following [this guide]({% link _docs/quickstarts/scanner/rules.md %}).
 
 ### Move Configuration to GCS
 

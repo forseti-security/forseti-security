@@ -25,15 +25,15 @@ Prior to running the setup wizard, you will need:
 The setup wizard automatically determines setup information, generates a 
 deployment template, and creates a Forseti deployment.
 
-## Activate Google Cloud Shell
+### Activate Google Cloud Shell
 
-It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
+It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
 
   1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
   1. In the **Select a project** drop-down list at the top of the console, select the project where you want to deploy Forseti.
   1. On the top right of the console, click the icon to **Activate Google Cloud Shell**. The Cloud Shell panel opens at the bottom of the page.
 
-### Running setup
+### Run setup
   
   1. Once you've started Cloud Shell, download Forseti. The setup wizard is included:
   
@@ -78,6 +78,6 @@ It's best to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) t
   [Scanner]({% link _docs/quickstarts/scanner/index.md %}),
   and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %}).
   - Configure Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
-  - Enable [GSuite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
+  - Enable [G Suite Google Groups collection]({% link _docs/howto/configure/gsuite-group-collection.md %})
   for processing by Forseti.
   - Learn how to [change a deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
