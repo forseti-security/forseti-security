@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import threading
 import concurrent.futures
 from google.apputils import datelib
 
@@ -32,6 +33,9 @@ STATUS_SKIPPED = enforcer_log_pb2.SKIPPED
 STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
 
 LOGGER = log_util.get_logger(__name__)
+
+# Per thread storage.
+LOCAL_THREAD = threading.local()
 
 
 class BatchFirewallEnforcer(object):
@@ -65,8 +69,20 @@ class BatchFirewallEnforcer(object):
 
         self._project_sema = project_sema
         self._max_running_operations = max_running_operations
+        self._local = LOCAL_THREAD
 
-        self.compute = compute.ComputeClient(self.global_configs)
+    @property
+    def compute_client(self):
+        """A thread local instance of compute.ComputeClient.
+
+        Returns:
+            compute.ComputeClient: A Compute API client instance.
+        """
+        if not hasattr(self._local, 'compute_client'):
+            self._local.compute_client = compute.ComputeClient(
+                self.global_configs)
+
+        return self._local.compute_client
 
     def run(self, project_policies, prechange_callback=None,
             new_result_callback=None, add_rule_callback=None):
@@ -196,7 +212,7 @@ class BatchFirewallEnforcer(object):
         enforcer = project_enforcer.ProjectEnforcer(
             project_id,
             global_configs=self.global_configs,
-            compute_service=self.compute.service,
+            compute_service=self.compute_client.service,
             dry_run=self._dry_run,
             project_sema=self._project_sema,
             max_running_operations=self._max_running_operations)
