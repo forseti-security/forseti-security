@@ -33,7 +33,11 @@ class FirewallRule(object):
         """Firewall resource.
 
         Args:
-          kwargs (dict): Object properties"""
+          kwargs (dict): Object properties
+
+        Raises:
+          ValueError: if the allowed and denied rules aren't set properly.
+        """
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
         self.create_time = kwargs.get('firewall_rule_create_time')
@@ -51,10 +55,13 @@ class FirewallRule(object):
         self._target_tags = frozenset(parser.json_unstringify(
             kwargs.get('firewall_rule_target_tags', '[]')))
         self.allowed = parser.json_unstringify(
-            kwargs.get('firewall_rule_allowed', '[]'))
+            kwargs.get('firewall_rule_allowed'))
         self.denied = parser.json_unstringify(
-            kwargs.get('firewall_rule_denied', '[]'))
-        self._action = kwargs.get('firewall_rule_action', 'allow')
+            kwargs.get('firewall_rule_denied'))
+        if self.allowed and self.denied:
+            raise ValueError('Cannot have allowed and denied rules')
+        if self.allowed is None and self.denied is None:
+            raise ValueError('Either allowed or denied rules must be set')
         self._firewall_action = None
 
     @property
@@ -121,12 +128,14 @@ class FirewallRule(object):
           ValueError: If there are both allow and deny actions for a rule.
         """
         if not self._firewall_action:
-            action_dict = {
-                'firewall_rule_allowed': self.allowed,
-                'firewall_rule_denied': self.denied,
-                'firewall_rule_action': self._action,
-            }
-            self._firewall_action = FirewallAction(**action_dict)
+            if self.allowed:
+                self._firewall_action = FirewallAction(
+                    firewall_rules=self.allowed,
+                    firewall_rule_action=FirewallAction.ALLOW)
+            else:
+                self._firewall_action = FirewallAction(
+                    firewall_rules=self.denied,
+                    firewall_rule_action=FirewallAction.DENY)
         return self._firewall_action
 
     def __lt__(self, other):
@@ -190,6 +199,7 @@ class FirewallRule(object):
                 self.source_ranges == other.source_ranges and
                 self.destination_ranges == other.destination_ranges and
                 self.firewall_action == other.firewall_action)
+    # pylint: enable=protected-access
 
     # pylint: disable=protected-access
     def is_equivalent(self, other):
@@ -208,40 +218,44 @@ class FirewallRule(object):
                 self.source_ranges == other.source_ranges and
                 self.destination_ranges == other.destination_ranges and
                 self.firewall_action.is_equivalent(other.firewall_action))
+    # pylint: enable=protected-access
 
 
 class FirewallAction(object):
     """An association of allowed or denied ports and protocols."""
 
-    def __init__(self, firewall_rule_allowed=None, firewall_rule_denied=None,
-                 firewall_rule_action='allow'):
+    ALLOW = 'allow'
+    DENY = 'deny'
+    ANY_VALUE = '*'
+
+    def __init__(self, firewall_rules=None, firewall_rule_action='allow'):
         """Initialize.
 
         Args:
-          firewall_rule_allowed (list): A list of dictionaries of allowed ports
+          firewall_rules (list): A list of dictionaries of allowed ports
             and protocols.
-          firewall_rule_denied (list): A list of dictionaries of denied ports
-            and protocols.
-          firewall_rule_action (str): The action, either allow or deny.
+          firewall_rule_action (str): The action, either ALLOW or DENY.
 
         Raises:
           ValueError: If there are both allow and deny rules.
         """
-        if firewall_rule_allowed:
-            if firewall_rule_denied:
-                raise ValueError(
-                    'Rule cannot have deny (%s) and allow (%s) actions' %
-                    (firewall_rule_denied, firewall_rule_allowed))
-            self.action = 'allow'
-            self.rules = sort_rules(firewall_rule_allowed)
-        elif firewall_rule_denied:
-            self.action = 'deny'
-            self.rules = sort_rules(firewall_rule_denied)
+        if firewall_rule_action not in (FirewallAction.ALLOW,
+                                        FirewallAction.DENY):
+            raise ValueError(
+                'Firewall rule action must be either ALLOW or DENY, got: %s' % (
+                    firewall_rule_action))
+        self.action = firewall_rule_action
+        self._any_value = None
+        if firewall_rules == '*':
+            self._any_value = True
+            self.rules = []
+        elif firewall_rules:
+            self.rules = sort_rules(firewall_rules)
         else:
-            self.action = firewall_rule_action
             self.rules = []
 
         self._applies_to_all = None
+        self._any_value = None
 
         self._expanded_rules = {}
 
@@ -262,12 +276,27 @@ class FirewallAction(object):
         return self._applies_to_all
 
     @property
+    def any_value(self):
+        """Returns whether this rule matches any value.
+
+        Returns:
+          bool: Whether this rule matches any value.
+        """
+        if self._any_value is None:
+            self._any_value = False
+            if self.rules == '*':
+                self._any_value = True
+        return self._any_value
+
+    @property
     def expanded_rules(self):
         """Returns an expanded set of ports.
 
         Returns:
           list: A list of every string port number.
         """
+        if self.any_value:
+            return []
         if not self._expanded_rules:
             self._expanded_rules = {}
             for rule in self.rules:
@@ -320,13 +349,14 @@ class FirewallAction(object):
           bool: Whether these two FirewallActions are functionally equivalent.
         """
         return (self.action == other.action and
-                self.expanded_rules.keys() == other.expanded_rules.keys() and
-                all([
-                    self.ports_are_equal(
-                        self.expanded_rules.get(protocol, []),
-                        other.expanded_rules.get(protocol, []))
-                    for protocol in self.expanded_rules
-                ]))
+                (self.any_value or other.any_value or
+                 self.expanded_rules.keys() == other.expanded_rules.keys() and
+                 all([
+                     self.ports_are_equal(
+                         self.expanded_rules.get(protocol, []),
+                         other.expanded_rules.get(protocol, []))
+                     for protocol in self.expanded_rules
+                 ])))
 
     def __lt__(self, other):
         """Less than.
@@ -338,7 +368,9 @@ class FirewallAction(object):
           bool: Whether this action is a subset of the other action.
         """
         return (self.action == other.action and
-                (other.applies_to_all or not
+                (other.applies_to_all or
+                 self.any_value or
+                 other.any_value or not
                  other.expanded_rules or
                  all([
                      self.ports_are_subset(
@@ -356,7 +388,9 @@ class FirewallAction(object):
           bool: Whether this action is a superset of the other action.
         """
         return (self.action == other.action and
-                (self.applies_to_all or not
+                (self.applies_to_all or
+                 self.any_value or
+                 other.any_value or not
                  self.expanded_rules or
                  all([
                      self.ports_are_subset(
