@@ -7,7 +7,6 @@ This page describes how to create an AppScript to find, parse, and upload the
 summary email dispatched from Forseti Security to BigQuery.
 
 ## Before you begin
-
 To complete this guide, you'll need the following:
 
 - A Google Cloud Platform (GCP)
@@ -19,15 +18,12 @@ To complete this guide, you'll need the following:
   [billing enabled](https://cloud.google.com/billing/docs/how-to/modify-project#enable_billing_for_a_project).
 
 ## Setting up configurations
-
 ### Filtering your email notifications
-
 [Create a Gmail filter](https://support.google.com/mail/answer/6579) to
 automatically label email that has the subject "Inventory Snapshot Complete."
 You can use a simple label name like "Forseti."
 
 ### Creating an AppScript project
-
 1. Create an [AppScript](https://script.google.com/intro) project with the
    following function, and save it with a temporary name.
 
@@ -91,7 +87,6 @@ You can use a simple label name like "Forseti."
    **Resources > Advanced Google Services**.    
 
 ### Creating a BigQuery dataset and table
-
 1. Go to [BigQuery](https://bigquery.cloud.google.com/welcome/) and select
    the project you're using for this guide.
 1. On the project menu, click **Create new dataset** and type a name in the
@@ -104,12 +99,11 @@ You can use a simple label name like "Forseti."
    the following:
 
     ```
-    date:DATE,status:STRING,resource:STRING,count:INTEGER
+    date:STRING,status:STRING,resource:STRING,count:INTEGER
     ```
 1. Click **Create Table**.
 
 ### Configuring the AppScript project
-
 1. In your AppScript project, paste the names of the dataset and table you
    created as the values for the `gcp_bigquery_datasetid` and `gcp_bigquery_tabletid`
    variables:
