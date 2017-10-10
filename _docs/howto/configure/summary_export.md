@@ -6,18 +6,19 @@ order: 205
 This page describes how to create an AppScript to find, parse, and upload the
 summary email dispatched from Forseti Security to BigQuery.
 
-
 ## Setting up configurations
-1. First, create a filter in Gmail to automatically label the summary email,
+1. First, Create a GCP project and note the project-id for later.
+1. Enable billing and the BigQuery API.
+1. Then create a filter in Gmail to automatically label the summary email,
 e.g. "forseti".
 
 1. Create an [AppScript](https://script.google.com/intro) with the following
-function.
+function, save it with a temporary name.
 
     ```js
     gmail_label = "forseti";
     message_subject = "Inventory Snapshot Complete";
-    gcp_projectid = "" ;
+    gcp_projectname = "" ;
     gcp_bigquery_datasetid = "";
     gcp_bigquery_tableid =  "";
     
@@ -43,7 +44,7 @@ function.
            configuration: {
            load: {
            destinationTable: {
-           projectId: gcp_projectid,
+           projectId: gcp_projectname,
            datasetId: gcp_bigquery_datasetid,
            tableId: gcp_bigquery_tableid
            },
@@ -51,27 +52,25 @@ function.
            }
           }
          };
-         job = BigQuery.Jobs.insert(job, gcp_projectid, data);
+         job = BigQuery.Jobs.insert(job, gcp_projectname, data);
         }
       }
     }
     ```
-1. Once saved obtain the project id from `Resources > Google Cloud Platform`
-project and use that for the value of the `gcp_projectid` variable in the script.
+1. Once saved migrate the temporary AppScript project to the GCP project created
+ in the first step. You can do this in the `Resources > Cloud Platform Project`
+  menu by choosing "Change Project".
+
+1. After you moved the project to the project created in the first step then
+give the variable `gcp_projectname` the same value
 
     ```js
     ...
-    gcp_projectid = "project-id-11111";
+    gcp_projectname = "project-id-11111";
     ...
     ```
-1. Next enable the BigQuery API for the project in two places.
-    1. In the AppsScript at `Resources > Advanced Google Services`.
-    1. In the API & Services of the GCP Project.
-    
-    Note that by default AppsScript creates projects outside the organization.
-    To enable this API you will need to enable billing. This would be a good
-    time to [migrate](https://cloud.google.com/resource-manager/docs/migrating-projects-billing)
-    this project into an existing Organization.
+1. Next enable the BigQuery API in the AppScript project at
+`Resources > Advanced Google Services`.
     
 1. Create a Bigquery Dataset and corresponding Table. Choose to create an empty
 table and give it a name. Then choose the "Edit as Text" option specifying the
@@ -81,7 +80,7 @@ content below
     date:DATE,status:STRING,resource:STRING,count:INTEGER
     ```
 1. Insert the values from the just created Dataset and Tables into the
-`gcp_bigquery_datasetid` and `gcp_bigquery_projectid` variables of the script.
+`gcp_bigquery_datasetid` and `gcp_bigquery_projectname` variables of the script.
 
     ```js
     ...
