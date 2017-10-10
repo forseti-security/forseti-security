@@ -6,14 +6,30 @@ order: 205
 This page describes how to create an AppScript to find, parse, and upload the
 summary email dispatched from Forseti Security to BigQuery.
 
-## Setting up configurations
-1. First, Create a GCP project and note the project-id for later.
-1. Enable billing and the BigQuery API.
-1. Then create a filter in Gmail to automatically label the summary email,
-e.g. "forseti".
+## Before you begin
 
-1. Create an [AppScript](https://script.google.com/intro) with the following
-function, save it with a temporary name.
+To complete this guide, you'll need the following:
+
+- A Google Cloud Platform (GCP)
+  [Organization resource](https://cloud.google.com/resource-manager/docs/creating-managing-organization).
+- A Forseti Security installation with
+  [email notifications](http://forsetisecurity.org/docs/howto/configure/email-notification) enabled.
+- A GCP project with the
+  [BigQuery API enabled](https://pantheon.corp.google.com/flows/enableapi?apiid=bigquery) and
+  [billing enabled](https://cloud.google.com/billing/docs/how-to/modify-project#enable_billing_for_a_project).
+
+## Setting up configurations
+
+### Filtering your email notifications
+
+[Create a Gmail filter](https://support.google.com/mail/answer/6579) to
+automatically label email that has the subject "Inventory Snapshot Complete."
+You can use a simple label name like "Forseti."
+
+### Creating an AppScript project
+
+1. Create an [AppScript](https://script.google.com/intro) project with the
+   following function, and save it with a temporary name.
 
     ```js
     gmail_label = "forseti";
@@ -59,37 +75,57 @@ function, save it with a temporary name.
       }
     }
     ```
-1. Once saved migrate the temporary AppScript project to the GCP project created
- in the first step. You can do this in the `Resources > Cloud Platform Project`
-  menu by choosing "Change Project".
-
-1. After you moved the project to the project created in the first step then
-give the variable `gcp_projectname` the same value
+1. Migrate the temporary AppScript project to your GCP project:
+    1. Select **Resources > Cloud Platform project**.
+    1. On the **Cloud Platform project** dialog that appears, paste your
+       GCP Project ID, then click **Set Project**.
+1.  In your AppScript project, paste your GCP Project ID as the `gcp_projectname`
+    variable value:
 
     ```js
     ...
-    gcp_projectname = "project-id-11111";
+    gcp_projectname = "your_project_id";
     ...
     ```
-1. Next enable the BigQuery API in the AppScript project at
-`Resources > Advanced Google Services`.
-    
-1. Create a Bigquery Dataset and corresponding Table. Choose to create an empty
-table and give it a name. Then choose the "Edit as Text" option specifying the
-content below
+1. Enable the BigQuery API for the AppScript project under
+   **Resources > Advanced Google Services**.    
+
+### Creating a BigQuery dataset and table
+
+1. Go to [BigQuery](https://bigquery.cloud.google.com/welcome/) and select
+   the project you're using for this guide.
+1. On the project menu, click **Create new dataset** and type a name in the
+   **Dataset ID** box, then click **OK**.
+1. On the dataset menu, click **Create new table**.
+1. In the **Create Table** panel that appears, select **Create empty table**
+   next to **Source Data**.
+1. Add a **Destination table name**.
+1. Under **Schema**, click **Edit as Text**. In the box that appears, paste
+   the following:
 
     ```
     date:DATE,status:STRING,resource:STRING,count:INTEGER
     ```
-1. Insert the values from the just created Dataset and Tables into the
-`gcp_bigquery_datasetid` and `gcp_bigquery_projectname` variables of the script.
+1. Click **Create Table**.
+
+### Configuring the AppScript project
+
+1. In your AppScript project, paste the names of the dataset and table you
+   created as the values for the `gcp_bigquery_datasetid` and `gcp_bigquery_tabletid`
+   variables:
 
     ```js
     ...
-    gcp_bigquery_datasetid = "forseti";
-    gcp_bigquery_tableid= "summaries";
+    gcp_bigquery_datasetid = "your_dataset_id";
+    gcp_bigquery_tableid= "your_table_id";
     ...
     ```
+1. Configure the script to run daily:
+    1. Select **Edit > Current project's triggers**.
+    1. Click to add a new trigger.
+    1. On the **Hour timer** dropdown, select **Day timer**.
+    1. On the time dropdown, select the time you want the script to run, then
+       click **Save**.
 
-1. Configure trigger in Google App Script to launch every day in the
-`Edit > Current Project's Triggers`.
+The script will now run at the time you selected and export details from the Forseti
+notification email to BigQuery.
