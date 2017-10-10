@@ -800,6 +800,55 @@ class ComputeClient(object):
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
 
+    def get_quota(self, project_id, metric):
+        """Returns the quota for any metric
+
+        Args:
+            project_id (str): The project id.
+            metric (str): The metric name of the quota needed.
+
+        Returns:
+            dict: The quota of a requested metric in a dict.
+                Example:
+                {
+                  "metric": "FIREWALLS",
+                  "limit": 100.0,
+                  "usage": 9.0
+                }
+
+        Raises:
+            KeyError: Metric was not found in the project.
+        """
+        resource = self.get_project(project_id)
+        quotas = resource.get('quotas', [])
+        for quota in quotas:
+            if quota.get('metric', '') == metric:
+                return quota
+        raise KeyError(
+            "Passed in metric, %s, was not found for project id, %s." %
+            (metric, project_id))
+
+    def get_firewall_quota(self, project_id):
+        """Calls get_quota to request the firewall quota
+        Args:
+          project_id (str): The project id.
+
+        Returns:
+            dict: The quota of a requested metric in a dict.
+                Example:
+                {
+                  "metric": "FIREWALLS",
+                  "limit": 100.0,
+                  "usage": 9.0
+                }
+
+        Raises:
+            KeyError: Metric was not a firewall resource.
+        """
+        metric = 'FIREWALLS'
+        resource = self.get_quota(project_id, metric)
+        return resource
+
     def get_subnetworks(self, project_id, region=None):
         """Return the list of all subnetworks in the project.
 
