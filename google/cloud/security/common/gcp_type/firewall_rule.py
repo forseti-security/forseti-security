@@ -131,11 +131,11 @@ class FirewallRule(object):
             if self.allowed:
                 self._firewall_action = FirewallAction(
                     firewall_rules=self.allowed,
-                    firewall_rule_action=FirewallAction.ALLOW)
+                    firewall_rule_action='allow')
             else:
                 self._firewall_action = FirewallAction(
                     firewall_rules=self.denied,
-                    firewall_rule_action=FirewallAction.DENY)
+                    firewall_rule_action='deny')
         return self._firewall_action
 
     def __lt__(self, other):
@@ -224,9 +224,8 @@ class FirewallRule(object):
 class FirewallAction(object):
     """An association of allowed or denied ports and protocols."""
 
-    ALLOW = 'allow'
-    DENY = 'deny'
-    ANY_VALUE = '*'
+    VALID_ACTIONS = frozenset(['allow', 'deny'])
+    MATCH_ANY = '*'
 
     def __init__(self, firewall_rules=None, firewall_rule_action='allow'):
         """Initialize.
@@ -234,19 +233,18 @@ class FirewallAction(object):
         Args:
           firewall_rules (list): A list of dictionaries of allowed ports
             and protocols.
-          firewall_rule_action (str): The action, either ALLOW or DENY.
+          firewall_rule_action (str): The action, either allow or deny.
 
         Raises:
           ValueError: If there are both allow and deny rules.
         """
-        if firewall_rule_action not in (FirewallAction.ALLOW,
-                                        FirewallAction.DENY):
+        if firewall_rule_action not in self.VALID_ACTIONS:
             raise ValueError(
-                'Firewall rule action must be either ALLOW or DENY, got: %s' % (
+                'Firewall rule action must be either allow or deny, got: %s' % (
                     firewall_rule_action))
         self.action = firewall_rule_action
         self._any_value = None
-        if firewall_rules == '*':
+        if firewall_rules == ['*']:
             self._any_value = True
             self.rules = []
         elif firewall_rules:
@@ -283,9 +281,7 @@ class FirewallAction(object):
           bool: Whether this rule matches any value.
         """
         if self._any_value is None:
-            self._any_value = False
-            if self.rules == '*':
-                self._any_value = True
+            self._any_value = all(rule == self.MATCH_ANY for rule in self.rules)
         return self._any_value
 
     @property
@@ -293,19 +289,20 @@ class FirewallAction(object):
         """Returns an expanded set of ports.
 
         Returns:
-          list: A list of every string port number.
+          dict: A dict of protocol to all port numbers.
         """
-        if self.any_value:
-            return []
-        if not self._expanded_rules:
+        if self._expanded_rules:
             self._expanded_rules = {}
-            for rule in self.rules:
-                protocol = rule.get('IPProtocol')
-                ports = rule.get('ports', ['all'])
-                expanded_ports = set(expand_ports(ports))
-                current_ports = self._expanded_rules.get(protocol, set([]))
-                current_ports.update(expanded_ports)
-                self._expanded_rules[protocol] = current_ports
+        if not self._expanded_rules:
+            if not self.any_value:
+                self._expanded_rules = {}
+                for rule in self.rules:
+                    protocol = rule.get('IPProtocol')
+                    ports = rule.get('ports', ['all'])
+                    expanded_ports = set(expand_ports(ports))
+                    current_ports = self._expanded_rules.get(protocol, set([]))
+                    current_ports.update(expanded_ports)
+                    self._expanded_rules[protocol] = current_ports
         return self._expanded_rules
 
     @staticmethod
@@ -368,9 +365,9 @@ class FirewallAction(object):
           bool: Whether this action is a subset of the other action.
         """
         return (self.action == other.action and
-                (other.applies_to_all or
-                 self.any_value or
-                 other.any_value or not
+                (self.any_value or
+                 other.any_value or
+                 other.applies_to_all or not
                  other.expanded_rules or
                  all([
                      self.ports_are_subset(
@@ -388,9 +385,9 @@ class FirewallAction(object):
           bool: Whether this action is a superset of the other action.
         """
         return (self.action == other.action and
-                (self.applies_to_all or
-                 self.any_value or
-                 other.any_value or not
+                (self.any_value or
+                 other.any_value or
+                 self.applies_to_all or not
                  self.expanded_rules or
                  all([
                      self.ports_are_subset(
@@ -419,7 +416,9 @@ def sort_rules(rules):
       list: A list of sorted firewall rules.
     """
     sorted_rules = []
-    for rule in sorted(rules, key=lambda k: k.get('IPProtocol' '')):
+    if FirewallAction.MATCH_ANY in rules:
+        return rules
+    for rule in sorted(rules, key=lambda k: k.get('IPProtocol', '')):
         if 'ports' in rule:
             # Sort ports numerically handle ranges through sorting by start port
             rule['ports'] = sorted(rule['ports'],
