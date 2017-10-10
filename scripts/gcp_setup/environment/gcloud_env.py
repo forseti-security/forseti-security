@@ -111,6 +111,7 @@ class ForsetiGcpSetup(object):
         self.timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         self.timeonly = self.timestamp[8:]
         self.force_no_cloudshell = kwargs.get('no_cloudshell')
+        self.skip_iam_check = kwargs.get('no_iam_check')
         self.branch = kwargs.get('branch') or 'master'
 
         self.is_devshell = False
@@ -403,17 +404,20 @@ class ForsetiGcpSetup(object):
         User must be an org admin in order to assign a service account roles
         on the organization IAM policy.
         """
-        self._print_banner('Checking permissions')
+        if not self.skip_iam_check:
+            self._print_banner('Checking permissions')
 
-        if self._is_org_admin() and self._can_modify_project_iam():
-            print('You have the necessary roles to grant roles that Forseti '
-                  'needs. Continuing...')
+            if self._is_org_admin() and self._can_modify_project_iam():
+                print('You have the necessary roles to grant roles that '
+                      'Forseti needs. Continuing...')
+            else:
+                print('You do not have the necessary roles to grant roles that '
+                      'Forseti needs. Please have someone who is an Org Admin '
+                      'and either Project Editor or Project Owner for this '
+                      'project to run this setup. Exiting.')
+                sys.exit(1)
         else:
-            print('You do not have the necessary roles to grant roles that '
-                  'Forseti needs. Please have someone who is an Org Admin '
-                  'and either Project Editor or Project Owner for this project '
-                  'to run this setup. Exiting.')
-            sys.exit(1)
+            self._print_banner('Permission check skipped')
 
     def _is_org_admin(self):
         """Check if current user is an org admin.
