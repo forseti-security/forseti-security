@@ -244,18 +244,14 @@ class FirewallAction(object):
                     firewall_rule_action))
         self.action = firewall_rule_action
         self._any_value = None
-        if firewall_rules == ['*']:
-            self._any_value = True
-            self.rules = []
-        elif firewall_rules:
+        if firewall_rules:
             self.rules = sort_rules(firewall_rules)
         else:
             self.rules = []
 
         self._applies_to_all = None
-        self._any_value = None
 
-        self._expanded_rules = {}
+        self._expanded_rules = None
 
     @property
     def applies_to_all(self):
@@ -291,11 +287,9 @@ class FirewallAction(object):
         Returns:
           dict: A dict of protocol to all port numbers.
         """
-        if self._expanded_rules:
+        if self._expanded_rules is None:
             self._expanded_rules = {}
-        if not self._expanded_rules:
             if not self.any_value:
-                self._expanded_rules = {}
                 for rule in self.rules:
                     protocol = rule.get('IPProtocol')
                     ports = rule.get('ports', ['all'])
