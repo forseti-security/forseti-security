@@ -42,18 +42,20 @@ function, save it with a temporary name.
          var data = Utilities.newBlob(result, 'application/octet-stream')
          var job = {
            configuration: {
-           load: {
-           destinationTable: {
-           projectId: gcp_projectname,
-           datasetId: gcp_bigquery_datasetid,
-           tableId: gcp_bigquery_tableid
-           },
-           skipLeadingRows: 0
+             load: {
+               destinationTable: {
+               projectId: gcp_projectname,
+               datasetId: gcp_bigquery_datasetid,
+               tableId: gcp_bigquery_tableid
+               },
+             skipLeadingRows: 0
+             }
            }
-          }
          };
          job = BigQuery.Jobs.insert(job, gcp_projectname, data);
         }
+        Logger.log('Load job started. Check on the status of it here: ' +
+          'https://bigquery.cloud.google.com/jobs/%s', gcp_projectname);
       }
     }
     ```
