@@ -18,7 +18,12 @@ TRED='\e[91m'
 TYELLOW='\e[93m'
 TGREEN='\e[92m'
 TNC='\033[0m'
-repodir="/home/$USER/forseti-security"
+# Set the toplevel forseti folder.
+if command -v git > /dev/null; then
+	repodir="$(git rev-parse --show-toplevel 2> /dev/null || echo "/home/$USER/forseti-security")"
+else
+	repodir="/home/$USER/forseti-security"
+fi
 
 echo -e "${TGREEN}Welcome to IAM Explain${TNC}"
 
@@ -95,12 +100,19 @@ then
 elif [[ $ROOTTYPE == "folders" ]]
 then
 # Set folder ID
-	echo "Here are folders in your organization:"
-	gcloud alpha resource-manager folders list --organization=$ORGANIZATION_ID
+	FOLDER_LIST="$(gcloud alpha resource-manager folders list --organization=$ORGANIZATION_ID 2> /dev/null || echo "none")"
+	if [[ $FOLDER_LIST == "none" ]]
+	then
+		echo -e "${TRED}  Could not list all folders for your organization.${TNC}"
+		echo -e "  Try visiting https://console.cloud.google.com/cloud-resource-manager?organizationId=${ORGANIZATION_ID}"
+	else
+		echo "Here are folders in your organization:"
+		echo "${FOLDER_LIST}"
+	fi
 	folderNotChoose=true
 	while $folderNotChoose
 	do
-		echo "Choose one to build IAM Explain Inventory using the folder ID. Notice you can choose folders not listed above if you have access to."
+		echo "Enter a folder ID for which to build IAM Explain Inventory; you can choose an unlisted folder ID if you have access."
 		read FOLDER_ID
 		echo -e "Please confirm ${TRED}$FOLDER_ID${TNC} is the folder you want to build your IAM Explain inventory."
 		read -p "Is it correct?(y/n)" -n 1 -r
@@ -137,9 +149,10 @@ then
 fi
 
 # Get project information
-echo "Fetching deployment project ID"
+echo "Fetching deployment project ID from your Cloud SDK config"
 
-PROJECT_ID=$(gcloud info | grep "project: \[" | sed -e 's/^ *project: \[//' -e  's/\]$//g')
+PROJECT_ID="$(gcloud config get-value project)"
+echo "Found: ${PROJECT_ID}"
 
 # Checking user authority
 echo -e "${TYELLOW}Please make sure you have adequate permissions on GCP and GSuite in order to deploy IAM Explain ${TNC}"
@@ -359,7 +372,7 @@ then
 		fi
 	done
 else
-	BRANCH="master"
+	BRANCHNAME="master"
 fi
 sed -i -e 's/BRANCHNAME/'$BRANCHNAME'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
