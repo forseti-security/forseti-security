@@ -28,18 +28,21 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
-# Support older versions of apiclient without cache support
-SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
+CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
-# Default value num_retries within HttpRequest execute method
-NUM_HTTP_RETRIES = 5
+# Per request max wait timeout.
+HTTP_REQUEST_TIMEOUT = 30.0
 
 # Per thread storage.
 LOCAL_THREAD = threading.local()
 
-CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
-
 LOGGER = log_util.get_logger(__name__)
+
+# Default value num_retries within HttpRequest execute method
+NUM_HTTP_RETRIES = 5
+
+# Support older versions of apiclient without cache support
+SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 
 
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -63,8 +66,10 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
         object: A Resource object with methods for interacting with the service.
     """
     # The default logging of the discovery obj is very noisy in recent versions.
-    # Lower the default logging level of just this module to WARNING.
-    logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
+    # Lower the default logging level of just this module to WARNING unless
+    # debug is enabled.
+    if LOGGER.getEffectiveLevel() > logging.DEBUG:
+        logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
 
     discovery_kwargs = {
         'serviceName': service_name,
@@ -280,7 +285,7 @@ class GCPRepository(object):
         if self._use_cached_http and hasattr(self._local, 'http'):
             return self._local.http
 
-        http = httplib2.Http()
+        http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
         self._credentials.authorize(http=http)
         if self._use_cached_http:
             self._local.http = http
