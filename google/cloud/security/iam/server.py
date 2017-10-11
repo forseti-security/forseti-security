@@ -102,8 +102,8 @@ class AbstractInventoryConfig(dict):
 
     __metaclass__ = ABCMeta
 
-    def get_organization_id(self):
-        """Returns the organization id.
+    def get_root_resource_id(self):
+        """Returns the root resource id.
 
         Raises:
             NotImplementedError: Abstract.
@@ -143,7 +143,7 @@ class InventoryConfig(AbstractInventoryConfig):
     """Implements composed dependency injection for the inventory."""
 
     def __init__(self,
-                 organization_id,
+                 root_resource_id,
                  gsuite_sa_path,
                  gsuite_admin_email,
                  record_file=None,
@@ -153,20 +153,20 @@ class InventoryConfig(AbstractInventoryConfig):
 
         super(InventoryConfig, self).__init__(*args, **kwargs)
         self.service_config = None
-        self.organization_id = organization_id
+        self.root_resource_id = root_resource_id
         self.gsuite_sa_path = gsuite_sa_path
         self.gsuite_admin_email = gsuite_admin_email
         self.record_file = record_file
         self.replay_file = replay_file
 
-    def get_organization_id(self):
-        """Return the configured organization id.
+    def get_root_resource_id(self):
+        """Return the configured root resource id.
 
         Returns:
-            str: Organization ID.
+            str: Root resource id.
         """
 
-        return self.organization_id
+        return self.root_resource_id
 
     def get_gsuite_sa_path(self):
         """Return the gsuite service account path.
@@ -297,7 +297,7 @@ class ServiceConfig(AbstractServiceConfig):
 def serve(endpoint, services,
           explain_connect_string, forseti_connect_string,
           gsuite_sa_path, gsuite_admin_email,
-          organization_id, max_workers=32, wait_shutdown_secs=3):
+          root_resource_id, max_workers=32, wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC."""
 
     factories = []
@@ -308,7 +308,7 @@ def serve(endpoint, services,
         raise Exception("No services to start")
 
     # Setting up configurations
-    inventory_config = InventoryConfig(organization_id,
+    inventory_config = InventoryConfig(root_resource_id,
                                        gsuite_sa_path,
                                        gsuite_admin_email)
     config = ServiceConfig(inventory_config,
@@ -338,7 +338,7 @@ if __name__ == "__main__":
     EXPLAIN_DB = sys.argv[3] if len(sys.argv) > 3 else ''
     GSUITE_SA = sys.argv[4] if len(sys.argv) > 4 else ''
     GSUITE_ADMIN_EMAIL = sys.argv[5] if len(sys.argv) > 5 else ''
-    ORGANIZATION_ID = sys.argv[6] if len(sys.argv) > 6 else ''
+    ROOT_RESOURCE_ID = sys.argv[6] if len(sys.argv) > 6 else ''
     SVCS = sys.argv[7:] if len(sys.argv) > 7 else []
     serve(EP, SVCS, EXPLAIN_DB, FORSETI_DB,
-          GSUITE_SA, GSUITE_ADMIN_EMAIL, ORGANIZATION_ID)
+          GSUITE_SA, GSUITE_ADMIN_EMAIL, ROOT_RESOURCE_ID)

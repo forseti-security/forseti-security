@@ -57,7 +57,7 @@ resources:
     # This is the numeric ID of your organization, e.g. '433637338589'
     # Length may vary. You can get this value using the console or
     # by executing 'gcloud organizations list' in your cloud shell.
-    organization-id: ORGANIZATION_ID
+    root-resource-id: ROOT_RESOURCE_ID
 
     # EDIT REQUIRED
     # This is the service account that holds the security reviewer role

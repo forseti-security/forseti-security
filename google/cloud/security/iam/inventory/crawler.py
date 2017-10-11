@@ -117,11 +117,9 @@ def run_crawler(storage,
         'record_file': config.get_record_file(),
         }
 
-    orgid = 'organizations/{}'.format(config.get_organization_id())
-
+    root_id = config.get_root_resource_id()
     client = gcp.ApiClientImpl(client_config)
-    resource = resources.Organization.fetch(client, orgid)
-
+    resource = resources.from_root_id(client, root_id)
     config = CrawlerConfig(storage, progresser, client)
     crawler_impl = Crawler(config)
     progresser = crawler_impl.run(resource)

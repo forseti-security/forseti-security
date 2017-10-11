@@ -19,12 +19,12 @@ import os
 
 class GcpEnvironment(object):
     def __init__(self):
-        self.organization_id = os.environ.get('EXPLAIN_GCP_ORG_ID')
+        self.root_id = os.environ.get('EXPLAIN_GCP_ORG_ID')
         self.gsuite_sa = os.environ.get('EXPLAIN_GCP_GROUPS_SA')
         self.crawling_sa = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
         self.gsuite_admin_email = os.environ.get('EXPLAIN_GCP_CRAWLING_SA')
         self.passphrase = os.environ.get('EXPLAIN_GCP_PASSPHRASE')
-        if not all([self.organization_id,
+        if not all([self.root_id,
                     self.gsuite_sa,
                     self.crawling_sa,
                     self.gsuite_admin_email,

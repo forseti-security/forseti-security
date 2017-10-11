@@ -48,7 +48,7 @@ def GenerateConfig(context):
     EXPLAIN_DB_NAME = context.properties['explain-db-name']
     GSUITE_SERVICE_ACCOUNT_PATH = context.properties['gsuite-service-accout-path']
     GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
-    ORGANIZATION_ID = context.properties['organization-id']
+    ROOT_RESOURCE_ID = context.properties['root-resource-id']
 
     resources = []
 
@@ -181,7 +181,7 @@ systemctl start forseti
     EXPLAIN_DB_NAME,
     GSUITE_SERVICE_ACCOUNT_PATH,
     GSUITE_ADMIN_EMAIL,
-    ORGANIZATION_ID,
+    ROOT_RESOURCE_ID,
 
     # cloud_sql_proxy
     SQL_INSTANCE_CONN_STRING,
