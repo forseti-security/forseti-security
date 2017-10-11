@@ -1,4 +1,16 @@
-"""Tests for google3.experimental.users.mwwolters.forseti.forseti-security.tests.scanner.audit.fw_rules_engine."""
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import mock
 import json
@@ -451,6 +463,10 @@ class FwRulesEngineTest(ForsetiTestCase):
                   'rule_name': 'No 0.0.0.0/0 policy allowed',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0'],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('DELETE_FIREWALL_RULE', '0.0.0.0/0')),
+                  ],
               },
           ],
       ),
@@ -495,6 +511,10 @@ class FwRulesEngineTest(ForsetiTestCase):
                   'rule_name': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0'],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('DELETE_FIREWALL_RULE', '0.0.0.0/0')),
+                  ],
               },
               {
                   'resource_type': 'firewall_policy',
@@ -502,6 +522,10 @@ class FwRulesEngineTest(ForsetiTestCase):
                   'rule_name': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0 2'],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('DELETE_FIREWALL_RULE', '0.0.0.0/0 2')),
+                  ],
               },
           ],
       ),
@@ -577,6 +601,10 @@ class FwRulesEngineTest(ForsetiTestCase):
                   'rule_name': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 443 on https-server'],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('DELETE_FIREWALL_RULE', 'Any to 443 on https-server')),
+                  ],
               },
           ],
       ),
@@ -635,6 +663,10 @@ class FwRulesEngineTest(ForsetiTestCase):
                   'rule_name': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 443 on https-server'],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('DELETE_FIREWALL_RULE', 'Any to 443 on https-server')),
+                  ],
               },
               {
                   'resource_type': 'firewall_policy',
@@ -642,6 +674,11 @@ class FwRulesEngineTest(ForsetiTestCase):
                   'rule_name': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 80/443 to https-server and tag3'],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('DELETE_FIREWALL_RULE',
+                        'Any to 80/443 to https-server and tag3')),
+                  ],
               },
           ],
       ),
@@ -730,6 +767,11 @@ class FwRulesEngineTest(ForsetiTestCase):
                   'rule_name': 'Allow SSH to tag from 1.1.1.1',
                   'violation_type': 'FIREWALL_REQUIRED_VIOLATION',
                   'policy_names': ['Any to 443', 'Allow 22 from 1.1.1.1'],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('INSERT_FIREWALL_RULE',
+                        'Allow SSH to tag from 1.1.1.1')),
+                  ],
               },
           ],
       ),
@@ -852,6 +894,10 @@ class FwRulesEngineTest(ForsetiTestCase):
                       'SSH from 1.1.1.1', '443 from 10.0.0.0/8',
                       '80 from 10.0.0.0/8'
                   ],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('DELETE_FIREWALL_RULE', '80 from 10.0.0.0/8')),
+                  ],
               },
           ],
       ),
@@ -906,6 +952,10 @@ class FwRulesEngineTest(ForsetiTestCase):
                   'rule_name': 'Golden Policy',
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
                   'policy_names': ['SSH from 1.1.1.1', '80 from 10.0.0.0/8'],
+                  'recommended_actions': [
+                      ('Recommended Action %s: %s' %
+                       ('DELETE_FIREWALL_RULE', '80 from 10.0.0.0/8')),
+                  ],
               },
           ],
       ),
