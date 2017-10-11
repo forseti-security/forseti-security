@@ -135,7 +135,7 @@ notifier:
     # to send alerts for every violation found
     resources:
         - resource: policy_violations
-          should_notify: true
+          should_notify: false
           pipelines:
             - name: email_violations_pipeline
               configuration:
