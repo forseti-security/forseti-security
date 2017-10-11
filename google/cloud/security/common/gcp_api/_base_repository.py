@@ -28,20 +28,21 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
-# Support older versions of apiclient without cache support
-SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
+CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
-# Default value num_retries within HttpRequest execute method
-NUM_HTTP_RETRIES = 5
+# Per request max wait timeout.
+HTTP_REQUEST_TIMEOUT = 30.0
 
 # Per thread storage.
 LOCAL_THREAD = threading.local()
 
-CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
-
 LOGGER = log_util.get_logger(__name__)
 
-DEFAULT_HTTP_TIMEOUT = 30.0
+# Default value num_retries within HttpRequest execute method
+NUM_HTTP_RETRIES = 5
+
+# Support older versions of apiclient without cache support
+SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 
 
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -284,7 +285,7 @@ class GCPRepository(object):
         if self._use_cached_http and hasattr(self._local, 'http'):
             return self._local.http
 
-        http = httplib2.Http(timeout=DEFAULT_HTTP_TIMEOUT)
+        http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
         self._credentials.authorize(http=http)
         if self._use_cached_http:
             self._local.http = http
