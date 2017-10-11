@@ -242,6 +242,7 @@ class FirewallAction(object):
             raise ValueError(
                 'Firewall rule action must be either allow or deny, got: %s' % (
                     firewall_rule_action))
+        assert isinstance(firewall_rules, list)
         self.action = firewall_rule_action
         self._any_value = None
         if firewall_rules:

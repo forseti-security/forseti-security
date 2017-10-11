@@ -123,13 +123,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.1']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.2']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             False,
         ),
@@ -139,13 +139,13 @@ class FirewallRuleTest(ForsetiTestCase):
                                                                 '10.0.0.2']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             True,
         ),
@@ -155,12 +155,12 @@ class FirewallRuleTest(ForsetiTestCase):
                                                                 '10.0.0.2']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
                 'firewall_rule_direction': 'egress',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             True,
         ),
@@ -169,12 +169,12 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.1',
                                                                 '10.0.0.2']),
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
                 'firewall_rule_direction': 'egress',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             True,
         ),
@@ -184,11 +184,11 @@ class FirewallRuleTest(ForsetiTestCase):
                                                                 '10.0.0.2']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
-                'firewall_rule_allowed': json.dumps([])
+                'firewall_rule_allowed': json.dumps(['*'])
             },
             True,
         ),
@@ -222,13 +222,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             True,
         ),
@@ -237,13 +237,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.1']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.2']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
@@ -252,14 +252,14 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.1',
                                                                 '10.0.0.2']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             True,
         ),
@@ -267,14 +267,14 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
                 'firewall_rule_direction': 'egress',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.1',
                                                                 '10.0.0.2']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             True,
         ),
@@ -282,14 +282,14 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.1',
                                                                 '10.0.0.2']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             True,
         ),
@@ -298,13 +298,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
                 'firewall_rule_direction': 'egress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.1',
                                                                 '10.0.0.2']),
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             True,
         ),
@@ -338,13 +338,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
@@ -359,11 +359,11 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_direction': 'ingress',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_direction': 'egress',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
@@ -371,12 +371,12 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n2',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
@@ -385,13 +385,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t3', 't2']),
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
@@ -401,14 +401,14 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't5']),
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
@@ -419,7 +419,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_direction': 'ingress',
@@ -427,7 +427,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.0/24']),
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
@@ -438,7 +438,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
                 'firewall_rule_destination_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_direction': 'ingress',
@@ -446,7 +446,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
                 'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
@@ -489,13 +489,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
-                'firewall_rule_allowed': json.dumps('*'),
+                'firewall_rule_allowed': json.dumps(['*']),
             },
             False,
         ),
