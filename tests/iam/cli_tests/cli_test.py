@@ -25,8 +25,16 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.iam import cli
 
 CLIENT = mock.Mock()
+
 CLIENT.playground = CLIENT
-CLIENT.explainer = CLIENT
+
+CLIENT.inventory = CLIENT
+CLIENT.inventory.create = mock.Mock(return_value=iter(['test']))
+CLIENT.inventory.get = mock.Mock(return_value='test')
+CLIENT.inventory.delete = mock.Mock(return_value='test')
+
+CLIENT.explain = CLIENT
+CLIENT.explain.denormalize = mock.Mock(return_value=iter(['test']))
 
 
 class ArgumentParserError(Exception):
@@ -66,13 +74,39 @@ class ImporterTest(ForsetiTestCase):
          [],
          {}),
 
+        ('explainer delete_model foobar',
+         CLIENT.explain.delete_model,
+         ['foobar'],
+         {}),
+
+        ('explainer denormalize',
+         CLIENT.explain.denormalize,
+         [],
+         {}),
+
         ('playground list_members',
          CLIENT.playground.list_members,
          [''],
          {}),
+
+        ('inventory create --background --import_as "bar"',
+         CLIENT.inventory.create,
+         [True, 'bar'],
+         {}),
+
+        ('inventory get 1',
+         CLIENT.inventory.get,
+         [1],
+         {}),
+
+        ('inventory delete 1',
+         CLIENT.inventory.delete,
+         [1],
+         {}),
+
         ])
     def test_cli(self, test_cases):
-        """Foo."""
+        """Test if the CLI hits specific client methods."""
         for commandline, client_func, func_args, func_kwargs in test_cases:
             try:
                 args = shlex.split(commandline)

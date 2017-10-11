@@ -63,6 +63,7 @@ TEST_REQUIRES = [
     'mock==2.0.0',
     'SQLAlchemy==1.1.9',
     'parameterized==0.6.1',
+    'simple-crypt>=4.1.7',
 ]
 
 if sys.version_info < (2, 7):

@@ -41,5 +41,6 @@ RUN pip install -q --upgrade \
     mock \
     netaddr \
     parameterized \
-    pylint
+    pylint \
+    simple-crypt
 
