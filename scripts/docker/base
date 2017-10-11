@@ -22,6 +22,8 @@ FROM ubuntu:16.04
 RUN apt-get update && apt-get install -qq -y \
     curl \
     git \
+    libffi-dev \
+    libssl-dev \
     libmysqlclient-dev \
     python-pip \
     python-dev \
