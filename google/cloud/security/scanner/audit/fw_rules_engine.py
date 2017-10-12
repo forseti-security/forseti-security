@@ -36,7 +36,8 @@ class Rule(object):
                  verify_policies=None,
                  mode=scanner_rules.RuleMode.WHITELIST,
                  applies_to=scanner_rules.RuleAppliesTo.SELF,
-                 inherit_from_parents=False):
+                 inherit_from_parents=False,
+                 exact_match=True):
         """Initialize.
 
         Args:
@@ -46,10 +47,12 @@ class Rule(object):
           mode (RuleMode): The RuleMode for this rule.
           applies_to (RuleAppliesTo): The resources this rule applies to.
           inherit_from_parents (bool): Whether this rule inherits from parents.
+          exact_match (bool): Whether to exactly match required rules.
         """
         self.name = rule_name
         self._match_policies = match_policies
         self._match_rules = None
+        self._exact_match = exact_match
         self.mode = mode
         self._verify_policies = verify_policies
         self._verify_rules = None
@@ -124,7 +127,8 @@ class Rule(object):
         """
         recommended_actions = []
         for rule in self.match_rules:
-            if is_rule_exists_violation(rule, firewall_policies):
+            if is_rule_exists_violation(rule, firewall_policies,
+                                        self._exact_match):
                 recommended_action = self._create_recommendation(
                     'INSERT_FIREWALL_RULE', rule)
                 recommended_actions.append(recommended_action)
@@ -150,7 +154,8 @@ class Rule(object):
           iterable: A generator of RuleViolations.
         """
         for rule in self.match_rules:
-            if is_rule_exists_violation(rule, firewall_policies):
+            if is_rule_exists_violation(rule, firewall_policies,
+                                        self._exact_match):
                 recommended_action = self._create_recommendation(
                     'INSERT_FIREWALL_RULE', self)
                 yield self._create_violation(
@@ -271,14 +276,17 @@ def is_blacklist_violation(rules, policy):
     """
     return any([policy > rule for rule in rules])
 
-def is_rule_exists_violation(rule, policies):
+def is_rule_exists_violation(rule, policies, exact_match=True):
     """Checks if the rule is the same as one of the policies.
 
     Args:
       rule (FirweallRule): A FirewallRule.
       policies (list): A list of FirewallRule that must have the rule.
+      exact_match (bool): Whether to match the rule exactly.
 
     Returns:
       bool: If the required rule is in the policies.
     """
-    return not any([policy == rule for policy in policies])
+    if exact_match:
+        return not any([policy == rule for policy in policies])
+    return not any([policy.is_equilvalent(rule) for policy in policies])
