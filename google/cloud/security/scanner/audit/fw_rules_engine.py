@@ -125,24 +125,29 @@ class Rule(object):
         Yields:
           iterable: A generator of RuleViolations.
         """
-        recommended_actions = []
-        for rule in self.match_rules:
+        inserts = set([])
+        deletes = set([])
+        for i, rule in enumerate(self.match_rules):
             if is_rule_exists_violation(rule, firewall_policies,
                                         self._exact_match):
-                recommended_action = self._create_recommendation(
-                    'INSERT_FIREWALL_RULE', rule)
-                recommended_actions.append(recommended_action)
+                inserts.add('%s: rule %s' % (self.name, i))
 
         for policy in firewall_policies:
-            if not any(policy == rule for rule in self.match_rules):
-                recommended_action = self._create_recommendation(
-                    'DELETE_FIREWALL_RULE', policy)
-                recommended_actions.append(recommended_action)
+            if is_rule_exists_violation(policy, self.match_rules,
+                                        self._exact_match):
+                deletes.add(policy.name)
 
-        if recommended_actions:
+        updates = inserts & deletes
+        inserts, deletes = (inserts-deletes, deletes-inserts)
+
+        if inserts or deletes or updates:
             yield self._create_violation(
                 firewall_policies, 'FIREWALL_MATCHES_VIOLATION',
-                recommended_actions=[recommended_action])
+                recommended_actions={
+                    'INSERT_FIREWALL_RULES': list(inserts),
+                    'DELETE_FIREWALL_RULES': list(deletes),
+                    'UPDATE_FIREWALL_RULES': list(updates),
+                })
 
     def _yield_required_violations(self, firewall_policies):
         """Finds missing policies that are required.
@@ -153,14 +158,16 @@ class Rule(object):
         Yields:
           iterable: A generator of RuleViolations.
         """
-        for rule in self.match_rules:
+        for i, rule in enumerate(self.match_rules):
             if is_rule_exists_violation(rule, firewall_policies,
                                         self._exact_match):
-                recommended_action = self._create_recommendation(
-                    'INSERT_FIREWALL_RULE', self)
                 yield self._create_violation(
                     firewall_policies, 'FIREWALL_REQUIRED_VIOLATION',
-                    recommended_actions=[recommended_action])
+                    recommended_actions={
+                        'INSERT_FIREWALL_RULES': [
+                            '%s: rule %s' % (self.name, i)
+                        ],
+                    })
 
     def _yield_whitelist_violations(self, firewall_policies):
         """Finds policies that aren't whitelisted.
@@ -175,11 +182,11 @@ class Rule(object):
             if not any([policy > rule for rule in self.match_rules]):
                 continue
             if is_whitelist_violation(self.verify_rules, policy):
-                recommended_action = self._create_recommendation(
-                    'DELETE_FIREWALL_RULE', policy)
                 yield self._create_violation(
                     [policy], 'FIREWALL_WHITELIST_VIOLATION',
-                    recommended_actions=[recommended_action])
+                    recommended_actions={
+                        'DELETE_FIREWALL_RULES': [policy.name],
+                    })
 
     def _yield_blacklist_violations(self, firewall_policies):
         """Finds blacklisted policies.
@@ -194,11 +201,11 @@ class Rule(object):
             if not any([policy > rule for rule in self.match_rules]):
                 continue
             if is_blacklist_violation(self.verify_rules, policy):
-                recommended_action = self._create_recommendation(
-                    'DELETE_FIREWALL_RULE', policy)
                 yield self._create_violation(
                     [policy], 'FIREWALL_BLACKLIST_VIOLATION',
-                    recommended_actions=[recommended_action])
+                    recommended_actions={
+                        'DELETE_FIREWALL_RULES': [policy.name],
+                    })
 
     def _create_violation(self, policies, violation_type,
                           recommended_actions=None):
@@ -225,19 +232,6 @@ class Rule(object):
             policy_names=[p.name for p in policies],
             recommended_actions=recommended_actions,
         )
-
-    @staticmethod
-    def _create_recommendation(recommended_action, policy):
-        """Creates a recommendation string.
-
-        Args:
-          recommended_action (str): The type of action to take.
-          policy (str): The policy to take the action on.
-
-        Returns:
-          str: A recommended action string.
-        """
-        return 'Recommended Action %s: %s' % (recommended_action, policy.name)
 # pylint: enable=too-many-instance-attributes
 
 # Rule violation.
