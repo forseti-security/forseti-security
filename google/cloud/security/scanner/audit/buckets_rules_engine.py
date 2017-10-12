@@ -73,9 +73,9 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         resource_rules = self.rule_book.get_resource_rules()
 
         for rule in resource_rules:
-            violations = itertools.chain(violations,
-                                         rule.\
-                                         find_policy_violations(buckets_acls))
+            violations = itertools.chain(
+                violations,
+                rule.find_policy_violations(buckets_acls))
         return violations
 
     def add_rules(self, rules):
