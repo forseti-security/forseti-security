@@ -138,15 +138,15 @@ class Rule(object):
                 deletes.add(policy.name)
 
         updates = inserts & deletes
-        inserts, deletes = (inserts-deletes, deletes-inserts)
+        inserts, deletes = (inserts-updates, deletes-updates)
 
         if inserts or deletes or updates:
             yield self._create_violation(
                 firewall_policies, 'FIREWALL_MATCHES_VIOLATION',
                 recommended_actions={
-                    'INSERT_FIREWALL_RULES': list(inserts),
-                    'DELETE_FIREWALL_RULES': list(deletes),
-                    'UPDATE_FIREWALL_RULES': list(updates),
+                    'INSERT_FIREWALL_RULES': sorted(inserts),
+                    'DELETE_FIREWALL_RULES': sorted(deletes),
+                    'UPDATE_FIREWALL_RULES': sorted(updates),
                 })
 
     def _yield_required_violations(self, firewall_policies):
