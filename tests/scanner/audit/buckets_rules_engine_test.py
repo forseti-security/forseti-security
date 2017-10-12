@@ -21,6 +21,7 @@ import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.security.common.gcp_type import bucket_access_controls
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import base_rules_engine as bre
@@ -85,6 +86,46 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
+
+    def test_find_violation_for_publicly_exposed_acls(self):
+
+        rules_local_path = get_datafile_path(__file__,
+            'buckets_test_rules_1.yaml')
+        rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
+        rules_engine.build_rule_book()
+        rules_map = rules_engine.rule_book.resource_rules_map
+        allUsers_rule = rules_map[0]
+        allAuthenticatedUsers_rule = rules_map[1]
+
+        # Everything is allowed.
+        acl = bucket_access_controls.BucketAccessControls(
+            '*', '*', '*', '*', '*', '111111')
+        violation = allUsers_rule.find_policy_violations(acl)
+        self.assertEquals(0, len(list(violation)))
+
+        # Exposed to everyone in the world.
+        acl = bucket_access_controls.BucketAccessControls(
+            '*', 'allUsers', '*', '*', '*', '111111')
+        violation = allUsers_rule.find_policy_violations(acl)
+        self.assertEquals(1, len(list(violation)))
+
+        # Test case sensitivity.
+        acl = bucket_access_controls.BucketAccessControls(
+            '*', 'AllUsers', '*', '*', '*', '111111')
+        violation = allUsers_rule.find_policy_violations(acl)
+        self.assertEquals(0, len(list(violation)))
+
+        # Exposed to all google-authenticated users in the world.
+        acl = bucket_access_controls.BucketAccessControls(
+            '*', 'allAuthenticatedUsers', '*', '*', '*', '111111')
+        violation = allAuthenticatedUsers_rule.find_policy_violations(acl)
+        self.assertEquals(1, len(list(violation)))
+
+        # Test case sensitivity.
+        acl = bucket_access_controls.BucketAccessControls(
+            '*', 'AllAuthenticatedUsers', '*', '*', '*', '111111')
+        violation = allAuthenticatedUsers_rule.find_policy_violations(acl)
+        self.assertEquals(0, len(list(violation)))
 
 
 if __name__ == '__main__':
