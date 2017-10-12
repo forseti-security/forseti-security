@@ -107,7 +107,6 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl = bucket_access_controls.BucketAccessControls(
             '*', 'allUsers', '*', '*', '*', '111111')
         violation = allUsers_rule.find_policy_violations(acl)
-        violation = list(violation)
         self.assertEquals(1, len(list(violation)))
 
         # Test case sensitivity.
@@ -120,7 +119,6 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl = bucket_access_controls.BucketAccessControls(
             '*', 'allAuthenticatedUsers', '*', '*', '*', '111111')
         violation = allAuthenticatedUsers_rule.find_policy_violations(acl)
-        violation = list(violation)
         self.assertEquals(1, len(list(violation)))
 
         # Test case sensitivity.

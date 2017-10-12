@@ -21,7 +21,7 @@ rules:
     role: '*'
     resource:
         - resource_ids:
-          - '*'
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
   - name: sample bucket acls rule to search for exposed buckets
     bucket: '*'
     entity: allAuthenticatedUsers
@@ -30,4 +30,4 @@ rules:
     role: '*' 
     resource:
         - resource_ids:
-          - '*'
+          - YOUR_ORG_ID / YOUR_PROJECT_ID
