@@ -113,7 +113,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl = bucket_access_controls.BucketAccessControls(
             '*', 'AllUsers', '*', '*', '*', '111111')
         violation = allUsers_rule.find_policy_violations(acl)
-        self.assertEquals(0, len(list(violation)))
+        self.assertEquals(1, len(list(violation)))
 
         # Exposed to all google-authenticated users in the world.
         acl = bucket_access_controls.BucketAccessControls(
@@ -125,7 +125,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl = bucket_access_controls.BucketAccessControls(
             '*', 'AllAuthenticatedUsers', '*', '*', '*', '111111')
         violation = allAuthenticatedUsers_rule.find_policy_violations(acl)
-        self.assertEquals(0, len(list(violation)))
+        self.assertEquals(1, len(list(violation)))
 
 
 if __name__ == '__main__':
