@@ -125,7 +125,7 @@ sudo apt-get upgrade -y
 # Forseti setup.
 sudo apt-get install -y git unzip
 # Forseti dependencies
-sudo apt-get install -y libmysqlclient-dev python-pip python-dev
+sudo apt-get install -y libffi-dev libssl-dev libmysqlclient-dev python-pip python-dev
 
 USER=ubuntu
 USER_HOME=/home/ubuntu
