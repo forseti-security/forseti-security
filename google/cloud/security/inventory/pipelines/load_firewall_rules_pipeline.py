@@ -70,6 +70,9 @@ class LoadFirewallRulesPipeline(base_pipeline.BasePipeline):
                        'firewall_rule_target_tags':
                            parser.json_stringify(
                                firewall_rule.get('targetTags')),
+                       'firewall_rule_source_service_accounts':
+                           parser.json_stringify(
+                               firewall_rule.get('sourceServiceAccounts')),
                        'firewall_rule_target_service_accounts':
                            parser.json_stringify(
                                firewall_rule.get('targetServiceAccounts')),
