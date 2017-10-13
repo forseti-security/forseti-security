@@ -24,6 +24,22 @@ from google.cloud.security.common.util import parser
 # pylint: disable=too-many-instance-attributes
 
 ALL_REPRESENTATIONS = ('all', '0-65355', '1-65535')
+ALLOWED_RULE_ITEMS = frozenset(('allowed', 'denied', 'description', 'direction',
+                                'name', 'network', 'priority', 'sourceRanges',
+                                'destinationRanges', 'sourceTags',
+                                'targetTags'))
+
+
+class Error(Exception):
+    """Base error class for the module."""
+
+
+class InvalidFirewallRuleError(Error):
+    """Raised if a firewall rule doesn't look like a firewall rule should."""
+
+
+class InvalidFirewallActionError(Error):
+    """Raised if a firewall action doesn't look like a firewall rule should."""
 
 
 class FirewallRule(object):
@@ -59,10 +75,167 @@ class FirewallRule(object):
         self.denied = parser.json_unstringify(
             kwargs.get('firewall_rule_denied'))
         if self.allowed and self.denied:
-            raise ValueError('Cannot have allowed and denied rules')
+            raise InvalidFirewallRuleError(
+                'Cannot have allowed and denied rules (%s, %s)' % (
+                    self.allowed, self.denied))
         if self.allowed is None and self.denied is None:
-            raise ValueError('Either allowed or denied rules must be set')
+            raise InvalidFirewallRuleError('Must have allowed or denied rules')
+        if parser.json_unstringify(kwargs.get('validate', 'false')):
+            self.validate()
         self._firewall_action = None
+
+    def as_json(self):
+      """Returns a valid JSON representation of this firewall rule.
+
+      This rule must be valid to return the representation.
+
+      Returns:
+        str: A string JSON dump of the firewall rule.
+
+      Raises:
+        InvalidFirewallRuleError: If the firewall rule is invalid.
+        InvalidFirewallActionError: If the firewall action is invalid.
+      """
+      self.validate()
+      firewall_dict = {
+        'direction': self.direction,
+        'network': self.network,
+      }
+      for key, value in [self.firewall_action.json_key(),
+                         ('sourceRanges', self._source_ranges),
+                         ('sourceTags', self._source_tags),
+                         ('targetTags', self._target_tags),
+                         ('destinationRanges', self._destination_ranges),
+                         ('priority', self._priority)]:
+          if value:
+              firewall_dict[key] = value
+      return json.dumps(firewall_dict, sort_keys=True)
+
+    def validate(self):
+        """Validates that a rule is valid and not a duplicate.
+
+        Validation is based on reference:
+        https://cloud.google.com/compute/docs/reference/beta/firewalls and
+        https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table
+        If add_rule_callback is set, this will also confirm that
+        add_rule_callback returns True for the rule, otherwise it will not add
+        the rule.
+
+        Args:
+          rule: The rule to validate.
+
+        Returns:
+          True if rule is valid
+
+        Raises:
+          DuplicateFirewallRuleNameError: Two or more rules have the same name.
+          InvalidFirewallRuleError: One or more rules failed validation.
+        """
+        self._validate_keys()
+        self._validate_direction()
+        self._validate_priority()
+        if not self.firewall_action:
+            raise InvalidFirewallRuleError('Rule missing action "%s"' % self)
+        else:
+            self.firewall_action.validate()
+
+        # TODO: Verify rule name matches regex of allowed
+        # names from reference
+
+        return True
+
+    def _validate_keys(self):
+        """Checks that required keys and value restrictions.
+
+        Required fields: name and network
+        Length restrictions:
+          * name <= 63 characters
+          * <= 256 values:
+            sourceRanges, sourceTags, targetTags, destinationRanges 
+
+        Raises:
+          InvalidFirewallRuleError: If keys don't meet requirements.
+        """
+        if not self.name:
+            raise InvalidFirewallRuleError(
+                'Rule missing required field "%s"' % 'name')
+        if not self.network:
+            raise InvalidFirewallRuleError(
+                'Rule missing required field "%s"' % 'network')
+
+        if len(self.name) > 63:
+            raise InvalidFirewallRuleError(
+                'Rule name exceeds length limit of 63 chars: "%s".' %
+                rule['name'])
+
+        max_256_value_keys = [
+            ('sourceRanges', self._source_ranges),
+            ('sourceTags', self._source_tags),
+            ('targetTags', self.target_tags),
+            ('destinationRanges', self._destination_ranges)
+        ]
+        for key, value in max_256_value_keys:
+            if value and len(value) > 256:
+                raise InvalidFirewallRuleError(
+                    'Rule entry "%s" must contain 256 or fewer values: "%s".'
+                    % (key, value))
+
+    def _validate_direction(self):
+        """Checks that the direction and associated fields are valid.
+
+        Raises:
+          InvalidFirewallRuleError: If:
+            * Direction is 'ingress' and
+              * there are no source ranges or tags
+              * _destination_ranges is set
+            * Direction is 'egress' and
+              * there are no source ranges or tags
+              * _destination_ranges is set
+        """
+        if self.direction == 'ingress':
+            if not self._source_ranges and not self._source_tags:
+                raise InvalidFirewallRuleError(
+                    'Ingress rule missing required field oneof '
+                    '"sourceRanges" or "sourceTags": "%s".' % self)
+
+            if self._destination_ranges:
+                raise InvalidFirewallRuleError(
+                    'Ingress rules cannot include "destinationRanges": "%s".'
+                    % self)
+
+        elif self.direction == 'egress':
+            if not self._destination_ranges:
+                raise InvalidFirewallRuleError(
+                    'Egress rule missing required field "destinationRanges":'
+                    '"%s".'% self)
+
+            if self._source_ranges or self._source_tags:
+                raise InvalidFirewallRuleError(
+                    'Egress rules cannot include "sourceRanges", "sourceTags":'
+                    '"%s".' % self)
+
+        else:
+            raise InvalidFirewallRuleError(
+                'Rule "direction" must be either "ingress" or "egress": "%s".'
+                % self)
+
+    def _validate_priority(self):
+        """Checks that the priority of the rule is a valid value.
+
+        Raises:
+          InvalidFirewallRuleError: If the priority can't be converted to an int
+            or if it is outside the allowed range.
+        """
+        if self._priority:
+            try:
+                priority = int(self._priority)
+            except ValueError:
+                raise InvalidFirewallRuleError(
+                    'Rule "priority" could not be converted to an integer: '
+                    '"%s".' % self)
+            if priority < 0 or priority > 65535:
+                raise InvalidFirewallRuleError(
+                    'Rule "priority" out of range 0-65535: "%s".' % self)
 
     @property
     def source_ranges(self):
@@ -239,7 +412,7 @@ class FirewallAction(object):
           ValueError: If there are both allow and deny rules.
         """
         if firewall_rule_action not in self.VALID_ACTIONS:
-            raise ValueError(
+            raise InvalidFirewallActionError(
                 'Firewall rule action must be either allow or deny, got: %s' % (
                     firewall_rule_action))
         self.action = firewall_rule_action
@@ -253,6 +426,32 @@ class FirewallAction(object):
         self._applies_to_all = None
 
         self._expanded_rules = None
+
+    def json_key(self):
+        """Gets the JSON key and values for the firewall action.
+
+        Returns:
+          tuple: Of key ('allowed' or 'denied') and the firewall rules.
+
+        Raises:
+          InvalidFirewallActionError: If a rule is not formatted for the API.
+        """
+        self.validate()
+        if self.action == 'allow':
+            return ('allowed', self.rules)
+        else:
+            return ('denied', self.rules)
+
+    def validate(self):
+        """Validates that the firewall rules are valid for use in the API.
+
+        Raises:
+          InvalidFirewallActionError: If a rule is not formatted for the API.
+        """
+        for rule in self.rules:
+            if 'IPProtocol' not in rule:
+                raise InvalidFirewallActionError(
+                    'Action must have field IPProtocol')
 
     @property
     def applies_to_all(self):

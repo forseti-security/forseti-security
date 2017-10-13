@@ -54,6 +54,122 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
+                'firewall_rule_priority': 'NaN',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+        (
+            {
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_priority': '-1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+        (
+            {
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_priority': '1000000000',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+    ])
+    def test_validate_priority_error(self, rule_dict):
+        rule = firewall_rule.FirewallRule(**rule_dict)
+        with self.assertRaises(firewall_rule.InvalidFirewallRuleError):
+            rule._validate_priority()
+
+    @parameterized.parameterized.expand([
+        (
+            {
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+        (
+            {
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_destination_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+        (
+            {
+                'firewall_rule_direction': 'egress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+        (
+            {
+                'firewall_rule_destination_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'egress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+        (
+            {
+                'firewall_rule_destination_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_source_tags': json.dumps(['t1']),
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'egress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+    ])
+    def test_validate_direction_error(self, rule_dict):
+        rule = firewall_rule.FirewallRule(**rule_dict)
+        with self.assertRaises(firewall_rule.InvalidFirewallRuleError):
+            rule._validate_direction()
+
+    @parameterized.parameterized.expand([
+        (
+            {
+                'firewall_rule_network': 'n1',
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+        (
+            {
+                'firewall_rule_name': 'n1',
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_allowed': json.dumps(
+                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+            },
+        ),
+    ])
+    def test_validate_keys_error(self, rule_dict):
+        rule = firewall_rule.FirewallRule(**rule_dict)
+        with self.assertRaises(firewall_rule.InvalidFirewallRuleError):
+            rule._validate_keys()
+
+    @parameterized.parameterized.expand([
+        (
+            {
+                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_direction': 'ingress',
+                'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
@@ -507,6 +623,68 @@ class FirewallRuleTest(ForsetiTestCase):
         rule_2 = firewall_rule.FirewallRule(**rule_2_dict)
         self.assertEqual(expected, rule_1.is_equivalent(rule_2))
 
+
+class FirewallActionTest(ForsetiTestCase):
+    """Tests for FirewallAction."""
+
+    @parameterized.parameterized.expand([
+        [{
+            'firewall_rules': [{}],
+        }],
+        [{
+            'firewall_rules':
+            [
+                {'IPProtocol': 'tcp', 'ports': ['21-23']},
+                {},
+            ],
+        }],
+    ])
+    def test_validate_errors(self, action_1_dict):
+        action = firewall_rule.FirewallAction(**action_1_dict)
+        with self.assertRaises(firewall_rule.InvalidFirewallActionError):
+          action.validate()
+
+    @parameterized.parameterized.expand([
+        [{
+            'firewall_rules': [{}],
+        }],
+        [{
+            'firewall_rules': [
+                {'IPProtocol': 'tcp', 'ports': ['21-23']},
+                {},
+            ],
+        }],
+    ])
+    def test_json_key_errors(self, action_dict):
+        action = firewall_rule.FirewallAction(**action_dict)
+        with self.assertRaises(firewall_rule.InvalidFirewallActionError):
+          action.json_key()
+
+    @parameterized.parameterized.expand([
+        (
+            {
+                'firewall_rules': [
+                    {'IPProtocol': 'tcp', 'ports': ['21-23']},
+                ],
+            },
+            'allowed', 
+        ),
+        (
+            {
+                'firewall_rules': [
+                    {'IPProtocol': 'tcp', 'ports': ['21-23']},
+                    {'IPProtocol': 'udp'},
+                ],
+            },
+            'allowed', 
+        ),
+    ])
+    def test_json_key(self, action_dict, direction):
+        action = firewall_rule.FirewallAction(**action_dict)
+        key, value = action.json_key()
+        self.assertEqual(direction, key)
+        self.assertEqual(action_dict['firewall_rules'], value)
+
     @parameterized.parameterized.expand([
         (
             {
@@ -628,7 +806,7 @@ class FirewallRuleTest(ForsetiTestCase):
             True,
         ),
     ])
-    def test_firewall_action_lt(self, action_1_dict, action_2_dict, expected):
+    def test_lt(self, action_1_dict, action_2_dict, expected):
         """Tests that action 1 < action 2 returns the correct value."""
         action_1 = firewall_rule.FirewallAction(**action_1_dict)
         action_2 = firewall_rule.FirewallAction(**action_2_dict)
@@ -740,7 +918,7 @@ class FirewallRuleTest(ForsetiTestCase):
             False,
         ),
     ])
-    def test_firewall_action_gt(self, action_1_dict, action_2_dict, expected):
+    def test_gt(self, action_1_dict, action_2_dict, expected):
         """Tests that action 1 > action 2 returns the correct value."""
         action_1 = firewall_rule.FirewallAction(**action_1_dict)
         action_2 = firewall_rule.FirewallAction(**action_2_dict)
@@ -800,7 +978,7 @@ class FirewallRuleTest(ForsetiTestCase):
             True,
         ),
     ])
-    def test_firewall_action_is_equivalent(
+    def test_is_equivalent(
             self, action_1_dict, action_2_dict, expected):
         """Tests that action 1 > action 2 returns the correct value."""
         action_1 = firewall_rule.FirewallAction(**action_1_dict)
