@@ -43,6 +43,7 @@ class LoadFirewallRulesTest(ForsetiTestCase):
                 self.configs,
                 self.mock_compute_client,
                 self.mock_dao))
+        self.maxDiff = None
 
     def test_can_transform_firewall_rules(self):
         """Test the firewall rules map can be transformed."""
