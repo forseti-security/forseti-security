@@ -95,6 +95,6 @@ def json_unstringify(json_to_objify, default=None):
     Returns:
         object: The un-stringified object.
     """
-    if not json_to_objify:
+    if not json_to_objify or not json.loads(json_to_objify):
         return default
     return json.loads(json_to_objify)
