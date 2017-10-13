@@ -85,15 +85,16 @@ def json_stringify(obj_to_jsonify):
     return json_str
 
 
-def json_unstringify(json_to_objify):
+def json_unstringify(json_to_objify, default=None):
     """Convert a json string to a python object.
 
     Args:
         json_to_objify (str): The json string.
+        default (object): The default value if no json string is passed in.
 
     Returns:
         object: The un-stringified object.
     """
     if not json_to_objify:
-        return None
+        return default
     return json.loads(json_to_objify)

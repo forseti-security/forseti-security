@@ -47,13 +47,19 @@ class FirewallRule(object):
         self._priority = kwargs.get('firewall_rule_priority')
         self.direction = kwargs.get('firewall_rule_direction')
         self._source_ranges = frozenset(parser.json_unstringify(
-            kwargs.get('firewall_rule_source_ranges', '[]')))
+            kwargs.get('firewall_rule_source_ranges'), default=list()))
         self._destination_ranges = frozenset(parser.json_unstringify(
-            kwargs.get('firewall_rule_destination_ranges', '[]')))
+            kwargs.get('firewall_rule_destination_ranges'), default=list()))
         self._source_tags = frozenset(parser.json_unstringify(
-            kwargs.get('firewall_rule_source_tags', '[]')))
+            kwargs.get('firewall_rule_source_tags'), default=list()))
         self._target_tags = frozenset(parser.json_unstringify(
-            kwargs.get('firewall_rule_target_tags', '[]')))
+            kwargs.get('firewall_rule_target_tags'), default=list()))
+        self._source_service_accounts = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_source_service_accounts'),
+            default=list()))
+        self._target_service_accounts = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_target_service_accounts'),
+            default=list()))
         self.allowed = parser.json_unstringify(
             kwargs.get('firewall_rule_allowed'))
         self.denied = parser.json_unstringify(
@@ -99,6 +105,24 @@ class FirewallRule(object):
           list: Sorted target tags.
         """
         return sorted(self._target_tags)
+
+    @property
+    def source_service_accounts(self):
+        """The sorted source tags for this policy.
+
+        Returns:
+          list: Sorted source tags.
+        """
+        return sorted(self._source_service_accounts)
+
+    @property
+    def target_service_accounts(self):
+        """The sorted target tags for this policy.
+
+        Returns:
+          list: Sorted target tags.
+        """
+        return sorted(self._target_service_accounts)
 
     @property
     def priority(self):
