@@ -28,7 +28,8 @@ ALL_REPRESENTATIONS = ('all', '0-65355', '1-65535')
 ALLOWED_RULE_ITEMS = frozenset(('allowed', 'denied', 'description', 'direction',
                                 'name', 'network', 'priority', 'sourceRanges',
                                 'destinationRanges', 'sourceTags',
-                                'targetTags'))
+                                'targetTags', 'sourceServiceAccounts',
+                                'targetServiceAccounts'))
 
 
 class Error(Exception):
@@ -107,33 +108,32 @@ class FirewallRule(object):
         firewall_dict = {
             'direction': self.direction,
             'network': self.network,
+            'name': self.name,
         }
-        for key, value in [self.firewall_action.json_key(),
-                           ('sourceRanges', list(self._source_ranges)),
-                           ('sourceTags', list(self._source_tags)),
-                           ('targetTags', list(self._target_tags)),
-                           ('destinationRanges',
-                            list(self._destination_ranges)),
-                           ('priority', self._priority)]:
+        for key, value in [
+            self.firewall_action.json_dict(),
+            ('sourceRanges', self.source_ranges),
+            ('sourceTags', self.source_tags),
+            ('targetTags', self.target_tags),
+            ('destinationRanges', self.destination_ranges),
+            ('priority', self._priority),
+            ('sourceServiceAccounts', self.source_service_accounts),
+            ('targetServiceAccounts', self.target_service_accounts)]:
             if value:
                 firewall_dict[key] = value
         return json.dumps(firewall_dict, sort_keys=True)
 
     def validate(self):
-        """Validates that a rule is valid and not a duplicate.
+        """Validates that a rule is valid.
 
         Validation is based on reference:
         https://cloud.google.com/compute/docs/reference/beta/firewalls and
         https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table
-        If add_rule_callback is set, this will also confirm that
-        add_rule_callback returns True for the rule, otherwise it will not add
-        the rule.
 
         Returns:
           bool: If rule is valid.
 
         Raises:
-          DuplicateFirewallRuleNameError: Two or more rules have the same name.
           InvalidFirewallRuleError: One or more rules failed validation.
         """
         self._validate_keys()
@@ -176,13 +176,35 @@ class FirewallRule(object):
         max_256_value_keys = [
             ('sourceRanges', self._source_ranges),
             ('sourceTags', self._source_tags),
-            ('targetTags', self.target_tags),
+            ('targetTags', self._target_tags),
             ('destinationRanges', self._destination_ranges)
         ]
         for key, value in max_256_value_keys:
             if value and len(value) > 256:
                 raise InvalidFirewallRuleError(
                     'Rule entry "%s" must contain 256 or fewer values: "%s".'
+                    % (key, value))
+
+        if self._source_tags:
+            if self._source_service_accounts or self._target_service_accounts:
+                raise InvalidFirewallRuleError(
+                    'sourceTags cannot be set when source/targetServiceAccounts'
+                    ' are set')
+
+        if self._target_tags:
+            if self._source_service_accounts or self._target_service_accounts:
+                raise InvalidFirewallRuleError(
+                    'sourceTags cannot be set when source/targetServiceAccounts'
+                    ' are set')
+
+        max_1_value_keys = [
+            ('sourceServiceAccount', self.source_service_accounts),
+            ('targetServiceAccount', self.target_service_accounts),
+        ]
+        for key, value in max_1_value_keys:
+            if value and len(value) > 1:
+                raise InvalidFirewallRuleError(
+                    'Rule entry "%s" may contain at most 1 value: "%s".'
                     % (key, value))
 
     def _validate_direction(self):
@@ -192,13 +214,14 @@ class FirewallRule(object):
           InvalidFirewallRuleError: If:
             * Direction is 'ingress' and
               * there are no source ranges or tags
-              * _destination_ranges is set
+              * _destination_ranges is not set
             * Direction is 'egress' and
               * there are no source ranges or tags
               * _destination_ranges is set
         """
         if self.direction == 'ingress':
-            if not self._source_ranges and not self._source_tags:
+            if (not self._source_ranges and not self._source_tags and not
+                self.source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Ingress rule missing required field oneof '
                     '"sourceRanges" or "sourceTags": "%s".' % self)
@@ -214,7 +237,8 @@ class FirewallRule(object):
                     'Egress rule missing required field "destinationRanges":'
                     '"%s".'% self)
 
-            if self._source_ranges or self._source_tags:
+            if (self._source_ranges or self._source_tags or
+                self._source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Egress rules cannot include "sourceRanges", "sourceTags":'
                     '"%s".' % self)
@@ -450,7 +474,7 @@ class FirewallAction(object):
 
         self._expanded_rules = None
 
-    def json_key(self):
+    def json_dict(self):
         """Gets the JSON key and values for the firewall action.
 
         Returns:
@@ -474,6 +498,38 @@ class FirewallAction(object):
             if 'IPProtocol' not in rule:
                 raise InvalidFirewallActionError(
                     'Action must have field IPProtocol')
+            if 'ports' in rule:
+                if rule['IPProtocol'] not in ['tcp', 'udp']:
+                    raise InvalidFirewallActionError(
+                        'Only "tcp" and "udp" can have ports specified: %s' %
+                        rule)
+                for port in rule['ports']:
+                    if '-' in port:
+                      split_ports = port.split('-')
+                      if len(split_ports) > 2:
+                          raise InvalidFirewallActionError(
+                              'Invalid port range: %s' % port)
+                      if int(split_ports[0]) < 0:
+                          raise InvalidFirewallActionError(
+                              'Port range must start > 0: %s' % port)
+                      if int(split_ports[1]) > 65535:
+                          raise InvalidFirewallActionError(
+                              'Port range must end < 65536: %s' % port)
+                      if int(split_ports[0]) > int(split_ports[1]):
+                          raise InvalidFirewallActionError(
+                              'Start port range > end port range: %s' % port)
+                    else:
+                        try:
+                            int(port)
+                        except ValueError:
+                          raise InvalidFirewallActionError(
+                              'Port not a valid int: %s' % port)
+            invalid_keys = set(rule.keys()) - set(['IPProtocol', 'ports'])
+            if invalid_keys:
+                raise InvalidFirewallActionError(
+                    'Action can only have "IPProtocol" and "ports": %s' %
+                    invalid_keys)
+
 
     @property
     def applies_to_all(self):
