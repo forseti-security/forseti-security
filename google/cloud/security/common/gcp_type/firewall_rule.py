@@ -17,6 +17,7 @@
 See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 """
 
+import json
 import netaddr
 
 from google.cloud.security.common.util import parser
@@ -52,7 +53,7 @@ class FirewallRule(object):
           kwargs (dict): Object properties
 
         Raises:
-          ValueError: if the allowed and denied rules aren't set properly.
+          InvalidFirewallRuleError: If allowed and denied rules aren't valid.
         """
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
@@ -91,31 +92,32 @@ class FirewallRule(object):
         self._firewall_action = None
 
     def as_json(self):
-      """Returns a valid JSON representation of this firewall rule.
+        """Returns a valid JSON representation of this firewall rule.
 
-      This rule must be valid to return the representation.
+        This rule must be valid to return the representation.
 
-      Returns:
-        str: A string JSON dump of the firewall rule.
+        Returns:
+          str: A string JSON dump of the firewall rule.
 
-      Raises:
-        InvalidFirewallRuleError: If the firewall rule is invalid.
-        InvalidFirewallActionError: If the firewall action is invalid.
-      """
-      self.validate()
-      firewall_dict = {
-        'direction': self.direction,
-        'network': self.network,
-      }
-      for key, value in [self.firewall_action.json_key(),
-                         ('sourceRanges', self._source_ranges),
-                         ('sourceTags', self._source_tags),
-                         ('targetTags', self._target_tags),
-                         ('destinationRanges', self._destination_ranges),
-                         ('priority', self._priority)]:
-          if value:
-              firewall_dict[key] = value
-      return json.dumps(firewall_dict, sort_keys=True)
+        Raises:
+          InvalidFirewallRuleError: If the firewall rule is invalid.
+          InvalidFirewallActionError: If the firewall action is invalid.
+        """
+        self.validate()
+        firewall_dict = {
+            'direction': self.direction,
+            'network': self.network,
+        }
+        for key, value in [self.firewall_action.json_key(),
+                           ('sourceRanges', list(self._source_ranges)),
+                           ('sourceTags', list(self._source_tags)),
+                           ('targetTags', list(self._target_tags)),
+                           ('destinationRanges',
+                            list(self._destination_ranges)),
+                           ('priority', self._priority)]:
+            if value:
+                firewall_dict[key] = value
+        return json.dumps(firewall_dict, sort_keys=True)
 
     def validate(self):
         """Validates that a rule is valid and not a duplicate.
@@ -127,11 +129,8 @@ class FirewallRule(object):
         add_rule_callback returns True for the rule, otherwise it will not add
         the rule.
 
-        Args:
-          rule: The rule to validate.
-
         Returns:
-          True if rule is valid
+          bool: If rule is valid.
 
         Raises:
           DuplicateFirewallRuleNameError: Two or more rules have the same name.
@@ -157,7 +156,7 @@ class FirewallRule(object):
         Length restrictions:
           * name <= 63 characters
           * <= 256 values:
-            sourceRanges, sourceTags, targetTags, destinationRanges 
+            sourceRanges, sourceTags, targetTags, destinationRanges
 
         Raises:
           InvalidFirewallRuleError: If keys don't meet requirements.
@@ -433,7 +432,7 @@ class FirewallAction(object):
           firewall_rule_action (str): The action, either allow or deny.
 
         Raises:
-          ValueError: If there are both allow and deny rules.
+          InvalidFirewallActionError: If there are both allow and deny rules.
         """
         if firewall_rule_action not in self.VALID_ACTIONS:
             raise InvalidFirewallActionError(
@@ -463,8 +462,7 @@ class FirewallAction(object):
         self.validate()
         if self.action == 'allow':
             return ('allowed', self.rules)
-        else:
-            return ('denied', self.rules)
+        return ('denied', self.rules)
 
     def validate(self):
         """Validates that the firewall rules are valid for use in the API.
