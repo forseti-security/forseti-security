@@ -52,6 +52,7 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
+                'firewall_rule_source_tags': None,
                 'firewall_rule_direction': 'ingress',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
