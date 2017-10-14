@@ -392,3 +392,22 @@ RULES9 = {
         },
     ]
 }
+
+RULES10 = {
+    'rules': [
+        {
+            'name': 'project required',
+            'mode': 'required',
+            'resource': [{
+                    'type': 'project',
+                    'applies_to': 'self',
+                    'resource_ids': ['*']
+                }],
+            'inherit_from_parents': False,
+            'bindings': [{
+                    'role': 'roles/owner',
+                    'members': ['user:*@company.com']
+                }]
+        },
+    ]
+}
