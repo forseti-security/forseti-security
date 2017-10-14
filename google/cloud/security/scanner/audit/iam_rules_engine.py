@@ -149,7 +149,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
                 violations,
                 self.rule_book.find_violations(resource, binding))
 
-        return set(violations)
+        return violations
 
     def add_rules(self, rules):
         """Add rules to the rule book.
