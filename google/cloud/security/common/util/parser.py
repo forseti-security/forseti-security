@@ -100,6 +100,6 @@ def json_unstringify(json_to_objify, default=None):
     except (TypeError, ValueError):
         parsed = default
 
-    if not parsed:
+    if parsed is None and default is not None:
         return default
     return parsed
