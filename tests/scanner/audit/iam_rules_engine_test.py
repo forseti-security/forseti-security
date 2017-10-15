@@ -168,7 +168,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             All policy binding members are in the whitelist.
         """
-        test_binding = [{
+        test_binding = [IamPolicyBinding.create_from({
             'role': 'roles/owner',
             'members': [
                 'user:foo@company.com',
@@ -176,7 +176,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 'group:some-group@googlegroups.com',
                 'serviceAccount:12345@iam.gserviceaccount.com',
             ]
-        }]
+        })]
         rule_bindings = [
             {
                 'role': 'roles/owner',
@@ -209,12 +209,12 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             No policy bindings found in the blacklist.
         """
-        test_binding = [{
+        test_binding = [IamPolicyBinding.create_from({
             'role': 'roles/owner',
             'members': [
                 'user:someone@notcompany.com',
             ]
-        }]
+        })]
         rule_bindings = [
             {
                 'role': 'roles/owner',
@@ -247,7 +247,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             All required members are found in the policy.
         """
-        test_binding = [{
+        test_binding = [IamPolicyBinding.create_from({
             'role': 'roles/owner',
             'members': [
                 'user:foo@company.com',
@@ -255,7 +255,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 'group:some-group@googlegroups.com',
                 'serviceAccount:12345@iam.gserviceaccount.com',
             ]
-        }]
+        })]
         rule_bindings = [
             {
                 'role': 'roles/owner',
@@ -286,14 +286,14 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             All required members are found in the policy.
         """
-        test_binding = [{
+        test_binding = [IamPolicyBinding.create_from({
             'role': 'roles/owner',
             'members': [
                 'user:foo@company.com.abc',
                 'group:some-group@googlegroups.com',
                 'serviceAccount:12345@iam.gserviceaccount.com',
             ]
-        }]
+        })]
         rule_bindings = [
             {
                 'role': 'roles/owner',
@@ -1340,8 +1340,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         ])
         self.assertItemsEqual(expected_violations, actual_violations)
 
-    def test_project_required_dedupe(self):
-        """Test that violations are deduped."""
+    def test_project_required(self):
+        """Test required rule."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
