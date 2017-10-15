@@ -549,64 +549,105 @@ class ResourceRules(object):
             policy_bindings (list): The list of IamPolicyBindings
                 to compare to this rule's bindings.
 
+        Returns:
+            iterable: The violations generator
+        """
+        violations = itertools.chain()
+        for rule in self.rules:
+            if rule.mode == scanner_rules.RuleMode.REQUIRED:
+                violations = itertools.chain(
+                    violations,
+                    self._check_required_rules(
+                        resource, rule, policy_bindings))
+            else:
+                violations = itertools.chain(
+                    violations,
+                    self._check_whitelistblacklist_rules(
+                        resource, rule, policy_bindings))
+
+        return violations
+
+    def _check_required_rules(self, resource, rule, policy_bindings):
+        """Check required rule.
+
+        Args:
+            resource (Resource): The resource that the policy belongs to.
+            policy_bindings (list): The list of IamPolicyBindings.
+            rule (Rule): The rule to check.
+
         Yields:
             iterable: A generator of RuleViolations.
         """
-        for rule in self.rules:
-            if rule.mode == scanner_rules.RuleMode.REQUIRED:
-                found_role = False
-                violating_bindings = {}
-                # If the rule's binding role is found in the policy, check the policy members
-                # to see if all rule binding members are found.
-                # Any outstanding rule bindings (role => members) should be reported.
-                for rule_binding in rule.bindings:
-                    for policy_binding in policy_bindings:
-                        if rule_binding.role_pattern.match(policy_binding.role_name):
-                            found_role = True
-                            violating_members = (self._dispatch_rule_mode_check(
-                                mode=rule.mode,
-                                rule_members=rule_binding.members,
-                                policy_members=policy_binding.members))
-                            if violating_members:
-                                violating_bindings[rule_binding.role_name] = violating_members
+        violation_type = scanner_rules.VIOLATION_TYPE.get(
+            rule.mode,
+            scanner_rules.VIOLATION_TYPE['UNSPECIFIED'])
+        found_role = False
+        violating_bindings = {}
+        # If the rule's binding role is found in the policy,
+        # check the policy members to see if all rule binding
+        # members are found.
+        # Any outstanding rule bindings (role => members) should be reported.
+        for rule_binding in rule.bindings:
+            for policy_binding in policy_bindings:
+                violating_members = None
+                if rule_binding.role_pattern.match(policy_binding.role_name):
+                    found_role = True
+                    violating_members = (self._dispatch_rule_mode_check(
+                        mode=rule.mode,
+                        rule_members=rule_binding.members,
+                        policy_members=policy_binding.members))
+                if violating_members:
+                    violating_bindings[
+                        rule_binding.role_name] = violating_members
 
-                if not found_role:
-                    violating_bindings = {b.role_name: b.members for b in rule.bindings}
+        if not found_role:
+            violating_bindings = {b.role_name: b.members for b in rule.bindings}
 
-                if violating_bindings:
-                    for (role_name, members) in violating_bindings.iteritems():
-                        yield scanner_rules.RuleViolation(
-                            resource_type=resource.type,
-                            resource_id=resource.id,
-                            rule_name=rule.rule_name,
-                            rule_index=rule.rule_index,
-                            violation_type=scanner_rules.VIOLATION_TYPE.get(
-                                rule.mode,
-                                scanner_rules.VIOLATION_TYPE['UNSPECIFIED']),
-                            role=role_name,
-                            members=tuple(members))
-            else:
-                for policy_binding in policy_bindings:
-                    for rule_binding in rule.bindings:
-                        # If the rule's role pattern matches the policy binding's role
-                        # pattern, then check the members to see whether they match,
-                        # according to the rule mode.
-                        if rule_binding.role_pattern.match(policy_binding.role_name):
-                            violating_members = (self._dispatch_rule_mode_check(
-                                mode=rule.mode,
-                                rule_members=rule_binding.members,
-                                policy_members=policy_binding.members))
-                            if violating_members:
-                                yield scanner_rules.RuleViolation(
-                                    resource_type=resource.type,
-                                    resource_id=resource.id,
-                                    rule_name=rule.rule_name,
-                                    rule_index=rule.rule_index,
-                                    violation_type=scanner_rules.VIOLATION_TYPE.get(
-                                        rule.mode,
-                                        scanner_rules.VIOLATION_TYPE['UNSPECIFIED']),
-                                    role=policy_binding.role_name,
-                                    members=tuple(violating_members))
+        if violating_bindings:
+            for (role_name, members) in violating_bindings.iteritems():
+                yield scanner_rules.RuleViolation(
+                    resource_type=resource.type,
+                    resource_id=resource.id,
+                    rule_name=rule.rule_name,
+                    rule_index=rule.rule_index,
+                    violation_type=violation_type,
+                    role=role_name,
+                    members=tuple(members))
+
+    def _check_whitelistblacklist_rules(self, resource, rule, policy_bindings):
+        """Check whitelist and blacklist rules.
+
+        Args:
+            resource (Resource): The resource that the policy belongs to.
+            rule (Rule): The rule to check.
+            policy_bindings (list): The list of IamPolicyBindings.
+
+        Yields:
+            iterable: A generator of RuleViolations.
+        """
+        violation_type = scanner_rules.VIOLATION_TYPE.get(
+            rule.mode,
+            scanner_rules.VIOLATION_TYPE['UNSPECIFIED'])
+        for policy_binding in policy_bindings:
+            for rule_binding in rule.bindings:
+                # If the rule's role pattern matches the policy binding's
+                # role pattern, then check the members to see whether they
+                # match, according to the rule mode.
+                violating_members = None
+                if rule_binding.role_pattern.match(policy_binding.role_name):
+                    violating_members = (self._dispatch_rule_mode_check(
+                        mode=rule.mode,
+                        rule_members=rule_binding.members,
+                        policy_members=policy_binding.members))
+                if violating_members:
+                    yield scanner_rules.RuleViolation(
+                        resource_type=resource.type,
+                        resource_id=resource.id,
+                        rule_name=rule.rule_name,
+                        rule_index=rule.rule_index,
+                        violation_type=violation_type,
+                        role=policy_binding.role_name,
+                        members=tuple(violating_members))
 
     def _dispatch_rule_mode_check(self, mode, rule_members=None,
                                   policy_members=None):
