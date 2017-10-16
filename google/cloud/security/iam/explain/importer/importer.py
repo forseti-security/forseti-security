@@ -496,7 +496,7 @@ class InventoryImporter(object):
                    member not in self.member_cache_policies:
                     if (not '/' in member):
                         name = member
-                        m_type = 'Special_Group'
+                        m_type = member
                     else:
                         m_type, name = member.split('/', 1)
                     self.member_cache_policies[member] = self.dao.TBL_MEMBER(
