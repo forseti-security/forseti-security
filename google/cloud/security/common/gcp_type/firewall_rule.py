@@ -65,6 +65,8 @@ class FirewallRule(object):
         self.network = kwargs.get('firewall_rule_network')
         self._priority = kwargs.get('firewall_rule_priority')
         self.direction = kwargs.get('firewall_rule_direction')
+        if self.direction:
+            self.direction = self.direction.upper()
         self._source_ranges = frozenset(parser.json_unstringify(
             kwargs.get('firewall_rule_source_ranges'), default=list()))
         self._destination_ranges = frozenset(parser.json_unstringify(

@@ -817,6 +817,17 @@ class FirewallRuleTest(ForsetiTestCase):
         self.assertEqual(expected, rule_1.is_equivalent(rule_2))
 
     def test_load_firewall_rule(self):
+        """Tests that loading to FirewallRule and exporting it as JSON works.
+
+        This test depends on the data in
+        tests/inventory/pipelines/test_data/fake_firewall_rules.py
+        being formatted like:
+          {
+            <project_id>: [<firewall_rules>]
+          }
+        If a loadable firewall exists that isn't in the map, this test will
+        fail.
+        """
         expected_map = fake_firewall_rules.EXPECTED_FIREWALL_RULES_MAP
         for loadable_firewall in fake_firewall_rules.EXPECTED_LOADABLE_FIREWALL_RULES:
             rule = firewall_rule.FirewallRule(**loadable_firewall)
