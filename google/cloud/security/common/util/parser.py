@@ -95,6 +95,11 @@ def json_unstringify(json_to_objify, default=None):
     Returns:
         object: The un-stringified object.
     """
-    if not json_to_objify:
+    try:
+        parsed = json.loads(json_to_objify)
+    except (TypeError, ValueError):
+        parsed = default
+
+    if parsed is None and default is not None:
         return default
-    return json.loads(json_to_objify)
+    return parsed
