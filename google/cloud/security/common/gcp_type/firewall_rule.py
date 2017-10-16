@@ -111,14 +111,14 @@ class FirewallRule(object):
             'name': self.name,
         }
         for key, value in [
-            self.firewall_action.json_dict(),
-            ('sourceRanges', self.source_ranges),
-            ('sourceTags', self.source_tags),
-            ('targetTags', self.target_tags),
-            ('destinationRanges', self.destination_ranges),
-            ('priority', self._priority),
-            ('sourceServiceAccounts', self.source_service_accounts),
-            ('targetServiceAccounts', self.target_service_accounts)]:
+                self.firewall_action.json_dict(),
+                ('sourceRanges', self.source_ranges),
+                ('sourceTags', self.source_tags),
+                ('targetTags', self.target_tags),
+                ('destinationRanges', self.destination_ranges),
+                ('priority', self._priority),
+                ('sourceServiceAccounts', self.source_service_accounts),
+                ('targetServiceAccounts', self.target_service_accounts)]:
             if value:
                 firewall_dict[key] = value
         return json.dumps(firewall_dict, sort_keys=True)
@@ -221,7 +221,7 @@ class FirewallRule(object):
         """
         if self.direction == 'ingress':
             if (not self._source_ranges and not self._source_tags and not
-                self.source_service_accounts):
+                    self.source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Ingress rule missing required field oneof '
                     '"sourceRanges" or "sourceTags": "%s".' % self)
@@ -238,7 +238,7 @@ class FirewallRule(object):
                     '"%s".'% self)
 
             if (self._source_ranges or self._source_tags or
-                self._source_service_accounts):
+                    self._source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Egress rules cannot include "sourceRanges", "sourceTags":'
                     '"%s".' % self)
@@ -488,6 +488,7 @@ class FirewallAction(object):
             return ('allowed', self.rules)
         return ('denied', self.rules)
 
+    # pylint: disable=too-many-branches
     def validate(self):
         """Validates that the firewall rules are valid for use in the API.
 
@@ -505,30 +506,31 @@ class FirewallAction(object):
                         rule)
                 for port in rule['ports']:
                     if '-' in port:
-                      split_ports = port.split('-')
-                      if len(split_ports) > 2:
-                          raise InvalidFirewallActionError(
-                              'Invalid port range: %s' % port)
-                      if int(split_ports[0]) < 0:
-                          raise InvalidFirewallActionError(
-                              'Port range must start > 0: %s' % port)
-                      if int(split_ports[1]) > 65535:
-                          raise InvalidFirewallActionError(
-                              'Port range must end < 65536: %s' % port)
-                      if int(split_ports[0]) > int(split_ports[1]):
-                          raise InvalidFirewallActionError(
-                              'Start port range > end port range: %s' % port)
+                        split_ports = port.split('-')
+                        if len(split_ports) > 2:
+                            raise InvalidFirewallActionError(
+                                'Invalid port range: %s' % port)
+                        if int(split_ports[0]) < 0:
+                            raise InvalidFirewallActionError(
+                                'Port range must start > 0: %s' % port)
+                        if int(split_ports[1]) > 65535:
+                            raise InvalidFirewallActionError(
+                                'Port range must end < 65536: %s' % port)
+                        if int(split_ports[0]) > int(split_ports[1]):
+                            raise InvalidFirewallActionError(
+                                'Start port range > end port range: %s' % port)
                     else:
                         try:
                             int(port)
                         except ValueError:
-                          raise InvalidFirewallActionError(
-                              'Port not a valid int: %s' % port)
+                            raise InvalidFirewallActionError(
+                                'Port not a valid int: %s' % port)
             invalid_keys = set(rule.keys()) - set(['IPProtocol', 'ports'])
             if invalid_keys:
                 raise InvalidFirewallActionError(
                     'Action can only have "IPProtocol" and "ports": %s' %
                     invalid_keys)
+    # pylint: enable=too-many-branches
 
 
     @property
