@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Map for mapping rules engine to scanner class"""
+"""Map for mapping violations."""
 
 RESOURCE_MAP = {
     'bigquery_acl_violations': 'violations',

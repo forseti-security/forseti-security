@@ -131,6 +131,8 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         Returns:
             dict: A map of the email with subject, content, attachemnt
         """
+        del kwargs
+
         email_map = {}
 
         attachment = self._make_attachment()
