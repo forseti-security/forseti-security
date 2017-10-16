@@ -1147,7 +1147,7 @@ class FirewallActionTest(ForsetiTestCase):
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}],
             },
             {
-                'firewall_rule_action': 'deny',
+                'firewall_rule_action': 'denied',
                 'firewall_rules':
                     [{'IPProtocol': 'tcp', 'ports': ['22', '21', '23']}],
             },
