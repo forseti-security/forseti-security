@@ -48,7 +48,90 @@ class FirewallRuleTest(ForsetiTestCase):
       rule = firewall_rule.FirewallRule.from_json(json_string)
       self.assertTrue(rule.validate())
 
-    def test_from_json(self):
+    @parameterized.parameterized.expand([
+        (
+            {
+                'kind': 'compute#firewall',
+                'id': '8',
+                'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+                'name': 'default',
+                'description': '',
+                'network': 'network name',
+                'priority': 1000,
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': [
+                    {
+                        'IPProtocol': 'tcp',
+                        'ports': ['22']
+                    }
+                ],
+                'direction': 'EGRESS',
+                'selfLink': 'https:// insert link here'
+            },
+            firewall_rule.InvalidFirewallRuleError,
+        ),
+        (
+            {
+                'kind': 'compute#firewall',
+                'id': '8',
+                'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+                'description': '',
+                'network': 'network name',
+                'priority': 1000,
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': [
+                    {
+                        'IPProtocol': 'tcp',
+                        'ports': ['22']
+                    }
+                ],
+                'direction': 'INGRESS',
+                'selfLink': 'https:// insert link here'
+            },
+            firewall_rule.InvalidFirewallRuleError,
+        ),
+        (
+            {
+                'kind': 'compute#firewall',
+                'id': '8',
+                'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+                'description': '',
+                'network': 'network name',
+                'priority': 1000,
+                'sourceRanges': ['0.0.0.0/0'],
+                'direction': 'INGRESS',
+                'selfLink': 'https:// insert link here'
+            },
+            firewall_rule.InvalidFirewallRuleError,
+        ),
+        (
+            {
+                'kind': 'compute#firewall',
+                'id': '8',
+                'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+                'name': 'default',
+                'description': '',
+                'network': 'network name',
+                'priority': -1,
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': [
+                    {
+                        'IPProtocol': 'tcp',
+                        'ports': ['22']
+                    }
+                ],
+                'direction': 'INGRESS',
+                'selfLink': 'https:// insert link here'
+            },
+            firewall_rule.InvalidFirewallRuleError,
+        ),
+    ])
+    def test_from_json_error(self, json_dict, expected_error):
+      json_string = json.dumps(json_dict)
+      with self.assertRaises(expected_error):
+          rule = firewall_rule.FirewallRule.from_json(json_string)
+
+    def test_from_dict(self):
       firewall_dict = {
 	  'name': 'default',
 	  'network': 'network name',
