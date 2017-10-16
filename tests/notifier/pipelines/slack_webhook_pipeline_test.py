@@ -48,6 +48,16 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
 
             self.assertEqual(expected_output.strip(), actual_output.strip())
 
+    def test_no_url_no_run_pipeline(self):
+        """Test that no url for Slack pipeline will skip running."""
+        with mock.patch.object(slack_webhook_pipeline.SlackWebhookPipeline, '__init__', lambda x: None):
+            slack_pipeline = slack_webhook_pipeline.SlackWebhookPipeline()
+            slack_pipeline.pipeline_config = {}
+            slack_pipeline._compose = mock.MagicMock()
+            slack_pipeline.run()
+
+            slack_pipeline._compose.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
