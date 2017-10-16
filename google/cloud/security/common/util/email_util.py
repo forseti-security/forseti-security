@@ -30,18 +30,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
 
-# TODO: remove these
-FLAGS = flags.FLAGS
-
-flags.DEFINE_string('email_recipient', None,
-                    'Email address of the notification recipient.')
-
-flags.DEFINE_string('email_sender', None,
-                    'Email address of the notification sender.')
-
-flags.DEFINE_string('sendgrid_api_key', None,
-                    'API key to authenticate with SendGrid email service.')
-
 LOGGER = log_util.get_logger(__name__)
 
 
@@ -116,7 +104,7 @@ class EmailUtil(object):
         if not email_sender or not email_recipient:
             LOGGER.warn('Unable to send email: sender=%s, recipient=%s',
                         email_sender, email_recipient)
-            raise util_errors.EmailSendError
+            return
 
         email = mail.Mail()
         email.from_email = mail.Email(email_sender)
