@@ -21,6 +21,7 @@ from sendgrid.helpers import mail
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import email_util
+from google.cloud.security.common.util import errors as util_errors
 
 
 class EmailUtilTest(ForsetiTestCase):
@@ -60,9 +61,8 @@ class EmailUtilTest(ForsetiTestCase):
     def test_no_sender_recip_no_email(self, mock_mail):
         """Test that no sender/recip doesn't send email."""
         util = email_util.EmailUtil('fake_sendgrid_key')
-        util.send()
-
-        mock_mail.assert_not_called()
+        with self.assertRaises(util_errors.EmailSendError):
+            util.send()
 
 
 if __name__ == '__main__':

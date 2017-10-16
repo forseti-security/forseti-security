@@ -103,7 +103,7 @@ class EmailUtil(object):
         if not email_sender or not email_recipient:
             LOGGER.warn('Unable to send email: sender=%s, recipient=%s',
                         email_sender, email_recipient)
-            return
+            raise util_errors.EmailSendError
 
         email = mail.Mail()
         email.from_email = mail.Email(email_sender)
