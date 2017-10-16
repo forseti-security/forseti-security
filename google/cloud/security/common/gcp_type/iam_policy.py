@@ -134,7 +134,7 @@ class IamPolicyBinding(object):
         if not role_name or not members:
             raise errors.InvalidIamPolicyBindingError(
                 ('Invalid IAM policy binding: '
-                 'role={}, members={}'.format(role_name, members)))
+                 'role_name={}, members={}'.format(role_name, members)))
         self.role_name = role_name
         self.members = _get_iam_members(members)
         self.role_pattern = re.compile(_escape_and_globify(role_name),
@@ -171,7 +171,7 @@ class IamPolicyBinding(object):
         Returns:
             str: The representation of IamPolicyBinding.
         """
-        return 'IamBinding: <role={}, members={}>'.format(
+        return 'IamBinding: <role_name={}, members={}>'.format(
             self.role_name, self.members)
 
     @classmethod
