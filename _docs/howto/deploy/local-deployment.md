@@ -103,14 +103,41 @@ To install required build dependencies, run the following commands:
   $ pip install grpcio grpcio-tools google-apputils
   ```
 
-### Building proto files and running the python setup
+### Running the python setup
 
-To build proto files and run the python setup, navigate to your cloned repo and
-use the following command:
+To run the python setup, navigate to your cloned repo and use the following command:
 
   ```bash
-  $ python build_protos.py --clean
   $ python setup.py install
+  ```
+
+### Troubleshooting
+
+If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and see 
+a fatal error related to `'openssl/opensslv.h' file not found`, you may need to 
+export `CPPFLAGS` and `LDFLAGS` for the openssl package
+(see [this issue](https://github.com/pyca/cryptography/issues/3489) for more information).
+You can find the `CPPFLAGS` and `LDFLAGS` information and export them as follows:
+
+  ```bash
+  $ brew info openssl
+  
+    ... lots of information ...
+    
+    Generally there are no consequences of this for you. If you build your
+    own software and it requires this formula, you'll need to add to your
+    build variables:
+
+    LDFLAGS:  -L/SOME/PATH/TO/openssl/lib
+    CPPFLAGS: -I/SOME/PATH/TO/openssl/include
+  ```
+
+Then copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the 
+following (use the values from your terminal, not "`/SOME/PATH/TO`"):
+
+  ```bash
+  $ export CPPFLAGS=-I/SOME/PATH/TO/openssl/include
+  $ export LDFLAGS=-L/SOME/PATH/TO/openssl/lib
   ```
 
 ### Executing Forseti commands
@@ -121,6 +148,7 @@ command-line tools:
 -   `forseti_inventory`
 -   `forseti_scanner`
 -   `forseti_enforcer`
+-   `forseti_notifier`
 -   `forseti_api`
 -   `forseti_iam`
 
