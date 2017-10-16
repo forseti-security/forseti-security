@@ -25,6 +25,55 @@ from tests.inventory.pipelines.test_data import fake_firewall_rules
 class FirewallRuleTest(ForsetiTestCase):
     """Tests for firewall_rule."""
 
+    def test_from_json(self):
+      json_dict = {
+	  'kind': 'compute#firewall',
+	  'id': '8',
+	  'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+	  'name': 'default',
+	  'description': '',
+	  'network': 'network name',
+	  'priority': 1000,
+	  'sourceRanges': ['0.0.0.0/0'],
+	  'allowed': [
+	      {
+		  'IPProtocol': 'tcp',
+		  'ports': ['22']
+	      }
+	  ],
+	  'direction': 'INGRESS',
+          'selfLink': 'https:// insert link here'
+      }
+      json_string = json.dumps(json_dict)
+      rule = firewall_rule.FirewallRule.from_json(json_string)
+      self.assertTrue(rule.validate())
+
+    def test_from_json(self):
+      firewall_dict = {
+	  'name': 'default',
+	  'network': 'network name',
+	  'priority': 1000,
+	  'sourceRanges': ['0.0.0.0/0'],
+	  'allowed': ['*'],
+	  'direction': 'INGRESS',
+      }
+      firewall_dict_2 = {
+	  'name': 'default',
+	  'network': 'network name',
+	  'priority': 1000,
+	  'sourceRanges': ['0.0.0.0/0'],
+	  'allowed': [
+	      {
+		  'IPProtocol': 'tcp',
+		  'ports': ['22']
+	      }
+	  ],
+	  'direction': 'INGRESS',
+      }
+      rule = firewall_rule.FirewallRule.from_dict(firewall_dict)
+      rule_2 = firewall_rule.FirewallRule.from_dict(firewall_dict)
+      self.assertTrue(rule_2 < rule)
+
     @parameterized.parameterized.expand([
         ('192.0.0.1', '192.0.0.1/24', True),
         ('192.0.0.1', '192.0.0.0/16', True),
