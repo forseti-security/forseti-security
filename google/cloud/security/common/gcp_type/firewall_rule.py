@@ -220,7 +220,7 @@ class FirewallRule(object):
               * there are no source ranges or tags
               * _destination_ranges is set
         """
-        if self.direction == 'ingress':
+        if self.direction == 'INGRESS':
             if (not self._source_ranges and not self._source_tags and not
                     self.source_service_accounts):
                 raise InvalidFirewallRuleError(
@@ -232,7 +232,7 @@ class FirewallRule(object):
                     'Ingress rules cannot include "destinationRanges": "%s".'
                     % self)
 
-        elif self.direction == 'egress':
+        elif self.direction == 'EGRESS':
             if not self._destination_ranges:
                 raise InvalidFirewallRuleError(
                     'Egress rule missing required field "destinationRanges":'

@@ -20,6 +20,7 @@ import parameterized
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_type import firewall_rule
+from tests.inventory.pipelines.test_data import fake_firewall_rules
 
 class FirewallRuleTest(ForsetiTestCase):
     """Tests for firewall_rule."""
@@ -53,7 +54,7 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
                 'firewall_rule_source_tags': None,
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_priority': 'NaN',
                 'firewall_rule_allowed': json.dumps(
@@ -63,7 +64,7 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_priority': '-1',
                 'firewall_rule_allowed': json.dumps(
@@ -73,7 +74,7 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_priority': '1000000000',
                 'firewall_rule_allowed': json.dumps(
@@ -89,7 +90,7 @@ class FirewallRuleTest(ForsetiTestCase):
     @parameterized.parameterized.expand([
         (  # ingress rule has no source ranges, tags, or service accounts
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
@@ -99,7 +100,7 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
                 'firewall_rule_destination_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
@@ -144,7 +145,7 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_denied': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
@@ -155,7 +156,7 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_name': 'n1',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_denied': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
@@ -166,7 +167,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_name': 'n1',
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_denied': json.dumps(
                     [
                         {'IPProtocol': 'tcp', 'ports': ['21-23']},
@@ -186,7 +187,7 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_denied': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
@@ -197,7 +198,7 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_name': 'n1',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_denied': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
@@ -208,7 +209,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_name': 'n1',
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_denied': json.dumps(
                     [
                         {'IPProtocol': 'tcp', 'ports': ['21-23']},
@@ -229,13 +230,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_name': 'n1',
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_denied': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
             {
                 'denied': [{'IPProtocol': 'tcp', 'ports': ['21-23']}],
-                'direction': 'ingress',
+                'direction': 'INGRESS',
                 'network': 'n2',
                 'name': 'n1',
                 'sourceRanges': ['1.1.1.1'],
@@ -251,7 +252,7 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
@@ -260,7 +261,7 @@ class FirewallRuleTest(ForsetiTestCase):
             {
                 'firewall_rule_name': 'n1',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
@@ -270,7 +271,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_name': 'n'*64,
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
@@ -281,7 +282,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(
                     ['1.1.1.%s' % i for i in range(257)]),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
@@ -292,7 +293,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_network': 'n2',
                 'firewall_rule_destination_ranges': json.dumps(
                     ['1.1.1.%s' % i for i in range(257)]),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
@@ -303,7 +304,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(
                     ['1.1.1.%s' % i for i in range(256)]),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_source_tags': json.dumps(
                     ['t%s' % i for i in range(257)]),
                 'firewall_rule_allowed': json.dumps(
@@ -316,7 +317,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(
                     ['1.1.1.%s' % i for i in range(256)]),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_target_tags': json.dumps(
                     ['t%s' % i for i in range(257)]),
                 'firewall_rule_allowed': json.dumps(
@@ -329,7 +330,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(
                     ['1.1.1.%s' % i for i in range(256)]),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
                 'firewall_rule_source_service_accounts': json.dumps(
@@ -342,7 +343,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_network': 'n2',
                 'firewall_rule_source_ranges': json.dumps(
                     ['1.1.1.%s' % i for i in range(256)]),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_target_tags': json.dumps(
                     ['t%s' % i for i in range(256)]),
                 'firewall_rule_allowed': json.dumps(
@@ -360,14 +361,14 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
@@ -377,14 +378,14 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_denied': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['50-55']}]),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_denied': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['40-60']}]),
@@ -394,14 +395,14 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
@@ -411,7 +412,7 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_action': 'deny',
                 'firewall_rule_denied': json.dumps(
@@ -419,7 +420,7 @@ class FirewallRuleTest(ForsetiTestCase):
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
@@ -429,13 +430,13 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*'])
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.2']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*'])
             },
@@ -511,14 +512,14 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
@@ -528,13 +529,13 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
@@ -543,13 +544,13 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['10.0.0.2']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
@@ -627,14 +628,14 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
@@ -644,13 +645,13 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
@@ -666,7 +667,7 @@ class FirewallRuleTest(ForsetiTestCase):
     @parameterized.parameterized.expand([
         (
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
@@ -677,12 +678,12 @@ class FirewallRuleTest(ForsetiTestCase):
         ),
         (
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n2',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
@@ -690,13 +691,13 @@ class FirewallRuleTest(ForsetiTestCase):
         ),
         (
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t3', 't2']),
                 'firewall_rule_allowed': json.dumps(['*']),
@@ -705,14 +706,14 @@ class FirewallRuleTest(ForsetiTestCase):
         ),
         (
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't5']),
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
@@ -722,7 +723,7 @@ class FirewallRuleTest(ForsetiTestCase):
         ),
         (
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
@@ -730,7 +731,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
@@ -741,7 +742,7 @@ class FirewallRuleTest(ForsetiTestCase):
         ),
         (
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
@@ -749,7 +750,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_source_tags': json.dumps(['t1', 't2']),
                 'firewall_rule_target_tags': json.dumps(['t3', 't4']),
@@ -761,14 +762,14 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
@@ -778,14 +779,14 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['10', '11', '12', '13']}]),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['10-13']}]),
@@ -795,13 +796,13 @@ class FirewallRuleTest(ForsetiTestCase):
         (
             {
                 'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
             {
                 'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_direction': 'ingress',
+                'firewall_rule_direction': 'INGRESS',
                 'firewall_rule_network': 'n1',
                 'firewall_rule_allowed': json.dumps(['*']),
             },
@@ -814,6 +815,25 @@ class FirewallRuleTest(ForsetiTestCase):
         rule_1 = firewall_rule.FirewallRule(**rule_1_dict)
         rule_2 = firewall_rule.FirewallRule(**rule_2_dict)
         self.assertEqual(expected, rule_1.is_equivalent(rule_2))
+
+    def test_load_firewall_rule(self):
+        expected_map = fake_firewall_rules.EXPECTED_FIREWALL_RULES_MAP
+        for loadable_firewall in fake_firewall_rules.EXPECTED_LOADABLE_FIREWALL_RULES:
+            rule = firewall_rule.FirewallRule(**loadable_firewall)
+            dict_rule = json.loads(rule.as_json())
+            expected_list = expected_map.get(rule.project_id)
+            expected = {}
+            for fw_rule in expected_list:
+                if fw_rule['name'] == rule.name:
+                    expected = fw_rule
+            for key in ['kind', 'id', 'creationTimestamp', 'description',
+                        'selfLink']:
+                expected.pop(key)
+            unicode_expected = json.loads(json.dumps(expected))
+            unicode_expected['allowed'] = sorted(unicode_expected['allowed'])
+            dict_rule['allowed'] = sorted(dict_rule['allowed'])
+            self.maxDiff = None
+            self.assertDictEqual(unicode_expected, dict_rule)
 
 
 class FirewallActionTest(ForsetiTestCase):
