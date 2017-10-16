@@ -825,7 +825,7 @@ class FirewallRuleTest(ForsetiTestCase):
             expected = {}
             for fw_rule in expected_list:
                 if fw_rule['name'] == rule.name:
-                    expected = fw_rule
+                    expected = fw_rule.copy()
             for key in ['kind', 'id', 'creationTimestamp', 'description',
                         'selfLink']:
                 expected.pop(key)
