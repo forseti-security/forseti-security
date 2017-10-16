@@ -158,6 +158,89 @@ class FirewallRuleTest(ForsetiTestCase):
       self.assertTrue(rule_2 < rule)
 
     @parameterized.parameterized.expand([
+        (
+            {
+                'kind': 'compute#firewall',
+                'id': '8',
+                'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+                'name': 'default',
+                'description': '',
+                'network': 'network name',
+                'priority': 1000,
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': [
+                    {
+                        'IPProtocol': 'tcp',
+                        'ports': ['22']
+                    }
+                ],
+                'direction': 'EGRESS',
+                'selfLink': 'https:// insert link here'
+            },
+            firewall_rule.InvalidFirewallRuleError,
+        ),
+        (
+            {
+                'kind': 'compute#firewall',
+                'id': '8',
+                'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+                'description': '',
+                'network': 'network name',
+                'priority': 1000,
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': [
+                    {
+                        'IPProtocol': 'tcp',
+                        'ports': ['22']
+                    }
+                ],
+                'direction': 'INGRESS',
+                'selfLink': 'https:// insert link here'
+            },
+            firewall_rule.InvalidFirewallRuleError,
+        ),
+        (
+            {
+                'kind': 'compute#firewall',
+                'id': '8',
+                'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+                'description': '',
+                'network': 'network name',
+                'priority': 1000,
+                'sourceRanges': ['0.0.0.0/0'],
+                'direction': 'INGRESS',
+                'selfLink': 'https:// insert link here'
+            },
+            firewall_rule.InvalidFirewallRuleError,
+        ),
+        (
+            {
+                'kind': 'compute#firewall',
+                'id': '8',
+                'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+                'name': 'default',
+                'description': '',
+                'network': 'network name',
+                'priority': -1,
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': [
+                    {
+                        'IPProtocol': 'tcp',
+                        'ports': ['22']
+                    }
+                ],
+                'direction': 'INGRESS',
+                'selfLink': 'https:// insert link here'
+            },
+            firewall_rule.InvalidFirewallRuleError,
+        ),
+    ])
+    def test_from_dict_error(self, firewall_dict, expected_error):
+      with self.assertRaises(expected_error):
+          rule = firewall_rule.FirewallRule.from_dict(
+              firewall_dict, validate=True)
+
+    @parameterized.parameterized.expand([
         ('192.0.0.1', '192.0.0.1/24', True),
         ('192.0.0.1', '192.0.0.0/16', True),
         ('192.0.0.1/24', '192.0.0.0/16', True),

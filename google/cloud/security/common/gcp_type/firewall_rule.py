@@ -147,12 +147,12 @@ class FirewallRule(object):
         return FirewallRule(validate=True, **in_dict)
 
     @classmethod
-    def from_dict(cls, firewall_dict, project_id=None):
+    def from_dict(cls, firewall_dict, validate=False):
         """Creates an unvalidated FirewallRule from a dictionary.
 
         Args:
           firewall_dict (dict): A dict with firewall keys and values.
-          project_id (str): A string project id.
+          validate (bool): Whether to validate this rule or not.
 
         Returns:
           FirewallRule: A validated FirewallRule from the JSON string.
@@ -163,7 +163,6 @@ class FirewallRule(object):
         """
         in_dict = {
             'firewall_rule_id': firewall_dict.get('id'),
-            'project_id': project_id,
             'firewall_rule_name': firewall_dict.get('name'),
             'firewall_rule_description': firewall_dict.get('description'),
             'firewall_rule_kind': firewall_dict.get('kind'),
@@ -192,7 +191,7 @@ class FirewallRule(object):
                 parser.json_stringify(firewall_dict.get('creationTimestamp')),
                 cls.MYSQL_DATETIME_FORMAT),
         }
-        return FirewallRule(validate=False, **in_dict)
+        return FirewallRule(validate=validate, **in_dict)
 
 
     def as_json(self):
