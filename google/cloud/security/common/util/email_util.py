@@ -18,7 +18,6 @@ import base64
 import os
 import urllib2
 
-import gflags as flags
 import jinja2
 
 from retrying import retry
