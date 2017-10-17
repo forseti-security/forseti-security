@@ -42,6 +42,7 @@ def read_and_parse_file(file_path):
 
     return _read_file_from_local(file_path)
 
+
 def _get_filetype_parser(file_path, parser_type):
     """Return a parser function for parsing the file.
 
@@ -75,27 +76,32 @@ def _get_filetype_parser(file_path, parser_type):
 
     return filetype_handlers[file_ext][parser_type]
 
-def _read_file_from_gcs(file_path):
+
+def _read_file_from_gcs(file_path, storage_client=None):
     """Load file from GCS.
 
     Args:
         file_path (str): The GCS path to the file.
+        storage_client (storage.StorageClient): The Storage API Client to use
+            for downloading the file using the API.
 
     Returns:
         dict: The parsed dict from the loaded file.
     """
-    storage_client = storage.StorageClient()
+    if not storage_client:
+        storage_client = storage.StorageClient()
 
     file_content = storage_client.get_text_file(full_bucket_path=file_path)
 
     parser = _get_filetype_parser(file_path, 'string')
     return parser(file_content)
 
+
 def _read_file_from_local(file_path):
     """Load rules file from local path.
 
     Args:
-        file_path (str): The path to the file.
+      file_path (str): The path to the file.
 
     Returns:
         dict: The parsed dict from the loaded file.
@@ -103,6 +109,7 @@ def _read_file_from_local(file_path):
     with open(os.path.abspath(file_path), 'r') as rules_file:
         parser = _get_filetype_parser(file_path, 'file')
         return parser(rules_file)
+
 
 def _parse_json_string(data):
     """Parse the data from a string of json.
@@ -139,6 +146,7 @@ def _parse_json_file(data):
         return json.load(data)
     except ValueError as json_error:
         raise json_error
+
 
 def _parse_yaml(data):
     """Parse yaml data.

@@ -56,7 +56,7 @@ class FileLoaderTest(ForsetiTestCase):
               'content-range': '0-10/11'}, b'{"test": 1}')
         ]
         http_mocks.mock_http_response_sequence(mock_responses)
-        expected_dict = {"test": 1}
+        expected_dict = {'test': 1}
         return_dict = file_loader._read_file_from_gcs('gs://fake/file.json')
 
         self.assertEqual(expected_dict, return_dict)
@@ -69,7 +69,7 @@ class FileLoaderTest(ForsetiTestCase):
               'content-range': '0-6/7'}, b'test: 1')
         ]
         http_mocks.mock_http_response_sequence(mock_responses)
-        expected_dict = {"test": 1}
+        expected_dict = {'test': 1}
         return_dict = file_loader._read_file_from_gcs('gs://fake/file.yaml')
 
         self.assertEqual(expected_dict, return_dict)
@@ -82,4 +82,3 @@ class FileLoaderTest(ForsetiTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

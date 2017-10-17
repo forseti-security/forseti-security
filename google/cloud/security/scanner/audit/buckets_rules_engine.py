@@ -73,9 +73,9 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         resource_rules = self.rule_book.get_resource_rules()
 
         for rule in resource_rules:
-            violations = itertools.chain(violations,
-                                         rule.\
-                                         find_policy_violations(buckets_acls))
+            violations = itertools.chain(
+                violations,
+                rule.find_policy_violations(buckets_acls))
         return violations
 
     def add_rules(self, rules):
@@ -206,15 +206,20 @@ class Rule(object):
         is_domain_violated = True
         is_role_violated = True
 
-        is_bucket_violated = re.match(self.rules.bucket, bucket_acl.bucket)
+        is_bucket_violated = re.match(
+            self.rules.bucket, bucket_acl.bucket, re.IGNORECASE)
 
-        is_entity_violated = re.match(self.rules.entity, bucket_acl.entity)
+        is_entity_violated = re.match(
+            self.rules.entity, bucket_acl.entity, re.IGNORECASE)
 
-        is_email_violated = re.match(self.rules.email, bucket_acl.email)
+        is_email_violated = re.match(
+            self.rules.email, bucket_acl.email, re.IGNORECASE)
 
-        is_domain_violated = re.match(self.rules.domain, bucket_acl.domain)
+        is_domain_violated = re.match(
+            self.rules.domain, bucket_acl.domain, re.IGNORECASE)
 
-        is_role_violated = re.match(self.rules.role, bucket_acl.role)
+        is_role_violated = re.match(
+            self.rules.role, bucket_acl.role, re.IGNORECASE)
 
         should_raise_violation = (
             (is_bucket_violated is not None and is_bucket_violated) and

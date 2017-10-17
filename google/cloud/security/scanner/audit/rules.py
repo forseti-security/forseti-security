@@ -123,8 +123,9 @@ class RuleMode(object):
     WHITELIST = 'whitelist'
     BLACKLIST = 'blacklist'
     REQUIRED = 'required'
+    MATCHES = 'matches'
 
-    modes = frozenset([WHITELIST, BLACKLIST, REQUIRED])
+    modes = frozenset([WHITELIST, BLACKLIST, REQUIRED, MATCHES])
 
     @classmethod
     def verify(cls, mode):

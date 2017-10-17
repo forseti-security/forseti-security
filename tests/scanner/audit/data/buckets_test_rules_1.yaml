@@ -1,7 +1,7 @@
 rules:
   - name: sample bucket acls rule to search for public buckets
     bucket: '*'
-    entity: AllUsers
+    entity: allUsers
     email: '*'
     domain: '*'
     role: '*'

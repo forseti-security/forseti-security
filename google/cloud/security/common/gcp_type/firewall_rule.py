@@ -17,9 +17,13 @@
 See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 """
 
+import netaddr
+
 from google.cloud.security.common.util import parser
 
 # pylint: disable=too-many-instance-attributes
+
+ALL_REPRESENTATIONS = ('all', '0-65355', '1-65535')
 
 
 class FirewallRule(object):
@@ -29,7 +33,11 @@ class FirewallRule(object):
         """Firewall resource.
 
         Args:
-          kwargs (dict): Object properties"""
+          kwargs (dict): Object properties
+
+        Raises:
+          ValueError: if the allowed and denied rules aren't set properly.
+        """
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
         self.create_time = kwargs.get('firewall_rule_create_time')
@@ -38,18 +46,83 @@ class FirewallRule(object):
         self.network = kwargs.get('firewall_rule_network')
         self._priority = kwargs.get('firewall_rule_priority')
         self.direction = kwargs.get('firewall_rule_direction')
-        self.source_ranges = parser.json_unstringify(
-            kwargs.get('firewall_rule_source_ranges'))
-        self.destination_ranges = parser.json_unstringify(
-            kwargs.get('firewall_rule_destination_ranges'))
-        self.source_tags = parser.json_unstringify(
-            kwargs.get('firewall_rule_source_tags'))
-        self.target_tags = parser.json_unstringify(
-            kwargs.get('firewall_rule_target_tags'))
+        self._source_ranges = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_source_ranges'), default=list()))
+        self._destination_ranges = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_destination_ranges'), default=list()))
+        self._source_tags = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_source_tags'), default=list()))
+        self._target_tags = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_target_tags'), default=list()))
+        self._source_service_accounts = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_source_service_accounts'),
+            default=list()))
+        self._target_service_accounts = frozenset(parser.json_unstringify(
+            kwargs.get('firewall_rule_target_service_accounts'),
+            default=list()))
         self.allowed = parser.json_unstringify(
             kwargs.get('firewall_rule_allowed'))
         self.denied = parser.json_unstringify(
             kwargs.get('firewall_rule_denied'))
+        if self.allowed and self.denied:
+            raise ValueError('Cannot have allowed and denied rules')
+        if self.allowed is None and self.denied is None:
+            raise ValueError('Either allowed or denied rules must be set')
+        self._firewall_action = None
+
+    @property
+    def source_ranges(self):
+        """The sorted source ranges for this policy.
+
+        Returns:
+          list: Sorted source ips ranges.
+        """
+        return sorted(self._source_ranges)
+
+    @property
+    def destination_ranges(self):
+        """The sorted destination ranges for this policy.
+
+        Returns:
+          list: Sorted destination ips ranges.
+        """
+        return sorted(self._destination_ranges)
+
+    @property
+    def source_tags(self):
+        """The sorted source tags for this policy.
+
+        Returns:
+          list: Sorted source tags.
+        """
+        return sorted(self._source_tags)
+
+    @property
+    def target_tags(self):
+        """The sorted target tags for this policy.
+
+        Returns:
+          list: Sorted target tags.
+        """
+        return sorted(self._target_tags)
+
+    @property
+    def source_service_accounts(self):
+        """The sorted source tags for this policy.
+
+        Returns:
+          list: Sorted source tags.
+        """
+        return sorted(self._source_service_accounts)
+
+    @property
+    def target_service_accounts(self):
+        """The sorted target tags for this policy.
+
+        Returns:
+          list: Sorted target tags.
+        """
+        return sorted(self._target_service_accounts)
 
     @property
     def priority(self):
@@ -64,3 +137,394 @@ class FirewallRule(object):
         if self._priority is None:
             return 1000
         return self._priority
+
+    @property
+    def firewall_action(self):
+        """The protocols and ports allowed or denied by this policy.
+
+        https://cloud.google.com/compute/docs/reference/beta/firewalls
+
+        Returns:
+          FirewallAction: An object that represents what ports and protocols are
+            allowed or denied.
+
+        Raises:
+          ValueError: If there are both allow and deny actions for a rule.
+        """
+        if not self._firewall_action:
+            if self.allowed:
+                self._firewall_action = FirewallAction(
+                    firewall_rules=self.allowed,
+                    firewall_rule_action='allow')
+            else:
+                self._firewall_action = FirewallAction(
+                    firewall_rules=self.denied,
+                    firewall_rule_action='deny')
+        return self._firewall_action
+
+    def __lt__(self, other):
+        """Test whether this policy is contained in another policy.
+
+        Checks if this rule is a subset of the allowed/denied ports and
+        protocols that are in the other rule.
+
+        Args:
+          other(FirewallRule): object to compare to
+
+        Returns:
+          bool: comparison result
+        """
+        return ((self.direction == other.direction or
+                 self.direction is None or
+                 other.direction is None) and
+                (self.network == other.network or other.network is None) and
+                set(self.source_tags).issubset(other.source_tags) and
+                set(self.target_tags).issubset(other.target_tags) and
+                self.firewall_action < other.firewall_action and
+                ips_in_list(self.source_ranges, other.source_ranges) and
+                ips_in_list(self.destination_ranges, other.destination_ranges))
+
+    def __gt__(self, other):
+        """Test whether this policy contains the other policy.
+
+        Checks if this rule is a superset of the allowed/denied ports and
+        protocols that are in the other rule.
+
+        Args:
+          other(FirewallRule): object to compare to
+
+        Returns:
+          bool: comparison result
+        """
+        return ((self.direction is None or
+                 other.direction is None or
+                 self.direction == other.direction) and
+                (self.network is None or self.network == other.network) and
+                set(other.source_tags).issubset(self.source_tags) and
+                set(other.target_tags).issubset(self.target_tags) and
+                self.firewall_action > other.firewall_action and
+                ips_in_list(other.source_ranges, self.source_ranges) and
+                ips_in_list(other.destination_ranges, self.destination_ranges))
+
+    # pylint: disable=protected-access
+    def __eq__(self, other):
+        """Test whether this policy is the same as the other policy.
+
+        Args:
+          other(FirewallRule): object to compare to
+
+        Returns:
+          bool: comparison result
+        """
+        return (self.direction == other.direction and
+                self.network == other.network and
+                self._source_tags == other._source_tags and
+                self._target_tags == other._target_tags and
+                self.source_ranges == other.source_ranges and
+                self.destination_ranges == other.destination_ranges and
+                self.firewall_action == other.firewall_action)
+    # pylint: enable=protected-access
+
+    # pylint: disable=protected-access
+    def is_equivalent(self, other):
+        """Test whether this policy is equivalent to the other policy.
+
+        Args:
+          other(FirewallRule): object to compare to
+
+        Returns:
+          bool: comparison result
+        """
+        return (self.direction == other.direction and
+                self.network == other.network and
+                self._source_tags == other._source_tags and
+                self._target_tags == other._target_tags and
+                self.source_ranges == other.source_ranges and
+                self.destination_ranges == other.destination_ranges and
+                self.firewall_action.is_equivalent(other.firewall_action))
+    # pylint: enable=protected-access
+
+
+class FirewallAction(object):
+    """An association of allowed or denied ports and protocols."""
+
+    VALID_ACTIONS = frozenset(['allow', 'deny'])
+    MATCH_ANY = '*'
+
+    def __init__(self, firewall_rules=None, firewall_rule_action='allow'):
+        """Initialize.
+
+        Args:
+          firewall_rules (list): A list of dictionaries of allowed ports
+            and protocols.
+          firewall_rule_action (str): The action, either allow or deny.
+
+        Raises:
+          ValueError: If there are both allow and deny rules.
+        """
+        if firewall_rule_action not in self.VALID_ACTIONS:
+            raise ValueError(
+                'Firewall rule action must be either allow or deny, got: %s' % (
+                    firewall_rule_action))
+        self.action = firewall_rule_action
+        self._any_value = None
+        if firewall_rules:
+            assert isinstance(firewall_rules, list)
+            self.rules = sort_rules(firewall_rules)
+        else:
+            self.rules = []
+
+        self._applies_to_all = None
+
+        self._expanded_rules = None
+
+    @property
+    def applies_to_all(self):
+        """Returns whether this applies to all ports and protocols or not.
+
+        Returns:
+          bool: Whether this applies to all ports and protocols or not.
+        """
+        if self._applies_to_all is None:
+            self._applies_to_all = False
+            for rule in self.rules:
+                protocol = rule.get('IPProtocol')
+                if protocol == 'all':
+                    self._applies_to_all = True
+                    break
+        return self._applies_to_all
+
+    @property
+    def any_value(self):
+        """Returns whether this rule matches any value.
+
+        Returns:
+          bool: Whether this rule matches any value.
+        """
+        if self._any_value is None:
+            self._any_value = all(rule == self.MATCH_ANY for rule in self.rules)
+        return self._any_value
+
+    @property
+    def expanded_rules(self):
+        """Returns an expanded set of ports.
+
+        Returns:
+          dict: A dict of protocol to all port numbers.
+        """
+        if self._expanded_rules is None:
+            self._expanded_rules = {}
+            if not self.any_value:
+                for rule in self.rules:
+                    protocol = rule.get('IPProtocol')
+                    ports = rule.get('ports', ['all'])
+                    expanded_ports = set(expand_ports(ports))
+                    current_ports = self._expanded_rules.get(protocol, set([]))
+                    current_ports.update(expanded_ports)
+                    self._expanded_rules[protocol] = current_ports
+        return self._expanded_rules
+
+    @staticmethod
+    def ports_are_subset(ports_1, ports_2):
+        """Returns whether one port list is a subset of another.
+
+        Args:
+          ports_1 (list): A list of string port numbers.
+          ports_2 (list): A list of string port numbers.
+
+        Returns:
+          bool: Whether ports_1 are a subset of ports_2 or not.
+        """
+        if any([a in ports_2 for a in ALL_REPRESENTATIONS]):
+            return True
+        return set(ports_1).issubset(ports_2)
+
+    @staticmethod
+    def ports_are_equal(ports_1, ports_2):
+        """Returns whether two port lists are the same.
+
+        Args:
+          ports_1 (list): A list of string port numbers.
+          ports_2 (list): A list of string port numbers.
+
+        Returns:
+          bool: Whether ports_1 have the same ports as ports_2.
+        """
+        if (any([a in ports_1 for a in ALL_REPRESENTATIONS]) and
+                any([a in ports_2 for a in ALL_REPRESENTATIONS])):
+            return True
+        return set(ports_1) == set(ports_2)
+
+    def is_equivalent(self, other):
+        """Returns whether this action and another are functionally equivalent.
+
+        Args:
+          other (FirewallAction): Another FirewallAction.
+
+        Returns:
+          bool: Whether these two FirewallActions are functionally equivalent.
+        """
+        return (self.action == other.action and
+                (self.any_value or other.any_value or
+                 self.expanded_rules.keys() == other.expanded_rules.keys() and
+                 all([
+                     self.ports_are_equal(
+                         self.expanded_rules.get(protocol, []),
+                         other.expanded_rules.get(protocol, []))
+                     for protocol in self.expanded_rules
+                 ])))
+
+    def __lt__(self, other):
+        """Less than.
+
+        Args:
+          other (FirewallAction): The FirewallAction to compare to.
+
+        Returns:
+          bool: Whether this action is a subset of the other action.
+        """
+        return (self.action == other.action and
+                (self.any_value or
+                 other.any_value or
+                 other.applies_to_all or not
+                 other.expanded_rules or
+                 all([
+                     self.ports_are_subset(
+                         self.expanded_rules.get(protocol, []),
+                         other.expanded_rules.get(protocol, []))
+                     for protocol in self.expanded_rules])))
+
+    def __gt__(self, other):
+        """Greater than.
+
+        Args:
+          other (FirewallAction): The FirewallAction to compare to.
+
+        Returns:
+          bool: Whether this action is a superset of the other action.
+        """
+        return (self.action == other.action and
+                (self.any_value or
+                 other.any_value or
+                 self.applies_to_all or not
+                 self.expanded_rules or
+                 all([
+                     self.ports_are_subset(
+                         other.expanded_rules.get(protocol, []),
+                         self.expanded_rules.get(protocol, []))
+                     for protocol in other.expanded_rules])))
+
+    def __eq__(self, other):
+        """Equals.
+
+        Args:
+          other (FirewallAction): The FirewallAction to compare to.
+
+        Returns:
+          bool: If this action is the exact same as the other FirewallAction.
+        """
+        return self.action == other.action and self.rules == other.rules
+
+def sort_rules(rules):
+    """Sorts firewall rules by protocol and sorts ports.
+
+    Args:
+      rules (list): A list of firewall rule dictionaries.
+
+    Returns:
+      list: A list of sorted firewall rules.
+    """
+    sorted_rules = []
+    if FirewallAction.MATCH_ANY in rules:
+        return rules
+    for rule in sorted(rules, key=lambda k: k.get('IPProtocol', '')):
+        if 'ports' in rule:
+            # Sort ports numerically handle ranges through sorting by start port
+            rule['ports'] = sorted(rule['ports'],
+                                   key=lambda k: int(k.split('-')[0]))
+        sorted_rules.append(rule)
+    return sorted_rules
+
+
+def ips_in_list(ips, ips_list):
+    """Checks whether the ips and ranges are all in a list.
+
+    Examples:
+      ips_in_list([1.1.1.1], [0.0.0.0/0]) = True
+      ips_in_list([1.1.1.1/24], [0.0.0.0/0]) = True
+      ips_in_list([1.1.1.1, 1.1.1.2], [0.0.0.0/0]) = True
+      ips_in_list([1.1.1.1, 2.2.2.2], [1.1.1.0/24, 2.2.2.0/24]) = True
+      ips_in_list([0.0.0.0/0], [1.1.1.1]) = False
+
+    Args:
+      ips (list): A list of string IP addresses.
+      ips_list (list): A list of string IP addresses.
+
+    Returns:
+      bool: Whether the ips are all in the given ips_list.
+    """
+    if not ips or not ips_list:
+        return True
+    for ip_addr in ips:
+        if not ips_list:
+            return False
+        if not any([ip_in_range(ip_addr, ips) for ips in ips_list]):
+            return False
+    return True
+
+def ip_in_range(ip_addr, ip_range):
+    """Checks whether the ip/ip range is in another ip range.
+
+    Examples:
+      ip_in_range(1.1.1.1, 0.0.0.0/0) = True
+      ip_in_range(1.1.1.1/24, 0.0.0.0/0) = True
+      ip_in_range(0.0.0.0/0, 1.1.1.1) = False
+
+    Args:
+      ip_addr (string): A list of string IP addresses.
+      ip_range (string): A list of string IP addresses.
+
+    Returns:
+      bool: Whether the ip / ip range is in another ip range.
+    """
+    ip_network = netaddr.IPNetwork(ip_addr)
+    ip_range_network = netaddr.IPNetwork(ip_range)
+    return ip_network in ip_range_network
+
+def expand_port_range(port_range):
+    """Expands a port range.
+
+    From https://cloud.google.com/compute/docs/reference/beta/firewalls, ports
+    can be of the form "<number>-<number>".
+
+    Args:
+      port_range (string): A string of format "<number_1>-<number_2>".
+
+    Returns:
+      list: A list of string integers from number_1 to number_2.
+    """
+    start, end = port_range.split('-')
+    return [str(i) for i in xrange(int(start), int(end) + 1)]
+
+def expand_ports(ports):
+    """Expands all ports in a list.
+
+    From https://cloud.google.com/compute/docs/reference/beta/firewalls, ports
+    can be of the form "<number" or "<number>-<number>".
+
+    Args:
+      ports (list): A list of strings of format "<number>" or
+        "<number_1>-<number_2>".
+
+    Returns:
+      list: A list of all port number strings with the ranges expanded.
+    """
+    expanded_ports = []
+    if not ports:
+        return []
+    for port_str in ports:
+        if '-' in port_str:
+            expanded_ports.extend(expand_port_range(port_str))
+        else:
+            expanded_ports.append(port_str)
+    return expanded_ports

@@ -148,13 +148,18 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             use_rate_limiter = False
 
         self._backend_services = None
-        self._forwarding_rules = None
+        self._disks = None
         self._firewalls = None
+        self._forwarding_rules = None
+        self._global_operations = None
         self._instance_group_managers = None
         self._instance_groups = None
-        self._instances = None
         self._instance_templates = None
+        self._instances = None
+        self._networks = None
+        self._projects = None
         self._region_instance_groups = None
+        self._subnetworks = None
 
         super(ComputeRepositoryClient, self).__init__(
             'compute', versions=['beta', 'v1'],
@@ -175,12 +180,12 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         return self._backend_services
 
     @property
-    def forwarding_rules(self):
-        """Returns a _ComputeForwardingRulesRepository instance."""
-        if not self._forwarding_rules:
-            self._forwarding_rules = self._init_repository(
-                _ComputeForwardingRulesRepository)
-        return self._forwarding_rules
+    def disks(self):
+        """Returns a _ComputeDisksRepository instance."""
+        if not self._disks:
+            self._disks = self._init_repository(
+                _ComputeDisksRepository)
+        return self._disks
 
     @property
     def firewalls(self):
@@ -191,6 +196,22 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             self._firewalls = self._init_repository(
                 _ComputeFirewallsRepository, version='beta')
         return self._firewalls
+
+    @property
+    def forwarding_rules(self):
+        """Returns a _ComputeForwardingRulesRepository instance."""
+        if not self._forwarding_rules:
+            self._forwarding_rules = self._init_repository(
+                _ComputeForwardingRulesRepository)
+        return self._forwarding_rules
+
+    @property
+    def global_operations(self):
+        """Returns a _ComputeGlobalOperationsRepository instance."""
+        if not self._global_operations:
+            self._global_operations = self._init_repository(
+                _ComputeGlobalOperationsRepository)
+        return self._global_operations
 
     @property
     def instance_group_managers(self):
@@ -209,14 +230,6 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         return self._instance_groups
 
     @property
-    def instances(self):
-        """Returns a _ComputeInstancesRepository instance."""
-        if not self._instances:
-            self._instances = self._init_repository(
-                _ComputeInstancesRepository)
-        return self._instances
-
-    @property
     def instance_templates(self):
         """Returns a _ComputeInstanceTemplatesRepository instance."""
         if not self._instance_templates:
@@ -225,12 +238,44 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         return self._instance_templates
 
     @property
+    def instances(self):
+        """Returns a _ComputeInstancesRepository instance."""
+        if not self._instances:
+            self._instances = self._init_repository(
+                _ComputeInstancesRepository)
+        return self._instances
+
+    @property
+    def networks(self):
+        """Returns a _ComputeNetworksRepository instance."""
+        if not self._networks:
+            self._networks = self._init_repository(
+                _ComputeNetworksRepository)
+        return self._networks
+
+    @property
+    def projects(self):
+        """Returns a _ComputeProjectsRepository instance."""
+        if not self._projects:
+            self._projects = self._init_repository(
+                _ComputeProjectsRepository)
+        return self._projects
+
+    @property
     def region_instance_groups(self):
         """Returns a _ComputeRegionInstanceGroupsRepository instance."""
         if not self._region_instance_groups:
             self._region_instance_groups = self._init_repository(
                 _ComputeRegionInstanceGroupsRepository)
         return self._region_instance_groups
+
+    @property
+    def subnetworks(self):
+        """Returns a _ComputeSubnetworksRepository instance."""
+        if not self._subnetworks:
+            self._subnetworks = self._init_repository(
+                _ComputeSubnetworksRepository)
+        return self._subnetworks
     # pylint: enable=missing-return-doc, missing-return-type-doc
 # pylint: enable=too-many-instance-attributes
 
@@ -249,6 +294,53 @@ class _ComputeBackendServicesRepository(
         """
         super(_ComputeBackendServicesRepository, self).__init__(
             component='backendServices', **kwargs)
+
+class _ComputeDisksRepository(
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Disks repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeDisksRepository, self).__init__(
+            component='disks', **kwargs)
+
+    # Extend the base list implementation to support the required zone field.
+    # pylint: disable=arguments-differ
+    def list(self, resource, zone, **kwargs):
+        """List disks by zone.
+
+        Args:
+            resource (str): The project to query resources for.
+            zone (str): The zone of the instance group to query.
+            **kwargs (dict): Additional args to pass through to the base method.
+
+        Returns:
+            iterator: An iterator over each page of results from the API.
+        """
+        kwargs['zone'] = zone
+        return repository_mixins.ListQueryMixin.list(self, resource, **kwargs)
+    # pylint: enable=arguments-differ
+
+
+class _ComputeFirewallsRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Forwarding Rules repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeFirewallsRepository, self).__init__(
+            component='firewalls', **kwargs)
 
 
 class _ComputeForwardingRulesRepository(
@@ -283,11 +375,10 @@ class _ComputeForwardingRulesRepository(
         return repository_mixins.ListQueryMixin.list(self, resource, **kwargs)
     # pylint: enable=arguments-differ
 
-
-class _ComputeFirewallsRepository(
-        repository_mixins.ListQueryMixin,
+class _ComputeGlobalOperationsRepository(
+        repository_mixins.GetQueryMixin,
         _base_repository.GCPRepository):
-    """Implementation of Compute Forwarding Rules repository."""
+    """Implementation of Compute Global Operations repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -295,9 +386,8 @@ class _ComputeFirewallsRepository(
         Args:
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
-        super(_ComputeFirewallsRepository, self).__init__(
-            component='firewalls', **kwargs)
-
+        super(_ComputeGlobalOperationsRepository, self).__init__(
+            component='globalOperations', entity_field='operation', **kwargs)
 
 class _ComputeInstanceGroupManagersRepository(
         repository_mixins.AggregatedListQueryMixin,
@@ -348,6 +438,21 @@ class _ComputeInstanceGroupsRepository(
             self, resource, verb='listInstances', **kwargs)
 
 
+class _ComputeInstanceTemplatesRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Instance Templates repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeInstanceTemplatesRepository, self).__init__(
+            component='instanceTemplates', **kwargs)
+
+
 class _ComputeInstancesRepository(
         repository_mixins.AggregatedListQueryMixin,
         repository_mixins.ListQueryMixin,
@@ -381,10 +486,10 @@ class _ComputeInstancesRepository(
     # pylint: enable=arguments-differ
 
 
-class _ComputeInstanceTemplatesRepository(
+class _ComputeNetworksRepository(
         repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
-    """Implementation of Compute Instance Templates repository."""
+    """Implementation of Compute Networks repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -392,8 +497,23 @@ class _ComputeInstanceTemplatesRepository(
         Args:
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
-        super(_ComputeInstanceTemplatesRepository, self).__init__(
-            component='instanceTemplates', **kwargs)
+        super(_ComputeNetworksRepository, self).__init__(
+            component='networks', **kwargs)
+
+
+class _ComputeProjectsRepository(
+        repository_mixins.GetQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Projects repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeProjectsRepository, self).__init__(
+            component='projects', **kwargs)
 
 
 class _ComputeRegionInstanceGroupsRepository(
@@ -426,6 +546,39 @@ class _ComputeRegionInstanceGroupsRepository(
         kwargs['region'] = region
         return repository_mixins.ListQueryMixin.list(
             self, resource, verb='listInstances', **kwargs)
+
+
+class _ComputeSubnetworksRepository(
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Subnetworks repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeSubnetworksRepository, self).__init__(
+            component='subnetworks', **kwargs)
+
+    # Extend the base list implementation to support the required region field.
+    # pylint: disable=arguments-differ
+    def list(self, resource, region, **kwargs):
+        """List subnetworks by region.
+
+        Args:
+            resource (str): The project to query resources for.
+            region (str): The region of the forwarding rules to query.
+            **kwargs (dict): Additional args to pass through to the base method.
+
+        Returns:
+            iterator: An iterator over each page of results from the API.
+        """
+        kwargs['region'] = region
+        return repository_mixins.ListQueryMixin.list(self, resource, **kwargs)
+    # pylint: enable=arguments-differ
 
 
 class ComputeClient(object):
@@ -467,6 +620,40 @@ class ComputeClient(object):
         return _flatten_aggregated_list_results(project_id, paged_results,
                                                 'backendServices')
 
+    def get_disks(self, project_id, zone=None):
+        """Return the list of all disks in the project.
+
+        Args:
+            project_id (str): The project id.
+            zone (str): An optional zone to query, if not provided then all
+                disks in all zones are returned.
+
+        Returns:
+            list: A list of disk resources for this project.
+        """
+        repository = self.repository.disks
+        if zone:
+            paged_results = repository.list(project_id, zone)
+            results = _flatten_list_results(project_id, paged_results, 'items')
+        else:
+            paged_results = repository.aggregated_list(project_id)
+            results = _flatten_aggregated_list_results(project_id,
+                                                       paged_results,
+                                                       'disks')
+        return results
+
+    def get_firewall_rules(self, project_id):
+        """Get the firewall rules for a given project id.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            list: A list of firewall rules for this project id.
+        """
+        paged_results = self.repository.firewalls.list(project_id)
+        return _flatten_list_results(project_id, paged_results, 'items')
+
     def get_forwarding_rules(self, project_id, region=None):
         """Get the forwarding rules for a project.
 
@@ -491,38 +678,29 @@ class ComputeClient(object):
                                                        'forwardingRules')
         return results
 
-    def get_firewall_rules(self, project_id):
-        """Get the firewall rules for a given project id.
-
+    def get_global_operation(self, project_id, operation_id):
+        """Get the Operations Status
         Args:
             project_id (str): The project id.
+            operation_id (str): The operation id.
 
         Returns:
-            list: A list of firewall rules for this project id.
+            dict: Global Operation status and info.
+            https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+        Raises:
+            ApiNotEnabledError: Returns if the api is not enabled.
+            ApiExecutionError: Returns if the api is not executable.
+
         """
-        paged_results = self.repository.firewalls.list(project_id)
-        return _flatten_list_results(project_id, paged_results, 'items')
-
-    def get_instances(self, project_id, zone=None):
-        """Get the instances for a project.
-
-        Args:
-            project_id (str): The project id.
-            zone (str): The zone to list the instances in.
-
-        Returns:
-            list: A list of instances for this project.
-        """
-        repository = self.repository.instances
-        if zone:
-            paged_results = repository.list(project_id, zone)
-            results = _flatten_list_results(project_id, paged_results, 'items')
-        else:
-            paged_results = repository.aggregated_list(project_id)
-            results = _flatten_aggregated_list_results(project_id,
-                                                       paged_results,
-                                                       'instances')
-        return results
+        try:
+            return self.repository.global_operations.get(
+                project_id, operation_id)
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
 
     def get_instance_group_instances(self, project_id, instance_group_name,
                                      region=None, zone=None):
@@ -566,6 +744,20 @@ class ComputeClient(object):
             if 'instance' in instance_data
         ]
 
+    def get_instance_group_managers(self, project_id):
+        """Get the instance group managers for a project.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            list: A list of instance group managers for this project.
+        """
+        paged_results = self.repository.instance_group_managers.aggregated_list(
+            project_id)
+        return _flatten_aggregated_list_results(project_id, paged_results,
+                                                'instanceGroupManagers')
+
     def get_instance_groups(self, project_id):
         """Get the instance groups for a project.
 
@@ -603,16 +795,142 @@ class ComputeClient(object):
         paged_results = self.repository.instance_templates.list(project_id)
         return _flatten_list_results(project_id, paged_results, 'items')
 
-    def get_instance_group_managers(self, project_id):
-        """Get the instance group managers for a project.
+    def get_instances(self, project_id, zone=None):
+        """Get the instances for a project.
+
+        Args:
+            project_id (str): The project id.
+            zone (str): The zone to list the instances in.
+
+        Returns:
+            list: A list of instances for this project.
+        """
+        repository = self.repository.instances
+        if zone:
+            paged_results = repository.list(project_id, zone)
+            results = _flatten_list_results(project_id, paged_results, 'items')
+        else:
+            paged_results = repository.aggregated_list(project_id)
+            results = _flatten_aggregated_list_results(project_id,
+                                                       paged_results,
+                                                       'instances')
+        return results
+
+    def get_networks(self, project_id):
+        """Get the networks list for a given project id.
 
         Args:
             project_id (str): The project id.
 
         Returns:
-            list: A list of instance group managers for this project.
+            list: A list of networks for this project id.
         """
-        paged_results = self.repository.instance_group_managers.aggregated_list(
-            project_id)
-        return _flatten_aggregated_list_results(project_id, paged_results,
-                                                'instanceGroupManagers')
+        paged_results = self.repository.networks.list(project_id)
+        return _flatten_list_results(project_id, paged_results, 'items')
+
+    def get_project(self, project_id):
+        """Returns the specified Project resource.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            dict: A Compute Project resource dict.
+            https://cloud.google.com/compute/docs/reference/latest/projects/get
+        """
+        try:
+            return self.repository.projects.get(project_id)
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+
+    def get_quota(self, project_id, metric):
+        """Returns the quota for any metric
+
+        Args:
+            project_id (str): The project id.
+            metric (str): The metric name of the quota needed.
+
+        Returns:
+            dict: The quota of a requested metric in a dict.
+                Example:
+                {
+                  "metric": "FIREWALLS",
+                  "limit": 100.0,
+                  "usage": 9.0
+                }
+
+        Raises:
+            KeyError: Metric was not found in the project.
+        """
+        resource = self.get_project(project_id)
+        quotas = resource.get('quotas', [])
+        for quota in quotas:
+            if quota.get('metric', '') == metric:
+                return quota
+        raise KeyError(
+            "Passed in metric, %s, was not found for project id, %s." %
+            (metric, project_id))
+
+    def get_firewall_quota(self, project_id):
+        """Calls get_quota to request the firewall quota
+        Args:
+          project_id (str): The project id.
+
+        Returns:
+            dict: The quota of a requested metric in a dict.
+                Example:
+                {
+                  "metric": "FIREWALLS",
+                  "limit": 100.0,
+                  "usage": 9.0
+                }
+
+        Raises:
+            KeyError: Metric was not a firewall resource.
+        """
+        metric = 'FIREWALLS'
+        resource = self.get_quota(project_id, metric)
+        return resource
+
+    def get_subnetworks(self, project_id, region=None):
+        """Return the list of all subnetworks in the project.
+
+        Args:
+            project_id (str): The project id.
+            region (str): An optional region to query, if not provided then all
+                subnetworks in all regions are returned.
+
+        Returns:
+            list: A list of subnetwork resources for this project.
+        """
+        repository = self.repository.subnetworks
+        if region:
+            paged_results = repository.list(project_id, region)
+            results = _flatten_list_results(project_id, paged_results, 'items')
+        else:
+            paged_results = repository.aggregated_list(project_id)
+            results = _flatten_aggregated_list_results(project_id,
+                                                       paged_results,
+                                                       'subnetworks')
+        return results
+
+    def is_api_enabled(self, project_id):
+        """Checks if the Compute API is enabled for the specified project.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            bool: True if the API is enabled, else False.
+        """
+        try:
+            result = self.repository.projects.get(project_id, fields='name')
+            return bool('name' in result)  # True if name, otherwise False.
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, _ = _api_not_enabled(e)
+            if api_not_enabled:
+                return False
+            raise api_errors.ApiExecutionError(project_id, e)

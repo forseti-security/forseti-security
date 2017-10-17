@@ -22,6 +22,8 @@ FROM ubuntu:16.04
 RUN apt-get update && apt-get install -qq -y \
     curl \
     git \
+    libffi-dev \
+    libssl-dev \
     libmysqlclient-dev \
     python-pip \
     python-dev \
@@ -37,6 +39,7 @@ RUN pip install -q --upgrade \
     grpcio==1.4.0 \
     grpcio-tools==1.4.0 \
     mock \
+    netaddr \
     parameterized \
     pylint
 

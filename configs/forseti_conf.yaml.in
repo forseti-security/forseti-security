@@ -141,10 +141,17 @@ notifier:
     # to send alerts for every violation found
     resources:
         - resource: policy_violations
-          should_notify: true
+          should_notify: false
           pipelines:
             - name: email_violations_pipeline
               configuration:
                 sendgrid_api_key: {SENDGRID_API_KEY}
                 sender: {EMAIL_SENDER}
                 recipient: {EMAIL_RECIPIENT}
+            # Slack webhook pipeline.
+            # Create an incoming webhook in your organization's Slack setting, located at:
+            # https://[your_org].slack.com/apps/manage/custom-integrations
+            # Add the provided URL in the configuration below in `webhook_url`.
+            - name: slack_webhook_pipeline
+              configuration:
+                webhook_url: ''

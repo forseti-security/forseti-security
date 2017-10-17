@@ -38,6 +38,15 @@ CREATE_TABLE_MAP = {
     # appengine
     'appengine': create_tables.CREATE_APPENGINE_TABLE,
 
+    # appengine services
+    'appengine_services': create_tables.CREATE_APPENGINE_SERVICES_TABLE,
+
+    # appengine versions
+    'appengine_versions': create_tables.CREATE_APPENGINE_VERSIONS_TABLE,
+
+    # appengine instances
+    'appengine_instances': create_tables.CREATE_APPENGINE_INSTANCES_TABLE,
+
     # backend services
     'backend_services': create_tables.CREATE_BACKEND_SERVICES_TABLE,
 

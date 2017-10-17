@@ -16,7 +16,7 @@
 
 
 class ListQueryMixin(object):
-    """Mixin that implements Paged List query."""
+    """Mixin that implements paged List query."""
 
     def list(self, resource=None, fields=None, max_results=None, verb='list',
              **kwargs):
@@ -56,7 +56,7 @@ class ListQueryMixin(object):
 
 
 class AggregatedListQueryMixin(ListQueryMixin):
-    """Mixin that implements a Paged List and AggregatedList query."""
+    """Mixin that implements a paged AggregatedList query."""
 
     def aggregated_list(self, resource=None, fields=None, max_results=None,
                         verb='aggregatedList', **kwargs):
@@ -92,7 +92,7 @@ class GetQueryMixin(object):
             **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
-            dict: GCE response.
+            dict: Response from the API.
 
         Raises:
             ValueError: When get_key_field was not defined in the base
@@ -143,7 +143,7 @@ class GetIamPolicyQueryMixin(object):
             **kwargs (dict): Optional additional arguments to pass to the query.
 
         Returns:
-            dict: GCE response.
+            dict: Response from the API.
 
         Raises:
             errors.HttpError: When attempting to get a non-existent entity.
@@ -163,7 +163,7 @@ class GetIamPolicyQueryMixin(object):
 
 
 class SearchQueryMixin(object):
-    """Mixin that implements Search query."""
+    """Mixin that implements a paged Search query."""
 
     def search(self, query=None, fields=None, max_results=500, verb='search'):
         """List all subresource entities visable to the caller.
@@ -177,7 +177,7 @@ class SearchQueryMixin(object):
             verb (str): The method to call on the API.
 
         Yields:
-            dict: Response from the API.
+            dict: An API response containing one page of results.
         """
         req_body = {}
         if query:

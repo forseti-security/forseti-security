@@ -66,6 +66,26 @@ class IamTest(unittest_utils.ForsetiTestCase):
 
         self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
 
+    def test_get_service_account_keys_key_type(self):
+        """Test get iam project service accounts."""
+        http_mocks.mock_http_response(
+            fake_iam.GET_PROJECTS_SERVICEACCOUNTS_KEYS)
+
+        for key_type in self.iam_api_client.KEY_TYPES:
+            result = self.iam_api_client.get_service_account_keys(
+                fake_iam.FAKE_SERVICEACCOUNT_NAME, key_type=key_type)
+
+            self.assertEquals(fake_iam.EXPECTED_SERVICE_ACCOUNT_KEYS, result)
+
+    def test_get_service_account_keys_invalid_key_type(self):
+        """Test get iam project service accounts with invalid key_type."""
+        http_mocks.mock_http_response(
+            fake_iam.GET_PROJECTS_SERVICEACCOUNTS_KEYS)
+
+        with self.assertRaises(ValueError):
+             self.iam_api_client.get_service_account_keys(
+                 fake_iam.FAKE_SERVICEACCOUNT_NAME, key_type='Other')
+
     def test_get_service_account_keys_raises(self):
         """Test get iam project service accounts not found."""
         http_mocks.mock_http_response(fake_iam.SERVICE_ACCOUNT_NOT_FOUND, '404')

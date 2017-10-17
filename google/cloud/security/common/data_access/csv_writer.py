@@ -14,14 +14,15 @@
 
 """Writes the csv files for upload to Cloud SQL."""
 from contextlib import contextmanager
-import csv
 import os
 import tempfile
+
+import unicodecsv as csv
 
 from google.cloud.security.common.data_access.errors import CSVFileError
 
 
-APPENGINE_SERVICES_FIELDNAMES = [
+APPENGINE_FIELDNAMES = [
     'project_id',
     'name',
     'app_id',
@@ -36,6 +37,30 @@ APPENGINE_SERVICES_FIELDNAMES = [
     'iap',
     'gcr_domain',
     'raw_application'
+]
+
+APPENGINE_SERVICES_FIELDNAMES = [
+    'project_id',
+    'app_id',
+    'service_id',
+    'service'
+]
+
+APPENGINE_VERSIONS_FIELDNAMES = [
+    'project_id',
+    'app_id',
+    'service_id',
+    'version_id',
+    'version'
+]
+
+APPENGINE_INSTANCES_FIELDNAMES = [
+    'project_id',
+    'app_id',
+    'service_id',
+    'version_id',
+    'instance_id',
+    'instance'
 ]
 
 BACKEND_SERVICES_FIELDNAMES = [
@@ -190,6 +215,8 @@ FIREWALL_RULES_FIELDNAMES = [
     'firewall_rule_destination_ranges',
     'firewall_rule_source_tags',
     'firewall_rule_target_tags',
+    'firewall_rule_source_service_accounts',
+    'firewall_rule_target_service_accounts',
     'firewall_rule_allowed',
     'firewall_rule_denied',
     'firewall_rule_self_link',
@@ -394,7 +421,10 @@ SERVICE_ACCOUNTS_FIELDNAMES = [
 ]
 
 CSV_FIELDNAME_MAP = {
-    'appengine': APPENGINE_SERVICES_FIELDNAMES,
+    'appengine': APPENGINE_FIELDNAMES,
+    'appengine_services': APPENGINE_SERVICES_FIELDNAMES,
+    'appengine_versions': APPENGINE_VERSIONS_FIELDNAMES,
+    'appengine_instances': APPENGINE_INSTANCES_FIELDNAMES,
 
     'backend_services': BACKEND_SERVICES_FIELDNAMES,
 
