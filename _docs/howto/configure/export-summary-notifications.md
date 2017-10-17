@@ -1,6 +1,6 @@
 ---
-title: Export Summary Emails 
-order: 205
+title: Export Summary Notifications 
+order: 206
 ---
 # {{ page.title }}
 This page describes how to create an AppScript to find, parse, and upload the
