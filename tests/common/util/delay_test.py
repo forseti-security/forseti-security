@@ -24,7 +24,7 @@ from google.cloud.security.common.util import delay
 class DelayTest(unittest_utils.ForsetiTestCase):
     """ Tests for the Delay Utility."""
 
-    def mytest_delay(self):
+    def delay_test(self):
         """test to verify that a delay is used"""
         delay_by = 9
         param = 1
@@ -32,11 +32,11 @@ class DelayTest(unittest_utils.ForsetiTestCase):
         inside_function = Mock()
 
         @delay.delay(delay_by, clock=wait_function)
-        def test_function():
+        def function_test():
             inside_function(func)
             return func
 
-        result = test_function(param)
+        result = function_test(param)
         inside_function.assert_called_once_with(param)
         self.assertEqual(result, param)
         waitfunc.assert_called_once_with(delay_by)
