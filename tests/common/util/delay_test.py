@@ -15,8 +15,7 @@
 
 import time
 import unittest
-import google.apputils
-from mock import Mock, patch
+import mock
 from tests import unittest_utils
 from google.cloud.security.common.util import delay
 
@@ -28,8 +27,8 @@ class DelayTest(unittest_utils.ForsetiTestCase):
         """test to verify that a delay is used"""
         delay_by = 9
         param = 1
-        wait_function = Mock()
-        inside_function = Mock()
+        wait_function = mock.Mock()
+        inside_function = mock.Mock()
 
         @delay.delay(delay_by, clock=wait_function)
         def test_function(param):
