@@ -24,10 +24,10 @@ def delay(delay_by, clock=None):
     Args:
         delay_by(int): Number of seconds to delay by.
         clock(time.sleep): Clock used to measure delay (mainly used for tests).
-        If none is provided clock will be created.
+            If none is provided clock will be created.
 
     Returns:
-        (function): Wrapped function.
+        function: Wrapped function.
 
     """
     if clock is None:
@@ -37,10 +37,11 @@ def delay(delay_by, clock=None):
         """Decorator function for the wrapper.
 
         Args:
-            func: passes a function into the wrapper.
+            func(function): passes a function into the wrapper.
 
         Returns:
-            (function): Wrapped function.
+            function: Wrapped function.
+
         """
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -51,7 +52,9 @@ def delay(delay_by, clock=None):
                 **kwargs: Passed in keyword arguments.
 
             Returns:
-                (function): clock after its been delayed by the passed in argument.
+                function: clock after its been delayed by the passed in
+                    argument.
+
             """
             clock(delay_by)
             return func(*args, **kwargs)
