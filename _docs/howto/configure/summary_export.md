@@ -14,7 +14,7 @@ To complete this guide, you'll need the following:
 - A Forseti Security installation with
   [email notifications](http://forsetisecurity.org/docs/howto/configure/email-notification) enabled.
 - A GCP project with the
-  [BigQuery API enabled](https://pantheon.corp.google.com/flows/enableapi?apiid=bigquery) and
+  [BigQuery API enabled](https://console.cloud.google.com/flows/enableapi?apiid=bigquery) and
   [billing enabled](https://cloud.google.com/billing/docs/how-to/modify-project#enable_billing_for_a_project).
 
 ## Setting up configurations
