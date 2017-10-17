@@ -33,8 +33,8 @@ class DelayTest(unittest_utils.ForsetiTestCase):
 
         @delay.delay(delay_by, clock=wait_function)
         def test_function():
-            inside_function(x)
-            return x
+            inside_function(func)
+            return func
 
         result = test_function(param)
         inside_function.assert_called_once_with(param)

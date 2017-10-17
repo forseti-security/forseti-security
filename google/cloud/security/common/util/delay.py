@@ -17,16 +17,14 @@
 from functools import wraps
 import time
 
-from google.cloud.security.common.util import log_util
-
 
 def delay(delay_by, clock=None):
     """Delays execution of the decorated function.
 
     Args:
         delay_by(int): Number of seconds to delay by.
-        clock(time.sleep): Clock used to measure delay (mainly used for tests). If
-            None is provided clock will be created.
+        clock(time.sleep): Clock used to measure delay (mainly used for tests).
+        If none is provided clock will be created.
 
     Returns:
         (function): Wrapped function.
@@ -36,8 +34,25 @@ def delay(delay_by, clock=None):
         clock = time.sleep
 
     def decorate(func):
+        """Decorator function for the wrapper.
+
+        Args:
+            func: passes a function into the wrapper.
+
+        Returns:
+            (function): Wrapped function.
+        """
         @wraps(func)
         def wrapper(*args, **kwargs):
+            """Wrapper function for clock.
+
+            Args:
+                *args: Passed in arguments.
+                **kwargs: Passed in keyword arguments.
+
+            Returns:
+                (function): clock after its been delayed by the passed in argument.
+            """
             clock(delay_by)
             return func(*args, **kwargs)
 
