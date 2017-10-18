@@ -16,6 +16,7 @@
 import collections
 
 # pylint: disable=line-too-long
+from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util.email_util import EmailUtil
 from google.cloud.security.common.gcp_type import resource_util
@@ -146,13 +147,16 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
         )
         scanner_subject = '{} Complete - {} violation(s) found'.format(
             email_description, total_violations)
-        self.email_util.send(
-            email_sender=email_sender,
-            email_recipient=email_recipient,
-            email_subject=scanner_subject,
-            email_content=email_content,
-            content_type='text/html',
-            attachment=attachment)
+        try:
+            self.email_util.send(
+                email_sender=email_sender,
+                email_recipient=email_recipient,
+                email_subject=scanner_subject,
+                email_content=email_content,
+                content_type='text/html',
+                attachment=attachment)
+        except util_errors.EmailSendError:
+            LOGGER.warn('Unable to send Scanner Summary email')
 
     def run(  # pylint: disable=arguments-differ
             self, csv_name, output_filename, now_utc, all_violations,
