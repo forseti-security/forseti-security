@@ -42,7 +42,7 @@ class FirewallRuleTest(ForsetiTestCase):
 	      }
 	  ],
 	  'direction': 'INGRESS',
-          'selfLink': 'https:// insert link here'
+          'selfLink': 'https:// insert link here',
       }
       json_string = json.dumps(json_dict)
       rule = firewall_rule.FirewallRule.from_json(json_string)
@@ -69,6 +69,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'selfLink': 'https:// insert link here'
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Egress rule missing required field "destinationRanges".*',
         ),
         (
             {
@@ -89,6 +90,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'selfLink': 'https:// insert link here'
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Rule missing required field "name"',
         ),
         (
             {
@@ -103,6 +105,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'selfLink': 'https:// insert link here'
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Must have allowed or denied rules',
         ),
         (
             {
@@ -124,11 +127,12 @@ class FirewallRuleTest(ForsetiTestCase):
                 'selfLink': 'https:// insert link here'
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Rule "priority" out of range 0-65535',
         ),
     ])
-    def test_from_json_error(self, json_dict, expected_error):
+    def test_from_json_error(self, json_dict, expected_error, regexp):
       json_string = json.dumps(json_dict)
-      with self.assertRaises(expected_error):
+      with self.assertRaisesRegexp(expected_error, regexp):
           rule = firewall_rule.FirewallRule.from_json(json_string)
 
     def test_from_dict(self):
@@ -178,6 +182,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'selfLink': 'https:// insert link here'
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Egress rule missing required field "destinationRanges".*',
         ),
         (
             {
@@ -198,6 +203,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'selfLink': 'https:// insert link here'
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Rule missing required field "name"',
         ),
         (
             {
@@ -212,6 +218,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'selfLink': 'https:// insert link here'
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Must have allowed or denied rules',
         ),
         (
             {
@@ -233,10 +240,11 @@ class FirewallRuleTest(ForsetiTestCase):
                 'selfLink': 'https:// insert link here'
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Rule "priority" out of range 0-65535',
         ),
     ])
-    def test_from_dict_error(self, firewall_dict, expected_error):
-      with self.assertRaises(expected_error):
+    def test_from_dict_error(self, firewall_dict, expected_error, regexp):
+      with self.assertRaisesRegexp(expected_error, regexp):
           rule = firewall_rule.FirewallRule.from_dict(
               firewall_dict, validate=True)
 
@@ -275,6 +283,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            'Rule "priority" could not be converted to an integer: .*NaN.*',
         ),
         (
             {
@@ -285,6 +294,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            'Rule "priority" out of range 0-65535: "-1".',
         ),
         (
             {
@@ -295,11 +305,13 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            'Rule "priority" out of range 0-65535: "1000000000"',
         ),
     ])
-    def test_validate_priority_error(self, rule_dict):
+    def test_validate_priority_error(self, rule_dict, expected_regex):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaises(firewall_rule.InvalidFirewallRuleError):
+        with self.assertRaisesRegexp(firewall_rule.InvalidFirewallRuleError,
+                                     expected_regex):
             rule._validate_priority()
 
     @parameterized.parameterized.expand([
@@ -310,6 +322,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            ('Ingress rule missing required field oneof "sourceRanges" or'
+             ' "sourceTags" or "sourceServiceAccounts"'),
         ),
         (  # ingress rule has destination range
             {
@@ -320,6 +334,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            'Ingress rules cannot include "destinationRanges"',
         ),
         (  # egress rule has no destination ranges
             {
@@ -328,6 +343,7 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            'Egress rule missing required field "destinationRanges"',
         ),
         (  # egress rule has source ranges
             {
@@ -338,6 +354,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            ('Egress rules cannot include "sourceRanges", "sourceTags" or'
+             ' "sourceServiceAccounts"'),
         ),
         (  # egress rule has source tags
             {
@@ -348,11 +366,14 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            ('Egress rules cannot include "sourceRanges", "sourceTags" or'
+             ' "sourceServiceAccounts"'),
         ),
     ])
-    def test_validate_direction_error(self, rule_dict):
+    def test_validate_direction_error(self, rule_dict, expected_regex):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaises(firewall_rule.InvalidFirewallRuleError):
+        with self.assertRaisesRegexp(firewall_rule.InvalidFirewallRuleError,
+                               expected_regex):
             rule._validate_direction()
 
     @parameterized.parameterized.expand([
@@ -366,6 +387,7 @@ class FirewallRuleTest(ForsetiTestCase):
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Rule missing required field "name"',
         ),
         (
             {
@@ -376,6 +398,7 @@ class FirewallRuleTest(ForsetiTestCase):
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Rule missing required field "network"',
         ),
         (
             {
@@ -390,11 +413,12 @@ class FirewallRuleTest(ForsetiTestCase):
                     ]),
             },
             firewall_rule.InvalidFirewallActionError,
+            'Action must have field IPProtocol',
         ),
     ])
-    def test_validate_errors(self, rule_dict, expected_error):
+    def test_validate_errors(self, rule_dict, expected_error, regexp):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaises(expected_error):
+        with self.assertRaisesRegexp(expected_error, regexp):
             rule.validate()
 
     @parameterized.parameterized.expand([
@@ -408,6 +432,7 @@ class FirewallRuleTest(ForsetiTestCase):
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Rule missing required field "name"',
         ),
         (
             {
@@ -418,6 +443,7 @@ class FirewallRuleTest(ForsetiTestCase):
                     [{'IPProtocol': 'tcp', 'ports': ['21-23']}]),
             },
             firewall_rule.InvalidFirewallRuleError,
+            'Rule missing required field "network"',
         ),
         (
             {
@@ -432,11 +458,12 @@ class FirewallRuleTest(ForsetiTestCase):
                     ]),
             },
             firewall_rule.InvalidFirewallActionError,
+            'Action must have field IPProtocol',
         ),
     ])
-    def test_as_json_error(self, rule_dict, expected_error):
+    def test_as_json_error(self, rule_dict, expected_error, regexp):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaises(expected_error):
+        with self.assertRaisesRegexp(expected_error, regexp):
             rule.as_json()
 
     @parameterized.parameterized.expand([
@@ -471,6 +498,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            'Rule missing required field "name"',
         ),
         (
             {
@@ -480,6 +509,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            'Rule missing required field "network"',
         ),
         (
             {
@@ -490,6 +521,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            'Rule name exceeds length limit of 63 chars',
         ),
         (
             {
@@ -501,6 +534,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            'Rule entry "sourceRanges" must contain 256 or fewer values',
         ),
         (
             {
@@ -512,6 +547,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            'Rule entry "destinationRanges" must contain 256 or fewer values',
         ),
         (
             {
@@ -525,6 +562,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            'Rule entry "sourceTags" must contain 256 or fewer values',
         ),
         (
             {
@@ -538,6 +577,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_allowed': json.dumps(
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            'Rule entry "targetTags" must contain 256 or fewer values',
         ),
         (
             {
@@ -551,6 +592,8 @@ class FirewallRuleTest(ForsetiTestCase):
                 'firewall_rule_source_service_accounts': json.dumps(
                     ['sa1', 'sa2']),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            'Rule entry "sourceServiceAccount" may contain at most 1 value',
         ),
         (
             {
@@ -565,11 +608,14 @@ class FirewallRuleTest(ForsetiTestCase):
                     [{'IPProtocol': 'tcp', 'ports': ['22']}]),
                 'firewall_rule_source_service_accounts': json.dumps(['sa1']),
             },
+            firewall_rule.InvalidFirewallRuleError,
+            ('targetTags cannot be set when source/targetServiceAccounts '
+             'are set'),
         ),
     ])
-    def test_validate_keys_error(self, rule_dict):
+    def test_validate_keys_error(self, rule_dict, expected_error, regexp):
         rule = firewall_rule.FirewallRule(**rule_dict)
-        with self.assertRaises(firewall_rule.InvalidFirewallRuleError):
+        with self.assertRaisesRegexp(expected_error, regexp):
             rule.validate()
 
     @parameterized.parameterized.expand([
@@ -1066,60 +1112,82 @@ class FirewallActionTest(ForsetiTestCase):
     """Tests for FirewallAction."""
 
     @parameterized.parameterized.expand([
-        [{
-            'firewall_rules': [{}],
-        }],
-        [{
-            'firewall_rules':
-            [
-                {'IPProtocol': 'tcp', 'ports': ['21-23']},
-                {},
-            ],
-        }],
-        [{
-            'firewall_rules':
-            [
-                {'IPProtocol': 'tcp', 'ports': ['21-23'], 'invalid': 'test'},
-            ],
-        }],
-        [{
-            'firewall_rules':
-            [
-                {'IPProtocol': 'ucp', 'ports': ['21-23']},
-            ],
-        }],
-        [{
-            'firewall_rules':
-            [
-                {'IPProtocol': 'udp', 'ports': ['100-50']},
-            ],
-        }],
-        [{
-            'firewall_rules':
-            [
-                {'IPProtocol': 'udp', 'ports': ['0-5000000']},
-            ],
-        }],
+        (
+            {'firewall_rules': [{}],},
+            'Action must have field IPProtocol',
+        ),
+        (
+            {
+                'firewall_rules':
+                [
+                    {'IPProtocol': 'tcp', 'ports': ['21-23']},
+                    {},
+                ],
+            },
+            'Action must have field IPProtocol',
+        ),
+        (
+            {
+                'firewall_rules':
+                [
+                    {'IPProtocol': 'tcp', 'ports': ['21-23'], 'invalid': 'test'},
+                ],
+            },
+            'Action can only have "IPProtocol" and "ports"',
+        ),
+        (
+            {
+                'firewall_rules':
+                [
+                    {'IPProtocol': 'ucp', 'ports': ['21-23']},
+                ],
+            },
+            'Only "tcp" and "udp" can have ports specified',
+        ),
+        (
+            {
+                'firewall_rules':
+                [
+                    {'IPProtocol': 'udp', 'ports': ['100-50']},
+                ],
+            },
+            'Start port range > end port range',
+        ),
+        (
+            {
+                'firewall_rules':
+                [
+                    {'IPProtocol': 'udp', 'ports': ['0-5000000']},
+                ],
+            },
+            'Port must be <= 65535',
+        ),
     ])
-    def test_validate_errors(self, action_1_dict):
+    def test_validate_errors(self, action_1_dict, error_regexp):
         action = firewall_rule.FirewallAction(**action_1_dict)
-        with self.assertRaises(firewall_rule.InvalidFirewallActionError):
+        with self.assertRaisesRegexp(
+            firewall_rule.InvalidFirewallActionError, error_regexp):
           action.validate()
 
     @parameterized.parameterized.expand([
-        [{
-            'firewall_rules': [{}],
-        }],
-        [{
-            'firewall_rules': [
-                {'IPProtocol': 'tcp', 'ports': ['21-23']},
-                {},
-            ],
-        }],
+        (
+            {'firewall_rules': [{}]},
+            'Action must have field IPProtocol',
+        ),
+        (
+            {
+                'firewall_rules': [
+                    {'IPProtocol': 'tcp', 'ports': ['21-23']},
+                    {},
+                ],
+            },
+            'Action must have field IPProtocol',
+        ),
     ])
-    def test_json_dict_errors(self, action_dict):
+    def test_json_dict_errors(self, action_dict, error_regexp):
         action = firewall_rule.FirewallAction(**action_dict)
-        with self.assertRaises(firewall_rule.InvalidFirewallActionError):
+        with self.assertRaisesRegexp(
+            firewall_rule.InvalidFirewallActionError, error_regexp):
           action.json_dict()
 
     @parameterized.parameterized.expand([
