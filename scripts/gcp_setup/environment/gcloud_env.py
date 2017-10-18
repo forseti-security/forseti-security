@@ -113,6 +113,7 @@ class ForsetiGcpSetup(object):
         self.force_no_cloudshell = kwargs.get('no_cloudshell')
         self.skip_iam_check = kwargs.get('no_iam_check')
         self.branch = kwargs.get('branch') or 'master'
+        self.unattended_install = kwargs.get('unattended_install')
 
         self.is_devshell = False
         self.authed_user = None
@@ -137,10 +138,13 @@ class ForsetiGcpSetup(object):
         self.deploy_tpl_path = None
         self.forseti_conf_path = None
 
+        # forseti_conf.yaml.in properties
         self.skip_email = False
-        self.sendgrid_api_key = '""'
-        self.notification_sender_email = '""'
-        self.notification_recipient_email = '""'
+        self.sendgrid_api_key = kwargs.get('sendgrid_api_key')
+        self.notification_sender_email = None
+        self.notification_recipient_email = (
+            kwargs.get('notification_recipient_email'))
+        self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
 
     def run_setup(self):
         """Run the setup steps."""
@@ -173,7 +177,6 @@ class ForsetiGcpSetup(object):
         if not return_code:
             self.copy_config_to_bucket()
             self.grant_gcp_svc_acct_roles()
-            self.download_gsuite_svc_acct_key()
             self.copy_gsuite_key()
 
         self.post_install_instructions(deploy_success=(not return_code))
@@ -208,6 +211,22 @@ class ForsetiGcpSetup(object):
                                 stderr=subprocess.PIPE)
         out, err = proc.communicate()
         return proc.returncode, out, err
+
+    @staticmethod
+    def _sanitize_conf_values(conf_values):
+        """Sanitize the forseti_conf values not to be zero-length strings.
+
+        Args:
+            conf_values (dict): The conf values to replace in the
+                forseti_conf.yaml.
+
+        Returns:
+            dict: The sanitized values.
+        """
+        for key in conf_values.keys():
+            if not conf_values[key]:
+                conf_values[key] = '""'
+        return conf_values
 
     def check_proper_gcloud(self):
         """Check gcloud version and presence of alpha components."""
@@ -522,7 +541,7 @@ class ForsetiGcpSetup(object):
 
     def download_gsuite_svc_acct_key(self):
         """Download the service account key."""
-        print('\nDownloading GSuite service account key for %s'
+        print('\nDownloading G Suite service account key for %s'
               % self.gsuite_service_account)
         proc = subprocess.Popen(
             ['gcloud', 'iam', 'service-accounts', 'keys',
@@ -647,37 +666,18 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 ROOT_DIR_PATH, 'configs', 'forseti_conf_dm.yaml'))
 
-        # Ask for SendGrid API Key
-        print('Forseti can send email notifications through SendGrid '
-              'via an API key. '
-              'This step is optional and can be configured later.')
-        sendgrid_api_key = raw_input(
-            'What is your SendGrid API key? (press [enter] to skip) ').strip()
-        if sendgrid_api_key:
-            self.sendgrid_api_key = sendgrid_api_key
+        self._get_user_input()
 
-            # Ask for notification sender email
-            self.notification_sender_email = 'forseti-notify@localhost.domain'
-
-            # Ask for notification recipient email
-            notification_recipient_email = raw_input(
-                'At what email address do you want to receive notifications? '
-                '(press [enter] to skip) ').strip()
-            if notification_recipient_email:
-                self.notification_recipient_email = notification_recipient_email
-        else:
-            self.skip_email = True
-
-        conf_values = {
+        conf_values = self._sanitize_conf_values({
             'EMAIL_RECIPIENT': self.notification_recipient_email,
             'EMAIL_SENDER': self.notification_sender_email,
             'SENDGRID_API_KEY': self.sendgrid_api_key,
             'SCANNER_BUCKET': self.bucket_name[len('gs://'):],
             'GROUPS_SERVICE_ACCOUNT_KEY_FILE':
                 '/home/ubuntu/{}'.format(GSUITE_KEY_NAME),
-            'DOMAIN_SUPER_ADMIN_EMAIL': '""',
+            'DOMAIN_SUPER_ADMIN_EMAIL': self.gsuite_superadmin_email,
             'ENABLE_GROUP_SCANNER': 'true',
-        }
+        })
 
         with open(forseti_conf_in, 'r') as in_tmpl:
             tmpl_contents = in_tmpl.read()
@@ -688,6 +688,40 @@ class ForsetiGcpSetup(object):
 
         print('\nCreated forseti_conf_dm.yaml config file:\n    %s\n' %
               self.forseti_conf_path)
+
+    def _get_user_input(self):
+        """Ask user for specific setup values."""
+        if self.unattended_install:
+            return
+
+        if not self.sendgrid_api_key:
+            # Ask for SendGrid API Key
+            print('Forseti can send email notifications through SendGrid '
+                  'via an API key. '
+                  'This step is optional and can be configured later.')
+            self.sendgrid_api_key = raw_input(
+                'What is your SendGrid API key? '
+                '(press [enter] to skip) ').strip()
+        if self.sendgrid_api_key:
+            self.notification_sender_email = 'forseti-notify@localhost.domain'
+
+            # Ask for notification recipient email
+            if not self.notification_recipient_email:
+                self.notification_recipient_email = raw_input(
+                    'At what email address do you want to receive '
+                    'notifications? (press [enter] to skip) ').strip()
+        else:
+            self.skip_email = True
+
+
+        if not self.gsuite_superadmin_email:
+            # Ask for G Suite super admin email
+            print('To read G Suite Groups data, please provide a '
+                  'G Suite super admin email address. '
+                  'This step is optional and can be configured later.')
+            self.gsuite_superadmin_email = raw_input(
+                'What is your G Suite super admin email? '
+                '(press [enter] to skip) ').strip()
 
     def create_deployment(self):
         """Create the GCP deployment.
@@ -758,6 +792,7 @@ class ForsetiGcpSetup(object):
         Use 2**<attempt #> seconds of sleep() between attempts.
         """
         self._print_banner('Copy G Suite key to Forseti VM')
+        self.download_gsuite_svc_acct_key()
         print('scp-ing your gsuite_key.json to your Forseti GCE instance...')
         for i in range(1, GSUITE_KEY_SCP_ATTEMPTS+1):
             print('Attempt {} of {} ...'.format(i, GSUITE_KEY_SCP_ATTEMPTS))
@@ -782,11 +817,17 @@ class ForsetiGcpSetup(object):
                 print('Done')
                 break
 
+        print('Delete downloaded %s' % GSUITE_KEY_NAME)
+        try:
+            os.remove(self.gsuite_svc_acct_key_location)
+        except OSError as ose:
+            print(ose)
+
     def post_install_instructions(self, deploy_success):
         """Show post-install instructions.
 
         Print link for deployment manager dashboard.
-        Print link to go to GSuite service account and enable DWD.
+        Print link to go to G Suite service account and enable DWD.
 
         Args:
             deploy_success (bool): Whether deployment was successful.
