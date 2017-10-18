@@ -26,7 +26,7 @@ from google.cloud.security.iam.dao import ModelManager, create_engine
 from google.cloud.security.iam.explain.service import GrpcExplainerFactory
 from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
 from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
-from google.cloud.security.iam.inventory.storage import Storage
+from google.cloud.security.common.storage.sql_storage import Storage
 
 
 # TODO: The next editor must remove this disable and correct issues.

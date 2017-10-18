@@ -18,8 +18,8 @@ import google.protobuf.timestamp_pb2 as timestamp
 
 from google.cloud.security.iam.inventory import inventory_pb2
 from google.cloud.security.iam.inventory import inventory_pb2_grpc
-from google.cloud.security.iam.inventory import inventory
 from google.cloud.security.iam.utils import autoclose_stream
+from google.cloud.security.inventory import inventory
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc

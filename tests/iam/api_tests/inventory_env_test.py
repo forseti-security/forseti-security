@@ -25,7 +25,7 @@ from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
 from google.cloud.security.iam.dao import ModelManager
 from google.cloud.security.iam.client import ClientComposition
 from google.cloud.security.iam import db
-from google.cloud.security.iam.inventory.storage import Storage
+from google.cloud.security.common.storage.sql_storage import Storage
 
 from tests.iam.api_tests.api_tester import ApiTestRunner
 from tests.iam.utils.db import create_test_engine, cleanup
