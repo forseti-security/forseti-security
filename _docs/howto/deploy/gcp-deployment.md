@@ -29,7 +29,7 @@ To complete this quickstart, you will need:
 ### Customizing deployment templates
 
 Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update
-the following variables:
+at least the following variables:
 
   - `CLOUDSQL_INSTANCE_NAME`
     - Instance names must start with a letter and consist of lowercase letters,
@@ -42,8 +42,6 @@ the following variables:
     - Make sure the name conforms to [bucket naming guidelines](https://cloud.google.com/storage/docs/naming).
     - Use the same name for both the Cloud Storage and Compute Engine sections
     in the template.
-  - `YOUR_SERVICE_ACCOUNT`: The service account you created to read GCP
-  resource data.
 
 By default, the deployment template retrieves the latest stable branch to set
 `release version` and `src-path`. To get a different release archive, change
@@ -54,9 +52,10 @@ the following values:
     - Tag names start with a "v" and can be found on the
     [forseti-security](https://github.com/GoogleCloudPlatform/forseti-security/tags)
     page.
-    - To use the master branch, set `TAG_NAME` to `master`.
+    - To use the master branch, use `master` as the `TAG_NAME`.
   - `release-version `: the tag name, without the "v" prefix.
-    - To use the master branch, set this value to "master".
+    - To use the master branch (latest release), set this value to "master".
+  - `branch-name`: the git branch to deploy.
 
 Following are examples of different values for the `src-path` and
 `release-version`:
@@ -75,12 +74,13 @@ Following are examples of different values for the `src-path` and
 
 You can also modify the following templates:
 
-  - `inventory/cloudsql-instance.py`: the template for the Google Cloud SQL
+  - `cloudsql/cloudsql-instance.py`: the template for the Google Cloud SQL
   instance.
-  - `inventory/cloudsql-database.py`: the template for the Google Cloud SQL
+  - `cloudsql/cloudsql-database.py`: the template for the Google Cloud SQL
   database.
+  - `iam/service_acct.py`: the template for service accounts.
   - `storage/bucket.py`: the template for the Google Cloud Storage buckets.
-  - `forseti-instance.py`: the template for the Compute Engine instance where
+  - `compute-engine/forseti-instance.py`: the template for the Compute Engine instance where
   Forseti Security will run.
     - You can customize the startup script.
     - By default, the startup script sets up the environment to install Forseti
@@ -129,7 +129,7 @@ After editing your forseti_conf.yaml, copy it to your GCS `SCANNER_BUCKET`:
 gsutil cp configs/forseti_conf.yaml gs://YOUR_SCANNER_BUCKET/configs/forseti_conf.yaml
 ```
 
-Next, copy your rules directory to the GCS `SCANNER_BUCKET`:
+Next, edit your rules and copy the rules directory to the GCS `SCANNER_BUCKET`:
 
 ```
 gsutil cp -r rules gs://YOUR_SCANNER_BUCKET/
