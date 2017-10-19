@@ -15,7 +15,7 @@
 rules:
   - name: sample bucket acls rule to search for public buckets
     bucket: '*'
-    entity: AllUsers
+    entity: allUsers
     email: '*'
     domain: '*'
     role: '*'
@@ -24,7 +24,7 @@ rules:
           - YOUR_ORG_ID / YOUR_PROJECT_ID
   - name: sample bucket acls rule to search for exposed buckets
     bucket: '*'
-    entity: AllAuthenticatedUsers
+    entity: allAuthenticatedUsers
     email: '*'
     domain: '*'
     role: '*' 

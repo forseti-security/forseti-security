@@ -103,6 +103,9 @@ inventory:
 
 scanner:
 
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
     # Output path (do not include filename).
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
@@ -141,13 +144,19 @@ notifier:
     # to send alerts for every violation found
     resources:
         - resource: policy_violations
-          should_notify: true
+          should_notify: false
           pipelines:
+            # Email violations
             - name: email_violations_pipeline
               configuration:
                 sendgrid_api_key: {SENDGRID_API_KEY}
                 sender: {EMAIL_SENDER}
                 recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
             # Slack webhook pipeline.
             # Create an incoming webhook in your organization's Slack setting, located at:
             # https://[your_org].slack.com/apps/manage/custom-integrations

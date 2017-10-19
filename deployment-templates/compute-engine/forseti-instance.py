@@ -58,6 +58,13 @@ mv forseti-security-{} forseti-security
             )
     )
 
+    notifier_command = (
+        ('/usr/local/bin/forseti_notifier --forseti_config {} ')
+            .format(
+                FORSETI_CONF,
+            )
+    )
+
     NEW_BUILD_PROTOS = """
 # Build protos separately.
 python build_protos.py --clean
@@ -118,7 +125,7 @@ sudo apt-get upgrade -y
 # Forseti setup.
 sudo apt-get install -y git unzip
 # Forseti dependencies
-sudo apt-get install -y libmysqlclient-dev python-pip python-dev
+sudo apt-get install -y libffi-dev libssl-dev libmysqlclient-dev python-pip python-dev
 
 USER=ubuntu
 USER_HOME=/home/ubuntu
@@ -178,6 +185,8 @@ fi
 {}
 # scanner command
 {}
+# notifier command
+{}
 
 EOF
 echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
@@ -216,6 +225,9 @@ sudo su $USER -c $USER_HOME/run_forseti.sh
 
     # - forseti_scanner
     scanner_command,
+
+    # - forseti_notifier
+    notifier_command,
 )
                 }]
             }

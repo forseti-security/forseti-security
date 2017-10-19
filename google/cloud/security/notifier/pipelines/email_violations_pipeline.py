@@ -1,4 +1,3 @@
-
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +18,7 @@ from datetime import datetime
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
+from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
 from google.cloud.security.common.util.email_util import EmailUtil
@@ -131,6 +131,8 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         Returns:
             dict: A map of the email with subject, content, attachemnt
         """
+        del kwargs
+
         email_map = {}
 
         attachment = self._make_attachment()
@@ -154,12 +156,16 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         content = notification_map['content']
         attachment = notification_map['attachment']
 
-        self.mail_util.send(email_sender=self.pipeline_config['sender'],
-                            email_recipient=self.pipeline_config['recipient'],
-                            email_subject=subject,
-                            email_content=content,
-                            content_type='text/html',
-                            attachment=attachment)
+        try:
+            self.mail_util.send(
+                email_sender=self.pipeline_config['sender'],
+                email_recipient=self.pipeline_config['recipient'],
+                email_subject=subject,
+                email_content=content,
+                content_type='text/html',
+                attachment=attachment)
+        except util_errors.EmailSendError:
+            LOGGER.warn('Unable to send Violations email')
 
     def run(self):
         """Run the email pipeline"""

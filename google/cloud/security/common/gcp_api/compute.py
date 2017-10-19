@@ -151,6 +151,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._disks = None
         self._firewalls = None
         self._forwarding_rules = None
+        self._global_operations = None
         self._instance_group_managers = None
         self._instance_groups = None
         self._instance_templates = None
@@ -203,6 +204,14 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             self._forwarding_rules = self._init_repository(
                 _ComputeForwardingRulesRepository)
         return self._forwarding_rules
+
+    @property
+    def global_operations(self):
+        """Returns a _ComputeGlobalOperationsRepository instance."""
+        if not self._global_operations:
+            self._global_operations = self._init_repository(
+                _ComputeGlobalOperationsRepository)
+        return self._global_operations
 
     @property
     def instance_group_managers(self):
@@ -366,6 +375,19 @@ class _ComputeForwardingRulesRepository(
         return repository_mixins.ListQueryMixin.list(self, resource, **kwargs)
     # pylint: enable=arguments-differ
 
+class _ComputeGlobalOperationsRepository(
+        repository_mixins.GetQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Global Operations repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeGlobalOperationsRepository, self).__init__(
+            component='globalOperations', entity_field='operation', **kwargs)
 
 class _ComputeInstanceGroupManagersRepository(
         repository_mixins.AggregatedListQueryMixin,
@@ -656,6 +678,30 @@ class ComputeClient(object):
                                                        'forwardingRules')
         return results
 
+    def get_global_operation(self, project_id, operation_id):
+        """Get the Operations Status
+        Args:
+            project_id (str): The project id.
+            operation_id (str): The operation id.
+
+        Returns:
+            dict: Global Operation status and info.
+            https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+        Raises:
+            ApiNotEnabledError: Returns if the api is not enabled.
+            ApiExecutionError: Returns if the api is not executable.
+
+        """
+        try:
+            return self.repository.global_operations.get(
+                project_id, operation_id)
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+
     def get_instance_group_instances(self, project_id, instance_group_name,
                                      region=None, zone=None):
         """Get the instance groups for a project.
@@ -799,6 +845,55 @@ class ComputeClient(object):
             if api_not_enabled:
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
+
+    def get_quota(self, project_id, metric):
+        """Returns the quota for any metric
+
+        Args:
+            project_id (str): The project id.
+            metric (str): The metric name of the quota needed.
+
+        Returns:
+            dict: The quota of a requested metric in a dict.
+                Example:
+                {
+                  "metric": "FIREWALLS",
+                  "limit": 100.0,
+                  "usage": 9.0
+                }
+
+        Raises:
+            KeyError: Metric was not found in the project.
+        """
+        resource = self.get_project(project_id)
+        quotas = resource.get('quotas', [])
+        for quota in quotas:
+            if quota.get('metric', '') == metric:
+                return quota
+        raise KeyError(
+            "Passed in metric, %s, was not found for project id, %s." %
+            (metric, project_id))
+
+    def get_firewall_quota(self, project_id):
+        """Calls get_quota to request the firewall quota
+        Args:
+          project_id (str): The project id.
+
+        Returns:
+            dict: The quota of a requested metric in a dict.
+                Example:
+                {
+                  "metric": "FIREWALLS",
+                  "limit": 100.0,
+                  "usage": 9.0
+                }
+
+        Raises:
+            KeyError: Metric was not a firewall resource.
+        """
+        metric = 'FIREWALLS'
+        resource = self.get_quota(project_id, metric)
+        return resource
 
     def get_subnetworks(self, project_id, region=None):
         """Return the list of all subnetworks in the project.
