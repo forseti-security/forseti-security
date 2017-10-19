@@ -18,7 +18,7 @@ import unittest
 from tests.unittest_utils import ForsetiTestCase
 from sqlalchemy import event
 
-from google.cloud.security.iam.inventory.storage import Storage, initialize
+from google.cloud.security.common.storage.sql_storage import Storage, initialize
 from google.cloud.security.iam import db
 from google.cloud.security.iam.inventory.inventory2.resources import Resource
 from tests.iam.utils.db import create_test_engine

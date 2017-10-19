@@ -20,8 +20,8 @@ import tempfile
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.security.common.storage.sql_storage import InventoryState
 from google.cloud.security.iam.dao import ModelManager, create_engine
-from google.cloud.security.iam.inventory.storage import InventoryState
 from google.cloud.security.iam.explain.importer import importer
 from tests.iam.utils.gcp_env import gcp_configured, gcp_env
 from tests.iam.utils.protect import copy_file_decrypt

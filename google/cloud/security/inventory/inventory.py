@@ -21,8 +21,8 @@
 
 from Queue import Queue
 
-from google.cloud.security.iam.inventory.storage import DataAccess
-from google.cloud.security.iam.inventory.storage import initialize as init_storage
+from google.cloud.security.common.storage.sql_storage import DataAccess
+from google.cloud.security.common.storage.sql_storage import initialize as init_storage
 from google.cloud.security.inventory.crawler import run_crawler
 
 

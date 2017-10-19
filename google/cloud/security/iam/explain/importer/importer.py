@@ -23,10 +23,10 @@ from StringIO import StringIO
 from time import time
 import traceback
 
-from google.cloud.security.iam.utils import get_sql_dialect
 from google.cloud.security.common.data_access import forseti
+from google.cloud.security.common.storage.sql_storage import Storage as Inventory
 from google.cloud.security.iam.explain.importer import roles as roledef
-from google.cloud.security.iam.inventory.storage import Storage as Inventory
+from google.cloud.security.iam.utils import get_sql_dialect
 
 
 class ResourceCache(dict):
