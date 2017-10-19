@@ -102,13 +102,7 @@ class BigQueryClient(_base_client.BaseClient):
         paged_results = self._build_paged_result(
             request, bigquery_datasets_api, self.rate_limiter)
 
-        flattened_result = self._flatten_list_results(paged_results, key)
-
-        datasets = []
-        for result in flattened_result:
-            datasets.append(result.get('datasetReference'))
-
-        return datasets
+        return self._flatten_list_results(paged_results, key)
 
     def get_dataset_access(self, project_id, dataset_id):
         """Return the access portion of the dataset resource object.
