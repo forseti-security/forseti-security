@@ -1,5 +1,5 @@
 ---
-title: Why does Forseti store the G Suite private key in the Compute Engine instnce?
+title: Why does Forseti store the G Suite private key in the Compute Engine instance?
 order: 1
 ---
 {::options auto_ids="false" /}
