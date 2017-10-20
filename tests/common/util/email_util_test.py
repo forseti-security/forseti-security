@@ -13,12 +13,15 @@
 # limitations under the License.
 
 """Tests for the Email utility."""
+
+import mock
 import unittest
 
 from sendgrid.helpers import mail
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.util import email_util
+from google.cloud.security.common.util import errors as util_errors
 
 
 class EmailUtilTest(ForsetiTestCase):
@@ -53,6 +56,13 @@ class EmailUtilTest(ForsetiTestCase):
         self.assertEquals(2, len(added_recipients))
         self.assertEquals('foo@company.com', added_recipients[0].get('email'))
         self.assertEquals('bar@company.com', added_recipients[1].get('email'))
+
+    @mock.patch('sendgrid.helpers.mail.Mail', autospec=True)
+    def test_no_sender_recip_no_email(self, mock_mail):
+        """Test that no sender/recip doesn't send email."""
+        util = email_util.EmailUtil('fake_sendgrid_key')
+        with self.assertRaises(util_errors.EmailSendError):
+            util.send()
 
 
 if __name__ == '__main__':

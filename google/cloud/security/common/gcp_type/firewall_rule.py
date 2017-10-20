@@ -47,6 +47,8 @@ class InvalidFirewallActionError(Error):
 class FirewallRule(object):
     """Represents Firewall resource."""
 
+    MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
     def __init__(self, validate=False, **kwargs):
         """Firewall resource.
 
@@ -91,9 +93,95 @@ class FirewallRule(object):
                     self.allowed, self.denied))
         if self.allowed is None and self.denied is None:
             raise InvalidFirewallRuleError('Must have allowed or denied rules')
+        self._firewall_action = None
         if validate:
             self.validate()
-        self._firewall_action = None
+
+    @staticmethod
+    def _transform(firewall_dict, project_id=None, validate=None):
+        """Transforms firewall dictionary into FirewallRule.
+
+        Args:
+          firewall_dict (dict): A dictionary with firewall field names matching
+            the API field names.
+          project_id (str): A project id string.
+          validate (bool): Whether to validate this FirewallRule or not.
+
+        Returns:
+          FirewallRule: A FirewallRule created from the input dictionary.
+        """
+        in_dict = {
+            'firewall_rule_id': firewall_dict.get('id'),
+            'firewall_rule_name': firewall_dict.get('name'),
+            'firewall_rule_description': firewall_dict.get('description'),
+            'firewall_rule_kind': firewall_dict.get('kind'),
+            'firewall_rule_network': firewall_dict.get('network'),
+            'firewall_rule_priority': firewall_dict.get('priority'),
+            'firewall_rule_direction': firewall_dict.get('direction'),
+            'firewall_rule_source_ranges': parser.json_stringify(
+                firewall_dict.get('sourceRanges')),
+            'firewall_rule_destination_ranges': parser.json_stringify(
+                firewall_dict.get('destinationRanges')),
+            'firewall_rule_source_tags': parser.json_stringify(
+                firewall_dict.get('sourceTags')),
+            'firewall_rule_target_tags': parser.json_stringify(
+                firewall_dict.get('targetTags')),
+            'firewall_rule_source_service_accounts': parser.json_stringify(
+                firewall_dict.get('sourceServiceAccounts')),
+            'firewall_rule_target_service_accounts': parser.json_stringify(
+                firewall_dict.get('targetServiceAccounts')),
+            'firewall_rule_allowed': parser.json_stringify(
+                firewall_dict.get('allowed')),
+            'firewall_rule_denied': parser.json_stringify(
+                firewall_dict.get('denied')),
+            'firewall_rule_self_link': parser.json_stringify(
+                firewall_dict.get('selfLink')),
+            'firewall_rule_create_time': parser.format_timestamp(
+                parser.json_stringify(firewall_dict.get('creationTimestamp')),
+                FirewallRule.MYSQL_DATETIME_FORMAT),
+        }
+        if project_id:
+            in_dict['project_id'] = project_id
+        return FirewallRule(validate=validate, **in_dict)
+
+    @classmethod
+    def from_json(cls, json_string, project_id=None):
+        """Creates a validated FirewallRule from a valid firewall JSON.
+
+        Args:
+          json_string (str): A valid firewall JSON string.
+          project_id (str): A string project id.
+
+        Returns:
+          FirewallRule: A validated FirewallRule from the JSON string.
+
+        Raises:
+          InvalidFirewallRuleError: If the firewall rule is invalid.
+          InvalidFirewallActionError: If the firewall action is invalid.
+        """
+        json_dict = json.loads(json_string)
+        return FirewallRule._transform(
+            json_dict, project_id=project_id, validate=True)
+
+    @classmethod
+    def from_dict(cls, firewall_dict, project_id=None, validate=False):
+        """Creates an unvalidated FirewallRule from a dictionary.
+
+        Args:
+          firewall_dict (dict): A dict with firewall keys and values.
+          project_id (str): A string project id.
+          validate (bool): Whether to validate this rule or not.
+
+        Returns:
+          FirewallRule: A validated FirewallRule from the JSON string.
+
+        Raises:
+          InvalidFirewallRuleError: If the firewall rule is invalid.
+          InvalidFirewallActionError: If the firewall action is invalid.
+        """
+        return FirewallRule._transform(
+            firewall_dict, project_id=project_id, validate=validate)
+
 
     def as_json(self):
         """Returns a valid JSON representation of this firewall rule.
@@ -261,13 +349,13 @@ class FirewallRule(object):
         if self._priority:
             try:
                 priority = int(self._priority)
-            except ValueError:
+            except ValueError as err:
                 raise InvalidFirewallRuleError(
                     'Rule "priority" could not be converted to an integer: '
-                    '"%s".' % self)
+                    '"%s".' % err)
             if priority < 0 or priority > 65535:
                 raise InvalidFirewallRuleError(
-                    'Rule "priority" out of range 0-65535: "%s".' % self)
+                    'Rule "priority" out of range 0-65535: "%s".' % priority)
 
     @property
     def source_ranges(self):
@@ -514,8 +602,6 @@ class FirewallAction(object):
                 raise InvalidFirewallActionError(
                     'Action can only have "IPProtocol" and "ports": %s' %
                     invalid_keys)
-
-
 
     @property
     def applies_to_all(self):
