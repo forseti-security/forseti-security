@@ -18,9 +18,9 @@
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
-from google.cloud.security.iam.inventory.inventory2 import resources
 from google.cloud.security.iam.inventory.inventory2 import gcp
 from google.cloud.security.inventory import base_crawler
+from google.cloud.security.inventory import resources
 
 
 class CrawlerConfig(base_crawler.CrawlerConfig):
