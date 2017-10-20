@@ -878,6 +878,20 @@ class FirewallRuleTest(ForsetiTestCase):
             },
             True,
         ),
+        (
+            {
+                'firewall_rule_destination_ranges': json.dumps(['10.0.0.0/24']),
+                'firewall_rule_direction': 'egress',
+                'firewall_rule_network': 'n1',
+                'firewall_rule_allowed': json.dumps(['*']),
+            },
+            {
+                'firewall_rule_destination_ranges': json.dumps(['10.0.0.1',
+                                                                '10.0.0.2']),
+                'firewall_rule_allowed': json.dumps(['*']),
+            },
+            True,
+        ),
     ])
     def test_firewall_rule_gt(self, rule_1_dict, rule_2_dict, expected):
         """Tests that rule 1 > rule 2 returns the correct value."""

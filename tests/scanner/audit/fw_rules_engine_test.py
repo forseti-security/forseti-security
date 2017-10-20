@@ -28,7 +28,31 @@ from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import test_rules
 
 
-class FwRulesEngineTest(ForsetiTestCase):
+class RuleTest(ForsetiTestCase):
+
+    @parameterized.parameterized.expand([
+        (
+            {},
+            fre.InvalidRuleDefinition,
+            'Rule requires rule_id',
+        ),
+        (
+            {'rule_id': 'id'},
+            fre.InvalidRuleDefinition,
+            'Rule requires mode',
+        ),
+        (
+            {
+                'rule_id': 'id',
+                'mode': 'notavalidmode',
+            },
+            fre.InvalidRuleDefinition,
+            'Mode notavalidmode is not in valid modes',
+        ),
+    ])
+    def test_from_config_errors(self, rule_def, expected_error, regexp):
+        with self.assertRaisesRegexp(expected_error, regexp):
+            fre.Rule.from_config(rule_def)
 
     @parameterized.parameterized.expand([
       (
@@ -411,18 +435,16 @@ class FwRulesEngineTest(ForsetiTestCase):
     @parameterized.parameterized.expand([
       (
           {
-            'rule_name': 'No 0.0.0.0/0 policy allowed',
+            'rule_id': 'No 0.0.0.0/0 policy allowed',
             'match_policies': [{
-                'firewall_rule_direction': 'ingress',
-                'firewall_rule_allowed': json.dumps(['*']),
+                'direction': 'ingress',
+                'allowed': ['*'],
             }],
             'verify_policies': [{
-                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_allowed': json.dumps(['*']),
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': ['*'],
             }],
             'mode': scanner_rules.RuleMode.BLACKLIST,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [{
               'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
@@ -435,18 +457,16 @@ class FwRulesEngineTest(ForsetiTestCase):
       ),
       (
           {
-            'rule_name': 'No 0.0.0.0/0 policy allowed',
+            'rule_id': 'No 0.0.0.0/0 policy allowed',
             'match_policies': [{
-                'firewall_rule_direction': 'ingress',
-                'firewall_rule_allowed': json.dumps(['*']),
+                'direction': 'ingress',
+                'allowed': ['*'],
             }],
             'verify_policies': [{
-                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_allowed': json.dumps(['*']),
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': ['*'],
             }],
             'mode': scanner_rules.RuleMode.BLACKLIST,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [{
               'project_id': 'p1',
@@ -460,7 +480,7 @@ class FwRulesEngineTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p1',
-                  'rule_name': 'No 0.0.0.0/0 policy allowed',
+                  'rule_id': 'No 0.0.0.0/0 policy allowed',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0'],
                   'recommended_actions': {
@@ -473,18 +493,16 @@ class FwRulesEngineTest(ForsetiTestCase):
       ),
       (
           {
-            'rule_name': 'No 0.0.0.0/0 policy allowed 2',
+            'rule_id': 'No 0.0.0.0/0 policy allowed 2',
             'match_policies': [{
-                'firewall_rule_direction': 'ingress',
-                'firewall_rule_allowed': json.dumps(['*']),
+                'direction': 'ingress',
+                'allowed': ['*'],
             }],
             'verify_policies': [{
-                'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                'firewall_rule_allowed': json.dumps(['*']),
+                'sourceRanges': ['0.0.0.0/0'],
+                'allowed': ['*'],
             }],
             'mode': scanner_rules.RuleMode.BLACKLIST,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [
               {
@@ -509,7 +527,7 @@ class FwRulesEngineTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p1',
-                  'rule_name': 'No 0.0.0.0/0 policy allowed 2',
+                  'rule_id': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0'],
                   'recommended_actions': {
@@ -521,7 +539,7 @@ class FwRulesEngineTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p2',
-                  'rule_name': 'No 0.0.0.0/0 policy allowed 2',
+                  'rule_id': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0 2'],
                   'recommended_actions': {
@@ -546,62 +564,52 @@ class FwRulesEngineTest(ForsetiTestCase):
     @parameterized.parameterized.expand([
       (
           {
-            'rule_name': 'Only Allow 443 to tagged instances',
+            'rule_id': 'Only Allow 443 to tagged instances',
             'match_policies': [{
-                'firewall_rule_direction': 'ingress',
-                'firewall_rule_action': 'allow',
-                'firewall_rule_allowed': json.dumps(
-                    [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
             }],
             'verify_policies': [{
-              'firewall_rule_source_tags': json.dumps(['https-server']),
-              'firewall_rule_allowed': json.dumps(['*']),
+              'sourceTags': ['https-server'],
+              'allowed': ['*'],
             }],
             'mode': scanner_rules.RuleMode.WHITELIST,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [{
-              'firewall_rule_name': 'Any to 443 on https-server',
-              'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-              'firewall_rule_direction': 'ingress',
-              'firewall_rule_source_tags': json.dumps(['https-server']),
-              'firewall_rule_allowed': json.dumps(
-                  [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+              'name': 'Any to 443 on https-server',
+              'sourceRanges': ['0.0.0.0/0'],
+              'direction': 'ingress',
+              'sourceTags': ['https-server'],
+              'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
           }],
           [],
       ),
       (
           {
-            'rule_name': 'Only Allow 443 to tagged instances',
+            'rule_id': 'Only Allow 443 to tagged instances',
             'match_policies': [{
-                'firewall_rule_direction': 'ingress',
-                'firewall_rule_action': 'allow',
-                'firewall_rule_allowed': json.dumps(
-                    [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
             }],
             'verify_policies': [{
-              'firewall_rule_source_tags': json.dumps(['https-server']),
-              'firewall_rule_allowed': json.dumps(['*']),
+              'sourceTags': ['https-server'],
+              'allowed': ['*'],
             }],
             'mode': scanner_rules.RuleMode.WHITELIST,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [{
               'project_id': 'p1',
-              'firewall_rule_name': 'Any to 443 on https-server',
-              'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-              'firewall_rule_direction': 'ingress',
-              'firewall_rule_source_tags': json.dumps(['https-server', 'tag2']),
-              'firewall_rule_allowed': json.dumps(
-                  [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+              'name': 'Any to 443 on https-server',
+              'sourceRanges': ['0.0.0.0/0'],
+              'direction': 'ingress',
+              'sourceTags': ['https-server', 'tag2'],
+              'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
           }],
           [
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p1',
-                  'rule_name': 'Only Allow 443 to tagged instances',
+                  'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 443 on https-server'],
                   'recommended_actions': {
@@ -614,57 +622,48 @@ class FwRulesEngineTest(ForsetiTestCase):
       ),
       (
           {
-            'rule_name': 'Only Allow 443 to tagged instances',
+            'rule_id': 'Only Allow 443 to tagged instances',
             'match_policies': [{
-                'firewall_rule_direction': 'ingress',
-                'firewall_rule_action': 'allow',
-                'firewall_rule_allowed': json.dumps(
-                    [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
             }],
             'verify_policies': [{
-              'firewall_rule_source_tags': json.dumps(['https-server']),
-              'firewall_rule_allowed': json.dumps(['*']),
+              'sourceTags': ['https-server'],
+              'allowed': ['*'],
             }],
             'mode': scanner_rules.RuleMode.WHITELIST,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [
               {
                   'project_id': 'p1',
-                  'firewall_rule_name': 'Any to 443 on https-server',
-                  'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_source_tags': json.dumps(['tag1', 'tag2']),
-                  'firewall_rule_allowed': json.dumps(
-                      [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+                  'name': 'Any to 443 on https-server',
+                  'sourceRanges': ['0.0.0.0/0'],
+                  'direction': 'ingress',
+                  'sourceTags': ['tag1', 'tag2'],
+                  'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
               },
               {
                   'project_id': 'p2',
-                  'firewall_rule_name': 'Any to 443 on https-server',
-                  'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_source_tags': json.dumps(['https-server']),
-                  'firewall_rule_allowed': json.dumps(
-                      [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+                  'name': 'Any to 443 on https-server',
+                  'sourceRanges': ['0.0.0.0/0'],
+                  'direction': 'ingress',
+                  'sourceTags': ['https-server'],
+                  'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
               },
               {
                   'project_id': 'p3',
-                  'firewall_rule_name': (
-                      'Any to 80/443 to https-server and tag3'),
-                  'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_source_tags': json.dumps(
-                      ['https-server', 'tag3']),
-                  'firewall_rule_allowed': json.dumps(
-                      [{'IPProtocol': 'tcp', 'ports': ['443', '80']}]),
+                  'name': 'Any to 80/443 to https-server and tag3',
+                  'sourceRanges': ['0.0.0.0/0'],
+                  'direction': 'ingress',
+                  'sourceTags': ['https-server', 'tag3'],
+                  'allowed': [{'IPProtocol': 'tcp', 'ports': ['443', '80']}],
               },
           ],
           [
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p1',
-                  'rule_name': 'Only Allow 443 to tagged instances',
+                  'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 443 on https-server'],
                   'recommended_actions': {
@@ -676,7 +675,7 @@ class FwRulesEngineTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p3',
-                  'rule_name': 'Only Allow 443 to tagged instances',
+                  'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 80/443 to https-server and tag3'],
                   'recommended_actions': {
@@ -693,7 +692,8 @@ class FwRulesEngineTest(ForsetiTestCase):
         rule = fre.Rule(**rule_dict)
         policies = []
         for policy_dict in policy_dicts:
-            policy = FirewallRule(**policy_dict)
+            project = policy_dict.get('project_id')
+            policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
         violations = list(rule.find_policy_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
@@ -701,75 +701,71 @@ class FwRulesEngineTest(ForsetiTestCase):
     @parameterized.parameterized.expand([
       (
           {
-            'rule_name': 'Allow SSH to tag from 1.1.1.1',
+            'rule_id': 'Allow SSH to tag from 1.1.1.1',
             'match_policies': [{
-                'firewall_rule_direction': 'ingress',
-                'firewall_rule_action': 'allow',
-                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_allowed': json.dumps(
-                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+                'name': 'name',
+                'network': 'network',
+                'direction': 'ingress',
+                'action': 'allow',
+                'sourceRanges': ['1.1.1.1'],
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
             }],
             'verify_policies': [],
             'mode': scanner_rules.RuleMode.REQUIRED,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [
               {
-                  'firewall_rule_name': 'Any to 443',
-                  'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_allowed': json.dumps(
-                      [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+                  'name': 'Any to 443',
+                  'sourceRanges': ['0.0.0.0/0'],
+                  'direction': 'ingress',
+                  'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
               },
               {
-                  'firewall_rule_name': 'Allow 22 from 1.1.1.1',
-                  'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_allowed': json.dumps(
-                      [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+                  'name': 'Allow 22 from 1.1.1.1',
+                  'network': 'network',
+                  'sourceRanges': ['1.1.1.1'],
+                  'direction': 'ingress',
+                  'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
               },
           ],
           [],
       ),
       (
           {
-            'rule_name': 'Allow SSH to tag from 1.1.1.1',
+            'rule_id': 'Allow SSH to tag from 1.1.1.1',
             'match_policies': [{
-                'firewall_rule_direction': 'ingress',
-                'firewall_rule_action': 'allow',
-                'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                'firewall_rule_allowed': json.dumps(
-                    [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+                'name': 'name',
+                'network': 'network',
+                'direction': 'ingress',
+                'action': 'allow',
+                'sourceRanges': ['1.1.1.1'],
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
             }],
             'verify_policies': [],
             'mode': scanner_rules.RuleMode.REQUIRED,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [
               {
                   'project_id': 'p1',
-                  'firewall_rule_name': 'Any to 443',
-                  'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_allowed': json.dumps(
-                      [{'IPProtocol': 'tcp', 'ports': ['443']}]),
+                  'name': 'Any to 443',
+                  'sourceRanges': ['0.0.0.0/0'],
+                  'direction': 'ingress',
+                  'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
               },
               {
                   'project_id': 'p1',
-                  'firewall_rule_name': 'Allow 22 from 1.1.1.1',
-                  'firewall_rule_source_ranges': json.dumps(['1.1.1.2']),
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_allowed': json.dumps(
-                      [{'IPProtocol': 'tcp', 'ports': ['22']}]),
+                  'name': 'Allow 22 from 1.1.1.1',
+                  'sourceRanges': ['1.1.1.2'],
+                  'direction': 'ingress',
+                  'allowed': [
+                      {'IPProtocol': 'tcp', 'ports': ['22']}],
               },
           ],
           [
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p1',
-                  'rule_name': 'Allow SSH to tag from 1.1.1.1',
+                  'rule_id': 'Allow SSH to tag from 1.1.1.1',
                   'violation_type': 'FIREWALL_REQUIRED_VIOLATION',
                   'policy_names': ['Any to 443', 'Allow 22 from 1.1.1.1'],
                   'recommended_actions': {
@@ -786,7 +782,8 @@ class FwRulesEngineTest(ForsetiTestCase):
         rule = fre.Rule(**rule_dict)
         policies = []
         for policy_dict in policy_dicts:
-            policy = FirewallRule(**policy_dict)
+            project = policy_dict.get('project_id')
+            policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
         violations = list(rule.find_policy_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
@@ -794,43 +791,47 @@ class FwRulesEngineTest(ForsetiTestCase):
     @parameterized.parameterized.expand([
       (
           {
-            'rule_name': 'Golden Policy',
+            'rule_id': 'Golden Policy',
             'match_policies': [
                 {
-                    'firewall_rule_direction': 'ingress',
-                    'firewall_rule_action': 'allow',
-                    'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                    'firewall_rule_allowed': json.dumps(
+                    'name': 'name',
+                    'network': 'network',
+                    'direction': 'ingress',
+                    'action': 'allow',
+                    'sourceRanges': (['1.1.1.1']),
+                    'allowed': (
                         [{'IPProtocol': 'tcp', 'ports': ['22']}]),
                 },
                 {
-                    'firewall_rule_direction': 'ingress',
-                    'firewall_rule_action': 'allow',
-                    'firewall_rule_source_ranges': json.dumps(['10.0.0.0/8']),
-                    'firewall_rule_allowed': json.dumps(
+                    'name': 'name',
+                    'network': 'network',
+                    'direction': 'ingress',
+                    'action': 'allow',
+                    'sourceRanges': (['10.0.0.0/8']),
+                    'allowed': (
                         [{'IPProtocol': 'tcp', 'ports': ['443']}]),
                 },
             ],
             'verify_policies': [],
             'mode': scanner_rules.RuleMode.MATCHES,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [
               {
-                  'firewall_rule_name': 'SSH from 1.1.1.1',
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_action': 'allow',
-                  'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                  'firewall_rule_allowed': json.dumps(
+                  'name': 'SSH from 1.1.1.1',
+                  'network': 'network',
+                  'direction': 'ingress',
+                  'action': 'allow',
+                  'sourceRanges': (['1.1.1.1']),
+                  'allowed': (
                       [{'IPProtocol': 'tcp', 'ports': ['22']}]),
               },
               {
-                  'firewall_rule_name': '443 from 10.0.0.0/8',
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_action': 'allow',
-                  'firewall_rule_source_ranges': json.dumps(['10.0.0.0/8']),
-                  'firewall_rule_allowed': json.dumps(
+                  'name': '443 from 10.0.0.0/8',
+                  'network': 'network',
+                  'direction': 'ingress',
+                  'action': 'allow',
+                  'sourceRanges': (['10.0.0.0/8']),
+                  'allowed': (
                       [{'IPProtocol': 'tcp', 'ports': ['443']}]),
               },
           ],
@@ -838,54 +839,59 @@ class FwRulesEngineTest(ForsetiTestCase):
       ),
       (
           {
-            'rule_name': 'Golden Policy',
+            'rule_id': 'Golden Policy',
             'match_policies': [
                 {
-                    'firewall_rule_direction': 'ingress',
-                    'firewall_rule_action': 'allow',
-                    'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                    'firewall_rule_allowed': json.dumps(
+                    'name': 'name',
+                    'network': 'network',
+                    'direction': 'ingress',
+                    'action': 'allow',
+                    'sourceRanges': (['1.1.1.1']),
+                    'allowed': (
                         [{'IPProtocol': 'tcp', 'ports': ['22']}]),
                 },
                 {
-                    'firewall_rule_direction': 'ingress',
-                    'firewall_rule_action': 'allow',
-                    'firewall_rule_source_ranges': json.dumps(['10.0.0.0/8']),
-                    'firewall_rule_allowed': json.dumps(
+                    'name': 'name',
+                    'network': 'network',
+                    'direction': 'ingress',
+                    'action': 'allow',
+                    'sourceRanges': (['10.0.0.0/8']),
+                    'allowed': (
                         [{'IPProtocol': 'tcp', 'ports': ['443']}]),
                 },
             ],
             'verify_policies': [],
             'mode': scanner_rules.RuleMode.MATCHES,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [
               {
                   'project_id': 'p1',
-                  'firewall_rule_name': 'SSH from 1.1.1.1',
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_action': 'allow',
-                  'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                  'firewall_rule_allowed': json.dumps(
+                  'name': 'SSH from 1.1.1.1',
+                  'network': 'network',
+                  'direction': 'ingress',
+                  'action': 'allow',
+                  'sourceRanges': (['1.1.1.1']),
+                  'allowed': (
                       [{'IPProtocol': 'tcp', 'ports': ['22']}]),
               },
               {
                   'project_id': 'p1',
-                  'firewall_rule_name': '443 from 10.0.0.0/8',
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_action': 'allow',
-                  'firewall_rule_source_ranges': json.dumps(['10.0.0.0/8']),
-                  'firewall_rule_allowed': json.dumps(
+                  'name': '443 from 10.0.0.0/8',
+                  'network': 'network',
+                  'direction': 'ingress',
+                  'action': 'allow',
+                  'sourceRanges': (['10.0.0.0/8']),
+                  'allowed': (
                       [{'IPProtocol': 'tcp', 'ports': ['443']}]),
               },
               {
                   'project_id': 'p1',
-                  'firewall_rule_name': '80 from 10.0.0.0/8',
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_action': 'allow',
-                  'firewall_rule_source_ranges': json.dumps(['10.0.0.0/8']),
-                  'firewall_rule_allowed': json.dumps(
+                  'name': '80 from 10.0.0.0/8',
+                  'network': 'network',
+                  'direction': 'ingress',
+                  'action': 'allow',
+                  'sourceRanges': (['10.0.0.0/8']),
+                  'allowed': (
                       [{'IPProtocol': 'tcp', 'ports': ['80']}]),
               },
           ],
@@ -893,7 +899,7 @@ class FwRulesEngineTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p1',
-                  'rule_name': 'Golden Policy',
+                  'rule_id': 'Golden Policy',
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
                   'policy_names': [
                       'SSH from 1.1.1.1', '443 from 10.0.0.0/8',
@@ -911,45 +917,49 @@ class FwRulesEngineTest(ForsetiTestCase):
       ),
       (
           {
-            'rule_name': 'Golden Policy',
+            'rule_id': 'Golden Policy',
             'match_policies': [
                 {
-                    'firewall_rule_direction': 'ingress',
-                    'firewall_rule_action': 'allow',
-                    'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                    'firewall_rule_allowed': json.dumps(
+                    'name': 'name',
+                    'network': 'network',
+                    'direction': 'ingress',
+                    'action': 'allow',
+                    'sourceRanges': (['1.1.1.1']),
+                    'allowed': (
                         [{'IPProtocol': 'tcp', 'ports': ['22']}]),
                 },
                 {
-                    'firewall_rule_direction': 'ingress',
-                    'firewall_rule_action': 'allow',
-                    'firewall_rule_source_ranges': json.dumps(['10.0.0.0/8']),
-                    'firewall_rule_allowed': json.dumps(
+                    'name': 'name',
+                    'network': 'network',
+                    'direction': 'ingress',
+                    'action': 'allow',
+                    'sourceRanges': (['10.0.0.0/8']),
+                    'allowed': (
                         [{'IPProtocol': 'tcp', 'ports': ['443']}]),
                 },
             ],
             'verify_policies': [],
             'mode': scanner_rules.RuleMode.MATCHES,
-            'applies_to': 'self',
-            'inherit_from_parents': False,
           },
           [
               {
                   'project_id': 'p1',
-                  'firewall_rule_name': 'SSH from 1.1.1.1',
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_action': 'allow',
-                  'firewall_rule_source_ranges': json.dumps(['1.1.1.1']),
-                  'firewall_rule_allowed': json.dumps(
+                  'name': 'SSH from 1.1.1.1',
+                  'network': 'network',
+                  'direction': 'ingress',
+                  'action': 'allow',
+                  'sourceRanges': (['1.1.1.1']),
+                  'allowed': (
                       [{'IPProtocol': 'tcp', 'ports': ['22']}]),
               },
               {
                   'project_id': 'p1',
-                  'firewall_rule_name': '80 from 10.0.0.0/8',
-                  'firewall_rule_direction': 'ingress',
-                  'firewall_rule_action': 'allow',
-                  'firewall_rule_source_ranges': json.dumps(['10.0.0.0/8']),
-                  'firewall_rule_allowed': json.dumps(
+                  'name': '80 from 10.0.0.0/8',
+                  'network': 'network',
+                  'direction': 'ingress',
+                  'action': 'allow',
+                  'sourceRanges': (['10.0.0.0/8']),
+                  'allowed': (
                       [{'IPProtocol': 'tcp', 'ports': ['80']}]),
               },
           ],
@@ -957,7 +967,7 @@ class FwRulesEngineTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_policy',
                   'resource_id': 'p1',
-                  'rule_name': 'Golden Policy',
+                  'rule_id': 'Golden Policy',
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
                   'policy_names': ['SSH from 1.1.1.1', '80 from 10.0.0.0/8'],
                   'recommended_actions': {
@@ -978,7 +988,8 @@ class FwRulesEngineTest(ForsetiTestCase):
         rule = fre.Rule(**rule_dict)
         policies = []
         for policy_dict in policy_dicts:
-            policy = FirewallRule(**policy_dict)
+            project = policy_dict.get('project_id')
+            policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
         violations = list(rule.find_policy_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
@@ -989,6 +1000,489 @@ class FwRulesEngineTest(ForsetiTestCase):
         self.assertTrue(len(expected) == len(violations))
         for expected_dict, violation in zip(expected, violations):
             self.assertItemsEqual(expected_dict.values(), list(violation))
+
+class RuleBookTest(ForsetiTestCase):
+
+    def setUp(self):
+        self.mock_org_rel_dao = mock.patch(
+            'google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao').start()
+
+    @parameterized.parameterized.expand([
+        (
+            [
+                {
+                    'rule_id': 'id',
+                    'mode': 'matches',
+                    'match_policies': ['test'],
+                },
+                {
+                    'rule_id': 'id',
+                    'mode': 'matches',
+                    'match_policies': ['test'],
+                },
+            ],
+            fre.DuplicateFirewallRuleError,
+            'Rule id "id" already in rules',
+        ),
+    ])
+    def test_add_rule_errors(self, rule_defs, expected_error, regexp):
+        rule_book = fre.RuleBook({})
+        with self.assertRaisesRegexp(expected_error, regexp):
+            for rule_def in rule_defs:
+                rule_book.add_rule(rule_def, 1)
+
+    @parameterized.parameterized.expand([
+        (
+            {'rule_id': 'id', 'mode': 'required', 'match_policies': ['test']},
+        ),
+    ])
+    def test_add_rule(self, rule_def):
+        rule_book = fre.RuleBook({})
+        rule_book.add_rule(rule_def, 1)
+        rule_id = rule_def.get('rule_id')
+        self.assertTrue(rule_book.rules_map.get(rule_id) is not None)
+
+    @parameterized.parameterized.expand([
+        (
+            [{}],
+            fre.InvalidRuleDefinition,
+            'Rule requires rule_id',
+        ),
+        (
+            [{'rule_id': 'id'}],
+            fre.InvalidRuleDefinition,
+            'Rule requires mode',
+        ),
+        (
+            [{
+                'rule_id': 'id',
+                'mode': 'notavalidmode',
+            }],
+            fre.InvalidRuleDefinition,
+            'Mode notavalidmode is not in valid modes',
+        ),
+        (
+            [
+                {
+                    'rule_id': 'id',
+                    'mode': 'matches',
+                    'match_policies': ['test'],
+                },
+                {
+                    'rule_id': 'id',
+                    'mode': 'matches',
+                    'match_policies': ['test'],
+                },
+            ],
+            fre.DuplicateFirewallRuleError,
+            'Rule id "id" already in rules',
+        ),
+    ])
+    def test_add_rules_errors(self, rule_defs, expected_error, regexp):
+        rule_book = fre.RuleBook({})
+        with self.assertRaisesRegexp(expected_error, regexp):
+            rule_book.add_rules(rule_defs)
+
+    @parameterized.parameterized.expand([
+        (
+            [
+                {
+                    'rule_id': 'id',
+                    'mode': 'required',
+                    'match_policies': ['test']
+                },
+                {
+                    'rule_id': 'id2',
+                    'mode': 'required',
+                    'match_policies': ['test']
+                },
+            ],
+        ),
+    ])
+    def test_add_rules(self, rule_defs):
+        rule_book = fre.RuleBook({})
+        rule_book.add_rules(rule_defs)
+        for rule_def in rule_defs:
+          rule_id = rule_def.get('rule_id')
+          self.assertTrue(rule_book.rules_map.get(rule_id) is not None)
+
+    @parameterized.parameterized.expand([
+        (
+            [{}],
+            fre.InvalidGroupDefinition,
+            'Group requires a group id',
+        ),
+        (
+            [{'group_id': 'id'}],
+            fre.InvalidGroupDefinition,
+            'Group "id" does not have any rules',
+        ),
+        (
+            [{'group_id': 'id', 'rule_ids': ['rid']}],
+            fre.RuleDoesntExistError,
+            'Rule id "rid" does not exist, cannot be in group',
+        ),
+    ])
+    def test_add_rule_groups_errors(self, group_defs, expected_error, regexp):
+        rule_book = fre.RuleBook({})
+        with self.assertRaisesRegexp(expected_error, regexp):
+            rule_book.add_rule_groups(group_defs)
+
+    @parameterized.parameterized.expand([
+        (
+            [
+                {
+                    'group_id': 'id',
+                    'rule_ids': ['rid1', 'rid2', 'rid3']
+                },
+                {
+                    'group_id': 'id2',
+                    'rule_ids': ['rid4']
+                },
+            ],
+        ),
+    ])
+    def test_add_rule_groups(self, group_defs):
+        rule_book = fre.RuleBook({})
+        rule_book.rules_map['rid1'] = 'rule1'
+        rule_book.rules_map['rid2'] = 'rule2'
+        rule_book.rules_map['rid3'] = 'rule3'
+        rule_book.rules_map['rid4'] = 'rule4'
+        rule_book.add_rule_groups(group_defs)
+        for group in group_defs:
+            group_id = group.get('group_id')
+            self.assertTrue(group_id in rule_book.rule_groups_map)
+            self.assertItemsEqual(
+                group.get('rule_ids'), rule_book.rule_groups_map[group_id])
+
+    @parameterized.parameterized.expand([
+        (
+            {},
+            fre.InvalidOrgDefinition,
+            'Org policy does not have any resources',
+        ),
+        (
+            {'resources': []},
+            fre.InvalidOrgDefinition,
+            'Org policy does not have any resources',
+        ),
+        (
+            {'resources': [{}]},
+            fre.resource_mod.errors.InvalidResourceTypeError,
+            'Invalid resource type:',
+        ),
+        (
+            {
+                'resources': [
+                    {
+                        'type': 'organization',
+                        'rules': {
+                            'group_ids': ['id'],
+                        },
+                    }
+                ]
+            },
+            fre.GroupDoesntExistError,
+            'Group "id" does not exist',
+        ),
+        (
+            {
+                'resources': [
+                    {
+                        'type': 'organization',
+                        'rules': {
+                            'rule_ids': ['id'],
+                        },
+                    }
+                ]
+            },
+            fre.RuleDoesntExistError,
+            'Rule id "id" does not exist',
+        ),
+    ])
+    def test_add_org_policy_errors(self, org_def, expected_error, regexp):
+        rule_book = fre.RuleBook({})
+        with self.assertRaisesRegexp(expected_error, regexp):
+            rule_book.add_org_policy(org_def)
+
+    def test_add_org_policy(self):
+        rule_book = fre.RuleBook({})
+        rule_book.rules_map['rule1'] = 1
+        rule_book.rules_map['rule2'] = 2
+        rule_book.rules_map['rule3'] = 3
+        rule_book.rules_map['rule4'] = 4
+        rule_book.rule_groups_map['gid1'] = ['rule3', 'rule4']
+        org_def = {
+          'resources': [
+              {
+                'type': 'folder',
+                'resource_ids': ['res1', 'res2'],
+                'rules': {
+                    'rule_ids': ['rule1', 'rule2'],
+                    'group_ids': ['gid1'],
+                },
+              },
+          ],
+        }
+        rule_book.add_org_policy(org_def)
+        gcp_resource_1 = fre.resource_util.create_resource(
+            resource_id='res1', resource_type='folder')
+        gcp_resource_2 = fre.resource_util.create_resource(
+            resource_id='res2', resource_type='folder')
+        self.assertItemsEqual(
+            rule_book.org_policy_rules_map[gcp_resource_1],
+            ['rule1', 'rule2', 'rule3', 'rule4'])
+        self.assertItemsEqual(
+            rule_book.org_policy_rules_map[gcp_resource_2],
+            ['rule1', 'rule2', 'rule3', 'rule4'])
+
+    def test_find_violations(self):
+        rule_defs = [
+            {
+                'rule_id': 'rule1',
+                'mode': 'blacklist',
+                'match_policies': [
+                    {
+                        'direction': 'ingress',
+                        'allowed': ['*'],
+                        'targetTags': ['linux'],
+                    },
+                ],
+                'verify_policies': [
+                    {
+                        'allowed': [{
+                            'IPProtocol': 'tcp',
+                            'ports': ['3389']
+                        }],
+                    }
+                ],
+            },
+            {
+                'rule_id': 'rule2',
+                'mode': 'whitelist',
+                'match_policies': [
+                    {
+                        'direction': 'ingress',
+                        'allowed': ['*'],
+                        'targetTags': ['test'],
+                    },
+                ],
+                'verify_policies': [
+                    {
+                        'allowed': ['*'],
+                        'sourceRanges': ['10.0.0.0/8'],
+                    }
+                ],
+            },
+            {
+                'rule_id': 'rule3',
+                'mode': 'required',
+                'match_policies': [
+                    {
+                        'name': 'policy1',
+                        'network': 'network1',
+                        'direction': 'egress',
+                        'denied': [{'IPProtocol': '*'}],
+                        'destinationRanges': ['8.8.8.8'],
+                    }
+                ],
+            },
+            {
+                'rule_id': 'rule4',
+                'mode': 'matches',
+                'match_policies': [
+                    {
+                      'name': 'policy1',
+                      'network': 'network1',
+                      'direction': 'ingress',
+                      'allowed': [
+                          {
+                              'IPProtocol': 'tcp',
+                              'ports': ['22'],
+                          },
+                      ],
+                      'sourceRanges': ['0.0.0.0/0'],
+                    }
+                ],
+            },
+        ]
+        group_defs = [
+            {
+                'group_id': 'gid1',
+                'rule_ids': ['rule1', 'rule2'],
+            },
+        ]
+        org_def = {
+            'resources': [
+                {
+                    'type': 'organization',
+                    'resource_ids': ['org'],
+                    'rules': {
+                        'rule_ids': ['rule4'],
+                    },
+                },
+                {
+                    'type': 'folder',
+                    'resource_ids': ['folder1', 'folder2'],
+                    'rules': {
+                        'group_ids': ['gid1'],
+                    },
+                },
+                {
+                    'type': 'project',
+                    'resource_ids': ['project2'],
+                    'rules': {
+                        'rule_ids': ['rule3'],
+                    },
+                },
+                {
+                    'type': 'project',
+                    'resource_ids': ['exception'],
+                    'rules': {
+                        'rule_ids': [],
+                    },
+                },
+            ],
+        }
+        project0 = fre.resource_util.create_resource(
+            resource_id='project0', resource_type='project')
+        project1 = fre.resource_util.create_resource(
+            resource_id='project1', resource_type='project')
+        project2 = fre.resource_util.create_resource(
+            resource_id='project2', resource_type='project')
+        project3 = fre.resource_util.create_resource(
+            resource_id='project3', resource_type='project')
+        exception = fre.resource_util.create_resource(
+            resource_id='exception', resource_type='project')
+        folder1 = fre.resource_util.create_resource(
+            resource_id='folder1', resource_type='folder')
+        folder2 = fre.resource_util.create_resource(
+            resource_id='folder2', resource_type='folder')
+        folder3 = fre.resource_util.create_resource(
+            resource_id='folder3', resource_type='folder')
+        folder4 = fre.resource_util.create_resource(
+            resource_id='folder4', resource_type='folder')
+        org = fre.resource_util.create_resource(
+            resource_id='org', resource_type='organization')
+
+        policy_violates_rule_1 = fre.firewall_rule.FirewallRule.from_dict(
+            {
+                'name': 'policy1',
+                'network': 'network1',
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
+                'sourceRanges': ['0.0.0.0/0'],
+                'targetTags': ['linux'],
+            },
+            validate=True,
+        )
+        policy_violates_rule_2 = fre.firewall_rule.FirewallRule.from_dict(
+            {
+                'name': 'policy1',
+                'network': 'network1',
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
+                'sourceRanges': ['11.0.0.1'],
+                'targetTags': ['test'],
+            },
+            validate=True,
+        )
+        policy_violates_rule_3 = fre.firewall_rule.FirewallRule.from_dict(
+            {
+                'name': 'policy1',
+                'network': 'network1',
+                'direction': 'egress',
+                'denied': [{'IPProtocol': 'tcp', 'ports': ['22']}],
+                'destinationRanges': ['11.0.0.1'],
+            },
+            validate=True,
+        )
+        policy_violates_rule_4 = fre.firewall_rule.FirewallRule.from_dict(
+            {
+                'name': 'policy1',
+                'network': 'network1',
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
+                'sourceRanges': ['0.0.0.0/1'],
+            },
+            validate=True,
+        )
+        ancestry = {
+            project0: [folder1, org],
+            project1: [folder2, org],
+            project2: [folder4, folder3, org],
+            project3: [folder3, org],
+            exception: [folder3, org],
+        }
+        rule_book = fre.RuleBook(
+            {},
+            rule_defs=rule_defs,
+            group_defs=group_defs,
+            org_policy=org_def
+        )
+        rule_book.org_res_rel_dao = mock.Mock()
+        rule_book.org_res_rel_dao.find_ancestors.side_effect = (
+            lambda x,y: ancestry[x])
+        project0_violations = [
+            fre.RuleViolation(
+                resource_type='firewall_policy',
+                resource_id=None,
+                rule_id='rule1',
+                violation_type='FIREWALL_BLACKLIST_VIOLATION',
+                policy_names=['policy1'],
+                recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']}
+            )
+        ]
+        project1_violations = [
+            fre.RuleViolation(
+                resource_type='firewall_policy',
+                resource_id=None,
+                rule_id='rule2',
+                violation_type='FIREWALL_WHITELIST_VIOLATION',
+                policy_names=['policy1'],
+                recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']}
+            )
+        ]
+        project2_violations = [
+            fre.RuleViolation(
+                resource_type='firewall_policy',
+                resource_id=None,
+                rule_id='rule3',
+                violation_type='FIREWALL_REQUIRED_VIOLATION',
+                policy_names=['policy1'],
+                recommended_actions={'INSERT_FIREWALL_RULES': ['rule3: rule 0']}
+            )
+        ]
+        project3_violations = [
+            fre.RuleViolation(
+                resource_type='firewall_policy',
+                resource_id=None,
+                rule_id='rule4',
+                violation_type='FIREWALL_MATCHES_VIOLATION',
+                policy_names=['policy1'],
+                recommended_actions={
+                    'DELETE_FIREWALL_RULES': ['policy1'],
+                    'UPDATE_FIREWALL_RULES': [],
+                    'INSERT_FIREWALL_RULES': ['rule4: rule 0']
+                }
+            )
+        ]
+        resources_and_policies = (
+            (project0, policy_violates_rule_1, project0_violations),
+            (project1, policy_violates_rule_2, project1_violations),
+            (project2, policy_violates_rule_3, project2_violations),
+            (project3, policy_violates_rule_4, project3_violations),
+            (exception, policy_violates_rule_1, []),
+        )
+        for resource, policy, expected_violation in resources_and_policies:
+          violations = rule_book.find_violations(resource, policy)
+          self.assert_rule_violation_lists_equal(
+              expected_violation, list(violations))
+
+    def assert_rule_violation_lists_equal(self, expected, violations):
+        sorted(expected, key=lambda k: k.resource_id)
+        sorted(violations, key=lambda k: k.resource_id)
+        self.assertItemsEqual(expected, violations)
 
 
 if __name__ == '__main__':
