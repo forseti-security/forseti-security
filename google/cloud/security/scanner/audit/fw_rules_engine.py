@@ -62,6 +62,59 @@ class InvalidOrgDefinition(Error):
     """Raised if a org definition is invalid."""
 
 
+class FirewallRuleEngine(bre.BaseRulesEngine):
+    """Rules engine for firewall resources."""
+
+    def __init__(self, rules_file_path, snapshot_timestamp=None):
+        """Initialize.
+
+        Args:
+          rules_file_path (str): File location of rules.
+          snapshot_timestamp (str): The snapshot to work with.
+        """
+        super(FirewallRuleEngine, self).__init__(
+            rules_file_path=rules_file_path,
+            snapshot_timestamp=snapshot_timestamp)
+        self.rule_book = None
+
+    def build_rule_book(self, global_configs):
+        """Build RuleBook from the rule definition file.
+
+        Args:
+          global_configs (dict): Global configurations.
+        """
+        rule_file_dict = self._load_rule_definitions()
+        rule_defs = rule_file_dict.get('rules', [])
+        group_defs = rule_file_dict.get('rule_groups', [])
+        org_policy = rule_file_dict.get('org_policy', [])
+        self.rule_book = RuleBook(
+            global_configs,
+            rule_defs=rule_defs,
+            group_defs=group_defs,
+            org_policy=org_policy,
+            snapshot_timestamp=self.snapshot_timestamp)
+
+    def find_policy_violations(self, resource, policy, force_rebuild=False):
+        """Determine whether policy violates rules.
+
+        Args:
+          resource (Resource): The resource that the policy belongs to.
+          policy (dict): The policy to compare against the rules.
+          force_rebuild (bool): If True, rebuilds the rule book.
+            This will reload the rules definition file and add the rules to the
+            book.
+
+        Returns:
+            list: A list of the rule violations.
+        """
+        if self.rule_book is None or force_rebuild:
+            self.build_rule_book(self.full_rules_path)
+
+        violations = self.rule_book.find_violations(resource, policy)
+
+        return list(violations)
+
+
 class RuleBook(bre.BaseRuleBook):
     """The RuleBook for firewall auditing.
 

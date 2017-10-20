@@ -1484,6 +1484,134 @@ class RuleBookTest(ForsetiTestCase):
         sorted(violations, key=lambda k: k.resource_id)
         self.assertItemsEqual(expected, violations)
 
+class RuleEngineTest(ForsetiTestCase):
+
+    def setUp(self):
+        project0 = fre.resource_util.create_resource(
+            resource_id='test_project', resource_type='project')
+        project1 = fre.resource_util.create_resource(
+            resource_id='project1', resource_type='project')
+        project2 = fre.resource_util.create_resource(
+            resource_id='project2', resource_type='project')
+        project3 = fre.resource_util.create_resource(
+            resource_id='project3', resource_type='project')
+        exception = fre.resource_util.create_resource(
+            resource_id='honeypot_exception', resource_type='project')
+        folder1 = fre.resource_util.create_resource(
+            resource_id='folder1', resource_type='folder')
+        folder2 = fre.resource_util.create_resource(
+            resource_id='test_instances', resource_type='folder')
+        folder3 = fre.resource_util.create_resource(
+            resource_id='folder3', resource_type='folder')
+        folder4 = fre.resource_util.create_resource(
+            resource_id='folder4', resource_type='folder')
+        org = fre.resource_util.create_resource(
+            resource_id='org', resource_type='organization')
+        self.project_resource_map = {
+            'test_project': project0,
+            'project1': project1,
+            'project2': project2,
+            'project3': project3,
+            'honeypot_exception': exception,
+        }
+        self.ancestry = {
+            project0: [folder1, org],
+            project1: [folder2, org],
+            project2: [folder4, folder3, org],
+            project3: [folder3, org],
+            exception: [folder3, org],
+        }
+
+    def test_build_rule_book_from_yaml(self):
+        rules_local_path = get_datafile_path(
+            __file__, 'firewall_test_rules.yaml')
+        rules_engine = fre.FirewallRuleEngine(rules_file_path=rules_local_path)
+        rules_engine.build_rule_book({})
+        self.assertEqual(4, len(rules_engine.rule_book.rules_map))
+        self.assertEqual(1, len(rules_engine.rule_book.rule_groups_map))
+        self.assertEqual(5, len(rules_engine.rule_book.org_policy_rules_map))
+
+    @parameterized.parameterized.expand([
+        (
+            'test_project',
+            {
+                'name': 'policy1',
+                'network': 'network1',
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
+                'sourceRanges': ['0.0.0.0/0'],
+                'targetTags': ['linux'],
+            },
+            [
+                {
+                    'resource_type': 'firewall_policy',
+                    'resource_id': None,
+                    'rule_id': 'no_rdp_to_linux',
+                    'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
+                    'policy_names': ['policy1'],
+                    'recommended_actions': {
+                        'DELETE_FIREWALL_RULES': ['policy1']
+                    },
+                }
+            ],
+        ),
+        (
+            'project1',
+            {
+                'name': 'policy1',
+                'network': 'network1',
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
+                'sourceRanges': ['11.0.0.1'],
+                'targetTags': ['test'],
+            },
+            [
+                {
+                    'resource_type': 'firewall_policy',
+                    'resource_id': None,
+                    'rule_id': 'test_instances_rule',
+                    'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
+                    'policy_names': ['policy1'],
+                    'recommended_actions': {
+                        'DELETE_FIREWALL_RULES': ['policy1']
+                    },
+                }
+            ],
+        ),
+        (
+            'honeypot_exception',
+            {
+                'name': 'policy1',
+                'network': 'network1',
+                'direction': 'ingress',
+                'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
+                'sourceRanges': ['0.0.0.0/0'],
+                'targetTags': ['linux'],
+            },
+            [],
+        ),
+    ])
+    def test_find_violations_from_yaml_rule_book(
+        self, project, policy_dict, expected_violations_dicts):
+        rules_local_path = get_datafile_path(
+            __file__, 'firewall_test_rules.yaml')
+        rules_engine = fre.FirewallRuleEngine(rules_file_path=rules_local_path)
+        rules_engine.build_rule_book({})
+        resource = self.project_resource_map[project]
+        policy = fre.firewall_rule.FirewallRule.from_dict(
+            policy_dict, validate=True)
+        rules_engine.rule_book.org_res_rel_dao = mock.Mock()
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors.side_effect = (
+            lambda x,y: self.ancestry[x])
+        violations = rules_engine.find_policy_violations(resource, policy)
+        expected_violations = [
+            fre.RuleViolation(**v) for v in expected_violations_dicts]
+        self.assert_rule_violation_lists_equal(expected_violations, violations)
+
+    def assert_rule_violation_lists_equal(self, expected, violations):
+        sorted(expected, key=lambda k: k.resource_id)
+        sorted(violations, key=lambda k: k.resource_id)
+        self.assertItemsEqual(expected, violations)
 
 if __name__ == '__main__':
   unittest.main()
