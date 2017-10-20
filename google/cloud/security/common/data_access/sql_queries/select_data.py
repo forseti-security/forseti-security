@@ -197,7 +197,8 @@ SELECT_FORWARDING_RULE_VIOLATION = """
 """
 
 SELECT_GROUPS_VIOLATIONS = """
-    SELECT * FROM groups_violations_{0};
+    SELECT * FROM violations_{0}
+    WHERE violation_type = 'GROUP_VIOLATION';
 """
 
 SELECT_INSTANCE_NETWORK_INTERFACE_VIOLATIONS = """

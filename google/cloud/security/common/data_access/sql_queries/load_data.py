@@ -26,9 +26,3 @@ INSERT_VIOLATION = """
      violation_type, violation_data)
     VALUES (%s, %s, %s, %s, %s, %s)
 """
-
-INSERT_GROUPS_VIOLATION = """
-    INSERT INTO {0}
-    (member_email, group_email, rule_name)
-    VALUES (%s, %s, %s)
-"""
