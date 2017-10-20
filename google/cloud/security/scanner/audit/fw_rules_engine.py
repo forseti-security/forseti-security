@@ -106,9 +106,8 @@ class RuleBook(bre.BaseRuleBook):
         self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
             global_configs)
         self.snapshot_timestamp = None
-        if snapshot_timestamp:
-            self.snapshot_timestamp = snapshot_timestamp
-        self._rules_sema = threading.BoundedSemaphore(value=1)
+        self.snapshot_timestamp = snapshot_timestamp or None
+        self._repository_lock = threading.RLock()
         if rule_defs:
             self.add_rules(rule_defs)
         if group_defs:
@@ -126,11 +125,10 @@ class RuleBook(bre.BaseRuleBook):
           InvalidRuleDefinition: If the rule is missing required fields or the
             fields have invalid values.
         """
-        self._rules_sema.acquire() #TODO change to lock
-        for i, rule_def in enumerate(rule_defs):
-            if rule_def is not None:
-                self.add_rule(rule_def, i)
-        self._rules_sema.release()
+        with self._repository_lock:
+            for i, rule_def in enumerate(rule_defs):
+                if rule_def is not None:
+                    self.add_rule(rule_def, i)
 
     def add_rule(self, rule_def, rule_index):
         """Adds a rule to the rule book.
@@ -178,8 +176,7 @@ class RuleBook(bre.BaseRuleBook):
                     raise RuleDoesntExistError(
                         'Rule id "%s" does not exist, cannot be in group' %
                         rule_id)
-            self.rule_groups_map[group_id] = group_def.get(
-                'rule_ids', [])
+            self.rule_groups_map[group_id] = rule_ids
 
     def add_org_policy(self, org_def):
         """Creates org policy and rule mapping.
@@ -216,23 +213,24 @@ class RuleBook(bre.BaseRuleBook):
             ids = resource.get('resource_ids', [])
             rules = resource.get('rules', {})
             groups = rules.get('group_ids', [])
-            expanded_rules = []
-            for group in groups:
-                if group not in self.rule_groups_map:
+            expanded_rules = set()
+            for group_id in groups:
+                if group_id not in self.rule_groups_map:
                     raise GroupDoesntExistError(
-                        'Group "%s" does not exist' % group)
-                expanded_group = self.rule_groups_map.get(group, [])
-                expanded_rules.extend(expanded_group)
+                        'Group "%s" does not exist' % group_id)
+                expanded_group = self.rule_groups_map.get(group_id, [])
+                expanded_rules.update(expanded_group)
             for rule_id in rules.get('rule_ids', []):
-                expanded_rules.append(rule_id)
                 if rule_id not in self.rules_map:
                     raise RuleDoesntExistError(
                         'Rule id "%s" does not exist' % rule_id)
+                expanded_rules.add(rule_id)
             for resource_id in ids:
                 gcp_resource = resource_util.create_resource(
                     resource_id=resource_id,
                     resource_type=resource_type)
-                self.org_policy_rules_map[gcp_resource] = expanded_rules
+                self.org_policy_rules_map[gcp_resource] = sorted(
+                    list(expanded_rules))
 
     def find_violations(self, resource, policy):
         """Find policy binding violations in the rule book.
@@ -300,6 +298,14 @@ class Rule(object):
         self.mode = mode
         self._verify_policies = verify_policies
         self._verify_rules = None
+
+    def __hash__(self):
+        """Makes a hash of the rule id.
+
+        Returns:
+          int: The hash of the rule id.
+        """
+        return hash(self.id)
 
     @classmethod
     def from_config(cls, rule_def):
@@ -373,10 +379,10 @@ class Rule(object):
           list: A list of FirewallRule.
         """
         if not self._match_rules:
-            validate = self.mode in [
+            validate = self.mode in {
                 scanner_rules.RuleMode.REQUIRED,
                 scanner_rules.RuleMode.MATCHES
-            ]
+            }
             self._match_rules = self.create_rules(
                 self._match_policies, validate=validate)
         return self._match_rules
