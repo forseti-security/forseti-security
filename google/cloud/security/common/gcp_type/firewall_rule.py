@@ -486,7 +486,8 @@ class FirewallRule(object):
         return ((self.direction is None or
                  other.direction is None or
                  self.direction == other.direction) and
-                (self.network is None or self.network == other.network) and
+                (self.network is None or other.network is None or
+                 self.network == other.network) and
                 set(other.source_tags).issubset(self.source_tags) and
                 set(other.target_tags).issubset(self.target_tags) and
                 self.firewall_action > other.firewall_action and
