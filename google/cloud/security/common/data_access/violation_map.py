@@ -27,12 +27,14 @@ VIOLATION_MAP = {
     'groups_violations': vf.format_groups_violation,
 }
 
+# TODO: Now that all violations are going into the same table, a map is not
+# need anymore.
 VIOLATION_INSERT_MAP = {
     'violations': load_data.INSERT_VIOLATION.format,
     'bigquery_acl_violations': load_data.INSERT_VIOLATION.format,
     'buckets_acl_violations': load_data.INSERT_VIOLATION.format,
     'cloudsql_acl_violations': load_data.INSERT_VIOLATION.format,
-    'groups_violations': load_data.INSERT_GROUPS_VIOLATION.format
+    'groups_violations': load_data.INSERT_VIOLATION.format
 }
 
 VIOLATION_SELECT_MAP = {
