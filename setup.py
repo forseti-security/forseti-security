@@ -38,6 +38,7 @@ INSTALL_REQUIRES = [
     'futures==3.0.5',
     'google-api-python-client==1.6.1',
     'Jinja2==2.9.5',
+    'jsonschema>=2.6.0',
     'MySQL-python==1.2.5',
     'netaddr>=0.7.19',
     'protobuf>=3.2.0',
