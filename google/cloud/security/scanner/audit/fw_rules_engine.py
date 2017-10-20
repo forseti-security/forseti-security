@@ -75,6 +75,7 @@ class FirewallRuleEngine(bre.BaseRulesEngine):
         super(FirewallRuleEngine, self).__init__(
             rules_file_path=rules_file_path,
             snapshot_timestamp=snapshot_timestamp)
+        self._repository_lock = threading.RLock()
         self.rule_book = None
 
     def build_rule_book(self, global_configs):
@@ -83,16 +84,17 @@ class FirewallRuleEngine(bre.BaseRulesEngine):
         Args:
           global_configs (dict): Global configurations.
         """
-        rule_file_dict = self._load_rule_definitions()
-        rule_defs = rule_file_dict.get('rules', [])
-        group_defs = rule_file_dict.get('rule_groups', [])
-        org_policy = rule_file_dict.get('org_policy', [])
-        self.rule_book = RuleBook(
-            global_configs,
-            rule_defs=rule_defs,
-            group_defs=group_defs,
-            org_policy=org_policy,
-            snapshot_timestamp=self.snapshot_timestamp)
+        with self._repository_lock:
+            rule_file_dict = self._load_rule_definitions()
+            rule_defs = rule_file_dict.get('rules', [])
+            group_defs = rule_file_dict.get('rule_groups', [])
+            org_policy = rule_file_dict.get('org_policy', [])
+            self.rule_book = RuleBook(
+                global_configs,
+                rule_defs=rule_defs,
+                group_defs=group_defs,
+                org_policy=org_policy,
+                snapshot_timestamp=self.snapshot_timestamp)
 
     def find_policy_violations(self, resource, policy, force_rebuild=False):
         """Determine whether policy violates rules.
