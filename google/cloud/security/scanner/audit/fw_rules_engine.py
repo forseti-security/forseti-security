@@ -105,7 +105,6 @@ class RuleBook(bre.BaseRuleBook):
         self.org_policy_rules_map = {}
         self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
             global_configs)
-        self.snapshot_timestamp = None
         self.snapshot_timestamp = snapshot_timestamp or None
         self._repository_lock = threading.RLock()
         if rule_defs:
@@ -229,8 +228,7 @@ class RuleBook(bre.BaseRuleBook):
                 gcp_resource = resource_util.create_resource(
                     resource_id=resource_id,
                     resource_type=resource_type)
-                self.org_policy_rules_map[gcp_resource] = sorted(
-                    list(expanded_rules))
+                self.org_policy_rules_map[gcp_resource] = sorted(expanded_rules)
 
     def find_violations(self, resource, policy):
         """Find policy binding violations in the rule book.
