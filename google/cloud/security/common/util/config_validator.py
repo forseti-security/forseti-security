@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Configuration Validator."""
+"""Configuration Validator.
+
+This is a wrapper around the jsonschema validator.
+"""
 
 import json
 import os
@@ -25,8 +28,11 @@ def validate(config_path, schema_path):
     """Validate the configuration.
 
     Args:
-        config_path (str): The path to the configuration.
-        schema_path (str): The path to the schema.
+        config_path (str): The filesystem path to the configuration.
+        schema_path (str): The filesystem path to the schema.
+
+    Returns:
+        dict: The config that has been validated against the schema.
 
     Raises:
         ConfigLoadError: When the configuration load fails.
@@ -52,6 +58,8 @@ def validate(config_path, schema_path):
         raise InvalidConfigError(ve)
     except jsonschema.SchemaError(se):
         raise InvalidSchemaError(se)
+
+    return config
 
 
 # TODO: custom messaging for errors?

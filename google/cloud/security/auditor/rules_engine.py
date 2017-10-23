@@ -23,26 +23,15 @@ import os
 import sys
 
 from collections import namedtuple
-# dummy import to force the PYTHONPATH to work and not complain about
-# the "ImportError: No module named cloud.security.common.util"
-from google.protobuf.json_format import MessageToJson
 
-from google.cloud.security.common.util import config_validator
+# dummy import to force building the namespace package to find
+# stuff in google.cloud.security.
+# Otherwise, we get the following error:
+# "ImportError: No module named cloud.security.common.util"
+# See https://github.com/google/protobuf/issues/1296#issuecomment-264265761
+import google.protobuf
 
-
-RULES_SCHEMA_PATH = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        'schema',
-        'rules.json'))
-
-
-class Error(Exception):
-    """Base Error class."""
-
-
-class InvalidRulesConfigError(Error):
-    """InvalidRulesConfigError."""
+from google.cloud.security.auditor import rules_config_validator
 
 
 class RulesEngine(object):
@@ -53,27 +42,18 @@ class RulesEngine(object):
         self.rules_config_path = rules_config_path
 
     def setup(self):
-        self.validate_config()
-        self.rules = self.parse_config()
-
-    def parse_config(self):
-        return []
+        """Set up the RulesEngine."""
+        valid_config = self.validate_config()
+        self.rules = valid_config
 
     def validate_config(self):
         """Validate the rules config.
 
-        Raises:
-            InvalidRulesConfigError: When the rules config is invalid.
+        Returns:
+            dict: The parsed, valid config.
         """
-        try:
-            config_validator.validate(self.rules_config_path, RULES_SCHEMA_PATH)
-        except (config_validator.ConfigLoadError,
-                config_validator.InvalidConfigError,
-                config_validator.InvalidSchemaError) as err:
-            raise InvalidRulesConfigError(err)
-
-    def _check_unique_rule_ids(self):
-        return True
+        return rules_config_validator.RulesConfigValidator.validate(
+            self.rules_config_path)
 
     def evaluate_rules(self, resource):
         for rule in self.valid_rules:
@@ -92,6 +72,11 @@ Args:
 """
 RuleResult = namedtuple('RuleResult',
                         ['rule_id', 'resource', 'result', 'metadata'])
+
+
+class Error(Exception):
+    """Base Error class."""
+
 
 def main(args):
     parser = ap.ArgumentParser()

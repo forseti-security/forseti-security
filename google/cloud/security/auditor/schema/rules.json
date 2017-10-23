@@ -28,7 +28,8 @@
           "type": "array",
           "items": { "type": "string" }
         }
-      }
+      },
+      "required": ["variables", "resources", "condition"]
     },
     "variables": {
       "type": "array",
@@ -43,7 +44,8 @@
       "properties": {
         "type": { "type": "string" },
         "variables": { "$ref": "#/definitions/resourceVars" }
-      }
+      },
+      "required": ["type"]
     },
     "resourceVars": {
       "type": "array",
