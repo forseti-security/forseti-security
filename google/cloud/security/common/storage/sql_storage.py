@@ -26,7 +26,7 @@ from sqlalchemy.orm import aliased
 
 
 from sqlalchemy.ext.declarative import declarative_base
-from google.cloud.security.iam.inventory.inventory2.storage import \
+from google.cloud.security.common.storage.base_storage import \
     Storage as BaseStorage
 
 # TODO: Remove this when time allows

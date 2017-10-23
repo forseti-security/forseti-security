@@ -18,12 +18,12 @@
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
-from google.cloud.security.iam.inventory.inventory2 import resources
 from google.cloud.security.iam.inventory.inventory2 import gcp
-from google.cloud.security.iam.inventory.inventory2 import crawler
+from google.cloud.security.inventory import base_crawler
+from google.cloud.security.inventory import resources
 
 
-class CrawlerConfig(crawler.CrawlerConfig):
+class CrawlerConfig(base_crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
     def __init__(self, storage, progresser, api_client, variables=None):
@@ -34,7 +34,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
         self.client = api_client
 
 
-class Crawler(crawler.Crawler):
+class Crawler(base_crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
     def __init__(self, config):
