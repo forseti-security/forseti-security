@@ -71,13 +71,15 @@ class FwPolicyScanner(base_scanner.BaseScanner):
             violation_data['recommended_actions'] = (
                 violation.recommended_actions)
 
-            yield {
+            violation_dict = {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
                 'rule_id': violation.rule_id,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data
             }
+            sorted(violation_dict)
+            yield violation_dict
 
     def _output_results(self, all_violations, resource_counts):
         """Output results.
@@ -151,7 +153,7 @@ class FwPolicyScanner(base_scanner.BaseScanner):
         Returns:
             list: A list of all violations
         """
-        policies = itertools.chain(*policies)
+        policies = itertools.chain(policies)
         all_violations = []
         LOGGER.info('Finding firewall policy violations...')
         for (resource, policy) in policies:
