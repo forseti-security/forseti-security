@@ -255,11 +255,12 @@ class GcsObject(Resource):
 class DataSet(Resource):
     @cached('dataset_policy')
     def getDatasetPolicy(self, client=None):
-        return client.get_dataset_dataset_policy(self.parent().key(),
-                                                 self.key())
+        return client.get_dataset_dataset_policy(
+            self.parent().key(),
+            self['datasetReference']['datasetId'])
 
     def key(self):
-        return self['datasetId']
+        return self['id']
 
     def type(self):
         return 'dataset'

@@ -311,7 +311,7 @@ class InventoryImporter(object):
             last_res_type = None
             with Inventory(self.session, self.inventory_id, True) as inventory:
 
-                for resource in inventory.iter('organization'):
+                for resource in inventory.iter(['organization']):
                     self.found_root = True
                 if not self.found_root:
                     raise Exception(
@@ -494,7 +494,12 @@ class InventoryImporter(object):
                 # that we haven't seen in gsuite.
                 if member not in self.member_cache and \
                    member not in self.member_cache_policies:
-                    m_type, name = member.split('/', 1)
+                    try:
+                        # This is the default case, e.g. 'group/foobar'
+                        m_type, name = member.split('/', 1)
+                    except ValueError:
+                        # Special groups like 'allUsers' done specify a type
+                        m_type, name = member, member
                     self.member_cache_policies[member] = self.dao.TBL_MEMBER(
                         name=member,
                         type=m_type,
