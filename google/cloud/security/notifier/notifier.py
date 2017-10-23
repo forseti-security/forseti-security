@@ -37,7 +37,7 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
-from google.cloud.security.scanner.scanners.scanners_map import RESOURCE_MAP
+from google.cloud.security.scanner.scanners.scanners_map import SCANNER_VIOLATION_MAP
 # pylint: enable=line-too-long
 
 
@@ -181,10 +181,10 @@ def main(_):
     # get violations
     v_dao = violation_dao.ViolationDao(global_configs)
     violations = {}
-    for resource in RESOURCE_MAP:
+    for mapped_scanner_violation in SCANNER_VIOLATION_MAP:
         try:
-            violations[resource] = v_dao.get_all_violations(
-                timestamp, resource)
+            violations[mapped_scanner_violation] = v_dao.get_all_violations(
+                timestamp, mapped_scanner_violation)
         except db_errors.MySQLError, e:
             # even if an error is raised we still want to continue execution
             # this is because if we don't have violations the Mysql table
@@ -201,6 +201,9 @@ def main(_):
         if violations.get(resource['resource']) is None:
             LOGGER.error('The resource name \'%s\' is invalid, skipping',
                          resource['resource'])
+            continue
+        if not violations[resource['resource']]:
+            LOGGER.debug('No violations for: %s', resource['resource'])
             continue
         if not resource['should_notify']:
             continue

@@ -102,6 +102,9 @@ inventory:
 
 scanner:
 
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
     # Output path (do not include filename).
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
