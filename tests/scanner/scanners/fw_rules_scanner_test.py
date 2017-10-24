@@ -111,7 +111,6 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
     @mock.patch.object(
         fw_rules_scanner.FwPolicyScanner,
         '_output_results_to_db', autospec=True)
-    # autospec on staticmethod will return noncallable mock
     def test_output_results_local_no_email(
         self, mock_output_results_to_db,
         mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
@@ -200,7 +199,6 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
     @mock.patch.object(
         fw_rules_scanner.FwPolicyScanner,
         '_output_results_to_db', autospec=True)
-    # autospec on staticmethod will return noncallable mock
     def test_output_results_gcs_email(
         self, mock_output_results_to_db,
         mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
