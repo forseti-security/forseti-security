@@ -311,6 +311,7 @@ class InventoryImporter(object):
             self.session.autoflush = False
             item_counter = 0
             last_res_type = None
+
             with Inventory(self.session, self.inventory_id, True) as inventory:
 
                 for resource in inventory.iter(['organization']):
@@ -975,7 +976,11 @@ class InventoryImporter(object):
 
 
 class ForsetiImporter(object):
-    """Imports data from Forseti."""
+    """Imports data from Forseti.
+
+    TODO: Delete this class when the forseti inventory pipelines are no longer
+    supported.
+    """
 
     def __init__(self, session, model, dao, service_config, *args, **kwargs):
         """Create a ForsetiImporter which creates a model from the Forseti DB.

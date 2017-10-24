@@ -171,7 +171,7 @@ class Inventory(object):
 
     def __init__(self, config):
         self.config = config
-        init_storage(self.config.get_engine())
+        init_storage(self.config.get_forseti_engine())
 
     def Create(self, background, model_name):
         """Create a new inventory,
@@ -193,7 +193,7 @@ class Inventory(object):
         def do_inventory():
             """Run the inventory."""
 
-            with self.config.scoped_session() as session:
+            with self.config.forseti_scoped_session() as session:
                 try:
                     result = run_inventory(
                         self.config,
@@ -232,7 +232,7 @@ class Inventory(object):
             object: Inventory metadata
         """
 
-        with self.config.scoped_session() as session:
+        with self.config.forseti_scoped_session() as session:
             for item in DataAccess.list(session):
                 yield item
 
@@ -246,7 +246,7 @@ class Inventory(object):
             object: Inventory metadata
         """
 
-        with self.config.scoped_session() as session:
+        with self.config.forseti_scoped_session() as session:
             result = DataAccess.get(session, inventory_id)
             return result
 
@@ -260,6 +260,6 @@ class Inventory(object):
             object: Inventory object that was deleted
         """
 
-        with self.config.scoped_session() as session:
+        with self.config.forseti_scoped_session() as session:
             result = DataAccess.delete(session, inventory_id)
             return result

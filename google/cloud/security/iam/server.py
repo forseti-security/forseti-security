@@ -235,9 +235,11 @@ class ServiceConfig(AbstractServiceConfig):
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
         self.engine = create_engine(explain_connect_string, pool_recycle=3600)
-        self.model_manager = ModelManager(self.engine)
+        self.forseti_engine = create_engine(forseti_connect_string, pool_recycle=3600)
+        self.model_manager = ModelManager(self.forseti_engine)
         self.forseti_connect_string = forseti_connect_string
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
+        self.forseti_sessionmaker = db.create_scoped_sessionmaker(self.forseti_engine)
         self.endpoint = endpoint
 
         self.inventory_config = inventory_config
@@ -261,6 +263,15 @@ class ServiceConfig(AbstractServiceConfig):
 
         return self.engine
 
+    def get_forseti_engine(self):
+        """Get the forseti database engine.
+
+        Returns:
+            object: Database engine object.
+        """
+
+        return self.forseti_engine
+
     def scoped_session(self):
         """Get a scoped session.
 
@@ -269,6 +280,15 @@ class ServiceConfig(AbstractServiceConfig):
         """
 
         return self.sessionmaker()
+
+    def forseti_scoped_session(self):
+        """Get a forseti scoped session.
+
+        Returns:
+            object: A scoped session.
+        """
+
+        return self.forseti_sessionmaker()
 
     def client(self):
         """Get an API client.
