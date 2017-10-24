@@ -28,6 +28,7 @@ from collections import namedtuple
 # "ImportError: No module named cloud.security.common.util"
 # See https://github.com/google/protobuf/issues/1296#issuecomment-264265761
 import google.protobuf
+import pyparsing
 
 from google.cloud.security.common.util import config_validator
 from google.cloud.security.auditor import condition_parser
@@ -55,6 +56,9 @@ class RulesConfigValidator(object):
         Raises:
             InvalidRulesConfigError: When the rules config is invalid.
         """
+        schema_errors = []
+        config = {}
+
         # Validate against the JSON schema.
         try:
             config = config_validator.validate(
@@ -77,12 +81,12 @@ class RulesConfigValidator(object):
         invalid_conditions = []
 
         for rule in config.get('rules', []):
-            rule_id = rule['rule_id']
+            rule_id = rule['id']
 
             # Keep track rule id occurrences.
             rule_ids[rule_id] += 1
 
-            rule_config = rule.get('configurations')
+            rule_config = rule.get('configuration')
             if not rule_config:
                 continue
 
@@ -91,34 +95,57 @@ class RulesConfigValidator(object):
 
             # Check that all configuration['variables'] are present in
             # configuration['resources'] variables.
-            resource_vars = set(config_resources.get('variables', {}).keys())
-            unused_config_vars = config_vars - resource_vars
-            unused_resource_vars = resource_vars - config_vars
-            if unused_config_vars or unused_resource_vars:
-                outstanding_vars.append(
-                    (rule_id, unused_config_vars, unused_resource_vars))
+            for resource in config_resources:
+                # {'resources': [
+                #   {'variables': [
+                #     {'key': 'value'},
+                #    ...], ...}, ...], ...}
+                resource_vars = set([
+                    res_var
+                    for var_map in resource.get('variables', [])
+                    for res_var in var_map.keys()])
+
+                unused_config_vars = config_vars - resource_vars
+                unused_resource_vars = resource_vars - config_vars
+                if unused_config_vars or unused_resource_vars:
+                    outstanding_vars.append(
+                        (rule_id,
+                         resource.get('type'),
+                         unused_config_vars,
+                         unused_resource_vars))
 
             # Check that conditional statement parses.
             config_condition = ' and '.join(rule_config.get('condition', ''))
-            # TODO: don't evaluate, just parse the condition for correctness
-            cp = condition_parser.ConditionParser(config_vars)
+            cp = condition_parser.ConditionParser(
+                {v: 1 for v in config_vars})
+
+            try:
+                cp.eval_filter(config_condition)
+            except pyparsing.ParseException as pe:
+                invalid_conditions.append((rule_id, config_condition, pe))
 
         errors_iter = itertools.chain(
             # Schema errors
             schema_errors,
 
             # Errors for dupliate rule ids
-            [InvalidRulesDuplicateError(rule_id)
+            [DuplicateRuleIdError(rule_id)
                 for rule_id in rule_ids
-                if rule_ids[rule_id] > 1]),
+                if rule_ids[rule_id] > 1],
 
             # Outstanding variables
-            [],
+            [UnmatchedVariablesError(
+                rule_id, resource_type, unmatched_cfg_vars, unmatched_res_vars)
+                for (rule_id, resource_type,
+                        unmatched_cfg_vars, unmatched_res_vars)
+                in outstanding_vars],
 
             # Invalid conditions
-            []
+            [ConditionParseError(rule_id, config_condition, pe)
+                for (rule_id, config_condition, pe) in invalid_conditions]
             )
 
+        errors = [str(err) for err in errors_iter]
         if errors:
             raise InvalidRulesConfigError(errors)
 
@@ -141,23 +168,70 @@ class InvalidRulesConfigError(Error):
             errors (list): The list of Errors.
         """
         super(InvalidRulesConfigError, self).__init__(
-            self.CUSTOM_ERROR_MSG.format('\n'.join(errors)))
+            self.CUSTOM_ERROR_MSG.format('\n--------------\n'.join(errors)))
 
 
-class InvalidRulesDuplicateIdError(Error):
-    """InvalidRulesDuplicateIdError."""
+class DuplicateRuleIdError(Error):
+    """DuplicateRuleIdError."""
 
-    CUSTOM_ERROR_MSG = 'Duplicate rule id: {0}\n{1}'
+    CUSTOM_ERROR_MSG = 'Found duplicate rule id: {0}'
 
-    def __init__(self, rule_id, e):
+    def __init__(self, rule_id):
         """Init.
 
         Args:
             rule_id (str): The rule id.
-            e (Error): The Error.
         """
-        super(InvalidRulesDuplicateIdError, self).__init__(
-            self.CUSTOM_ERROR_MSG.format(rule_id, e))
+        super(DuplicateRuleIdError, self).__init__(
+            self.CUSTOM_ERROR_MSG.format(rule_id))
+
+
+class UnmatchedVariablesError(Error):
+    """UnmatchedVariablesError."""
+
+    CUSTOM_ERROR_MSG = ('Unmatched config variables: '
+                        'rule_id={0}, resource_type={1}\n'
+                        'Unmatched config_vars={2}\n'
+                        'Unmatched resource_vars={3}')
+
+    def __init__(self,
+                 rule_id,
+                 resource_type,
+                 unmatched_config_vars,
+                 unmatched_resource_vars):
+        """Init.
+
+        Args:
+            rule_id (str): The rule id.
+            resource_type (str): The resource type in the configuration.
+            unmatched_config_vars (set): The unmatched config variables.
+            unmatched_resource_vars (set): The unmatched resource variables.
+        """
+        super(UnmatchedVariablesError, self).__init__(
+            self.CUSTOM_ERROR_MSG.format(
+                rule_id,
+                resource_type,
+                ','.join(unmatched_config_vars),
+                ','.join(unmatched_resource_vars)))
+
+
+class ConditionParseError(Error):
+    """ConditionParseError."""
+
+    CUSTOM_ERROR_MSG = ('Rule condition parse error: '
+                        'rule_id={0}, condition={1}\n{2}')
+
+    def __init__(self, rule_id, config_condition, parse_error):
+        """Init.
+
+        Args:
+            rule_id (str): The rule id.
+            config_condition (str): The condition with the parse error.
+            parse_error (ParseException): The pyparsing.ParseException.
+        """
+        super(ConditionParseError, self).__init__(
+            self.CUSTOM_ERROR_MSG.format(
+                rule_id, config_condition, parse_error))
 
 
 def main(args):
