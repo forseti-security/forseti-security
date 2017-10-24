@@ -311,38 +311,42 @@ class InventoryImporter(object):
             self.session.autoflush = False
             item_counter = 0
             last_res_type = None
-            with Inventory(self.session, self.inventory_id, True) as inventory:
 
-                for resource in inventory.iter(['organization']):
-                    self.found_root = True
-                if not self.found_root:
-                    raise Exception(
-                        'Cannot import inventory without organization root')
+            with self.service_config.forseti_scoped_session() as \
+                forseti_session:
+                with Inventory(
+                    forseti_session, self.inventory_id, True) as inventory:
 
-                for resource in inventory.iter(gcp_type_list):
-                    item_counter += 1
-                    last_res_type = self._store_resource(resource,
-                                                         last_res_type)
-                self._store_resource(None, last_res_type)
-                self.session.flush()
+                    for resource in inventory.iter(['organization']):
+                        self.found_root = True
+                    if not self.found_root:
+                        raise Exception(
+                            'Cannot import inventory without organization root')
 
-                for resource in inventory.iter(gsuite_type_list):
-                    self._store_gsuite_principal(resource)
-                self.session.flush()
+                    for resource in inventory.iter(gcp_type_list):
+                        item_counter += 1
+                        last_res_type = self._store_resource(resource,
+                                                             last_res_type)
+                    self._store_resource(None, last_res_type)
+                    self.session.flush()
 
-                self._store_gsuite_membership_pre()
-                for child, parent in inventory.iter(member_type_list,
-                                                    with_parent=True):
-                    self._store_gsuite_membership(parent, child)
-                self._store_gsuite_membership_post()
+                    for resource in inventory.iter(gsuite_type_list):
+                        self._store_gsuite_principal(resource)
+                    self.session.flush()
 
-                self.dao.denorm_group_in_group(self.session)
+                    self._store_gsuite_membership_pre()
+                    for child, parent in inventory.iter(member_type_list,
+                                                        with_parent=True):
+                        self._store_gsuite_membership(parent, child)
+                    self._store_gsuite_membership_post()
 
-                self._store_iam_policy_pre()
-                for policy in inventory.iter(gcp_type_list,
-                                             fetch_iam_policy=True):
-                    self._store_iam_policy(policy)
-                self._store_iam_policy_post()
+                    self.dao.denorm_group_in_group(self.session)
+
+                    self._store_iam_policy_pre()
+                    for policy in inventory.iter(gcp_type_list,
+                                                 fetch_iam_policy=True):
+                        self._store_iam_policy(policy)
+                    self._store_iam_policy_post()
 
         except Exception:  # pylint: disable=broad-except
             buf = StringIO()
@@ -975,7 +979,11 @@ class InventoryImporter(object):
 
 
 class ForsetiImporter(object):
-    """Imports data from Forseti."""
+    """Imports data from Forseti data pipelines.
+
+    TODO: Delete this class when the forseti inventory pipelines are no longer
+    supported.
+    """
 
     def __init__(self, session, model, dao, service_config, *args, **kwargs):
         """Create a ForsetiImporter which creates a model from the Forseti DB.
