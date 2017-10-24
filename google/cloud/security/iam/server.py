@@ -235,11 +235,13 @@ class ServiceConfig(AbstractServiceConfig):
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
         self.engine = create_engine(explain_connect_string, pool_recycle=3600)
-        self.forseti_engine = create_engine(forseti_connect_string, pool_recycle=3600)
-        self.model_manager = ModelManager(self.forseti_engine)
+        self.forseti_engine = create_engine(forseti_connect_string,
+                                            pool_recycle=3600)
+        self.model_manager = ModelManager(self.engine)
         self.forseti_connect_string = forseti_connect_string
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
-        self.forseti_sessionmaker = db.create_scoped_sessionmaker(self.forseti_engine)
+        self.forseti_sessionmaker = db.create_scoped_sessionmaker(
+            self.forseti_engine)
         self.endpoint = endpoint
 
         self.inventory_config = inventory_config
