@@ -56,7 +56,7 @@ def GenerateConfig(context):
 
     EXPORT_INITIALIZE_VARS = (
         'export SQL_PORT={0}\n'
-        'export CLOUDSQL_INSTANCE_ID="{1}"\n'
+        'export SQL_INSTANCE_CONN_STRING="{1}"\n'
         'export FORSETI_DB_NAME="{2}"\n'
         'export EXPLAIN_DB_NAME="{3}"\n'
         'export GSUITE_ADMIN_EMAIL="{4}"\n'

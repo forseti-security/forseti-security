@@ -28,7 +28,7 @@ set -o nounset
 # Reference all required bash varibles prior to running. Due to 'nounset', if
 # a caller fails to export the following expected environmental variables, this
 # script will fail immediately rather than partially succeeding.
-echo "CloudSQL Instance ID: ${CLOUDSQL_INSTANCE_ID}"
+echo "CloudSQL Instance connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "Local SQL port is: ${SQL_PORT}"
 echo "Forseti DB name: ${FORSETI_DB_NAME}"
 echo "Explain DB name: ${EXPLAIN_DB_NAME}"
@@ -53,7 +53,7 @@ FORSETI_COMMAND+=" playground explain inventory"
 
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
-SQL_PROXY_COMMAND+=" -instances=${CLOUDSQL_INSTANCE_ID}=tcp:${SQL_PORT}"
+SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
 
 
 # Cannot use "read -d" since it returns a nonzero exit status.
