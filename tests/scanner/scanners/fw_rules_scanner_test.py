@@ -15,18 +15,19 @@
 from datetime import datetime
 import mock
 import unittest
+import os
 import parameterized
 
-from tests.unittest_utils import get_datafile_path
+import tests.unittest_utils
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.scanner.scanners import fw_rules_scanner
 from google.cloud.security.scanner.audit import fw_rules_engine as fre
-from tests.unittest_utils import ForsetiTestCase
+from tests import unittest_utils
 
 
-class FwRulesScannerTest(ForsetiTestCase):
+class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
 
     @mock.patch(
         'google.cloud.security.scanner.scanners.fw_rules_scanner.fw_rules_engine',
@@ -39,8 +40,8 @@ class FwRulesScannerTest(ForsetiTestCase):
             year=1900, month=1, day=1, hour=0, minute=0, second=0,
             microsecond=0)
         self.fake_scanner_configs = {'output_path': '/fake/output/path'}
-        rules_local_path = get_datafile_path(
-            __file__, 'firewall_test_rules.yaml')
+        rules_local_path = unittest_utils.get_datafile_path(os.path.join(
+            os.path.dirname( __file__), 'audit'), 'firewall_test_rules.yaml')
         self.scanner = fw_rules_scanner.FwPolicyScanner(
             {}, {}, '', rules_local_path)
         self.mock_rules_engine = mock_rules_engine
@@ -110,12 +111,9 @@ class FwRulesScannerTest(ForsetiTestCase):
     @mock.patch.object(
         fw_rules_scanner.FwPolicyScanner,
         '_output_results_to_db', autospec=True)
-    @mock.patch.object(
-        fw_rules_scanner.FwPolicyScanner,
-        '_flatten_violations')
     # autospec on staticmethod will return noncallable mock
     def test_output_results_local_no_email(
-        self, mock_flatten_violations, mock_output_results_to_db,
+        self, mock_output_results_to_db,
         mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
         """Test output results for local output, and don't send email.
 
@@ -139,11 +137,44 @@ class FwRulesScannerTest(ForsetiTestCase):
         fake_csv_file.name = fake_csv_name
 
         self.scanner.scanner_configs = self.fake_scanner_configs
-        self.scanner._output_results(None, '88888')
+        violations = [
+            fw_rules_scanner.fw_rules_engine.RuleViolation(
+                resource_type='firewall_policy',
+                resource_id='p1',
+                rule_id='rule1',
+                violation_type='violation1',
+                policy_names=['n1'],
+                recommended_actions=['a1'],
+            ),
+            fw_rules_scanner.fw_rules_engine.RuleViolation(
+                resource_type='firewall_policy',
+                resource_id='p2',
+                rule_id='rule2',
+                violation_type='violation2',
+                policy_names=['n2'],
+                recommended_actions=['a2'],
+            ),
+        ]
+        flattened_violations = [
+            {
+                'resource_id': v.resource_id,
+                'resource_type': v.resource_type,
+                'rule_id': v.rule_id,
+                'violation_type': v.violation_type,
+                'violation_data': {
+                    'policy_names': v.policy_names,
+                    'recommended_actions': v.recommended_actions,
+                },
+            } for v in violations]
 
-        self.assertEquals(1, mock_flatten_violations.call_count)
-        self.assertEquals(1, mock_output_results_to_db.call_count)
-        self.assertEquals(1, mock_write_csv.call_count)
+        self.scanner._output_results(violations, '88888')
+
+        mock_output_results_to_db.assert_called_once_with(
+            self.scanner, 'violations', flattened_violations)
+        mock_write_csv.assert_called_once_with(
+            resource_name='violations',
+            data=flattened_violations,
+            write_header=True)
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
@@ -169,12 +200,9 @@ class FwRulesScannerTest(ForsetiTestCase):
     @mock.patch.object(
         fw_rules_scanner.FwPolicyScanner,
         '_output_results_to_db', autospec=True)
-    @mock.patch.object(
-        fw_rules_scanner.FwPolicyScanner,
-        '_flatten_violations')
     # autospec on staticmethod will return noncallable mock
     def test_output_results_gcs_email(
-        self, mock_flatten_violations, mock_output_results_to_db,
+        self, mock_output_results_to_db,
         mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
 
         mock_os.path.abspath.return_value = (
@@ -190,17 +218,70 @@ class FwRulesScannerTest(ForsetiTestCase):
         fake_global_configs['email_recipient'] = 'foo@bar.com'
         self.scanner.global_configs = fake_global_configs
         self.scanner.scanner_configs = self.fake_scanner_configs
-        self.scanner._output_results(None, '88888')
+        violations = [
+            fw_rules_scanner.fw_rules_engine.RuleViolation(
+                resource_type='firewall_policy',
+                resource_id='p1',
+                rule_id='rule1',
+                violation_type='violation1',
+                policy_names=['n1'],
+                recommended_actions=['a1'],
+            ),
+            fw_rules_scanner.fw_rules_engine.RuleViolation(
+                resource_type='firewall_policy',
+                resource_id='p2',
+                rule_id='rule2',
+                violation_type='violation2',
+                policy_names=['n2'],
+                recommended_actions=['a2'],
+            ),
+        ]
+        self.scanner._output_results(violations, '88888')
+        flattened_violations = [
+            {
+                'resource_id': v.resource_id,
+                'resource_type': v.resource_type,
+                'rule_id': v.rule_id,
+                'violation_type': v.violation_type,
+                'violation_data': {
+                    'policy_names': v.policy_names,
+                    'recommended_actions': v.recommended_actions,
+                },
+            } for v in violations]
 
-        self.assertEquals(1, mock_flatten_violations.call_count)
-        self.assertEquals(1, mock_output_results_to_db.call_count)
-        self.assertEquals(1, mock_write_csv.call_count)
+        mock_output_results_to_db.assert_called_once_with(
+            self.scanner, 'violations', flattened_violations)
+        mock_write_csv.assert_called_once_with(
+            resource_name='violations',
+            data=flattened_violations,
+            write_header=True)
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
             self.fake_utcnow,
             fake_csv_name)
         self.assertEquals(1, mock_notifier.process.call_count)
+        expected_message = {
+            'status': 'scanner_done',
+            'payload': {
+                'email_description': 'Policy Scan',
+                'email_sender':
+                self.scanner.global_configs.get('email_sender'),
+                'email_recipient':
+                self.scanner.global_configs.get('email_recipient'),
+                'sendgrid_api_key':
+                self.scanner.global_configs.get('sendgrid_api_key'),
+                'output_csv_name': fake_csv_name,
+                'output_filename': self.scanner._get_output_filename(
+                    self.fake_utcnow),
+                'now_utc': self.fake_utcnow,
+                'all_violations': flattened_violations,
+                'resource_counts': '88888',
+                'violation_errors': mock_output_results_to_db(
+                    self, 'violations', flattened_violations),
+            }
+        }
+        mock_notifier.process.assert_called_once_with(expected_message)
 
     @parameterized.parameterized.expand([
         (
@@ -264,8 +345,8 @@ class FwRulesScannerTest(ForsetiTestCase):
     ])
     def test_find_violations_from_yaml_rule_book(
         self, project, policy_dict, expected_violations_dicts):
-        rules_local_path = get_datafile_path(
-            __file__, 'firewall_test_rules.yaml')
+        rules_local_path = os.path.join(os.path.dirname(
+            os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
         scanner = fw_rules_scanner.FwPolicyScanner(
             {}, {}, '', rules_local_path)
         resource = self.project_resource_map[project]
@@ -329,8 +410,8 @@ class FwRulesScannerTest(ForsetiTestCase):
             fw_rules_scanner.firewall_rule_dao, 'FirewallRuleDao').start()
         mock_get_firewall_rules().get_firewall_rules.return_value = (
             fake_firewall_rules)
-        rules_local_path = get_datafile_path(
-            __file__, 'firewall_test_rules.yaml')
+        rules_local_path = os.path.join(os.path.dirname(
+            os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
         scanner = fw_rules_scanner.FwPolicyScanner(
             {}, {}, '', rules_local_path)
         results = scanner._retrieve()
@@ -391,8 +472,8 @@ class FwRulesScannerTest(ForsetiTestCase):
         mock_org_rel_dao = mock.Mock()
         mock_org_rel_dao.find_ancestors.side_effect = (
             lambda x,y: self.ancestry[x])
-        rules_local_path = get_datafile_path(
-            __file__, 'firewall_test_rules.yaml')
+        rules_local_path = os.path.join(os.path.dirname(
+            os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
         scanner = fw_rules_scanner.FwPolicyScanner(
             {}, {}, '', rules_local_path)
         scanner.rules_engine.rule_book.org_res_rel_dao = mock_org_rel_dao
