@@ -223,6 +223,7 @@ class InventoryConfig(AbstractInventoryConfig):
         return self.record_file
 
 
+# pylint: disable=too-many-instance-attributes
 class ServiceConfig(AbstractServiceConfig):
     """Implements composed dependency injection to IAM Explain services."""
 
@@ -314,6 +315,7 @@ class ServiceConfig(AbstractServiceConfig):
         """
 
         return Storage
+# pylint: enable=too-many-instance-attributes
 
 
 def serve(endpoint, services,
