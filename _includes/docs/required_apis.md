@@ -1,6 +1,6 @@
 
 {: .table}
-|API Name|Endpoint URI|
+|Name|API URI|
 |--------|------------|
 |Admin SDK API|`admin.googleapis.com`|
 |AppEngine Admin API|`appengine.googleapis.com`|
