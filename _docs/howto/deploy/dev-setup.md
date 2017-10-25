@@ -8,7 +8,7 @@ This page explains how to set up Forseti for local development.
 
 ## Before you begin
 
-To complete this quickstart, you will need:
+To complete this guide, you will need:
 
 - A GCP organization.
 - A GCP project (in above organization) for Forseti Security with billing enabled.
