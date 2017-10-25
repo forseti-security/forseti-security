@@ -17,7 +17,7 @@ the setup commands:
 Enable each of the required APIs by running the following command:
 
   ```bash
-  $ gcloud beta service-management enable <API NAME>`
+  $ gcloud beta service-management enable <API NAME>
   ```
   
   {% include docs/required_apis.md %}
