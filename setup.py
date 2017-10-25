@@ -23,9 +23,9 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-execfile('google/cloud/security/version.py')
+import google.cloud.security
 
-FORSETI_VERSION = __version__
+FORSETI_VERSION = google.cloud.security.__version__
 
 NAMESPACE_PACKAGES = [
     'google',

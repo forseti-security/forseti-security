@@ -161,9 +161,9 @@ class ConditionParser:
             (multop, 2, opAssoc.LEFT, EvalMultOp),
             (plusop, 2, opAssoc.LEFT, EvalAddOp),
             (comparisonop, 2, opAssoc.LEFT, EvalComparisonOp),
-            (CaselessKeyword("NOT"), 1, opAssoc.RIGHT, EvalNot),
-            (CaselessKeyword("AND"), 2, opAssoc.LEFT, EvalAnd),
-            (CaselessKeyword("OR"), 2, opAssoc.LEFT, EvalOr),            
+            (notop, 1, opAssoc.RIGHT, EvalNot),
+            (andop, 2, opAssoc.LEFT, EvalAnd),
+            (orop, 2, opAssoc.LEFT, EvalOr),
         ])
         return expr.parseString(filter_expr, parseAll=True)[0]
 
@@ -196,7 +196,6 @@ def main():
         ( "FRP - 100 == 0", True),
         ( "FRP == 1 and satellite == 'T'", False ),
         ( "FRP != 1 and not satellite == 'T'", True ),
-        # TODO: This should be an error, try to fix it?
         ( "FRP == xyz", False ),
         ( "FRP > 'abc'", False ),
         ( "and and", False ),
@@ -204,6 +203,7 @@ def main():
         ( "or not", False ),
         ( "3 or not", False ),
         ( "not", False ),
+        ( "3 3 3", False ),
         # packrat speeds up nested expressions tremendously
         ( "(FRP == 1) and ((satellite == 'T') or (satellite == 'A'))", False ),
     ]

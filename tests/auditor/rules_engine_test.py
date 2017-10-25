@@ -12,25 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Auditor tests."""
-
-from datetime import datetime
+"""Rules Engine and Rules tests."""
 
 import mock
 import unittest
 import MySQLdb
 
-from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import errors
 from google.cloud.security.auditor.rules import rule
-from tests.inventory.pipelines.test_data import fake_iam_policies
+from tests.unittest_utils import ForsetiTestCase
 
 
-class AuditorTest(ForsetiTestCase):
+class RulesEngineTest(ForsetiTestCase):
 
     def setUp(self):
         pass
 
+
+class RulesTest(ForsetiTestCase):
+    
+    def setUp(self):
+        pass
 
     def test_create_rule(self):
         """Test create_rule()."""

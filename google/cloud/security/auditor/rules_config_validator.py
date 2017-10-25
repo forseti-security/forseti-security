@@ -40,6 +40,7 @@ RULES_SCHEMA_PATH = os.path.abspath(
         'schema',
         'rules.json'))
 
+
 class RulesConfigValidator(object):
     """RulesEngine class."""
 
@@ -74,7 +75,7 @@ class RulesConfigValidator(object):
 
         # Differences between config variables and resource variables:
         # [tuple(rule_id, outstanding_config_vars, outstanding_res_vars), ...]
-        outstanding_vars = []
+        unmatched_vars = []
 
         # Invalid rule conditions
         # [(rule_id, expanded_condition), ...]
@@ -93,36 +94,11 @@ class RulesConfigValidator(object):
             config_vars = set(rule_config.get('variables', []))
             config_resources = rule_config.get('resources', {})
 
-            # Check that all configuration['variables'] are present in
-            # configuration['resources'] variables.
-            for resource in config_resources:
-                # {'resources': [
-                #   {'variables': [
-                #     {'key': 'value'},
-                #    ...], ...}, ...], ...}
-                resource_vars = set([
-                    res_var
-                    for var_map in resource.get('variables', [])
-                    for res_var in var_map.keys()])
+            unmatched_vars = RulesConfigValidator._check_unmatched_config_vars(
+                rule_id, config_vars, config_resources)
 
-                unused_config_vars = config_vars - resource_vars
-                unused_resource_vars = resource_vars - config_vars
-                if unused_config_vars or unused_resource_vars:
-                    outstanding_vars.append(
-                        (rule_id,
-                         resource.get('type'),
-                         unused_config_vars,
-                         unused_resource_vars))
-
-            # Check that conditional statement parses.
-            config_condition = ' and '.join(rule_config.get('condition', ''))
-            cp = condition_parser.ConditionParser(
-                {v: 1 for v in config_vars})
-
-            try:
-                cp.eval_filter(config_condition)
-            except pyparsing.ParseException as pe:
-                invalid_conditions.append((rule_id, config_condition, pe))
+            invalid_conditions = RulesConfigValidator._check_invalid_conditions(
+                rule_id, config_vars, rule_config.get('condition', ''))
 
         errors_iter = itertools.chain(
             # Schema errors
@@ -138,7 +114,7 @@ class RulesConfigValidator(object):
                 rule_id, resource_type, unmatched_cfg_vars, unmatched_res_vars)
                 for (rule_id, resource_type,
                         unmatched_cfg_vars, unmatched_res_vars)
-                in outstanding_vars],
+                in unmatched_vars],
 
             # Invalid conditions
             [ConditionParseError(rule_id, config_condition, pe)
@@ -148,6 +124,71 @@ class RulesConfigValidator(object):
         errors = [str(err) for err in errors_iter]
         if errors:
             raise InvalidRulesConfigError(errors)
+
+    @staticmethod
+    def _check_unmatched_config_vars(
+        rule_id, config_vars, config_resources):
+        """Check that configuration variables are found in resource variables.
+
+        Check that all configuration['variables'] are present in
+        configuration['resources'] variables.
+
+        Args:
+            rule_id (str): The rule id.
+            config_vars (set): The set of rule configuration variables.
+            config_resources (list): The rule configuration resources.
+
+        Returns:
+            list: A list of tuples of 
+                (rule_id, resource_type,
+                 unmatched_config_vars, unmatched_resource_vars)
+        """
+        unmatched_vars = []
+        for resource in config_resources:
+            # {'resources': [
+            #   {'variables': [
+            #     {'key': 'value'},
+            #    ...], ...}, ...], ...}
+            resource_vars = set([
+                res_var
+                for var_map in resource.get('variables', [])
+                for res_var in var_map.keys()])
+
+            unmatched_config_vars = config_vars - resource_vars
+            unmatched_resource_vars = resource_vars - config_vars
+            if unmatched_config_vars or unmatched_resource_vars:
+                unmatched_vars.append(
+                    (rule_id,
+                     resource.get('type'),
+                     unmatched_config_vars,
+                     unmatched_resource_vars))
+        return unmatched_vars
+
+    @staticmethod
+    def _check_invalid_conditions(rule_id, config_vars, rule_config_conditions):
+        """Check that conditional statement parses.
+
+        Args:
+            rule_id (str): The rule id.
+            config_vars (set): The configuration variables.
+            rule_config_conditions (list): The rule configuration conditions.
+
+        Returns:
+            list: The list of tuples 
+                (rule_id, config_condition, ParseException)
+                corresponding to the invalid configuration conditions.
+        """
+        invalid_conditions = []
+        config_condition = ' and '.join(rule_config_conditions)
+        cp = condition_parser.ConditionParser(
+            {v: 1 for v in config_vars})
+
+        try:
+            cp.eval_filter(config_condition)
+        except pyparsing.ParseException as pe:
+            invalid_conditions.append((rule_id, config_condition, pe))
+
+        return invalid_conditions
 
 
 class Error(Exception):
