@@ -4,8 +4,8 @@ order: 101
 ---
 # {{ page.title }}
 
-Learn about the different methods to deploy Forseti Security and change a deployment.
+Learn about the different methods to set up and deploy Forseti Security, as well as change details about the deployment.
 
-- [Deploying Forseti on Google Cloud Platform]({% link _docs/howto/deploy/gcp-deployment.md %})
-- [Deploying Forseti in a Local Environment]({% link _docs/howto/deploy/local-deployment.md %})
-- [Changing a Deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %})
+- [Deploy Forseti on Google Cloud Platform]({% link _docs/howto/deploy/gcp-deployment.md %})
+- [Set up Forseti for Development Environment]({% link _docs/howto/deploy/dev-setup.md %})
+- [Change a Deployment]({% link _docs/howto/deploy/change-gcp-deployment.md %})
