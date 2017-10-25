@@ -114,7 +114,6 @@ class ForsetiGcpSetup(object):
         self.force_no_cloudshell = kwargs.get('no_cloudshell')
         self.skip_iam_check = kwargs.get('no_iam_check')
         self.branch = kwargs.get('branch')
-        self.unattended_install = kwargs.get('unattended_install')
 
         self.is_devshell = False
         self.authed_user = None
@@ -714,9 +713,6 @@ class ForsetiGcpSetup(object):
 
     def _get_user_input(self):
         """Ask user for specific setup values."""
-        if self.unattended_install:
-            return
-
         if not self.sendgrid_api_key:
             # Ask for SendGrid API Key
             print('Forseti can send email notifications through SendGrid '
@@ -738,9 +734,9 @@ class ForsetiGcpSetup(object):
 
         if not self.gsuite_superadmin_email:
             # Ask for G Suite super admin email
-            print('\nTo read G Suite Groups data (e.g. if you are want to use '
-                  'IAM Explain), please provide a G Suite super admin email '
-                  'address. '
+            print('\nTo read G Suite Groups data, for example, if you want to '
+                  'use IAM Explain, please provide a G Suite super admin '
+                  'email address. '
                   'This step is optional and can be configured later.')
             self.gsuite_superadmin_email = raw_input(
                 'What is your organization\'s G Suite super admin email? '
@@ -879,14 +875,10 @@ class ForsetiGcpSetup(object):
               'has been generated. If you wish to change your '
               'Forseti configuration or rules, e.g. enabling G Suite '
               'Groups collection, either download the conf file in your bucket '
-              '`{}` or edit your local copy, then use gsutil to copy the '
-              'changed files from the root directory of forseti-security/ to '
-              'your Forseti bucket:\n\n'
-              '    gsutil cp configs/forseti_conf_dm.yaml '
-              '{}/configs/forseti_conf.yaml\n\n'
-              '    gsutil cp -r rules {}\n\n'.format(
-                  self.bucket_name,
-                  self.bucket_name,
+              '`{}` or edit your local copy, then follow the guide below to '
+              'copy the files to Cloud Storage:\n\n'
+              '    http://forsetisecurity.org/docs/howto/deploy/'
+              'gcp-deployment.html#move-configuration-to-gcs\n\n'.format(
                   self.bucket_name))
 
         if self.skip_email:
@@ -897,14 +889,15 @@ class ForsetiGcpSetup(object):
                   'email-notification\n\n')
 
         if self.gsuite_superadmin_email:
-            print('You have a few more steps left in order to finish '
-                  'setting up the G Suite Groups data collection:\n\n'
+            print('To complete setup for G Suite Groups data collection, '
+                  'follow the steps in the guide below:\n\n'
                   '    '
                   'http://forsetisecurity.org/docs/howto/configure/'
                   'gsuite-group-collection\n\n')
         else:
             print('If you want to enable G Suite Groups collection in '
-                  'Forseti (e.g. for IAM Explain), please refer to:\n\n'
+                  'Forseti, for example, to use IAM Explain), follow '
+                  ' the steps in the guide below:\n\n'
                   '    '
                   'http://forsetisecurity.org/docs/howto/configure/'
                   'gsuite-group-collection\n\n')

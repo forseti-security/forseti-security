@@ -33,9 +33,6 @@ def run():
                         help='Bypass IAM check for user running script')
     parser.add_argument('--branch',
                         help='Which Forseti branch to deploy')
-    parser.add_argument('--unattended-install',
-                        action='store_true',
-                        help='Perform unattended install (no user prompts)')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
