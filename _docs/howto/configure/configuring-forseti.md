@@ -43,11 +43,11 @@ If you change a configuration, such as by changing which pipeline or scanner to
 run, you'll need to restart the appropriate module so it picks up the new
 configuration change.
 
+### Minimum configuration
+
+{% include docs/howto/min_conf_settings.md %}
+
 ### Configuring Inventory
-
-{% include docs/howto/config_inventory.md %}
-
-#### Configuring Inventory pipelines
 
 Forseti Inventory runs in batch mode, executing each inventory
 pipeline serially for each run. To specify which pipelines to run:
