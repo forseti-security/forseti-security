@@ -119,6 +119,8 @@ scanner:
           enabled: true
         - name: cloudsql_acl
           enabled: true
+        - name: fw_rule
+          enabled: true
         - name: forwarding_rule
           enabled: true
         - name: group
