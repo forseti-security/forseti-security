@@ -349,6 +349,7 @@ class InventoryImporter(object):
             message = buf.read()
             self.model.set_error(message)
         else:
+            self.model.add_warning(inventory.index.warnings)
             self.model.set_done(item_counter)
         finally:
             self.session.commit()

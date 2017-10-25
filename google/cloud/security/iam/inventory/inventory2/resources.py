@@ -22,7 +22,6 @@
 
 import json
 
-
 def from_root_id(client, root_id):
     root_map = {
         'organizations': Organization.fetch,
@@ -75,6 +74,8 @@ class Resource(object):
         self._stack = None
         self._leaf = contains is None
         self._contains = [] if contains is None else contains
+        self._row = None
+        self._warning = None
 
     def is_leaf(self):
         return self._leaf
@@ -112,17 +113,24 @@ class Resource(object):
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
-            for resource in yielder.iter():
-                res = resource
-
-                def call_accept():
-                    res.accept(visitor, stack + [self])
-                if res.is_leaf():
-                    call_accept()
-
-                # Potential parallelization for non-leaf resources
-                else:
-                    visitor.dispatch(call_accept)
+            try:
+                for resource in yielder.iter():
+                    res = resource
+    
+                    def call_accept():
+                        res.accept(visitor, stack + [self])
+                    
+                    if res.is_leaf():
+                        call_accept()
+    
+                    # Potential parallelization for non-leaf resources
+                    else:
+                        visitor.dispatch(call_accept)
+            except Exception as e:
+                visitor.onChildError(self, e)
+        if self._warning:
+            visitor.update(self)
+                    
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):

@@ -223,6 +223,10 @@ class Inventory(BASE):
                     error=None))
         return rows
 
+    @classmethod
+    def update_resource(cls, resource):
+        resource._row.error = resource._warning
+
     def __repr__(self):
         """String representation of the database row object."""
 
@@ -523,7 +527,7 @@ class Storage(BaseStorage):
         self.opened = False
 
     def write(self, resource):
-        """Write a resource to the storage.
+        """Write a resource to the storage and updates its row
 
         Args:
             resource (object): Resource object to store in db.
@@ -540,6 +544,23 @@ class Storage(BaseStorage):
             self.buffer.add(row)
 
         self.index.counter += len(rows)
+        resource._row = rows[0]
+
+    def update(self, resource):
+        """Update a resource in the storage.
+
+        Args:
+            resource (object): Resource object to store in db.
+
+        Raises:
+            Exception: If storage was opened readonly.
+        """
+
+        if self.readonly:
+            raise Exception('Opened storage readonly')
+
+        Inventory.update_resource(resource)
+        self.buffer.add(resource._row)
 
     def read(self, key):
         """Read a resource from the storage.
