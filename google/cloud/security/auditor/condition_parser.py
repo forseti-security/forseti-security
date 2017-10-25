@@ -134,7 +134,9 @@ notop = CaselessKeyword("NOT")
 class ConditionParser:
     """Parser class."""
 
-    def __init__(self, param_dic={}):
+    def __init__(self, param_dic=None):
+        if param_dic is None:
+            param_dic = {}
         self.param_dic = {}
         # Save parameters (key-value pairs), but with capitalized key
         for k, v in param_dic.items():
@@ -146,7 +148,10 @@ class ConditionParser:
     def setParam(self, s, l, t):
         "Replace keywords with actual values using param_dic mapping"
         param = t[0].upper()
-        return self.param_dic.get(param, '')
+        found_param = self.param_dic.get(param)
+        if not found_param:
+            raise ParseException('Undefined variable: %s' % (param))
+        return found_param
 
     def eval_filter(self, filter_expr):
         keyword = Param.copy()
@@ -167,11 +172,11 @@ def parse(filter_expr, expected, params, parser=ConditionParser):
     if not parser:
         parser = ConditionParser(params)
     
-    print 'expr: %s, expected: %s' % (filter_expr, expected)
+    print '\nexpr: %s, expected: %s' % (filter_expr, expected)
 
     result = parser.eval_filter(filter_expr)
     if result != expected:
-        raise AssertionError("yields %s" % (result))
+        raise AssertionError("yields %s instead of %s" % (result, expected))
     print 'Ok'
 
 def main():
@@ -194,6 +199,11 @@ def main():
         # TODO: This should be an error, try to fix it?
         ( "FRP == xyz", False ),
         ( "FRP > 'abc'", False ),
+        ( "and and", False ),
+        ( "and or", False ),
+        ( "or not", False ),
+        ( "3 or not", False ),
+        ( "not", False ),
         # packrat speeds up nested expressions tremendously
         ( "(FRP == 1) and ((satellite == 'T') or (satellite == 'A'))", False ),
     ]
