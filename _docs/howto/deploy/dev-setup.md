@@ -142,6 +142,13 @@ following (use the values from your terminal, not "`/SOME/PATH/TO`"):
   $ export LDFLAGS=-L/SOME/PATH/TO/openssl/lib
   ```
 
+### Configuring Forseti settings
+
+Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
+`forseti-security/configs/forseti_conf.yaml`. Refer to 
+"[Configuring Forseti]"({% link _docs/howto/configure/configuring-forseti.md %}) 
+for more information.
+
 ### Executing Forseti commands
 
 After you complete the above steps, you should be able to run the following
