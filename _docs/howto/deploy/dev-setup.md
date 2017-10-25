@@ -12,7 +12,7 @@ To complete this guide, you will need:
 
 - A GCP organization.
 - A GCP project (in above organization) for Forseti Security with billing enabled.
-- The ability to assign roles on the Organization IAM policy of your organization.
+- The ability to assign roles on your organization's Cloud IAM policy.
 
 ## Setting GCP infrastructure
 
