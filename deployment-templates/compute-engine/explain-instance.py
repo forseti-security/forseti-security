@@ -135,8 +135,7 @@ if [ -z "$FLUENTD" ]; then
 fi
 
 # Check whether Cloud SQL proxy is installed
-CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
-if [ -z "$CLOUD_SQL_PROXY" ]; then
+if ! [[ -x /usr/bin/cloud_sql_proxy ]]; then
     cd $USER_HOME
     wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 \
             -O /tmp/cloud_sql_proxy
