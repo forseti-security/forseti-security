@@ -63,7 +63,7 @@ When you're finished making changes, run the following command with your
 updated configuration:
 
 ```
-forseti_inventory --config_path path/to/forseti_conf.yaml
+forseti_inventory --forseti_config path/to/forseti_conf.yaml
 ```
 
 ### Configuring Scanner
@@ -85,7 +85,7 @@ When you're finished making changes, run the following command with your
 updated configuration:
 
  ```
- forseti_scanner --config_path path/to/forseti_conf.yaml
+ forseti_scanner --forseti_config path/to/forseti_conf.yaml
  ```
  
  Some scanners are dependent on specific Inventory pipelines. To learn about
