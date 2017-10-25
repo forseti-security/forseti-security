@@ -91,6 +91,11 @@ updated configuration:
  Some scanners are dependent on specific Inventory pipelines. To learn about
  the available scanners and dependencies, see
  [Scanner specifications]({% link _docs/quickstarts/scanner/descriptions.md %}).
+ 
+ 
+### Configuring Notifier
+
+Coming soon.
 
 
 ## Updating configuration for GCP deployments
