@@ -1,4 +1,5 @@
 
+{: .table}
 |API Name|Endpoint URI|
 |--------|------------|
 |Admin SDK API|`admin.googleapis.com`|
