@@ -191,6 +191,7 @@ def main():
         ( "FRP - 100 == 0", True),
         ( "FRP == 1 and satellite == 'T'", False ),
         ( "FRP != 1 and not satellite == 'T'", True ),
+        # TODO: This should be an error, try to fix it?
         ( "FRP == xyz", False ),
         ( "FRP > 'abc'", False ),
         # packrat speeds up nested expressions tremendously
