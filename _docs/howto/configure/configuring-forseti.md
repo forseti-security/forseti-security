@@ -26,7 +26,7 @@ module-specific sections.
 To set up your configuration, you'll edit
 [forseti_conf.yaml sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/configs/forseti_conf.yaml.sample)
 and save it as `forseti_conf.yaml`. For convenience, you can maintain different
-versions of this file to support running different forseti instances.
+versions of this file to support multiple configurations of Forseti.
 
 -   `forseti_conf_prod.yaml`
 -   `forseti_conf_staging.yaml`
