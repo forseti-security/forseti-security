@@ -1,11 +1,10 @@
 ---
-title: Local Deployment
+title: Development Environment Setup
 order: 103
 ---
 #  {{ page.title }}
 
-This page explains how to use the gcloud command-line tool to set up Forseti for
-your Google Cloud Platform (GCP) resources.
+This page explains how to set up Forseti for local development.
 
 ## Before you begin
 
@@ -15,7 +14,7 @@ To complete this quickstart, you will need:
 - A GCP project (in above organization) for Forseti Security with billing enabled.
 - The ability to assign roles on the Organization IAM policy of your organization.
 
-## Setting up Forseti Security
+## Setting GCP infrastructure
 
 {% include docs/howto/deployment_prerequisites.md %}
 
@@ -58,6 +57,8 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
    the database name (e.g. "forseti_security" -- this is NOT the ID of your Cloud SQL instance). 
    You will need these for your forseti_conf.yaml later.
 
+## Setting up local environment
+
 ### Installing mysql_config
 
 The MySql-python library requires the `mysql_config` utility to be present in your system.
@@ -74,8 +75,8 @@ Following are example commands to install `mysql_config`:
 
 ### Creating a virtualenv
 
-Use the commands (or whatever the equivalent is for your Linux/OS X system) 
-below to install and create a virtualenv:
+Use the commands below (or whatever the equivalent is for your Linux/OS X system) 
+to set up a virtualenv:
 
   ```bash
   # install virtualenvwrapper
@@ -89,7 +90,7 @@ below to install and create a virtualenv:
 
 ### Getting the source code
 
-Use the command below to clone the repo if you haven't already:
+Use the command below to get the Forseti code if you haven't already:
 
   ```bash
   $ git clone https://github.com/GoogleCloudPlatform/forseti-security.git
@@ -97,7 +98,7 @@ Use the command below to clone the repo if you haven't already:
 
 ### Installing build dependencies
 
-To install required build dependencies, run the following commands:
+Use the following command to install required build dependencies:
 
   ```bash
   $ pip install grpcio grpcio-tools google-apputils
@@ -105,9 +106,10 @@ To install required build dependencies, run the following commands:
 
 ### Running the python setup
 
-To run the python setup, navigate to your cloned repo and use the following command:
+Use the following commands to navigate to your cloned repo and run the python setup:
 
   ```bash
+  $ cd forseti-security
   $ python setup.py install
   ```
 
