@@ -118,7 +118,7 @@ class FirewallRule(object):
                       self.network,
                       self._priority,
                       self.direction,
-                      self.firewall_action)
+                      self._firewall_action)
 
         for field_name, value in [
                 ('sourceRanges', self._source_ranges),
