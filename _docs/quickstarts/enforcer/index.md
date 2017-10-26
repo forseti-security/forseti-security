@@ -38,7 +38,7 @@ configured on the project. The network name is prepended to the rule name.
 
 The following is an example enforcement rule that only allows:
   * SSH from anywhere
-  * HTTP(S) traffic from load balancer and health checker to VM instances
+  * HTTP(S) traffic from both load balancer and health checker to VM instances
   * Only internal tcp, udp, and icmp traffic
 
   ```json
