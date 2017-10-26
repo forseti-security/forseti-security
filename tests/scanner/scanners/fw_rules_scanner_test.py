@@ -147,7 +147,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             lambda x, y: rule_indices.get(x, -1))
         violations = [
             fw_rules_scanner.fw_rules_engine.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id='p1',
                 rule_id='rule1',
                 violation_type='violation1',
@@ -155,7 +155,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 recommended_actions=['a1'],
             ),
             fw_rules_scanner.fw_rules_engine.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id='p2',
                 rule_id='rule2',
                 violation_type='violation2',
@@ -228,7 +228,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.scanner.scanner_configs = self.fake_scanner_configs
         violations = [
             fw_rules_scanner.fw_rules_engine.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id='p1',
                 rule_id='rule1',
                 violation_type='violation1',
@@ -236,7 +236,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 recommended_actions=['a1'],
             ),
             fw_rules_scanner.fw_rules_engine.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id='p2',
                 rule_id='rule2',
                 violation_type='violation2',
@@ -311,7 +311,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_policy',
+                    'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'no_rdp_to_linux',
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -334,7 +334,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_policy',
+                    'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'test_instances_rule',
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -430,7 +430,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         scanner = fw_rules_scanner.FwPolicyScanner(
             {}, {}, '', rules_local_path)
         results = scanner._retrieve()
-        self.assertEqual(3, results[1])
+        self.assertEqual({'firewall_rule': 3}, results[1])
         self.assertItemsEqual(
             expected.items(), results[0])
 
@@ -501,7 +501,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                 'rule_name': 'no_rdp_to_linux',
                 'rule_index': 1,
-                'resource_type': 'firewall_policy',
+                'resource_type': 'firewall_rule',
                 'violation_data': {
                     'policy_names': ['policy1'],
                     'recommended_actions': {
@@ -514,7 +514,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                 'rule_name': 'test_instances_rule',
                 'rule_index': 0,
-                'resource_type': 'firewall_policy',
+                'resource_type': 'firewall_rule',
                 'violation_data': {
                     'policy_names': ['policy2'],
                     'recommended_actions': {

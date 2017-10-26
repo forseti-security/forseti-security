@@ -581,7 +581,7 @@ class Rule(object):
         if not policies:
             raise ValueError('No policies in violation')
         return RuleViolation(
-            resource_type='firewall_policy',
+            resource_type='firewall_rule',
             resource_id=policies[0].project_id,
             rule_id=self.id,
             violation_type=violation_type,

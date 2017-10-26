@@ -23,6 +23,7 @@ from google.cloud.security.notifier import notifier
 
 from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import firewall_rule_dao
+from google.cloud.security.common.gcp_type import resource as resource_type
 from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.scanner.audit import fw_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
@@ -181,11 +182,16 @@ class FwPolicyScanner(base_scanner.BaseScanner):
                              .FirewallRuleDao(self.global_configs)
                              .get_firewall_rules(self.snapshot_timestamp))
 
+
         if not firewall_policies:
             LOGGER.warn('No firewall policies found. Exiting.')
             sys.exit(1)
 
-        return firewall_policies, len(firewall_policies)
+        resource_counts = {
+            resource_type.ResourceType.FIREWALL_RULE: len(firewall_policies),
+        }
+
+        return firewall_policies, resource_counts
 
     def run(self):
         """Runs the data collection."""
