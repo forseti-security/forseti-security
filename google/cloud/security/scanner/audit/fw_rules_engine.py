@@ -155,6 +155,7 @@ class RuleBook(bre.BaseRuleBook):
           org_policy (dict): The parsed org policy configuration.
         """
         super(RuleBook, self).__init__()
+        self.rule_indices = {}
         self.rules_map = {}
         self.rule_groups_map = {}
         self.org_policy_rules_map = {}
@@ -199,6 +200,7 @@ class RuleBook(bre.BaseRuleBook):
             raise DuplicateFirewallRuleError(
                 'Rule id "%s" already in rules (rule %s)' % (
                     rule.id, rule_index))
+        self.rule_indices[rule.id] = rule_index
         self.rules_map[rule.id] = rule
 
     def add_rule_groups(self, group_defs):
