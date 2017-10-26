@@ -52,18 +52,8 @@ only internally allows tcp, udp, and icmp traffic:
         "name": "allow-ssh"
    },
    {
-           "sourceRanges": ["130.211.0.0/22",
-                            "35.191.0.0/16"],
-           "description": "Allow traffic from load balancer and health checker to reach VM instances",
-           "allowed": [
-               {
-                   "IPProtocol": "tcp",
-                   "ports": ["443"]
-               }
-           ],
-           "name": "allow-load-balancer-and-health-checker"
-   },
-   {
+=======
+>>>>>>> upstream/gh-pages
         "sourceRanges": ["10.128.0.0/9"],
         "description": "Allow internal only",
         "allowed": [

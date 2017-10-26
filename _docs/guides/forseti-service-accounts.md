@@ -1,10 +1,9 @@
 ---
-title: Best Practices 
+title: Forseti Service Accounts
 order: 004
 ---
 # {{ page.title }}
 
-## Service accounts
 When you use multiple service accounts with your Forseti Security deployments,
 you implement the security best practice of privilege separation. Following are the
 scenarios for which it's best to use separate service accounts:
@@ -12,8 +11,8 @@ scenarios for which it's best to use separate service accounts:
  * **[Forseti Security service account](#forseti-security-service-account)**
  (required): Used by all core modules of the program to provide basic
  inventory, scanning, and enforcement actions.
- * **[GSuite Groups service account](#gsuite-groups-service-account)**
- (optional): Used to inventory GSuite Groups and their members.
+ * **[G Suite Groups service account](#g-suite-groups-service-account)**
+ (optional): Used to inventory G Suite Groups and their members.
  Forseti IAM Explain requires this to be enabled.
  * **[Forseti Explain service account](#forseti-explain-service-account)**
  (optional): Used to provide IAM Explain functionality.
@@ -29,14 +28,14 @@ supported resources. It's also used by `forseti_scanner` to scan
 
 A good name for this service account would be `forseti-security`.
 
-### GSuite Groups service account
-It's best to use a separate service account for GSuite Groups inventory for
+### G Suite Groups service account
+It's best to use a separate service account for G Suite Groups inventory for
 privilege separation because the service account key must be local to
 `forseti_inventory`. By using a separate service account, the key scope is
-limited to GSuite Groups if the machine is compromised.
+limited to G Suite Groups if the machine is compromised.
 
 If you [enable]({% link _docs/howto/configure/gsuite-group-collection.md %})
-GSuite Group inventory and create a service account, a good name
+G Suite Group inventory and create a service account, a good name
 for the service account would be `forseti-security-gsuite-groups`.
 
 ### Forseti Explain service account
@@ -68,9 +67,9 @@ Forseti Security needs the following roles for `forseti_inventory` and/or
 
 {% include docs/required_roles.md %}
 
-### Service account for GSuite Groups
-To inventory GSuite Groups and their members, Forseti Security uses a service
-account enabled for GSuite domain-wide delegation. The only permission this
+### Service account for G Suite Groups
+To inventory G Suite Groups and their members, Forseti Security uses a service
+account enabled for G Suite domain-wide delegation. The only permission this
 service account needs is read-access on the Groups and Group Members services.
 
  * `https://www.googleapis.com/auth/admin.directory.group.readonly`

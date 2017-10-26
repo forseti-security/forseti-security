@@ -26,7 +26,7 @@ To display Inventory flag options, run the following commands:
 
 ## Configuring Inventory
 
-{% include docs/howto/config_inventory.md %}
+{% include docs/howto/min_conf_settings.md %}
 
 ## What's next
 - Learn more about [configuring Forseti]({% link _docs/howto/configure/configuring-forseti.md %}).

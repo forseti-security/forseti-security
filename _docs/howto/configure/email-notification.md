@@ -1,11 +1,13 @@
 ---
 title: Enabling Email Notifications
-order: 202
+order: 203
 ---
 #  {{ page.title }}
 
 Forseti Security can send email notifications using the SendGrid API. SendGrid
-is currently the only supported email service provider.
+is the suggested free email service provider for Google Cloud Platform (GCP).
+For information about how to get 12,000 free emails every month, see
+[Sending Email with SendGrid](https://cloud.google.com/appengine/docs/standard/python/mail/sendgrid).
 
 ## Setting Up SendGrid
 
