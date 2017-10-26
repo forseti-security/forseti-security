@@ -610,7 +610,7 @@ class FirewallAction(object):
         Returns:
           str: A string representation of FirewallAction.
         """
-        return "FirewallAction(action=%s, rules=%s)" % (self.action, self.rules)
+        return 'FirewallAction(action=%s, rules=%s)' % (self.action, self.rules)
 
     def json_dict(self):
         """Gets the JSON key and values for the firewall action.

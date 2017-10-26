@@ -22,9 +22,9 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier import notifier
 
 from google.cloud.security.common.data_access import csv_writer
-from google.cloud.security.scanner.audit import fw_rules_engine
-from google.cloud.security.common.gcp_type import resource_util
 from google.cloud.security.common.data_access import firewall_rule_dao
+from google.cloud.security.common.gcp_type import resource_util
+from google.cloud.security.scanner.audit import fw_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
 LOGGER = log_util.get_logger(__name__)
