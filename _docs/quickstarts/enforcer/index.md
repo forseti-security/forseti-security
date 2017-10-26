@@ -33,11 +33,13 @@ more allowed protocols. To learn more, refer to the
 [Compute Engine Firewall](https://cloud.google.com/compute/docs/reference/latest/firewalls)
 documentation.
 
-If a rule doesn't include a network name, then it's applied to all networks
+If a rule does not include a network name, then it's applied to all networks
 configured on the project. The network name is prepended to the rule name.
 
-The following is an example rule that allows SSH from anywhere and
-only internally allows tcp, udp, and icmp traffic:
+The following is an example enforcement rule that only allows:
+  * SSH from anywhere
+  * HTTP(S) traffic from load balancer and health checker to VM instances
+  * Only internal tcp, udp, and icmp traffic
 
   ```json
   [{
@@ -52,16 +54,15 @@ only internally allows tcp, udp, and icmp traffic:
         "name": "allow-ssh"
    },
    {
-           "sourceRanges": ["130.211.0.0/22",
-                            "35.191.0.0/16"],
-           "description": "Allow traffic from load balancer and health checker to reach VM instances",
-           "allowed": [
-               {
-                   "IPProtocol": "tcp",
-                   "ports": ["443"]
-               }
-           ],
-           "name": "allow-load-balancer-and-health-checker"
+        "sourceRanges": ["130.211.0.0/22", "35.191.0.0/16"],
+        "description": "Allow traffic from load balancer and health checker to reach VM instances",
+        "allowed": [
+            {
+                "IPProtocol": "tcp",
+                "ports": ["80","443"]
+            }
+        ],
+        "name": "allow-load-balancer-and-health-checker"
    },
    {
         "sourceRanges": ["10.128.0.0/9"],
