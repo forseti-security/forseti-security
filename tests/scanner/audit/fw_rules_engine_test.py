@@ -478,7 +478,7 @@ class RuleTest(ForsetiTestCase):
           }],
           [
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'No 0.0.0.0/0 policy allowed',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -525,7 +525,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -537,7 +537,7 @@ class RuleTest(ForsetiTestCase):
                   },
               },
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p2',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -607,7 +607,7 @@ class RuleTest(ForsetiTestCase):
           }],
           [
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -661,7 +661,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -673,7 +673,7 @@ class RuleTest(ForsetiTestCase):
                   },
               },
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p3',
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -763,7 +763,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Allow SSH to tag from 1.1.1.1',
                   'violation_type': 'FIREWALL_REQUIRED_VIOLATION',
@@ -897,7 +897,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Golden Policy',
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
@@ -965,7 +965,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_policy',
+                  'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Golden Policy',
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
@@ -1425,7 +1425,7 @@ class RuleBookTest(ForsetiTestCase):
             lambda x,y: ancestry[x])
         project0_violations = [
             fre.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule1',
                 violation_type='FIREWALL_BLACKLIST_VIOLATION',
@@ -1435,7 +1435,7 @@ class RuleBookTest(ForsetiTestCase):
         ]
         project1_violations = [
             fre.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule2',
                 violation_type='FIREWALL_WHITELIST_VIOLATION',
@@ -1445,7 +1445,7 @@ class RuleBookTest(ForsetiTestCase):
         ]
         project2_violations = [
             fre.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule3',
                 violation_type='FIREWALL_REQUIRED_VIOLATION',
@@ -1455,7 +1455,7 @@ class RuleBookTest(ForsetiTestCase):
         ]
         project3_violations = [
             fre.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule4',
                 violation_type='FIREWALL_MATCHES_VIOLATION',
@@ -1544,7 +1544,7 @@ class RuleEngineTest(ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_policy',
+                    'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'no_rdp_to_linux',
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -1567,7 +1567,7 @@ class RuleEngineTest(ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_policy',
+                    'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'test_instances_rule',
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
