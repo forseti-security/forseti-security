@@ -20,7 +20,10 @@ See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 import json
 import netaddr
 
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
+
+LOGGER = log_util.get_logger(__name__)
 
 # pylint: disable=too-many-instance-attributes
 
@@ -96,6 +99,38 @@ class FirewallRule(object):
         self._firewall_action = None
         if validate:
             self.validate()
+
+    def __str__(self):
+        """String representation.
+
+        Returns:
+          str: A string representation of FirewallRule.
+        """
+        string = ('FirewallRule('
+                  'project_id=%s\n'
+                  'name=%s\n'
+                  'network=%s\n'
+                  'priority=%s\n'
+                  'direction=%s\n'
+                  'action=%s\n') % (
+                      self.project_id,
+                      self.name,
+                      self.network,
+                      self._priority,
+                      self.direction,
+                      self._firewall_action)
+
+        for field_name, value in [
+                ('sourceRanges', self._source_ranges),
+                ('destinationRanges', self._destination_ranges),
+                ('sourceTags', self._source_tags),
+                ('targetTags', self._target_tags),
+                ('sourceServiceAccounts', self._source_service_accounts),
+                ('targetServiceAccounts', self._target_service_accounts),
+        ]:
+            if value:
+                string += '%s=%s\n' % (field_name, value)
+        return string.strip()
 
     @staticmethod
     def _transform(firewall_dict, project_id=None, validate=None):
@@ -461,6 +496,7 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
+        LOGGER.debug('Checking %s < %s', self, other)
         return ((self.direction == other.direction or
                  self.direction is None or
                  other.direction is None) and
@@ -483,6 +519,7 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
+        LOGGER.debug('Checking %s > %s', self, other)
         return ((self.direction is None or
                  other.direction is None or
                  self.direction == other.direction) and
@@ -504,6 +541,7 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
+        LOGGER.debug('Checking %s == %s', self, other)
         return (self.direction == other.direction and
                 self.network == other.network and
                 self._source_tags == other._source_tags and
@@ -565,6 +603,14 @@ class FirewallAction(object):
         self._applies_to_all = None
 
         self._expanded_rules = None
+
+    def __str__(self):
+        """String representation.
+
+        Returns:
+          str: A string representation of FirewallAction.
+        """
+        return "FirewallAction(action=%s, rules=%s)" % (self.action, self.rules)
 
     def json_dict(self):
         """Gets the JSON key and values for the firewall action.
