@@ -57,11 +57,12 @@ class FwPolicyScanner(base_scanner.BaseScanner):
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
-    def _flatten_violations(violations):
+    def _flatten_violations(violations, rule_indices):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:
             violations (list): The RuleViolations to flatten.
+            rule_indices (dict): A dictionary of string rule ids to indices.
 
         Yields:
             dict: Iterator of RuleViolations as a dict per member.
@@ -75,7 +76,8 @@ class FwPolicyScanner(base_scanner.BaseScanner):
             violation_dict = {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
-                'rule_id': violation.rule_id,
+                'rule_name': violation.rule_id,
+                'rule_index': rule_indices.get(violation.rule_id, 0),
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data
             }
@@ -90,8 +92,9 @@ class FwPolicyScanner(base_scanner.BaseScanner):
             resource_counts (int): Resource count.
         """
         resource_name = 'violations'
-
-        all_violations = list(self._flatten_violations(all_violations))
+        rule_indices = self.rules_engine.rule_book.rule_indices
+        all_violations = list(self._flatten_violations(all_violations,
+                                                       rule_indices))
         violation_errors = self._output_results_to_db(resource_name,
                                                       all_violations)
 
