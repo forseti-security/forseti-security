@@ -109,7 +109,7 @@ rules:
     #      }
     #    ],
     #  }
-  - rule_id: 'https_allowed'
+  - rule_id: 'allow_http_and_https'
     description: Only HTTP and HTTPS allowed to all
     mode: whitelist
     match_policies:
@@ -127,7 +127,9 @@ rules:
 org_policy:
   resources:
     - type: organization
+      resource_ids:
+        - YOUR_ORG_ID
       rules:
         rule_ids:
           - 'test_instances_rule'
-            'https_allowed'
+            'allow_http_and_https'

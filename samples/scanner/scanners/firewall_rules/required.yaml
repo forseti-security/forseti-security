@@ -1,4 +1,4 @@
-# This file contains several example blacklist firewall rules.
+# This file contains several example required firewall rules.
 # 
 # Note: Required and Matches rules can only have "match_policies" fields which will
 # be validated.
@@ -94,6 +94,8 @@ rules:
 org_policy:
   resources:
     - type: organization
+      resource_ids:
+        - YOUR_ORG_ID
       rules:
         rule_ids:
           - 'require_deny_to_bad_ips'

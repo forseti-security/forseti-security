@@ -1,6 +1,6 @@
 rules:
-  - rule_id: 'prevent_allow_all'
-    description: Prevent allow all policies
+  - rule_id: 'prevent_allow_all_ingress'
+    description: Detect allow ingress to all policies
     type: blacklist
     match_policies:
       - direction: ingress
@@ -9,7 +9,7 @@ rules:
       - allowed:
         - IPProtocol: 'all'
 
-  - rule_id: 'disallow_any_port'
+  - rule_id: 'disallow_all_ports'
     description: Don't allow policies that expose every port
     type: blacklist
     match_policies:
@@ -28,13 +28,14 @@ rules:
 rule_groups:
   - group_id: 'default_rules'
     rule_ids:
-      - 'prevent_allow_all'
-        'disallow_any_port'
+      - 'prevent_allow_all_ingress'
+        'disallow_all_ports'
 
 org_policy:
   resources:
     - type: organization
       resource_ids:
+        - YOUR_ORG_ID
       rules:
         group_ids:
           - 'default_rules'

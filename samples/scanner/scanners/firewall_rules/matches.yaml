@@ -1,4 +1,4 @@
-# This file contains several example blacklist firewall rules.
+# This file contains several example matches firewall rules.
 # 
 # Note: Required and Matches rules can only have "match_policies" fields which will
 # be validated.
@@ -112,3 +112,12 @@ rules:
           - 'http-server'
           - 'https-server'
     verify_policies:
+
+org_policy:
+  resources:
+    - type: organization
+      resource_ids:
+        - YOUR_ORG_ID
+      rules:
+        rule_ids:
+          - 'golden_policy'

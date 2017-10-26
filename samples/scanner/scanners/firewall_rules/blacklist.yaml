@@ -41,8 +41,8 @@ rules:
     #     ],
     #     "direction": "EGRESS",
     #   }
-  - rule_id: 'prevent_allow_all'
-    description: Prevent allow all policies
+  - rule_id: 'prevent_allow_all_ingress'
+    description: Detect allow ingress to all policies
     type: blacklist
     match_policies:
       - direction: ingress
@@ -82,7 +82,7 @@ rules:
     #     ],
     #     "direction": "INGRESS",
     #   }
-  - rule_id: 'disallow_any_port'
+  - rule_id: 'disallow_all_ports'
     description: Don't allow policies that expose every port
     type: blacklist
     match_policies:
@@ -98,7 +98,7 @@ rules:
           ports:
             - 'all'
 
-    # This rule will trigger on policies that allow IPProtocol all.
+    # This rule will trigger on policies that allow 3389 to a machine tagged with linux.
     #
     # Example triggering firewall rule:
     #  {
@@ -147,6 +147,8 @@ rules:
 org_policy:
   resources:
     - type: organization
+      resource_ids:
+        - YOUR_ORG_ID
       rules:
         rule_ids:
           - 'prevent_allow_all'
