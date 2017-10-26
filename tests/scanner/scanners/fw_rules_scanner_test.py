@@ -426,6 +426,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             (
                 'test_project',
                 {
+                    'project': 'test_project',
                     'name': 'policy1',
                     'network': 'network1',
                     'direction': 'ingress',
@@ -437,6 +438,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             (
                 'project1',
                 {
+                    'project': 'project1',
                     'name': 'policy2',
                     'network': 'network1',
                     'direction': 'ingress',
@@ -448,6 +450,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             (
                 'honeypot_exception',
                 {
+                    'project': 'honeypot_exception',
                     'name': 'policy3',
                     'network': 'network1',
                     'direction': 'ingress',
@@ -459,10 +462,9 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         ]
         fake_firewall_rules = []
         for project, policy_dict in resource_and_policies:
-            resource = self.project_resource_map[project]
             policy = fre.firewall_rule.FirewallRule.from_dict(
                 policy_dict, project_id=project, validate=True)
-            fake_firewall_rules.append((resource, policy))
+            fake_firewall_rules.append(policy)
         mock_get_firewall_rules = mock.patch.object(
             fw_rules_scanner.firewall_rule_dao, 'FirewallRuleDao').start()
         mock_get_firewall_rules().get_firewall_rules.return_value = (
