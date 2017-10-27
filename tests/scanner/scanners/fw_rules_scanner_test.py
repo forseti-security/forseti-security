@@ -33,6 +33,9 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         'google.cloud.security.scanner.scanners.fw_rules_scanner.fw_rules_engine',
         autospec=True)
     def setUp(self, mock_rules_engine):
+        mre = mock.patch(
+            'google.cloud.security.scanner.scanners.fw_rules_scanner.'
+            'fw_rules_engine').start()
         self.mock_org_rel_dao = mock.patch(
                         'google.cloud.security.common.data_access.'
                         'org_resource_rel_dao.OrgResourceRelDao').start()
@@ -44,7 +47,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             os.path.dirname( __file__), 'audit'), 'firewall_test_rules.yaml')
         self.scanner = fw_rules_scanner.FwPolicyScanner(
             {}, {}, '', rules_local_path)
-        self.mock_rules_engine = mock_rules_engine
+        self.mock_rules_engine = mre
         self.project0 = fre.resource_util.create_resource(
             resource_id='test_project', resource_type='project')
         self.project1 = fre.resource_util.create_resource(
@@ -136,9 +139,15 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         fake_csv_file.name = fake_csv_name
 
         self.scanner.scanner_configs = self.fake_scanner_configs
+        rule_indices = {
+            'rule1': 1,
+            'rule2': 2,
+        }
+        self.scanner.rules_engine.rule_book.rule_indices.get.side_effect = (
+            lambda x, y: rule_indices.get(x, -1))
         violations = [
             fw_rules_scanner.fw_rules_engine.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id='p1',
                 rule_id='rule1',
                 violation_type='violation1',
@@ -146,7 +155,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 recommended_actions=['a1'],
             ),
             fw_rules_scanner.fw_rules_engine.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id='p2',
                 rule_id='rule2',
                 violation_type='violation2',
@@ -158,13 +167,14 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             {
                 'resource_id': v.resource_id,
                 'resource_type': v.resource_type,
-                'rule_id': v.rule_id,
+                'rule_name': v.rule_id,
+                'rule_index': i+1,
                 'violation_type': v.violation_type,
                 'violation_data': {
                     'policy_names': v.policy_names,
                     'recommended_actions': v.recommended_actions,
                 },
-            } for v in violations]
+            } for i, v in enumerate(violations)]
 
         self.scanner._output_results(violations, '88888')
 
@@ -218,7 +228,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.scanner.scanner_configs = self.fake_scanner_configs
         violations = [
             fw_rules_scanner.fw_rules_engine.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id='p1',
                 rule_id='rule1',
                 violation_type='violation1',
@@ -226,7 +236,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 recommended_actions=['a1'],
             ),
             fw_rules_scanner.fw_rules_engine.RuleViolation(
-                resource_type='firewall_policy',
+                resource_type='firewall_rule',
                 resource_id='p2',
                 rule_id='rule2',
                 violation_type='violation2',
@@ -234,18 +244,25 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 recommended_actions=['a2'],
             ),
         ]
+        rule_indices = {
+            'rule1': 1,
+            'rule2': 2,
+        }
+        self.scanner.rules_engine.rule_book.rule_indices.get.side_effect = (
+            lambda x, y: rule_indices.get(x, -1))
         self.scanner._output_results(violations, '88888')
         flattened_violations = [
             {
                 'resource_id': v.resource_id,
                 'resource_type': v.resource_type,
-                'rule_id': v.rule_id,
+                'rule_name': v.rule_id,
+                'rule_index': i+1,
                 'violation_type': v.violation_type,
                 'violation_data': {
                     'policy_names': v.policy_names,
                     'recommended_actions': v.recommended_actions,
                 },
-            } for v in violations]
+            } for i, v in enumerate(violations)]
 
         mock_output_results_to_db.assert_called_once_with(
             self.scanner, 'violations', flattened_violations)
@@ -294,7 +311,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_policy',
+                    'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'no_rdp_to_linux',
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -317,7 +334,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_policy',
+                    'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'test_instances_rule',
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -413,7 +430,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         scanner = fw_rules_scanner.FwPolicyScanner(
             {}, {}, '', rules_local_path)
         results = scanner._retrieve()
-        self.assertEqual(3, results[1])
+        self.assertEqual({'firewall_rule': 3}, results[1])
         self.assertItemsEqual(
             expected.items(), results[0])
 
@@ -426,6 +443,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             (
                 'test_project',
                 {
+                    'project': 'test_project',
                     'name': 'policy1',
                     'network': 'network1',
                     'direction': 'ingress',
@@ -437,6 +455,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             (
                 'project1',
                 {
+                    'project': 'project1',
                     'name': 'policy2',
                     'network': 'network1',
                     'direction': 'ingress',
@@ -448,6 +467,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             (
                 'honeypot_exception',
                 {
+                    'project': 'honeypot_exception',
                     'name': 'policy3',
                     'network': 'network1',
                     'direction': 'ingress',
@@ -459,10 +479,9 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         ]
         fake_firewall_rules = []
         for project, policy_dict in resource_and_policies:
-            resource = self.project_resource_map[project]
             policy = fre.firewall_rule.FirewallRule.from_dict(
                 policy_dict, project_id=project, validate=True)
-            fake_firewall_rules.append((resource, policy))
+            fake_firewall_rules.append(policy)
         mock_get_firewall_rules = mock.patch.object(
             fw_rules_scanner.firewall_rule_dao, 'FirewallRuleDao').start()
         mock_get_firewall_rules().get_firewall_rules.return_value = (
@@ -480,8 +499,9 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             {
                 'resource_id': 'test_project',
                 'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
-                'rule_id': 'no_rdp_to_linux',
-                'resource_type': 'firewall_policy',
+                'rule_name': 'no_rdp_to_linux',
+                'rule_index': 1,
+                'resource_type': 'firewall_rule',
                 'violation_data': {
                     'policy_names': ['policy1'],
                     'recommended_actions': {
@@ -492,8 +512,9 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             {
                 'resource_id': 'project1',
                 'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
-                'rule_id': 'test_instances_rule',
-                'resource_type': 'firewall_policy',
+                'rule_name': 'test_instances_rule',
+                'rule_index': 0,
+                'resource_type': 'firewall_rule',
                 'violation_data': {
                     'policy_names': ['policy2'],
                     'recommended_actions': {

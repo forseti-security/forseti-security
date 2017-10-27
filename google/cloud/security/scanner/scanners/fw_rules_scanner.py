@@ -22,8 +22,10 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier import notifier
 
 from google.cloud.security.common.data_access import csv_writer
-from google.cloud.security.scanner.audit import fw_rules_engine
 from google.cloud.security.common.data_access import firewall_rule_dao
+from google.cloud.security.common.gcp_type import resource as resource_type
+from google.cloud.security.common.gcp_type import resource_util
+from google.cloud.security.scanner.audit import fw_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
 LOGGER = log_util.get_logger(__name__)
@@ -56,11 +58,12 @@ class FwPolicyScanner(base_scanner.BaseScanner):
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
-    def _flatten_violations(violations):
+    def _flatten_violations(violations, rule_indices):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:
             violations (list): The RuleViolations to flatten.
+            rule_indices (dict): A dictionary of string rule ids to indices.
 
         Yields:
             dict: Iterator of RuleViolations as a dict per member.
@@ -74,7 +77,8 @@ class FwPolicyScanner(base_scanner.BaseScanner):
             violation_dict = {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
-                'rule_id': violation.rule_id,
+                'rule_name': violation.rule_id,
+                'rule_index': rule_indices.get(violation.rule_id, 0),
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data
             }
@@ -89,8 +93,9 @@ class FwPolicyScanner(base_scanner.BaseScanner):
             resource_counts (int): Resource count.
         """
         resource_name = 'violations'
-
-        all_violations = list(self._flatten_violations(all_violations))
+        rule_indices = self.rules_engine.rule_book.rule_indices
+        all_violations = list(self._flatten_violations(all_violations,
+                                                       rule_indices))
         violation_errors = self._output_results_to_db(resource_name,
                                                       all_violations)
 
@@ -156,7 +161,10 @@ class FwPolicyScanner(base_scanner.BaseScanner):
         policies = itertools.chain(policies)
         all_violations = []
         LOGGER.info('Finding firewall policy violations...')
-        for (resource, policy) in policies:
+        for policy in policies:
+            resource_id = policy.project_id
+            resource = resource_util.create_resource(
+                resource_id=resource_id, resource_type='project')
             LOGGER.debug('%s => %s', resource, policy)
             violations = self.rules_engine.find_policy_violations(
                 resource, policy)
@@ -174,11 +182,16 @@ class FwPolicyScanner(base_scanner.BaseScanner):
                              .FirewallRuleDao(self.global_configs)
                              .get_firewall_rules(self.snapshot_timestamp))
 
+
         if not firewall_policies:
             LOGGER.warn('No firewall policies found. Exiting.')
             sys.exit(1)
 
-        return firewall_policies, len(firewall_policies)
+        resource_counts = {
+            resource_type.ResourceType.FIREWALL_RULE: len(firewall_policies),
+        }
+
+        return firewall_policies, resource_counts
 
     def run(self):
         """Runs the data collection."""
