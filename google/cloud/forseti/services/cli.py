@@ -203,6 +203,26 @@ def define_inventory_parser(parent):
         help='Inventory id to get')
 
 
+def define_scanner_parser(parent):
+    """Define the scanner service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+    service_parser = parent.add_parser('scanner', help='scanner service')
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    create_scanner_parser = action_subparser.add_parser(
+        'run',
+        help='Run the scanner')
+
+    create_scanner_parser.add_argument(
+        'config_dir',
+        help='Scanner config directory')
+
+
 def define_explainer_parser(parent):
     """Define the explainer service parser.
 
@@ -420,6 +440,7 @@ def create_parser(parser_cls):
     define_explainer_parser(service_subparsers)
     define_playground_parser(service_subparsers)
     define_inventory_parser(service_subparsers)
+    define_scanner_parser(service_subparsers)
     return main_parser
 
 
@@ -456,6 +477,27 @@ class JsonOutput(Output):
                 obj (object): Object to write as json
         """
         print MessageToJson(obj)
+
+
+def run_scanner(client, config, output):
+    """Run scanner commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+    """
+
+    client = client.scanner
+
+    def do_run():
+        """Run a scanner."""
+        result = client.run(config.config_dir)
+        output.write(result)
+
+    actions = {
+        'run': do_run}
+
+    actions[config.action]()
 
 
 def run_inventory(client, config, output):
@@ -697,6 +739,7 @@ SERVICES = {
     'explainer': run_explainer,
     'playground': run_playground,
     'inventory': run_inventory,
+    'scanner': run_scanner,
     }
 
 

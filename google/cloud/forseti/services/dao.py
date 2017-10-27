@@ -485,6 +485,17 @@ def define_model(model_name, dbengine, model_seed):
                 return bindings, member_graph, resource_type_names
 
         @classmethod
+        def scanner_iter(cls, session, resource_type):
+            """Iterate over all resources with the specified type."""
+
+            qry = (
+                session.query(Resource)
+                .filter(Resource.type == resource_type))
+
+            for resource in qry.yield_per(PER_YIELD):
+                yield resource
+
+        @classmethod
         def explain_denied(cls, session, member_name, resource_type_names,
                            permission_names, role_names):
             """Provide information how to grant access to a member."""

@@ -24,6 +24,8 @@ from google.cloud.forseti.services.playground import playground_pb2_grpc
 from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2_grpc
+from google.cloud.forseti.services.scanner import scanner_pb2
+from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 
 from google.cloud.forseti.services.utils import oneof
 
@@ -62,6 +64,31 @@ class IAMClient(object):
     def metadata(self):
         """Create default metadata for gRPC call."""
         return [('handle', self.config.handle())]
+
+
+class ScannerClient(IAMClient):
+    """Scanner service allows the client to scan a model."""
+
+    def __init__(self, config):
+        super(ScannerClient, self).__init__(config)
+        self.stub = scanner_pb2_grpc.ScannerStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Inventory' service is available by performing a ping.
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(scanner_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    @require_model
+    def run(self, config_dir):
+        """Runs the scanner"""
+
+        request = scanner_pb2.RunRequest(
+            config_dir=config_dir)
+        return self.stub.Run(request,
+                             metadata=self.metadata())
 
 
 class InventoryClient(IAMClient):
@@ -127,7 +154,8 @@ class ExplainClient(IAMClient):
         self.stub = explain_pb2_grpc.ExplainStub(config['channel'])
 
     def is_available(self):
-        """Checks if the 'Explain' service is available by performing a ping."""
+        """Checks if the 'Explain' service is available by performing a ping.
+        """
 
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
@@ -429,8 +457,13 @@ class ClientComposition(object):
         self.explain = ExplainClient(self.config)
         self.playground = PlaygroundClient(self.config)
         self.inventory = InventoryClient(self.config)
+        self.scanner = ScannerClient(self.config)
 
-        self.clients = [self.explain, self.playground, self.inventory]
+        self.clients = [self.explain,
+                        self.playground,
+                        self.inventory,
+                        self.scanner]
+
         if not all([c.is_available() for c in self.clients]):
             raise Exception('gRPC connected but services not registered')
 
