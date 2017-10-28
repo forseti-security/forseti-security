@@ -15,6 +15,10 @@
 """Configuration Validator.
 
 This is a wrapper around the jsonschema validator.
+
+validate() reads in the yaml configuration as a dict and the schema
+(should be a valid json file, see http://json-schema.org/) as a dict,
+then tries to validate the config against the schema.
 """
 
 import json
@@ -28,7 +32,7 @@ def validate(config_path, schema_path):
     """Validate the configuration.
 
     Args:
-        config_path (str): The filesystem path to the configuration.
+        config_path (str): The filesystem path to a yaml configuration.
         schema_path (str): The filesystem path to the schema.
 
     Returns:
@@ -61,8 +65,6 @@ def validate(config_path, schema_path):
 
     return config
 
-
-# TODO: custom messaging for errors?
 
 class Error(Exception):
     """Base Error class."""

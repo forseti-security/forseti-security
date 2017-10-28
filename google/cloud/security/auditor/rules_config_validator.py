@@ -19,6 +19,8 @@ import itertools
 import os
 import sys
 
+import pyparsing
+
 from collections import defaultdict
 from collections import namedtuple
 
@@ -28,7 +30,6 @@ from collections import namedtuple
 # "ImportError: No module named cloud.security.common.util"
 # See https://github.com/google/protobuf/issues/1296#issuecomment-264265761
 import google.protobuf
-import pyparsing
 
 from google.cloud.security.common.util import config_validator
 from google.cloud.security.auditor import condition_parser
@@ -42,11 +43,30 @@ RULES_SCHEMA_PATH = os.path.abspath(
 
 
 class RulesConfigValidator(object):
-    """RulesEngine class."""
+    """RulesConfigValidator class.
+
+    Contains the most basic validation that should be done on all rule
+    configurations.
+    """
+    # TODO: how to handle validation of rule configurations where a
+    # certain resource requires a certain property that's not
+    # included in the schema?
 
     @staticmethod
     def validate(rules_config_path):
         """Validate the rules config.
+
+        Rule configuration validation:
+
+        1. Rule configuration should validate against a json schema.
+        2. Rule ids should be unique.
+        3. Configuration variables should all matched to each
+           resource's variables.
+        4. Configuration condition statement should parse without error.
+
+        TODO:
+        1. Each rule.type is a valid module.
+        2. Each resource.type is a valid module.
 
         Args:
             rules_config_path (str): The rules configuration path.
@@ -57,17 +77,9 @@ class RulesConfigValidator(object):
         Raises:
             InvalidRulesConfigError: When the rules config is invalid.
         """
-        schema_errors = []
-        config = {}
-
-        # Validate against the JSON schema.
-        try:
-            config = config_validator.validate(
-                rules_config_path, RULES_SCHEMA_PATH)
-        except (config_validator.ConfigLoadError,
-                config_validator.InvalidConfigError,
-                config_validator.InvalidSchemaError) as err:
-            schema_errors.append(err)
+        # Validate rules against the rules config schema.
+        config, schema_errors = RulesConfigValidator._validate_schema(
+            rules_config_path)
 
         # All the rule ids found in the config
         #   rule_id => # of rule_ids found in config
@@ -124,6 +136,29 @@ class RulesConfigValidator(object):
         errors = [str(err) for err in errors_iter]
         if errors:
             raise InvalidRulesConfigError(errors)
+
+    @staticmethod
+    def _validate_schema(rules_config_path):
+        """Validate the rules configuration against the rules schema.
+
+        Args:
+            rules_config_path (str): The path to the rules configuration.
+
+        Returns:
+            dict: The config that gets successfully parsed/validated.
+            list: A list of schema errors.
+        """
+        schema_errors = []
+        config = {}
+        try:
+            config = config_validator.validate(
+                rules_config_path, RULES_SCHEMA_PATH)
+        except (config_validator.ConfigLoadError,
+                config_validator.InvalidConfigError,
+                config_validator.InvalidSchemaError) as err:
+            schema_errors.append(err)
+
+        return config, schema_errors
 
     @staticmethod
     def _check_unmatched_config_vars(
@@ -225,6 +260,7 @@ class DuplicateRuleIdError(Error):
         """
         super(DuplicateRuleIdError, self).__init__(
             self.CUSTOM_ERROR_MSG.format(rule_id))
+        self.rule_id = rule_id
 
 
 class UnmatchedVariablesError(Error):
