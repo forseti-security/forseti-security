@@ -26,9 +26,8 @@ rules:
       resources:
         - type: google.cloud.security.common.gcp_type.fake_resource
           variables:
-            - myvar1: myprop1
-      condition:
-        - myvar1 > 100
+            myvar1: myprop1
+      condition: myvar1 > 100
 
   - type: google.cloud.security.auditor.rules.generic_rule
     description: Test invalid rule
@@ -40,13 +39,12 @@ rules:
       resources:
         - type: google.cloud.security.common.gcp_type.cloudsql
           variables:
-            - authorized_networks: authorized_networks
-            - asdf: asdf
+            authorized_networks: authorized_networks
+            asdf: asdf
         - type: google.cloud.security.common.gcp_type.aabbcc
           variables:
-            - jkl: aaa
-      condition:
-        - authorized_networks != xyz
+            jkl: aaa
+      condition: authorized_networks != xyz
 
   - type: google.cloud.security.auditor.rules.generic_rule
     description: Test invalid rule 2
@@ -58,10 +56,9 @@ rules:
       resources:
         - type: google.cloud.security.common.gcp_type.fake_resource
           variables:
-            - authorized_networks: authorized_networks
-            - asdf: asdf
+            authorized_networks: authorized_networks
+            asdf: asdf
         - type: google.cloud.security.common.gcp_type.aabbcc
           variables:
-            - jkl: aaa
-      condition:
-        - authorized_networks != xyz
+            jkl: aaa
+      condition: authorized_networks != xyz

@@ -22,6 +22,8 @@ from collections import defaultdict
 
 import pyparsing
 
+import google.protobuf
+
 from google.cloud.security.common.util import config_validator
 from google.cloud.security.auditor import condition_parser
 
@@ -58,9 +60,13 @@ class RulesConfigValidator(object):
         TODO:
         1. Each rule.type is a valid module.
         2. Each resource.type is a valid module.
+        3. Resource types should be unique within a rule configuration.
 
         Args:
             rules_config_path (str): The rules configuration path.
+
+        Returns:
+            dict: The validated configuration.
 
         Raises:
             InvalidRulesConfigError: When the rules config is invalid.
@@ -94,9 +100,11 @@ class RulesConfigValidator(object):
                 RulesConfigValidator._check_unmatched_config_vars(
                     rule['id'], config_vars, config_resources))
 
-            invalid_condition_errs = (
-                RulesConfigValidator._check_invalid_conditions(
-                    rule['id'], config_vars, rule_config.get('condition', '')))
+            try:
+                RulesConfigValidator._check_invalid_condition(
+                    rule['id'], config_vars, rule_config.get('condition', ''))
+            except ConditionParseError as cpe:
+                invalid_condition_errs.append(cpe)
 
         errors_iter = itertools.chain(
             # Schema errors
@@ -118,6 +126,8 @@ class RulesConfigValidator(object):
         if errors:
             raise InvalidRulesConfigError(errors)
 
+        return config
+
     @staticmethod
     def _validate_schema(rules_config_path):
         """Validate the rules configuration against the rules schema.
@@ -131,6 +141,7 @@ class RulesConfigValidator(object):
         """
         schema_errors = []
         config = {}
+
         try:
             config = config_validator.validate(
                 rules_config_path, RULES_SCHEMA_PATH)
@@ -160,13 +171,13 @@ class RulesConfigValidator(object):
         unmatched_vars_errs = []
         for resource in config_resources:
             # {'resources': [
-            #   {'variables': [
-            #     {'key': 'value'},
-            #    ...], ...}, ...], ...}
+            #   {'variables': {
+            #     'key': 'value',
+            #     ...
+            #    }, ...}, ...], ...}
             resource_vars = set([
                 res_var
-                for var_map in resource.get('variables', [])
-                for res_var in var_map.keys()])
+                for res_var in resource.get('variables', {}).keys()])
 
             unmatched_config_vars = config_vars - resource_vars
             unmatched_resource_vars = resource_vars - config_vars
@@ -180,29 +191,25 @@ class RulesConfigValidator(object):
         return unmatched_vars_errs
 
     @staticmethod
-    def _check_invalid_conditions(rule_id, config_vars, rule_config_conditions):
+    def _check_invalid_condition(rule_id, config_vars, config_condition):
         """Check that conditional statement parses.
 
         Args:
             rule_id (str): The rule id.
             config_vars (set): The configuration variables.
-            rule_config_conditions (list): The rule configuration conditions.
+            config_condition (str): The rule configuration condition.
 
-        Returns:
-            list: The list of ConditionParseErrors corresponding to
+        Raises:
+            ConditionParseError: The ConditionParseError corresponding to
                 the invalid configuration conditions.
         """
-        invalid_conditions = []
-        config_condition = ' and '.join(rule_config_conditions)
         cond_parser = condition_parser.ConditionParser(
-            {v: 1 for v in config_vars})
+            {cfg_var: 1 for cfg_var in config_vars})
 
         try:
             cond_parser.eval_filter(config_condition)
         except pyparsing.ParseException as parse_err:
-            invalid_conditions.append((rule_id, config_condition, parse_err))
-
-        return invalid_conditions
+           raise ConditionParseError(rule_id, config_condition, parse_err)
 
 
 class Error(Exception):

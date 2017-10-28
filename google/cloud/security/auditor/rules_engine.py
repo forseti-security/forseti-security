@@ -22,8 +22,6 @@ import argparse as ap
 import os
 import sys
 
-from collections import namedtuple
-
 # dummy import to force building the namespace package to find
 # stuff in google.cloud.security.
 # Otherwise, we get the following error:
@@ -32,19 +30,28 @@ from collections import namedtuple
 import google.protobuf
 
 from google.cloud.security.auditor import rules_config_validator
+from google.cloud.security.auditor.rules import rule as generic_rule
+from google.cloud.security.common.gcp_type import project
 
 
 class RulesEngine(object):
     """RulesEngine class."""
 
     def __init__(self, rules_config_path):
-        self.valid_rules = []
+        """Initialize.
+
+        Args:
+            rules_config_path (str): The rules configuration path.
+        """
+        self.rules = []
         self.rules_config_path = rules_config_path
 
     def setup(self):
         """Set up the RulesEngine."""
         valid_config = self.validate_config()
-        self.rules = valid_config
+        print valid_config
+        for rule in valid_config.get('rules', []):
+            self.rules.append(generic_rule.Rule.create_rule(rule))
 
     def validate_config(self):
         """Validate the rules config.
@@ -56,22 +63,16 @@ class RulesEngine(object):
             self.rules_config_path)
 
     def evaluate_rules(self, resource):
-        for rule in self.valid_rules:
+        results = []
+        print self.rules
+        for rule in self.rules:
             result = rule.audit(resource)
-        return []
+            if not result:
+                continue
+            results.append(result)
+        print results
 
-
-"""The result of rule evaluation.
-
-Args:
-    rule_id (str): The rule id.
-    resource (Resource): The GCP Resource.
-    result (boolean): True if the rule condition is met, otherwise False.
-    metadata (dict): Additional data related to the Resource and
-        rule evaluation.
-"""
-RuleResult = namedtuple('RuleResult',
-                        ['rule_id', 'resource', 'result', 'metadata'])
+        return results
 
 
 class Error(Exception):
@@ -84,7 +85,10 @@ def main(args):
     parsed_args = parser.parse_args()
 
     rules_engine = RulesEngine(parsed_args.rules_path)
-    rules_engine.validate_config()
+    rules_engine.setup()
+
+    proj1 = project.Project('proj1', 1111)
+    rules_engine.evaluate_rules(proj1)
 
 
 if __name__ == '__main__':

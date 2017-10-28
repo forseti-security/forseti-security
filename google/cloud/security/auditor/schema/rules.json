@@ -24,10 +24,7 @@
       "properties": {
         "variables": { "$ref": "#/definitions/variables" },
         "resources": { "$ref": "#/definitions/resources" },
-        "condition": {
-          "type": "array",
-          "items": { "type": "string" }
-        }
+        "condition": { "type": "string" }
       },
       "required": ["variables", "resources", "condition"]
     },
@@ -48,10 +45,6 @@
       "required": ["type"]
     },
     "resourceVars": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/resourceVar" }
-    },
-    "resourceVar": {
       "type": "object",
       "additionalProperties": { "type": "string" }
     }

@@ -23,6 +23,7 @@ then tries to validate the config against the schema.
 
 import json
 import os
+import sys
 
 import jsonschema
 import yaml

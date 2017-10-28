@@ -25,9 +25,8 @@ rules:
       resources:
         - type: google.cloud.security.common.gcp_type.fake_resource
           variables:
-            - myvar1: myprop1
-      condition:
-        - myvar1 > 100
+            myvar1: myprop1
+      condition: myvar1 > 100
 
   - type: google.cloud.security.auditor.rules.generic_rule
     description: Another test rule
@@ -39,11 +38,10 @@ rules:
       resources:
         - type: google.cloud.security.common.gcp_type.fake_resource_a
           variables:
-            - created_date: created_dt
-            - someprop: someprop
+            created_date: created_dt
+            someprop: someprop
         - type: google.cloud.security.common.gcp_type.fake_resource_b
           variables:
-            - created_date: created_dt
-            - someprop: someprop
-      condition:
-        - created_date > someprop
+            created_date: created_dt
+            someprop: someprop
+      condition: created_date > someprop

@@ -47,17 +47,17 @@ class RulesConfigValidator(ForsetiTestCase):
 
         self.assertFalse(actual_unmatched)
 
-    def test_check_invalid_conditions(self):
-        """Test _check_invalid_conditions()."""
+    def test_check_invalid_condition(self):
+        """Test _check_invalid_condition()."""
         rule = self.valid_rules1.get('rules')[0]
         rule_config = rule.get('configuration')
         config_vars = set(rule_config.get('variables', []))
-        condition = rule_config.get('condition', {})
+        condition = rule_config.get('condition')
 
-        invalid_conditions = self.validator._check_invalid_conditions(
+        invalid_condition = self.validator._check_invalid_condition(
             rule['id'], config_vars, condition)
 
-        self.assertFalse(invalid_conditions)
+        self.assertFalse(invalid_condition)
 
     def test_validate(self):
         """Test validate() works for well formed generic configurations."""
