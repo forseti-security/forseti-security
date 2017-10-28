@@ -16,22 +16,21 @@
 
 import mock
 import unittest
-import MySQLdb
 
+from google.cloud.security.auditor import rules_engine
 from google.cloud.security.auditor.rules import rule
 from tests.unittest_utils import ForsetiTestCase
 
 
 class RulesEngineTest(ForsetiTestCase):
+    """RulesEngineTest."""
 
     def setUp(self):
         pass
 
 
 class RulesTest(ForsetiTestCase):
-    
-    def setUp(self):
-        pass
+    """RulesTest."""
 
     def test_create_rule(self):
         """Test create_rule()."""

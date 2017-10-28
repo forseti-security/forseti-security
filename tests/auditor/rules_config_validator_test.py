@@ -19,16 +19,15 @@ for the json schema validator.
 """
 
 import mock
-import os
 import unittest
-import MySQLdb
 
 from google.cloud.security.auditor import rules_config_validator as rcv
 from tests.auditor.test_data import test_auditor_data
 from tests.unittest_utils import ForsetiTestCase
 
 
-class RulesConfigValidator(ForsetiTestCase):
+class RulesConfigValidatorTest(ForsetiTestCase):
+    """RulesConfigValidatorTest."""
 
     def setUp(self):
         self.validator = rcv.RulesConfigValidator

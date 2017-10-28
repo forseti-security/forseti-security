@@ -17,9 +17,13 @@
 import collections
 import contextlib
 import json
+import logging
 import os
 import tempfile
 import unittest
+
+
+logging.disable(logging.CRITICAL)
 
 
 @contextlib.contextmanager
