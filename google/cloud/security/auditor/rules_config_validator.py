@@ -22,7 +22,7 @@ from collections import defaultdict
 
 import pyparsing
 
-import google.protobuf
+# import google.protobuf
 
 from google.cloud.security.common.util import config_validator
 from google.cloud.security.auditor import condition_parser
@@ -209,7 +209,7 @@ class RulesConfigValidator(object):
         try:
             cond_parser.eval_filter(config_condition)
         except pyparsing.ParseException as parse_err:
-           raise ConditionParseError(rule_id, config_condition, parse_err)
+            raise ConditionParseError(rule_id, config_condition, parse_err)
 
 
 class Error(Exception):

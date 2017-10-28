@@ -59,7 +59,7 @@ class Rule(object):
         # Set properties
         new_rule.rule_id = rule_definition.get('id')
         new_rule.description = rule_definition.get('description')
-        
+
         config = rule_definition.get('configuration', {})
         new_rule.config_variables = config.get('variables', [])
         new_rule.resource_config = config.get('resources', [])
@@ -79,7 +79,8 @@ class Rule(object):
         resource_type = '%s.%s' % (
             resource.__module__, resource.__class__.__name__)
 
-        print '... checking if %s applies to %s' % (self.rule_id, resource_type)
+        print '... checking if %s applies to %s' % (
+            self.rule_id, resource_type)
 
         resource_cfg = None
         # Check if this Rule applies to this resource.
@@ -109,18 +110,21 @@ class Rule(object):
 
     @property
     def type(self):
+        """The `type` property of this class.
+
+        Returns:
+            str: The type name, comprising module and class name.
+        """
         return '%s.%s' % (self.__module__, self.__class__.__name__)
 
 
-"""The result of rule evaluation.
-
-Args:
-    rule_id (str): The rule id.
-    resource (Resource): The GCP Resource.
-    result (boolean): True if the rule condition is met, otherwise False.
-    metadata (dict): Additional data related to the Resource and
-        rule evaluation.
-"""
+# The result of rule evaluation.
+#
+# Properties::
+#   rule_id (str): The rule id.
+#   resource (Resource): The GCP Resource.
+#   result (boolean): True if the rule condition is met, otherwise False.
+#   metadata (dict): Additional data related to the Resource and
+#       rule evaluation.
 RuleResult = namedtuple('RuleResult',
                         ['rule_id', 'resource', 'result', 'metadata'])
-

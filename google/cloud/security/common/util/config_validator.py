@@ -23,7 +23,6 @@ then tries to validate the config against the schema.
 
 import json
 import os
-import sys
 
 import jsonschema
 import yaml
@@ -45,24 +44,24 @@ def validate(config_path, schema_path):
             validate correctly against the schema.
         InvalidSchemaError: When the schema is invalid.
     """
-    with open(os.path.abspath(schema_path), 'rb') as fp:
+    with open(os.path.abspath(schema_path), 'rb') as filep:
         try:
-            schema = json.load(fp)
-        except ValueError as ve:
-            raise InvalidSchemaError(ve)
+            schema = json.load(filep)
+        except ValueError as verr:
+            raise InvalidSchemaError(verr)
 
-    with open(os.path.abspath(config_path), 'rb') as fp:
+    with open(os.path.abspath(config_path), 'rb') as filep:
         try:
-            config = yaml.safe_load(fp)
+            config = yaml.safe_load(filep)
         except yaml.YAMLError as yaml_error:
             raise ConfigLoadError(yaml_error)
 
     try:
         jsonschema.validate(config, schema)
-    except jsonschema.ValidationError as ve:
-        raise InvalidConfigError(ve)
-    except jsonschema.SchemaError(se):
-        raise InvalidSchemaError(se)
+    except jsonschema.ValidationError as verr:
+        raise InvalidConfigError(verr)
+    except jsonschema.SchemaError as serr:
+        raise InvalidSchemaError(serr)
 
     return config
 
