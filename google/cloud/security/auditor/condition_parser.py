@@ -21,34 +21,43 @@ import logging
 import sys
 import traceback
 
-from pyparsing import *
-
-ParserElement.enablePackrat()
+import pyparsing
 
 
-def EvalSignOp(s, l, t):
+pyparsing.ParserElement.enablePackrat()
+
+
+# pylint: disable=invalid-name
+# pylint: disable=missing-param-doc
+# pylint: disable=missing-return-doc
+# pylint: disable=missing-return-type-doc
+# pylint: disable=missing-type-doc
+# pylint: disable=missing-yield-doc
+# pylint: disable=missing-yield-type-doc
+# pylint: disable=unused-argument
+def eval_sign_op(s, l, t):
     """Evaluate expressions with a leading + or - sign"""
     sign, value = t[0]
     mult = {'+':1, '-':-1}[sign]
     res = mult * value
-    logging.debug("SIGN: t=%s res=%s" % (t, res))
+    logging.debug("SIGN: t=%s res=%s", t, res)
     return res
 
-def operatorOperands(tokenlist):
+def _operator_operands(tokenlist):
     """Generator to extract operators and operands in pairs"""
     it = iter(tokenlist)
     while 1:
         try:
             o1 = next(it)
             o2 = next(it)
-            yield ( o1, o2 )
+            yield (o1, o2)
         except StopIteration:
             break
 
-def EvalMultOp(s, l, t):
+def eval_mult_op(s, l, t):
     """Evaluate multiplication and division expressions"""
     prod = t[0][0]
-    for op,val in operatorOperands(t[0][1:]):
+    for op, val in _operator_operands(t[0][1:]):
         if op == '*':
             prod *= val
         if op == '/':
@@ -57,121 +66,183 @@ def EvalMultOp(s, l, t):
             prod //= val
         if op == '%':
             prod %= val
-    logging.debug("MULT: t=%s res=%s" % (t, prod))
+    logging.debug("MULT: t=%s res=%s", t, prod)
     return prod
 
-def EvalAddOp(s, l, t):
+def eval_add_op(s, l, t):
     """Evaluate addition and subtraction expressions"""
-    sum = t[0][0]
-    for op,val in operatorOperands(t[0][1:]):
+    total = t[0][0]
+    for op, val in _operator_operands(t[0][1:]):
         if op == '+':
-            sum += val
+            total += val
         if op == '-':
-            sum -= val
-    logging.debug("ADD: t=%s res=%s" % (t, sum))
-    return sum
-    
-def EvalComparisonOp(s, l, t):
+            total -= val
+    logging.debug("ADD: t=%s res=%s", t, total)
+    return total
+
+def eval_comparison_op(s, l, t):
     """Evaluate comparison expressions"""
     opMap = {
-        "<" : lambda a,b : a < b,
-        "<=" : lambda a,b : a <= b,
-        ">" : lambda a,b : a > b,
-        ">=" : lambda a,b : a >= b,
-        "==" : lambda a,b : a == b,
-        "!=" : lambda a,b : a != b,
+        "<": lambda a, b: a < b,
+        "<=": lambda a, b: a <= b,
+        ">": lambda a, b: a > b,
+        ">=": lambda a, b: a >= b,
+        "==": lambda a, b: a == b,
+        "!=": lambda a, b: a != b,
         }
     res = False
     val1 = t[0][0]
-    for op,val2 in operatorOperands(t[0][1:]):
+    for op, val2 in _operator_operands(t[0][1:]):
         fn = opMap[op]
-        if not fn(val1,val2):
+        if not fn(val1, val2):
             break
         val1 = val2
     else:
         res = True
-    logging.debug("COMP: t=%s res=%s\n" % (t, res))
+    logging.debug("COMP: t=%s res=%s\n", t, res)
     return res
 
-def EvalAnd(s, l, t):
+def eval_and(s, l, t):
     """Evaluate `and` expression."""
     bool1, op, bool2 = t[0]
     res = bool1 and bool2
-    logging.debug("%s %s %s res=%s" % (bool1, op, bool2, res))
+    logging.debug("%s %s %s res=%s", bool1, op, bool2, res)
     return res
 
-def EvalOr(s, l, t):
+def eval_or(s, l, t):
     """Evaluate `or` expression."""
     bool1, op, bool2 = t[0]
     res = bool1 or bool2
-    logging.debug("%s %s %s res=%s" % (bool1, op, bool2, res))
+    logging.debug("%s %s %s res=%s", bool1, op, bool2, res)
     return res
-    
-def EvalNot(s, l, t):
+
+def eval_not(s, l, t):
     """Evaluate `not` expression."""
     op, bool1 = t[0]
     res = not bool1
-    logging.debug("%s %s res=%s" % (op, bool1, res))
+    logging.debug("%s %s res=%s", op, bool1, res)
     return res
 
-Param = Word(alphas+"_", alphanums+"_")
-Qstring = quotedString(r".*").setParseAction(removeQuotes)
-PosInt = Word(nums).setParseAction(lambda s,l,t: [int(t[0])])
-PosReal = ( Combine(Word(nums) + Optional("." + Word(nums))
-        + oneOf("E e") + Optional( oneOf('+ -')) + Word(nums))
-        | Combine(Word(nums) + "." + Word(nums))
-).setParseAction(lambda s,l,t: [float(t[0])])
+# pylint: enable=missing-param-doc
+# pylint: enable=missing-return-doc
+# pylint: enable=missing-return-type-doc
+# pylint: enable=missing-type-doc
+# pylint: enable=missing-yield-doc
+# pylint: enable=missing-yield-type-doc
 
-signop = oneOf('+ -')
-multop = oneOf('* / // %')
-plusop = oneOf('+ -')
-comparisonop = oneOf("< <= > >= == !=")
 
-andop = CaselessKeyword("AND")
-orop = CaselessKeyword("OR")
-notop = CaselessKeyword("NOT")
-
-class ConditionParser:
+class ConditionParser(object):
     """Parser class."""
 
+    Param = pyparsing.Word(pyparsing.alphas+"_", pyparsing.alphanums+"_")
+    Qstring = pyparsing.quotedString(r".*").setParseAction(
+        pyparsing.removeQuotes)
+    PosInt = pyparsing.Word(pyparsing.nums).setParseAction(
+        lambda s, l, t: [int(t[0])])
+    PosReal = (
+        pyparsing.Combine(
+            pyparsing.Word(pyparsing.nums) +
+            pyparsing.Optional("." + pyparsing.Word(pyparsing.nums)) +
+            pyparsing.oneOf("E e") +
+            pyparsing.Optional(pyparsing.oneOf('+ -')) +
+            pyparsing.Word(pyparsing.nums)) |
+        pyparsing.Combine(
+            pyparsing.Word(pyparsing.nums) + "." +
+            pyparsing.Word(pyparsing.nums))
+        ).setParseAction(lambda s, l, t: [float(t[0])])
+
+    signop = pyparsing.oneOf('+ -')
+    multop = pyparsing.oneOf('* / // %')
+    plusop = pyparsing.oneOf('+ -')
+    comparisonop = pyparsing.oneOf("< <= > >= == !=")
+
+    andop = pyparsing.CaselessKeyword("AND")
+    orop = pyparsing.CaselessKeyword("OR")
+    notop = pyparsing.CaselessKeyword("NOT")
+
     def __init__(self, param_dic=None):
+        """Initialize.
+
+        Args:
+            param_dic (dict): The parameter dictionary.
+
+        Raises:
+            ValueError: If there is a parameter collision.
+        """
         if param_dic is None:
             param_dic = {}
         self.param_dic = {}
         # Save parameters (key-value pairs), but with capitalized key
-        for k, v in param_dic.items():
-            K = k.upper()
-            if K in self.param_dic:
-                raise ValueError("Parameter key collision: '%s'" % k)
-            self.param_dic[K] = v
+        for key, val in param_dic.items():
+            upper_key = key.upper()
+            if upper_key in self.param_dic:
+                raise ValueError("Parameter key collision: '%s'" % key)
+            self.param_dic[upper_key] = val
 
-    def setParam(self, s, l, t):
-        "Replace keywords with actual values using param_dic mapping"
-        param = t[0].upper()
+    def set_param(self, orig_str, loc, tokens):
+        """Replace keywords with actual values using param_dic mapping.
+
+        Args:
+            orig_str (str): The original string to be parsed.
+            loc (str): The location of the matching substring.
+            tokens (list): The list of matched tokens.
+
+        Returns:
+            str: The found param.
+
+        Raises:
+            ParseException: If there is an undefined variable in
+                the expression.
+        """
+        del orig_str
+        del loc
+        param = tokens[0].upper()
         found_param = self.param_dic.get(param)
         if not found_param:
-            raise ParseException('Undefined variable: %s' % (param))
+            raise pyparsing.ParseException('Undefined variable: %s' % (param))
         return found_param
 
     def eval_filter(self, filter_expr):
-        keyword = Param.copy()
-        atom = PosReal | PosInt | Qstring | keyword.setParseAction(self.setParam)
-        expr = operatorPrecedence(atom, [
-            (signop, 1, opAssoc.RIGHT, EvalSignOp),
-            (multop, 2, opAssoc.LEFT, EvalMultOp),
-            (plusop, 2, opAssoc.LEFT, EvalAddOp),
-            (comparisonop, 2, opAssoc.LEFT, EvalComparisonOp),
-            (notop, 1, opAssoc.RIGHT, EvalNot),
-            (andop, 2, opAssoc.LEFT, EvalAnd),
-            (orop, 2, opAssoc.LEFT, EvalOr),
+        """Evaluate the expression.
+
+        Args:
+            filter_expr (str): The expression string to evaluate.
+
+        Returns:
+            bool: True if the expression evaluates to True, otherwise False.
+        """
+        keyword = self.Param.copy()
+        atom = (self.PosReal |
+                self.PosInt |
+                self.Qstring |
+                keyword.setParseAction(self.set_param))
+        expr = pyparsing.infixNotation(atom, [
+            (self.signop, 1, pyparsing.opAssoc.RIGHT, eval_sign_op),
+            (self.multop, 2, pyparsing.opAssoc.LEFT, eval_mult_op),
+            (self.plusop, 2, pyparsing.opAssoc.LEFT, eval_add_op),
+            (self.comparisonop, 2, pyparsing.opAssoc.LEFT, eval_comparison_op),
+            (self.notop, 1, pyparsing.opAssoc.RIGHT, eval_not),
+            (self.andop, 2, pyparsing.opAssoc.LEFT, eval_and),
+            (self.orop, 2, pyparsing.opAssoc.LEFT, eval_or),
         ])
         return expr.parseString(filter_expr, parseAll=True)[0]
 
 
 def parse(filter_expr, expected, params, parser=ConditionParser):
+    """Parse the expression.
+
+    Args:
+        filter_expr (str): The expression to evaluate.
+        expected (bool): The expected result.
+        params (dict): The parameters to use for variable lookups.
+        parser (object): The parser to use for parsing the expression.
+
+    Raises:
+        AssertionError: If the results do not equal the expected value.
+    """
     if not parser:
         parser = ConditionParser(params)
-    
+
     print '\nexpr: %s, expected: %s' % (filter_expr, expected)
 
     result = parser.eval_filter(filter_expr)
@@ -179,46 +250,52 @@ def parse(filter_expr, expected, params, parser=ConditionParser):
         raise AssertionError("yields %s instead of %s" % (result, expected))
     print 'Ok'
 
+
 def main():
+    """Run tests.
+
+    Returns:
+        int: The number of errors found.
+    """
     parameters = {
         'FRP': 100,
-        'satellite': 'A',    
+        'satellite': 'A',
     }
     tests = [
-        # ( Filter_string, Expected_result )
-        ( "199 / 2 > FRP", False ),
-        ( "101 == FRP + 1", True ),
-        ( "5 + 45 * 2 > FRP", False ),
-        ( "-5+5 < FRP", True ),
-        ( "satellite == 'N'", False),
-        ( "1", True),
-        ( "0", False),
-        ( "FRP - 100 == 0", True),
-        ( "FRP == 1 and satellite == 'T'", False ),
-        ( "FRP != 1 and not satellite == 'T'", True ),
-        ( "FRP == xyz", False ),
-        ( "FRP > 'abc'", False ),
-        ( "and and", False ),
-        ( "and or", False ),
-        ( "or not", False ),
-        ( "3 or not", False ),
-        ( "not", False ),
-        ( "3 3 3", False ),
+        # Filter_string, Expected_result)
+        ("199 / 2 > FRP", False),
+        ("101 == FRP + 1", True),
+        ("5 + 45 * 2 > FRP", False),
+        ("-5+5 < FRP", True),
+        ("satellite == 'N'", False),
+        ("1", True),
+        ("0", False),
+        ("FRP - 100 == 0", True),
+        ("FRP == 1 and satellite == 'T'", False),
+        ("FRP != 1 and not satellite == 'T'", True),
+        ("FRP == xyz", False),
+        ("FRP > 'abc'", False),
+        ("and and", False),
+        ("and or", False),
+        ("or not", False),
+        ("3 or not", False),
+        ("not", False),
+        ("3 3 3", False),
         # packrat speeds up nested expressions tremendously
-        ( "(FRP == 1) and ((satellite == 'T') or (satellite == 'A'))", False ),
+        ("(FRP == 1) and ((satellite == 'T') or (satellite == 'A'))", False),
     ]
-    
-    logging.basicConfig(level=logging.WARNING)
-    got_error = 0
+
+    logging.basicConfig(level=logging.DEBUG)
+    num_errors = 0
     ap = ConditionParser(parameters)
     for filter_expr, expected in tests:
         try:
             parse(filter_expr, expected, parameters, ap)
-        except Exception, err:
+        except Exception as err: # pylint: disable=broad-except
             traceback.print_exc(file=sys.stderr)
             print "%s: %s" % (filter_expr, err)
-            got_error += 1
-    return got_error
+            num_errors += 1
+    return num_errors
 
 
 if __name__ == "__main__":

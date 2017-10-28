@@ -17,19 +17,10 @@
 import argparse as ap
 import itertools
 import os
-import sys
-
-import pyparsing
 
 from collections import defaultdict
-from collections import namedtuple
 
-# dummy import to force building the namespace package to find
-# stuff in google.cloud.security.
-# Otherwise, we get the 
-# "ImportError: No module named cloud.security.common.util"
-# See https://github.com/google/protobuf/issues/1296#issuecomment-264265761
-import google.protobuf
+import pyparsing
 
 from google.cloud.security.common.util import config_validator
 from google.cloud.security.auditor import condition_parser
@@ -71,9 +62,6 @@ class RulesConfigValidator(object):
         Args:
             rules_config_path (str): The rules configuration path.
 
-        Returns:
-            dict: The parsed, valid config.
-
         Raises:
             InvalidRulesConfigError: When the rules config is invalid.
         """
@@ -85,19 +73,15 @@ class RulesConfigValidator(object):
         #   rule_id => # of rule_ids found in config
         rule_ids = defaultdict(int)
 
-        # Differences between config variables and resource variables:
-        # [tuple(rule_id, outstanding_config_vars, outstanding_res_vars), ...]
-        unmatched_vars = []
+        # UnmatchedVariablesError for each unmatched variable
+        unmatched_vars_errs = []
 
-        # Invalid rule conditions
-        # [(rule_id, expanded_condition), ...]
-        invalid_conditions = []
+        # ConditionParserError for each invalid condition
+        invalid_condition_errs = []
 
         for rule in config.get('rules', []):
-            rule_id = rule['id']
-
             # Keep track rule id occurrences.
-            rule_ids[rule_id] += 1
+            rule_ids[rule['id']] += 1
 
             rule_config = rule.get('configuration')
             if not rule_config:
@@ -106,11 +90,13 @@ class RulesConfigValidator(object):
             config_vars = set(rule_config.get('variables', []))
             config_resources = rule_config.get('resources', {})
 
-            unmatched_vars = RulesConfigValidator._check_unmatched_config_vars(
-                rule_id, config_vars, config_resources)
+            unmatched_vars_errs = (
+                RulesConfigValidator._check_unmatched_config_vars(
+                    rule['id'], config_vars, config_resources))
 
-            invalid_conditions = RulesConfigValidator._check_invalid_conditions(
-                rule_id, config_vars, rule_config.get('condition', ''))
+            invalid_condition_errs = (
+                RulesConfigValidator._check_invalid_conditions(
+                    rule['id'], config_vars, rule_config.get('condition', '')))
 
         errors_iter = itertools.chain(
             # Schema errors
@@ -118,20 +104,15 @@ class RulesConfigValidator(object):
 
             # Errors for dupliate rule ids
             [DuplicateRuleIdError(rule_id)
-                for rule_id in rule_ids
-                if rule_ids[rule_id] > 1],
+             for rule_id in rule_ids
+             if rule_ids[rule_id] > 1],
 
-            # Outstanding variables
-            [UnmatchedVariablesError(
-                rule_id, resource_type, unmatched_cfg_vars, unmatched_res_vars)
-                for (rule_id, resource_type,
-                        unmatched_cfg_vars, unmatched_res_vars)
-                in unmatched_vars],
+            # Unmatched configuration variables
+            unmatched_vars_errs,
 
             # Invalid conditions
-            [ConditionParseError(rule_id, config_condition, pe)
-                for (rule_id, config_condition, pe) in invalid_conditions]
-            )
+            invalid_condition_errs
+        )
 
         errors = [str(err) for err in errors_iter]
         if errors:
@@ -162,7 +143,7 @@ class RulesConfigValidator(object):
 
     @staticmethod
     def _check_unmatched_config_vars(
-        rule_id, config_vars, config_resources):
+            rule_id, config_vars, config_resources):
         """Check that configuration variables are found in resource variables.
 
         Check that all configuration['variables'] are present in
@@ -174,11 +155,9 @@ class RulesConfigValidator(object):
             config_resources (list): The rule configuration resources.
 
         Returns:
-            list: A list of tuples of 
-                (rule_id, resource_type,
-                 unmatched_config_vars, unmatched_resource_vars)
+            list: A list of UnmatchedVariablesErrors
         """
-        unmatched_vars = []
+        unmatched_vars_errs = []
         for resource in config_resources:
             # {'resources': [
             #   {'variables': [
@@ -192,12 +171,13 @@ class RulesConfigValidator(object):
             unmatched_config_vars = config_vars - resource_vars
             unmatched_resource_vars = resource_vars - config_vars
             if unmatched_config_vars or unmatched_resource_vars:
-                unmatched_vars.append(
-                    (rule_id,
-                     resource.get('type'),
-                     unmatched_config_vars,
-                     unmatched_resource_vars))
-        return unmatched_vars
+                unmatched_vars_errs.append(
+                    UnmatchedVariablesError(
+                        rule_id,
+                        resource.get('type'),
+                        unmatched_config_vars,
+                        unmatched_resource_vars))
+        return unmatched_vars_errs
 
     @staticmethod
     def _check_invalid_conditions(rule_id, config_vars, rule_config_conditions):
@@ -209,19 +189,18 @@ class RulesConfigValidator(object):
             rule_config_conditions (list): The rule configuration conditions.
 
         Returns:
-            list: The list of tuples 
-                (rule_id, config_condition, ParseException)
-                corresponding to the invalid configuration conditions.
+            list: The list of ConditionParseErrors corresponding to
+                the invalid configuration conditions.
         """
         invalid_conditions = []
         config_condition = ' and '.join(rule_config_conditions)
-        cp = condition_parser.ConditionParser(
+        cond_parser = condition_parser.ConditionParser(
             {v: 1 for v in config_vars})
 
         try:
-            cp.eval_filter(config_condition)
-        except pyparsing.ParseException as pe:
-            invalid_conditions.append((rule_id, config_condition, pe))
+            cond_parser.eval_filter(config_condition)
+        except pyparsing.ParseException as parse_err:
+            invalid_conditions.append((rule_id, config_condition, parse_err))
 
         return invalid_conditions
 
@@ -311,7 +290,8 @@ class ConditionParseError(Error):
                 rule_id, config_condition, parse_error))
 
 
-def main(args):
+def main():
+    """main"""
     parser = ap.ArgumentParser()
     parser.add_argument('--rules-path', required=True)
     parsed_args = parser.parse_args()
@@ -320,4 +300,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
