@@ -14,7 +14,7 @@
 
 rules:
   # default rules
-  - name: Allow only IAM members in my domain to be an OrgAdmin
+  - name: Only allow only IAM members in my domain to be an OrgAdmin
     mode: whitelist
     resource:
       - type: organization
