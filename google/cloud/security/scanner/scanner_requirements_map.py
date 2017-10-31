@@ -33,7 +33,7 @@ REQUIREMENTS_MAP = {
     'firewall_rule':
         {'module_name': 'fw_rules_scanner',
          'class_name': 'FwPolicyScanner',
-         'rules_filename': 'fw_rules.yaml'},
+         'rules_filename': 'firewall_rules.yaml'},
     'forwarding_rule':
         {'module_name': 'forwarding_rule_scanner',
          'class_name': 'ForwardingRuleScanner',
