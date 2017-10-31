@@ -31,7 +31,6 @@ global:
     # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-
     email_recipient: {EMAIL_RECIPIENT}
     email_sender: {EMAIL_SENDER}
     sendgrid_api_key: {SENDGRID_API_KEY}
@@ -144,7 +143,7 @@ notifier:
     # to send alerts for every violation found
     resources:
         - resource: policy_violations
-          should_notify: false
+          should_notify: true
           pipelines:
             # Email violations
             - name: email_violations_pipeline
