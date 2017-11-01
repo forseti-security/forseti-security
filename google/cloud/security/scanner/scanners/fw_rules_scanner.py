@@ -152,8 +152,7 @@ class FwPolicyScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            policies (list): The a list of resource and policy tuples to find
-              violations in.
+            policies (list): The list of policies to find violations in.
 
         Returns:
             list: A list of all violations
