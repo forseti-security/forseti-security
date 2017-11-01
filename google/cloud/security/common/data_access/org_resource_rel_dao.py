@@ -93,13 +93,15 @@ class OrgResourceRelDao(object):
             Resource: The resource.
         """
         loaded_resource = unloaded_resource
-        if unloaded_resource:
-            resource_lookup = self._resource_db_lookup.get(
-                unloaded_resource.type, {})
-            # Invoke the dao.get_*() method, to get the resource
-            if resource_lookup.get('dao'):
-                loaded_resource = getattr(
-                    resource_lookup.get('dao'),
-                    resource_lookup.get('get'))(
-                        unloaded_resource.id, snapshot_timestamp)
+        if not unloaded_resource:
+            return unloaded_resource
+
+        resource_lookup = self._resource_db_lookup.get(
+            unloaded_resource.type, {})
+        # Invoke the dao.get_*() method, to get the resource
+        if resource_lookup.get('dao'):
+            loaded_resource = getattr(
+                resource_lookup.get('dao'),
+                resource_lookup.get('get'))(
+                    unloaded_resource.id, snapshot_timestamp)
         return loaded_resource
