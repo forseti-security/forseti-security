@@ -51,12 +51,12 @@ class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
     def run(self):
         """Generate the temporary json file and upload to GCS."""
         with tempfile.NamedTemporaryFile() as tmp_violations:
-            output_filename = self._get_output_filename()
             tmp_violations.write(parser.json_stringify(self.violations))
+            tmp_violations.flush()
 
             gcs_upload_path = '{}/{}'.format(
                 self.pipeline_config['gcs_path'],
-                output_filename)
+                self._get_output_filename())
 
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
