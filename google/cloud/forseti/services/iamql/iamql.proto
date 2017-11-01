@@ -21,6 +21,7 @@ package iamql;
 service Iamql {
   rpc Ping(PingRequest) returns (PingReply) {}
   rpc Query(QueryRequest) returns (stream ResultRow) {}
+  rpc QueryString(QueryStringRequest) returns (stream ResultRow) {}
 }
 
 message PingRequest {
@@ -29,6 +30,10 @@ message PingRequest {
 
 message PingReply {
   string data = 1;
+}
+
+message QueryStringRequest {
+	string query = 1;
 }
 
 message QueryRequest {
