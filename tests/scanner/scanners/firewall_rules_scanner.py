@@ -1,3 +1,4 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -10,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Scanner runner script test."""
 
 from datetime import datetime
@@ -22,20 +24,20 @@ import tests.unittest_utils
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization
 from google.cloud.security.common.gcp_type import project
-from google.cloud.security.scanner.scanners import fw_rules_scanner
-from google.cloud.security.scanner.audit import fw_rules_engine as fre
+from google.cloud.security.scanner.scanners import firewall_rules_scanner
+from google.cloud.security.scanner.audit import firewall_rules_engine as fre
 from tests import unittest_utils
 
 
-class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
+class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.fw_rules_scanner.fw_rules_engine',
+        'google.cloud.security.scanner.scanners.firewall_rules_scanner.firewall_rules_engine',
         autospec=True)
     def setUp(self, mock_rules_engine):
         mre = mock.patch(
-            'google.cloud.security.scanner.scanners.fw_rules_scanner.'
-            'fw_rules_engine').start()
+            'google.cloud.security.scanner.scanners.firewall_rules_scanner.'
+            'firewall_rules_engine').start()
         self.mock_org_rel_dao = mock.patch(
                         'google.cloud.security.common.data_access.'
                         'org_resource_rel_dao.OrgResourceRelDao').start()
@@ -45,7 +47,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.fake_scanner_configs = {'output_path': '/fake/output/path'}
         rules_local_path = unittest_utils.get_datafile_path(os.path.join(
             os.path.dirname( __file__), 'audit'), 'firewall_test_rules.yaml')
-        self.scanner = fw_rules_scanner.FwPolicyScanner(
+        self.scanner = firewall_rules_scanner.FirewallPolicyScanner(
             {}, {}, '', rules_local_path)
         self.mock_rules_engine = mre
         self.project0 = fre.resource_util.create_resource(
@@ -97,22 +99,22 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.assertEquals(expected, actual)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.fw_rules_scanner.notifier',
+        'google.cloud.security.scanner.scanners.firewall_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
-        fw_rules_scanner.FwPolicyScanner,
+        firewall_rules_scanner.FirewallPolicyScanner,
         '_upload_csv', autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.fw_rules_scanner.os',
+        'google.cloud.security.scanner.scanners.firewall_rules_scanner.os',
         autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.fw_rules_scanner.datetime',
+        'google.cloud.security.scanner.scanners.firewall_rules_scanner.datetime',
         autospec=True)
     @mock.patch.object(
-        fw_rules_scanner.csv_writer,
+        firewall_rules_scanner.csv_writer,
         'write_csv', autospec=True)
     @mock.patch.object(
-        fw_rules_scanner.FwPolicyScanner,
+        firewall_rules_scanner.FirewallPolicyScanner,
         '_output_results_to_db', autospec=True)
     def test_output_results_local_no_email(
         self, mock_output_results_to_db,
@@ -146,7 +148,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.scanner.rules_engine.rule_book.rule_indices.get.side_effect = (
             lambda x, y: rule_indices.get(x, -1))
         violations = [
-            fw_rules_scanner.fw_rules_engine.RuleViolation(
+            firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id='p1',
                 rule_id='rule1',
@@ -154,7 +156,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 policy_names=['n1'],
                 recommended_actions=['a1'],
             ),
-            fw_rules_scanner.fw_rules_engine.RuleViolation(
+            firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id='p2',
                 rule_id='rule2',
@@ -192,22 +194,22 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.assertEquals(0, mock_notifier.process.call_count)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.fw_rules_scanner.notifier',
+        'google.cloud.security.scanner.scanners.firewall_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
-        fw_rules_scanner.FwPolicyScanner,
+        firewall_rules_scanner.FirewallPolicyScanner,
         '_upload_csv', autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.fw_rules_scanner.os',
+        'google.cloud.security.scanner.scanners.firewall_rules_scanner.os',
         autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.fw_rules_scanner.datetime',
+        'google.cloud.security.scanner.scanners.firewall_rules_scanner.datetime',
         autospec=True)
     @mock.patch.object(
-        fw_rules_scanner.csv_writer,
+        firewall_rules_scanner.csv_writer,
         'write_csv', autospec=True)
     @mock.patch.object(
-        fw_rules_scanner.FwPolicyScanner,
+        firewall_rules_scanner.FirewallPolicyScanner,
         '_output_results_to_db', autospec=True)
     def test_output_results_gcs_email(
         self, mock_output_results_to_db,
@@ -227,7 +229,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.scanner.global_configs = fake_global_configs
         self.scanner.scanner_configs = self.fake_scanner_configs
         violations = [
-            fw_rules_scanner.fw_rules_engine.RuleViolation(
+            firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id='p1',
                 rule_id='rule1',
@@ -235,7 +237,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 policy_names=['n1'],
                 recommended_actions=['a1'],
             ),
-            fw_rules_scanner.fw_rules_engine.RuleViolation(
+            firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id='p2',
                 rule_id='rule2',
@@ -362,7 +364,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         self, project, policy_dict, expected_violations_dicts):
         rules_local_path = os.path.join(os.path.dirname(
             os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
-        scanner = fw_rules_scanner.FwPolicyScanner(
+        scanner = firewall_rules_scanner.FirewallPolicyScanner(
             {}, {}, '', rules_local_path)
         resource = self.project_resource_map[project]
         policy = fre.firewall_rule.FirewallRule.from_dict(
@@ -422,12 +424,12 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             expected[resource] = policy
             fake_firewall_rules.append((resource, policy))
         mock_get_firewall_rules = mock.patch.object(
-            fw_rules_scanner.firewall_rule_dao, 'FirewallRuleDao').start()
+            firewall_rules_scanner.firewall_rule_dao, 'FirewallRuleDao').start()
         mock_get_firewall_rules().get_firewall_rules.return_value = (
             fake_firewall_rules)
         rules_local_path = os.path.join(os.path.dirname(
             os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
-        scanner = fw_rules_scanner.FwPolicyScanner(
+        scanner = firewall_rules_scanner.FirewallPolicyScanner(
             {}, {}, '', rules_local_path)
         results = scanner._retrieve()
         self.assertEqual({'firewall_rule': 3}, results[1])
@@ -435,7 +437,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             expected.items(), results[0])
 
     @mock.patch.object(
-        fw_rules_scanner.FwPolicyScanner,
+        firewall_rules_scanner.FirewallPolicyScanner,
         '_output_results_to_db',
         autospec=True)
     def test_run_no_email(self, mock_output_results_to_db):
@@ -483,7 +485,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
                 policy_dict, project_id=project, validate=True)
             fake_firewall_rules.append(policy)
         mock_get_firewall_rules = mock.patch.object(
-            fw_rules_scanner.firewall_rule_dao, 'FirewallRuleDao').start()
+            firewall_rules_scanner.firewall_rule_dao, 'FirewallRuleDao').start()
         mock_get_firewall_rules().get_firewall_rules.return_value = (
             fake_firewall_rules)
         mock_org_rel_dao = mock.Mock()
@@ -491,7 +493,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
             lambda x,y: self.ancestry[x])
         rules_local_path = os.path.join(os.path.dirname(
             os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
-        scanner = fw_rules_scanner.FwPolicyScanner(
+        scanner = firewall_rules_scanner.FirewallPolicyScanner(
             {}, {}, '', rules_local_path)
         scanner.rules_engine.rule_book.org_res_rel_dao = mock_org_rel_dao
         scanner.run()
