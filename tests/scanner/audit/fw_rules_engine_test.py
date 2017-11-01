@@ -19,8 +19,6 @@ import parameterized
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_type.firewall_rule import FirewallRule
-from google.cloud.security.common.gcp_type.organization import Organization
-from google.cloud.security.common.gcp_type.project import Project
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.security.scanner.audit import fw_rules_engine as fre
 from google.cloud.security.scanner.audit import rules as scanner_rules

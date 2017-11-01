@@ -16,8 +16,7 @@
 Usage:
 
   Run scanner:
-  $ forseti_scanner \\
-      --forseti_config (optional)
+  $ forseti_scanner --forseti_config
 """
 import sys
 
@@ -105,9 +104,6 @@ def main(_):
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, snapshot_timestamp).build()
 
-    # TODO: Make resilient by letting the batch continue to run even if one
-    # scanner errors out.
-    # TODO: fix the bare except
     # pylint: disable=bare-except
     for scanner in runnable_scanners:
         try:
