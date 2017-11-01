@@ -24,8 +24,16 @@ from pyparsing import nums
 from pyparsing import alphas
 from pyparsing import Suppress
 
+from sqlalchemy.orm import aliased
+from sqlalchemy import and_
 
-class SQLGenerator(object):
+
+class QueryCompiler(object):
+    def __init__(self, data_access, session, iam_query):
+        self.session = session
+        self.iam_query = iam_query
+        self.data_access = data_access
+
     def visit(self, node, transformed_children):
         if isinstance(node, Projection):
             pass
@@ -35,6 +43,19 @@ class SQLGenerator(object):
             pass
         else:
             pass
+
+    def compile(self):
+        t1 = aliased(self.data_access.TBL_RESOURCE, name='t1')
+        t2 = aliased(self.data_access.TBL_RESOURCE, name='t2')
+        return (
+            self.session.query(t1,
+                               t2)
+                .filter(
+                    and_(t1.full_name.startswith(t2.full_name),
+                         t1.full_name != t2.full_name)
+                        )
+                )
+
 
 class Node(list):
     def __init__(self, orig, loc, args):
@@ -191,5 +212,4 @@ if __name__ == "__main__":
         bnf = BNF()
         results = bnf.parseFile('test.query', parseAll=True)
         print results.dump()
-
     test()

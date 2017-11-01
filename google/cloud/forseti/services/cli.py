@@ -763,7 +763,8 @@ def run_iamql(client, config, output, _):
     def do_query():
         """Perform query operations."""
 
-        pass
+        for result in client.query(config.query_string):
+            output.write(result)
 
     actions = {
         'query': do_query}

@@ -156,9 +156,10 @@ class IamQLClient(ForsetiClient):
         echo = self.stub.Ping(iamql_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def query(self, request):
+    def query(self, iam_query):
         """Queries the data model."""
 
+        request = iamql_pb2.QueryStringRequest(query=iam_query)
         return self.stub.QueryString(request, metadata=self.metadata())
 
 
