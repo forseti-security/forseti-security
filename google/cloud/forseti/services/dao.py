@@ -50,6 +50,8 @@ from google.cloud.forseti.services.utils import mutual_exclusive
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
+from google.cloud.forseti.services.iamql import langspec as iamql
+
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -237,6 +239,15 @@ def define_model(model_name, dbengine, model_seed):
             return "<Resource(full_name='{}', name='{}' type='{}')>".format(
                 self.full_name, self.name, self.type)
 
+        def get_columns(self):
+            return {
+                'name': self.name,
+                'type': self.type,
+                'display_name': self.display_name,
+                'full_name': self.full_name,
+                'policy_update_counter': self.policy_update_counter,
+                }.iteritems()
+
     Resource.children = relationship(
         "Resource", order_by=Resource.full_name, back_populates="parent")
 
@@ -268,6 +279,13 @@ def define_model(model_name, dbengine, model_seed):
             """String representation."""
             return "<Member(name='{}', type='{}')>".format(
                 self.name, self.type)
+
+        def get_columns(self):
+            return {
+                'name': self.name,
+                'type': self.type,
+                'member_name': self.member_name,
+                }.iteritems()
 
     class GroupInGroup(base):
         """Row for a group-in-group membership."""
@@ -309,6 +327,12 @@ def define_model(model_name, dbengine, model_seed):
                 self.resource_type_name,
                 self.members)
 
+        def get_columns(self):
+            return {
+                'resource': self.resource_type_name,
+                'role': self.role_name,
+                }.iteritems()
+
     class Role(base):
         """Row entry for an IAM role."""
 
@@ -325,6 +349,14 @@ def define_model(model_name, dbengine, model_seed):
         def __repr__(self):
             return "<Role(name='%s')>" % (self.name)
 
+        def get_columns(self):
+            return {
+                'name': self.name,
+                'title': self.title,
+                'description': self.description,
+                'custom': self.custom,
+                }.iteritems()
+
     class Permission(base):
         """Row entry for an IAM permission."""
 
@@ -336,6 +368,11 @@ def define_model(model_name, dbengine, model_seed):
 
         def __repr__(self):
             return "<Permission(name='%s')>" % (self.name)
+
+        def get_columns(self):
+            return {
+                'name': self.name,
+                }.iteritems()
 
     # pylint: disable=too-many-public-methods
     class ModelAccess(object):
@@ -365,19 +402,26 @@ def define_model(model_name, dbengine, model_seed):
             Resource.__table__.drop(engine)
 
         @classmethod
-        def iamql_query(cls, session, query):
+        def iamql_query(cls, session, iam_query):
             """Implement IAMQL query functionality.
 
             Args:
                 session (object): Database session to use.
-                query (object): Query to execute.
+                iam_query (str): Query to execute.
 
             Yields:
                 list(object): Returned rows
             """
 
-            for row in []:
-                yield row
+            db_query = iamql.QueryCompiler(cls, session, iam_query).compile()
+            for row in db_query.yield_per(PER_YIELD):
+                column_desc = db_query.column_descriptions
+                converted_row = {}
+                for index, item in enumerate(row):
+                    converted_row[index] = column_desc[index]['name']
+                    converted_row[converted_row[index]] = (
+                        {name: value for name, value in item.get_columns()})
+                yield converted_row
 
         @classmethod
         def denorm_group_in_group(cls, session):

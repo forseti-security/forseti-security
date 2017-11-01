@@ -14,11 +14,13 @@
 
 """ IAMQL gRPC service. """
 
+from google.protobuf import any_pb2
 from google.cloud.security.iam.iamql import iamql_pb2
 from google.cloud.security.iam.iamql import iamql_pb2_grpc
 from google.cloud.security.iam.iamql import iamql
 from google.cloud.security.iam.utils import autoclose_stream
 
+import numbers
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -53,16 +55,46 @@ class GrpcIamQL(iamql_pb2_grpc.IamqlServicer):
     @autoclose_stream
     def Query(self, request, context):
         """Executes a query data structure."""
-
+        print "Query"
         raise NotImplementedError()
 
     @autoclose_stream
     def QueryString(self, request, context):
         """Executes a query string."""
 
+        def iter_pb_columns(row, index):
+            alias = row[index]
+            obj = row[alias]
+
+            def pack_type(value):
+                type_mapping = {
+                        numbers.Number: iamql_pb2.NumberValue,
+                        str: iamql_pb2.StringValue,
+                        unicode: iamql_pb2.StringValue,
+                        bool: iamql_pb2.BooleanValue
+                    }
+
+                for py_type, pb_type in type_mapping.iteritems():
+                    if isinstance(value, py_type):
+                        return pb_type(value=value)
+                raise TypeError(value)
+
+            for key, value in obj.iteritems():
+                any_value = any_pb2.Any()
+                value_type = pack_type(value)
+                any_value.Pack(value_type)
+                yield iamql_pb2.Column(name='{}.{}'.format(alias, key),
+                                       value=any_value)
+
         model_name = self._get_handle(context)
         for row in self.iamql.QueryString(model_name, request.query):
-            yield row
+            columns = []
+            index = 0
+            while index in row:
+                for column in iter_pb_columns(row, index):
+                    columns.append(column)
+                index += 1
+            yield iamql_pb2.Row(columns=columns)
 
 
 class GrpcIamQLFactory(object):

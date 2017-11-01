@@ -20,8 +20,6 @@
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc,invalid-name
 
-from google.cloud.security.iam.iamql.langspec import BNF
-
 
 class IamQL(object):
     """Implements the IAMQL API."""
@@ -40,7 +38,4 @@ class IamQL(object):
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
-            bnf = BNF()
-            results = bnf.parseString(query, parseAll=True)
-            print results.dump()
             return data_access.iamql_query(session, query)

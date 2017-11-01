@@ -20,8 +20,7 @@ package iamql;
 
 service Iamql {
   rpc Ping(PingRequest) returns (PingReply) {}
-  rpc Query(QueryRequest) returns (stream ResultRow) {}
-  rpc QueryString(QueryStringRequest) returns (stream ResultRow) {}
+  rpc QueryString(QueryStringRequest) returns (stream Row) {}
 }
 
 message PingRequest {
@@ -36,47 +35,23 @@ message QueryStringRequest {
 	string query = 1;
 }
 
-message QueryRequest {
-	repeated Query queries = 1;
-}
-
-message ResultRow {
-	repeated Entity entity = 1;
-}
-
-message Query {
-	repeated Selection selections = 1;
-	repeated Join joins = 2;
-	repeated Projection projections = 3;
-}
-
-message Entity {
-	enum Type {
-		Resource = 0;
-		Binding = 1;
-		Role = 2;
-		Permission = 3;
-		Member = 4;
-		Principal = 5;
-	}
-
-	Type type = 1;
-	map<string, google.protobuf.Any> columns = 2;
-}
-
-message Selection {
-	Identifier identifier = 1;
-}
-
-message Join {
-	Identifier source = 1;
-	Identifier destination = 2;
-}
-
-message Projection {
-	Identifier identifier = 1;
-}
-
-message Identifier {
+message Column {
 	string name = 1;
+	google.protobuf.Any value = 3;
+}
+
+message StringValue {
+	string value = 1;
+}
+
+message BooleanValue {
+	bool value = 1;
+}
+
+message NumberValue {
+	int64 value = 1;
+}
+
+message Row {
+	repeated Column columns = 1;
 }
