@@ -368,6 +368,21 @@ def define_model(model_name, dbengine, model_seed):
             Resource.__table__.drop(engine)
 
         @classmethod
+        def iamql_query(cls, session, query):
+            """Implement IAMQL query functionality.
+
+            Args:
+                session (object): Database session to use.
+                query (object): Query to execute.
+
+            Yields:
+                list(object): Returned rows
+            """
+
+            for row in []:
+                yield row
+
+        @classmethod
         def denorm_group_in_group(cls, session):
             """Denormalize group-in-group relation.
 

@@ -28,6 +28,9 @@ from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2_grpc
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
+from google.cloud.forseti.services.iamql import iamql_pb2
+from google.cloud.forseti.services.iamql import iamql_pb2_grpc
+
 
 from google.cloud.forseti.services.utils import oneof
 
@@ -136,6 +139,27 @@ class ModelClient(ForsetiClient):
             model_pb2.DeleteModelRequest(
                 handle=model_name),
             metadata=self.metadata())
+
+
+class IamQLClient(ForsetiClient):
+    """IAMQL service allows the client to query arbitrarily."""
+
+    def __init__(self, config):
+        super(IamQLClient, self).__init__(config)
+        self.stub = iamql_pb2_grpc.IamqlStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'IAMQL' service is available by performing a ping.
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(iamql_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    def query(self, request):
+        """Queries the data model."""
+
+        return self.stub.QueryString(request, metadata=self.metadata())
 
 
 class InventoryClient(ForsetiClient):
@@ -483,12 +507,14 @@ class ClientComposition(object):
         self.inventory = InventoryClient(self.config)
         self.scanner = ScannerClient(self.config)
         self.model = ModelClient(self.config)
+        self.iamql = IamQLClient(self.config)
 
         self.clients = [self.explain,
                         self.playground,
                         self.inventory,
                         self.scanner,
-                        self.model]
+                        self.model,
+                        self.iamql]
 
         if ping:
             if not all([c.is_available() for c in self.clients]):

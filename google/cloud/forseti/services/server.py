@@ -33,8 +33,11 @@ from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFac
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
+from google.cloud.forseti.services.iamql.service import GrpcIamQLFactory
 from google.cloud.forseti.services.inventory.storage import Storage
 
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
 
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
@@ -42,6 +45,7 @@ STATIC_SERVICE_MAPPING = {
     'inventory': GrpcInventoryFactory,
     'scanner': GrpcScannerFactory,
     'model': GrpcModellerFactory,
+    'iamql': GrpcIamQLFactory,
 }
 
 
