@@ -17,26 +17,50 @@
 See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 """
 
+import json
 import netaddr
 
+from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import parser
+
+LOGGER = log_util.get_logger(__name__)
 
 # pylint: disable=too-many-instance-attributes
 
 ALL_REPRESENTATIONS = ('all', '0-65355', '1-65535')
+ALLOWED_RULE_ITEMS = frozenset(('allowed', 'denied', 'description', 'direction',
+                                'name', 'network', 'priority', 'sourceRanges',
+                                'destinationRanges', 'sourceTags',
+                                'targetTags', 'sourceServiceAccounts',
+                                'targetServiceAccounts'))
+
+
+class Error(Exception):
+    """Base error class for the module."""
+
+
+class InvalidFirewallRuleError(Error):
+    """Raised if a firewall rule doesn't look like a firewall rule should."""
+
+
+class InvalidFirewallActionError(Error):
+    """Raised if a firewall action doesn't look like a firewall rule should."""
 
 
 class FirewallRule(object):
     """Represents Firewall resource."""
 
-    def __init__(self, **kwargs):
+    MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+    def __init__(self, validate=False, **kwargs):
         """Firewall resource.
 
         Args:
+          validate (bool): Whether to validate this rule.
           kwargs (dict): Object properties
 
         Raises:
-          ValueError: if the allowed and denied rules aren't set properly.
+          InvalidFirewallRuleError: If allowed and denied rules aren't valid.
         """
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
@@ -46,6 +70,8 @@ class FirewallRule(object):
         self.network = kwargs.get('firewall_rule_network')
         self._priority = kwargs.get('firewall_rule_priority')
         self.direction = kwargs.get('firewall_rule_direction')
+        if self.direction:
+            self.direction = self.direction.upper()
         self._source_ranges = frozenset(parser.json_unstringify(
             kwargs.get('firewall_rule_source_ranges'), default=list()))
         self._destination_ranges = frozenset(parser.json_unstringify(
@@ -65,10 +91,306 @@ class FirewallRule(object):
         self.denied = parser.json_unstringify(
             kwargs.get('firewall_rule_denied'))
         if self.allowed and self.denied:
-            raise ValueError('Cannot have allowed and denied rules')
+            raise InvalidFirewallRuleError(
+                'Cannot have allowed and denied rules (%s, %s)' % (
+                    self.allowed, self.denied))
         if self.allowed is None and self.denied is None:
-            raise ValueError('Either allowed or denied rules must be set')
+            raise InvalidFirewallRuleError('Must have allowed or denied rules')
         self._firewall_action = None
+        if validate:
+            self.validate()
+
+    def __str__(self):
+        """String representation.
+
+        Returns:
+          str: A string representation of FirewallRule.
+        """
+        string = ('FirewallRule('
+                  'project_id=%s\n'
+                  'name=%s\n'
+                  'network=%s\n'
+                  'priority=%s\n'
+                  'direction=%s\n'
+                  'action=%s\n') % (
+                      self.project_id,
+                      self.name,
+                      self.network,
+                      self._priority,
+                      self.direction,
+                      self._firewall_action)
+
+        for field_name, value in [
+                ('sourceRanges', self._source_ranges),
+                ('destinationRanges', self._destination_ranges),
+                ('sourceTags', self._source_tags),
+                ('targetTags', self._target_tags),
+                ('sourceServiceAccounts', self._source_service_accounts),
+                ('targetServiceAccounts', self._target_service_accounts),
+        ]:
+            if value:
+                string += '%s=%s\n' % (field_name, value)
+        return string.strip()
+
+    @staticmethod
+    def _transform(firewall_dict, project_id=None, validate=None):
+        """Transforms firewall dictionary into FirewallRule.
+
+        Args:
+          firewall_dict (dict): A dictionary with firewall field names matching
+            the API field names.
+          project_id (str): A project id string.
+          validate (bool): Whether to validate this FirewallRule or not.
+
+        Returns:
+          FirewallRule: A FirewallRule created from the input dictionary.
+        """
+        in_dict = {
+            'firewall_rule_id': firewall_dict.get('id'),
+            'firewall_rule_name': firewall_dict.get('name'),
+            'firewall_rule_description': firewall_dict.get('description'),
+            'firewall_rule_kind': firewall_dict.get('kind'),
+            'firewall_rule_network': firewall_dict.get('network'),
+            'firewall_rule_priority': firewall_dict.get('priority'),
+            'firewall_rule_direction': firewall_dict.get('direction'),
+            'firewall_rule_source_ranges': parser.json_stringify(
+                firewall_dict.get('sourceRanges')),
+            'firewall_rule_destination_ranges': parser.json_stringify(
+                firewall_dict.get('destinationRanges')),
+            'firewall_rule_source_tags': parser.json_stringify(
+                firewall_dict.get('sourceTags')),
+            'firewall_rule_target_tags': parser.json_stringify(
+                firewall_dict.get('targetTags')),
+            'firewall_rule_source_service_accounts': parser.json_stringify(
+                firewall_dict.get('sourceServiceAccounts')),
+            'firewall_rule_target_service_accounts': parser.json_stringify(
+                firewall_dict.get('targetServiceAccounts')),
+            'firewall_rule_allowed': parser.json_stringify(
+                firewall_dict.get('allowed')),
+            'firewall_rule_denied': parser.json_stringify(
+                firewall_dict.get('denied')),
+            'firewall_rule_self_link': parser.json_stringify(
+                firewall_dict.get('selfLink')),
+            'firewall_rule_create_time': parser.format_timestamp(
+                parser.json_stringify(firewall_dict.get('creationTimestamp')),
+                FirewallRule.MYSQL_DATETIME_FORMAT),
+        }
+        if project_id:
+            in_dict['project_id'] = project_id
+        return FirewallRule(validate=validate, **in_dict)
+
+    @classmethod
+    def from_json(cls, json_string, project_id=None):
+        """Creates a validated FirewallRule from a valid firewall JSON.
+
+        Args:
+          json_string (str): A valid firewall JSON string.
+          project_id (str): A string project id.
+
+        Returns:
+          FirewallRule: A validated FirewallRule from the JSON string.
+
+        Raises:
+          InvalidFirewallRuleError: If the firewall rule is invalid.
+          InvalidFirewallActionError: If the firewall action is invalid.
+        """
+        json_dict = json.loads(json_string)
+        return FirewallRule._transform(
+            json_dict, project_id=project_id, validate=True)
+
+    @classmethod
+    def from_dict(cls, firewall_dict, project_id=None, validate=False):
+        """Creates an unvalidated FirewallRule from a dictionary.
+
+        Args:
+          firewall_dict (dict): A dict with firewall keys and values.
+          project_id (str): A string project id.
+          validate (bool): Whether to validate this rule or not.
+
+        Returns:
+          FirewallRule: A validated FirewallRule from the JSON string.
+
+        Raises:
+          InvalidFirewallRuleError: If the firewall rule is invalid.
+          InvalidFirewallActionError: If the firewall action is invalid.
+        """
+        return FirewallRule._transform(
+            firewall_dict, project_id=project_id, validate=validate)
+
+
+    def as_json(self):
+        """Returns a valid JSON representation of this firewall rule.
+
+        This rule must be valid to return the representation.
+
+        Returns:
+          str: A string JSON dump of the firewall rule.
+
+        Raises:
+          InvalidFirewallRuleError: If the firewall rule is invalid.
+          InvalidFirewallActionError: If the firewall action is invalid.
+        """
+        self.validate()
+        firewall_dict = {
+            'direction': self.direction,
+            'network': self.network,
+            'name': self.name,
+        }
+        for key, value in [
+                self.firewall_action.json_dict(),
+                ('sourceRanges', self.source_ranges),
+                ('sourceTags', self.source_tags),
+                ('targetTags', self.target_tags),
+                ('destinationRanges', self.destination_ranges),
+                ('priority', self._priority),
+                ('sourceServiceAccounts', self.source_service_accounts),
+                ('targetServiceAccounts', self.target_service_accounts)]:
+            if value:
+                firewall_dict[key] = value
+        return json.dumps(firewall_dict, sort_keys=True)
+
+    def validate(self):
+        """Validates that a rule is valid.
+
+        Validation is based on reference:
+        https://cloud.google.com/compute/docs/reference/beta/firewalls and
+        https://cloud.google.com/compute/docs/vpc/firewalls#gcp_firewall_rule_summary_table
+
+        Returns:
+          bool: If rule is valid.
+
+        Raises:
+          InvalidFirewallRuleError: One or more rules failed validation.
+        """
+        self._validate_keys()
+        self._validate_direction()
+        self._validate_priority()
+        if not self.firewall_action:
+            raise InvalidFirewallRuleError('Rule missing action "%s"' % self)
+        else:
+            self.firewall_action.validate()
+
+        # TODO: Verify rule name matches regex of allowed
+        # names from reference
+
+        return True
+
+    def _validate_keys(self):
+        """Checks that required keys and value restrictions.
+
+        Required fields: name and network
+        Length restrictions:
+          * name <= 63 characters
+          * <= 256 values:
+            sourceRanges, sourceTags, targetTags, destinationRanges
+
+        Raises:
+          InvalidFirewallRuleError: If keys don't meet requirements.
+        """
+        if not self.name:
+            raise InvalidFirewallRuleError(
+                'Rule missing required field "%s"' % 'name')
+        if not self.network:
+            raise InvalidFirewallRuleError(
+                'Rule missing required field "%s"' % 'network')
+
+        if len(self.name) > 63:
+            raise InvalidFirewallRuleError(
+                'Rule name exceeds length limit of 63 chars: "%s".' %
+                self.name)
+
+        max_256_value_keys = [
+            ('sourceRanges', self._source_ranges),
+            ('sourceTags', self._source_tags),
+            ('targetTags', self._target_tags),
+            ('destinationRanges', self._destination_ranges)
+        ]
+        for key, value in max_256_value_keys:
+            if value and len(value) > 256:
+                raise InvalidFirewallRuleError(
+                    'Rule entry "%s" must contain 256 or fewer values: "%s".'
+                    % (key, value))
+
+        if self._source_tags:
+            if self._source_service_accounts or self._target_service_accounts:
+                raise InvalidFirewallRuleError(
+                    'sourceTags cannot be set when source/targetServiceAccounts'
+                    ' are set')
+
+        if self._target_tags:
+            if self._source_service_accounts or self._target_service_accounts:
+                raise InvalidFirewallRuleError(
+                    'targetTags cannot be set when source/targetServiceAccounts'
+                    ' are set')
+
+        max_1_value_keys = [
+            ('sourceServiceAccount', self.source_service_accounts),
+            ('targetServiceAccount', self.target_service_accounts),
+        ]
+        for key, value in max_1_value_keys:
+            if value and len(value) > 1:
+                raise InvalidFirewallRuleError(
+                    'Rule entry "%s" may contain at most 1 value: "%s".'
+                    % (key, value))
+
+    def _validate_direction(self):
+        """Checks that the direction and associated fields are valid.
+
+        Raises:
+          InvalidFirewallRuleError: If:
+            * Direction is 'ingress' and
+              * there are no source ranges or tags
+              * _destination_ranges is not set
+            * Direction is 'egress' and
+              * there are no source ranges or tags
+              * _destination_ranges is set
+        """
+        if self.direction == 'INGRESS':
+            if (not self._source_ranges and not self._source_tags and not
+                    self.source_service_accounts):
+                raise InvalidFirewallRuleError(
+                    'Ingress rule missing required field oneof "sourceRanges" '
+                    'or "sourceTags" or "sourceServiceAccounts": "%s".' % self)
+
+            if self._destination_ranges:
+                raise InvalidFirewallRuleError(
+                    'Ingress rules cannot include "destinationRanges": "%s".'
+                    % self)
+
+        elif self.direction == 'EGRESS':
+            if not self._destination_ranges:
+                raise InvalidFirewallRuleError(
+                    'Egress rule missing required field "destinationRanges":'
+                    '"%s".'% self)
+
+            if (self._source_ranges or self._source_tags or
+                    self._source_service_accounts):
+                raise InvalidFirewallRuleError(
+                    'Egress rules cannot include "sourceRanges", "sourceTags"'
+                    ' or "sourceServiceAccounts": "%s".' % self)
+
+        else:
+            raise InvalidFirewallRuleError(
+                'Rule "direction" must be either "ingress" or "egress": "%s".'
+                % self)
+
+    def _validate_priority(self):
+        """Checks that the priority of the rule is a valid value.
+
+        Raises:
+          InvalidFirewallRuleError: If the priority can't be converted to an int
+            or if it is outside the allowed range.
+        """
+        if self._priority:
+            try:
+                priority = int(self._priority)
+            except ValueError as err:
+                raise InvalidFirewallRuleError(
+                    'Rule "priority" could not be converted to an integer: '
+                    '"%s".' % err)
+            if priority < 0 or priority > 65535:
+                raise InvalidFirewallRuleError(
+                    'Rule "priority" out of range 0-65535: "%s".' % priority)
 
     @property
     def source_ranges(self):
@@ -155,11 +477,11 @@ class FirewallRule(object):
             if self.allowed:
                 self._firewall_action = FirewallAction(
                     firewall_rules=self.allowed,
-                    firewall_rule_action='allow')
+                    firewall_rule_action='allowed')
             else:
                 self._firewall_action = FirewallAction(
                     firewall_rules=self.denied,
-                    firewall_rule_action='deny')
+                    firewall_rule_action='denied')
         return self._firewall_action
 
     def __lt__(self, other):
@@ -174,6 +496,7 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
+        LOGGER.debug('Checking %s < %s', self, other)
         return ((self.direction == other.direction or
                  self.direction is None or
                  other.direction is None) and
@@ -196,10 +519,12 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
+        LOGGER.debug('Checking %s > %s', self, other)
         return ((self.direction is None or
                  other.direction is None or
                  self.direction == other.direction) and
-                (self.network is None or self.network == other.network) and
+                (self.network is None or other.network is None or
+                 self.network == other.network) and
                 set(other.source_tags).issubset(self.source_tags) and
                 set(other.target_tags).issubset(self.target_tags) and
                 self.firewall_action > other.firewall_action and
@@ -216,6 +541,7 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
+        LOGGER.debug('Checking %s == %s', self, other)
         return (self.direction == other.direction and
                 self.network == other.network and
                 self._source_tags == other._source_tags and
@@ -248,10 +574,10 @@ class FirewallRule(object):
 class FirewallAction(object):
     """An association of allowed or denied ports and protocols."""
 
-    VALID_ACTIONS = frozenset(['allow', 'deny'])
+    VALID_ACTIONS = frozenset(['allowed', 'denied'])
     MATCH_ANY = '*'
 
-    def __init__(self, firewall_rules=None, firewall_rule_action='allow'):
+    def __init__(self, firewall_rules=None, firewall_rule_action='allowed'):
         """Initialize.
 
         Args:
@@ -260,12 +586,12 @@ class FirewallAction(object):
           firewall_rule_action (str): The action, either allow or deny.
 
         Raises:
-          ValueError: If there are both allow and deny rules.
+          InvalidFirewallActionError: If there are both allow and deny rules.
         """
         if firewall_rule_action not in self.VALID_ACTIONS:
-            raise ValueError(
-                'Firewall rule action must be either allow or deny, got: %s' % (
-                    firewall_rule_action))
+            raise InvalidFirewallActionError(
+                'Firewall rule action must be either allowed or denied'
+                ' got: %s' % (firewall_rule_action))
         self.action = firewall_rule_action
         self._any_value = None
         if firewall_rules:
@@ -277,6 +603,52 @@ class FirewallAction(object):
         self._applies_to_all = None
 
         self._expanded_rules = None
+
+    def __str__(self):
+        """String representation.
+
+        Returns:
+          str: A string representation of FirewallAction.
+        """
+        return 'FirewallAction(action=%s, rules=%s)' % (self.action, self.rules)
+
+    def json_dict(self):
+        """Gets the JSON key and values for the firewall action.
+
+        Returns:
+          tuple: Of key ('allowed' or 'denied') and the firewall rules.
+
+        Raises:
+          InvalidFirewallActionError: If a rule is not formatted for the API.
+        """
+        self.validate()
+        return (self.action, self.rules)
+
+    def validate(self):
+        """Validates that the firewall rules are valid for use in the API.
+
+        Raises:
+          InvalidFirewallActionError: If a rule is not formatted for the API.
+        """
+        for rule in self.rules:
+            if 'IPProtocol' not in rule:
+                raise InvalidFirewallActionError(
+                    'Action must have field IPProtocol')
+            if 'ports' in rule:
+                if rule['IPProtocol'] not in ['tcp', 'udp']:
+                    raise InvalidFirewallActionError(
+                        'Only "tcp" and "udp" can have ports specified: %s' %
+                        rule)
+                for port in rule['ports']:
+                    if '-' in port:
+                        validate_port_range(port)
+                    else:
+                        validate_port(port)
+            invalid_keys = set(rule.keys()) - set(['IPProtocol', 'ports'])
+            if invalid_keys:
+                raise InvalidFirewallActionError(
+                    'Action can only have "IPProtocol" and "ports": %s' %
+                    invalid_keys)
 
     @property
     def applies_to_all(self):
@@ -528,3 +900,49 @@ def expand_ports(ports):
         else:
             expanded_ports.append(port_str)
     return expanded_ports
+
+
+def validate_port(port):
+    """Validates that a string is a valid port number.
+
+    Args:
+      port (str): A port number string.
+
+    Returns:
+      int: The integer port number.
+
+    Raises:
+      InvalidFirewallActionError: If the port string isn't a valid port.
+    """
+    try:
+        iport = int(port)
+    except ValueError:
+        raise InvalidFirewallActionError(
+            'Port not a valid int: %s' % port)
+    if iport < 0:
+        raise InvalidFirewallActionError(
+            'Port must be >= 0: %s' % port)
+    if iport > 65535:
+        raise InvalidFirewallActionError(
+            'Port must be <= 65535: %s' % port)
+    return iport
+
+
+def validate_port_range(port_range):
+    """Validates that a string is a valid port number.
+
+    Args:
+      port_range (str): A port range string.
+
+    Raises:
+      InvalidFirewallActionError: If the port range isn't a valid range.
+    """
+    split_ports = port_range.split('-')
+    if len(split_ports) > 2:
+        raise InvalidFirewallActionError(
+            'Invalid port range: %s' % port_range)
+    start = validate_port(split_ports[0])
+    end = validate_port(split_ports[1])
+    if start > end:
+        raise InvalidFirewallActionError(
+            'Start port range > end port range: %s' % port_range)

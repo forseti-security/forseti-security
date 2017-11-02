@@ -31,7 +31,6 @@ global:
     # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-
     email_recipient: {EMAIL_RECIPIENT}
     email_sender: {EMAIL_SENDER}
     sendgrid_api_key: {SENDGRID_API_KEY}
@@ -103,6 +102,9 @@ inventory:
 
 scanner:
 
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
     # Output path (do not include filename).
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
@@ -121,6 +123,8 @@ scanner:
         - name: bucket_acl
           enabled: true
         - name: cloudsql_acl
+          enabled: true
+        - name: firewall_rule
           enabled: true
         - name: forwarding_rule
           enabled: true
@@ -143,11 +147,17 @@ notifier:
         - resource: policy_violations
           should_notify: false
           pipelines:
+            # Email violations
             - name: email_violations_pipeline
               configuration:
                 sendgrid_api_key: {SENDGRID_API_KEY}
                 sender: {EMAIL_SENDER}
                 recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
             # Slack webhook pipeline.
             # Create an incoming webhook in your organization's Slack setting, located at:
             # https://[your_org].slack.com/apps/manage/custom-integrations
@@ -155,3 +165,57 @@ notifier:
             - name: slack_webhook_pipeline
               configuration:
                 webhook_url: ''
+
+        - resource: bigquery_acl_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
+        - resource: buckets_acl_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
+        - resource: cloudsql_acl_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
+        - resource: forwarding_rule_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
+        - resource: groups_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
+        - resource: instance_network_interface_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations

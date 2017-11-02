@@ -86,6 +86,10 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
 
     def run(self):
         """Run the slack webhook pipeline"""
+        if not self.pipeline_config.get('webhook_url'):
+            LOGGER.warn('No url found, not running Slack pipeline.')
+            return
+
         for violation in self.violations:
             webhook_payload = self._compose(violation=violation)
             self._send(payload=webhook_payload)

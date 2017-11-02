@@ -29,15 +29,28 @@ rules:
           - group:*@YOURDOMAIN
 
   # custom rules
-  - name: sample whitelist
+  - name: Allow only service accounts to have access
     mode: whitelist
     resource:
       - type: organization
         applies_to: self_and_children
         resource_ids:
-          - YOUR_ORG_ID
+          - '*'
     inherit_from_parents: true
     bindings:
       - role: roles/*
         members:
           - serviceAccount:*@*.gserviceaccount.com
+
+  - name: All projects must have owner from my domain
+    mode: required
+    resource:
+      - type: project
+        applies_to: self
+        resource_ids:
+          - '*'
+    inherit_from_parents: true
+    bindings:
+      - role: roles/owner
+        members:
+          - user:*@YOURDOMAIN

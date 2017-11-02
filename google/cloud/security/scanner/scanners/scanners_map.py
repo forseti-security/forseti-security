@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Map for mapping rules engine to scanner class"""
+"""Map for mapping violations."""
 
-RESOURCE_MAP = {
+# TODO: After groups violations are going into the violations table,
+# this map is not needed anymore.
+SCANNER_VIOLATION_MAP = {
     'bigquery_acl_violations': 'violations',
     'buckets_acl_violations': 'violations',
     'cloudsql_acl_violations': 'violations',
     'forwarding_rule_violations': 'violations',
-    'groups_violations': 'groups_violations',
+    'groups_violations': 'violations',
     'instance_network_interface_violations': 'violations',
     'policy_violations': 'violations',
     'iap_violations': 'violations',

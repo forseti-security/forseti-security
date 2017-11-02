@@ -64,24 +64,44 @@ class OrgResourceRelDao(object):
         while curr_resource is not None:
             parent_resource = None
 
+            # If we don't have parent information for the current
+            # resource, try to look it up.
+            if not curr_resource.parent:
+                curr_resource = self._load_resource(
+                    curr_resource, snapshot_timestamp)
+
             if (curr_resource.parent and
                     curr_resource.parent.type and
                     curr_resource.parent.id):
-                resource_lookup = self._resource_db_lookup.get(
-                    curr_resource.parent.type, {})
-
-                # No dao object for the parent resource, so quit
-                if not resource_lookup.get('dao'):
-                    break
-
-                # Invoke the dao.get_*() method, to get the parent resource
-                parent_resource = getattr(
-                    resource_lookup.get('dao'),
-                    resource_lookup.get('get'))(
-                        curr_resource.parent.id, snapshot_timestamp)
+                parent_resource = self._load_resource(
+                    curr_resource.parent, snapshot_timestamp)
 
             if parent_resource:
                 ancestors.append(parent_resource)
             curr_resource = parent_resource
 
         return ancestors
+
+    def _load_resource(self, unloaded_resource, snapshot_timestamp):
+        """Load the resource from the database.
+
+        Args:
+            unloaded_resource (Resource): The Resource to load.
+            snapshot_timestamp (str): The timestamp to use for data lookup.
+
+        Returns:
+            Resource: The resource.
+        """
+        loaded_resource = unloaded_resource
+        if not unloaded_resource:
+            return unloaded_resource
+
+        resource_lookup = self._resource_db_lookup.get(
+            unloaded_resource.type, {})
+        # Invoke the dao.get_*() method, to get the resource
+        if resource_lookup.get('dao'):
+            loaded_resource = getattr(
+                resource_lookup.get('dao'),
+                resource_lookup.get('get'))(
+                    unloaded_resource.id, snapshot_timestamp)
+        return loaded_resource
