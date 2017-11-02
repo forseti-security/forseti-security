@@ -11,7 +11,7 @@ processing by Forseti Inventory.
 
 To enable collection of G Suite Google Groups, follow the steps below to create a
 service account just for this functionality. Read more about 
-[Domain-wide delegation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount?hl=en_US#delegatingauthority).
+[domain-wide delegation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount?hl=en_US#delegatingauthority).
 
 ### Create a service account
 
