@@ -86,10 +86,8 @@ class GroupsScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of nodes that are in violation.
         """
-        resource_name = 'violations'
-
         all_violations = self._flatten_violations(all_violations)
-        self._output_results_to_db(resource_name, all_violations)
+        self._output_results_to_db(all_violations)
 
     # pylint: disable=too-many-branches
     @staticmethod

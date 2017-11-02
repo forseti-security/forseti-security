@@ -14,13 +14,20 @@
 
 """Provides the data access object (DAO) for Organizations."""
 
+import json
+
+from collections import defaultdict
 from collections import namedtuple
+
 import MySQLdb
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.data_access import violation_map as vm
+from google.cloud.security.common.data_access.sql_queries import load_data
+from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.util import log_util
+
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -34,13 +41,12 @@ class ViolationDao(dao.Dao):
     frozen_violation_attribute_list = frozenset(violation_attribute_list)
     Violation = namedtuple('Violation', frozen_violation_attribute_list)
 
-    def insert_violations(self, violations, resource_name,
+    def insert_violations(self, violations,
                           snapshot_timestamp=None):
         """Import violations into database.
 
         Args:
             violations (iterator): An iterator of RuleViolations.
-            resource_name (str): String that defines a resource.
             snapshot_timestamp (str): The snapshot timestamp to associate
                 these violations with.
 
@@ -52,6 +58,8 @@ class ViolationDao(dao.Dao):
         Raise:
             MySQLError: is raised when the snapshot table can not be created.
         """
+
+        resource_name = 'violations'
 
         try:
             # Make sure to have a reasonable timestamp to use.
@@ -89,7 +97,7 @@ class ViolationDao(dao.Dao):
                 try:
                     self.execute_sql_with_commit(
                         resource_name,
-                        vm.VIOLATION_INSERT_MAP[resource_name](snapshot_table),
+                        load_data.INSERT_VIOLATION.format(snapshot_table),
                         formatted_violation)
                     inserted_rows += 1
                 except MySQLdb.Error, e:
@@ -99,19 +107,28 @@ class ViolationDao(dao.Dao):
 
         return (inserted_rows, violation_errors)
 
-    def get_all_violations(self, timestamp, resource_name):
+    def get_all_violations(self, timestamp, violation_type=None):
         """Get all the violations.
 
         Args:
             timestamp (str): The timestamp of the snapshot.
-            resource_name (str): String that defines a resource.
+            violation_type (str): The violation type.
 
         Returns:
-            tuple: A tuple of the violations as dict.
+            list: A list of dict of the violations data.
         """
-        violations_sql = vm.VIOLATION_SELECT_MAP[resource_name](timestamp)
+        if not violation_type:
+            resource_name = 'all_violations'
+            query = select_data.SELECT_ALL_VIOLATIONS
+            params = ()
+        else:
+            resource_name = violation_type
+            query = select_data.SELECT_VIOLATIONS_BY_TYPE
+            params = (violation_type,)
+
+        violations_sql = query.format(timestamp)
         rows = self.execute_sql_with_fetch(
-            resource_name, violations_sql, ())
+            resource_name, violations_sql, params)
         return rows
 
 
@@ -128,3 +145,29 @@ def _format_violation(violation, resource_name):
     """
     formatted_output = vm.VIOLATION_MAP[resource_name](violation)
     return formatted_output
+
+
+def map_by_resource(violation_rows):
+    """Create a map of violation types to violations of that resource.
+
+    Args:
+        violation_rows (list): A list of dict of violation data.
+
+    Returns:
+        dict: A dict of violation types mapped to the list of corresponding
+            violation types, i.e. { resource => [violation_data...] }.
+    """
+    v_by_type = defaultdict(list)
+
+    for v_data in violation_rows:
+        try:
+            v_data['violation_data'] = json.loads(v_data['violation_data'])
+        except ValueError as ve:
+            LOGGER.warn('Invalid violation data, unable to parse json for %s',
+                        v_data['violation_data'])
+
+        v_resource = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
+        if v_resource:
+            v_by_type[v_resource].append(v_data)
+
+    return v_by_type

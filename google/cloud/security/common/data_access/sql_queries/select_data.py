@@ -166,44 +166,13 @@ BUCKETS_BY_PROJECT_ID = """
     WHERE project_number = %s;
 """
 
-# TODO: reduce these sql to a generic statement
-SELECT_POLICY_VIOLATIONS = """
-    SELECT * FROM violations_{0}
-    WHERE violation_type in ('ADDED', 'REMOVED');
+SELECT_ALL_VIOLATIONS = """
+    SELECT * FROM violations_{0};
 """
 
-SELECT_IAP_VIOLATIONS = """
+SELECT_VIOLATIONS_BY_TYPE = """
     SELECT * FROM violations_{0}
-    WHERE violation_type = 'IAP_VIOLATION';
-"""
-
-SELECT_BIGQUERY_ACL_VIOLATIONS = """
-    SELECT * FROM violations_{0}
-    WHERE violation_type = 'BIGQUERY_VIOLATION';
-"""
-
-SELECT_BUCKETS_ACL_VIOLATIONS = """
-    SELECT * FROM violations_{0}
-    WHERE violation_type = 'BUCKET_VIOLATION';
-"""
-SELECT_CLOUDSQL_VIOLATIONS = """
-    SELECT * FROM violations_{0}
-    WHERE violation_type = 'CLOUD_SQL_VIOLATION';
-"""
-
-SELECT_FORWARDING_RULE_VIOLATION = """
-    SELECT * FROM violations_{0}
-    WHERE violation_type = 'FORWARDING_RULE_VIOLATION';
-"""
-
-SELECT_GROUPS_VIOLATIONS = """
-    SELECT * FROM violations_{0}
-    WHERE violation_type = 'GROUP_VIOLATION';
-"""
-
-SELECT_INSTANCE_NETWORK_INTERFACE_VIOLATIONS = """
-    SELECT * FROM violations_{0}
-    WHERE violation_type = 'INSTANCE_NETWORK_INTERFACE_VIOLATION';
+    WHERE violation_type = %s;
 """
 
 BACKEND_SERVICES = """
