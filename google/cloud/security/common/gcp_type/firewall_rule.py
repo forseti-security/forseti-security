@@ -811,9 +811,14 @@ def sort_rules(rules):
         return rules
     for rule in sorted(rules, key=lambda k: k.get('IPProtocol', '')):
         if 'ports' in rule:
-            # Sort ports numerically handle ranges through sorting by start port
-            rule['ports'] = sorted(rule['ports'],
-                                   key=lambda k: int(k.split('-')[0]))
+            # If the ports contains 'all', don't care about the other ports
+            # or sorting. Otherwise, sort ports numerically, and handle ranges
+            # through sorting by start port.
+            if 'all' in rule['ports']:
+                rule['ports'] = 'all'
+            else:
+                rule['ports'] = sorted(rule['ports'],
+                                       key=lambda k: int(k.split('-')[0]))
         sorted_rules.append(rule)
     return sorted_rules
 
