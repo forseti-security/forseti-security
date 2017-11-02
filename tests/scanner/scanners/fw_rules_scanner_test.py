@@ -279,7 +279,7 @@ class FwRulesScannerTest(unittest_utils.ForsetiTestCase):
         expected_message = {
             'status': 'scanner_done',
             'payload': {
-                'email_description': 'Policy Scan',
+                'email_description': 'Firewall Rules Scan',
                 'email_sender':
                 self.scanner.global_configs.get('email_sender'),
                 'email_recipient':
