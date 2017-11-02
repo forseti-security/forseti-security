@@ -71,7 +71,7 @@ class BaseScanner(object):
                 snapshot_timestamp=self.snapshot_timestamp)
         except db_errors.MySQLError as err:
             LOGGER.error('Error importing violations to database: %s\n%s',
-                          err, violations)
+                         err, violations)
 
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
