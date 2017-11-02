@@ -36,11 +36,16 @@ It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quicks
 ### Run setup
   
   1. Once you've started Cloud Shell, download Forseti. The setup wizard is included.
-     To get a particular release, e.g. 1.1.6, use the following command (note the "v"):
-  
+     Getting `master` branch will install the latest version of Forseti.
+ 
       ```bash
-      git clone -b v1.1.6 --single-branch https://github.com/GoogleCloudPlatform/forseti-security
+      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security
+      ``` 
+  
+     To get a particular release, e.g. 1.1.7, use the following command (note the "v"):
 
+      ```bash
+      git clone -b v1.1.7 --single-branch https://github.com/GoogleCloudPlatform/forseti-security
       ```
 
   1. Navigate to the setup wizard directory:
