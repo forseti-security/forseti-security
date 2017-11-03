@@ -193,6 +193,15 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
+        - resource: firewall_rule_violations
+          should_notify: false
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
         - resource: forwarding_rule_violations
           should_notify: true
           pipelines:
