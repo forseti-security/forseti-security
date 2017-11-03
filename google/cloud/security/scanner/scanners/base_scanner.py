@@ -54,26 +54,24 @@ class BaseScanner(object):
         """Runs the pipeline."""
         pass
 
-    def _output_results_to_db(self, resource_name, violations):
+    def _output_results_to_db(self, violations):
         """Output scanner results to DB.
 
         Args:
-            resource_name (str): Resource name.
             violations (list): A list of violations.
 
         Returns:
             list: Violations that encountered an error during insert.
         """
-        resource_name = 'violations'
         (inserted_row_count, violation_errors) = (0, [])
         try:
             vdao = violation_dao.ViolationDao(self.global_configs)
             (inserted_row_count, violation_errors) = vdao.insert_violations(
                 violations,
-                resource_name=resource_name,
                 snapshot_timestamp=self.snapshot_timestamp)
         except db_errors.MySQLError as err:
-            LOGGER.error('Error importing violations to database: %s', err)
+            LOGGER.error('Error importing violations to database: %s\n%s',
+                         err, violations)
 
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',

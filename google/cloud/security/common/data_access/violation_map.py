@@ -14,11 +14,8 @@
 
 """Provides violations map"""
 
-# pylint: disable=line-too-long
 from google.cloud.security.common.data_access import violation_format as vf
-from google.cloud.security.common.data_access.sql_queries import load_data
-from google.cloud.security.common.data_access.sql_queries import select_data as sd
-# pylint: enable=line-too-long
+
 
 VIOLATION_MAP = {
     'violations': vf.format_violation,
@@ -27,24 +24,19 @@ VIOLATION_MAP = {
     'groups_violations': vf.format_groups_violation,
 }
 
-# TODO: Now that all violations are going into the same table, a map is not
-# need anymore.
-VIOLATION_INSERT_MAP = {
-    'violations': load_data.INSERT_VIOLATION.format,
-    'bigquery_acl_violations': load_data.INSERT_VIOLATION.format,
-    'buckets_acl_violations': load_data.INSERT_VIOLATION.format,
-    'cloudsql_acl_violations': load_data.INSERT_VIOLATION.format,
-    'groups_violations': load_data.INSERT_VIOLATION.format
-}
-
-VIOLATION_SELECT_MAP = {
-    'bigquery_acl_violations': sd.SELECT_BIGQUERY_ACL_VIOLATIONS.format,
-    'buckets_acl_violations': sd.SELECT_BUCKETS_ACL_VIOLATIONS.format,
-    'cloudsql_acl_violations': sd.SELECT_CLOUDSQL_VIOLATIONS.format,
-    'forwarding_rule_violations': sd.SELECT_FORWARDING_RULE_VIOLATION.format,
-    'groups_violations': sd.SELECT_GROUPS_VIOLATIONS.format,
-    'policy_violations': sd.SELECT_POLICY_VIOLATIONS.format,
-    'iap_violations': sd.SELECT_IAP_VIOLATIONS.format,
-    'instance_network_interface_violations': (
-        sd.SELECT_INSTANCE_NETWORK_INTERFACE_VIOLATIONS.format),
+VIOLATION_RESOURCES = {
+    'ADDED': 'policy_violations',
+    'REMOVED': 'policy_violations',
+    'BIGQUERY_VIOLATION': 'bigquery_acl_violations',
+    'BUCKET_VIOLATION': 'buckets_acl_violations',
+    'CLOUD_SQL_VIOLATION': 'cloudsql_acl_violations',
+    'FORWARDING_RULE_VIOLATION': 'forwarding_rule_violations',
+    'FIREWALL_BLACKLIST_VIOLATION': 'firewall_rule_violations',
+    'FIREWALL_MATCHES_VIOLATION': 'firewall_rule_violations',
+    'FIREWALL_REQUIRED_VIOLATION': 'firewall_rule_violations',
+    'FIREWALL_WHITELIST_VIOLATION': 'firewall_rule_violations',
+    'GROUP_VIOLATION': 'groups_violations',
+    'IAP_VIOLATION': 'iap_violations',
+    'INSTANCE_NETWORK_INTERFACE_VIOLATION': (
+        'instance_network_interface_violations'),
 }

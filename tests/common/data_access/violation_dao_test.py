@@ -22,8 +22,10 @@ import unittest
 from google.cloud.security.common.data_access import _db_connector
 from google.cloud.security.common.data_access import errors
 from google.cloud.security.common.data_access import violation_dao
+from google.cloud.security.common.data_access.sql_queries import select_data
 from google.cloud.security.common.gcp_type import iam_policy as iam
 from google.cloud.security.scanner.audit import rules
+from tests.common.data_access.test_data import fake_violation_dao_data as fake_data
 
 
 class ViolationDaoTest(ForsetiTestCase):
@@ -134,8 +136,7 @@ class ViolationDaoTest(ForsetiTestCase):
             return_value=self.fake_table_name)
         self.dao.conn = conn_mock
         self.dao.execute_sql_with_commit = commit_mock
-        self.dao.insert_violations(self.fake_flattened_violations,
-                                   self.resource_name)
+        self.dao.insert_violations(self.fake_flattened_violations)
 
         # Assert snapshot is retrieved because no snapshot timestamp was
         # provided to the method call.
@@ -169,7 +170,6 @@ class ViolationDaoTest(ForsetiTestCase):
         self.dao.get_latest_snapshot_timestamp = mock.MagicMock()
         self.dao.insert_violations(
             self.fake_flattened_violations,
-            self.resource_name,
             fake_custom_timestamp)
 
         self.dao.get_latest_snapshot_timestamp.assert_not_called()
@@ -230,6 +230,68 @@ class ViolationDaoTest(ForsetiTestCase):
 
         self.assertEqual(expected, actual)
         self.assertEquals(1, violation_dao.LOGGER.error.call_count)
+
+    def test_get_all_violations_no_type(self):
+        """Test get_all_violations() with no type."""
+        expected = [
+            {'resource_type': 'fake_type',
+             'resource_id': 'fake_id_1',
+             'rule_name': 'fake rule name',
+             'rule_index': 0,
+             'violation_type': 'type1',
+             'violation_data': {}},
+            {'resource_type': 'fake_type',
+             'resource_id': 'fake_id_2',
+             'rule_name': 'fake rule name',
+             'rule_index': 0,
+             'violation_type': 'type2',
+             'violation_data': {}},
+        ]
+        self.dao.conn = mock.MagicMock()
+        self.dao.get_latest_snapshot_timestamp = mock.MagicMock()
+        self.dao.execute_sql_with_fetch = mock.MagicMock(
+            return_value=expected)
+        violations = self.dao.get_all_violations(self.fake_snapshot_timestamp)
+
+        self.dao.execute_sql_with_fetch.assert_called_once_with(
+            'all_violations',
+            select_data.SELECT_ALL_VIOLATIONS.format(
+                self.fake_snapshot_timestamp),
+            ())
+        self.assertEqual(expected, violations)
+
+    def test_get_all_violations_by_type(self):
+        """Test get_all_violations() with no type."""
+        expected = [
+            {'resource_type': 'fake_type',
+             'resource_id': 'fake_id_1',
+             'rule_name': 'fake rule name',
+             'rule_index': 0,
+             'violation_type': 'type1',
+             'violation_data': {}},
+        ]
+        violation_type = 'type1'
+        self.dao.conn = mock.MagicMock()
+        self.dao.get_latest_snapshot_timestamp = mock.MagicMock()
+        self.dao.execute_sql_with_fetch = mock.MagicMock(
+            return_value=expected)
+        violations = self.dao.get_all_violations(
+            self.fake_snapshot_timestamp, violation_type)
+
+        self.dao.execute_sql_with_fetch.assert_called_once_with(
+            violation_type,
+            select_data.SELECT_VIOLATIONS_BY_TYPE.format(
+                self.fake_snapshot_timestamp),
+            (violation_type,))
+        self.assertEqual(expected, violations)
+
+    def test_map_by_type(self):
+        """Test violation_dao.map_by_resource() util method."""
+        actual = violation_dao.map_by_resource(
+            fake_data.ROWS_MAP_BY_RESOURCE_1)
+
+        self.assertEqual(
+            fake_data.EXPECTED_MAP_BY_RESOURCE_1, actual)
 
 
 if __name__ == '__main__':

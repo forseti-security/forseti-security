@@ -94,8 +94,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         resource_name = 'violations'
 
         all_violations = list(self._flatten_violations(all_violations))
-        violation_errors = self._output_results_to_db(resource_name,
-                                                      all_violations)
+        violation_errors = self._output_results_to_db(all_violations)
 
         # Write the CSV for all the violations.
         # TODO: Move this into the base class? The IAP scanner version of this

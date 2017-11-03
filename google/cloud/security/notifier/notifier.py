@@ -37,7 +37,6 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
-from google.cloud.security.scanner.scanners.scanners_map import SCANNER_VIOLATION_MAP
 # pylint: enable=line-too-long
 
 
@@ -181,15 +180,14 @@ def main(_):
     # get violations
     v_dao = violation_dao.ViolationDao(global_configs)
     violations = {}
-    for mapped_scanner_violation in SCANNER_VIOLATION_MAP:
-        try:
-            violations[mapped_scanner_violation] = v_dao.get_all_violations(
-                timestamp, mapped_scanner_violation)
-        except db_errors.MySQLError, e:
-            # even if an error is raised we still want to continue execution
-            # this is because if we don't have violations the Mysql table
-            # is not present and an error is thrown
-            LOGGER.error('get_all_violations error: %s', e.message)
+    try:
+        violations = violation_dao.map_by_resource(
+            v_dao.get_all_violations(timestamp))
+    except db_errors.MySQLError, e:
+        # even if an error is raised we still want to continue execution
+        # this is because if we don't have violations the Mysql table
+        # is not present and an error is thrown
+        LOGGER.error('get_all_violations error: %s', e.message)
 
     for retrieved_v in violations:
         LOGGER.info('retrieved %d violations for resource \'%s\'',
@@ -199,8 +197,8 @@ def main(_):
     pipelines = []
     for resource in notifier_configs['resources']:
         if violations.get(resource['resource']) is None:
-            LOGGER.error('The resource name \'%s\' is invalid, skipping',
-                         resource['resource'])
+            LOGGER.warn('The resource name \'%s\' has no violations, '
+                        'skipping', resource['resource'])
             continue
         if not violations[resource['resource']]:
             LOGGER.debug('No violations for: %s', resource['resource'])
