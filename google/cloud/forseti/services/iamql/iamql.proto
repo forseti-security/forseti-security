@@ -14,8 +14,6 @@
 
 syntax = "proto3";
 
-import "google/protobuf/any.proto";
-
 package iamql;
 
 service Iamql {
@@ -37,19 +35,12 @@ message QueryStringRequest {
 
 message Column {
 	string name = 1;
-	google.protobuf.Any value = 3;
-}
-
-message StringValue {
-	string value = 1;
-}
-
-message BooleanValue {
-	bool value = 1;
-}
-
-message NumberValue {
-	int64 value = 1;
+	uint32 type = 5; // 0 == string, 1 == bool, 2 == number
+	oneof values {
+     string s = 2;
+     bool b = 3;
+     int64 n = 4;
+    }
 }
 
 message Row {
