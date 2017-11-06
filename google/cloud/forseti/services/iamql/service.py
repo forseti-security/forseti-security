@@ -66,25 +66,19 @@ class GrpcIamQL(iamql_pb2_grpc.IamqlServicer):
             alias = row[index]
             obj = row[alias]
 
-            def pack_type(value):
-                type_mapping = {
-                        numbers.Number: iamql_pb2.NumberValue,
-                        str: iamql_pb2.StringValue,
-                        unicode: iamql_pb2.StringValue,
-                        bool: iamql_pb2.BooleanValue
-                    }
-
-                for py_type, pb_type in type_mapping.iteritems():
-                    if isinstance(value, py_type):
-                        return pb_type(value=value)
-                raise TypeError(value)
+            def pack_type(name, value):
+                if isinstance(value, numbers.Number):
+                    return iamql_pb2.Column(name=name, n=value, type=2)
+                elif isinstance(value, str) or isinstance(value, unicode):
+                    return iamql_pb2.Column(name=name, s=value, type=0)
+                elif isinstance(value, bool):
+                    return iamql_pb2.Column(name=name, b=value, type=1)
+                else:
+                    raise TypeError(value)
 
             for key, value in obj.iteritems():
-                any_value = any_pb2.Any()
-                value_type = pack_type(value)
-                any_value.Pack(value_type)
-                yield iamql_pb2.Column(name='{}.{}'.format(alias, key),
-                                       value=any_value)
+                col = pack_type('{}.{}'.format(alias, key), value)
+                yield col
 
         model_name = self._get_handle(context)
         for row in self.iamql.QueryString(model_name, request.query):

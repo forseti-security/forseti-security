@@ -385,6 +385,12 @@ def define_model(model_name, dbengine, model_seed):
         TBL_ROLE = Role
         TBL_RESOURCE = Resource
         TBL_MEMBERSHIP = group_members
+        TBL_ROLE_PERMISSION = base.metadata.tables[
+            '{}_role_permissions'.format(model_name)]
+        TBL_GROUP_MEMBERS = base.metadata.tables[
+            '{}_group_members'.format(model_name)]
+        TBL_BINDING_MEMBERS = base.metadata.tables[
+            '{}_binding_members'.format(model_name)]
 
         @classmethod
         def delete_all(cls, engine):
@@ -415,6 +421,10 @@ def define_model(model_name, dbengine, model_seed):
 
             db_query = iamql.QueryCompiler(cls, session, iam_query).compile()
             for row in db_query.yield_per(PER_YIELD):
+                try:
+                    len(row)
+                except TypeError:
+                    row = (row,)
                 column_desc = db_query.column_descriptions
                 converted_row = {}
                 for index, item in enumerate(row):

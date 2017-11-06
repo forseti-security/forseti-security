@@ -1,6 +1,6 @@
 q:
 {
-	r role;
+	r role(a==3);
 	p permission;
 }
 {

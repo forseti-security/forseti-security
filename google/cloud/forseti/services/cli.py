@@ -763,8 +763,17 @@ def run_iamql(client, config, output, _):
     def do_query():
         """Perform query operations."""
 
-        for result in client.query(config.query_string):
-            output.write(result)
+        for row in client.query(config.query_string):
+            d = dict()
+            for column in row.columns:
+                if column.type == 0:
+                    value = column.s
+                elif column.type == 1:
+                    value = column.b
+                else:
+                    value = column.n
+                d[column.name] = value
+            print d
 
     actions = {
         'query': do_query}
