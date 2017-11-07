@@ -96,8 +96,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         rule_indices = self.rules_engine.rule_book.rule_indices
         all_violations = list(self._flatten_violations(all_violations,
                                                        rule_indices))
-        violation_errors = self._output_results_to_db(resource_name,
-                                                      all_violations)
+        violation_errors = self._output_results_to_db(all_violations)
 
         # Write the CSV for all the violations.
         # TODO: Move this into the base class? The IAP scanner version of this
@@ -128,7 +127,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                 # from the saved copy.
                 if self.global_configs.get('email_recipient') is not None:
                     payload = {
-                        'email_description': 'Policy Scan',
+                        'email_description': 'Firewall Rules Scan',
                         'email_sender':
                             self.global_configs.get('email_sender'),
                         'email_recipient':

@@ -181,7 +181,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.scanner._output_results(violations, '88888')
 
         mock_output_results_to_db.assert_called_once_with(
-            self.scanner, 'violations', flattened_violations)
+            self.scanner, flattened_violations)
         mock_write_csv.assert_called_once_with(
             resource_name='violations',
             data=flattened_violations,
@@ -267,7 +267,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             } for i, v in enumerate(violations)]
 
         mock_output_results_to_db.assert_called_once_with(
-            self.scanner, 'violations', flattened_violations)
+            self.scanner, flattened_violations)
         mock_write_csv.assert_called_once_with(
             resource_name='violations',
             data=flattened_violations,
@@ -281,7 +281,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         expected_message = {
             'status': 'scanner_done',
             'payload': {
-                'email_description': 'Policy Scan',
+                'email_description': 'Firewall Rules Scan',
                 'email_sender':
                 self.scanner.global_configs.get('email_sender'),
                 'email_recipient':
@@ -295,7 +295,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'all_violations': flattened_violations,
                 'resource_counts': '88888',
                 'violation_errors': mock_output_results_to_db(
-                    self, 'violations', flattened_violations),
+                    self, flattened_violations),
             }
         }
         mock_notifier.process.assert_called_once_with(expected_message)
@@ -527,7 +527,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         ]
         [sorted(v) for v in expected_violations]
         mock_output_results_to_db.assert_called_once_with(
-            scanner, 'violations', expected_violations)
+            scanner, expected_violations)
 
     def assert_rule_violation_lists_equal(self, expected, violations):
         sorted(expected, key=lambda k: k.resource_id)

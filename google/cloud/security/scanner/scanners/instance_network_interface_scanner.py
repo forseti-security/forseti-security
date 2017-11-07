@@ -82,10 +82,8 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): All violations
         """
-        resource_name = 'violations'
-
         all_violations = self._flatten_violations(all_violations)
-        self._output_results_to_db(resource_name, all_violations)
+        self._output_results_to_db(all_violations)
 
     # pylint: disable=invalid-name
     def get_instance_networks_interfaces(self):

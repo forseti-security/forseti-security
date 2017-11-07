@@ -274,7 +274,7 @@ class Dao(_db_connector.DbConnector):
             values (tuple): Tuple of string for sql placeholder values.
 
         Returns:
-            list: A list of tuples representing rows of sql query result.
+            list: A list of dict representing rows of sql query result.
 
         Raises:
             MySQLError: When an error has occured while executing the query.
