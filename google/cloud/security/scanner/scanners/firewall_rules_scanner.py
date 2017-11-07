@@ -34,7 +34,7 @@ LOGGER = log_util.get_logger(__name__)
 class FirewallPolicyScanner(base_scanner.BaseScanner):
     """Scanner for firewall data."""
 
-    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_fw.{}.csv'
+    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_firewall.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
