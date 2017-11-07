@@ -83,6 +83,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
+
 class GcloudEnvTest(ForsetiTestCase):
     """Test the gcp_setup."""
 
@@ -314,6 +315,25 @@ class GcloudEnvTest(ForsetiTestCase):
             actual = self.gcp_setup._has_roles('X', 1, [
                 'roles/fakeAdminRole'])
             self.assertFalse(actual)
+
+    def test_sanitize_conf_values(self):
+        """Test _sanitize_conf_values()."""
+        self.assertTrue(
+            all(self.gcp_setup._sanitize_conf_values(
+                {
+                    'test': None,
+                    'test2': 3,
+                    'test3': None,
+                }
+            )))
+        self.assertTrue(
+            all(self.gcp_setup._sanitize_conf_values(
+                {
+                    'test': '',
+                    'test2': 1,
+                    'test3': None,
+                }
+            )))
 
 
 if __name__ == '__main__':

@@ -421,8 +421,7 @@ class IapScanner(base_scanner.BaseScanner):
 
         all_violations = list(self._flatten_violations(all_violations))
         LOGGER.debug('Writing violations: %r', all_violations)
-        violation_errors = self._output_results_to_db(resource_name,
-                                                      all_violations)
+        violation_errors = self._output_results_to_db(all_violations)
 
         # Write the CSV for all the violations.
         # TODO: Move this into base class? It's cargo-culted from the IAM

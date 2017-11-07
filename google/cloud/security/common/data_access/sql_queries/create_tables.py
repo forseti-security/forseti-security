@@ -341,16 +341,6 @@ CREATE_GROUPS_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
-CREATE_GROUPS_VIOLATIONS_TABLE = """
-    CREATE TABLE `{0}` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `member_email` varchar(255) NOT NULL,
-        `group_email` varchar(255) NOT NULL,
-        `rule_name` json DEFAULT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
 CREATE_INSTANCES_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -540,10 +530,18 @@ CREATE_VIOLATIONS_TABLE = """
         `resource_id` varchar(255) NOT NULL,
         `rule_name` varchar(255) DEFAULT NULL,
         `rule_index` int DEFAULT NULL,
-        `violation_type` enum('UNSPECIFIED','ADDED','REMOVED',
-                              'BIGQUERY_VIOLATION', 'BUCKET_VIOLATION',
-                              'IAP_VIOLATION', 'CLOUD_SQL_VIOLATION',
+        `violation_type` enum('UNSPECIFIED',
+                              'ADDED','REMOVED',
+                              'BIGQUERY_VIOLATION',
+                              'BUCKET_VIOLATION',
+                              'CLOUD_SQL_VIOLATION',
+                              'FIREWALL_BLACKLIST_VIOLATION',
+                              'FIREWALL_MATCHES_VIOLATION',
+                              'FIREWALL_REQUIRED_VIOLATION',
+                              'FIREWALL_WHITELIST_VIOLATION',
                               'FORWARDING_RULE_VIOLATION',
+                              'GROUP_VIOLATION',
+                              'IAP_VIOLATION',
                               'INSTANCE_NETWORK_INTERFACE_VIOLATION') NOT NULL,
         `violation_data` json DEFAULT NULL,
         PRIMARY KEY (`id`)

@@ -29,7 +29,7 @@ rules:
           - group:*@YOURDOMAIN
 
   # custom rules
-  - name: Allow service accounts to have access
+  - name: Allow only service accounts to have access
     mode: whitelist
     resource:
       - type: organization
