@@ -10,7 +10,8 @@ processing by Forseti Inventory.
 ## Enable Domain-Wide Delegation in G Suite
 
 To enable collection of G Suite Google Groups, follow the steps below to create a
-service account just for this functionality.
+service account just for this functionality. Read more about 
+[domain-wide delegation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount?hl=en_US#delegatingauthority).
 
 ### Create a service account
 
@@ -21,10 +22,12 @@ service account. You can go directly to the
 1. Go to
    [Cloud Platform Console Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
    and click **Create service account**.
+
 1. On the **Create service account** dialog that appears, set up your service account:
-   1. Enter a service account name.
-   1. Select the **Enable G Suite Domain-wide Delegation** checkbox.
-   1. If you haven't already configured your project's OAuth consent screen, enter a product name
+
+   * Enter a service account name.
+   * Select the **Enable G Suite Domain-wide Delegation** checkbox.
+   * If you haven't already configured your project's OAuth consent screen, enter a product name
       to display on the consent screen, then click **Create**. To change the product name or add
       details to the consent screen later, edit your
       [OAuth consent screen](https://console.developers.google.com/apis/credentials/consent) settings.
@@ -32,11 +35,14 @@ service account. You can go directly to the
       ![create service account window with product name field highlighted](/images/docs/howto/create-service-account.png)
         
 1. To create and download a JSON key for the service account:
-   1. Click **More** on the service account row, then click **Create key**.
+
+   * Click **More** on the service account row, then click **Create key**.
       ![more menu with create key highlighted](/images/docs/howto/create-key.png)
-   1.  On the **Create private key** dialog that appears, select **JSON**, then click **Create**.
-   1.  In the **Save File** window that appears, save the file to a local directory.
+   *  On the **Create private key** dialog that appears, select **JSON**, then click **Create**.
+   *  In the **Save File** window that appears, save the file to a local directory.
+
 1. On the service account row, click **View Client ID**.
+
 1. On the **Client ID for Service account client** panel that appears, copy the **Client ID**
    value, which will be a large number.
     
@@ -57,14 +63,21 @@ You must have the **super admin** role in admin.google.com to complete these ste
 
 ## Configuring Forseti to enable G Suite Google Groups collection
 
-After you create a service account above, edit the following variables in your
-version of `forseti_conf.yaml`:
+After you create a service account above, you may need to edit the following variables 
+in your `forseti_conf.yaml`.
 
 - `groups-domain-super-admin-email`: Use of the Admin API requires delegation
   (impersonation). Enter an email address of a Super Admin in the GSuite
-  account.
+  account. If you entered this value in the setup wizard, you do not need to 
+  change this in your `forseti_conf.yaml`.
 - `groups-service-account-key-file`: Forseti Inventory uses this path to
-  locate the key file which you downloaded earlier.
+  locate the key file which you downloaded earlier. If you deployed with the 
+  setup wizard, this value is already pre-populated for you.
+
+If you are running Forseti on GCP and made any changes to the above values, 
+you will need to copy the conf file to the GCS bucket. See 
+["Move Configuration to GCS"]({% link _docs/howto/deploy/gcp-deployment.md %}#move-configuration-to-gcs) 
+for details on how to do this.
 
 ## Deploying to GCP with G Suite Google Groups collection
 
