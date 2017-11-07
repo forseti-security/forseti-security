@@ -36,7 +36,7 @@ documentation.
 If a rule does not include a network name, then it's applied to all networks
 configured on the project. The network name is prepended to the rule name.
 
-The following is an example enforcement rule that only allows:
+The following is an example firewall rule (which can be applied by enforcer) that only allows:
   * SSH from anywhere
   * HTTP(S) traffic from both load balancer and health checker to VM instances
   * Only internal tcp, udp, and icmp traffic
