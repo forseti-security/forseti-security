@@ -29,7 +29,7 @@ To complete this guide, you will need:
 
 ### Customizing deployment templates
 
-Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update
+Make a copy of [`deploy-forseti.yaml.sample`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/deployment-templates/deploy-forseti.yaml.sample) as `deploy-forseti.yaml` and update
 at least the following variables:
 
   - `CLOUDSQL_INSTANCE_NAME`
