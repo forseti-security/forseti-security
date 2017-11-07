@@ -18,7 +18,6 @@ import base64
 import os
 import urllib2
 
-import gflags as flags
 import jinja2
 
 from retrying import retry
@@ -29,18 +28,6 @@ from google.cloud.security.common.util import errors as util_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
-
-# TODO: remove these
-FLAGS = flags.FLAGS
-
-flags.DEFINE_string('email_recipient', None,
-                    'Email address of the notification recipient.')
-
-flags.DEFINE_string('email_sender', None,
-                    'Email address of the notification sender.')
-
-flags.DEFINE_string('sendgrid_api_key', None,
-                    'API key to authenticate with SendGrid email service.')
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -73,6 +60,24 @@ class EmailUtil(object):
         """
         return self.sendgrid.client.mail.send.post(request_body=email.get())
 
+    @staticmethod
+    def _add_recipients(email, email_recipients):
+        """Add multiple recipients to the sendgrid email object.
+
+        Args:
+            email (SendGrid): SendGrid mail object
+            email_recipients (Str): comma-separated text of the email recipients
+
+        Returns:
+            SendGrid: SendGrid mail object with mulitiple recipients.
+        """
+        personalization = mail.Personalization()
+        recipients = email_recipients.split(',')
+        for recipient in recipients:
+            personalization.add_to(mail.Email(recipient))
+        email.add_personalization(personalization)
+        return email
+
     def send(self, email_sender=None, email_recipient=None,
              email_subject=None, email_content=None, content_type=None,
              attachment=None):
@@ -100,12 +105,12 @@ class EmailUtil(object):
                         email_sender, email_recipient)
             raise util_errors.EmailSendError
 
-        email = mail.Mail(
-            mail.Email(email_sender),
-            email_subject,
-            mail.Email(email_recipient),
-            mail.Content(content_type, email_content)
-        )
+        email = mail.Mail()
+        email.from_email = mail.Email(email_sender)
+        email.subject = email_subject
+        email.add_content(mail.Content(content_type, email_content))
+
+        email = self._add_recipients(email, email_recipient)
 
         if attachment:
             email.add_attachment(attachment)

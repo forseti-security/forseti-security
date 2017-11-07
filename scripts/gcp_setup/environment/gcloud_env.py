@@ -43,6 +43,7 @@ ORG_IAM_ROLES = [
     'roles/compute.networkViewer',
     'roles/iam.securityReviewer',
     'roles/appengine.appViewer',
+    'roles/bigquery.dataViewer',
     'roles/servicemanagement.quotaViewer',
     'roles/cloudsql.viewer',
     'roles/compute.securityAdmin',
@@ -82,6 +83,8 @@ ROOT_DIR_PATH = os.path.dirname(
         os.path.dirname(
             os.path.dirname(__file__))))
 
+VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
+
 
 def org_id_from_org_name(org_name):
     """Extract the organization id (number) from the organization name.
@@ -96,7 +99,6 @@ def org_id_from_org_name(org_name):
     return org_name[len('organizations/'):]
 
 
-# pylint: disable=no-self-use
 # pylint: disable=too-many-instance-attributes
 class ForsetiGcpSetup(object):
     """Setup the Forseti Security GCP components."""
@@ -110,7 +112,8 @@ class ForsetiGcpSetup(object):
         self.timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         self.timeonly = self.timestamp[8:]
         self.force_no_cloudshell = kwargs.get('no_cloudshell')
-        self.branch = kwargs.get('branch') or 'master'
+        self.skip_iam_check = kwargs.get('no_iam_check')
+        self.branch = kwargs.get('branch')
 
         self.is_devshell = False
         self.authed_user = None
@@ -135,15 +138,19 @@ class ForsetiGcpSetup(object):
         self.deploy_tpl_path = None
         self.forseti_conf_path = None
 
+        # forseti_conf.yaml.in properties
         self.skip_email = False
-        self.sendgrid_api_key = '""'
-        self.notification_sender_email = '""'
-        self.notification_recipient_email = '""'
+        self.sendgrid_api_key = kwargs.get('sendgrid_api_key')
+        self.notification_sender_email = None
+        self.notification_recipient_email = (
+            kwargs.get('notification_recipient_email'))
+        self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
 
     def run_setup(self):
         """Run the setup steps."""
         # Pre-flight checks.
         self._print_banner('Pre-flight checks')
+        self.infer_version()
         self.gcloud_info()
         self.check_cloudshell()
         self.get_authed_user()
@@ -171,7 +178,6 @@ class ForsetiGcpSetup(object):
         if not return_code:
             self.copy_config_to_bucket()
             self.grant_gcp_svc_acct_roles()
-            self.download_gsuite_svc_acct_key()
             self.copy_gsuite_key()
 
         self.post_install_instructions(deploy_success=(not return_code))
@@ -206,6 +212,42 @@ class ForsetiGcpSetup(object):
                                 stderr=subprocess.PIPE)
         out, err = proc.communicate()
         return proc.returncode, out, err
+
+    @staticmethod
+    def _sanitize_conf_values(conf_values):
+        """Sanitize the forseti_conf values not to be zero-length strings.
+
+        Args:
+            conf_values (dict): The conf values to replace in the
+                forseti_conf.yaml.
+
+        Returns:
+            dict: The sanitized values.
+        """
+        for key in conf_values.keys():
+            if not conf_values[key]:
+                conf_values[key] = '""'
+        return conf_values
+
+    def infer_version(self):
+        """Infer the Forseti version, if --branch wasn't supplied as an arg."""
+        if not self.branch:
+            version_re = re.compile(VERSIONFILE_REGEX)
+            version_file = os.path.join(
+                ROOT_DIR_PATH, 'google', 'cloud', 'security', '__init__.py')
+            version = None
+            with open(version_file, 'rt') as vfile:
+                for line in vfile.readlines():
+                    version_match = version_re.match(line)
+                    if version_match:
+                        version = version_match.group(1)
+                        break
+            if version:
+                self.branch = 'v%s' % version
+            else:
+                self.branch = 'master'
+
+        print('Forseti version: %s' % self.branch)
 
     def check_proper_gcloud(self):
         """Check gcloud version and presence of alpha components."""
@@ -364,7 +406,8 @@ class ForsetiGcpSetup(object):
         if self.organization_id:
             print('Organization id: %s' % self.organization_id)
 
-    def _no_organization(self):
+    @staticmethod
+    def _no_organization():
         """No organization, so print a message and exit."""
         print('You need to have an organization set up to use Forseti. '
               'Refer to the following documentation for more information.\n\n'
@@ -402,17 +445,20 @@ class ForsetiGcpSetup(object):
         User must be an org admin in order to assign a service account roles
         on the organization IAM policy.
         """
-        self._print_banner('Checking permissions')
+        if not self.skip_iam_check:
+            self._print_banner('Checking permissions')
 
-        if self._is_org_admin() and self._can_modify_project_iam():
-            print('You have the necessary roles to grant roles that Forseti '
-                  'needs. Continuing...')
+            if self._is_org_admin() and self._can_modify_project_iam():
+                print('You have the necessary roles to grant roles that '
+                      'Forseti needs. Continuing...')
+            else:
+                print('You do not have the necessary roles to grant roles that '
+                      'Forseti needs. Please have someone who is an Org Admin '
+                      'and either Project Editor or Project Owner for this '
+                      'project to run this setup. Exiting.')
+                sys.exit(1)
         else:
-            print('You do not have the necessary roles to grant roles that '
-                  'Forseti needs. Please have someone who is an Org Admin '
-                  'and either Project Editor or Project Owner for this project '
-                  'to run this setup. Exiting.')
-            sys.exit(1)
+            self._print_banner('Permission check skipped')
 
     def _is_org_admin(self):
         """Check if current user is an org admin.
@@ -517,7 +563,7 @@ class ForsetiGcpSetup(object):
 
     def download_gsuite_svc_acct_key(self):
         """Download the service account key."""
-        print('\nDownloading GSuite service account key for %s'
+        print('\nDownloading G Suite service account key for %s'
               % self.gsuite_service_account)
         proc = subprocess.Popen(
             ['gcloud', 'iam', 'service-accounts', 'keys',
@@ -642,39 +688,20 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 ROOT_DIR_PATH, 'configs', 'forseti_conf_dm.yaml'))
 
-        # Ask for SendGrid API Key
-        print('Forseti can send email notifications through SendGrid '
-              'via an API key. '
-              'This step is optional and can be configured later.')
-        sendgrid_api_key = raw_input(
-            'What is your SendGrid API key? (press [enter] to skip) ').strip()
-        if sendgrid_api_key:
-            self.sendgrid_api_key = sendgrid_api_key
+        self._get_user_input()
 
-            # Ask for notification sender email
-            self.notification_sender_email = 'forseti-notify@localhost.domain'
-
-            # Ask for notification recipient email
-            notification_recipient_email = raw_input(
-                'At what email address do you want to receive notifications? '
-                '(press [enter] to skip) ').strip()
-            if notification_recipient_email:
-                self.notification_recipient_email = notification_recipient_email
-        else:
-            self.skip_email = True
-
-        conf_values = {
+        conf_values = self._sanitize_conf_values({
             'EMAIL_RECIPIENT': self.notification_recipient_email,
             'EMAIL_SENDER': self.notification_sender_email,
             'SENDGRID_API_KEY': self.sendgrid_api_key,
             'SCANNER_BUCKET': self.bucket_name[len('gs://'):],
             'GROUPS_SERVICE_ACCOUNT_KEY_FILE':
                 '/home/ubuntu/{}'.format(GSUITE_KEY_NAME),
-            'DOMAIN_SUPER_ADMIN_EMAIL': '""',
+            'DOMAIN_SUPER_ADMIN_EMAIL': self.gsuite_superadmin_email,
             'ENABLE_GROUP_SCANNER': 'true',
-        }
+        })
 
-        with open(forseti_conf_in, 'r') as in_tmpl:
+        with open(forseti_conf_in, 'rt') as in_tmpl:
             tmpl_contents = in_tmpl.read()
             out_contents = tmpl_contents.format(**conf_values)
             with open(forseti_conf_gen, 'w') as out_tmpl:
@@ -683,6 +710,37 @@ class ForsetiGcpSetup(object):
 
         print('\nCreated forseti_conf_dm.yaml config file:\n    %s\n' %
               self.forseti_conf_path)
+
+    def _get_user_input(self):
+        """Ask user for specific setup values."""
+        if not self.sendgrid_api_key:
+            # Ask for SendGrid API Key
+            print('Forseti can send email notifications through SendGrid '
+                  'via an API key. '
+                  'This step is optional and can be configured later.')
+            self.sendgrid_api_key = raw_input(
+                'What is your SendGrid API key? '
+                '(press [enter] to skip) ').strip()
+        if self.sendgrid_api_key:
+            self.notification_sender_email = 'forseti-notify@localhost.domain'
+
+            # Ask for notification recipient email
+            if not self.notification_recipient_email:
+                self.notification_recipient_email = raw_input(
+                    'At what email address do you want to receive '
+                    'notifications? (press [enter] to skip) ').strip()
+        else:
+            self.skip_email = True
+
+        if not self.gsuite_superadmin_email:
+            # Ask for G Suite super admin email
+            print('\nTo read G Suite Groups data, for example, if you want to '
+                  'use IAM Explain, please provide a G Suite super admin '
+                  'email address. '
+                  'This step is optional and can be configured later.')
+            self.gsuite_superadmin_email = raw_input(
+                'What is your organization\'s G Suite super admin email? '
+                '(press [enter] to skip) ').strip()
 
     def create_deployment(self):
         """Create the GCP deployment.
@@ -753,6 +811,7 @@ class ForsetiGcpSetup(object):
         Use 2**<attempt #> seconds of sleep() between attempts.
         """
         self._print_banner('Copy G Suite key to Forseti VM')
+        self.download_gsuite_svc_acct_key()
         print('scp-ing your gsuite_key.json to your Forseti GCE instance...')
         for i in range(1, GSUITE_KEY_SCP_ATTEMPTS+1):
             print('Attempt {} of {} ...'.format(i, GSUITE_KEY_SCP_ATTEMPTS))
@@ -777,53 +836,68 @@ class ForsetiGcpSetup(object):
                 print('Done')
                 break
 
+        print('Delete downloaded %s' % GSUITE_KEY_NAME)
+        try:
+            os.remove(self.gsuite_svc_acct_key_location)
+        except OSError as ose:
+            print(ose)
+
     def post_install_instructions(self, deploy_success):
         """Show post-install instructions.
 
         Print link for deployment manager dashboard.
-        Print link to go to GSuite service account and enable DWD.
+        Print link to go to G Suite service account and enable DWD.
 
         Args:
             deploy_success (bool): Whether deployment was successful.
         """
         self._print_banner('Post-setup instructions')
 
+        if deploy_success:
+            print('Forseti Security (branch/version: %s) has been '
+                  'deployed to GCP.\n' % self.branch)
+        else:
+            print('Your deployment had some issues. Please review the error '
+                  'messages. If you need help, please either file an issue '
+                  'on our Github Issues or email '
+                  'discuss@forsetisecurity.org.\n')
+
         print('Your generated Deployment Manager template can be '
               'found here:\n\n    {}\n\n'.format(self.deploy_tpl_path))
 
-        if not deploy_success:
-            print ('Your deployment had some issues. Please review the error '
-                   'messages. If you need help, please either file an issue '
-                   'on our Github Issues or email '
-                   'discuss@forsetisecurity.org.\n')
-
-        print('You can see the details of your deployment in the '
+        print('You can view the details of your deployment in the '
               'Cloud Console:\n\n    '
               'https://console.cloud.google.com/deployments/details/'
               '{}?project={}&organizationId={}\n\n'.format(
                   self.deployment_name, self.project_id, self.organization_id))
 
+        print('A default configuration file (configs/forseti_conf_dm.yaml) '
+              'has been generated. If you wish to change your '
+              'Forseti configuration or rules, e.g. enabling G Suite '
+              'Groups collection, either download the conf file in your bucket '
+              '`{}` or edit your local copy, then follow the guide below to '
+              'copy the files to Cloud Storage:\n\n'
+              '    http://forsetisecurity.org/docs/howto/deploy/'
+              'gcp-deployment.html#move-configuration-to-gcs\n\n'.format(
+                  self.bucket_name))
+
         if self.skip_email:
             print('If you would like to enable email notifications via '
-                  'SendGrid, please refer to:\n\n    '
+                  'SendGrid, please refer to:\n\n'
+                  '    '
                   'http://forsetisecurity.org/docs/howto/configure/'
                   'email-notification\n\n')
 
-        print('Finalize your installation by enabling G Suite Groups '
-              'collection in Forseti:\n\n'
-              '    '
-              'http://forsetisecurity.org/docs/howto/configure/'
-              'gsuite-group-collection\n\n')
-
-        print('A default configuration file '
-              '(configs/forseti_conf_dm.yaml) '
-              'has been generated. If you wish to change your '
-              'Forseti configuration or rules, e.g. enabling G Suite '
-              'Groups collection, copy the changed files '
-              'from the root directory of forseti-security/ to '
-              'your Forseti bucket:\n\n'
-              '    gsutil cp configs/forseti_conf_dm.yaml '
-              '{}/configs/forseti_conf.yaml\n\n'
-              '    gsutil cp -r rules {}\n\n'.format(
-                  self.bucket_name,
-                  self.bucket_name))
+        if self.gsuite_superadmin_email:
+            print('To complete setup for G Suite Groups data collection, '
+                  'follow the steps in the guide below:\n\n'
+                  '    '
+                  'http://forsetisecurity.org/docs/howto/configure/'
+                  'gsuite-group-collection\n\n')
+        else:
+            print('If you want to enable G Suite Groups collection in '
+                  'Forseti, for example, to use IAM Explain), follow '
+                  ' the steps in the guide below:\n\n'
+                  '    '
+                  'http://forsetisecurity.org/docs/howto/configure/'
+                  'gsuite-group-collection\n\n')

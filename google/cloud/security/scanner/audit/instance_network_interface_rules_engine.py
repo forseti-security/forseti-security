@@ -223,13 +223,18 @@ class Rule(object):
         """
         for instance_network_interface in instance_network_interface_list:
             network_and_project = re.search(
-                r'compute/v1/projects/([^/]*).*networks/([^/]*)',
+                r'compute/.*/projects/([^/]*).*networks/([^/]*)',
                 instance_network_interface.network)
             project = network_and_project.group(1)
             network = network_and_project.group(2)
-            is_external_network = (instance_network_interface.access_configs
-                                   is not None)
-            if not self.rules['whitelist'].get(project):
+            is_external_network = (instance_network_interface.access_configs is
+                                   not None)
+            ips = None
+            if (network not in self.rules['whitelist'].get(project, []) and
+                    is_external_network):
+                ips = [config['natIP']
+                       for config in instance_network_interface.access_configs
+                       if 'natIP' in config]
                 yield self.RuleViolation(
                     resource_type='instance',
                     rule_name=self.rule_name,
@@ -237,18 +242,8 @@ class Rule(object):
                     violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
                     project=project,
                     network=network,
-                    ip=None)
-            elif (network not in self.rules['whitelist'].get(project) and
-                  is_external_network):
-                yield self.RuleViolation(
-                    resource_type='instance',
-                    rule_name=self.rule_name,
-                    rule_index=self.rule_index,
-                    violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
-                    project=project,
-                    network=network,
-                    ip=instance_network_interface
-                    .access_configs[0].get('natIP'))
+                    ip=ips,
+                    raw_data=instance_network_interface.as_json())
 
     # Rule violation.
     # resource_type: string
@@ -261,4 +256,4 @@ class Rule(object):
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'rule_name',
                                 'rule_index', 'violation_type', 'project',
-                                'network', 'ip'])
+                                'network', 'ip', 'raw_data'])

@@ -38,6 +38,15 @@ CREATE_TABLE_MAP = {
     # appengine
     'appengine': create_tables.CREATE_APPENGINE_TABLE,
 
+    # appengine services
+    'appengine_services': create_tables.CREATE_APPENGINE_SERVICES_TABLE,
+
+    # appengine versions
+    'appengine_versions': create_tables.CREATE_APPENGINE_VERSIONS_TABLE,
+
+    # appengine instances
+    'appengine_instances': create_tables.CREATE_APPENGINE_INSTANCES_TABLE,
+
     # backend services
     'backend_services': create_tables.CREATE_BACKEND_SERVICES_TABLE,
 
@@ -70,7 +79,6 @@ CREATE_TABLE_MAP = {
     # groups
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
-    'groups_violations': create_tables.CREATE_GROUPS_VIOLATIONS_TABLE,
 
     # instances
     'instances': create_tables.CREATE_INSTANCES_TABLE,
@@ -266,7 +274,7 @@ class Dao(_db_connector.DbConnector):
             values (tuple): Tuple of string for sql placeholder values.
 
         Returns:
-            list: A list of tuples representing rows of sql query result.
+            list: A list of dict representing rows of sql query result.
 
         Raises:
             MySQLError: When an error has occured while executing the query.

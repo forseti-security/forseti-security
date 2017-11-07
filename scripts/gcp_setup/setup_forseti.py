@@ -28,13 +28,25 @@ def run():
     parser.add_argument('--no-cloudshell',
                         action='store_true',
                         help='Bypass Cloud Shell requirement')
+    parser.add_argument('--no-iam-check',
+                        action='store_true',
+                        help='Bypass IAM check for user running script')
     parser.add_argument('--branch',
                         help='Which Forseti branch to deploy')
+
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
                        help='The GCS bucket location')
     group.add_argument('--cloudsql-region',
                        help='The Cloud SQL region')
+
+    email_params = parser.add_argument_group(title='email')
+    email_params.add_argument('--sendgrid-api-key',
+                              help='Sendgrid API key')
+    email_params.add_argument('--notification-recipient-email',
+                              help='Notification recipient email')
+    email_params.add_argument('--gsuite-superadmin-email',
+                              help='G Suite super admin email')
 
     args = vars(parser.parse_args())
     forseti_setup = gcloud_env.ForsetiGcpSetup(**args)

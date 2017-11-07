@@ -17,6 +17,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import threading
 
 import concurrent.futures
 from google.apputils import datelib
@@ -33,10 +34,8 @@ STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
 
 LOGGER = log_util.get_logger(__name__)
 
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc
-# pylint: disable=too-many-instance-attributes
+# Per thread storage.
+LOCAL_THREAD = threading.local()
 
 
 class BatchFirewallEnforcer(object):
@@ -52,14 +51,15 @@ class BatchFirewallEnforcer(object):
 
         Args:
           global_configs (dict): Global configurations.
-          dry_run: If True, will simply log what action would have been taken
-              without actually applying any modifications.
-          concurrent_workers: The number of parallel enforcement threads to
-              execute.
-          project_sema: An optional semaphore object, used to limit the number
-              of concurrent projects getting written to.
-          max_running_operations: Used to limit the number of concurrent write
-              operations on a single project's firewall rules. Set to 0 to
+          dry_run (bool): If True, will simply log what action would have been
+              taken without actually applying any modifications.
+          concurrent_workers (int): The number of parallel enforcement threads
+              to execute.
+          project_sema (threading.BoundedSemaphore): An optional semaphore
+              object, used to limit the number of concurrent projects getting
+              written to.
+          max_running_operations (int): Used to limit the number of concurrent
+              write operations on a single project's firewall rules. Set to 0 to
               allow unlimited in flight asynchronous operations.
         """
         self.global_configs = global_configs
@@ -69,34 +69,50 @@ class BatchFirewallEnforcer(object):
 
         self._project_sema = project_sema
         self._max_running_operations = max_running_operations
+        self._local = LOCAL_THREAD
 
-        self.compute = compute.ComputeClient(self.global_configs)
+    @property
+    def compute_client(self):
+        """A thread local instance of compute.ComputeClient.
 
-        self.batch_id = None
+        Returns:
+            compute.ComputeClient: A Compute API client instance.
+        """
+        if not hasattr(self._local, 'compute_client'):
+            self._local.compute_client = compute.ComputeClient(
+                self.global_configs)
+
+        return self._local.compute_client
 
     def run(self, project_policies, prechange_callback=None,
-            new_result_callback=None):
+            new_result_callback=None, add_rule_callback=None):
         """Runs the enforcer over all projects passed in to the function.
 
         Args:
-          project_policies: An iterable of (project_id, firewall_policy)
-              tuples to enforce or a dictionary in the format
-              {project_id: firewall_policy}
+          project_policies (iterable): An iterable of
+              (project_id, firewall_policy) tuples to enforce or a dictionary
+              in the format {project_id: firewall_policy}
 
-          prechange_callback: A callback function that will get called if the
-              firewall policy for a project does not match the expected policy,
-              before any changes are actually applied. If the callback returns
-              False then no changes will be made to the project. If it returns
-              True then the changes will be pushed.
+          prechange_callback (Callable): A callback function that will get
+              called if the firewall policy for a project does not match the
+              expected policy, before any changes are actually applied. If the
+              callback returns False then no changes will be made to the
+              project. If it returns True then the changes will be pushed.
 
               See FirewallEnforcer.apply_firewall() docstring for more details.
 
-          new_result_callback: An optional function to call with each new result
-              proto message as they are returned from a ProjectEnforcer thread.
+          new_result_callback (Callable): An optional function to call with each
+              new result proto message as they are returned from a
+              ProjectEnforcer thread.
+
+          add_rule_callback (Callable): A callback function that checks whether
+              a firewall rule should be applied. If the callback returns False,
+              that rule will not be modified.
 
         Returns:
-          The EnforcerLog proto for the last run, including individual results
-          for each project, and a summary of all results.
+          enforcer_log_pb2.EnforcerLog: The EnforcerLog proto for the last run,
+              including individual results for each project, and a summary of
+              all results.
         """
         if self._dry_run:
             LOGGER.info('Simulating changes')
@@ -104,11 +120,7 @@ class BatchFirewallEnforcer(object):
         if isinstance(project_policies, dict):
             project_policies = project_policies.items()
 
-        # Get a 64 bit int to use as the unique batch ID for this run.
-        self.batch_id = datelib.Timestamp.now().AsMicroTimestamp()
-
         self.enforcement_log.Clear()
-        self.enforcement_log.summary.batch_id = self.batch_id
         self.enforcement_log.summary.projects_total = len(project_policies)
 
         started_timestamp = datelib.Timestamp.now()
@@ -116,7 +128,8 @@ class BatchFirewallEnforcer(object):
 
         projects_enforced_count = self._enforce_projects(project_policies,
                                                          prechange_callback,
-                                                         new_result_callback)
+                                                         new_result_callback,
+                                                         add_rule_callback)
 
         finished_timestamp = datelib.Timestamp.now()
         total_time = (finished_timestamp.AsSecondsSinceEpoch() -
@@ -137,25 +150,31 @@ class BatchFirewallEnforcer(object):
         return self.enforcement_log
 
     def _enforce_projects(self, project_policies, prechange_callback=None,
-                          new_result_callback=None):
+                          new_result_callback=None, add_rule_callback=None):
         """Do a single enforcement run on the projects.
 
         Args:
-          project_policies: An iterable of (project_id, firewall_policy) tuples
-              to enforce.
-          prechange_callback: See docstring for self.Run().
-          new_result_callback: See docstring for self.Run().
+          project_policies (iterable): An iterable of
+              (project_id, firewall_policy) tuples to enforce.
+          prechange_callback (Callable): See docstring for self.Run().
+          new_result_callback (Callable): See docstring for self.Run().
+          add_rule_callback (Callable): See docstring for self.Run().
 
         Returns:
-          The number of projects that were enforced.
+          int: The number of projects that were enforced.
         """
+        # Get a 64 bit int to use as the unique batch ID for this run.
+        batch_id = datelib.Timestamp.now().AsMicroTimestamp()
+        self.enforcement_log.summary.batch_id = batch_id
+
         projects_enforced_count = 0
         future_to_key = {}
         with (concurrent.futures.ThreadPoolExecutor(
             max_workers=self._concurrent_workers)) as executor:
             for (project_id, firewall_policy) in project_policies:
                 future = executor.submit(self._enforce_project, project_id,
-                                         firewall_policy, prechange_callback)
+                                         firewall_policy, prechange_callback,
+                                         add_rule_callback)
                 future_to_key[future] = project_id
 
             for future in concurrent.futures.as_completed(future_to_key):
@@ -168,7 +187,7 @@ class BatchFirewallEnforcer(object):
                 result.CopyFrom(future.result())
 
                 # Make sure all results have the current batch_id set
-                result.batch_id = self.batch_id
+                result.batch_id = batch_id
                 result.run_context = enforcer_log_pb2.ENFORCER_BATCH
 
                 if new_result_callback:
@@ -176,29 +195,32 @@ class BatchFirewallEnforcer(object):
 
         return projects_enforced_count
 
-    def _enforce_project(self, project_id, firewall_policy, prechange_callback):
+    def _enforce_project(self, project_id, firewall_policy,
+                         prechange_callback=None, add_rule_callback=None):
         """Enforces the policy on the project.
 
         Args:
-          project_id: The project id to enforce.
-          firewall_policy: A list of rules which are used to construct a
+          project_id (str): The project id to enforce.
+          firewall_policy (list): A list of rules which are used to construct a
               fe.FirewallRules object of expected rules to enforce.
-          prechange_callback: See docstring for self.Run().
+          prechange_callback (Callable): See docstring for self.Run().
+          add_rule_callback (Callable): See docstring for self.Run().
 
         Returns:
-          A GceEnforcerResult proto
+          enforcer_log_pb2.GceFirewallEnforcementResult: The result proto.
         """
         enforcer = project_enforcer.ProjectEnforcer(
             project_id,
             global_configs=self.global_configs,
+            compute_service=self.compute_client.service,
             dry_run=self._dry_run,
             project_sema=self._project_sema,
             max_running_operations=self._max_running_operations)
 
         result = enforcer.enforce_firewall_policy(
             firewall_policy,
-            compute_service=self.compute.service,
-            prechange_callback=prechange_callback)
+            prechange_callback=prechange_callback,
+            add_rule_callback=add_rule_callback)
 
         return result
 

@@ -80,10 +80,8 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of violations.
         """
-        resource_name = 'violations'
-
         all_violations = self._flatten_violations(all_violations)
-        self._output_results_to_db(resource_name, all_violations)
+        self._output_results_to_db(all_violations)
 
     def _find_violations(self, cloudsql_data):
         """Find violations in the policies.

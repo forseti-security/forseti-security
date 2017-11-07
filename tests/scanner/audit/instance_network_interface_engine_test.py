@@ -173,6 +173,5 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
         self.assertEqual('network-3', actual_violations_list[0].network)
 
 
-
 if __name__ == "__main__":
     unittest.main()

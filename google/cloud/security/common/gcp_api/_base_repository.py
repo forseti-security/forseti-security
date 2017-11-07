@@ -28,16 +28,21 @@ from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.util import retryable_exceptions
 
-# Support older versions of apiclient without cache support
-SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
+CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
-# Default value num_retries within HttpRequest execute method
-NUM_HTTP_RETRIES = 5
+# Per request max wait timeout.
+HTTP_REQUEST_TIMEOUT = 30.0
 
 # Per thread storage.
 LOCAL_THREAD = threading.local()
 
 LOGGER = log_util.get_logger(__name__)
+
+# Default value num_retries within HttpRequest execute method
+NUM_HTTP_RETRIES = 5
+
+# Support older versions of apiclient without cache support
+SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 
 
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -61,8 +66,10 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
         object: A Resource object with methods for interacting with the service.
     """
     # The default logging of the discovery obj is very noisy in recent versions.
-    # Lower the default logging level of just this module to WARNING.
-    logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
+    # Lower the default logging level of just this module to WARNING unless
+    # debug is enabled.
+    if LOGGER.getEffectiveLevel() > logging.DEBUG:
+        logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
 
     discovery_kwargs = {
         'serviceName': service_name,
@@ -74,16 +81,16 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     return discovery.build(**discovery_kwargs)
 
 
-def _set_user_agent(credentials):
-    """Set custom Forseti user agent for all authenticated requests.
+def _set_ua_and_scopes(credentials):
+    """Set custom Forseti user agent and add cloud scopes on credential object.
 
     Args:
-        credentials (OAuth2Credentials): The credentials object used to
+        credentials (client.OAuth2Credentials): The credentials object used to
             authenticate all http requests.
 
     Returns:
-        OAuth2Credentials: The credentials object with the user agent attribute
-            set or updated.
+        client.OAuth2Credentials: The credentials object with the user agent
+            attribute set or updated.
     """
     if isinstance(credentials, client.OAuth2Credentials):
         user_agent = credentials.user_agent
@@ -95,6 +102,9 @@ def _set_user_agent(credentials):
                     httplib2.__version__,
                     forseti_security.__package_name__,
                     forseti_security.__version__))
+        if (isinstance(credentials, client.GoogleCredentials) and
+                credentials.create_scoped_required()):
+            credentials = credentials.create_scoped(list(CLOUD_SCOPES))
     return credentials
 
 
@@ -128,7 +138,7 @@ class BaseRepositoryClient(object):
             # Only share the http object when using the default credentials.
             self._use_cached_http = True
             credentials = client.GoogleCredentials.get_application_default()
-        self._credentials = _set_user_agent(credentials)
+        self._credentials = _set_ua_and_scopes(credentials)
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()
@@ -275,7 +285,7 @@ class GCPRepository(object):
         if self._use_cached_http and hasattr(self._local, 'http'):
             return self._local.http
 
-        http = httplib2.Http()
+        http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
         self._credentials.authorize(http=http)
         if self._use_cached_http:
             self._local.http = http

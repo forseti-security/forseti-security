@@ -168,7 +168,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             All policy binding members are in the whitelist.
         """
-        test_binding = {
+        test_binding = [IamPolicyBinding.create_from({
             'role': 'roles/owner',
             'members': [
                 'user:foo@company.com',
@@ -176,7 +176,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 'group:some-group@googlegroups.com',
                 'serviceAccount:12345@iam.gserviceaccount.com',
             ]
-        }
+        })]
         rule_bindings = [
             {
                 'role': 'roles/owner',
@@ -209,12 +209,12 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             No policy bindings found in the blacklist.
         """
-        test_binding = {
+        test_binding = [IamPolicyBinding.create_from({
             'role': 'roles/owner',
             'members': [
                 'user:someone@notcompany.com',
             ]
-        }
+        })]
         rule_bindings = [
             {
                 'role': 'roles/owner',
@@ -247,7 +247,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             All required members are found in the policy.
         """
-        test_binding = {
+        test_binding = [IamPolicyBinding.create_from({
             'role': 'roles/owner',
             'members': [
                 'user:foo@company.com',
@@ -255,7 +255,7 @@ class IamRulesEngineTest(ForsetiTestCase):
                 'group:some-group@googlegroups.com',
                 'serviceAccount:12345@iam.gserviceaccount.com',
             ]
-        }
+        })]
         rule_bindings = [
             {
                 'role': 'roles/owner',
@@ -286,14 +286,14 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             All required members are found in the policy.
         """
-        test_binding = {
+        test_binding = [IamPolicyBinding.create_from({
             'role': 'roles/owner',
             'members': [
                 'user:foo@company.com.abc',
                 'group:some-group@googlegroups.com',
                 'serviceAccount:12345@iam.gserviceaccount.com',
             ]
-        }
+        })]
         rule_bindings = [
             {
                 'role': 'roles/owner',
@@ -1337,6 +1337,71 @@ class IamRulesEngineTest(ForsetiTestCase):
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
                 members=tuple(expected_outstanding['roles/editor'])),
+        ])
+        self.assertItemsEqual(expected_violations, actual_violations)
+
+    def test_project_required(self):
+        """Test required rule."""
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES10, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock()
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
+        project1_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/viewer',
+                    'members': [
+                        'user:someone2@company.com',
+                    ]
+                },
+            ]
+        }
+        project2_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': [
+                        'user:someone1@company.com',
+                    ]
+                }
+            ]
+        }
+
+        actual_violations = set(itertools.chain(
+                rules_engine.find_policy_violations(
+                    self.project1, project1_policy),
+                rules_engine.find_policy_violations(
+                    self.project2, project2_policy)
+            )
+        )
+
+        # expected
+        expected_outstanding = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:*@company.com')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='project required',
+                resource_id=self.project2.id,
+                resource_type=self.project2.type,
+                violation_type='REMOVED',
+                role='roles/owner',
+                members=tuple(expected_outstanding['roles/owner'])),
         ])
         self.assertItemsEqual(expected_violations, actual_violations)
 

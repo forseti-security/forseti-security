@@ -26,8 +26,7 @@ global:
     # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-
-    email_recipient: EMAIL_RECIPIENT
+    email_recipient: EMAIL_RECIPIENT1,EMAIL_RECIPIENT2
     email_sender: EMAIL_SENDER
     sendgrid_api_key: SENDGRID_API_KEY
 
@@ -98,6 +97,9 @@ inventory:
 
 scanner:
 
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
     # Output path (do not include filename).
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
@@ -116,6 +118,8 @@ scanner:
         - name: bucket_acl
           enabled: true
         - name: cloudsql_acl
+          enabled: true
+        - name: firewall_rule
           enabled: true
         - name: forwarding_rule
           enabled: true
@@ -136,10 +140,24 @@ notifier:
     # to send alerts for every violation found
     resources:
         - resource: policy_violations
-          should_notify: true
+          should_notify: false
           pipelines:
+            # Email violations
             - name: email_violations_pipeline
               configuration:
                 sendgrid_api_key: ''
                 sender: ''
+                # Multiple recipients can be specified as comma-separated text.
                 recipient: ''
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: ''
+            # Slack webhook pipeline
+            # Create an incoming webhook in your organization's Slack setting, located at:
+            # https://[your_org].slack.com/apps/manage/custom-integrations
+            # Add the provided URL in the configuration below in `webhook_url`.
+            - name: slack_webhook_pipeline
+              configuration:
+                webhook_url: ''

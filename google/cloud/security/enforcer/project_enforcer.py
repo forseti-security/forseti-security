@@ -28,16 +28,11 @@ from google.cloud.security.common.util import log_util
 from google.cloud.security.enforcer import enforcer_log_pb2
 from google.cloud.security.enforcer import gce_firewall_enforcer as fe
 
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc
-
-
 STATUS_SUCCESS = enforcer_log_pb2.SUCCESS
 STATUS_ERROR = enforcer_log_pb2.ERROR
 STATUS_SKIPPED = enforcer_log_pb2.SKIPPED
 STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
+STATUS_UNSPECIFIED = enforcer_log_pb2.ENFORCEMENT_STATUS_UNSPECIFIED
 
 # Default number of times to try applying the firewall policy to a project
 # before the status is changed to ERROR and the enforcement fails.
@@ -49,33 +44,43 @@ LOGGER = log_util.get_logger(__name__)
 class ProjectEnforcer(object):
     """Manages enforcement of policies for a single cloud project."""
 
-    # TODO: Investigate improving so we can avoid the pylint disable.
-    # pylint: disable=too-many-instance-attributes
     def __init__(self,
                  project_id,
                  global_configs=None,
+                 compute_service=None,
                  dry_run=False,
                  project_sema=None,
                  max_running_operations=0):
         """Initialize.
 
         Args:
-          project_id: The project id for the project to enforce.
-          global_configs (dict): Global configurations.
-          dry_run: Set to true to ensure no actual changes are made to the
-              project. EnforcePolicy will still return a ProjectResult proto
-              showing the changes that would have been made.
-          project_sema: An optional semaphore object, used to limit the number
-              of concurrent projects getting written to.
-          max_running_operations: Used to limit the number of concurrent running
-              operations on an API.
-
+            project_id (str): The project id for the project to enforce.
+            global_configs (dict): Global configurations.
+            compute_service (discovery.Resource): A Compute API service object.
+                If not provided, one will be created using the default
+                credentials.
+            dry_run (bool): Set to true to ensure no actual changes are made to
+                the project. EnforcePolicy will still return a ProjectResult
+                proto showing the changes that would have been made.
+            project_sema (threading.BoundedSemaphore): An optional semaphore
+                object, used to limit the number of concurrent projects getting
+                written to.
+            max_running_operations (int): Used to limit the number of concurrent
+                running operations on an API.
         """
         self.project_id = project_id
 
-        self.global_configs = global_configs
+        if not compute_service:
+            gce_api = compute.ComputeClient(global_configs)
+            compute_service = gce_api.service
+
+        self.firewall_api = fe.ComputeFirewallAPI(compute_service,
+                                                  dry_run=dry_run)
+
         self.result = enforcer_log_pb2.ProjectResult()
+        self.result.status = STATUS_UNSPECIFIED
         self.result.project_id = self.project_id
+        self.result.timestamp_sec = datelib.Timestamp.now().AsMicroTimestamp()
 
         self._dry_run = dry_run
 
@@ -86,105 +91,146 @@ class ProjectEnforcer(object):
         else:
             self._operation_sema = None
 
-    # pylint: disable=too-many-return-statements,too-many-branches
-    # TODO: Investigate not having to disable some of these messages.
     def enforce_firewall_policy(self,
                                 firewall_policy,
-                                compute_service=None,
                                 networks=None,
                                 allow_empty_ruleset=False,
                                 prechange_callback=None,
+                                add_rule_callback=None,
                                 retry_on_dry_run=False,
                                 maximum_retries=MAX_ENFORCEMENT_RETRIES):
         """Enforces the firewall policy on the project.
 
         Args:
-          firewall_policy: A list of rules to enforce on the project.
-          compute_service: A Compute service object. If not provided, one will
-              be created using the default credentials.
-          networks: An optional list of network names to apply the policy to. If
-              undefined, then the policy will be applied to all networks.
-          allow_empty_ruleset: If set to true and firewall_policy has no rules,
-              all current firewall rules will be deleted from the project.
-          prechange_callback: An optional callback function to pass to
-              FirewallEnforcer.apply_firewall. It gets called if the
-              firewall policy for a project does not match the expected policy,
-              before any changes are actually applied. If the callback returns
-              False then no changes will be made to the project. If it returns
-              True then the changes will be pushed.
-
-              See FirewallEnforcer.apply_firewall() docstring for more details.
-          retry_on_dry_run: Set to True to retry applying firewall rules when
-              the expected policy does not match the current policy when
-              dry_run is enabled.
-          maximum_retries: The number of times enforce_firewall_policy will
-              attempt to set the current firewall policy to the expected
-              firewall policy. Set to 0 to disable retry behavior.
+            firewall_policy (list): A list of firewall rules that should be
+                configured on the project networks.
+            networks (list): A list of networks on the project that the
+                policy applies to. If undefined, then the policy will be applied
+                to all networks.
+            allow_empty_ruleset (bool): If set to true and firewall_policy has
+                no rules, all current firewall rules will be deleted from the
+                project.
+            prechange_callback (Callable): See FirewallEnforcer.apply_firewall()
+                docstring for more details.
+            add_rule_callback (Callable): A callback function that checks
+                whether a firewall rule should be applied. If the callback
+                returns False, that rule will not be modified.
+            retry_on_dry_run (bool): Set to True to retry applying firewall
+                rules when the expected policy does not match the current policy
+                when dry_run is enabled.
+            maximum_retries (int): The number of times enforce_firewall_policy
+                will attempt to set the current firewall policy to the expected
+                firewall policy. Set to 0 to disable retry behavior.
 
         Returns:
-          A ProjectResult proto with details on the status of the enforcement
-          and an audit log with any changes made.
+            enforcer_log_pb2.ProjectResult: A proto with details on the status
+                of the enforcement and an audit log with any changes made.
         """
-        if not compute_service:
-            gce_api = compute.ComputeClient(self.global_configs)
-            compute_service = gce_api.service
-
-        # pylint: disable=attribute-defined-outside-init
-        # TODO: Investigate improving to avoid the pylint disable.
-        self.firewall_api = fe.ComputeFirewallAPI(compute_service,
-                                                  dry_run=self._dry_run)
-
-        # pylint: disable=attribute-defined-outside-init
-        # TODO: Investigate improving to avoid the pylint disable.
-        self.firewall_policy = firewall_policy
-
         if networks:
-            self.project_networks = sorted(networks)
+            networks = sorted(networks)
         else:
-            self.project_networks = self._get_project_networks()
-
-        self.result.timestamp_sec = datelib.Timestamp.now().AsMicroTimestamp()
+            networks = self._get_project_networks()
+            if not networks:
+                self._set_error_status('no networks found for project')
+                return self.result
 
         try:
-            # pylint: disable=attribute-defined-outside-init
-            # TODO: Investigate improving to avoid the pylint disable.
-            self.enforcer = self._initialize_firewall_enforcer()
+            expected_rules = self._get_expected_rules(networks,
+                                                      firewall_policy)
+
+            rules_before_enforcement = self._get_current_fw_rules(
+                add_rule_callback)
+
         except EnforcementError as e:
-            return self._set_error_status(e.reason())
-        except ProjectDeletedError as e:
-            self.result.status = STATUS_DELETED
-            self.result.status_reason = 'Project scheduled for deletion: %s' % e
-            LOGGER.warn('Project %s scheduled for deletion: %s',
-                        self.project_id, e)
+            self._set_error_status(e.reason())
+        except (ComputeApiDisabledError, ProjectDeletedError) as e:
+            self._set_deleted_status(e)
 
-            return self.result
-        except ComputeApiDisabledError as e:
-            # Reuse the DELETED status, since the project should be moved to the
-            # archive queue if the API is disabled.
-            self.result.status = STATUS_DELETED
-            self.result.status_reason = 'Project has GCE API disabled: %s' % e
-            LOGGER.warn('Project %s has the GCE API disabled: %s',
-                        self.project_id, e)
+        else:
 
-            return self.result
+            firewall_enforcer = self._initialize_firewall_enforcer(
+                expected_rules, rules_before_enforcement,
+                add_rule_callback)
 
+            rules_after_enforcement = self._apply_firewall_policy(
+                firewall_enforcer,
+                expected_rules,
+                networks,
+                allow_empty_ruleset,
+                prechange_callback,
+                add_rule_callback,
+                retry_on_dry_run,
+                maximum_retries)
+
+            if self.result.status == STATUS_UNSPECIFIED:
+                self.result.status = STATUS_SUCCESS
+
+            self._update_fw_results(firewall_enforcer,
+                                    rules_before_enforcement,
+                                    rules_after_enforcement)
+
+        if not self.result.gce_firewall_enforcement.rules_modified_count:
+            LOGGER.info('Firewall policy not changed for %s', self.project_id)
+
+        return self.result
+
+    def _apply_firewall_policy(self,
+                               firewall_enforcer,
+                               expected_rules,
+                               networks,
+                               allow_empty_ruleset,
+                               prechange_callback,
+                               add_rule_callback,
+                               retry_on_dry_run,
+                               maximum_retries):
+        """Attempt to enforce the expected rules until successful.
+
+        Args:
+            firewall_enforcer (fe.FirewallEnforcer): The firewall enforcer
+                instance to use for updating the firewall rules.
+            expected_rules (fe.FirewallRules): A list of expected firewall
+                rules to apply to the project.
+            networks (list): A list of networks on the project that the policy
+                applies to.
+            allow_empty_ruleset (bool): If set to true and firewall_policy has
+                no rules, all current firewall rules will be deleted from the
+                project.
+            prechange_callback (Callable): See FirewallEnforcer.apply_firewall()
+                docstring for more details.
+            add_rule_callback (Callable): A callback function that checks
+                whether a firewall rule should be applied. If the callback
+                returns False, that rule will not be modified.
+            retry_on_dry_run (bool): Set to True to retry applying firewall
+                rules when the expected policy does not match the current policy
+                when dry_run is enabled.
+            maximum_retries (int): The number of times enforce_firewall_policy
+                will attempt to set the current firewall policy to the expected
+                firewall policy. Set to 0 to disable retry behavior.
+
+        Returns:
+            fe.FirewallRules: A FirewallRules instance with the firewall rules
+                configured on the project after enforcement.
+        """
+        rules_after_enforcement = None
         retry_enforcement_count = 0
-        while True:
+        while True and self.result.status not in (STATUS_ERROR, STATUS_DELETED):
+            change_count = 0
             try:
-                change_count = self.enforcer.apply_firewall(
+                change_count = firewall_enforcer.apply_firewall(
                     prechange_callback=prechange_callback,
                     allow_empty_ruleset=allow_empty_ruleset,
-                    networks=self.project_networks)
+                    networks=networks)
             except fe.FirewallEnforcementFailedError as e:
-                return self._set_error_status(
+                self._set_error_status(
                     'error enforcing firewall for project: %s', e)
+                change_count = None
 
             try:
-                # pylint: disable=attribute-defined-outside-init
-                # TODO: Investigate improving to avoid the pylint disable.
-                self.rules_after_enforcement = self._get_current_fw_rules()
+                rules_after_enforcement = self._get_current_fw_rules(
+                    add_rule_callback)
             except EnforcementError as e:
-                return self._set_error_status(e.reason())
+                self._set_error_status(e.reason())
+                change_count = None
 
             if not change_count:
                 # Don't attempt to retry if there were no changes. This can be
@@ -193,7 +239,7 @@ class ProjectEnforcer(object):
                 break
 
             if ((self._dry_run and not retry_on_dry_run) or
-                    self.rules_after_enforcement == self.expected_rules):
+                    rules_after_enforcement == expected_rules):
                 break
 
             retry_enforcement_count += 1
@@ -202,62 +248,49 @@ class ProjectEnforcer(object):
                             'rules enforced by the policy for project %s, '
                             'retrying. (Retry #%d)', self.project_id,
                             retry_enforcement_count)
-                self.enforcer.refresh_current_rules()
+                firewall_enforcer.refresh_current_rules()
             else:
-                return self._set_error_status('New firewall rules do not match '
-                                              'the expected rules enforced by '
-                                              'the policy')
+                self._set_error_status('New firewall rules do not match '
+                                       'the expected rules enforced by '
+                                       'the policy')
+        return rules_after_enforcement
 
-        self.result.status = STATUS_SUCCESS
-        self._update_fw_results()
-
-        if not self.result.gce_firewall_enforcement.rules_modified_count:
-            LOGGER.info('Firewall policy not changed for %s', self.project_id)
-
-        return self.result
-
-    def _initialize_firewall_enforcer(self):
+    def _initialize_firewall_enforcer(self,
+                                      expected_rules,
+                                      rules_before_enforcement,
+                                      add_rule_callback=None):
         """Gets current and expected rules, returns a FirewallEnforcer object.
 
+        Args:
+            expected_rules (fe.FirewallRules): A list of expected firewall
+                rules to apply to the project.
+            rules_before_enforcement (fe.FirewallRules): The list of current
+                firewall rules configured on the project.
+            add_rule_callback (Callable): A callback function that checks
+                whether a firewall rule should be applied. If the callback
+                returns False, that rule will not be modified.
+
         Returns:
-          A new FirewallEnforcer object configured with the expected policy for
-          the project.
-
-        Raises:
-          EnforcementError: Raised if there are any errors fetching the current
-              firewall rules or building the expected rules from the policy.
+            fe.FirewallEnforcer: A new FirewallEnforcer object configured with
+                the expected policy for the project.
         """
-
-        # pylint: disable=attribute-defined-outside-init
-        # TODO: Investigate improving to avoid the pylint disable.
-        if not self.project_networks:
-            raise EnforcementError(STATUS_ERROR,
-                                   'no networks found for project')
-
-        self.rules_before_enforcement = self._get_current_fw_rules()
-        # pylint: disable=attribute-defined-outside-init
-        # TODO: Investigate improving to avoid the pylint disable.
-        self.expected_rules = fe.FirewallRules(self.project_id)
-        try:
-            for network_name in self.project_networks:
-                self.expected_rules.add_rules(
-                    self.firewall_policy, network_name=network_name)
-        except fe.InvalidFirewallRuleError as e:
-            raise EnforcementError(STATUS_ERROR, 'error adding the expected '
-                                   'firewall rules from the policy: %s' % e)
-
         enforcer = fe.FirewallEnforcer(
             self.project_id,
             self.firewall_api,
-            self.expected_rules,
-            self.rules_before_enforcement,
+            expected_rules,
+            rules_before_enforcement,
             project_sema=self._project_sema,
-            operation_sema=self._operation_sema)
+            operation_sema=self._operation_sema,
+            add_rule_callback=add_rule_callback)
 
         return enforcer
 
     def _get_project_networks(self):
-        """Enumerate the current project networks and returns a sorted list."""
+        """Enumerate the current project networks and returns a sorted list.
+
+        Returns:
+            list: A sorted list of network names.
+        """
         networks = set()
         try:
             response = self.firewall_api.list_networks(
@@ -276,17 +309,54 @@ class ProjectEnforcer(object):
                                  item, self.project_id)
         return sorted(networks)
 
-    def _get_current_fw_rules(self):
-        """Create a new FirewallRules object with the current rules.
+    def _get_expected_rules(self, networks, firewall_policy):
+        """Builds a FirewallRules object with the rules that should be defined.
+
+        Args:
+            networks (list): A list of networks on the project that the
+                policy applies to.
+            firewall_policy (list): A list of firewall rules that should be
+                configured on the project networks.
 
         Returns:
-          A new FirewallRules object with the current rules added to it.
+            fe.FirewallRules: A new FirewallRules object with the expected
+                policy.
 
         Raises:
-          EnforcementError: Raised if there are any exceptions raised while
-              adding the firewall rules.
+            EnforcementError: Raised if one or more firewall rules in the policy
+                are invalid.
         """
-        current_rules = fe.FirewallRules(self.project_id)
+        expected_rules = fe.FirewallRules(self.project_id)
+        try:
+            for network_name in networks:
+                expected_rules.add_rules(
+                    firewall_policy, network_name=network_name)
+        except fe.InvalidFirewallRuleError as e:
+            raise EnforcementError(STATUS_ERROR, 'error adding the expected '
+                                   'firewall rules from the policy: %s' % e)
+        return expected_rules
+
+    def _get_current_fw_rules(self, add_rule_callback=None):
+        """Create a new FirewallRules object with the current rules.
+
+        Args:
+            add_rule_callback (Callable): A callback function that checks
+                whether a firewall rule should be applied. If the callback
+                returns False, that rule will not be modified.
+
+        Returns:
+            fe.FirewallRules: A new FirewallRules object with the current rules
+                added to it.
+
+        Raises:
+            ProjectDeletedError: Raised if the project has been deleted.
+            ComputeApiDisabledError: Raised if the Compute API is not enabled on
+                the project.
+            EnforcementError: Raised if there are any exceptions raised while
+                adding the firewall rules.
+        """
+        current_rules = fe.FirewallRules(self.project_id,
+                                         add_rule_callback=add_rule_callback)
         try:
             current_rules.add_rules_from_api(self.firewall_api)
         except errors.HttpError as e:
@@ -314,57 +384,63 @@ class ProjectEnforcer(object):
                                    'rules from API: %s' % e)
         return current_rules
 
-    def _update_fw_results(self):
-        """Update the result proto with details on any changes made."""
+    def _update_fw_results(self,
+                           firewall_enforcer,
+                           rules_before_enforcement,
+                           rules_after_enforcement):
+        """Update the result proto with details on any changes made.
+
+        Args:
+            firewall_enforcer (fe.FirewallEnforcer): The firewall enforcer
+                instance to use for updating the firewall rules.
+            rules_before_enforcement (fe.FirewallRules): The firewall rules
+                before enforcer made any changes.
+            rules_after_enforcement (fe.FirewallRules): The firewall rules
+                after enforcer made any changes.
+        """
         results = self.result.gce_firewall_enforcement
         results.rules_modified_count = 0
 
         for rule in sorted(
-                [r['name'] for r in self.enforcer.get_inserted_rules()]):
+                [r['name'] for r in firewall_enforcer.get_inserted_rules()]):
             results.rules_added.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-                [r['name'] for r in self.enforcer.get_deleted_rules()]):
+                [r['name'] for r in firewall_enforcer.get_deleted_rules()]):
             results.rules_removed.append(rule)
             results.rules_modified_count += 1
 
         for rule in sorted(
-                [r['name'] for r in self.enforcer.get_updated_rules()]):
+                [r['name'] for r in firewall_enforcer.get_updated_rules()]):
             results.rules_updated.append(rule)
             results.rules_modified_count += 1
 
-        # If an error occured during enforcement, rules_after_enforcement may
+        # If an error occurred during enforcement, rules_after_enforcement may
         # not exist yet.
-        # pylint: disable=attribute-defined-outside-init
-        # TODO: Investigate improving to avoid the pylint disable.
-        if not hasattr(self, 'rules_after_enforcement'):
-            try:
-                self.rules_after_enforcement = self._get_current_fw_rules()
-            except EnforcementError as e:
-                LOGGER.error(
-                    'Project %s raised an error while listing firewall '
-                    'rules after enforcement: %s', self.project_id, e)
+        if not rules_after_enforcement:
+            LOGGER.error(
+                'Project %s could not list firewall rules after enforcement',
+                self.project_id)
 
-                # Ensure original rules are in audit log in case roll back is
-                # required
-                results.rules_before.json = (
-                    self.rules_before_enforcement.as_json())
-                results.rules_before.hash = (
-                    hashlib.sha256(results.rules_before.json).hexdigest())
-                return
-
-        if self.rules_before_enforcement != self.rules_after_enforcement:
-            results.rules_before.json = self.rules_before_enforcement.as_json()
+            # Ensure original rules are in audit log in case roll back is
+            # required
+            results.rules_before.json = rules_before_enforcement.as_json()
             results.rules_before.hash = (
                 hashlib.sha256(results.rules_before.json).hexdigest())
-            results.rules_after.json = self.rules_after_enforcement.as_json()
+            return
+
+        if rules_before_enforcement != rules_after_enforcement:
+            results.rules_before.json = rules_before_enforcement.as_json()
+            results.rules_before.hash = (
+                hashlib.sha256(results.rules_before.json).hexdigest())
+            results.rules_after.json = rules_after_enforcement.as_json()
             results.rules_after.hash = (
                 hashlib.sha256(results.rules_after.json).hexdigest())
 
         for (rule_name,
-             rule) in sorted(self.rules_after_enforcement.rules.items()):
-            if rule == self.rules_before_enforcement.rules.get(rule_name, {}):
+             rule) in sorted(rules_after_enforcement.rules.items()):
+            if rule == rules_before_enforcement.rules.get(rule_name, {}):
                 results.rules_unchanged.append(rule_name)
 
         if (self.result.status == STATUS_SUCCESS and
@@ -373,8 +449,8 @@ class ProjectEnforcer(object):
             # Check if all previous rules were deleted and all current rules
             # were added during this enforcement. If so, this is a newly
             # enforced project.
-            previous_fw_rules_count = len(self.rules_before_enforcement.rules)
-            current_fw_rules_count = len(self.rules_after_enforcement.rules)
+            previous_fw_rules_count = len(rules_before_enforcement.rules)
+            current_fw_rules_count = len(rules_after_enforcement.rules)
             if (len(results.rules_removed) >= previous_fw_rules_count and
                     len(results.rules_added) == current_fw_rules_count):
                 LOGGER.info(
@@ -383,7 +459,12 @@ class ProjectEnforcer(object):
                 results.all_rules_changed = True
 
     def _set_error_status(self, msg, *args):
-        """Set status to result ERROR and update the reason string from msg."""
+        """Set status to result ERROR and update the reason string from msg.
+
+        Args:
+            msg (str): The error message to use as the status reason.
+            *args (list): Optional args to format the msg string with.
+        """
         if args:
             msg %= args
 
@@ -391,10 +472,23 @@ class ProjectEnforcer(object):
         self.result.status_reason = msg
         LOGGER.warn('Project %s had an error: %s', self.project_id, msg)
 
-        if hasattr(self, 'enforcer'):  # Verify enforcer was initialized.
-            self._update_fw_results()
+    def _set_deleted_status(self, e):
+        """Set status of result to DELETED and update reason string.
 
-        return self.result
+        Args:
+            e (Exception): The exception raised.
+        """
+        self.result.status = STATUS_DELETED
+        if isinstance(e, ProjectDeletedError):
+            self.result.status_reason = (
+                'Project scheduled for deletion: %s' % e)
+            LOGGER.warn('Project %s scheduled for deletion: %s',
+                        self.project_id, e)
+        elif isinstance(e, ComputeApiDisabledError):
+            self.result.status_reason = (
+                'Project has GCE API disabled: %s' % e)
+            LOGGER.warn('Project %s has the GCE API disabled: %s',
+                        self.project_id, e)
 
 
 class Error(Exception):
@@ -405,20 +499,39 @@ class EnforcementError(Error):
     """Error encountered while enforcing firewall on project."""
 
     def __init__(self, status, reason):
+        """Initialize.
+
+        Args:
+            status (int): The status code to use for the error.
+            reason (str): The reason to use for the error.
+        """
         self._status = int(status)
         self._status_string = enforcer_log_pb2.EnforcementStatus.Name(status)
         self._reason = reason
         super(EnforcementError, self).__init__(str(self))
 
     def status(self):
-        """Return status."""
+        """Return status.
+
+        Returns:
+            int: Status code.
+        """
         return self._status
 
     def reason(self):
-        """Return reason."""
+        """Return reason.
+
+        Returns:
+            str: Status reason.
+        """
         return self._reason
 
     def __str__(self):
+        """Stringify.
+
+        Returns:
+            str: The stringified error message.
+        """
         return '{}: {}'.format(self._status_string, self._reason)
 
 

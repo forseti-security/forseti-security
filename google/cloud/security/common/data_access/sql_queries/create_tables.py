@@ -35,6 +35,46 @@ CREATE_APPENGINE_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_APPENGINE_SERVICES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `app_id` varchar(255) DEFAULT NULL,
+        `service_id` varchar(255) DEFAULT NULL,
+        `service` json DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `service_key` (`app_id`, `service_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_APPENGINE_VERSIONS_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `app_id` varchar(255) DEFAULT NULL,
+        `service_id` varchar(255) DEFAULT NULL,
+        `version_id` varchar(255) DEFAULT NULL,
+        `version` json DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `version_key` (`app_id`, `service_id`, `version_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
+CREATE_APPENGINE_INSTANCES_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `app_id` varchar(255) DEFAULT NULL,
+        `service_id` varchar(255) DEFAULT NULL,
+        `version_id` varchar(255) DEFAULT NULL,
+        `instance_id` varchar(255) DEFAULT NULL,
+        `instance` json DEFAULT NULL,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `instance_key` (`app_id`, `service_id`, `version_id`,
+                   `instance_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 CREATE_BACKEND_SERVICES_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -212,6 +252,8 @@ CREATE_FIREWALL_RULES_TABLE = """
         `firewall_rule_source_ranges` json DEFAULT NULL,
         `firewall_rule_destination_ranges` json DEFAULT NULL,
         `firewall_rule_source_tags` json DEFAULT NULL,
+        `firewall_rule_source_service_accounts` json DEFAULT NULL,
+        `firewall_rule_target_service_accounts` json DEFAULT NULL,
         `firewall_rule_target_tags` json DEFAULT NULL,
         `firewall_rule_allowed` json DEFAULT NULL,
         `firewall_rule_denied` json DEFAULT NULL,
@@ -295,16 +337,6 @@ CREATE_GROUPS_TABLE = """
         `group_kind` varchar(255) DEFAULT NULL,
         `direct_member_count` bigint(20) DEFAULT NULL,
         `raw_group` json DEFAULT NULL,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-"""
-
-CREATE_GROUPS_VIOLATIONS_TABLE = """
-    CREATE TABLE `{0}` (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        `member_email` varchar(255) NOT NULL,
-        `group_email` varchar(255) NOT NULL,
-        `rule_name` json DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
@@ -498,10 +530,18 @@ CREATE_VIOLATIONS_TABLE = """
         `resource_id` varchar(255) NOT NULL,
         `rule_name` varchar(255) DEFAULT NULL,
         `rule_index` int DEFAULT NULL,
-        `violation_type` enum('UNSPECIFIED','ADDED','REMOVED',
-                              'BIGQUERY_VIOLATION', 'BUCKET_VIOLATION',
-                              'IAP_VIOLATION', 'CLOUD_SQL_VIOLATION',
+        `violation_type` enum('UNSPECIFIED',
+                              'ADDED','REMOVED',
+                              'BIGQUERY_VIOLATION',
+                              'BUCKET_VIOLATION',
+                              'CLOUD_SQL_VIOLATION',
+                              'FIREWALL_BLACKLIST_VIOLATION',
+                              'FIREWALL_MATCHES_VIOLATION',
+                              'FIREWALL_REQUIRED_VIOLATION',
+                              'FIREWALL_WHITELIST_VIOLATION',
                               'FORWARDING_RULE_VIOLATION',
+                              'GROUP_VIOLATION',
+                              'IAP_VIOLATION',
                               'INSTANCE_NETWORK_INTERFACE_VIOLATION') NOT NULL,
         `violation_data` json DEFAULT NULL,
         PRIMARY KEY (`id`)
