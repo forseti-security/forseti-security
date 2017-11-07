@@ -20,7 +20,7 @@ import parameterized
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.gcp_type.firewall_rule import FirewallRule
 from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import fw_rules_engine as fre
+from google.cloud.security.scanner.audit import firewall_rules_engine as fre
 from google.cloud.security.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import test_rules
@@ -1523,7 +1523,7 @@ class RuleEngineTest(ForsetiTestCase):
     def test_build_rule_book_from_yaml(self):
         rules_local_path = get_datafile_path(
             __file__, 'firewall_test_rules.yaml')
-        rules_engine = fre.FirewallRuleEngine(rules_file_path=rules_local_path)
+        rules_engine = fre.FirewallRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book({})
         self.assertEqual(4, len(rules_engine.rule_book.rules_map))
         self.assertEqual(1, len(rules_engine.rule_book.rule_groups_map))
@@ -1593,7 +1593,7 @@ class RuleEngineTest(ForsetiTestCase):
         self, project, policy_dict, expected_violations_dicts):
         rules_local_path = get_datafile_path(
             __file__, 'firewall_test_rules.yaml')
-        rules_engine = fre.FirewallRuleEngine(rules_file_path=rules_local_path)
+        rules_engine = fre.FirewallRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book({})
         resource = self.project_resource_map[project]
         policy = fre.firewall_rule.FirewallRule.from_dict(
