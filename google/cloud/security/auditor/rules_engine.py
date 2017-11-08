@@ -18,11 +18,8 @@ Reads and parses the rule configuration, then applies the configurations to
 their specified rules for evaluation.
 """
 
-import argparse as ap
-
 from google.cloud.security.auditor import rules_config_validator
 from google.cloud.security.auditor.rules import rule as generic_rule
-from google.cloud.security.common.gcp_type import project
 
 
 class RulesEngine(object):

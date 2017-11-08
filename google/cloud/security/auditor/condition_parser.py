@@ -18,7 +18,6 @@ From https://gist.github.com/cynici/5865326
 """
 
 import logging
-import sys
 
 import pyparsing
 
@@ -242,7 +241,7 @@ def parse(filter_expr, expected, params, parser=ConditionParser):
     if not parser:
         parser = ConditionParser(params)
 
-    logging.debug('\nexpr: %s, expected: %s' % (filter_expr, expected))
+    logging.debug('\nexpr: %s, expected: %s', filter_expr, expected)
 
     result = parser.eval_filter(filter_expr)
     if result != expected:

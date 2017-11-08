@@ -109,8 +109,8 @@ class Rule(object):
         resource_type = '%s.%s' % (
             resource.__module__, resource.__class__.__name__)
 
-        LOGGER.debug('... checking if %s applies to %s' % (
-            self.rule_id, resource_type))
+        LOGGER.debug('... checking if %s applies to %s',
+                     self.rule_id, resource_type)
 
         resource_cfg = None
         # Check if this Rule applies to this resource.
@@ -120,7 +120,7 @@ class Rule(object):
                 break
 
         if not resource_cfg:
-            LOGGER.debug('nope, continue on')
+            LOGGER.debug('resource config does not apply, continue on')
             return None
 
         # Create configuration parameter map for evaluating
