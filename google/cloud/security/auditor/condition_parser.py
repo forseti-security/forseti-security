@@ -19,7 +19,6 @@ From https://gist.github.com/cynici/5865326
 
 import logging
 import sys
-import traceback
 
 import pyparsing
 
@@ -243,60 +242,9 @@ def parse(filter_expr, expected, params, parser=ConditionParser):
     if not parser:
         parser = ConditionParser(params)
 
-    print '\nexpr: %s, expected: %s' % (filter_expr, expected)
+    logging.debug('\nexpr: %s, expected: %s' % (filter_expr, expected))
 
     result = parser.eval_filter(filter_expr)
     if result != expected:
         raise AssertionError("yields %s instead of %s" % (result, expected))
-    print 'Ok'
-
-
-def main():
-    """Run tests.
-
-    Returns:
-        int: The number of errors found.
-    """
-    parameters = {
-        'FRP': 100,
-        'satellite': 'A',
-    }
-    tests = [
-        # Filter_string, Expected_result)
-        ("199 / 2 > FRP", False),
-        ("101 == FRP + 1", True),
-        ("5 + 45 * 2 > FRP", False),
-        ("-5+5 < FRP", True),
-        ("satellite == 'N'", False),
-        ("1", True),
-        ("0", False),
-        ("FRP - 100 == 0", True),
-        ("FRP == 1 and satellite == 'T'", False),
-        ("FRP != 1 and not satellite == 'T'", True),
-        ("FRP == xyz", False),
-        ("FRP > 'abc'", False),
-        ("and and", False),
-        ("and or", False),
-        ("or not", False),
-        ("3 or not", False),
-        ("not", False),
-        ("3 3 3", False),
-        # packrat speeds up nested expressions tremendously
-        ("(FRP == 1) and ((satellite == 'T') or (satellite == 'A'))", False),
-    ]
-
-    logging.basicConfig(level=logging.DEBUG)
-    num_errors = 0
-    ap = ConditionParser(parameters)
-    for filter_expr, expected in tests:
-        try:
-            parse(filter_expr, expected, parameters, ap)
-        except Exception as err: # pylint: disable=broad-except
-            traceback.print_exc(file=sys.stderr)
-            print "%s: %s" % (filter_expr, err)
-            num_errors += 1
-    return num_errors
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+    logging.debug('Parsed successfully')

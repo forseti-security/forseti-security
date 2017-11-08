@@ -20,13 +20,6 @@ their specified rules for evaluation.
 
 import argparse as ap
 
-# dummy import to force building the namespace package to find
-# stuff in google.cloud.security.
-# Otherwise, we get the following error:
-# "ImportError: No module named cloud.security.common.util"
-# See https://github.com/google/protobuf/issues/1296#issuecomment-264265761
-# import google.protobuf
-
 from google.cloud.security.auditor import rules_config_validator
 from google.cloud.security.auditor.rules import rule as generic_rule
 from google.cloud.security.common.gcp_type import project
@@ -47,7 +40,6 @@ class RulesEngine(object):
     def setup(self):
         """Set up the RulesEngine."""
         valid_config = self.validate_config()
-        print valid_config
         for rule in valid_config.get('rules', []):
             self.rules.append(generic_rule.Rule.create_rule(rule))
 
@@ -70,33 +62,10 @@ class RulesEngine(object):
             list: A list of RuleResults.
         """
         results = []
-        print self.rules
         for rule in self.rules:
             result = rule.audit(resource)
             if not result:
                 continue
             results.append(result)
-        print results
 
         return results
-
-
-class Error(Exception):
-    """Base Error class."""
-
-
-def main():
-    """Main."""
-    parser = ap.ArgumentParser()
-    parser.add_argument('--rules-path', required=True)
-    parsed_args = parser.parse_args()
-
-    rules_engine = RulesEngine(parsed_args.rules_path)
-    rules_engine.setup()
-
-    proj1 = project.Project('proj1', 1111)
-    rules_engine.evaluate_rules(proj1)
-
-
-if __name__ == '__main__':
-    main()

@@ -18,7 +18,10 @@ import mock
 import unittest
 
 from google.cloud.security.auditor import rules_engine
+from google.cloud.security.auditor import rules_config_validator
 from google.cloud.security.auditor.rules import rule
+from google.cloud.security.common.gcp_type import project as project_resource
+from tests.auditor.test_data import test_auditor_data
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -26,39 +29,57 @@ class RulesEngineTest(ForsetiTestCase):
     """RulesEngineTest."""
 
     def setUp(self):
+        """Setup."""
         pass
+
+    @mock.patch.object(
+        rules_config_validator.RulesConfigValidator, 'validate')
+    def test_setup(self, mock_rules_validate):
+        """Test setup()."""
+        fake_rules_path = '/fake/path/rules.yaml'
+        rules_eng = rules_engine.RulesEngine(fake_rules_path)
+        mock_rules_validate.return_value = test_auditor_data.FAKE_RULES_CONFIG1
+        expected_rules = [
+            rule.Rule.create_rule(r)
+            for r in test_auditor_data.FAKE_RULES_CONFIG1.get('rules', [])]
+
+        rules_eng.setup()
+
+        self.assertEquals(expected_rules, rules_eng.rules)
+        self.assertEquals(fake_rules_path, rules_eng.rules_config_path)
+
+    @mock.patch.object(rule.Rule, 'audit', autospec=True)
+    def test_evaluate_rules(self, mock_rule_audit):
+        """Test evaluate_rules() returns expected results."""
+        fake_rules_path = '/fake/path/rules.yaml'
+        rules_eng = rules_engine.RulesEngine(fake_rules_path)
+        rules_eng.rules = [
+            rule.Rule.create_rule(r)
+            for r in test_auditor_data.FAKE_RULES_CONFIG1['rules']]
+
+        fake_project = project_resource.Project('proj1', 1111)
+        fake_result = rule.RuleResult(
+            rule_id=rules_eng.rules[0].rule_id,
+            resource=fake_project,
+            result=True,
+            metadata={})
+        expected_results = [fake_result]
+        mock_rule_audit.side_effect = [
+            fake_result,
+            None
+        ]
+        actual_results = rules_eng.evaluate_rules(fake_project)
+        self.assertEquals(expected_results, actual_results)
 
 
 class RulesTest(ForsetiTestCase):
     """RulesTest."""
 
-    def test_create_rule(self):
-        """Test create_rule()."""
-        rule_type = 'google.cloud.security.auditor.rules.rule.Rule'
-        fake_rule_def = {
-            'type': rule_type,
-            'id': 'rules.fake.1',
-            'description': 'Fake rule',
-            'configuration': {
-                'variables': [
-                    'xyz'
-                ],
-                'resources': [
-                    {
-                        'type': 'google.cloud.security.common.gcp_type.project.Project',
-                        'variables': [
-                            {'xyz': 'project_id'}
-                        ]
-                    }
-                ],
-                'condition': [
-                    '1 == 1'
-                ]
-            }
-        }
-
+    def test_create_rule_works(self):
+        """Test create_rule() works."""
+        fake_rule_def = test_auditor_data.FAKE_RULES_CONFIG1['rules'][0]
         new_rule = rule.Rule.create_rule(fake_rule_def)
-        self.assertEquals(rule_type, new_rule.type)
+        self.assertEquals(fake_rule_def['type'], new_rule.type)
 
 
 if __name__ == '__main__':

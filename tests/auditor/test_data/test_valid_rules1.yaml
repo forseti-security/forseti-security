@@ -16,7 +16,7 @@
 # Valid rules
 
 rules:
-  - type: google.cloud.security.auditor.rules.generic_rule
+  - type: google.cloud.security.auditor.rules.Rule
     description: Test valid rule
     id: rules.valid_rule.1
     configuration:
@@ -28,7 +28,7 @@ rules:
             myvar1: myprop1
       condition: myvar1 > 100
 
-  - type: google.cloud.security.auditor.rules.generic_rule
+  - type: google.cloud.security.auditor.rules.Rule
     description: Another test rule
     id: rules.valid_rule.2
     configuration:

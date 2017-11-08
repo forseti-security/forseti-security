@@ -23,6 +23,9 @@ import importlib
 from collections import namedtuple
 
 from google.cloud.security.auditor import condition_parser
+from google.cloud.security.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class Rule(object):
@@ -37,9 +40,36 @@ class Rule(object):
         """
         self.rule_id = rule_id
         self.description = description
-        self.config_variables = []
+        self.config_variables = {}
         self.resource_config = []
         self.condition = None
+
+    def __eq__(self, other):
+        """Test equality.
+
+        Make this simple: a Rule equals another Rule if the rule ids are
+        the same.
+
+        Args:
+            other (object): The other object to test against.
+
+        Returns:
+            bool: True if equal, False otherwise.
+        """
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.rule_id == other.rule_id
+
+    def __ne__(self, other):
+        """Test inequality.
+
+        Args:
+            other (object): The other object to test against.
+
+        Returns:
+            bool: True if not equal, False otherwise.
+        """
+        return not self == other
 
     @staticmethod
     def create_rule(rule_definition):
@@ -61,7 +91,7 @@ class Rule(object):
         new_rule.description = rule_definition.get('description')
 
         config = rule_definition.get('configuration', {})
-        new_rule.config_variables = config.get('variables', [])
+        new_rule.config_variables = config.get('variables', {})
         new_rule.resource_config = config.get('resources', [])
         new_rule.condition = config.get('condition')
         return new_rule
@@ -79,8 +109,8 @@ class Rule(object):
         resource_type = '%s.%s' % (
             resource.__module__, resource.__class__.__name__)
 
-        print '... checking if %s applies to %s' % (
-            self.rule_id, resource_type)
+        LOGGER.debug('... checking if %s applies to %s' % (
+            self.rule_id, resource_type))
 
         resource_cfg = None
         # Check if this Rule applies to this resource.
@@ -90,13 +120,13 @@ class Rule(object):
                 break
 
         if not resource_cfg:
-            print 'nope, continue on'
+            LOGGER.debug('nope, continue on')
             return None
 
         # Create configuration parameter map for evaluating
         # the rule condition statement.
         resource_vars = resource_cfg.get('variables', {})
-        print resource_vars
+        LOGGER.debug(resource_vars)
         config_var_params = {
             var_name: getattr(resource, res_prop)
             for (var_name, res_prop) in resource_vars.iteritems()

@@ -34,3 +34,46 @@ INVALID_RULES1_DUP_IDS = [
     rule_id
     for rule_id, count in collections.Counter(
         [r['id'] for r in INVALID_RULES1['rules']]).items() if count > 1]
+
+FAKE_RULES_CONFIG1 = {
+    'rules': [
+        {
+            'type': 'google.cloud.security.auditor.rules.rule.Rule',
+            'id': 'rules.fake.1',
+            'description': 'Fake rule',
+            'configuration': {
+                'variables': [
+                    'xyz'
+                ],
+                'resources': [
+                    {
+                        'type': 'google.cloud.security.common.gcp_type.project.Project',
+                        'variables': {'xyz': 'project_id'}
+                    }
+                ],
+                'condition': [
+                    '1 == 1'
+                ]
+            }
+        },
+        {
+            'type': 'google.cloud.security.auditor.rules.rule.Rule',
+            'id': 'rules.fake.2',
+            'description': 'Fake rule 2',
+            'configuration': {
+                'variables': [
+                    'abc'
+                ],
+                'resources': [
+                    {
+                        'type': 'google.cloud.security.common.gcp_type.organization.Organization',
+                        'variables': {'abc': 'organization_id'}
+                    }
+                ],
+                'condition': [
+                    '1 == 1'
+                ]
+            }
+        }
+    ]
+}
