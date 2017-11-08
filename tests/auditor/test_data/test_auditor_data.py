@@ -48,12 +48,10 @@ FAKE_RULES_CONFIG1 = {
                 'resources': [
                     {
                         'type': 'google.cloud.security.common.gcp_type.project.Project',
-                        'variables': {'xyz': 'project_id'}
+                        'variables': {'xyz': 'id'}
                     }
                 ],
-                'condition': [
-                    '1 == 1'
-                ]
+                'condition': '1 == 1'
             }
         },
         {
@@ -70,9 +68,7 @@ FAKE_RULES_CONFIG1 = {
                         'variables': {'abc': 'organization_id'}
                     }
                 ],
-                'condition': [
-                    '1 == 1'
-                ]
+                'condition': '1 == 1'
             }
         }
     ]
@@ -91,12 +87,10 @@ FAKE_INVALID_RULES_CONFIG1 = {
                 'resources': [
                     {
                         'type': 'google.cloud.security.common.gcp_type.project.Project',
-                        'variables': {'xyz': 'project_id'}
+                        'variables': {'xyz': 'id'}
                     }
                 ],
-                'condition': [
-                    '1 == 1'
-                ]
+                'condition': '1 == 1'
             }
         },
     ]
