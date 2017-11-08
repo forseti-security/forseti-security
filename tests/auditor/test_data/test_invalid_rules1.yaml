@@ -16,7 +16,7 @@
 # Invalid rules
 
 rules:
-  - type: google.cloud.security.auditor.rules.generic_rule
+  - type: google.cloud.security.auditor.rules.rule.Rule
     description: Test invalid rule
     id: rules.invalid_rule.1
     configuration:
@@ -29,7 +29,7 @@ rules:
             myvar1: myprop1
       condition: myvar1 > 100
 
-  - type: google.cloud.security.auditor.rules.generic_rule
+  - type: google.cloud.security.auditor.rules.rule.Rule
     description: Test invalid rule
     id: rules.invalid_rule.1
     configuration:
@@ -46,7 +46,7 @@ rules:
             jkl: aaa
       condition: authorized_networks != xyz
 
-  - type: google.cloud.security.auditor.rules.generic_rule
+  - type: google.cloud.security.auditor.rules.rule.Rule
     description: Test invalid rule 2
     id: rules.invalid_rule.2
     configuration:

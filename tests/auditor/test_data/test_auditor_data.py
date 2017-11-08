@@ -77,3 +77,27 @@ FAKE_RULES_CONFIG1 = {
         }
     ]
 }
+
+FAKE_INVALID_RULES_CONFIG1 = {
+    'rules': [
+        {
+            'type': 'google.cloud.security.auditor.rules.rule.NonexistentRule',
+            'id': 'rules.fake.1',
+            'description': 'Fake rule',
+            'configuration': {
+                'variables': [
+                    'xyz'
+                ],
+                'resources': [
+                    {
+                        'type': 'google.cloud.security.common.gcp_type.project.Project',
+                        'variables': {'xyz': 'project_id'}
+                    }
+                ],
+                'condition': [
+                    '1 == 1'
+                ]
+            }
+        },
+    ]
+}

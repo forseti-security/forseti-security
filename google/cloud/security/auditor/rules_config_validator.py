@@ -14,15 +14,12 @@
 
 """Rules configuration validator."""
 
-import argparse as ap
 import itertools
 import os
 
 from collections import defaultdict
 
 import pyparsing
-
-# import google.protobuf
 
 from google.cloud.security.common.util import config_validator
 from google.cloud.security.auditor import condition_parser
@@ -295,16 +292,3 @@ class ConditionParseError(Error):
         super(ConditionParseError, self).__init__(
             self.CUSTOM_ERROR_MSG.format(
                 rule_id, config_condition, parse_error))
-
-
-def main():
-    """main"""
-    parser = ap.ArgumentParser()
-    parser.add_argument('--rules-path', required=True)
-    parsed_args = parser.parse_args()
-
-    RulesConfigValidator.validate(parsed_args.rules_path)
-
-
-if __name__ == '__main__':
-    main()

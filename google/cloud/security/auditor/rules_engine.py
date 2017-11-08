@@ -20,6 +20,9 @@ their specified rules for evaluation.
 
 from google.cloud.security.auditor import rules_config_validator
 from google.cloud.security.auditor.rules import rule as generic_rule
+from google.cloud.security.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class RulesEngine(object):
@@ -37,8 +40,12 @@ class RulesEngine(object):
     def setup(self):
         """Set up the RulesEngine."""
         valid_config = self.validate_config()
-        for rule in valid_config.get('rules', []):
-            self.rules.append(generic_rule.Rule.create_rule(rule))
+        for rule_def in valid_config.get('rules', []):
+            try:
+                self.rules.append(generic_rule.Rule.create_rule(rule_def))
+            except generic_rule.InvalidRuleTypeError as err:
+                LOGGER.error('Error trying to create rule %s due to %s',
+                             rule_def.get('id'), err)
 
     def validate_config(self):
         """Validate the rules config.

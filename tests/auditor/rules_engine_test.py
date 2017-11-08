@@ -81,6 +81,12 @@ class RulesTest(ForsetiTestCase):
         new_rule = rule.Rule.create_rule(fake_rule_def)
         self.assertEquals(fake_rule_def['type'], new_rule.type)
 
+    def test_create_rule_fails(self):
+        """Test create_rule() fails on nonexistent rule type."""
+        fake_invalid_rule_def = test_auditor_data.FAKE_INVALID_RULES_CONFIG1['rules'][0]
+        with self.assertRaises(rule.InvalidRuleTypeError):
+            new_rule = rule.Rule.create_rule(fake_invalid_rule_def)
+
 
 if __name__ == '__main__':
     unittest.main()
