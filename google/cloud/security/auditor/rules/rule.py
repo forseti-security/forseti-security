@@ -88,7 +88,7 @@ class Rule(object):
         module = importlib.import_module('.'.join(parts[:-1]))
         try:
             rule_class = getattr(module, parts[-1])
-        except AttributeError as attr_err:
+        except AttributeError:
             raise InvalidRuleTypeError(rule_definition.get('type'))
         new_rule = rule_class()
 
