@@ -258,7 +258,7 @@ then
 	gcloud beta service-management enable cloudbuild.googleapis.com
 	gcloud beta service-management enable iam.googleapis.com
 	gcloud beta service-management enable bigquery-json.googleapis.com
-	gcloud beta service-management enable storage.googleapis.com
+	gcloud beta service-management enable storage-api.googleapis.com
 else
 	echo "API Enabling skipped, if you haven't enable them, you can do so in cloud console."
 fi
