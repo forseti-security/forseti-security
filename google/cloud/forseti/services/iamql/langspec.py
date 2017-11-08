@@ -14,6 +14,8 @@
 
 """ IAMQL grammar definition. """
 
+import pprint
+
 from pyparsing import Literal
 from pyparsing import CaselessLiteral
 from pyparsing import Word
@@ -22,11 +24,63 @@ from pyparsing import Optional
 from pyparsing import Forward
 from pyparsing import nums
 from pyparsing import alphas
+from pyparsing import alphanums
 from pyparsing import Suppress
-import pprint
+from pyparsing import Keyword
 
 from sqlalchemy.orm import aliased
 from sqlalchemy import and_
+
+entity_attributes = {
+    'resource': {
+        'path': {
+            'type': unicode,
+            },
+        'type': {
+            'type': unicode,
+            },
+        'name': {
+            'type': unicode,
+            },
+        'display_name': {
+            'type': unicode,
+            },
+        },
+
+    'role': {
+        'name': {
+            'type': unicode,
+            },
+        'title': {
+            'type': unicode,
+            },
+        'description': {
+            'type': unicode,
+            },
+        },
+
+    'permission': {
+        'name': {
+            'type': unicode,
+            },
+        },
+
+    'member': {
+        'name': {
+            'type': unicode,
+            },
+        'type': {
+            'type': unicode,
+            },
+        },
+
+    'group': {},
+
+    'user': {},
+
+    'binding': {},
+
+    }
 
 allowed_joins = {
     'role': [
@@ -45,6 +99,40 @@ allowed_joins = {
                   binding.table.role_name == role.table.name,
                   dao.TBL_BINDING_MEMBERS.c.members_name == member.table.name,
                   dao.TBL_BINDING_MEMBERS.c.bindings_id == binding.table.id)
+             )),
+        ],
+    'permission': [
+        ('included',
+         ['role'],
+         lambda dao, p, r: (
+             and_(dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
+                  dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
+             )),
+        ],
+    'resource': [
+        ('child',
+         ['resource'],
+         lambda dao, child, parent: (
+             and_(child.table.parent_type_name == parent.table.type_name)
+             )),
+        ('parent',
+         ['resource'],
+         lambda dao, parent, child: (
+             and_(child.table.parent_type_name == parent.table.type_name)
+             )),
+        ('ancestor',
+         ['resource'],
+         lambda dao, ancestor, descendant: (
+             and_(
+                 ancestor.table.full_name.startswith(
+                     descendant.table.full_name))
+             )),
+        ('descendant',
+         ['resource'],
+         lambda dao, descendant, ancestor: (
+             and_(
+                 ancestor.table.full_name.startswith(
+                     descendant.table.full_name))
              )),
         ],
     }
@@ -71,6 +159,10 @@ class Variable(dict):
     table = property(_get_table, _set_table, _del_table)
 
 
+class CompilationContext(object):
+    pass
+
+
 class QueryCompiler(object):
     def __init__(self, data_access, session, iam_query):
         self.session = session
@@ -80,6 +172,7 @@ class QueryCompiler(object):
         self.variables = {}
         self.projection = []
         self.joins = []
+        self.last_defined_variable = None
 
     def get_table_by_entity(self, entity):
         type_mapping = {
@@ -88,7 +181,6 @@ class QueryCompiler(object):
                 'permission': self.data_access.TBL_PERMISSION,
                 'binding': self.data_access.TBL_BINDING,
                 'member': self.data_access.TBL_MEMBER,
-                'role_permission': self.data_access.TBL_ROLE_PERMISSION
             }
 
         return type_mapping[entity]
@@ -98,6 +190,7 @@ class QueryCompiler(object):
                 EntityDefinition: self.visit_entity_definition,
                 Projection: self.visit_projection,
                 Join: self.visit_join,
+                EntityFilter: self.visit_entity_filter,
             }
         for base_type, handler in handlers.iteritems():
             if isinstance(node, base_type):
@@ -120,6 +213,9 @@ class QueryCompiler(object):
     def visit_join(self, node, transformed_children):
         self.joins.append(node)
 
+    def visit_entity_filter(self, node, transformed_children):
+        self.node.compile()
+
     def generate_join_filter(self, join):
         obj = self.variables[join.object]
         obj_type = obj.entity
@@ -132,17 +228,18 @@ class QueryCompiler(object):
                         raise TypeError(
                             'Relation: {}, expected: {}, actual: {}'
                             .format(relation, arg_type, ))
-                generated = generator(self.data_access,
-                                      obj,
-                                      *map(lambda ident:
-                                           self.variables[ident], join.arglist))
-                return generated
+
+                return generator(self.data_access,
+                                 obj,
+                                 *map(lambda ident:
+                                      self.variables[ident], join.arglist))
 
         raise Exception('Undefined join relationship: {}'.format(join))
 
     def compile(self):
         ast = BNF().parseString(self.iam_query, parseAll=True)
         query_set = ast[0]
+        query_set.typecheck()
         query_set.accept(self)
 
         entities = []
@@ -154,7 +251,7 @@ class QueryCompiler(object):
         for join in self.joins:
             join_clause = self.generate_join_filter(join)
             qry = qry.filter(join_clause)
-
+        print qry
         return qry.distinct()
 
 
@@ -163,6 +260,9 @@ class Node(list):
         super(Node, self).__init__(args)
         self.orig = orig
         self.loc = loc
+
+        self._connected = False
+        self._parent = None
 
     def __eq__(self, other):
         return (
@@ -186,11 +286,39 @@ class Node(list):
             super(Node, self).__repr__())
 
     def accept(self, visitor):
+        if not self._connected:
+            self._connect()
         new_nodes = []
         for node in self:
             if isinstance(node, Node):
                 new_nodes.append(node.accept(visitor))
         return visitor.visit(self, new_nodes)
+
+    def _connect(self, parent=None):
+        if not self._connected:
+            self._connected = True
+            self._parent = parent
+
+            for item in self:
+                if isinstance(item, Node):
+                    item._connect(self)
+
+    def _find_ancestor(self, cls):
+        if not self._parent:
+            return None
+        elif isinstance(self, cls):
+            return self
+        return self._parent._find_ancestor(cls)
+
+    def typecheck(self):
+        if not self._connected:
+            self._connect()
+        for item in self:
+            if isinstance(item, Node):
+                item.typecheck()
+
+    def compile(self, context):
+        pass
 
 
 class Selection(Node):
@@ -251,7 +379,126 @@ class EntityDefinition(Node):
 
 
 class EntityFilter(Node):
-    pass
+    def compile(self):
+        pass
+
+
+class Not(Node):
+    def compile(self):
+        pass
+
+
+class And(Node):
+    def compile(self):
+        pass
+
+
+class Or(Node):
+    def compile(self):
+        pass
+
+
+class Paren(Node):
+    def compile(self):
+        pass
+
+
+class Attribute(Node):
+    def __init__(self, *args, **kwargs):
+        super(Attribute, self).__init__(*args, **kwargs)
+        self.attribute_type = None
+
+    @property
+    def name(self):
+        return self[0]
+
+    def typecheck(self):
+        entity_def = self._find_ancestor(EntityDefinition)
+        if entity_def is None:
+            raise Exception('Unable to find ancestor node')
+
+        entity = entity_def.entity
+        self.attribute_type = entity_attributes[entity][self.name]['type']
+
+    def type_of(self):
+        return (self.attribute_type
+                if self.attribute_type
+                else self.typecheck())
+
+    def compile(self):
+        pass
+
+
+class Operator(Node):
+    def __init__(self, *args, **kwargs):
+        super(Operator, self).__init__(*args, **kwargs)
+
+    @property
+    def right(self):
+        return self[2]
+
+    @property
+    def left(self):
+        return self[0]
+
+    def typecheck(self):
+        try:
+            self.left.typecheck()
+            self.right.typecheck()
+        except Exception:
+            import code
+            code.interact(local=locals())
+            raise
+
+        if self.right.type_of() != self.left.type_of():
+            raise TypeError('type({}) != type({})'.format(self.left,
+                                                          self.right))
+
+
+class Scalar(Node):
+    def typecheck(self):
+        pass
+
+
+class String(Scalar):
+    @property
+    def value(self):
+        return self[0]
+
+    def type_of(self):
+        return unicode
+
+
+class Number(Node):
+    @property
+    def value(self):
+        return self[0]
+
+    def type_of(self):
+        return int
+
+
+class Comparison(Operator):
+    def compile(self):
+        ops = {
+                '==': self[0].compile().__eq__,
+                '!=': self[0].compile().__ne__,
+                '>': self[0].compile().__gt__,
+                '<': self[0].compile().__lt__,
+                '>=': self[0].compile().__ge__,
+                '<=': self[0].compile().__le__,
+            }
+        return ops[self[1]](self[2].compile())
+
+
+class InOperator(Node):
+    def compile(self):
+        pass
+
+
+class LikeOperator(Node):
+    def compile(self):
+        pass
 
 
 def BNF():
@@ -261,7 +508,6 @@ def BNF():
         object: BNF
     """
 
-    tbl_policy = CaselessLiteral('policy')
     tbl_resource = CaselessLiteral('resource')
     tbl_role = CaselessLiteral('role')
     tbl_permission = CaselessLiteral('permission')
@@ -278,10 +524,24 @@ def BNF():
     COLON = Suppress(':')
     DOT = Suppress('.')
     COMMA = Suppress(',')
-    EQUAL = Literal('==')
+    DOUBLE_QUOTE = Suppress('"')
+    LBRACK = Suppress('[')
+    RBRACK = Suppress(']')
+
+    EQ = Literal('==')
+    NEQ = Literal('!=')
+    GT = Literal('>')
+    LT = Literal('<')
+    LTE = Literal('<=')
+    GTE = Literal('>=')
+
+    AND = Keyword('and')
+    OR = Keyword('or')
+    NOT = Keyword('not')
+    IN = Keyword('in')
+    LIKE = Keyword('like')
 
     entity = (
-        tbl_policy |
         tbl_resource |
         tbl_role |
         tbl_permission |
@@ -290,16 +550,40 @@ def BNF():
         tbl_user |
         tbl_binding)
 
+    string = DOUBLE_QUOTE + Word(alphanums) + DOUBLE_QUOTE
     number = Word(nums)
     relation = Word(alphas)
-    ident = Word(alphas)
-    attribute = Word(alphas)
-    filterspec = Group(attribute + EQUAL + number)
-    arglist = Forward()
-    arglist = filterspec + Optional(COMMA + arglist)
+    ident = Word(alphanums)
+    attribute = Attribute.build(Word(alphas))
+
+    comparator = EQ | NEQ | GT | LT | LTE | GTE
+    literal = Number.build(number) | String.build(string)
+
+    literal_list_item = Forward()
+    literal_list_item << literal + Optional(COMMA + literal_list_item)
+    literal_list = LBRACK + literal_list_item + RBRACK
+
+    comparison = (
+        LikeOperator.build(attribute + LIKE + string) |
+        InOperator.build(attribute + IN + literal_list) |
+        Comparison.build(attribute + comparator + literal) |
+        Comparison.build(literal + comparator + attribute)
+        )
+
+    entityfilter = Forward()
+    entityfilter << (
+        comparison |
+        Not.build(NOT + LPAREN + entityfilter + RPAREN) |
+        And.build(LPAREN + entityfilter + RPAREN + AND + LPAREN + entityfilter + RPAREN) |
+        Or.build(LPAREN + entityfilter + RPAREN + OR + LPAREN + entityfilter + RPAREN) |
+        Paren.build(LPAREN + entityfilter + RPAREN)
+        )
+
     decl = (
         ident + entity +
-        Optional(LPAREN + EntityFilter.build(Optional(arglist)) + RPAREN) +
+        Optional(LPAREN +
+                 EntityFilter.build(entityfilter) +
+                 RPAREN) +
         SEMICOLON
         )
 
@@ -341,5 +625,7 @@ if __name__ == "__main__":
         bnf = BNF()
         ast = bnf.parseFile('test.query', parseAll=True)
         pprint.pprint(ast)
+        query_set = ast[0]
+        query_set.typecheck()
 
     test()

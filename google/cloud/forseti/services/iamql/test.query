@@ -1,31 +1,12 @@
 q:
 {
-	r role(a==3);
-	p permission;
+  r role(((not(name == "felix")) or (name == "bar")));
+  p permission;
 }
 {
-	r.has(p);
+  r.has(p);
 }
 {
-	r,p
+  r,p
 }
 
-p:
-{
-	x policy;
-}
-{
-}
-{
-	x
-}
-
-z:
-{
-  x resource;
-}
-{
-}
-{
-	x
-}

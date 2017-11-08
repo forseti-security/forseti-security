@@ -240,14 +240,20 @@ def define_model(model_name, dbengine, model_seed):
             return "<Resource(full_name='{}', name='{}' type='{}')>".format(
                 self.full_name, self.name, self.type)
 
-        def get_columns(self):
+        def _column_decls(self):
             return {
-                'name': self.name,
-                'type': self.type,
-                'display_name': self.display_name,
-                'full_name': self.full_name,
-                'policy_update_counter': self.policy_update_counter,
-                }.iteritems()
+                'name': (self.name, unicode),
+                'type': (self.type, unicode),
+                'display_name': (self.display_name, unicode),
+                'full_name': (self.full_name, unicode),
+                'policy_update_counter': (self.policy_update_counter, int),
+                }
+
+        def get_columns(self):
+            return {k: v[0] for k, v in self._column_decls().iteritems()}
+
+        def get_column_type(self, column):
+            return self._column_decls()[column][1]
 
     Resource.children = relationship(
         "Resource", order_by=Resource.full_name, back_populates="parent")
@@ -283,12 +289,18 @@ def define_model(model_name, dbengine, model_seed):
             return "<Member(name='{}', type='{}')>".format(
                 self.name, self.type)
 
-        def get_columns(self):
+        def _column_decls(self):
             return {
-                'name': self.name,
-                'type': self.type,
-                'member_name': self.member_name,
-                }.iteritems()
+                'name': (self.name, unicode),
+                'type': (self.type, unicode),
+                'member_name': (self.member_name, unicode),
+                }
+
+        def get_columns(self):
+            return {k: v[0] for k, v in self._column_decls().iteritems()}
+
+        def get_column_type(self, column):
+            return self._column_decls()[column][1]
 
     class GroupInGroup(base):
         """Row for a group-in-group membership."""
@@ -330,11 +342,17 @@ def define_model(model_name, dbengine, model_seed):
                 self.resource_type_name,
                 self.members)
 
-        def get_columns(self):
+        def _column_decls(self):
             return {
-                'resource': self.resource_type_name,
-                'role': self.role_name,
-                }.iteritems()
+                'resource': (self.resource_type_name, unicode),
+                'role': (self.role_name, unicode),
+                }
+
+        def get_columns(self):
+            return {k: v[0] for k, v in self._column_decls().iteritems()}
+
+        def get_column_type(self, column):
+            return self._column_decls()[column][1]
 
     class Role(base):
         """Row entry for an IAM role."""
@@ -352,13 +370,19 @@ def define_model(model_name, dbengine, model_seed):
         def __repr__(self):
             return "<Role(name='%s')>" % (self.name)
 
-        def get_columns(self):
+        def _column_decls(self):
             return {
-                'name': self.name,
-                'title': self.title,
-                'description': self.description,
-                'custom': self.custom,
-                }.iteritems()
+                'name': (self.name, unicode),
+                'title': (self.title, unicode),
+                'description': (self.description, unicode),
+                'custom': (self.custom, int),
+                }
+
+        def get_columns(self):
+            return {k: v[0] for k, v in self._column_decls().iteritems()}
+
+        def get_column_type(self, column):
+            return self._column_decls()[column][1]
 
     class Permission(base):
         """Row entry for an IAM permission."""
@@ -372,10 +396,16 @@ def define_model(model_name, dbengine, model_seed):
         def __repr__(self):
             return "<Permission(name='%s')>" % (self.name)
 
-        def get_columns(self):
+        def _column_decls(self):
             return {
-                'name': self.name,
-                }.iteritems()
+                'name': (self.name, unicode),
+                }
+
+        def get_columns(self):
+            return {k: v[0] for k, v in self._column_decls().iteritems()}
+
+        def get_column_type(self, column):
+            return self._column_decls()[column][1]
 
     # pylint: disable=too-many-public-methods
     class ModelAccess(object):
@@ -433,7 +463,7 @@ def define_model(model_name, dbengine, model_seed):
                 for index, item in enumerate(row):
                     converted_row[index] = column_desc[index]['name']
                     converted_row[converted_row[index]] = (
-                        {name: value for name, value in item.get_columns()})
+                        {name: value for name, value in item.get_columns().iteritems()})
                 yield converted_row
 
         @classmethod
