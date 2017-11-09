@@ -15,6 +15,8 @@ currently schedule or execute Enforcer. You'll use DM to do the following:
   - Manage Forseti Security configuration and automatically run Forseti
   Inventory and Scanner.
 
+**This is the manual version of the [Quickstart]({% link _docs/quickstarts/forseti-security/index.md %}).**
+
 ## Before you begin
 
 To complete this guide, you will need:
@@ -29,7 +31,8 @@ To complete this guide, you will need:
 
 ### Customizing deployment templates
 
-Make a copy of `deploy-forseti.yaml.sample` as `deploy-forseti.yaml` and update
+The Forseti deployment template files can be found in the `deployment-templates` directory.
+Make a copy of [deploy-forseti.yaml.sample](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/deployment-templates/deploy-forseti.yaml.sample) as `deploy-forseti.yaml` and update
 at least the following variables:
 
   - `CLOUDSQL_INSTANCE_NAME`

@@ -59,6 +59,30 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
 
 ## Setting up local environment
 
+### Ubuntu setup
+
+Install the necessary python dev tools using the following command:
+
+```bash
+$ sudo apt-get install python-pip python-dev
+```
+
+### Mac setup
+
+This guide makes a very light assumption that you have [Homebrew](https://brew.sh).
+
+Use the following command to install python (which will also install the necessary python dev tools):
+
+```bash
+$ brew install python
+```
+
+Also install openssl:
+
+```bash
+$ brew install openssl
+```
+
 ### Installing mysql_config
 
 The MySql-python library requires the `mysql_config` utility to be present in your system.
@@ -75,14 +99,9 @@ Following are example commands to install `mysql_config`:
 
 ### Creating a virtualenv
 
-Use the commands below (or whatever the equivalent is for your Linux/OS X system) 
-to set up a virtualenv:
+Use the following command to create a virtualenv:
 
   ```bash
-  # install virtualenvwrapper
-  $ sudo apt-get install python-pip
-  $ sudo pip install --upgrade virtualenvwrapper
-
   # create a virtualenv
   $ mkvirtualenv forseti-security
   $ workon forseti-security
@@ -101,7 +120,16 @@ Use the command below to get the Forseti code if you haven't already:
 Use the following command to install required build dependencies:
 
   ```bash
-  $ pip install grpcio grpcio-tools google-apputils
+  $ pip install --upgrade \
+    coverage \
+    codecov \
+    google-apputils \
+    grpcio==1.4.0 \
+    grpcio-tools==1.4.0 \
+    mock \
+    netaddr \
+    parameterized \
+    pylint
   ```
 
 ### Running the python setup

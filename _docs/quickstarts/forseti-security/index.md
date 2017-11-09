@@ -5,7 +5,10 @@ order: 002
 # {{ page.title }}
 
 This quickstart explains how to use the Forseti setup wizard, which helps to 
-automate some of the Forseti installation and setup process.
+automate some of the Forseti installation and setup on GCP.
+
+**If you are trying to install Forseti in a developer environment, please
+refer to the [Development Environment Setup]({% link _docs/howto/deploy/dev-setup.md %}).**
 
 Setup wizard is not available prior to version 1.1.0.
 
@@ -91,7 +94,7 @@ It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quicks
 
 ## What's next
 
-  - Configure [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
+  - Customize [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
   [Scanner]({% link _docs/quickstarts/scanner/index.md %}),
   and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %}).
   - Configure Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
