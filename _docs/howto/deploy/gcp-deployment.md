@@ -15,6 +15,8 @@ currently schedule or execute Enforcer. You'll use DM to do the following:
   - Manage Forseti Security configuration and automatically run Forseti
   Inventory and Scanner.
 
+**This is the manual version of the [Quickstart]({% link _docs/quickstarts/forseti-security/index.md %}).**
+
 ## Before you begin
 
 To complete this guide, you will need:
