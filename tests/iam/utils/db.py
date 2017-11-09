@@ -18,7 +18,7 @@ import logging
 import os
 import tempfile
 
-from google.cloud.security.iam.dao import create_engine
+from google.cloud.forseti.services.dao import create_engine
 
 
 def create_test_engine(enforce_fks=True):

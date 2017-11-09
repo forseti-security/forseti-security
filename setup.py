@@ -23,14 +23,14 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-import google.cloud.security
+import google.cloud.forseti
 
-FORSETI_VERSION = google.cloud.security.__version__
+FORSETI_VERSION = google.cloud.forseti.__version__
 
 NAMESPACE_PACKAGES = [
     'google',
     'google.cloud',
-    'google.cloud.security'
+    'google.cloud.forseti'
 ]
 
 INSTALL_REQUIRES = [
@@ -113,12 +113,12 @@ setup(
     keywords='gcp google cloud platform security tools',
     entry_points={
         'console_scripts': [
-            'forseti_inventory = google.cloud.security.stubs:RunForsetiInventory',
-            'forseti_scanner = google.cloud.security.stubs:RunForsetiScanner',
-            'forseti_enforcer = google.cloud.security.stubs:RunForsetiEnforcer',
-            'forseti_notifier = google.cloud.security.stubs:RunForsetiNotifier',
-            'forseti_api = google.cloud.security.stubs:RunForsetiApi',
-            'forseti_iam = google.cloud.security.stubs:RunExplainCli',
+            'forseti_inventory = google.cloud.forseti.stubs:RunForsetiInventory',
+            'forseti_scanner = google.cloud.forseti.stubs:RunForsetiScanner',
+            'forseti_enforcer = google.cloud.forseti.stubs:RunForsetiEnforcer',
+            'forseti_notifier = google.cloud.forseti.stubs:RunForsetiNotifier',
+            'forseti_api = google.cloud.forseti.stubs:RunForsetiApi',
+            'forseti_iam = google.cloud.forseti.stubs:RunExplainCli',
         ]
     },
     zip_safe=False,   # Set to False: apputils doesn't like zip_safe eggs

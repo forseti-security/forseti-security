@@ -16,7 +16,7 @@
 
 from tests.common.gcp_type.test_data import fake_instance
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type import instance
+from google.cloud.forseti.common.gcp_type import instance
 
 
 class InstanceTest(ForsetiTestCase):

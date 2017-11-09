@@ -18,12 +18,12 @@ import mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type import backend_service
-from google.cloud.security.common.gcp_type import instance_group
-from google.cloud.security.common.gcp_type import instance
-from google.cloud.security.common.gcp_type import instance_template
-from google.cloud.security.common.gcp_type import key
-from google.cloud.security.common.gcp_type import network
+from google.cloud.forseti.common.gcp_type import backend_service
+from google.cloud.forseti.common.gcp_type import instance_group
+from google.cloud.forseti.common.gcp_type import instance
+from google.cloud.forseti.common.gcp_type import instance_template
+from google.cloud.forseti.common.gcp_type import key
+from google.cloud.forseti.common.gcp_type import network
 
 
 class KeyTest(ForsetiTestCase):

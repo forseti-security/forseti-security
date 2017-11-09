@@ -16,7 +16,7 @@
 
 import copy
 
-from google.cloud.security.common.util import parser
+from google.cloud.forseti.common.util import parser
 
 FAKE_PROJECT_SERVICE_ACCOUNTS_MAP = {
     'project1': [

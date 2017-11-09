@@ -13,8 +13,8 @@
 # limitations under the License.
 
 
-from google.cloud.security.iam.server import AbstractServiceConfig
-from google.cloud.security.iam.server import AbstractInventoryConfig
+from google.cloud.forseti.services.server import AbstractServiceConfig
+from google.cloud.forseti.services.server import AbstractInventoryConfig
 
 
 class InventoryConfig(AbstractInventoryConfig):

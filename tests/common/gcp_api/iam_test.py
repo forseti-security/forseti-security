@@ -20,8 +20,8 @@ from oauth2client import client
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_iam_responses as fake_iam
 from tests.common.gcp_api.test_data import http_mocks
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_api import iam
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import iam
 
 
 class IamTest(unittest_utils.ForsetiTestCase):

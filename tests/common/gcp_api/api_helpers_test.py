@@ -19,8 +19,8 @@ import mock
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_key_file
-from google.cloud.security.common.gcp_api import api_helpers
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import api_helpers
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 
 
 class ApiHelpersTest(unittest_utils.ForsetiTestCase):

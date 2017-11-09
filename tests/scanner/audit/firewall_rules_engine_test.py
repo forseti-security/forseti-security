@@ -18,10 +18,10 @@ import unittest
 import parameterized
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type.firewall_rule import FirewallRule
-from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import firewall_rules_engine as fre
-from google.cloud.security.scanner.audit import rules as scanner_rules
+from google.cloud.forseti.common.gcp_type.firewall_rule import FirewallRule
+from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
+from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
+from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import test_rules
 
@@ -1003,7 +1003,7 @@ class RuleBookTest(ForsetiTestCase):
 
     def setUp(self):
         self.mock_org_rel_dao = mock.patch(
-            'google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao').start()
+            'google.cloud.forseti.common.data_access.org_resource_rel_dao.OrgResourceRelDao').start()
 
     @parameterized.parameterized.expand([
         (

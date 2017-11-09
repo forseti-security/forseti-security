@@ -22,10 +22,10 @@ import unittest
 
 from MySQLdb import DataError
 
-from google.cloud.security.common.data_access import _db_connector
-from google.cloud.security.common.data_access import errors
-from google.cloud.security.common.data_access import bucket_dao
-from google.cloud.security.common.data_access.sql_queries import select_data
+from google.cloud.forseti.common.data_access import _db_connector
+from google.cloud.forseti.common.data_access import errors
+from google.cloud.forseti.common.data_access import bucket_dao
+from google.cloud.forseti.common.data_access.sql_queries import select_data
 
 
 class BucketDaoTest(ForsetiTestCase):

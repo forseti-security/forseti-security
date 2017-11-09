@@ -18,7 +18,7 @@ import mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.iam.utils import autoclose_stream, logcall
+from google.cloud.forseti.services.utils import autoclose_stream, logcall
 
 
 class IamUtilsTest(ForsetiTestCase):

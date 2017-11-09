@@ -17,12 +17,12 @@
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyError
-from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyBindingError
-from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyMemberError
-from google.cloud.security.common.gcp_type.iam_policy import IamPolicy
-from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
-from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
+from google.cloud.forseti.common.gcp_type.errors import InvalidIamPolicyError
+from google.cloud.forseti.common.gcp_type.errors import InvalidIamPolicyBindingError
+from google.cloud.forseti.common.gcp_type.errors import InvalidIamPolicyMemberError
+from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicy
+from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyBinding
+from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyMember
 
 
 def _get_member_list(members):

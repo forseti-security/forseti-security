@@ -15,7 +15,7 @@
 
 from collections import defaultdict
 
-from google.cloud.security.iam.utils import full_to_type_name
+from google.cloud.forseti.services.utils import full_to_type_name
 
 class ModelCreatorClient:
     def __init__(self, session, data_access):

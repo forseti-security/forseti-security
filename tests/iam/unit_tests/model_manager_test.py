@@ -20,8 +20,8 @@ import unittest
 from tests.iam.utils.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
 
-from google.cloud.security.iam.dao import ModelManager
-from google.cloud.security.common.util.threadpool import ThreadPool
+from google.cloud.forseti.services.dao import ModelManager
+from google.cloud.forseti.common.util.threadpool import ThreadPool
 
 
 class ModelManagerTest(ForsetiTestCase):

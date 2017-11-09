@@ -22,14 +22,14 @@ import mock
 import unittest
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.gcp_api import admin_directory as ad
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_type.resource import LifecycleState
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import load_group_members_pipeline
-from google.cloud.security.inventory import util as inventory_util
+from google.cloud.forseti.common.data_access import dao
+from google.cloud.forseti.common.data_access import errors as data_access_errors
+from google.cloud.forseti.common.gcp_api import admin_directory as ad
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_type.resource import LifecycleState
+from google.cloud.forseti.inventory import errors as inventory_errors
+from google.cloud.forseti.inventory.pipelines import load_group_members_pipeline
+from google.cloud.forseti.inventory import util as inventory_util
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_group_members
 # pylint: enable=line-too-long

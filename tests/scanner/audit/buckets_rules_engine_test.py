@@ -21,12 +21,12 @@ import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type import bucket_access_controls
-from google.cloud.security.common.util import file_loader
-from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import base_rules_engine as bre
-from google.cloud.security.scanner.audit import buckets_rules_engine as bre
-from google.cloud.security.scanner.audit import rules as scanner_rules
+from google.cloud.forseti.common.gcp_type import bucket_access_controls
+from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
+from google.cloud.forseti.scanner.audit import base_rules_engine as bre
+from google.cloud.forseti.scanner.audit import buckets_rules_engine as bre
+from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 
 

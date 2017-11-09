@@ -19,7 +19,7 @@ from collections import defaultdict
 from sqlalchemy.orm.exc import NoResultFound
 import unittest
 
-from google.cloud.security.iam.dao import session_creator
+from google.cloud.forseti.services.dao import session_creator
 from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1,\
     RESOURCE_EXPANSION_2, MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1,\
     ROLES_PERMISSIONS_TESTING_1, DENORMALIZATION_TESTING_1,\

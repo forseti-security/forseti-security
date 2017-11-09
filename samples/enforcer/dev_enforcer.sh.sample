@@ -15,4 +15,4 @@
 
 # Wrapper script to run enforcer in development mode.
 
-PYTHONPATH=./ python google/cloud/security/enforcer/enforcer.py
+PYTHONPATH=./ python google/cloud/forseti/enforcer/enforcer.py

@@ -19,9 +19,9 @@ import mock
 import yaml
 
 from google.apputils import basetest
-from google.cloud.security.common.gcp_type import instance
-from google.cloud.security.common.util import file_loader
-from google.cloud.security.scanner.audit import instance_network_interface_rules_engine as ini
+from google.cloud.forseti.common.gcp_type import instance
+from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.scanner.audit import instance_network_interface_rules_engine as ini
 from tests.unittest_utils import ForsetiTestCase
 from tests.unittest_utils import get_datafile_path
 from tests.scanner.test_data import fake_instance_scanner_data
@@ -46,7 +46,7 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
         self.ini.LOGGER = mock.MagicMock()
         # patch the organization resource relation dao
         self.patcher = mock.patch(
-            'google.cloud.security.common.' +
+            'google.cloud.forseti.common.' +
             'data_access.instance_dao.InstanceDao')
         self.mock_instance_dao = self.patcher.start()
         self.mock_instance_dao.return_value = None

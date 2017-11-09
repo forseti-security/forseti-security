@@ -24,9 +24,9 @@ from oauth2client import client
 from oauth2client import service_account
 
 from tests import unittest_utils
-from google.cloud import security as forseti_security
-from google.cloud.security.common.gcp_api import _base_repository as base
-from google.cloud.security.common.gcp_api import _supported_apis
+from google.cloud import forseti as forseti_security
+from google.cloud.forseti.common.gcp_api import _base_repository as base
+from google.cloud.forseti.common.gcp_api import _supported_apis
 
 
 class BaseRepositoryTest(unittest_utils.ForsetiTestCase):

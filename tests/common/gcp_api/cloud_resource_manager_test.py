@@ -24,9 +24,9 @@ from tests.common.gcp_api.test_data import http_mocks
 from tests.common.gcp_type.test_data import fake_folders
 from tests.common.gcp_type.test_data import fake_orgs
 from tests.common.gcp_type.test_data import fake_projects
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_type.resource import LifecycleState
+from google.cloud.forseti.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_type.resource import LifecycleState
 
 
 class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):

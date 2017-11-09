@@ -21,8 +21,8 @@ import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 
-from google.cloud.security.inventory import pipeline_requirements_map
-from google.cloud.security.inventory.pipelines import base_pipeline
+from google.cloud.forseti.inventory import pipeline_requirements_map
+from google.cloud.forseti.inventory.pipelines import base_pipeline
 
 
 class PipelineRequirementsMapTest(ForsetiTestCase):
@@ -33,12 +33,12 @@ class PipelineRequirementsMapTest(ForsetiTestCase):
 
         Returns: List of valid pipeline module names.
         """
-        pipeline_path = 'google/cloud/security/inventory/pipelines'
+        pipeline_path = 'google/cloud/forseti/inventory/pipelines'
         pipeline_module_names = []
         for _, module_name, _ in pkgutil.iter_modules([pipeline_path]):
             try:
                 module = importlib.import_module(
-                    'google.cloud.security.inventory.pipelines.{0}'.format(
+                    'google.cloud.forseti.inventory.pipelines.{0}'.format(
                         module_name))
                 for filename in dir(module):
                     obj = getattr(module, filename)

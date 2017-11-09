@@ -20,14 +20,14 @@ import unittest
 
 # pylint: disable=line-too-long
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import instance_dao
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.gcp_api import compute
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import base_pipeline
-from google.cloud.security.inventory.pipelines import load_instances_pipeline
+from google.cloud.forseti.common.data_access import errors as data_access_errors
+from google.cloud.forseti.common.data_access import instance_dao
+from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.inventory import errors as inventory_errors
+from google.cloud.forseti.inventory.pipelines import base_pipeline
+from google.cloud.forseti.inventory.pipelines import load_instances_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_instances
 from tests.inventory.pipelines.test_data import fake_projects
@@ -71,7 +71,7 @@ class LoadInstancesPipelineTest(ForsetiTestCase):
             list(actual))
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     def test_api_is_called_to_retrieve_instances(
             self, mock_get_projects, mock_conn):
         """Test that API is called to retrieve instances."""
@@ -82,7 +82,7 @@ class LoadInstancesPipelineTest(ForsetiTestCase):
             self.pipeline.api_client.get_instances.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     def test_retrieve_data_is_correct(
             self, mock_get_projects, mock_conn):
         """Test _retrieve() data is correct."""
@@ -99,9 +99,9 @@ class LoadInstancesPipelineTest(ForsetiTestCase):
             actual)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     @mock.patch(
-        'google.cloud.security.inventory.pipelines.base_pipeline.LOGGER')
+        'google.cloud.forseti.inventory.pipelines.base_pipeline.LOGGER')
     def test_retrieve_error_logged_when_api_error(
             self, mock_logger, mock_get_projects, mock_conn):
         """Test that LOGGER.error() is called when there is an API error."""
@@ -115,7 +115,7 @@ class LoadInstancesPipelineTest(ForsetiTestCase):
             mock_logger.error.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     def test_pipeline_no_rules_loads_nothing(
             self, mock_get_projects, mock_conn):
         """Test the pipeline with no instances."""

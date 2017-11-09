@@ -18,14 +18,14 @@ from tests.unittest_utils import ForsetiTestCase
 import mock
 import unittest
 
-from google.cloud.security.common.data_access import _db_connector
-from google.cloud.security.common.data_access import folder_dao
-from google.cloud.security.common.data_access import org_resource_rel_dao
-from google.cloud.security.common.data_access import organization_dao
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.gcp_type import folder
-from google.cloud.security.common.gcp_type import organization
-from google.cloud.security.common.gcp_type import project
+from google.cloud.forseti.common.data_access import _db_connector
+from google.cloud.forseti.common.data_access import folder_dao
+from google.cloud.forseti.common.data_access import org_resource_rel_dao
+from google.cloud.forseti.common.data_access import organization_dao
+from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import organization
+from google.cloud.forseti.common.gcp_type import project
 
 
 class OrgResourceRelDaoTest(ForsetiTestCase):

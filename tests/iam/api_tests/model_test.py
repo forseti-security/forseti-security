@@ -16,10 +16,10 @@
 
 import unittest
 
-from google.cloud.security.iam.explain.service import GrpcExplainerFactory
-from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
-from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
-from google.cloud.security.iam.dao import ModelManager
+from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
+from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
+from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.dao import ModelManager
 
 from tests.iam.api_tests.api_tester import ModelTestRunner
 from tests.iam.utils.db import create_test_engine

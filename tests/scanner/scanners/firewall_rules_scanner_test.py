@@ -21,25 +21,25 @@ import os
 import parameterized
 
 import tests.unittest_utils
-from google.cloud.security.common.gcp_type import folder
-from google.cloud.security.common.gcp_type import organization
-from google.cloud.security.common.gcp_type import project
-from google.cloud.security.scanner.scanners import firewall_rules_scanner
-from google.cloud.security.scanner.audit import firewall_rules_engine as fre
+from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import organization
+from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.scanner.scanners import firewall_rules_scanner
+from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
 from tests import unittest_utils
 
 
 class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.firewall_rules_scanner.firewall_rules_engine',
+        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.firewall_rules_engine',
         autospec=True)
     def setUp(self, mock_rules_engine):
         mre = mock.patch(
-            'google.cloud.security.scanner.scanners.firewall_rules_scanner.'
+            'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.'
             'firewall_rules_engine').start()
         self.mock_org_rel_dao = mock.patch(
-                        'google.cloud.security.common.data_access.'
+                        'google.cloud.forseti.common.data_access.'
                         'org_resource_rel_dao.OrgResourceRelDao').start()
         self.fake_utcnow = datetime(
             year=1900, month=1, day=1, hour=0, minute=0, second=0,
@@ -99,16 +99,16 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.assertEquals(expected, actual)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.firewall_rules_scanner.notifier',
+        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
         firewall_rules_scanner.FirewallPolicyScanner,
         '_upload_csv', autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.firewall_rules_scanner.os',
+        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.os',
         autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.firewall_rules_scanner.datetime',
+        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.datetime',
         autospec=True)
     @mock.patch.object(
         firewall_rules_scanner.csv_writer,
@@ -194,16 +194,16 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         self.assertEquals(0, mock_notifier.process.call_count)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.firewall_rules_scanner.notifier',
+        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
         firewall_rules_scanner.FirewallPolicyScanner,
         '_upload_csv', autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.firewall_rules_scanner.os',
+        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.os',
         autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.firewall_rules_scanner.datetime',
+        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.datetime',
         autospec=True)
     @mock.patch.object(
         firewall_rules_scanner.csv_writer,

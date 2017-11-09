@@ -20,8 +20,8 @@ import unittest
 from sendgrid.helpers import mail
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.util import email_util
-from google.cloud.security.common.util import errors as util_errors
+from google.cloud.forseti.common.util import email_util
+from google.cloud.forseti.common.util import errors as util_errors
 
 
 class EmailUtilTest(ForsetiTestCase):

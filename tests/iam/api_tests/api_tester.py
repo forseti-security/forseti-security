@@ -16,7 +16,7 @@ import grpc
 from concurrent import futures
 from collections import defaultdict
 
-from google.cloud.security.iam.client import ClientComposition
+from google.cloud.forseti.services.client import ClientComposition
 
 
 class ApiTestRunner(object):

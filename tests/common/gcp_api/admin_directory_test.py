@@ -22,8 +22,8 @@ from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_admin_directory_responses as fake_admin
 from tests.common.gcp_api.test_data import fake_key_file
 from tests.common.gcp_api.test_data import http_mocks
-from google.cloud.security.common.gcp_api import admin_directory as admin
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import admin_directory as admin
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 
 
 class AdminDirectoryTest(unittest_utils.ForsetiTestCase):

@@ -19,10 +19,10 @@ import unittest
 import os
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.iam.inventory.inventory2.storage import Memory as MemoryStorage
-from google.cloud.security.iam.inventory.inventory2.progress import Progresser
-from google.cloud.security.iam.inventory.crawler import run_crawler
-from google.cloud.security.iam.server import InventoryConfig
+from google.cloud.forseti.services.inventory.inventory2.storage import Memory as MemoryStorage
+from google.cloud.forseti.services.inventory.inventory2.progress import Progresser
+from google.cloud.forseti.services.inventory.crawler import run_crawler
+from google.cloud.forseti.services.server import InventoryConfig
 
 from tests.iam.utils.gcp_env import gcp_configured, gcp_env
 from tests.iam.utils.protect import copy_file_decrypt

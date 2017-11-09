@@ -15,8 +15,8 @@
 """Tests the ForwardingRuleRulesEngine."""
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import forwarding_rule_rules_engine as fre
+from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
+from google.cloud.forseti.scanner.audit import forwarding_rule_rules_engine as fre
 from tests.unittest_utils import get_datafile_path
 
 

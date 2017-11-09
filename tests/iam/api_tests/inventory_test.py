@@ -18,15 +18,15 @@ import unittest
 import time
 from sqlalchemy import event
 
-from google.cloud.security.common.util.threadpool import ThreadPool
-from google.cloud.security.iam.explain.service import GrpcExplainerFactory
-from google.cloud.security.iam.inventory.service import GrpcInventoryFactory
-from google.cloud.security.iam.playground.service import GrpcPlaygrounderFactory
-from google.cloud.security.iam.dao import ModelManager
-from google.cloud.security.iam.client import ClientComposition
-from google.cloud.security.iam import db
-from google.cloud.security.iam.inventory.storage import Storage
-from google.cloud.security.iam.server import InventoryConfig
+from google.cloud.forseti.common.util.threadpool import ThreadPool
+from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
+from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
+from google.cloud.forseti.services.dao import ModelManager
+from google.cloud.forseti.services.client import ClientComposition
+from google.cloud.forseti.services import db
+from google.cloud.forseti.services.inventory.storage import Storage
+from google.cloud.forseti.services.server import InventoryConfig
 
 from tests.iam.api_tests.api_tester import ApiTestRunner
 from tests.iam.utils.db import create_test_engine

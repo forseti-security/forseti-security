@@ -18,10 +18,10 @@ import MySQLdb
 import mock
 import unittest
 
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.data_access import service_account_dao
-from google.cloud.security.common.gcp_api import iam
-from google.cloud.security.inventory.pipelines import \
+from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.data_access import service_account_dao
+from google.cloud.forseti.common.gcp_api import iam
+from google.cloud.forseti.inventory.pipelines import \
     load_service_accounts_pipeline
 from tests.inventory.pipelines.test_data import fake_service_accounts
 from tests.inventory.pipelines.test_data import fake_configs
@@ -64,7 +64,7 @@ class LoadServiceAccountsPipelineTest(ForsetiTestCase):
             list(actual))
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     def test_api_is_called_to_retrieve_service_accounts(
             self, mock_get_projects, mock_conn):
         """Test that API is called to retrieve instances."""
@@ -75,7 +75,7 @@ class LoadServiceAccountsPipelineTest(ForsetiTestCase):
             self.pipeline.api_client.get_service_accounts.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     def test_retrieve_data_is_correct(
             self, mock_get_projects, mock_conn):
         """Test _retrieve() data is correct."""

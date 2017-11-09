@@ -22,7 +22,7 @@ from copy import copy
 from argparse import ArgumentParser
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.iam import cli
+from google.cloud.forseti.services import cli
 
 CLIENT = mock.Mock()
 

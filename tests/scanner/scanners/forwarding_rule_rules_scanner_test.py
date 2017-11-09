@@ -17,10 +17,10 @@
 import mock
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.scanner.scanners import forwarding_rule_scanner
-from google.cloud.security.scanner.audit import forwarding_rule_rules_engine as fre
+from google.cloud.forseti.scanner.scanners import forwarding_rule_scanner
+from google.cloud.forseti.scanner.audit import forwarding_rule_rules_engine as fre
 from tests.unittest_utils import get_datafile_path
-from google.cloud.security.common.gcp_type import forwarding_rule as fr
+from google.cloud.forseti.common.gcp_type import forwarding_rule as fr
 
 
 class ForwardingRule(object):

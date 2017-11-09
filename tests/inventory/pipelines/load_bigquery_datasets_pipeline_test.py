@@ -19,11 +19,11 @@ import mock
 import unittest
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.gcp_api import bigquery as bq
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import load_bigquery_datasets_pipeline
+from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_api import bigquery as bq
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.inventory import errors as inventory_errors
+from google.cloud.forseti.inventory.pipelines import load_bigquery_datasets_pipeline
 from tests.inventory.pipelines.test_data import fake_bigquery_datasets as fbq
 from tests.inventory.pipelines.test_data import fake_configs
 # pylint: enable=line-too-long

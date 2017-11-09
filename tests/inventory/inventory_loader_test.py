@@ -21,13 +21,13 @@ import MySQLdb
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import errors
-from google.cloud.security.common.gcp_type import iam_policy
-from google.cloud.security.common.gcp_type import organization
-from google.cloud.security.common.gcp_type import project
-from google.cloud.security.common.gcp_type import resource
-from google.cloud.security.inventory import inventory_loader
+from google.cloud.forseti.common.data_access import dao
+from google.cloud.forseti.common.data_access import errors
+from google.cloud.forseti.common.gcp_type import iam_policy
+from google.cloud.forseti.common.gcp_type import organization
+from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.inventory import inventory_loader
 
 
 class InventoryLoaderTest(ForsetiTestCase):

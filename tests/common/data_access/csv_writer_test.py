@@ -18,7 +18,7 @@ from tests.unittest_utils import ForsetiTestCase
 import mock
 import unittest
 
-from google.cloud.security.common.data_access import csv_writer
+from google.cloud.forseti.common.data_access import csv_writer
 
 
 class CsvWriterTest(ForsetiTestCase):

@@ -1,0 +1,90 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Pipeline to load compute instance groups into Inventory.
+
+This pipeline depends on the LoadProjectsPipeline.
+"""
+
+from google.cloud.forseti.common.data_access import project_dao as proj_dao
+from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import parser
+from google.cloud.forseti.inventory.pipelines import base_pipeline
+
+LOGGER = log_util.get_logger(__name__)
+
+
+class LoadInstanceGroupsPipeline(base_pipeline.BasePipeline):
+    """Load compute instance groups for all projects."""
+
+    RESOURCE_NAME = 'instance_groups'
+
+    def _transform(self, resource_from_api):
+        """Create an iterator of instance groups to load into database.
+
+        Args:
+            resource_from_api (dict): Instance groups, keyed by
+                project id, from GCP API.
+
+        Yields:
+            iterator: Instance group properties in a dict.
+        """
+        for (project_id, instance_groups) in resource_from_api.iteritems():
+            for instance_group in instance_groups:
+                yield {'project_id': project_id,
+                       'id': instance_group.get('id'),
+                       'creation_timestamp': parser.format_timestamp(
+                           instance_group.get('creationTimestamp'),
+                           self.MYSQL_DATETIME_FORMAT),
+                       'name': instance_group.get('name'),
+                       'description': instance_group.get('description'),
+                       'instance_urls': parser.json_stringify(
+                           instance_group.get('instance_urls', [])),
+                       'named_ports': parser.json_stringify(
+                           instance_group.get('namedPorts', [])),
+                       'network': instance_group.get('network'),
+                       'region': instance_group.get('region'),
+                       'size': self._to_int(instance_group.get('size')),
+                       'subnetwork': instance_group.get('subnetwork'),
+                       'zone': instance_group.get('zone'),
+                       'raw_instance_group':
+                           parser.json_stringify(instance_group)}
+
+    def _retrieve(self):
+        """Retrieve instance groups from GCP.
+
+        Get all the projects in the current snapshot and retrieve the
+        compute instance groups for each.
+
+        Returns:
+            dict: Mapping projects with their instance groups (list):
+                {project_id: [instance groups]}
+        """
+        projects = (proj_dao
+                    .ProjectDao(self.global_configs)
+                    .get_projects(self.cycle_timestamp))
+        igs = {}
+        for project in projects:
+            project_igs = self.safe_api_call('get_instance_groups',
+                                             project.id)
+            if project_igs:
+                igs[project.id] = project_igs
+        return igs
+
+    def run(self):
+        """Run the pipeline."""
+        igs = self._retrieve()
+        loadable_igs = self._transform(igs)
+        self._load(self.RESOURCE_NAME, loadable_igs)
+        self._get_loaded_count()

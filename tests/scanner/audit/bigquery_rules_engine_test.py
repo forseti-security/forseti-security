@@ -21,12 +21,12 @@ import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type import bigquery_access_controls as bq_acls
-from google.cloud.security.common.util import file_loader
-from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import base_rules_engine as bre
-from google.cloud.security.scanner.audit import bigquery_rules_engine as bqe
-from google.cloud.security.scanner.audit import rules as scanner_rules
+from google.cloud.forseti.common.gcp_type import bigquery_access_controls as bq_acls
+from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
+from google.cloud.forseti.scanner.audit import base_rules_engine as bre
+from google.cloud.forseti.scanner.audit import bigquery_rules_engine as bqe
+from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import bigquery_test_rules
 from tests.scanner.test_data import fake_bigquery_scanner_data
