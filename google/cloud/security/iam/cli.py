@@ -157,6 +157,52 @@ def define_playground_parser(parent):
         help='Resource to get policy for')
 
 
+def define_inventory_parser(parent):
+    """Define the inventory service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+    service_parser = parent.add_parser('inventory', help='inventory service')
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    create_inventory_parser = action_subparser.add_parser(
+        'create',
+        help='Start a new inventory')
+    create_inventory_parser.add_argument(
+        '--background',
+        '-b',
+        action='store_true',
+        help='Execute inventory in background',
+        )
+    create_inventory_parser.add_argument(
+        '--import_as',
+        metavar=('MODEL_NAME',),
+        help='Import the inventory when complete, requres a model name')
+
+    delete_inventory_parser = action_subparser.add_parser(
+        'delete',
+        help='Delete an inventory')
+    delete_inventory_parser.add_argument(
+        'id',
+        type=int,
+        help='Inventory id to delete')
+
+    _ = action_subparser.add_parser(
+        'list',
+        help='List all inventory')
+
+    get_inventory_parser = action_subparser.add_parser(
+        'get',
+        help='Get a particular inventory')
+    get_inventory_parser.add_argument(
+        'id',
+        type=int,
+        help='Inventory id to get')
+
+
 def define_explainer_parser(parent):
     """Define the explainer service parser.
 
@@ -184,11 +230,24 @@ def define_explainer_parser(parent):
         help='Create a model')
     create_model_parser.add_argument(
         'source',
-        choices=['forseti', 'empty'],
+        choices=['forseti', 'empty', 'inventory'],
         help='Source to import from')
     create_model_parser.add_argument(
         'name',
         help='Human readable name for this model')
+    create_model_parser.add_argument(
+        '--id',
+        type=int,
+        default=-1,
+        help='Inventory id to import from, if "inventory" source'
+        )
+    create_model_parser.add_argument(
+        '--background',
+        '-b',
+        default=False,
+        action='store_true',
+        help='Run import in background'
+        )
 
     _ = action_subparser.add_parser(
         'denormalize',
@@ -360,6 +419,7 @@ def create_parser(parser_cls):
         dest="service")
     define_explainer_parser(service_subparsers)
     define_playground_parser(service_subparsers)
+    define_inventory_parser(service_subparsers)
     return main_parser
 
 
@@ -398,6 +458,46 @@ class JsonOutput(Output):
         print MessageToJson(obj)
 
 
+def run_inventory(client, config, output):
+    """Run inventory commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+    """
+
+    client = client.inventory
+
+    def do_create_inventory():
+        """Create an inventory."""
+        for progress in client.create(config.background,
+                                      config.import_as):
+            output.write(progress)
+
+    def do_list_inventory():
+        """List an inventory."""
+        for inventory in client.list():
+            output.write(inventory)
+
+    def do_get_inventory():
+        """Get an inventory."""
+        result = client.get(config.id)
+        output.write(result)
+
+    def do_delete_inventory():
+        """Delete an inventory."""
+        result = client.delete(config.id)
+        output.write(result)
+
+    actions = {
+        'create': do_create_inventory,
+        'list': do_list_inventory,
+        'get': do_get_inventory,
+        'delete': do_delete_inventory}
+
+    actions[config.action]()
+
+
 def run_explainer(client, config, output):
     """Run explain commands.
         Args:
@@ -420,7 +520,10 @@ def run_explainer(client, config, output):
 
     def do_create_model():
         """Create a model."""
-        result = client.new_model(config.source, config.name)
+        result = client.new_model(config.source,
+                                  config.name,
+                                  config.id,
+                                  config.background)
         output.write(result)
 
     def do_denormalize():
@@ -593,6 +696,7 @@ OUTPUTS = {
 SERVICES = {
     'explainer': run_explainer,
     'playground': run_playground,
+    'inventory': run_inventory,
     }
 
 

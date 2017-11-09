@@ -17,6 +17,7 @@
 import collections
 import contextlib
 import json
+import logging
 import os
 import tempfile
 import unittest
@@ -33,8 +34,13 @@ def create_temp_file(data):
         os.unlink(temp.name)
 
 
+
 class ForsetiTestCase(unittest.TestCase):
     """Forseti base class for tests."""
+
+    def __init__(self, *args, **kwargs):
+        super(ForsetiTestCase, self,).__init__(*args, **kwargs)
+        logging.getLogger().setLevel(logging.DEBUG)
 
     def assertStartsWith(self, actual, expected_start):
         """Assert that actual.startswith(expected_start) is True.

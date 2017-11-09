@@ -36,10 +36,11 @@ RUN pip install -q --upgrade \
     coverage \
     codecov \
     google-apputils \
-    grpcio==1.4.0 \
-    grpcio-tools==1.4.0 \
+    grpcio \
+    grpcio-tools \
     mock \
     netaddr \
     parameterized \
-    pylint
+    pylint \
+    simple-crypt
 

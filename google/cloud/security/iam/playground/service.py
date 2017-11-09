@@ -33,6 +33,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     """Playground gRPC handler."""
 
     HANDLE_KEY = "handle"
+
     def _get_handle(self, context):
         """Extract the model handle from the gRPC context."""
 
