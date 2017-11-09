@@ -5,7 +5,10 @@ order: 002
 # {{ page.title }}
 
 This quickstart explains how to use the Forseti setup wizard, which helps to 
-automate some of the Forseti installation and setup process.
+automate some of the Forseti installation and setup on GCP.
+
+**If you are trying to install Forseti in a developer environment, please
+refer to the [Development Environment Setup]({% link _docs/howto/deploy/dev-setup.md %}).**
 
 Setup wizard is not available prior to version 1.1.0.
 
