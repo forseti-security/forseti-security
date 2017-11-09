@@ -94,7 +94,7 @@ It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quicks
 
 ## What's next
 
-  - Configure [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
+  - Customize [Inventory]({% link _docs/quickstarts/inventory/index.md %}),
   [Scanner]({% link _docs/quickstarts/scanner/index.md %}),
   and [Enforcer]({% link _docs/quickstarts/enforcer/index.md %}).
   - Configure Forseti to send [email notifications]({% link _docs/howto/configure/email-notification.md %}).
