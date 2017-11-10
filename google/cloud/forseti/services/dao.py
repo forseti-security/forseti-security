@@ -198,6 +198,7 @@ def define_model(model_name, dbengine, model_seed):
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256), default='')
         email = Column(String(256), default='')
+        data = Column(Text)
 
         parent_type_name = Column(
             String(128),
