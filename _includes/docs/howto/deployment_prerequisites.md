@@ -12,23 +12,14 @@ the setup commands:
       1. Run `gcloud init` and select your Forseti Security project and Google
       account.
 
-### Enabling APIs
-
-Enable each of the required APIs by running the following command:
-
-  ```bash
-  $ gcloud beta service-management enable <API URI>
-  ```
-  
-  {% include docs/required_apis.md %}
-
 ### Creating service accounts
 
-Next, you'll create service accounts with Cloud Identity and Access Management
-(Cloud IAM) roles to allow Forseti to read GCP data and to manage Forseti
-modules. It's best to create your Forseti service accounts under a new GCP
-project. You'll still be able to use the service accounts in other projects and
-easily control the number of users who have Editor or Owner roles.
+If you are setting up a developer environment, you can just use the Google credentials 
+from when you ran `gcloud auth login`.
+
+If you are running Forseti on GCP, you'll need create service accounts with 
+Cloud Identity and Access Management (Cloud IAM) roles to allow Forseti to 
+read GCP data and to manage Forseti modules.
 
 _For a detailed explanation of how Forseti Security uses service accounts, refer to 
 ["Forseti Service Accounts"]({% link _docs/guides/forseti-service-accounts.md %})._
@@ -38,8 +29,15 @@ Scanner, and Enforcer, follow the steps below.
 
   1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
-  1. Grant these required Cloud IAM roles to the service account by running the
-  following:
+  1. Create and download a json key for the service account.
+  1. Run `gcloud auth activate-service-account --key-file=PATH/TO/KEYFILE.json` to assume the 
+  service account credentials.
+
+To create a separate service account for enabling G Suite data collection, follow the steps in 
+["Enabling GSuite Google Groups Collection"]({% link _docs/howto/configure/gsuite-group-collection.md %}).
+
+### Assigning roles
+Grant these required Cloud IAM roles to the service account by running the following:
   
       _Organization Cloud IAM roles_
       
@@ -107,3 +105,13 @@ Scanner, and Enforcer, follow the steps below.
       --member=serviceAccount:YOUR_SERVICE_ACCOUNT \
       --role=roles/cloudsql.client
       ```
+
+### Enabling APIs
+
+Enable each of the required APIs by running the following command:
+
+  ```bash
+  $ gcloud beta service-management enable <API URI>
+  ```
+  
+  {% include docs/required_apis.md %}
