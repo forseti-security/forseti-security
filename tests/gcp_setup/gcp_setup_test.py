@@ -22,7 +22,7 @@ import unittest
 from contextlib import contextmanager
 from StringIO import StringIO
 
-from scripts.gcp_setup import setup_roles
+from scripts.gcp_setup import setup_roles_apis
 from scripts.gcp_setup.environment import gcloud_env
 from tests.unittest_utils import ForsetiTestCase
 
@@ -341,7 +341,7 @@ class GcloudEnvTest(ForsetiTestCase):
 class SetupRolesTest(ForsetiTestCase):
 
     def setUp(self):
-        self.parser = setup_roles._create_arg_parser()
+        self.parser = setup_roles_apis._create_arg_parser()
         self.args1 = ['--org-id', '1234', '--user', 'abc']
         self.args2 = ['--folder-id', '4567', '--group', 'def']
         self.args3 = ['--project-id', 'xyz', '--service-account', 'pqrs']
@@ -378,34 +378,34 @@ class SetupRolesTest(ForsetiTestCase):
     def test_get_resource_info(self):
         """Test _get_resource_info()."""
         args1 = self.parser.parse_args(self.args1)
-        res_args1, res_id1 = setup_roles._get_resource_info(args1)
+        res_args1, res_id1 = setup_roles_apis._get_resource_info(args1)
         self.assertEquals(int(self.args1[1]), res_id1)
         self.assertEquals(['organizations'], res_args1)
 
         args2 = self.parser.parse_args(self.args2)
-        res_args2, res_id2 = setup_roles._get_resource_info(args2)
+        res_args2, res_id2 = setup_roles_apis._get_resource_info(args2)
         self.assertEquals(int(self.args2[1]), res_id2)
         self.assertEquals(['alpha', 'resource-manager', 'folders'], res_args2)
 
         args3 = self.parser.parse_args(self.args3)
-        res_args3, res_id3 = setup_roles._get_resource_info(args3)
+        res_args3, res_id3 = setup_roles_apis._get_resource_info(args3)
         self.assertEquals(self.args3[1], res_id3)
         self.assertEquals(['projects'], res_args3)
 
     def test_get_member(self):
         """Test _get_member()."""
         args1 = self.parser.parse_args(self.args1)
-        member_type1, member_name1 = setup_roles._get_member(args1)
+        member_type1, member_name1 = setup_roles_apis._get_member(args1)
         self.assertEquals('user', member_type1)
         self.assertEquals(self.args1[3], member_name1)
 
         args2 = self.parser.parse_args(self.args2)
-        member_type2, member_name2 = setup_roles._get_member(args2)
+        member_type2, member_name2 = setup_roles_apis._get_member(args2)
         self.assertEquals('group', member_type2)
         self.assertEquals(self.args2[3], member_name2)
 
         args3 = self.parser.parse_args(self.args3)
-        member_type3, member_name3 = setup_roles._get_member(args3)
+        member_type3, member_name3 = setup_roles_apis._get_member(args3)
         self.assertEquals('serviceAccount', member_type3)
         self.assertEquals(self.args3[3], member_name3)
 
