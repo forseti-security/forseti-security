@@ -180,7 +180,6 @@ class _ResourceManagerFoldersRepository(
         repository_mixins.GetQueryMixin,
         repository_mixins.GetIamPolicyQueryMixin,
         repository_mixins.ListQueryMixin,
-        repository_mixins.OrgPolicyQueryMixin,
         repository_mixins.SearchQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Folders repository."""
