@@ -162,6 +162,104 @@ class GetIamPolicyQueryMixin(object):
         )
 
 
+class OrgPolicyQueryMixin(object):
+    """Mixin that implements getOrgPolicy and listOrgPolicies query."""
+
+    def get_effective_org_policy(self, resource, constraint, fields=None,
+                                 verb='getEffectiveOrgPolicy', **kwargs):
+        """Get Effective Org Policy for a constraint on a resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            resource (str): The id of the resource to fetch.
+            constraint (str): The constraint name to fetch the policy for.
+            fields (str): Fields to include in the response - partial response.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the query.
+
+        Returns:
+            dict: Response from the API.
+
+        Raises:
+            errors.HttpError: When attempting to get a non-existent entity.
+                ex: HttpError 404 when requesting ... returned
+                    "The resource '...' was not found"
+        """
+        arguments = {'resource': resource,
+                     'fields': fields}
+        arguments['body'] = {'constraint': constraint}
+        if kwargs:
+            arguments.update(kwargs)
+        return self.execute_query(
+            verb=verb,
+            verb_arguments=arguments,
+        )
+
+    def get_org_policy(self, resource, constraint, fields=None,
+                       verb='getOrgPolicy', **kwargs):
+        """Get Org Policy for a constraint on a resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            resource (str): The id of the resource to fetch.
+            constraint (str): The constraint name to fetch the policy for.
+            fields (str): Fields to include in the response - partial response.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the query.
+
+        Returns:
+            dict: Response from the API.
+
+        Raises:
+            errors.HttpError: When attempting to get a non-existent entity.
+                ex: HttpError 404 when requesting ... returned
+                    "The resource '...' was not found"
+        """
+        arguments = {'resource': resource,
+                     'fields': fields}
+        arguments['body'] = {'constraint': constraint}
+        if kwargs:
+            arguments.update(kwargs)
+        return self.execute_query(
+            verb=verb,
+            verb_arguments=arguments,
+        )
+
+    def list_org_policies(self, resource, fields=None, max_results=None,
+                          verb='listOrgPolicies', **kwargs):
+        """List Org Policies applied to the resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            resource (str): The id of the resource to query.
+            fields (str): Fields to include in the response - partial response.
+            max_results (int): Number of entries to include per page.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the query.
+
+        Yields:
+            dict: An API response containing one page of results.
+
+        Raises:
+            errors.HttpError: When attempting to get a non-existent entity.
+                ex: HttpError 404 when requesting ... returned
+                    "The resource '...' was not found"
+        """
+        arguments = {'resource': resource,
+                     'fields': fields}
+        arguments['body'] = {}
+        if max_results:
+            arguments['body']['pageSize'] = max_results
+
+        if kwargs:
+            arguments.update(kwargs)
+
+        for resp in self.execute_search_query(
+                verb=verb,
+                verb_arguments=arguments):
+            yield resp
+
+
 class SearchQueryMixin(object):
     """Mixin that implements a paged Search query."""
 

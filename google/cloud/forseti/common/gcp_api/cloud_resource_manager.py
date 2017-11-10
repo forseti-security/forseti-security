@@ -49,6 +49,7 @@ class CloudResourceManagerRepositoryClient(
         self._projects = None
         self._organizations = None
         self._folders = None
+        self._folders_v1 = None
 
         super(CloudResourceManagerRepositoryClient, self).__init__(
             'cloudresourcemanager', versions=['v1', 'v2'],
@@ -81,6 +82,15 @@ class CloudResourceManagerRepositoryClient(
             self._folders = self._init_repository(
                 _ResourceManagerFoldersRepository, version='v2')
         return self._folders
+
+    @property
+    def folders_v1(self):
+        """Returns a _ResourceManagerFolderV1Repository instance."""
+        # Org Policy methods are only available on crm v1 currently.
+        if not self._folders_v1:
+            self._folders_v1 = self._init_repository(
+                _ResourceManagerFolderV1Repository, version='v1')
+        return self._folders_v1
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
@@ -88,6 +98,7 @@ class _ResourceManagerProjectsRepository(
         repository_mixins.GetQueryMixin,
         repository_mixins.GetIamPolicyQueryMixin,
         repository_mixins.ListQueryMixin,
+        repository_mixins.OrgPolicyQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Projects repository."""
 
@@ -115,10 +126,26 @@ class _ResourceManagerProjectsRepository(
         return repository_mixins.GetQueryMixin.get(
             self, resource, verb='getAncestry', body=dict(), **kwargs)
 
+    @staticmethod
+    def get_name(project_id):
+        """Format's an organization_id to pass in to .get().
+
+        Args:
+            project_id (str): The project id to query, either just the
+                id or the id prefixed with 'projects/'.
+
+        Returns:
+            str: The formatted resource name.
+        """
+        if not project_id.startswith('projects/'):
+            project_id = 'projects/{}'.format(project_id)
+        return project_id
+
 
 class _ResourceManagerOrganizationsRepository(
         repository_mixins.GetQueryMixin,
         repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.OrgPolicyQueryMixin,
         repository_mixins.SearchQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Organizations repository."""
@@ -153,6 +180,7 @@ class _ResourceManagerFoldersRepository(
         repository_mixins.GetQueryMixin,
         repository_mixins.GetIamPolicyQueryMixin,
         repository_mixins.ListQueryMixin,
+        repository_mixins.OrgPolicyQueryMixin,
         repository_mixins.SearchQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Cloud Resource Manager Folders repository."""
@@ -181,6 +209,22 @@ class _ResourceManagerFoldersRepository(
         if not folder_id.startswith('folders/'):
             folder_id = 'folders/{}'.format(folder_id)
         return folder_id
+
+
+class _ResourceManagerFolderV1Repository(
+        repository_mixins.OrgPolicyQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Cloud Resource Manager Folders v1 repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ResourceManagerFolderV1Repository, self).__init__(
+            list_key_field='parent', get_key_field='name',
+            max_results_field='pageSize', component='folders', **kwargs)
 
 
 class CloudResourceManagerClient(object):
@@ -273,7 +317,7 @@ class CloudResourceManagerClient(object):
             raise api_errors.ApiExecutionError(project_id, e)
 
     def get_project_iam_policies(self, resource_name, project_id):
-        """Get all the iam policies of given project numbers.
+        """Get all the iam policies for a given project.
 
         Args:
             resource_name (str): The resource type.
@@ -287,6 +331,25 @@ class CloudResourceManagerClient(object):
             return self.repository.projects.get_iam_policy(project_id)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
+
+    def get_project_org_policies(self, project_id):
+        """Get all the org policies for a given project.
+
+        Args:
+            project_id (str): Either the project number or the project id.
+
+        Returns:
+            list: Org policies applied to the project.
+            https://cloud.google.com/resource-manager/reference/rest/v1/Policy
+        """
+        resource_id = self.repository.projects.get_name(project_id)
+        try:
+            paged_results = self.repository.projects.list_org_policies(
+                resource_id)
+            return api_helpers.flatten_list_results(paged_results,
+                                                    'policies')
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_id, e)
 
     def get_organization(self, org_name):
         """Get organization by org_name.
@@ -333,7 +396,7 @@ class CloudResourceManagerClient(object):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        resource_id = 'organizations/%s' % org_id
+        resource_id = self.repository.organizations.get_name(org_id)
         try:
             iam_policy = (
                 self.repository.organizations.get_iam_policy(resource_id))
@@ -341,6 +404,25 @@ class CloudResourceManagerClient(object):
                     'iam_policy': iam_policy}
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
+
+    def get_org_org_policies(self, org_id):
+        """Get all the org policies for a given org.
+
+        Args:
+            org_id (int): The org id number.
+
+        Returns:
+            list: Org policies applied to the organization.
+            https://cloud.google.com/resource-manager/reference/rest/v1/Policy
+        """
+        resource_id = self.repository.organizations.get_name(org_id)
+        try:
+            paged_results = self.repository.organizations.list_org_policies(
+                resource_id)
+            return api_helpers.flatten_list_results(paged_results,
+                                                    'policies')
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_id, e)
 
     def get_folder(self, folder_name):
         """Get a folder.
@@ -408,10 +490,67 @@ class CloudResourceManagerClient(object):
         Raises:
             ApiExecutionError: An error has occurred when executing the API.
         """
-        resource_id = 'folders/%s' % folder_id
+        resource_id = self.repository.folders.get_name(folder_id)
         try:
             iam_policy = self.repository.folders.get_iam_policy(resource_id)
             return {'folder_id': folder_id,
                     'iam_policy': iam_policy}
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
+
+    def get_folder_org_policies(self, folder_id):
+        """Get all the org policies for a given folder.
+
+        Args:
+            folder_id (int): The folder id.
+
+        Returns:
+            list: Org policies applied to the folder.
+            https://cloud.google.com/resource-manager/reference/rest/v1/Policy
+        """
+        resource_id = self.repository.folders.get_name(folder_id)
+        try:
+            paged_results = self.repository.folders_v1.list_org_policies(
+                resource_id)
+            return api_helpers.flatten_list_results(paged_results,
+                                                    'policies')
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_id, e)
+
+    def get_org_policy(self, resource_id, constraint, effective_policy=False):
+        """Get a specific org policy constraint for a given resource.
+
+        Args:
+            resource_id (str): The organization, folder or project resource to
+                query
+            constraint (str): The org policy constraint to query.
+            effective_policy (bool): If set to true, query the effective policy
+                instead of the currently set policy. This takes the resource
+                hierarchy into account.
+
+        Returns:
+            dict: An org policy resource.
+
+        Raises:
+            ValueError: Raised if the resource_id is not value.
+        """
+        org_policy_method = None
+        repository = None
+        if resource_id.startswith('folders/'):
+            repository = self.repository.folders_v1
+        elif resource_id.startswith('organizations/'):
+            repository = self.repository.organizations
+        elif resource_id.startswith('projects/'):
+            repository = self.repository.projects
+        else:
+            raise ValueError(
+                'resource_id is not a valid resource: %s' % resource_id)
+
+        if effective_policy:
+            org_policy_method = getattr(repository, 'get_effective_org_policy')
+        else:
+            org_policy_method = getattr(repository, 'get_org_policy')
+        try:
+            return org_policy_method(resource_id, constraint)
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(resource_id, e)

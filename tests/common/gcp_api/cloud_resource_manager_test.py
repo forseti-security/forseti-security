@@ -95,7 +95,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
             fake_crm_responses.GET_PROJECT_ANCESTRY_RESPONSE)
         result = self.crm_api_client.get_project_ancestry(
             fake_crm_responses.FAKE_PROJECT_ID)
-        self.assertEquals(fake_crm_responses.EXPECTED_PROJECT_ANCESTRY_IDs,
+        self.assertEquals(fake_crm_responses.EXPECTED_PROJECT_ANCESTRY_IDS,
                           [r['resourceId']['id'] for r in result])
 
     def test_get_project_ancestry_api_error(self):
@@ -122,6 +122,22 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.crm_api_client.get_project_iam_policies('foo', self.project_id)
+
+    def test_get_project_org_policies(self):
+        """Test get project org policies."""
+        http_mocks.mock_http_response(fake_crm_responses.LIST_ORG_POLICIES)
+
+        response = self.crm_api_client.get_project_org_policies(self.project_id)
+        self.assertEqual([fake_crm_responses.TEST_ORG_POLICY_CONSTRAINT],
+                         [r['constraint'] for r in response])
+
+    def test_get_project_org_policies_errors(self):
+        """Test the error handling."""
+        http_mocks.mock_http_response(fake_crm_responses.GET_PROJECT_NOT_FOUND,
+                                      '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.crm_api_client.get_project_org_policies(self.project_id)
 
     def test_get_organization(self):
         """Test get single organization."""
@@ -184,9 +200,28 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         """Test get_org_iam_policies() raises ApiExecutionError on error."""
         http_mocks.mock_http_response(fake_crm_responses.GET_PROJECT_NOT_FOUND,
                                       '403')
+        org_id = fake_crm_responses.FAKE_ORG_ID
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.crm_api_client.get_org_iam_policies('foo', self.project_id)
+            self.crm_api_client.get_org_iam_policies('foo', org_id)
+
+    def test_get_org_org_policies(self):
+        """Test get org org policies."""
+        http_mocks.mock_http_response(fake_crm_responses.LIST_ORG_POLICIES)
+        org_id = fake_crm_responses.FAKE_ORG_ID
+
+        response = self.crm_api_client.get_org_org_policies(org_id)
+        self.assertEqual([fake_crm_responses.TEST_ORG_POLICY_CONSTRAINT],
+                         [r['constraint'] for r in response])
+
+    def test_get_org_org_policies_errors(self):
+        """Test the error handling."""
+        http_mocks.mock_http_response(fake_crm_responses.GET_PROJECT_NOT_FOUND,
+                                      '403')
+        org_id = fake_crm_responses.FAKE_ORG_ID
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.crm_api_client.get_org_org_policies(org_id)
 
     def test_get_folder(self):
         """Test get_folder()."""
@@ -268,6 +303,99 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.crm_api_client.get_folder_iam_policies(
                 'foo', fake_crm_responses.FAKE_FOLDER_ID)
+
+    def test_get_folder_org_policies(self):
+        """Test get folder org policies."""
+        http_mocks.mock_http_response(fake_crm_responses.LIST_ORG_POLICIES)
+        folder_id = fake_crm_responses.FAKE_FOLDER_ID
+
+        response = self.crm_api_client.get_folder_org_policies(folder_id)
+        self.assertEqual([fake_crm_responses.TEST_ORG_POLICY_CONSTRAINT],
+                         [r['constraint'] for r in response])
+
+    def test_get_folder_org_policies_errors(self):
+        """Test the error handling."""
+        http_mocks.mock_http_response(fake_crm_responses.GET_PROJECT_NOT_FOUND,
+                                      '403')
+        folder_id = fake_crm_responses.FAKE_FOLDER_ID
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.crm_api_client.get_folder_org_policies(folder_id)
+
+    def test_get_org_policy(self):
+        """Test get_org_policy for org, folder and project."""
+        test_cases = [
+            (
+                'folders/{}'.format(fake_crm_responses.FAKE_FOLDER_ID),
+                False,
+                fake_crm_responses.GET_ORG_POLICY_NO_POLICY
+            ),
+            (
+                'folders/{}'.format(fake_crm_responses.FAKE_FOLDER_ID),
+                True,
+                fake_crm_responses.GET_EFFECTIVE_ORG_POLICY
+            ),
+            (
+                'projects/{}'.format(fake_crm_responses.FAKE_PROJECT_ID),
+                False,
+                fake_crm_responses.GET_ORG_POLICY_NO_POLICY
+            ),
+            (
+                'projects/{}'.format(fake_crm_responses.FAKE_PROJECT_ID),
+                True,
+                fake_crm_responses.GET_EFFECTIVE_ORG_POLICY
+            ),
+            (
+                'organizations/{}'.format(fake_crm_responses.FAKE_ORG_ID),
+                False,
+                fake_crm_responses.GET_ORG_POLICY_NO_POLICY
+            ),
+            (
+                'organizations/{}'.format(fake_crm_responses.FAKE_ORG_ID),
+                True,
+                fake_crm_responses.GET_EFFECTIVE_ORG_POLICY
+            ),
+        ]
+        for (resource_id, effective_policy, fake_response) in test_cases:
+            http_mocks.mock_http_response(fake_response)
+            response = self.crm_api_client.get_org_policy(
+                resource_id,
+                fake_crm_responses.TEST_ORG_POLICY_CONSTRAINT,
+                effective_policy=effective_policy)
+            self.assertEqual(fake_crm_responses.TEST_ORG_POLICY_CONSTRAINT,
+                             response['constraint'])
+
+    def test_get_org_policy_errors(self):
+        """Test get_org_policy for error handling."""
+        test_cases = [
+            (
+                'folders/{}'.format(fake_crm_responses.FAKE_FOLDER_ID),
+                fake_crm_responses.GET_PROJECT_NOT_FOUND,
+                api_errors.ApiExecutionError
+            ),
+            (
+                'projects/{}'.format(fake_crm_responses.FAKE_PROJECT_ID),
+                fake_crm_responses.GET_PROJECT_NOT_FOUND,
+                api_errors.ApiExecutionError
+            ),
+            (
+                'organizations/{}'.format(fake_crm_responses.FAKE_ORG_ID),
+                fake_crm_responses.GET_PROJECT_NOT_FOUND,
+                api_errors.ApiExecutionError
+            ),
+            (
+                'bad_resource_id',
+                None,
+                ValueError
+            ),
+        ]
+        for (resource_id, response, expected_exception) in test_cases:
+            if response:
+                http_mocks.mock_http_response(response, '403')
+            with self.assertRaises(expected_exception):
+                self.crm_api_client.get_org_policy(
+                    resource_id,
+                    fake_crm_responses.TEST_ORG_POLICY_CONSTRAINT)
 
 
 if __name__ == '__main__':
