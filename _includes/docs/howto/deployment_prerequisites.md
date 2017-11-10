@@ -30,8 +30,11 @@ Scanner, and Enforcer, follow the steps below.
   1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
   1. Create and download a json key for the service account.
-  1. Run `gcloud auth activate-service-account --key-file=PATH/TO/KEYFILE.json` to assume the 
-  service account credentials.
+  1. Run the following command to assume the service account credentials:
+  
+  ```bash
+  gcloud auth activate-service-account --key-file=PATH/TO/KEYFILE.json
+  ```
 
 To create a separate service account for enabling G Suite data collection, follow the steps in 
 ["Enabling GSuite Google Groups Collection"]({% link _docs/howto/configure/gsuite-group-collection.md %}).
