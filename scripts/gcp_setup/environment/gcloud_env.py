@@ -100,6 +100,7 @@ def org_id_from_org_name(org_name):
 
 
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
 class ForsetiGcpSetup(object):
     """Setup the Forseti Security GCP components."""
 
@@ -196,7 +197,7 @@ class ForsetiGcpSetup(object):
         print('')
 
     @staticmethod
-    def _run_command(cmd_args):
+    def run_command(cmd_args):
         """Wrapper to run a command in subprocess.
 
         Args:
@@ -251,7 +252,7 @@ class ForsetiGcpSetup(object):
 
     def check_proper_gcloud(self):
         """Check gcloud version and presence of alpha components."""
-        return_code, out, err = self._run_command(
+        return_code, out, err = self.run_command(
             ['gcloud', '--version'])
 
         version_regex = re.compile(GCLOUD_VERSION_REGEX)
@@ -291,7 +292,7 @@ class ForsetiGcpSetup(object):
     def gcloud_info(self):
         """Read gcloud info, and check if running in Cloud Shell."""
         # Read gcloud info
-        return_code, out, err = self._run_command(
+        return_code, out, err = self.run_command(
             ['gcloud', 'info', '--format=json'])
         if return_code:
             print(err)
@@ -349,7 +350,7 @@ class ForsetiGcpSetup(object):
 
     def check_billing_enabled(self):
         """Check if billing is enabled."""
-        return_code, out, err = self._run_command(
+        return_code, out, err = self.run_command(
             ['gcloud', 'alpha', 'billing', 'projects', 'describe',
              self.project_id, '--format=json'])
         if return_code:
@@ -377,7 +378,7 @@ class ForsetiGcpSetup(object):
 
     def get_organization(self):
         """Infer the organization from the project's parent."""
-        return_code, out, err = self._run_command(
+        return_code, out, err = self.run_command(
             ['gcloud', 'projects', 'describe',
              self.project_id, '--format=json'])
         if return_code:
@@ -424,7 +425,7 @@ class ForsetiGcpSetup(object):
         parent_type = 'folders'
         parent_id = folder_id
         while parent_type != 'organizations':
-            return_code, out, err = self._run_command(
+            return_code, out, err = self.run_command(
                 ['gcloud', 'alpha', 'resource-manager', 'folders',
                  'describe', parent_id, '--format=json'])
             if return_code:
@@ -503,7 +504,7 @@ class ForsetiGcpSetup(object):
             bool: True if has roles, otherwise False.
         """
         has_roles = False
-        return_code, out, err = self._run_command(
+        return_code, out, err = self.run_command(
             ['gcloud', resource_type, 'get-iam-policy',
              resource_id, '--format=json'])
         if return_code:
@@ -541,7 +542,7 @@ class ForsetiGcpSetup(object):
         self._print_banner('Enabling required APIs')
         for api in REQUIRED_APIS:
             print('Enabling the {} API...'.format(api['name']))
-            return_code, _, err = self._run_command(
+            return_code, _, err = self.run_command(
                 ['gcloud', 'alpha', 'service-management',
                  'enable', api['service']])
             if return_code:
@@ -757,7 +758,7 @@ class ForsetiGcpSetup(object):
               'https://console.cloud.google.com/deployments/details/'
               '{}?project={}&organizationId={}\n'.format(
                   self.deployment_name, self.project_id, self.organization_id))
-        return_code, out, err = self._run_command(
+        return_code, out, err = self.run_command(
             ['gcloud', 'deployment-manager', 'deployments', 'create',
              self.deployment_name, '--config={}'.format(self.deploy_tpl_path)])
         time.sleep(2)
@@ -782,7 +783,7 @@ class ForsetiGcpSetup(object):
         self._print_banner('Copy configs to bucket')
 
         print('Copy forseti_conf.yaml to {}'.format(self.bucket_name))
-        return_code, out, err = self._run_command(
+        return_code, out, err = self.run_command(
             ['gsutil', 'cp', self.forseti_conf_path,
              '{}/configs/forseti_conf.yaml'.format(self.bucket_name)])
         if return_code:
@@ -795,7 +796,7 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 ROOT_DIR_PATH, 'rules'))
         print('Copy rules to {}'.format(self.bucket_name))
-        return_code, out, err = self._run_command(
+        return_code, out, err = self.run_command(
             ['gsutil', 'cp', '-r', rules_dir, self.bucket_name])
         if return_code:
             print(err)
@@ -815,7 +816,7 @@ class ForsetiGcpSetup(object):
         print('scp-ing your gsuite_key.json to your Forseti GCE instance...')
         for i in range(1, GSUITE_KEY_SCP_ATTEMPTS+1):
             print('Attempt {} of {} ...'.format(i, GSUITE_KEY_SCP_ATTEMPTS))
-            return_code, out, err = self._run_command(
+            return_code, out, err = self.run_command(
                 ['gcloud',
                  'compute',
                  'scp',
