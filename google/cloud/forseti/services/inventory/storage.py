@@ -276,13 +276,22 @@ class Inventory(BASE):
         return self.parent_type
 
     def get_data(self):
-        """Get the row's raw data.
+        """Get the row's metadata.
 
         Returns:
-            dict: row's raw data.
+            dict: row's metadata.
         """
 
         return json.loads(self.data)
+
+    def get_data_raw(self):
+        """Get the row's data json string.
+
+        Returns:
+            str: row's raw data.
+        """
+
+        return self.data
 
     def get_other(self):
         """Get the row's other data.

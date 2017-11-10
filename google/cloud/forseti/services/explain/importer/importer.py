@@ -618,6 +618,7 @@ class InventoryImporter(object):
                 type=bucket.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
+                data=bucket.get_data_raw(),
                 parent=parent))
 
     def _convert_object(self, gcsobject):
@@ -644,6 +645,7 @@ class InventoryImporter(object):
                 type=dataset.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
+                data=dataset.get_data_raw(),
                 parent=parent))
 
     def _convert_instancegroup(self, instancegroup):
@@ -663,6 +665,7 @@ class InventoryImporter(object):
                 type=instancegroup.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
+                data=instancegroup.get_data_raw(),
                 parent=parent))
 
     def _convert_instance(self, instance):
@@ -682,6 +685,7 @@ class InventoryImporter(object):
                 type=instance.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
+                data=instance.get_data_raw(),
                 parent=parent))
 
     def _convert_firewall(self, firewall):
@@ -701,6 +705,7 @@ class InventoryImporter(object):
                 type=firewall.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
+                data=firewall.get_data_raw(),
                 parent=parent))
 
     def _convert_backendservice(self, backendservice):
@@ -720,6 +725,7 @@ class InventoryImporter(object):
                 type=backendservice.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
+                data=backendservice.get_data_raw(),
                 parent=parent))
 
     def _convert_cloudsqlinstance(self, cloudsqlinstance):
@@ -739,6 +745,7 @@ class InventoryImporter(object):
                 type=cloudsqlinstance.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
+                data=cloudsqlinstance.get_data_raw(),
                 parent=parent))
 
     def _convert_serviceaccount(self, service_account):
@@ -759,6 +766,7 @@ class InventoryImporter(object):
                 type=service_account.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
+                data=service_account.get_data_raw(),
                 parent=parent))
 
     def _convert_folder(self, folder):
@@ -781,6 +789,7 @@ class InventoryImporter(object):
             name=folder.get_key(),
             type=folder.get_type(),
             display_name=data.get('displayName', ''),
+            data=folder.get_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(folder, resource)
@@ -805,6 +814,7 @@ class InventoryImporter(object):
             name=project.get_key(),
             type=project.get_type(),
             display_name=data.get('name', ''),
+            data=project.get_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(project, resource)
@@ -860,6 +870,7 @@ class InventoryImporter(object):
                     name=role.get_key(),
                     type=role.get_type(),
                     display_name=data.get('title'),
+                    data=role.get_data_raw(),
                     parent=parent))
 
     def _convert_organization(self, organization):
@@ -879,6 +890,7 @@ class InventoryImporter(object):
             name=organization.get_key(),
             type=organization.get_type(),
             display_name=data.get('displayName', ''),
+            data=organization.get_data_raw(),
             parent=None)
 
         self._add_to_cache(organization, org)
