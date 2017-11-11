@@ -23,6 +23,28 @@ from google.cloud.security.auditor import condition_parser as cp
 from tests.unittest_utils import ForsetiTestCase
 
 
+def parse(filter_expr, expected, params, parser=None):
+    """Parse the expression.
+
+    This wraps the eval_filter() method from the parser.
+
+    Args:
+        filter_expr (str): The expression to evaluate.
+        expected (bool): The expected result.
+        params (dict): The parameters to use for variable lookups.
+        parser (object): The parser to use for parsing the expression.
+
+    Raises:
+        AssertionError: If the results do not equal the expected value.
+    """
+    if not parser:
+        parser = ConditionParser(params)
+
+    result = parser.eval_filter(filter_expr)
+    if result != expected:
+        raise AssertionError("yields %s instead of %s" % (result, expected))
+
+
 class ConditionParserTest(ForsetiTestCase):
     """ConditionParserTest."""
 
@@ -54,7 +76,7 @@ class ConditionParserTest(ForsetiTestCase):
 
         parser = cp.ConditionParser(parameters)
         for filter_expr, expected in tests:
-            cp.parse(filter_expr, expected, parameters, parser)
+            parse(filter_expr, expected, parameters, parser)
 
     def test_conditions_fail_parse(self):
         """Test that the following conditions fail parsing."""
@@ -76,7 +98,7 @@ class ConditionParserTest(ForsetiTestCase):
         parser = cp.ConditionParser(parameters)
         for filter_expr, expected in tests:
             with self.assertRaises(pyparsing.ParseException):
-                cp.parse(filter_expr, expected, parameters, parser)
+                parse(filter_expr, expected, parameters, parser)
 
     def test_conditions_fail_eval(self):
         """Test that the following conditions fail evaluation."""
@@ -94,7 +116,7 @@ class ConditionParserTest(ForsetiTestCase):
         parser = cp.ConditionParser(parameters)
         for filter_expr, expected in tests:
             with self.assertRaises(AssertionError):
-                cp.parse(filter_expr, expected, parameters, parser)
+                parse(filter_expr, expected, parameters, parser)
 
 
 if __name__ == '__main__':

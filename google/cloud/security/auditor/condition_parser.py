@@ -224,26 +224,3 @@ class ConditionParser(object):
             (self.orop, 2, pyparsing.opAssoc.LEFT, eval_or),
         ])
         return expr.parseString(filter_expr, parseAll=True)[0]
-
-
-def parse(filter_expr, expected, params, parser=ConditionParser):
-    """Parse the expression.
-
-    Args:
-        filter_expr (str): The expression to evaluate.
-        expected (bool): The expected result.
-        params (dict): The parameters to use for variable lookups.
-        parser (object): The parser to use for parsing the expression.
-
-    Raises:
-        AssertionError: If the results do not equal the expected value.
-    """
-    if not parser:
-        parser = ConditionParser(params)
-
-    logging.debug('\nexpr: %s, expected: %s', filter_expr, expected)
-
-    result = parser.eval_filter(filter_expr)
-    if result != expected:
-        raise AssertionError("yields %s instead of %s" % (result, expected))
-    logging.debug('Parsed successfully')

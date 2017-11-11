@@ -75,6 +75,9 @@ class Rule(object):
     def create_rule(rule_definition):
         """Instantiate a rule based on its definition.
 
+        Rule schema can be found in
+        google/cloud/security/auditor/schema/rules.json.
+
         Args:
             rule_definition (dict): The rule definition properties.
 
