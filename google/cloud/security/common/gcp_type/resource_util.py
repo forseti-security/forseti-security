@@ -19,7 +19,10 @@ from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization as org
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
+from google.cloud.security.util import log_util
 
+
+LOGGER = log_util.get_logger(__name__)
 
 _RESOURCE_TYPE_MAP = {
     resource.ResourceType.ORGANIZATION: {
@@ -96,5 +99,29 @@ def type_from_name(resource_name):
     for (resource_type, metadata) in _RESOURCE_TYPE_MAP.iteritems():
         if resource_name.startswith(metadata['plural'].lower()):
             return resource_type
+
+    return None
+
+
+def load_all(resource_class_name):
+    """Load all the resources found in the database for a resource type.
+
+    The gcp_type class contains a property that points to its dao class,
+    and the dao class has a get_all() method that retrieves all the data
+    and returns the results. This is a temporary method that will go away
+    with the new data access layer.
+
+    Args:
+        resource_class_name (str): The resource class name, including the
+            module name (i.e. google.cloud.security.gcp_type.<module>.<Class>)
+
+    Returns:
+        list: The results from the database.
+    """
+    resource = class_loader_util.load_class(resource_class_name)()
+    if hasattr(resource, 'dao'):
+        return resource.dao().get_all()
+    else:
+        LOGGER.warn('No dao class mapped to %s', resource_class_name)
 
     return None

@@ -18,11 +18,10 @@ This is a generic class that handles a basic rule, as defined in
 schema/rules.json.
 """
 
-import importlib
-
 from collections import namedtuple
 
 from google.cloud.security.auditor import condition_parser
+from google.cloud.security.common.util import class_loader_util
 from google.cloud.security.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -83,17 +82,8 @@ class Rule(object):
 
         Return:
             object: An instance of Rule.
-
-        Raises:
-            InvalidRuleTypeError: If the rule type is does not exist.
         """
-        parts = rule_definition.get('type').split('.')
-        module = importlib.import_module('.'.join(parts[:-1]))
-        try:
-            rule_class = getattr(module, parts[-1])
-        except AttributeError:
-            raise InvalidRuleTypeError(rule_definition.get('type'))
-        new_rule = rule_class()
+        new_rule = class_loader_util.load_class(rule_definition.get('type'))()
 
         # Set properties
         new_rule.rule_id = rule_definition.get('id')
@@ -169,18 +159,3 @@ RuleResult = namedtuple('RuleResult',
                         ['rule_id', 'resource', 'result', 'metadata'])
 
 
-class Error(Exception):
-    """Base Error class."""
-
-
-class InvalidRuleTypeError(Error):
-    """InvalidRuleTypeError."""
-
-    def __init__(self, rule_type):
-        """Init.
-
-        Args:
-            rule_type (str): The rule type.
-        """
-        super(InvalidRuleTypeError, self).__init__(
-            'Invalid rule type: {}'.format(rule_type))
