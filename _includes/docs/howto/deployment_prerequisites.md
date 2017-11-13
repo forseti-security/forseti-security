@@ -127,6 +127,11 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 --member=MEMBER_TYPE:MEMBER_NAME \
 --role=roles/compute.securityAdmin
 ```
+```bash
+$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+--member=MEMBER_TYPE:MEMBER_NAME \
+--role=roles/bigquery.dataViewer
+```
 
 _Project Cloud IAM roles_
 
