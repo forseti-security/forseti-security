@@ -81,8 +81,11 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
         if not quota_max_calls:
             use_rate_limiter = False
 
-        self._objects = None
         self._buckets = None
+        self._bucket_acls = None
+        self._default_object_acls = None
+        self._objects = None
+        self._object_acls = None
 
         super(StorageRepositoryClient, self).__init__(
             'storage', versions=['v1'],
@@ -91,29 +94,48 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
 
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def buckets(self):
-        """An _StorageBucketsRepository instance.
-
-        Returns:
-            object: An _StorageBucketsRepository instance.
-        """
+        """An _StorageBucketsRepository instance."""
         if not self._buckets:
             self._buckets = self._init_repository(
                 _StorageBucketsRepository)
         return self._buckets
 
     @property
-    def objects(self):
-        """An _StorageObjectsRepository instance.
+    def bucket_acls(self):
+        """An _StorageBucketAclsRepository instance."""
+        if not self._bucket_acls:
+            self._bucket_acls = self._init_repository(
+                _StorageBucketAclsRepository)
+        return self._bucket_acls
 
-        Returns:
-            object: An _StorageObjectsRepository instance.
-        """
+    @property
+    def default_object_acls(self):
+        """An _StorageDefaultObjectAclsRepository instance."""
+        if not self._default_object_acls:
+            self._default_object_acls = self._init_repository(
+                _StorageDefaultObjectAclsRepository)
+        return self._default_object_acls
+
+    @property
+    def objects(self):
+        """An _StorageObjectsRepository instance."""
         if not self._objects:
             self._objects = self._init_repository(
                 _StorageObjectsRepository)
         return self._objects
+
+    @property
+    def object_acls(self):
+        """An _StorageObjectAclsRepository instance."""
+        if not self._object_acls:
+            self._object_acls = self._init_repository(
+                _StorageObjectAclsRepository)
+        return self._object_acls
+    # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
 class _StorageBucketsRepository(
@@ -151,6 +173,37 @@ class _StorageBucketsRepository(
             self, bucket, fields=fields, include_body=False,
             resource_field='bucket', **kwargs)
     # pylint: enable=arguments-differ
+
+
+class _StorageBucketAclsRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Storage Bucket Access Controls repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_StorageBucketAclsRepository, self).__init__(
+            component='bucketAccessControls', list_key_field='bucket', **kwargs)
+
+
+class _StorageDefaultObjectAclsRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Storage Default Object Access Controls repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_StorageDefaultObjectAclsRepository, self).__init__(
+            component='defaultObjectAccessControls', list_key_field='bucket',
+            **kwargs)
 
 
 class _StorageObjectsRepository(
@@ -244,6 +297,21 @@ class _StorageObjectsRepository(
                                     verb_arguments=verb_arguments)
 
 
+class _StorageObjectAclsRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Storage Object Access Controls repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+          **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_StorageObjectAclsRepository, self).__init__(
+            component='objectAccessControls', list_key_field='bucket', **kwargs)
+
+
 class StorageClient(object):
     """Storage Client."""
 
@@ -310,7 +378,7 @@ class StorageClient(object):
 
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
-                GCP ClodSQL API fails
+                GCP API fails
         """
         try:
             paged_results = self.repository.buckets.list(project_id,
@@ -320,6 +388,26 @@ class StorageClient(object):
             LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError('buckets', e)
 
+    def get_bucket_acls(self, bucket):
+        """Gets acls for GCS bucket.
+
+        Args:
+            bucket (str): The name of the bucket.
+
+        Returns:
+            dict: ACL json for bucket
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails
+        """
+        try:
+            results = self.repository.bucket_acls.list(resource=bucket)
+            return api_helpers.flatten_list_results(results, 'items')
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
+            raise api_errors.ApiExecutionError('bucketAccessControls', e)
+
     def get_bucket_iam_policy(self, bucket):
         """Gets the IAM policy for a bucket.
 
@@ -328,12 +416,36 @@ class StorageClient(object):
 
         Returns:
             dict: The IAM policies for the bucket.
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails
         """
         try:
             return self.repository.buckets.get_iam_policy(bucket)
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
             raise api_errors.ApiExecutionError('bucketIamPolicy', e)
+
+    def get_default_object_acls(self, bucket):
+        """Gets acls for GCS bucket.
+
+        Args:
+            bucket (str): The name of the bucket.
+
+        Returns:
+            dict: ACL json for bucket
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails
+        """
+        try:
+            results = self.repository.default_object_acls.list(resource=bucket)
+            return api_helpers.flatten_list_results(results, 'items')
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
+            raise api_errors.ApiExecutionError('defaultObjectAccessControls', e)
 
     def get_objects(self, bucket):
         """Gets all GCS buckets for a project.
@@ -347,7 +459,7 @@ class StorageClient(object):
 
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
-                GCP ClodSQL API fails
+                GCP API fails
         """
         try:
             paged_results = self.repository.objects.list(bucket,
@@ -356,6 +468,28 @@ class StorageClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
             raise api_errors.ApiExecutionError('objects', e)
+
+    def get_object_acls(self, bucket, object_name):
+        """Gets acls for GCS objects.
+
+        Args:
+            bucket (str): The name of the bucket.
+            object_name (str): The name of the object.
+
+        Returns:
+            dict: ACL json for bucket
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails
+        """
+        try:
+            results = self.repository.object_acls.list(resource=bucket,
+                                                       object=object_name)
+            return api_helpers.flatten_list_results(results, 'items')
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
+            raise api_errors.ApiExecutionError('objectAccessControls', e)
 
     def get_object_iam_policy(self, bucket, object_name):
         """Gets the IAM policy for an object.
@@ -366,6 +500,10 @@ class StorageClient(object):
 
         Returns:
             dict: The IAM policies for the object.
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails
         """
         try:
             return self.repository.objects.get_iam_policy(bucket, object_name)
