@@ -53,7 +53,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
     def test_get_buckets(self):
         """Test get buckets."""
         mock_responses = []
-        for page in fake_storage.LIST_FOLDERS_RESPONSES:
+        for page in fake_storage.GET_BUCKETS_RESPONSES:
             mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
@@ -69,7 +69,23 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-             self.gcs_api_client.get_buckets(fake_storage.FAKE_PROJECT_NUMBER)
+            self.gcs_api_client.get_buckets(fake_storage.FAKE_PROJECT_NUMBER)
+
+    def test_get_bucket_acls(self):
+        """Test get bucket acls."""
+        http_mocks.mock_http_response(
+            fake_storage.GET_BUCKET_ACL)
+
+        results = self.gcs_api_client.get_bucket_acls(
+            fake_storage.FAKE_BUCKET_NAME)
+        self.assertEqual(3, len(results))
+
+    def test_get_buckets_acls_raises(self):
+        """Test get buckets acls access forbidden."""
+        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.gcs_api_client.get_bucket_acls(fake_storage.FAKE_BUCKET_NAME)
 
     def test_get_bucket_iam_policy(self):
         """Test get bucket iam policy."""
@@ -85,8 +101,25 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-             self.gcs_api_client.get_bucket_iam_policy(
-                 fake_storage.FAKE_PROJECT_NUMBER)
+            self.gcs_api_client.get_bucket_iam_policy(
+                fake_storage.FAKE_BUCKET_NAME)
+
+    def test_get_default_object_acls(self):
+        """Test get default object acls."""
+        http_mocks.mock_http_response(
+            fake_storage.DEFAULT_OBJECT_ACL)
+
+        results = self.gcs_api_client.get_default_object_acls(
+            fake_storage.FAKE_BUCKET_NAME)
+        self.assertEqual(3, len(results))
+
+    def test_get_default_object_acls_raises(self):
+        """Test get default object acls access forbidden."""
+        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.gcs_api_client.get_default_object_acls(
+                 fake_storage.FAKE_BUCKET_NAME)
 
     def test_get_objects(self):
         """Test get objects."""
@@ -107,7 +140,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-             self.gcs_api_client.get_objects(fake_storage.FAKE_PROJECT_NUMBER)
+            self.gcs_api_client.get_objects(fake_storage.FAKE_PROJECT_NUMBER)
 
     def test_get_object_iam_policy(self):
         """Test get object iam policy."""
@@ -123,8 +156,25 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-             self.gcs_api_client.get_object_iam_policy(
-                 fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
+            self.gcs_api_client.get_object_iam_policy(
+                fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
+
+    def test_get_object_acls(self):
+        """Test get object acls."""
+        http_mocks.mock_http_response(
+            fake_storage.GET_OBJECT_ACL)
+
+        results = self.gcs_api_client.get_object_acls(
+            fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
+        self.assertEqual(4, len(results))
+
+    def test_get_objects_iam_policy_raises(self):
+        """Test get object acls access forbidden."""
+        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.gcs_api_client.get_object_acls(
+                fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
 
     def test_get_text_file(self):
         """Test get test file returns a valid response."""
