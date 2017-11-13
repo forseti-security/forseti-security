@@ -44,8 +44,11 @@ class IamRepositoryClient(_base_repository.BaseRepositoryClient):
         if not quota_max_calls:
             use_rate_limiter = False
 
+        self._organizations_roles = None
+        self._projects_roles = None
         self._projects_serviceaccounts = None
         self._projects_serviceaccounts_keys = None
+        self._roles = None
 
         super(IamRepositoryClient, self).__init__(
             'iam', versions=['v1'],
@@ -53,13 +56,27 @@ class IamRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
 
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
+    @property
+    def organizations_roles(self):
+        """An _IamOrganizationsRolesRepository instance."""
+        if not self._organizations_roles:
+            self._organizations_roles = self._init_repository(
+                _IamOrganizationsRolesRepository)
+        return self._organizations_roles
+
+    @property
+    def projects_roles(self):
+        """An _IamProjectsRolesRepository instance."""
+        if not self._projects_roles:
+            self._projects_roles = self._init_repository(
+                _IamProjectsRolesRepository)
+        return self._projects_roles
+
     @property
     def projects_serviceaccounts(self):
-        """An _IamProjectsServiceAccountsRepository instance.
-
-        Returns:
-            object: An _IamProjectsServiceAccountsRepository instance.
-        """
+        """An _IamProjectsServiceAccountsRepository instance."""
         if not self._projects_serviceaccounts:
             self._projects_serviceaccounts = self._init_repository(
                 _IamProjectsServiceAccountsRepository)
@@ -67,15 +84,80 @@ class IamRepositoryClient(_base_repository.BaseRepositoryClient):
 
     @property
     def projects_serviceaccounts_keys(self):
-        """An _IamProjectsServiceAccountsKeysRepository instance.
-
-        Returns:
-            object: An _IamProjectsServiceAccountsKeysRepository instance.
-        """
+        """An _IamProjectsServiceAccountsKeysRepository instance."""
         if not self._projects_serviceaccounts_keys:
             self._projects_serviceaccounts_keys = self._init_repository(
                 _IamProjectsServiceAccountsKeysRepository)
         return self._projects_serviceaccounts_keys
+
+    @property
+    def roles(self):
+        """An _IamRolesRepository instance."""
+        if not self._roles:
+            self._roles = self._init_repository(
+                _IamRolesRepository)
+        return self._roles
+    # pylint: enable=missing-return-doc, missing-return-type-doc
+
+
+class _IamOrganizationsRolesRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Iam Organizations Roles repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_IamOrganizationsRolesRepository, self).__init__(
+            key_field='parent', max_results_field='pageSize',
+            component='organizations.roles', **kwargs)
+
+    @staticmethod
+    def get_name(org_id):
+        """Returns a formatted name field to pass in to the API.
+
+        Args:
+            org_id (str): The id of the organization to query.
+
+        Returns:
+            str: A formatted project name.
+        """
+        if org_id and not org_id.startswith('organizations/'):
+            org_id = 'organizations/{}'.format(org_id)
+        return org_id
+
+
+class _IamProjectsRolesRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Iam Projects Roles repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_IamProjectsRolesRepository, self).__init__(
+            key_field='parent', max_results_field='pageSize',
+            component='projects.roles', **kwargs)
+
+    @staticmethod
+    def get_name(project_id):
+        """Returns a formatted name field to pass in to the API.
+
+        Args:
+            project_id (str): The id of the project to query.
+
+        Returns:
+            str: A formatted project name.
+        """
+        if project_id and not project_id.startswith('projects/'):
+            project_id = 'projects/{}'.format(project_id)
+        return project_id
 
 
 class _IamProjectsServiceAccountsRepository(
@@ -149,6 +231,21 @@ class _IamProjectsServiceAccountsKeysRepository(
             **kwargs)
 
 
+class _IamRolesRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Iam Roles repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_IamRolesRepository, self).__init__(
+            max_results_field='pageSize', component='roles', **kwargs)
+
+
 class IAMClient(object):
     """IAM Client."""
 
@@ -170,6 +267,74 @@ class IAMClient(object):
             quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
+    def get_curated_roles(self, parent=None):
+        """Get information about organization roles
+
+        Args:
+            parent (str): An optional parent ID to query. If unset, defaults
+                to returning the list of curated roles in GCP.
+
+        Returns:
+            list: The response of retrieving the curated roles.
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        try:
+            paged_results = self.repository.roles.list(parent=parent,
+                                                       view='FULL')
+            return api_helpers.flatten_list_results(paged_results, 'roles')
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.warn(api_errors.ApiExecutionError(parent, e))
+            raise api_errors.ApiExecutionError('projects_roles', e)
+
+    def get_organization_roles(self, org_id):
+        """Get information about custom organization roles.
+
+        Args:
+            org_id (str): The id of the organization.
+
+        Returns:
+            list: The response of retrieving the organization roles.
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        name = self.repository.organizations_roles.get_name(org_id)
+
+        try:
+            paged_results = self.repository.organizations_roles.list(
+                name, view='FULL')
+            return api_helpers.flatten_list_results(paged_results, 'roles')
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.warn(api_errors.ApiExecutionError(name, e))
+            raise api_errors.ApiExecutionError('organizations_roles', e)
+
+    def get_project_roles(self, project_id):
+        """Get information about custom project roles.
+
+        Args:
+            project_id (str): The id of the project.
+
+        Returns:
+            list: The response of retrieving the project roles.
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        name = self.repository.projects_roles.get_name(project_id)
+
+        try:
+            paged_results = self.repository.projects_roles.list(name,
+                                                                view='FULL')
+            return api_helpers.flatten_list_results(paged_results, 'roles')
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.warn(api_errors.ApiExecutionError(name, e))
+            raise api_errors.ApiExecutionError('projects_roles', e)
+
     def get_service_accounts(self, project_id):
         """Get Service Accounts associated with a project.
 
@@ -178,6 +343,10 @@ class IAMClient(object):
 
         Returns:
             list: List of service accounts associated with the project.
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
         """
         name = self.repository.projects_serviceaccounts.get_name(project_id)
 
@@ -197,6 +366,10 @@ class IAMClient(object):
 
         Returns:
             dict: The IAM policies for the service account.
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
         """
         try:
             return self.repository.projects_serviceaccounts.get_iam_policy(name)
@@ -219,6 +392,9 @@ class IAMClient(object):
 
         Raises:
             ValueError: Raised if an invalid key_type is specified.
+
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
         """
         try:
             kwargs = {}
