@@ -15,7 +15,6 @@
 """ IAM Explain server program. """
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
 # pylint: disable=protected-access,no-self-use,line-too-long,protected-access,useless-suppression
 
 from abc import ABCMeta, abstractmethod
@@ -30,13 +29,19 @@ from google.cloud.forseti.services.dao import ModelManager, create_engine
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.inventory.storage import Storage
+
+
+# TODO: The next editor must remove this disable and correct issues.
+# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
 
 
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
     'playground': GrpcPlaygrounderFactory,
     'inventory': GrpcInventoryFactory,
+    'scanner': GrpcScannerFactory,
 }
 
 
