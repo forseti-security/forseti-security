@@ -27,7 +27,7 @@ def load_class(module_class_name):
         object: The class, if it exists.
 
     Raises:
-        InvalidForsetiClassError: If the rule type is does not exist.
+        InvalidForsetiClassError: If the module or class does not exist.
     """
     try:
         parts = module_class_name.split('.')

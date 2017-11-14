@@ -19,8 +19,9 @@ import gflags as flags
 from google.apputils import app
 
 from google.cloud.security import config
-from google.cloud.security.util import log_util
-from google.cloud.security.auditor import rules_engine and rules_eng
+from google.cloud.security.auditor import rules_engine as rules_eng
+from google.cloud.security.common.gcp_type import resource_util
+from google.cloud.security.common.util import log_util
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -48,42 +49,61 @@ except flags.DuplicateFlagError:
 class AuditorRunner(object):
     """AuditorRunner."""
 
-    def __init__(self, config=None):
-        self.config = config or config.FORSETI_CONFIG.auditor
+    def __init__(self, config_props=None):
+        self.config = config_props or config.FORSETI_CONFIG.root_config.auditor
 
     def run(self):
         rules_engine = rules_eng.RulesEngine(self.config.rules_path)
-        resources = self.extract_resources(rules_engine)
+        rules_engine.setup()
         resource_types = [
             res_conf['type'] 
             for r in rules_engine.rules
             for res_conf in r.resource_config]
 
+        LOGGER.info('Resource types found: %s', resource_types)
+
         # For each resource type, load all the resources from the database.
         # TODO: Create a mapping between the gcp_type and the dao
         # and call each dao's get_all() method.
+        all_results = []
         for resource_type in resource_types:
             loaded_resources = None
             try:
                 loaded_resources = resource_util.load_all(resource_type)
-            except:
-                LOGGER.warn('Unable to load resources for %s', resource_type)
+            except Exception as err:
+                LOGGER.warn(
+                    'Unable to load resources for %s due to %s',
+                    resource_type, err)
 
             if not loaded_resources:
                 continue
 
             for resource in loaded_resources:
-                rules_engine.evaluate_rules(resource)
+                all_results.extend([
+                    result
+                    for result in rules_engine.evaluate_rules(resource)
+                    if result.result])
+
+            LOGGER.info('%s rules evaluated to True', len(all_results))
+        print all_results
+        return all_results
 
 
 def main(_):
     if not config.FORSETI_CONFIG:
+        if not FLAGS.forseti_config:
+            LOGGER.error('Provide a --forseti-config file to run the Auditor.')
+            sys.exit(1)
         config.FORSETI_CONFIG = config.from_file(FLAGS.forseti_config)
 
     # If user specifies a rules_config, use that instead of what's in
     # the Forseti config. (e.g. could be for testing purposes)
     if FLAGS.rules_config:
-        config.FORSETI_CONFIG.auditor.rules_path = FLAGS.rules_config
+        config.FORSETI_CONFIG.root_config.auditor.rules_path = (
+            FLAGS.rules_config)
+
+    log_util.set_logger_level_from_config(
+        config.FORSETI_CONFIG.root_config.auditor.get('loglevel'))
 
     runner = AuditorRunner()
     runner.run()

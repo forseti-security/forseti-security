@@ -35,6 +35,7 @@ config.prop1 => 'x'
 config.module1.prop1 => 'z'
 """
 
+import logging
 import os
 import sys
 
@@ -43,10 +44,10 @@ from pprint import pformat
 import yaml
 
 from google.cloud.security.common.util import file_loader
-from google.cloud.security.common.util import log_util
+#from google.cloud.security.common.util import log_util
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logging #log_util.get_logger(__name__)
 
 
 class ConfigHolder(dict):

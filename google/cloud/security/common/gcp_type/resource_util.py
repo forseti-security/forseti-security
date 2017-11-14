@@ -14,12 +14,14 @@
 
 """Util for generic operations for Resources."""
 
+from google.cloud.security import config
 from google.cloud.security.common.gcp_type import backend_service
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type import organization as org
 from google.cloud.security.common.gcp_type import project
 from google.cloud.security.common.gcp_type import resource
-from google.cloud.security.util import log_util
+from google.cloud.security.common.util import class_loader_util
+from google.cloud.security.common.util import log_util
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -46,6 +48,18 @@ _RESOURCE_TYPE_MAP = {
         'can_create_resource': False,
     },
 }
+
+# Temporary map of GCP types to dao, this will go away in the near future.
+# pylint: disable=line-too-long
+_TYPES_TO_DAO = {
+    'google.cloud.security.common.gcp_type.project.Project': {
+        'dao': 'google.cloud.security.common.data_access.project_dao.ProjectDao'
+    },
+    'google.cloud.security.common.gcp_type.instance.Instance': {
+        'dao': 'google.cloud.security.common.data_access.instance_dao.InstanceDao'
+    },
+}
+# pylint: enable=line-too-long
 
 def create_resource(resource_id, resource_type, **kwargs):
     """Factory to create a certain kind of Resource.
@@ -118,10 +132,20 @@ def load_all(resource_class_name):
     Returns:
         list: The results from the database.
     """
-    resource = class_loader_util.load_class(resource_class_name)()
-    if hasattr(resource, 'dao'):
-        return resource.dao().get_all()
-    else:
-        LOGGER.warn('No dao class mapped to %s', resource_class_name)
+    if not resource_class_name in _TYPES_TO_DAO:
+        LOGGER.warn('No dao class associated to %s', resource_class_name)
+        return None
 
-    return None
+    try:
+        dao_class_name = _TYPES_TO_DAO[resource_class_name]['dao']
+        LOGGER.info('Loading %s', dao_class_name)
+        resource_dao = class_loader_util.load_class(dao_class_name)(
+            config.FORSETI_CONFIG.root_config.common)
+        LOGGER.info('Loaded %s', resource_dao)
+        resources = resource_dao.get_all()
+    except Exception as err:
+        LOGGER.error(
+            'Error getting all resources for %s due to %s',
+            resource_class_name, err)
+
+    return resource_dao.get_all()
