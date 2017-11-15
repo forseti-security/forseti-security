@@ -420,9 +420,9 @@ class ClientComposition(object):
         the different services.
     """
 
-    DEFAULT_ENDPOINT = 'localhost:50058'
+    DEFAULT_ENDPOINT = 'localhost:50051'
 
-    def __init__(self, endpoint=DEFAULT_ENDPOINT):
+    def __init__(self, endpoint=DEFAULT_ENDPOINT, ping=False):
         self.channel = grpc.insecure_channel(endpoint)
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
@@ -431,8 +431,9 @@ class ClientComposition(object):
         self.inventory = InventoryClient(self.config)
 
         self.clients = [self.explain, self.playground, self.inventory]
-        if not all([c.is_available() for c in self.clients]):
-            raise Exception('gRPC connected but services not registered')
+        if ping:
+            if not all([c.is_available() for c in self.clients]):
+                raise Exception('gRPC connected but services not registered')
 
     def new_model(self, source, name, inventory_id=-1, background=False):
         """Create a new model from the specified source."""

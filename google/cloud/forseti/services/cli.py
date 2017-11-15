@@ -203,6 +203,98 @@ def define_inventory_parser(parent):
         help='Inventory id to get')
 
 
+def define_config_parser(parent):
+    """Define the config service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+
+    service_parser = parent.add_parser('config', help='config service')
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    _ = action_subparser.add_parser(
+        'show',
+        help='Show the config')
+
+    delete_config_parser = action_subparser.add_parser(
+        'delete',
+        help='Deletes an item from the config')
+    delete_config_parser.add_argument(
+        'key',
+        type=str,
+        help='Key to delete from config')
+
+    set_config_parser = action_subparser.add_parser(
+        'set',
+        help='Model to switch to')
+    set_config_parser.add_argument(
+        'key',
+        type=str,
+        help='Key to set value for in config')
+    set_config_parser.add_argument(
+        'value',
+        type=str,
+        help='Value to set in config')
+
+
+def define_model_parser(parent):
+    """Define the model service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+    service_parser = parent.add_parser('model', help='model service')
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    use_model_parser = action_subparser.add_parser(
+        'use',
+        help='Context switch into the model.')
+    use_model_parser.add_argument(
+        'model',
+        help='Model to switch to, either hash or name'
+        )
+
+    _ = action_subparser.add_parser(
+        'list',
+        help='List all available models')
+
+    delete_model_parser = action_subparser.add_parser(
+        'delete',
+        help='Deletes an entire model')
+    delete_model_parser.add_argument(
+        'model',
+        help='Model to delete')
+
+    create_model_parser = action_subparser.add_parser(
+        'create',
+        help='Create a model')
+    create_model_parser.add_argument(
+        'source',
+        choices=['empty', 'inventory'],
+        help='Source to import from')
+    create_model_parser.add_argument(
+        'name',
+        help='Human readable name for this model')
+    create_model_parser.add_argument(
+        '--id',
+        type=int,
+        default=-1,
+        help='Inventory id to import from, if "inventory" source'
+        )
+    create_model_parser.add_argument(
+        '--background',
+        '-b',
+        default=False,
+        action='store_true',
+        help='Run import in background'
+        )
+
+
 def define_explainer_parser(parent):
     """Define the explainer service parser.
 
@@ -380,10 +472,11 @@ def read_env(var_key, default):
     return os.environ[var_key] if var_key in os.environ else default
 
 
-def define_parent_parser(parser_cls):
+def define_parent_parser(parser_cls, config_env):
     """Define the parent parser.
     Args:
         parser_cls (type): Class to instantiate parser from.
+        config_env (object): Configuration environment.
 
     Returns:
         argparser: The parent parser which has been defined.
@@ -392,34 +485,37 @@ def define_parent_parser(parser_cls):
     parent_parser = parser_cls()
     parent_parser.add_argument(
         '--endpoint',
-        default='localhost:50051',
+        default=config_env['endpoint'],
         help='Server endpoint')
     parent_parser.add_argument(
         '--use_model',
-        default=read_env('IAM_MODEL', ''),
+        default=config_env['model'],
         help='Model to operate on')
     parent_parser.add_argument(
         '--out-format',
-        default='text',
+        default=config_env['format'],
         choices=['text', 'json'])
     return parent_parser
 
 
-def create_parser(parser_cls):
+def create_parser(parser_cls, config_env):
     """Create argument parser hierarchy.
     Args:
         parser_cls (cls): Class to instantiate parser from.
+        config_env (object): Configuration environment
 
     Returns:
         argparser: The argument parser hierarchy which is created.
     """
-    main_parser = define_parent_parser(parser_cls)
+    main_parser = define_parent_parser(parser_cls, config_env)
     service_subparsers = main_parser.add_subparsers(
         title="service",
         dest="service")
     define_explainer_parser(service_subparsers)
     define_playground_parser(service_subparsers)
     define_inventory_parser(service_subparsers)
+    define_config_parser(service_subparsers)
+    define_model_parser(service_subparsers)
     return main_parser
 
 
@@ -458,12 +554,94 @@ class JsonOutput(Output):
         print MessageToJson(obj)
 
 
-def run_inventory(client, config, output):
+def run_config(_, config, output, config_env):
+    """Run config commands.
+        Args:
+            _ (iam_client.ClientComposition): Unused.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+            config_env (object): Configuration environment.
+    """
+
+    def do_show_config():
+        """Show the current config."""
+        if isinstance(output, TextOutput):
+            output.write(config_env)
+        else:
+            print config_env
+
+    def do_set_config():
+        """Set a config item."""
+        config_env[config.key] = config.value
+        DefaultConfigParser.persist(config_env)
+        do_show_config()
+
+    def do_delete_config():
+        """Delete a config item."""
+        del config_env[config.key]
+        DefaultConfigParser.persist(config_env)
+        do_show_config()
+
+    actions = {
+        'show': do_show_config,
+        'set': do_set_config,
+        'delete': do_delete_config}
+
+    actions[config.action]()
+
+
+def run_model(client, config, output, config_env):
     """Run inventory commands.
         Args:
             client (iam_client.ClientComposition): client to use for requests.
             config (object): argparser namespace to use.
             output (Output): output writer to use.
+            config_env (object): Configuration environment.
+    """
+
+    client = client.explain
+
+    def do_list_models():
+        """List models."""
+        result = client.list_models()
+        output.write(result)
+
+    def do_delete_model():
+        """Delete a model."""
+        result = client.delete_model(config.model)
+        output.write(result)
+
+    def do_create_model():
+        """Create a model."""
+        result = client.new_model(config.source,
+                                  config.name,
+                                  config.id,
+                                  config.background)
+        output.write(result)
+
+    def do_use_model():
+        """Use a model."""
+        for model in client.list_models().models:
+            if config.model == model.name or config.model == model.handle:
+                config_env['model'] = model.handle
+            DefaultConfigParser.persist(config_env)
+
+    actions = {
+        'create': do_create_model,
+        'list': do_list_models,
+        'delete': do_delete_model,
+        'use': do_use_model}
+
+    actions[config.action]()
+
+
+def run_inventory(client, config, output, _):
+    """Run inventory commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+            _ (object): Unused.
     """
 
     client = client.inventory
@@ -498,12 +676,13 @@ def run_inventory(client, config, output):
     actions[config.action]()
 
 
-def run_explainer(client, config, output):
+def run_explainer(client, config, output, _):
     """Run explain commands.
         Args:
             client (iam_client.ClientComposition): client to use for requests.
             config (object): argparser namespace to use.
             output (Output): output writer to use.
+            _ (object): Unused.
     """
 
     client = client.explain
@@ -592,12 +771,13 @@ def run_explainer(client, config, output):
     actions[config.action]()
 
 
-def run_playground(client, config, output):
+def run_playground(client, config, output, _):
     """Run playground commands.
         Args:
             client (iam_client.ClientComposition): client to use for requests.
             config (object): argparser namespace to use.
             output (Output): output writer to use.
+            _ (object): Unused.
     """
 
     client = client.playground
@@ -697,10 +877,115 @@ SERVICES = {
     'explainer': run_explainer,
     'playground': run_playground,
     'inventory': run_inventory,
+    'config': run_config,
+    'model': run_model,
     }
 
 
+class DefaultConfigParser(object):
+    """Handles creation and persistence of DefaultConfig"""
+
+    @classmethod
+    def persist(cls, config):
+        """Save a configuration file.
+
+        Args:
+            config (obj): Configuration to store.
+        """
+
+        with file(get_config_path(), 'w+') as outfile:
+            json.dump(config, outfile)
+
+    @classmethod
+    def load(cls):
+        """Open configuration file and create an instance from it.
+
+        Returns:
+            object: DefaultConfig.
+        """
+
+        try:
+            with file(get_config_path()) as infile:
+                return DefaultConfig(json.load(infile))
+        except IOError:
+            return DefaultConfig()
+
+
+class DefaultConfig(dict):
+    """Represents the configuration."""
+
+    DEFAULT = {
+        'endpoint': 'localhost:50051',
+        'model': '',
+        'format': 'text',
+        }
+
+    def __init__(self, *args, **kwargs):
+        """Constructor.
+
+        Args:
+            *args (list): Forwarded to base class.
+            **kwargs (dict): Forwarded to base class.
+        """
+        super(DefaultConfig, self).__init__(*args, **kwargs)
+
+        # Initialize default values
+        for key, value in self.DEFAULT.iteritems():
+            if key not in self:
+                self[key] = value
+
+    def __getitem__(self, key):
+        """Get item by key.
+
+        Args:
+            key (object): Key to get value for.
+
+        Returns:
+            object: Returns base classe setitem result.
+
+        Raises:
+            KeyError: If configuration key is unknown.
+        """
+
+        if key not in self.DEFAULT:
+            raise KeyError('Configuration key unknown: {}'.format(key))
+        return dict.__getitem__(self, key)
+
+    def __setitem__(self, key, value):
+        """Set item by key.
+
+        Args:
+            key (object): Key to set value for.
+            value (object): Value to set.
+
+        Returns:
+            object: Returns base classe setitem result.
+
+        Raises:
+            KeyError: If configuration key is unknown.
+        """
+
+        if key not in self.DEFAULT:
+            raise KeyError('Configuration key unknown: {}'.format(key))
+        return dict.__setitem__(self, key, value)
+
+    def __delitem__(self, key):
+        """Delete item by key.
+
+        Args:
+            key (object): Key to delete value for
+
+        Raises:
+            KeyError: If configuration key is unknown.
+        """
+
+        if key not in self.DEFAULT:
+            raise KeyError('Configuration key unknown: {}'.format(key))
+        self[key] = self.DEFAULT[key]
+
+
 def main(args,
+         config_env,
          client=None,
          outputs=None,
          parser_cls=ArgumentParser,
@@ -708,13 +993,17 @@ def main(args,
     """Main function.
     Args:
         args (list): Command line arguments without argv[0].
+        config_env (obj): Configuration environment.
         client (obj): API client to use.
         outputs (list): Supported output formats.
         parser_cls (type): Argument parser type to instantiate.
         services (list): Supported IAM Explain services.
+
+    Returns:
+        object: Environment configuration.
     """
 
-    parser = create_parser(parser_cls)
+    parser = create_parser(parser_cls, config_env)
     config = parser.parse_args(args)
     if not client:
         client = iam_client.ClientComposition(config.endpoint)
@@ -725,8 +1014,22 @@ def main(args,
     if not services:
         services = SERVICES
     output = outputs[config.out_format]()
-    services[config.service](client, config, output)
+    services[config.service](client, config, output, config_env)
+    return config
+
+
+def get_config_path():
+    """Get configuration file path.
+
+    Returns:
+        str: Configuration path.
+    """
+
+    default_path = os.path.join(os.getenv('HOME'), '.forseti')
+    config_path = read_env('FORSETI_CLIENT_CONFIG', default_path)
+    return config_path
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    ENV_CONFIG = DefaultConfigParser.load()
+    main(sys.argv[1:], ENV_CONFIG)
