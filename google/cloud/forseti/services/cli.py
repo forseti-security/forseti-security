@@ -14,7 +14,7 @@
 
 """ IAM Explain CLI. """
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals,too-many-lines
 
 from argparse import ArgumentParser
 import json
@@ -210,7 +210,10 @@ def define_config_parser(parent):
         parent (argparser): Parent parser to hook into.
     """
 
-    service_parser = parent.add_parser('config', help='config service')
+    service_parser = parent.add_parser(
+        'config',
+        help=('config service, persist and modify the'
+              'client configuration in ~/.forseti'))
 
     action_subparser = service_parser.add_subparsers(
         title='action',
@@ -220,6 +223,10 @@ def define_config_parser(parent):
         'show',
         help='Show the config')
 
+    _ = action_subparser.add_parser(
+        'reset',
+        help='Reset the config to its default values')
+
     delete_config_parser = action_subparser.add_parser(
         'delete',
         help='Deletes an item from the config')
@@ -228,17 +235,29 @@ def define_config_parser(parent):
         type=str,
         help='Key to delete from config')
 
-    set_config_parser = action_subparser.add_parser(
-        'set',
-        help='Model to switch to')
-    set_config_parser.add_argument(
-        'key',
+    set_endpoint_config_parser = action_subparser.add_parser(
+        'endpoint',
+        help='Configure the client endpoint')
+    set_endpoint_config_parser.add_argument(
+        'hostport',
         type=str,
-        help='Key to set value for in config')
-    set_config_parser.add_argument(
-        'value',
+        help='Server endpoint in host:port format')
+
+    set_model_config_parser = action_subparser.add_parser(
+        'model',
+        help='Configure the model to use')
+    set_model_config_parser.add_argument(
+        'name',
         type=str,
-        help='Value to set in config')
+        help='Handle of the model to use, as hexlified sha1sum')
+
+    set_format_config_parser = action_subparser.add_parser(
+        'format',
+        help='Configure the output format')
+    set_format_config_parser.add_argument(
+        'name',
+        choices=['json', 'text'],
+        help='Configure the CLI output format')
 
 
 def define_model_parser(parent):
@@ -537,12 +556,9 @@ def create_parser(parser_cls, config_env):
     define_explainer_parser(service_subparsers)
     define_playground_parser(service_subparsers)
     define_inventory_parser(service_subparsers)
-<<<<<<< HEAD
     define_config_parser(service_subparsers)
     define_model_parser(service_subparsers)
-=======
     define_scanner_parser(service_subparsers)
->>>>>>> 2.0-dev
     return main_parser
 
 
@@ -581,7 +597,6 @@ class JsonOutput(Output):
         print MessageToJson(obj)
 
 
-<<<<<<< HEAD
 def run_config(_, config, output, config_env):
     """Run config commands.
         Args:
@@ -598,9 +613,21 @@ def run_config(_, config, output, config_env):
         else:
             print config_env
 
-    def do_set_config():
+    def do_set_endpoint():
         """Set a config item."""
-        config_env[config.key] = config.value
+        config_env['endpoint'] = config.hostport
+        DefaultConfigParser.persist(config_env)
+        do_show_config()
+
+    def do_set_model():
+        """Set a config item."""
+        config_env['model'] = config.name
+        DefaultConfigParser.persist(config_env)
+        do_show_config()
+
+    def do_set_output():
+        """Set a config item."""
+        config_env['format'] = config.name
         DefaultConfigParser.persist(config_env)
         do_show_config()
 
@@ -610,17 +637,31 @@ def run_config(_, config, output, config_env):
         DefaultConfigParser.persist(config_env)
         do_show_config()
 
+    def do_reset_config():
+        """Reset the config to default values."""
+        for key in config_env:
+            del config_env[key]
+        DefaultConfigParser.persist(config_env)
+        do_show_config()
+
     actions = {
         'show': do_show_config,
-        'set': do_set_config,
+        'model': do_set_model,
+        'endpoint': do_set_endpoint,
+        'format': do_set_output,
+        'reset': do_reset_config,
         'delete': do_delete_config}
-=======
-def run_scanner(client, config, output):
+
+    actions[config.action]()
+
+
+def run_scanner(client, config, output, _):
     """Run scanner commands.
         Args:
             client (iam_client.ClientComposition): client to use for requests.
             config (object): argparser namespace to use.
             output (Output): output writer to use.
+            _ (object): Configuration environment.
     """
 
     client = client.scanner
@@ -632,17 +673,12 @@ def run_scanner(client, config, output):
 
     actions = {
         'run': do_run}
->>>>>>> 2.0-dev
 
     actions[config.action]()
 
 
-<<<<<<< HEAD
 def run_model(client, config, output, config_env):
-=======
-def run_inventory(client, config, output):
->>>>>>> 2.0-dev
-    """Run inventory commands.
+    """Run model commands.
         Args:
             client (iam_client.ClientComposition): client to use for requests.
             config (object): argparser namespace to use.
@@ -928,12 +964,9 @@ SERVICES = {
     'explainer': run_explainer,
     'playground': run_playground,
     'inventory': run_inventory,
-<<<<<<< HEAD
     'config': run_config,
     'model': run_model,
-=======
     'scanner': run_scanner,
->>>>>>> 2.0-dev
     }
 
 

@@ -37,6 +37,10 @@ CLIENT.inventory.delete = mock.Mock(return_value='test')
 
 CLIENT.explain = CLIENT
 CLIENT.explain.denormalize = mock.Mock(return_value=iter(['test']))
+CLIENT.explain.list_models = mock.Mock(return_value=iter(['test']))
+
+CLIENT.scanner = CLIENT
+CLIENT.scanner.run = mock.Mock(return_value=iter(['test']))
 
 
 class ArgumentParserError(Exception):
@@ -141,6 +145,63 @@ class ImporterTest(ForsetiTestCase):
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '10.0.0.1:8080'}),
 
+        ('config show',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('config model foo',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('scanner run /tmp/config',
+         CLIENT.scanner.run,
+         ['/tmp/config'],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('model list',
+         CLIENT.explain.list_models,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('model list',
+         CLIENT.explain.list_models,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('config endpoint 192.168.0.1:80',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('config format json',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('config model foobar',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+
         ])
     def test_cli(self, test_cases):
         """Test if the CLI hits specific client methods."""
@@ -158,7 +219,8 @@ class ImporterTest(ForsetiTestCase):
                     CLIENT,
                     parser_cls=MockArgumentParser)
 
-                client_func.assert_called_with(*func_args, **func_kwargs)
+                if client_func is not None:
+                    client_func.assert_called_with(*func_args, **func_kwargs)
 
                 # Check attribute values
                 for attribute, value in config_expect.iteritems():
