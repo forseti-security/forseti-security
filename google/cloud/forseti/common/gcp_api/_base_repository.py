@@ -26,6 +26,7 @@ from google.cloud import forseti as forseti_security
 from google.cloud.forseti.common.gcp_api import _supported_apis
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
 
 CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
@@ -43,6 +44,10 @@ NUM_HTTP_RETRIES = 5
 
 # Support older versions of apiclient without cache support
 SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
+
+# Used by the record and replay decorator to store requests across all repos.
+REQUEST_RECORDER = dict()
+REQUEST_REPLAYER = dict()
 
 
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -432,6 +437,8 @@ class GCPRepository(object):
         request = self._build_request(verb, verb_arguments)
         return self._execute(request)
 
+    @replay.replay(REQUEST_REPLAYER)
+    @replay.record(REQUEST_RECORDER)
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
            stop_max_attempt_number=5)

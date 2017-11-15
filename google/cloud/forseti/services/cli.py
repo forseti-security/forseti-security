@@ -211,6 +211,7 @@ def define_config_parser(parent):
     """
 
     service_parser = parent.add_parser('config', help='config service')
+
     action_subparser = service_parser.add_subparsers(
         title='action',
         dest='action')
@@ -293,6 +294,28 @@ def define_model_parser(parent):
         action='store_true',
         help='Run import in background'
         )
+
+
+def define_scanner_parser(parent):
+    """Define the scanner service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+
+    service_parser = parent.add_parser('scanner', help='scanner service')
+
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    create_scanner_parser = action_subparser.add_parser(
+        'run',
+        help='Run the scanner')
+
+    create_scanner_parser.add_argument(
+        'config_dir',
+        help='Scanner config directory')
 
 
 def define_explainer_parser(parent):
@@ -514,8 +537,12 @@ def create_parser(parser_cls, config_env):
     define_explainer_parser(service_subparsers)
     define_playground_parser(service_subparsers)
     define_inventory_parser(service_subparsers)
+<<<<<<< HEAD
     define_config_parser(service_subparsers)
     define_model_parser(service_subparsers)
+=======
+    define_scanner_parser(service_subparsers)
+>>>>>>> 2.0-dev
     return main_parser
 
 
@@ -554,6 +581,7 @@ class JsonOutput(Output):
         print MessageToJson(obj)
 
 
+<<<<<<< HEAD
 def run_config(_, config, output, config_env):
     """Run config commands.
         Args:
@@ -586,11 +614,34 @@ def run_config(_, config, output, config_env):
         'show': do_show_config,
         'set': do_set_config,
         'delete': do_delete_config}
+=======
+def run_scanner(client, config, output):
+    """Run scanner commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+    """
+
+    client = client.scanner
+
+    def do_run():
+        """Run a scanner."""
+        result = client.run(config.config_dir)
+        output.write(result)
+
+    actions = {
+        'run': do_run}
+>>>>>>> 2.0-dev
 
     actions[config.action]()
 
 
+<<<<<<< HEAD
 def run_model(client, config, output, config_env):
+=======
+def run_inventory(client, config, output):
+>>>>>>> 2.0-dev
     """Run inventory commands.
         Args:
             client (iam_client.ClientComposition): client to use for requests.
@@ -877,8 +928,12 @@ SERVICES = {
     'explainer': run_explainer,
     'playground': run_playground,
     'inventory': run_inventory,
+<<<<<<< HEAD
     'config': run_config,
     'model': run_model,
+=======
+    'scanner': run_scanner,
+>>>>>>> 2.0-dev
     }
 
 
