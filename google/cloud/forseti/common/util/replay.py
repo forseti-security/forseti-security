@@ -135,7 +135,6 @@ def replay(requests):
     Returns:
         function: Decorator function.
     """
-
     def decorate(f):
         """Replay GCP API call answers.
 

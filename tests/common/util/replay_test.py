@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for google.cloud.forseti.common.util.replay."""
-import logging
 import os
 import tempfile
 import unittest
@@ -25,13 +24,6 @@ from tests.common.gcp_api.test_data import http_mocks
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import replay
-
-ERROR_TEST_CASES = [
-    ('api_not_enabled', fake_compute.API_NOT_ENABLED, '403',
-     api_errors.ApiNotEnabledError),
-    ('access_denied', fake_compute.ACCESS_DENIED, '403',
-     api_errors.ApiExecutionError),
-]
 
 
 class ReplayTest(unittest_utils.ForsetiTestCase):
