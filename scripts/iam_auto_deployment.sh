@@ -248,17 +248,17 @@ read -p "Do you want to use the script to enable them? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-	gcloud beta service-management enable admin.googleapis.com
-	gcloud beta service-management enable appengine.googleapis.com
-	gcloud beta service-management enable cloudresourcemanager.googleapis.com
-	gcloud beta service-management enable sqladmin.googleapis.com
-	gcloud beta service-management enable sql-component.googleapis.com
-	gcloud beta service-management enable compute.googleapis.com
-	gcloud beta service-management enable deploymentmanager.googleapis.com
-	gcloud beta service-management enable cloudbuild.googleapis.com
-	gcloud beta service-management enable iam.googleapis.com
-	gcloud beta service-management enable bigquery-json.googleapis.com
-	gcloud beta service-management enable storage-api.googleapis.com
+	gcloud service enable admin.googleapis.com
+	gcloud service enable appengine.googleapis.com
+	gcloud service enable cloudresourcemanager.googleapis.com
+	gcloud service enable sqladmin.googleapis.com
+	gcloud service enable sql-component.googleapis.com
+	gcloud service enable compute.googleapis.com
+	gcloud service enable deploymentmanager.googleapis.com
+	gcloud service enable cloudbuild.googleapis.com
+	gcloud service enable iam.googleapis.com
+	gcloud service enable bigquery-json.googleapis.com
+	gcloud service enable storage-api.googleapis.com
 else
 	echo "API Enabling skipped, if you haven't enable them, you can do so in cloud console."
 fi

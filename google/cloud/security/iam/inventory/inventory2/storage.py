@@ -39,7 +39,7 @@ class Storage(object):
         """
         raise NotImplementedError()
 
-    def read(self, key):
+    def update(self, resource):
         """Not Implemented.
 
         Raises:

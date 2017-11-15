@@ -74,7 +74,6 @@ class Resource(object):
         self._stack = None
         self._leaf = contains is None
         self._contains = [] if contains is None else contains
-        self._row = None
         self._warning = None
 
     def is_leaf(self):
@@ -106,6 +105,16 @@ class Resource(object):
     def key(self):
         raise NotImplementedError('Class: {}'.format(self.__class__.__name__))
 
+    def addWarning(self, warning):
+        warning_message = '{}\n'.format(warning)
+        if not self._warning:
+            self._warning = warning_message
+        else:
+            self._warning += warning_message
+
+    def getWarning(self):
+        return self._warning
+
     def accept(self, visitor, stack=None):
         stack = [] if not stack else stack
         self._stack = stack
@@ -127,10 +136,10 @@ class Resource(object):
                     else:
                         visitor.dispatch(call_accept)
             except Exception as e:
+                self.addWarning(e)
                 visitor.onChildError(self, e)
         if self._warning:
             visitor.update(self)
-                    
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):

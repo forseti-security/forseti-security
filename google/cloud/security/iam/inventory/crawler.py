@@ -97,10 +97,6 @@ class Crawler(crawler.Crawler):
         """
 
         warning_message = '{}\n'.format(error)
-        if not resource._warning:
-            resource._warning = warning_message
-        else:
-            resource._warning += warning_message
         self.config.storage.warning(warning_message)
         self.config.progresser.on_warning(error)
 
