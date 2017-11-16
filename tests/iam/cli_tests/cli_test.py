@@ -17,7 +17,9 @@
 import shlex
 import mock
 import os
+import json
 import unittest
+import StringIO
 from copy import copy
 from argparse import ArgumentParser
 
@@ -35,6 +37,10 @@ CLIENT.inventory.delete = mock.Mock(return_value='test')
 
 CLIENT.explain = CLIENT
 CLIENT.explain.denormalize = mock.Mock(return_value=iter(['test']))
+CLIENT.explain.list_models = mock.Mock(return_value=iter(['test']))
+
+CLIENT.scanner = CLIENT
+CLIENT.scanner.run = mock.Mock(return_value=iter(['test']))
 
 
 class ArgumentParserError(Exception):
@@ -69,49 +75,162 @@ class ImporterTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     @test_cmds([
-        ('explainer list_models',
-         CLIENT.explain.list_models,
-         [],
-         {}),
+        ('explainer list_models',     # Command line to call
+         CLIENT.explain.list_models,  # Expected client function call
+         [],                          # Expected args
+         {},                          # Expected kwargs
+         "{}",                        # .forseti config
+         {}),                         # Expected attrib:value of parser config
 
         ('explainer delete_model foobar',
          CLIENT.explain.delete_model,
          ['foobar'],
+         {},
+         "{}",
          {}),
 
         ('explainer denormalize',
          CLIENT.explain.denormalize,
          [],
+         {},
+         "{}",
          {}),
 
         ('playground list_members',
          CLIENT.playground.list_members,
          [''],
+         {},
+         "{}",
          {}),
 
         ('inventory create --background --import_as "bar"',
          CLIENT.inventory.create,
          [True, 'bar'],
+         {},
+         "{}",
          {}),
 
         ('inventory get 1',
          CLIENT.inventory.get,
          [1],
+         {},
+         "{}",
          {}),
 
         ('inventory delete 1',
          CLIENT.inventory.delete,
          [1],
+         {},
+         "{}",
          {}),
+
+        ('inventory delete 1',
+         CLIENT.inventory.delete,
+         [1],
+         {},
+         "{}",
+         {'endpoint': 'localhost:50051'}),
+
+        ('inventory delete 1',
+         CLIENT.inventory.delete,
+         [1],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('--endpoint 10.0.0.1:8080 inventory delete 1',
+         CLIENT.inventory.delete,
+         [1],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '10.0.0.1:8080'}),
+
+        ('config show',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('config model foo',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('scanner run /tmp/config',
+         CLIENT.scanner.run,
+         ['/tmp/config'],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('model list',
+         CLIENT.explain.list_models,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('model list',
+         CLIENT.explain.list_models,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('config endpoint 192.168.0.1:80',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('config format json',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('config model foobar',
+         None,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
 
         ])
     def test_cli(self, test_cases):
         """Test if the CLI hits specific client methods."""
-        for commandline, client_func, func_args, func_kwargs in test_cases:
+        for commandline, client_func, func_args,\
+            func_kwargs, config_string, config_expect\
+                in test_cases:
             try:
                 args = shlex.split(commandline)
-                cli.main(args, CLIENT, parser_cls=MockArgumentParser)
-                client_func.assert_called_with(*func_args, **func_kwargs)
+                env_config = cli.DefaultConfig(
+                    json.load(StringIO.StringIO(config_string)))
+
+                config = cli.main(
+                    args,
+                    env_config,
+                    CLIENT,
+                    parser_cls=MockArgumentParser)
+
+                if client_func is not None:
+                    client_func.assert_called_with(*func_args, **func_kwargs)
+
+                # Check attribute values
+                for attribute, value in config_expect.iteritems():
+                    self.assertEqual(
+                        getattr(config, attribute),
+                        value,
+                        'Attribute value unexpected: {}, {}'.format(
+                            attribute,
+                            value))
+
             except ArgumentParserError as e:
                 self.fail('Argument parser failed on {}, {}'.format(
                     commandline,
@@ -120,4 +239,3 @@ class ImporterTest(ForsetiTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

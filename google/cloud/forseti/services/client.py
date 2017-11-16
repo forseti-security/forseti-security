@@ -448,7 +448,7 @@ class ClientComposition(object):
         the different services.
     """
 
-    DEFAULT_ENDPOINT = 'localhost:50058'
+    DEFAULT_ENDPOINT = 'localhost:50051'
 
     def __init__(self, endpoint=DEFAULT_ENDPOINT, ping=False):
         self.channel = grpc.insecure_channel(endpoint)
