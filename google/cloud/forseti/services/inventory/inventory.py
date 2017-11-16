@@ -160,10 +160,10 @@ def run_import(client, model_name, inventory_id, background):
         object: RPC response object to indicate status.
     """
 
-    return client.explain.new_model('INVENTORY',
-                                    model_name,
-                                    inventory_id,
-                                    background)
+    return client.model.new_model('INVENTORY',
+                                  model_name,
+                                  inventory_id,
+                                  background)
 
 
 class Inventory(object):

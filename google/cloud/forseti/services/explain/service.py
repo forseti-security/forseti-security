@@ -14,23 +14,17 @@
 
 """ Explain gRPC service. """
 
-import time
 from collections import defaultdict
-from concurrent import futures
-import grpc
 
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.explain import explainer
-from google.cloud.forseti.services.dao import session_creator
 from google.cloud.forseti.services.utils import autoclose_stream
-
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc
-# pylint: disable=no-self-use
 
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
@@ -182,42 +176,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.permissionsbyroles.extend(permissions_by_roles_list)
         return reply
 
-    def CreateModel(self, request, context):
-        """Creates a new model from an import source."""
-
-        model = self.explainer.CreateModel(request.type,
-                                           request.name,
-                                           request.id,
-                                           request.background)
-        reply = explain_pb2.CreateModelReply(model=explain_pb2.Model(
-            name=model.name,
-            handle=model.handle,
-            status=model.state,
-            message=model.message))
-        return reply
-
-    def DeleteModel(self, request, _):
-        """Deletes a model and all associated data."""
-
-        model_name = request.handle
-        self.explainer.DeleteModel(model_name)
-        return explain_pb2.DeleteModelReply()
-
-    def ListModel(self, request, _):
-        """List all models."""
-
-        models = self.explainer.ListModel()
-        models_pb = []
-        for model in models:
-            models_pb.append(explain_pb2.Model(name=model.name,
-                                               handle=model.handle,
-                                               status=model.state,
-                                               message=model.message,
-                                               warnings=model.warnings))
-        reply = explain_pb2.ListModelReply()
-        reply.models.extend(models_pb)
-        return reply
-
     @autoclose_stream
     def Denormalize(self, _, context):
         """Denormalize the entire model into access triples."""
@@ -243,36 +201,3 @@ class GrpcExplainerFactory(object):
         service = GrpcExplainer(explainer_api=explainer.Explainer(self.config))
         explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
         return service
-
-
-def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
-    """Serve IAM Explain with the provided parameters."""
-
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-    GrpcExplainerFactory(config).create_and_register_service(server)
-    server.add_insecure_port(endpoint)
-    server.start()
-    while True:
-        try:
-            time.sleep(1)
-            print "Looping\n"
-        except KeyboardInterrupt:
-            server.stop(wait_shutdown_secs).wait()
-            return
-
-
-if __name__ == "__main__":
-    class DummyConfig(object):
-        """Dummy configuration."""
-
-        def __init__(self):
-            self.session_creator = session_creator('/tmp/explain.db')
-
-        def run_in_background(self, function):
-            """Run function in background."""
-
-            function()
-
-    import sys
-    serve(endpoint=sys.argv[1] if len(sys.argv) >
-          1 else '[::]:50051', config=DummyConfig())
