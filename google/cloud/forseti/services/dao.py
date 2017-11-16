@@ -47,6 +47,7 @@ from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.forseti.services.utils import mutual_exclusive
+from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
 
@@ -1080,12 +1081,12 @@ def define_model(model_name, dbengine, model_seed):
             """Adds resource by name."""
 
             res_type, res_name = resource_type_name.split('/')
-            if parent:
-                full_resource_name = '{}/{}'.format(
-                    parent.full_name,
-                    resource_type_name)
-            else:
-                full_resource_name = resource_type_name
+            parent_full_resource_name = (
+                '' if parent is None else parent.full_name)
+
+            full_resource_name = to_full_resource_name(
+                parent_full_resource_name,
+                resource_type_name)
 
             resource = Resource(full_name=full_resource_name,
                                 type_name=resource_type_name,

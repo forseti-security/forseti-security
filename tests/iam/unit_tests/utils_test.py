@@ -18,7 +18,11 @@ import mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.services.utils import autoclose_stream, logcall
+from google.cloud.forseti.services.utils import autoclose_stream
+from google.cloud.forseti.services.utils import logcall
+from google.cloud.forseti.services.utils import to_full_resource_name
+from google.cloud.forseti.services.utils import to_type_name
+from google.cloud.forseti.services.utils import split_type_name
 
 
 class IamUtilsTest(ForsetiTestCase):
@@ -52,6 +56,32 @@ class IamUtilsTest(ForsetiTestCase):
             decorated(0)
         except Exception as e:
             self.fail(e.message)
+
+    def test_to_full_resource_name(self):
+        """Test to_full_resource_name."""
+
+        self.assertEqual(
+            to_full_resource_name('', 'foo/bar'),
+            'foo/bar/')
+
+        self.assertEqual(
+            to_full_resource_name('foo/bar/', 'bar/baz'),
+            'foo/bar/bar/baz/')
+
+    def test_to_type_name(self):
+        """Test to_type_name."""
+
+        self.assertEqual(
+            to_type_name('foo', 'bar'),
+            'foo/bar')
+
+    def test_split_type_name(self):
+        """Test split_type_name."""
+
+        self.assertEqual(
+            split_type_name('foo/bar'),
+            ['foo', 'bar'])
+
 
 if __name__ == '__main__':
     unittest.main()
