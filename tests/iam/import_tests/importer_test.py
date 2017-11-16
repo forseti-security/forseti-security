@@ -22,7 +22,7 @@ import unittest
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.dao import ModelManager, create_engine
 from google.cloud.forseti.services.inventory.storage import InventoryState
-from google.cloud.forseti.services.explain.importer import importer
+from google.cloud.forseti.services.model.importer import importer
 from tests.iam.utils.gcp_env import gcp_configured, gcp_env
 from tests.iam.utils.protect import copy_file_decrypt
 

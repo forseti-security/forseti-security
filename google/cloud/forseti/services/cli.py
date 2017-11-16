@@ -686,7 +686,7 @@ def run_model(client, config, output, config_env):
             config_env (object): Configuration environment.
     """
 
-    client = client.explain
+    client = client.model
 
     def do_list_models():
         """List models."""
