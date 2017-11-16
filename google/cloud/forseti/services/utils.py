@@ -88,6 +88,24 @@ def full_to_type_name(full_resource_name):
     return '/'.join(full_resource_name.split('/')[-2:])
 
 
+def to_full_resource_name(full_parent_name, resource_type_name):
+    """Creates a full resource name by parent full name and type name."""
+
+    return '{}{}/'.format(full_parent_name, resource_type_name)
+
+
+def to_type_name(resource_type, resource_name):
+    """Creates a type/name from type and name."""
+
+    return '{}/{}'.format(resource_type, resource_name)
+
+
+def split_type_name(resource_type_name):
+    """."""
+
+    return resource_type_name.split('/')
+
+
 def resource_to_type_name(resource):
     """Creates a type/name format from a resource dbo."""
 

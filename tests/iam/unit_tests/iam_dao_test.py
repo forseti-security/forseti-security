@@ -1055,7 +1055,7 @@ class DaoTest(ForsetiTestCase):
 
 
         def expand(resource):
-            return ['/'.join(i.split('/')[-2:]) for i in data_access.expand_resources_by_names(session, [resource])]
+            return ['/'.join(i.split('/')[-3:-1]) for i in data_access.expand_resources_by_names(session, [resource])]
 
         self.assertEqual(set(expand('r/res1')),
                          set([u'r/res{}'.format(i) for i in range(1,9)]),
@@ -1097,7 +1097,7 @@ class DaoTest(ForsetiTestCase):
                          'Expecting all resources to be added to the database')
 
         def expand(resource):
-            return ['/'.join(i.split('/')[-2:]) for i in data_access.expand_resources_by_names(session, [resource])]
+            return ['/'.join(i.split('/')[-3:-1]) for i in data_access.expand_resources_by_names(session, [resource])]
 
         self.assertEqual(set(expand('r/res1')),
                          set([u'r/res{}'.format(i) for i in range(1,9)]),
