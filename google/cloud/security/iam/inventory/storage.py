@@ -16,7 +16,6 @@
 
 import datetime
 import json
-import code
 
 from sqlalchemy import Column
 from sqlalchemy import Text
