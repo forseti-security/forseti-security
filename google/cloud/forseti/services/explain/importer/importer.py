@@ -24,6 +24,8 @@ from time import time
 import traceback
 
 from google.cloud.forseti.services.utils import get_sql_dialect
+from google.cloud.forseti.services.utils import to_full_resource_name
+from google.cloud.forseti.services.utils import to_type_name
 from google.cloud.forseti.common.data_access import forseti
 from google.cloud.forseti.services.explain.importer import roles as roledef
 from google.cloud.forseti.services.inventory.storage import Storage as Inventory
@@ -885,7 +887,7 @@ class InventoryImporter(object):
         data = organization.get_data()
         type_name = self._type_name(organization)
         org = self.dao.TBL_RESOURCE(
-            full_name=type_name,
+            full_name=to_full_resource_name("", type_name),
             type_name=type_name,
             name=organization.get_key(),
             type=organization.get_type(),
@@ -930,7 +932,7 @@ class InventoryImporter(object):
             str: type/name representation of the resource.
         """
 
-        return '{}/{}'.format(
+        return to_type_name(
             resource.get_type(),
             resource.get_key())
 
@@ -944,7 +946,7 @@ class InventoryImporter(object):
             str: type/name representation of the resource's parent.
         """
 
-        return '{}/{}'.format(
+        return to_type_name(
             resource.get_parent_type(),
             resource.get_parent_key())
 
@@ -961,9 +963,7 @@ class InventoryImporter(object):
 
         type_name = self._type_name(resource)
         parent, full_res_name = self._get_parent(resource)
-        full_resource_name = '{}/{}'.format(
-            full_res_name,
-            type_name)
+        full_resource_name = to_full_resource_name(full_res_name, type_name)
         return parent, full_resource_name, type_name
 
     def _is_root(self, resource):
