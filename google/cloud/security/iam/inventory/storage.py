@@ -55,7 +55,7 @@ class InventoryTypeClass(object):
     RESOURCE = 'resource'
     IAM_POLICY = 'iam_policy'
     GCS_POLICY = 'gcs_policy'
-    Supported_TypeClass = [RESOURCE, IAM_POLICY, GCS_POLICY]
+    SUPPORTED_TYPECLASS = [RESOURCE, IAM_POLICY, GCS_POLICY]
 
 
 class InventoryIndex(BASE):
@@ -173,7 +173,7 @@ class Inventory(BASE):
         """Creates a database row object from a crawled resource.
 
         Args:
-            index (Object): InventoryIndex to associate.
+            index (object): InventoryIndex to associate.
             resource (object): Crawled resource.
 
         Returns:
@@ -195,7 +195,7 @@ class Inventory(BASE):
                 parent_key=None if not parent else parent.key(),
                 parent_type=None if not parent else parent.type(),
                 other=None,
-                error=resource.getWarning()))
+                error=resource.get_warning()))
 
         if iam_policy:
             rows.append(
@@ -475,16 +475,17 @@ class Storage(BaseStorage):
             key (str): The key of the resource
 
         Returns:
-            Object: The inventory db rows of the resource, 
+            object: The inventory db rows of the resource, 
             IAM policy and GCS policy.
 
         Raises:
             Exception: if there is no such row or more than one.
         """
 
-        qry = (self.session.query(Inventory)
-        .filter(Inventory.index == self.index.id)
-        .filter(Inventory.key == key))
+        qry = (
+            self.session.query(Inventory)
+            .filter(Inventory.index == self.index.id)
+            .filter(Inventory.key == key))
         rows = qry.all()
 
         if not rows:
@@ -605,7 +606,7 @@ class Storage(BaseStorage):
             new_dict = {row.type_class : row for row in new_rows}
             old_dict = {row.type_class : row for row in old_rows}
 
-            for type_class in InventoryTypeClass.Supported_TypeClass:
+            for type_class in InventoryTypeClass.SUPPORTED_TYPECLASS:
                 if type_class in new_dict:
                     if type_class in old_dict:
                         old_dict[type_class].copy_inplace(new_dict[type_class])

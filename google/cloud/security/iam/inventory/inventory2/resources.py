@@ -105,14 +105,14 @@ class Resource(object):
     def key(self):
         raise NotImplementedError('Class: {}'.format(self.__class__.__name__))
 
-    def addWarning(self, warning):
+    def add_warning(self, warning):
         warning_message = '{}\n'.format(warning)
         if not self._warning:
             self._warning = warning_message
         else:
             self._warning += warning_message
 
-    def getWarning(self):
+    def get_warning(self):
         return self._warning
 
     def accept(self, visitor, stack=None):
@@ -136,7 +136,7 @@ class Resource(object):
                     else:
                         visitor.dispatch(call_accept)
             except Exception as e:
-                self.addWarning(e)
+                self.add_warning(e)
                 visitor.onChildError(self, e)
         if self._warning:
             visitor.update(self)
