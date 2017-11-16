@@ -106,6 +106,10 @@ class Memory(Storage):
         """Write a resource object into storage"""
         self.mem[resource.key()] = resource
 
+    def update(self, resource):
+        """Update a existed resource object in memory"""
+        pass
+
     def read(self, key):
         """Read a resource object from storage"""
         return self.mem[key]

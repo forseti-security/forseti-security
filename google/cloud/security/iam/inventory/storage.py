@@ -16,6 +16,7 @@
 
 import datetime
 import json
+import code
 
 from sqlalchemy import Column
 from sqlalchemy import Text
@@ -31,7 +32,7 @@ from google.cloud.security.iam.inventory.inventory2.storage import \
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-param-doc,too-many-instance-attributes
 
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
@@ -475,7 +476,7 @@ class Storage(BaseStorage):
             key (str): The key of the resource
 
         Returns:
-            object: The inventory db rows of the resource, 
+            object: The inventory db rows of the resource,
             IAM policy and GCS policy.
 
         Raises:
@@ -615,7 +616,6 @@ class Storage(BaseStorage):
             self.session.commit()
         except Exception as e:
             raise Exception('Resource Update Unsuccessful: {}'.format(e))
-            
 
     def error(self, message):
         """Store a fatal error in storage. This will help debug problems.

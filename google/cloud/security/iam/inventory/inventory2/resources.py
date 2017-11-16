@@ -15,7 +15,7 @@
 """ Crawler implementation for gcp resources. """
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-return-type-doc,missing-return-doc,broad-except
 # pylint: disable=missing-docstring,unused-argument,invalid-name
 # pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc,attribute-defined-outside-init
 # pylint: disable=useless-suppression,cell-var-from-loop
@@ -125,19 +125,19 @@ class Resource(object):
             try:
                 for resource in yielder.iter():
                     res = resource
-    
+
                     def call_accept():
                         res.accept(visitor, stack + [self])
-                    
+
                     if res.is_leaf():
                         call_accept()
-    
+
                     # Potential parallelization for non-leaf resources
                     else:
                         visitor.dispatch(call_accept)
             except Exception as e:
                 self.add_warning(e)
-                visitor.onChildError(self, e)
+                visitor.on_child_error(e)
         if self._warning:
             visitor.update(self)
 
