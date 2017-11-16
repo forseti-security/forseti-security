@@ -611,12 +611,10 @@ class Storage(BaseStorage):
                     if type_class in old_dict:
                         old_dict[type_class].copy_inplace(new_dict[type_class])
                     else:
-                        old_dict[type_class] = new_dict[type_class]
-                    self.buffer.add(old_dict[type_class])
-            self.buffer.flush()
-        except:
-            self.rollback()
-            raise Exception('Resource Update Unsuccessful')
+                        self.session.add(new_dict[type_class])
+            self.session.commit()
+        except Exception as e:
+            raise Exception('Resource Update Unsuccessful: {}'.format(e))
             
 
     def error(self, message):
