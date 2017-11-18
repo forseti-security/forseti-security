@@ -19,6 +19,7 @@ import unittest
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.dao import ModelManager
 
 from tests.iam.api_tests.api_tester import ModelTestRunner
@@ -92,7 +93,9 @@ def create_tester():
                            TestServiceConfig(),
                            [GrpcExplainerFactory,
                             GrpcPlaygrounderFactory,
-                            GrpcInventoryFactory])
+                            GrpcInventoryFactory,
+                            GrpcModellerFactory,
+                            ])
 
 
 class ModelTest(ForsetiTestCase):

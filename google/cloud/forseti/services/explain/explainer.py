@@ -14,8 +14,6 @@
 
 """ Explain API. """
 
-from google.cloud.forseti.services.explain.importer import importer
-
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -68,31 +66,6 @@ class Explainer(object):
                                                            expand_groups)
             return mapping
 
-    def CreateModel(self, source, name, inventory_id, background):
-        """Creates a model from the import source."""
-
-        model_manager = self.config.model_manager
-        model_handle = model_manager.create(name=name)
-        scoped_session, data_access = model_manager.get(model_handle)
-
-        def doImport():
-            """Import runnable."""
-            with scoped_session as session:
-                importer_cls = importer.by_source(source)
-                import_runner = importer_cls(
-                    session,
-                    model_manager.model(model_handle, expunge=False),
-                    data_access,
-                    self.config,
-                    inventory_id)
-                import_runner.run()
-
-        if background:
-            self.config.run_in_background(doImport)
-        else:
-            doImport()
-        return model_manager.model(model_handle, expunge=True)
-
     def GetAccessByPermissions(self, model_name, role_name, permission_name,
                                expand_groups, expand_resources):
         """Returns access tuples satisfying the permission or role.
@@ -139,18 +112,6 @@ class Explainer(object):
             for result in data_access.query_permissions_by_roles(
                     session, role_names, role_prefixes):
                 yield result
-
-    def ListModel(self):
-        """Lists all models."""
-
-        model_manager = self.config.model_manager
-        return model_manager.models()
-
-    def DeleteModel(self, model_name):
-        """Deletes a model."""
-
-        model_manager = self.config.model_manager
-        model_manager.delete(model_name)
 
     def Denormalize(self, model_name):
         """Denormalizes a model."""

@@ -18,6 +18,8 @@ import binascii
 import os
 import grpc
 
+from google.cloud.forseti.services.model import model_pb2
+from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.playground import playground_pb2_grpc
@@ -32,6 +34,7 @@ from google.cloud.forseti.services.utils import oneof
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
+# pylint: disable=too-many-instance-attributes
 # pylint: disable=missing-param-doc,missing-raises-doc
 
 
@@ -89,6 +92,50 @@ class ScannerClient(IAMClient):
             config_dir=config_dir)
         return self.stub.Run(request,
                              metadata=self.metadata())
+
+
+class ModelClient(IAMClient):
+    """Model service allows the client to create models from inventory.
+
+    Model provides the following functionality:
+       - Create a new model by importing from inventory or create an empty
+       - List/Delete functionality on models
+    """
+
+    def __init__(self, config):
+        super(ModelClient, self).__init__(config)
+        self.stub = model_pb2_grpc.ModellerStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Model' service is available by performing a ping.
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(model_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    def new_model(self, source, name, inventory_id=-1, background=True):
+        """Creates a new model, reply contains the handle."""
+
+        return self.stub.CreateModel(
+            model_pb2.CreateModelRequest(
+                type=source,
+                name=name,
+                id=inventory_id,
+                background=background))
+
+    def list_models(self):
+        """List existing models in the service."""
+
+        return self.stub.ListModel(model_pb2.ListModelRequest())
+
+    def delete_model(self, model_name):
+        """Delete a model, deletes all corresponding data."""
+
+        return self.stub.DeleteModel(
+            model_pb2.DeleteModelRequest(
+                handle=model_name),
+            metadata=self.metadata())
 
 
 class InventoryClient(IAMClient):
@@ -159,29 +206,6 @@ class ExplainClient(IAMClient):
 
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
-
-    def new_model(self, source, name, inventory_id=-1, background=True):
-        """Creates a new model, reply contains the handle."""
-
-        return self.stub.CreateModel(
-            explain_pb2.CreateModelRequest(
-                type=source,
-                name=name,
-                id=inventory_id,
-                background=background))
-
-    def list_models(self):
-        """List existing models in the service."""
-
-        return self.stub.ListModel(explain_pb2.ListModelRequest())
-
-    def delete_model(self, model_name):
-        """Delete a model, deletes all corresponding data."""
-
-        return self.stub.DeleteModel(
-            explain_pb2.DeleteModelRequest(
-                handle=model_name),
-            metadata=self.metadata())
 
     def explain_denied(self, member_name, resource_names, roles=None,
                        permission_names=None):
@@ -458,11 +482,13 @@ class ClientComposition(object):
         self.playground = PlaygroundClient(self.config)
         self.inventory = InventoryClient(self.config)
         self.scanner = ScannerClient(self.config)
+        self.model = ModelClient(self.config)
 
         self.clients = [self.explain,
                         self.playground,
                         self.inventory,
-                        self.scanner]
+                        self.scanner,
+                        self.model]
 
         if ping:
             if not all([c.is_available() for c in self.clients]):
@@ -471,12 +497,12 @@ class ClientComposition(object):
     def new_model(self, source, name, inventory_id=-1, background=False):
         """Create a new model from the specified source."""
 
-        return self.explain.new_model(source, name, inventory_id, background)
+        return self.model.new_model(source, name, inventory_id, background)
 
     def list_models(self):
         """List existing models."""
 
-        return self.explain.list_models()
+        return self.model.list_models()
 
     def switch_model(self, model_name):
         """Switch the client into using a model."""
@@ -486,4 +512,4 @@ class ClientComposition(object):
     def delete_model(self, model_name):
         """Delete a model. Deletes all associated data."""
 
-        return self.explain.delete_model(model_name)
+        return self.model.delete_model(model_name)

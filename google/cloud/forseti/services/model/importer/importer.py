@@ -27,7 +27,7 @@ from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
 from google.cloud.forseti.common.data_access import forseti
-from google.cloud.forseti.services.explain.importer import roles as roledef
+from google.cloud.forseti.services.model.importer import roles as roledef
 from google.cloud.forseti.services.inventory.storage import Storage as Inventory
 
 

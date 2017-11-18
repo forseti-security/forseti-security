@@ -30,6 +30,7 @@ from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
+from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.inventory.storage import Storage
 
 
@@ -42,6 +43,7 @@ STATIC_SERVICE_MAPPING = {
     'playground': GrpcPlaygrounderFactory,
     'inventory': GrpcInventoryFactory,
     'scanner': GrpcScannerFactory,
+    'model': GrpcModellerFactory,
 }
 
 
