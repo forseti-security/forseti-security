@@ -107,8 +107,7 @@ sudo apt-get upgrade -y
 # Forseti setup
 sudo apt-get install -y git unzip
 # Forseti dependencies
-sudo apt-get install -y libmysqlclient-dev python-pip python-dev
-
+sudo apt-get install -y libmysqlclient-dev python-pip python-dev libssl-dev build-essential libffi-dev
 USER_HOME=/home/ubuntu
 
 # Install fluentd if necessary
@@ -149,7 +148,7 @@ Description=Explain API Server
 [Service]
 Restart=always
 RestartSec=3
-ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' '{}' '{}' '{}' '{}' playground explain inventory model
+ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' '{}' '{}' '{}' playground explain inventory model
 [Install]
 WantedBy=multi-user.target
 Wants=cloudsqlproxy.service
