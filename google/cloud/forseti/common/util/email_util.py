@@ -14,6 +14,8 @@
 
 """Email utility module."""
 
+# pylint: disable=no-member
+
 import base64
 import os
 import urllib2
