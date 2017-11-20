@@ -381,8 +381,9 @@ else
 fi
 
 #Choose deployment branch
+DownloadBranch=$( git rev-parse --abbrev-ref HEAD )
 echo -e "${TYELLOW}Choosing Github Branch${TNC}"
-echo "By default, master branch of IAM Explain will be deployed."
+echo -e "By default, the current branch ${TYELLOW} $DownloadBranch ${TNC} of IAM Explain will be deployed."
 read -p "Do you want to change to another one? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
@@ -403,7 +404,7 @@ then
 		fi
 	done
 else
-	BRANCHNAME="master"
+	BRANCHNAME=$DownloadBranch
 fi
 
 # sql instance name

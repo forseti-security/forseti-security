@@ -122,9 +122,7 @@ sudo apt-get upgrade -y
 # Forseti setup
 sudo apt-get install -y git unzip
 # Forseti dependencies
-sudo apt-get install -y libffi-dev libssl-dev libmysqlclient-dev \
-        python-pip python-dev
-
+sudo apt-get install -y libmysqlclient-dev python-pip python-dev libssl-dev build-essential libffi-dev
 USER_HOME=/home/ubuntu
 
 # Install fluentd if necessary
@@ -160,8 +158,36 @@ python setup.py install
 # Export variables required by initialize_explain_services.sh.
 {export_initialize_vars}
 
+<<<<<<< HEAD
 # Start explain service depends on vars defined above.
 bash ./scripts/gcp_setup/bash_scripts/initialize_explain_services.sh
+=======
+# Create upstart script for API server
+read -d '' API_SERVER << EOF
+[Unit]
+Description=Explain API Server
+[Service]
+Restart=always
+RestartSec=3
+ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' '{}' '{}' '{}' playground explain inventory model
+[Install]
+WantedBy=multi-user.target
+Wants=cloudsqlproxy.service
+EOF
+echo "$API_SERVER" > /lib/systemd/system/forseti.service
+
+read -d '' SQL_PROXY << EOF
+[Unit]
+Description=Explain Cloud SQL Proxy
+[Service]
+Restart=always
+RestartSec=3
+ExecStart=/home/ubuntu/cloud_sql_proxy -instances={}=tcp:3306
+[Install]
+WantedBy=forseti.service
+EOF
+echo "$SQL_PROXY" > /lib/systemd/system/cloudsqlproxy.service
+>>>>>>> gcp/2.0-dev
 
 echo "Starting services."
 systemctl start cloudsqlproxy

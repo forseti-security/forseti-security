@@ -14,7 +14,7 @@
 
 """ IAM Explain CLI. """
 
-# pylint: disable=too-many-locals,too-many-lines
+# pylint: disable=too-many-locals
 
 from argparse import ArgumentParser
 import json
@@ -347,41 +347,6 @@ def define_explainer_parser(parent):
     action_subparser = service_parser.add_subparsers(
         title='action',
         dest='action')
-
-    _ = action_subparser.add_parser(
-        'list_models',
-        help='List all available models')
-
-    delete_model_parser = action_subparser.add_parser(
-        'delete_model',
-        help='Deletes an entire model')
-    delete_model_parser.add_argument(
-        'model',
-        help='Model to delete')
-
-    create_model_parser = action_subparser.add_parser(
-        'create_model',
-        help='Create a model')
-    create_model_parser.add_argument(
-        'source',
-        choices=['forseti', 'empty', 'inventory'],
-        help='Source to import from')
-    create_model_parser.add_argument(
-        'name',
-        help='Human readable name for this model')
-    create_model_parser.add_argument(
-        '--id',
-        type=int,
-        default=-1,
-        help='Inventory id to import from, if "inventory" source'
-        )
-    create_model_parser.add_argument(
-        '--background',
-        '-b',
-        default=False,
-        action='store_true',
-        help='Run import in background'
-        )
 
     _ = action_subparser.add_parser(
         'denormalize',
@@ -774,24 +739,6 @@ def run_explainer(client, config, output, _):
 
     client = client.explain
 
-    def do_list_models():
-        """List models."""
-        result = client.list_models()
-        output.write(result)
-
-    def do_delete_model():
-        """Delete a model."""
-        result = client.delete_model(config.model)
-        output.write(result)
-
-    def do_create_model():
-        """Create a model."""
-        result = client.new_model(config.source,
-                                  config.name,
-                                  config.id,
-                                  config.background)
-        output.write(result)
-
     def do_denormalize():
         """Denormalize a model."""
         for access in client.denormalize():
@@ -844,9 +791,6 @@ def run_explainer(client, config, output, _):
             output.write(access)
 
     actions = {
-        'list_models': do_list_models,
-        'delete_model': do_delete_model,
-        'create_model': do_create_model,
         'denormalize': do_denormalize,
         'why_granted': do_why_granted,
         'why_denied': do_why_not_granted,

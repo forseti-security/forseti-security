@@ -34,35 +34,35 @@ NAMESPACE_PACKAGES = [
 ]
 
 INSTALL_REQUIRES = [
-    'anytree==2.1.4',
-    'futures==3.0.5',
-    'google-api-python-client==1.6.1',
-    'Jinja2==2.9.5',
-    'MySQL-python==1.2.5',
+    'anytree>=2.1.4',
+    'futures>=3.0.5',
+    'google-api-python-client>=1.6.1',
+    'Jinja2>=2.9.5',
+    'MySQL-python>=1.2.5',
     'netaddr>=0.7.19',
     'protobuf>=3.2.0',
-    'PyYAML==3.12',
-    'ratelimiter==1.1.0',
-    'retrying==1.3.3',
-    'requests[security]==2.18.4',
-    'sendgrid==3.6.3',
-    'SQLAlchemy==1.1.9',
+    'PyYAML>=3.12',
+    'ratelimiter>=1.1.0',
+    'retrying>=1.3.3',
+    'requests[security]>=2.18.4',
+    'sendgrid>=3.6.3',
+    'SQLAlchemy>=1.1.9',
     'pygraph>=0.2.1',
-    'unicodecsv==0.14.1',
+    'unicodecsv>=0.14.1',
 ]
 
 SETUP_REQUIRES = [
-    'google-apputils==0.4.2',
-    'python-gflags==3.1.1',
+    'google-apputils>=0.4.2',
+    'python-gflags>=3.1.1',
     'grpcio',
     'grpcio-tools',
     'protobuf>=3.2.0',
 ]
 
 TEST_REQUIRES = [
-    'mock==2.0.0',
-    'SQLAlchemy==1.1.9',
-    'parameterized==0.6.1',
+    'mock>=2.0.0',
+    'SQLAlchemy>=1.1.9',
+    'parameterized>=0.6.1',
     'simple-crypt>=4.1.7',
 ]
 
@@ -72,9 +72,11 @@ if sys.version_info < (2, 7):
 if sys.version_info.major > 2:
     sys.exit('Sorry, Python 3 is not supported.')
 
+
 def build_protos():
     """Build protos."""
     subprocess.check_call(['python', 'build_protos.py', '--clean'])
+
 
 class PostInstallCommand(install):
     """Post installation command."""
@@ -82,6 +84,7 @@ class PostInstallCommand(install):
     def run(self):
         build_protos()
         install.do_egg_install(self)
+
 
 setup(
     name='forseti-security',
