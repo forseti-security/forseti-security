@@ -37,7 +37,9 @@ CLIENT.inventory.delete = mock.Mock(return_value='test')
 
 CLIENT.explain = CLIENT
 CLIENT.explain.denormalize = mock.Mock(return_value=iter(['test']))
-CLIENT.explain.list_models = mock.Mock(return_value=iter(['test']))
+
+CLIENT.model = CLIENT
+CLIENT.model.list_models = mock.Mock(return_value=iter(['test']))
 
 CLIENT.scanner = CLIENT
 CLIENT.scanner.run = mock.Mock(return_value=iter(['test']))
@@ -75,20 +77,6 @@ class ImporterTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     @test_cmds([
-        ('explainer list_models',     # Command line to call
-         CLIENT.explain.list_models,  # Expected client function call
-         [],                          # Expected args
-         {},                          # Expected kwargs
-         "{}",                        # .forseti config
-         {}),                         # Expected attrib:value of parser config
-
-        ('explainer delete_model foobar',
-         CLIENT.explain.delete_model,
-         ['foobar'],
-         {},
-         "{}",
-         {}),
-
         ('explainer denormalize',
          CLIENT.explain.denormalize,
          [],
@@ -167,14 +155,14 @@ class ImporterTest(ForsetiTestCase):
          {'endpoint': '192.168.0.1:80'}),
 
         ('model list',
-         CLIENT.explain.list_models,
+         CLIENT.model.list_models,
          [],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
         ('model list',
-         CLIENT.explain.list_models,
+         CLIENT.model.list_models,
          [],
          {},
          '{"endpoint": "192.168.0.1:80"}',
