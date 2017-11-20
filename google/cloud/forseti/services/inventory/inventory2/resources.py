@@ -15,7 +15,7 @@
 """ Crawler implementation for gcp resources. """
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-return-type-doc,missing-return-doc
+# pylint: disable=missing-return-type-doc,missing-return-doc,broad-except
 # pylint: disable=missing-docstring,unused-argument,invalid-name
 # pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc,attribute-defined-outside-init
 # pylint: disable=useless-suppression,cell-var-from-loop,protected-access,too-many-instance-attributes,broad-except
@@ -75,7 +75,6 @@ class Resource(object):
         self._stack = None
         self._leaf = contains is None
         self._contains = [] if contains is None else contains
-        self._row = None
         self._warning = None
 
     def is_leaf(self):
@@ -107,6 +106,16 @@ class Resource(object):
     def key(self):
         raise NotImplementedError('Class: {}'.format(self.__class__.__name__))
 
+    def add_warning(self, warning):
+        warning_message = '{}\n'.format(warning)
+        if not self._warning:
+            self._warning = warning_message
+        else:
+            self._warning += warning_message
+
+    def get_warning(self):
+        return self._warning
+
     def accept(self, visitor, stack=None):
         stack = [] if not stack else stack
         self._stack = stack
@@ -128,7 +137,8 @@ class Resource(object):
                     else:
                         visitor.dispatch(call_accept)
             except Exception as e:
-                visitor.on_child_error(self, e)
+                self.add_warning(e)
+                visitor.on_child_error(e)
         if self._warning:
             visitor.update(self)
 
