@@ -81,11 +81,5 @@ resources:
     # EDIT DISCOURAGED
     # No need to set this unless you have deployed Forseti,
     # Don't change unless you know why you have to change this.
-    database-name-forseti: ''
-
-    # EDIT DISCOURAGED
-    # No need to set this unless you have deployed Forseti,
-    # Don't change unless you know why you have to change this.
-    forseti-db-name: 'forseti_security'
     explain-db-name: 'explain_security'
 

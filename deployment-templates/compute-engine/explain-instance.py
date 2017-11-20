@@ -34,17 +34,11 @@ def GenerateConfig(context):
             context.properties['release-version'],
             context.properties['release-version'])
 
+    SQL_INSTANCE_CONN_STRING = '{}:{}:{}'.format(
+        context.env['project'],
+        '$(ref.cloudsql-instance.region)',
+        '$(ref.cloudsql-instance.name)')
 
-    FORSETI_CONN_STRING = context.properties['database-name-forseti']
-    if FORSETI_CONN_STRING != '':
-        SQL_INSTANCE_CONN_STRING = FORSETI_CONN_STRING
-    else:
-        SQL_INSTANCE_CONN_STRING = '{}:{}:{}'.format(
-            context.env['project'],
-            '$(ref.cloudsql-instance.region)',
-            '$(ref.cloudsql-instance.name)')
-
-    FORSETI_DB_NAME = context.properties['forseti-db-name']
     EXPLAIN_DB_NAME = context.properties['explain-db-name']
     GSUITE_SERVICE_ACCOUNT_PATH = context.properties['gsuite-service-accout-path']
     GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
@@ -148,7 +142,7 @@ Description=Explain API Server
 [Service]
 Restart=always
 RestartSec=3
-ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' '{}' '{}' '{}' playground explain inventory model
+ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' '{}' '{}' '{}' playground explain inventory model
 [Install]
 WantedBy=multi-user.target
 Wants=cloudsqlproxy.service
@@ -176,7 +170,6 @@ systemctl start forseti
 
     # install forseti
     DOWNLOAD_FORSETI,
-    FORSETI_DB_NAME,
     EXPLAIN_DB_NAME,
     GSUITE_SERVICE_ACCOUNT_PATH,
     GSUITE_ADMIN_EMAIL,
