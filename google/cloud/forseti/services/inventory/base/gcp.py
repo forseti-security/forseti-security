@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" GCP API client fassade. """
+""" GCP API client fassade."""
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc
 # pylint: disable=missing-param-doc,invalid-name,too-many-instance-attributes
-# pylint: disable=too-many-public-methods,arguments-differ,line-too-long
+# pylint: disable=too-many-public-methods,arguments-differ
 
 from google.cloud.forseti.common.gcp_api import admin_directory
 from google.cloud.forseti.common.gcp_api import bigquery

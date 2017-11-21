@@ -57,6 +57,7 @@ class LoadFolderIamPoliciesPipelineTest(ForsetiTestCase):
         self.assertEquals(fake_iam_policies.EXPECTED_LOADABLE_FOLDER_IAM_POLICY,
                           list(loadable_iam_policies))
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     def test_api_is_called_to_retrieve_folder_policies(self):
         """Test that api is called to retrieve folder policies."""
 
@@ -79,6 +80,7 @@ class LoadFolderIamPoliciesPipelineTest(ForsetiTestCase):
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve()
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     @mock.patch(
         'google.cloud.forseti.inventory.pipelines.base_pipeline.LOGGER')
     def test_retrieve_error_logged_when_api_error(self, mock_logger):
