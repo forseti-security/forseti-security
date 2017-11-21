@@ -261,8 +261,7 @@ class CloudResourceManagerClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
-    def get_projects(self, resource_name, parent_id=None, parent_type=None,
-                     **filterargs):
+    def get_projects(self, parent_id=None, parent_type=None, **filterargs):
         """Get all the projects the authenticated account has access to.
 
         If no parent is passed in, then all projects the caller has visibility
@@ -270,7 +269,6 @@ class CloudResourceManagerClient(object):
         parent.
 
         Args:
-            resource_name (str): The resource type.
             parent_id (str): The id of the organization or folder parent object.
             parent_type (str): Either folder or organization.
             **filterargs (dict): Extra project filter args.
@@ -297,6 +295,10 @@ class CloudResourceManagerClient(object):
                     filter=' '.join(filters)):
                 yield response
         except (errors.HttpError, HttpLib2Error) as e:
+            if parent_id and parent_type:
+                resource_name = '{}/{}'.format(parent_type, parent_id)
+            else:
+                resource_name = 'All Projects'
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_project_ancestry(self, project_id):
@@ -315,11 +317,10 @@ class CloudResourceManagerClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
-    def get_project_iam_policies(self, resource_name, project_id):
+    def get_project_iam_policies(self, project_id):
         """Get all the iam policies for a given project.
 
         Args:
-            resource_name (str): The resource type.
             project_id (str): Either the project number or the project id.
 
         Returns:
@@ -329,7 +330,7 @@ class CloudResourceManagerClient(object):
         try:
             return self.repository.projects.get_iam_policy(project_id)
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(project_id, e)
 
     def get_project_org_policies(self, project_id):
         """Get all the org policies for a given project.
@@ -365,27 +366,23 @@ class CloudResourceManagerClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(org_name, e)
 
-    def get_organizations(self, resource_name):
+    def get_organizations(self):
         """Get organizations that the authenticated account has access to.
 
-        Args:
-            resource_name (str): The resource type.
-
         Returns:
-            list: A list of Folder dicts as returned by the API.
+            list: A list of Organization dicts as returned by the API.
         """
         try:
             paged_results = self.repository.organizations.search()
             return api_helpers.flatten_list_results(paged_results,
                                                     'organizations')
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError('All Organizations', e)
 
-    def get_org_iam_policies(self, resource_name, org_id):
+    def get_org_iam_policies(self, org_id):
         """Get all the iam policies of an org.
 
         Args:
-            resource_name (str): The resource type.
             org_id (int): The org id number.
 
         Returns:
@@ -399,7 +396,7 @@ class CloudResourceManagerClient(object):
         try:
             return self.repository.organizations.get_iam_policy(resource_id)
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(resource_id, e)
 
     def get_org_org_policies(self, org_id):
         """Get all the org policies for a given org.
@@ -439,7 +436,7 @@ class CloudResourceManagerClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(folder_name, e)
 
-    def get_folders(self, resource_name, parent=None, show_deleted=False):
+    def get_folders(self, parent=None, show_deleted=False):
         """Find all folders that the authenticated account has access to.
 
         If no parent is passed in, then all folders the caller has visibility
@@ -447,7 +444,6 @@ class CloudResourceManagerClient(object):
         parent.
 
         Args:
-            resource_name (str): The resource type.
             parent (str): Optional parent resource, either
                 'organizations/{org_id}' or 'folders/{folder_id}'.
             show_deleted (bool): Determines if deleted folders should be
@@ -471,13 +467,16 @@ class CloudResourceManagerClient(object):
         try:
             return api_helpers.flatten_list_results(paged_results, 'folders')
         except (errors.HttpError, HttpLib2Error) as e:
+            if parent:
+                resource_name = parent
+            else:
+                resource_name = 'All Folders'
             raise api_errors.ApiExecutionError(resource_name, e)
 
-    def get_folder_iam_policies(self, resource_name, folder_id):
+    def get_folder_iam_policies(self, folder_id):
         """Get all the iam policies of an folder.
 
         Args:
-            resource_name (str): The resource name (type).
             folder_id (int): The folder id.
 
         Returns:
@@ -490,7 +489,7 @@ class CloudResourceManagerClient(object):
         try:
             return self.repository.folders.get_iam_policy(resource_id)
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(resource_name, e)
+            raise api_errors.ApiExecutionError(resource_id, e)
 
     def get_folder_org_policies(self, folder_id):
         """Get all the org policies for a given folder.

@@ -54,6 +54,7 @@ class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
 
         self._groups = None
         self._members = None
+        self._users = None
 
         super(AdminDirectoryRepositoryClient, self).__init__(
             'admin', versions=['directory_v1'],
@@ -79,6 +80,14 @@ class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
             self._members = self._init_repository(
                 _AdminDirectoryMembersRepository)
         return self._members
+
+    @property
+    def users(self):
+        """Returns an _AdminDirectoryUsersRepository instance."""
+        if not self._users:
+            self._users = self._init_repository(
+                _AdminDirectoryUsersRepository)
+        return self._users
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
@@ -110,6 +119,21 @@ class _AdminDirectoryMembersRepository(
         """
         super(_AdminDirectoryMembersRepository, self).__init__(
             key_field='groupKey', component='members', **kwargs)
+
+
+class _AdminDirectoryUsersRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Admin Directory Users repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_AdminDirectoryUsersRepository, self).__init__(
+            key_field='', component='users', **kwargs)
 
 
 class AdminDirectoryClient(object):
@@ -184,3 +208,27 @@ class AdminDirectoryClient(object):
             return api_helpers.flatten_list_results(paged_results, 'groups')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
+
+    def get_users(self, customer_id='my_customer'):
+        """Get all the groups for a given customer_id.
+
+        A note on customer_id='my_customer'. This is a magic string instead
+        of using the real customer id. See:
+
+        https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups
+
+        Args:
+            customer_id (str): The customer id to scope the request to.
+
+        Returns:
+            list: A list of user objects returned from the API.
+
+        Raises:
+            api_errors.ApiExecutionError: If groups retrieval fails.
+        """
+        try:
+            paged_results = self.repository.users.list(customer=customer_id,
+                                                       viewType='admin_view')
+            return api_helpers.flatten_list_results(paged_results, 'users')
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError('users', e)
