@@ -19,13 +19,13 @@
 # pylint: disable=missing-param-doc,invalid-name,too-many-instance-attributes
 # pylint: disable=too-many-public-methods,arguments-differ,line-too-long
 
-from google.cloud.forseti.services.inventory.gcp_api2 import admin_directory
-from google.cloud.forseti.services.inventory.gcp_api2 import bigquery
-from google.cloud.forseti.services.inventory.gcp_api2 import cloud_resource_manager
-from google.cloud.forseti.services.inventory.gcp_api2 import cloudsql
-from google.cloud.forseti.services.inventory.gcp_api2 import compute
-from google.cloud.forseti.services.inventory.gcp_api2 import iam
-from google.cloud.forseti.services.inventory.gcp_api2 import storage
+from google.cloud.forseti.common.gcp_api import admin_directory
+from google.cloud.forseti.common.gcp_api import bigquery
+from google.cloud.forseti.common.gcp_api import cloud_resource_manager
+from google.cloud.forseti.common.gcp_api import cloudsql
+from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.gcp_api import iam
+from google.cloud.forseti.common.gcp_api import storage
 
 
 class ApiClient(object):
@@ -384,7 +384,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of service account
         """
-        for serviceaccount in self.iam.get_serviceaccounts(projectid):
+        for serviceaccount in self.iam.get_service_accounts(projectid):
             yield serviceaccount
 
     @create_lazy('iam', _create_iam)
@@ -408,13 +408,13 @@ class ApiClientImpl(ApiClient):
             yield role
 
     @create_lazy('iam', _create_iam)
-    def iter_curated_roles(self, orgid):
+    def iter_curated_roles(self):
         """Curated role Iterator in an organization from gcp API call
 
         Yields:
             dict: Generator of curated roles
         """
-        for role in self.iam.get_curated_roles(orgid):
+        for role in self.iam.get_curated_roles():
             yield role
 
     @create_lazy('crm', _create_crm)

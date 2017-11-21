@@ -26,7 +26,7 @@ from sqlalchemy.orm import aliased
 
 
 from sqlalchemy.ext.declarative import declarative_base
-from google.cloud.forseti.services.inventory.inventory2.storage import \
+from google.cloud.forseti.services.inventory.base.storage import \
     Storage as BaseStorage
 
 # TODO: Remove this when time allows

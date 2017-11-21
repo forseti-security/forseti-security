@@ -502,7 +502,7 @@ class OrganizationRoleIterator(ResourceIterator):
 class OrganizationCuratedRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_curated_roles(orgid=self.resource['name']):
+        for data in gcp.iter_curated_roles():
             yield FACTORIES['role'].create_new(data)
 
 
@@ -573,7 +573,7 @@ FACTORIES = {
         'dependsOn': ['project'],
         'cls': GcsBucket,
         'contains': [
-            #ObjectIterator
+            # ObjectIterator
             ]}),
 
     'object': ResourceFactory({

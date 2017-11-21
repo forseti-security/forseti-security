@@ -397,10 +397,7 @@ class CloudResourceManagerClient(object):
         """
         resource_id = self.repository.organizations.get_name(org_id)
         try:
-            iam_policy = (
-                self.repository.organizations.get_iam_policy(resource_id))
-            return {'org_id': org_id,
-                    'iam_policy': iam_policy}
+            return self.repository.organizations.get_iam_policy(resource_id)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 
@@ -491,9 +488,7 @@ class CloudResourceManagerClient(object):
         """
         resource_id = self.repository.folders.get_name(folder_id)
         try:
-            iam_policy = self.repository.folders.get_iam_policy(resource_id)
-            return {'folder_id': folder_id,
-                    'iam_policy': iam_policy}
+            return self.repository.folders.get_iam_policy(resource_id)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_name, e)
 

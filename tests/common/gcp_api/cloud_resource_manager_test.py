@@ -192,7 +192,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         response = self.crm_api_client.get_org_iam_policies(
             'organizations', org_id)
 
-        self.assertTrue('bindings' in response.get('iam_policy', {}),
+        self.assertTrue('bindings' in response,
                         msg='Response {} does not contain "bindings".'.format(
                             response))
 
@@ -291,7 +291,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
 
         response = self.crm_api_client.get_folder_iam_policies('foo', folder_id)
 
-        self.assertTrue('bindings' in response.get('iam_policy', {}),
+        self.assertTrue('bindings' in response,
                         msg='Response {} does not contain "bindings".'.format(
                             response))
 
