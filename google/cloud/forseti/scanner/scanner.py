@@ -55,7 +55,7 @@ LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
-CONFIG = None
+SERVICE_CONFIG = None
 
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
@@ -108,7 +108,7 @@ def run(forseti_config, model_name=None):
         sys.exit()
 
     runnable_scanners = scanner_builder.ScannerBuilder(
-        global_configs, scanner_configs, CONFIG, model_name,
+        global_configs, scanner_configs, SERVICE_CONFIG, model_name,
         snapshot_timestamp).build()
 
     # pylint: disable=bare-except

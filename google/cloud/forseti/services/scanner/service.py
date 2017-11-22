@@ -65,7 +65,7 @@ class GrpcScannerFactory(object):
 
     def create_and_register_service(self, server):
         """Create and register the IAM Scanner service."""
-        scanner.CONFIG = self.config
+        scanner.SERVICE_CONFIG = self.config
         service = GrpcScanner(scanner_api=scanner)
         scanner_pb2_grpc.add_ScannerServicer_to_server(service, server)
         return service

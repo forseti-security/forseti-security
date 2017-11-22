@@ -34,22 +34,21 @@ class BaseScanner(object):
     OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
-    def __init__(self, global_configs, scanner_configs, config, model_name,
-                 snapshot_timestamp,
-                 rules):
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules):
         """Constructor for the base pipeline.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
-            config (ServiceConfig): Forseti 2.0 service configs
+            service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
-        self.config = config
+        self.service_config = service_config
         self.model_name = model_name
         self.snapshot_timestamp = snapshot_timestamp
         self.rules = rules

@@ -37,14 +37,14 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_firewall.{}.csv'
 
-    def __init__(self, global_configs, scanner_configs, config, model_name,
-                 snapshot_timestamp, rules):
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
-            config (ServiceConfig): Forseti 2.0 service configs
+            service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
@@ -53,7 +53,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         super(FirewallPolicyScanner, self).__init__(
             global_configs,
             scanner_configs,
-            config,
+            service_config,
             model_name,
             snapshot_timestamp,
             rules)
@@ -182,31 +182,31 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             int: The resource count.
         """
 
-        model_manager = self.config[0].model_manager
+        model_manager = self.service_config[0].model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            firewalls = []
+            firewall_policies = []
 
             for i in data_access.scanner_iter(session, "firewall"):
                 firewall_data_for_scanner = ast.literal_eval(i.data)
                 firewall_data_for_scanner['project_id'] = i.parent.display_name
                 firewall_data_for_scanner['hierarchical_name'] = i.full_name
 
-                firewalls.append(
+                firewall_policies.append(
                     firewall_rule.FirewallRule.from_dict(
                         firewall_data_for_scanner,
                         i.parent.display_name,
                         True))
 
-        if not firewalls:
+        if not firewall_policies:
             LOGGER.warn('No firewall policies found. Exiting.')
             sys.exit(1)
 
         resource_counts = {
-            resource_type.ResourceType.FIREWALL_RULE: len(firewalls),
+            resource_type.ResourceType.FIREWALL_RULE: len(firewall_policies),
         }
 
-        return firewalls, resource_counts
+        return firewall_policies, resource_counts
 
     def run(self):
         """Runs the data collection."""
