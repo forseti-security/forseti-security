@@ -426,13 +426,6 @@ class ObjectIterator(ResourceIterator):
         for data in gcp.iter_objects(bucket_id=self.resource['id']):
             yield FACTORIES['object'].create_new(data)
 
-class ComputeIterator(ResourceIterator):
-    def iter(self):
-        gcp = self.client
-        if gcp.get_compute_api_enabled(projectid=self.resource['projectId']):
-            data = gcp.get_compute_project(
-                projectid=self.resource['projectId'])
-            yield FACTORIES['compute'].create_new(data)
 
 class DataSetIterator(ResourceIterator):
     def iter(self):
@@ -441,6 +434,15 @@ class DataSetIterator(ResourceIterator):
             for data in gcp.iter_datasets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
+
+
+class ComputeIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if gcp.get_compute_api_enabled(projectid=self.resource['projectId']):
+            data = gcp.get_compute_project(
+                projectid=self.resource['projectId'])
+            yield FACTORIES['compute'].create_new(data)
 
 
 class InstanceIterator(ResourceIterator):
