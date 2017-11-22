@@ -254,18 +254,9 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of projects
         """
-        if self.cached_projects is None:
-            self.cached_projects = []
-            for page in self.crm.get_projects(parent_id=parent_id,
-                                              parent_type=parent_type):
-                if 'projects' in page:
-                    for project in page['projects']:
-                        self.cached_projects.append(project)
-
-        for project in self.cached_projects:
-            parent_info = project['parent']
-            if parent_info['type'] == parent_type and \
-               parent_info['id'] == parent_id:
+        for page in self.crm.get_projects(parent_id=parent_id,
+                                          parent_type=parent_type):
+            for project in page.get('projects', []):
                 yield project
 
     @create_lazy('crm', _create_crm)
@@ -275,14 +266,8 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of folders
         """
-        if self.cached_folders is None:
-            self.cached_folders = []
-            for folder in self.crm.get_folders(parent_id):
-                self.cached_folders.append(folder)
-
-        for folder in self.cached_folders:
-            if folder['parent'] == parent_id:
-                yield folder
+        for folder in self.crm.get_folders(parent_id):
+            yield folder
 
     @create_lazy('storage', _create_storage)
     def iter_buckets(self, projectid):
