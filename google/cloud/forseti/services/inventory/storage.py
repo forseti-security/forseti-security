@@ -32,7 +32,6 @@ from google.cloud.forseti.services.inventory.inventory2.storage import \
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,too-many-instance-attributes
-# pylint: disable=protected-access,no-self-use,line-too-long
 
 BASE = declarative_base()
 CURRENT_SCHEMA = 1

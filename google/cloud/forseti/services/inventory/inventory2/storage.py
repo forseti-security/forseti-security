@@ -107,7 +107,7 @@ class Memory(Storage):
         self.mem[resource.key()] = resource
 
     def update(self, resource):
-        """Update a existed resource object in memory"""
+        """Update a existing resource object in memory"""
         pass
 
     def read(self, key):

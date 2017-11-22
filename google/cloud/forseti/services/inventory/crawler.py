@@ -101,7 +101,7 @@ class Crawler(crawler.Crawler):
         self.config.progresser.on_warning(error)
 
     def update(self, resource):
-        """Update the row of an existed resource
+        """Update the row of an existing resource
 
         Raises:
             Exception: Reraises any exception.

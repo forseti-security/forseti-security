@@ -27,7 +27,7 @@ from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import project
 
-@unittest.skip("skipping for local test issue")
+
 class OrgResourceRelDaoTest(ForsetiTestCase):
     """Test OrgResourceRelDaoTest."""
 
