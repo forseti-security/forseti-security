@@ -316,7 +316,7 @@ class ApiClientImpl(ApiClient):
         Returns:
             bool: True if API is enabled, else False.
         """
-        return self.client.is_api_enabled(projectid)
+        return self.compute.is_api_enabled(projectid)
 
     @create_lazy('compute', _create_compute)
     def fetch_compute_project(self, projectid):
@@ -325,7 +325,7 @@ class ApiClientImpl(ApiClient):
         Returns:
             dict: Compute project metadata resource.
         """
-        return self.client.get_project(projectid)
+        return self.compute.get_project(projectid)
 
     @create_lazy('compute', _create_compute)
     def iter_computeinstances(self, projectid):
