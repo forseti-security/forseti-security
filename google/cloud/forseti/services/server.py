@@ -15,8 +15,8 @@
 """ IAM Explain server program. """
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=protected-access,no-self-use,
-# pylint: disable=line-too-long,protected-access,useless-suppression
+# pylint: disable=line-too-long,useless-suppression
+# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
 
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import ThreadPool
@@ -33,10 +33,6 @@ from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.inventory.storage import Storage
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
 
 
 STATIC_SERVICE_MAPPING = {

@@ -235,18 +235,19 @@ class InventoryImporter(object):
         self.session.flush()
 
         # session.execute automatically flushes
-        if get_sql_dialect(self.session) == 'sqlite':
-            # SQLite doesn't support bulk insert
-            for item in self._membership_cache:
-                stmt = self.dao.TBL_MEMBERSHIP.insert(
-                    dict(group_name=item[0],
-                         members_name=item[1]))
+        if self._membership_cache:
+            if get_sql_dialect(self.session) == 'sqlite':
+                # SQLite doesn't support bulk insert
+                for item in self._membership_cache:
+                    stmt = self.dao.TBL_MEMBERSHIP.insert(
+                        dict(group_name=item[0],
+                             members_name=item[1]))
+                    self.session.execute(stmt)
+            else:
+                dicts = [dict(group_name=item[0], members_name=item[1])
+                         for item in self._membership_cache]
+                stmt = self.dao.TBL_MEMBERSHIP.insert(dicts)
                 self.session.execute(stmt)
-        else:
-            dicts = [dict(group_name=item[0], members_name=item[1])
-                     for item in self._membership_cache]
-            stmt = self.dao.TBL_MEMBERSHIP.insert(dicts)
-            self.session.execute(stmt)
 
     def _store_gsuite_membership(self, parent, child):
         """Store a gsuite principal such as a group, user or member.
