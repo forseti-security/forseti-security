@@ -23,7 +23,6 @@ from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier import notifier
 
 from google.cloud.forseti.common.data_access import csv_writer
-from google.cloud.forseti.common.data_access import firewall_rule_dao
 from google.cloud.forseti.common.gcp_type import firewall_rule
 from google.cloud.forseti.common.gcp_type import resource as resource_type
 from google.cloud.forseti.common.gcp_type import resource_util
@@ -45,6 +44,8 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
+            config (ServiceConfig): Forseti 2.0 service configs
+            model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
@@ -184,28 +185,18 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         model_manager = self.config[0].model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            num_resources = 0
             firewalls = []
-            
-            for i in data_access.scanner_iter(session,
-                                              "firewall"):
-                print i
-                print '-'
-                num_resources += 1
-                
+
+            for i in data_access.scanner_iter(session, "firewall"):
                 firewall_data_for_scanner = ast.literal_eval(i.data)
                 firewall_data_for_scanner['project_id'] = i.parent.display_name
+                firewall_data_for_scanner['hierarchical_name'] = i.full_name
 
-                firewalls.append(firewall_rule.FirewallRule.from_dict(
-                    firewall_data_for_scanner,
-                    i.parent.display_name,
-                    True))
-       
-        
-        firewall_policies = (firewall_rule_dao
-                             .FirewallRuleDao(self.global_configs)
-                             .get_firewall_rules(self.snapshot_timestamp))
-
+                firewalls.append(
+                    firewall_rule.FirewallRule.from_dict(
+                        firewall_data_for_scanner,
+                        i.parent.display_name,
+                        True))
 
         if not firewalls:
             LOGGER.warn('No firewall policies found. Exiting.')

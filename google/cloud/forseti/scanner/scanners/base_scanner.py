@@ -42,6 +42,8 @@ class BaseScanner(object):
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
+            config (ServiceConfig): Forseti 2.0 service configs
+            model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """

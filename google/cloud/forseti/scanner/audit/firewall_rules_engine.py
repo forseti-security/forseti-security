@@ -287,6 +287,55 @@ class RuleBook(bre.BaseRuleBook):
                     resource_type=resource_type)
                 self.org_policy_rules_map[gcp_resource] = sorted(expanded_rules)
 
+    @staticmethod
+    def get_resource_ancestors(starting_resource, policy):
+        """Find the ancestors for a given resource.
+
+        Args:
+            starting_resource (Resource): The GCP resource associated with the
+                policy binding.  This is where we move up the resource
+                hierarchy.
+            policy (FirewallRule): FirewallRule object
+
+        Returns:
+            list: A list of GCP resources in ascending order in the resource
+                hierarchy.
+        """
+        ancestor_resources = [starting_resource]
+
+        if starting_resource.type == 'organization':
+            return ancestor_resources
+
+        # Skip complex reverse hierarchy traversal since hierarchy
+        # is low height, so manually determining the parents.
+        # This will be re-implemented in auditor.
+
+        # policy.hierarchical_name has a trailing / that needs to be removed.
+        hierarchical_name = policy.hierarchical_name.rsplit('/', 1)[0]
+        hierarchical_name_parts = hierarchical_name.split('/')
+
+        hierarchy_map = {}
+        while hierarchical_name_parts:
+            resource_name = hierarchical_name_parts.pop(0)
+            resource_id = hierarchical_name_parts.pop(0)
+            hierarchy_map[resource_name] = resource_id
+
+        if starting_resource.type == 'project':
+            if hierarchy_map.get('folder') is not None:
+                ancestor_resources.append(
+                    resource_util.create_resource(
+                        hierarchy_map.get('folder'),
+                        'folder'))
+
+        # By default, every resource must have a organization as a parent.
+        if hierarchy_map.get('organization') is not None:
+            ancestor_resources.append(
+                resource_util.create_resource(
+                    hierarchy_map.get('organization'),
+                    'organization'))
+
+        return ancestor_resources
+
     def find_violations(self, resource, policy):
         """Find policy binding violations in the rule book.
 
@@ -296,20 +345,14 @@ class RuleBook(bre.BaseRuleBook):
                 This is where we start looking for rule violations and
                 we move up the resource hierarchy (if permitted by the
                 resource's "inherit_from_parents" property).
-            policy(list): A list of FirewallRule policies.
+            policy (FirewallRule): FirewallRule object
 
         Returns:
             iterable: A generator of the rule violations.
         """
         violations = itertools.chain()
-        resource_ancestors = [resource]
-        try:
-            resource_ancestors.extend(
-                self.org_res_rel_dao.find_ancestors(
-                    resource, self.snapshot_timestamp))
-        except:
-            LOGGER.info('exception to find ancestor')
-            
+
+        resource_ancestors = self.get_resource_ancestors(resource, policy)
         for curr_resource in resource_ancestors:
             if curr_resource in self.org_policy_rules_map:
                 org_policy_rules = self.org_policy_rules_map.get(
@@ -319,7 +362,6 @@ class RuleBook(bre.BaseRuleBook):
                     violations = itertools.chain(
                         violations,
                         rule.find_policy_violations([policy]))
-                    print policy
                 break  # Only the first rules found in the ancestry are applied
         return violations
 

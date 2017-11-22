@@ -35,6 +35,8 @@ class ScannerBuilder(object):
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
+            config (ServiceConfig): Inventory 2.0 service configs
+            model_name (str): name of the data model
             snapshot_timestamp (str): The snapshot timestamp
         """
         self.global_configs = global_configs

@@ -81,6 +81,10 @@ def run(forseti_config, model_name=None):
     """Run the scanners.
 
     Entry point when the scanner is run as a library.
+
+    Args:
+        forseti_config (dict): Forseti 1.0 config
+        model_name (str): name of the data model
     """
 
     if forseti_config is None:
@@ -117,11 +121,15 @@ def run(forseti_config, model_name=None):
     # pylint: enable=bare-except
 
     LOGGER.info('Scan complete!')
-    
+
 
 def main(_):
-    """Entry point when the scanner is run as an executable."""
- 
+    """Entry point when the scanner is run as an executable.
+
+    Args:
+        _ (list): args that aren't used
+    """
+
     run(FLAGS.forseti_config)
 
 
