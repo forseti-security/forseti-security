@@ -320,7 +320,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def fetch_compute_project(self, projectid):
-        """Verifies the Compute API is enabled on a project.
+        """Compute project data from gcp API call.
 
         Returns:
             dict: Compute project metadata resource.

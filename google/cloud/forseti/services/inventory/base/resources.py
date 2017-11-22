@@ -281,9 +281,6 @@ class ComputeProject(Resource):
     def type(self):
         return 'compute_project'
 
-    def enumerable(self):
-        return True
-
 
 class Instance(Resource):
     def key(self):
