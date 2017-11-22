@@ -442,10 +442,10 @@ class DataSetIterator(ResourceIterator):
 class ComputeIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
+        projectid = self.resource['projectId']
         if (self.resource.enumerable() and
-            gcp.is_compute_api_enabled(projectid=self.resource['projectId'])):
-            data = gcp.fetch_compute_project(
-                projectid=self.resource['projectId'])
+                gcp.is_compute_api_enabled(projectid=projectid)):
+            data = gcp.fetch_compute_project(projectid=projectid)
             yield FACTORIES['compute'].create_new(data)
 
 
