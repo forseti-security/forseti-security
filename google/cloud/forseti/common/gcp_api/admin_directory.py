@@ -25,7 +25,8 @@ from google.cloud.forseti.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 REQUIRED_SCOPES = frozenset([
-    'https://www.googleapis.com/auth/admin.directory.group.readonly'
+    'https://www.googleapis.com/auth/admin.directory.group.readonly',
+    'https://www.googleapis.com/auth/admin.directory.user.readonly'
 ])
 
 
