@@ -28,7 +28,8 @@ LOGGER = log_util.get_logger(__name__)
 class ScannerBuilder(object):
     """Scanner Builder."""
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp):
+    def __init__(self, global_configs, scanner_configs, config, model_name,
+                 snapshot_timestamp):
         """Initialize the scanner builder.
 
         Args:
@@ -38,6 +39,8 @@ class ScannerBuilder(object):
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
+        self.config = config,
+        self.model_name = model_name
         self.snapshot_timestamp = snapshot_timestamp
 
     def build(self):
@@ -88,6 +91,8 @@ class ScannerBuilder(object):
 
                 scanner = scanner_class(self.global_configs,
                                         self.scanner_configs,
+                                        self.config,
+                                        self.model_name,
                                         self.snapshot_timestamp,
                                         rules)
                 runnable_scanners.append(scanner)

@@ -34,7 +34,8 @@ class BaseScanner(object):
     OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
+    def __init__(self, global_configs, scanner_configs, config, model_name,
+                 snapshot_timestamp,
                  rules):
         """Constructor for the base pipeline.
 
@@ -46,6 +47,8 @@ class BaseScanner(object):
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
+        self.config = config
+        self.model_name = model_name
         self.snapshot_timestamp = snapshot_timestamp
         self.rules = rules
 

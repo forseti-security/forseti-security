@@ -303,9 +303,13 @@ class RuleBook(bre.BaseRuleBook):
         """
         violations = itertools.chain()
         resource_ancestors = [resource]
-        resource_ancestors.extend(
-            self.org_res_rel_dao.find_ancestors(
-                resource, self.snapshot_timestamp))
+        try:
+            resource_ancestors.extend(
+                self.org_res_rel_dao.find_ancestors(
+                    resource, self.snapshot_timestamp))
+        except:
+            LOGGER.info('exception to find ancestor')
+            
         for curr_resource in resource_ancestors:
             if curr_resource in self.org_policy_rules_map:
                 org_policy_rules = self.org_policy_rules_map.get(
@@ -315,6 +319,7 @@ class RuleBook(bre.BaseRuleBook):
                     violations = itertools.chain(
                         violations,
                         rule.find_policy_violations([policy]))
+                    print policy
                 break  # Only the first rules found in the ancestry are applied
         return violations
 

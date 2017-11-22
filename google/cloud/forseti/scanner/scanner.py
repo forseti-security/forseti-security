@@ -33,6 +33,7 @@ from google.cloud.forseti.scanner import scanner_builder
 # Setup flags
 FLAGS = flags.FLAGS
 
+
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
@@ -54,6 +55,8 @@ LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
+CONFIG = None
+
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
@@ -74,13 +77,12 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     return latest_timestamp
 
-def main(_):
+def run(forseti_config, model_name=None):
     """Run the scanners.
 
-    Args:
-        _ (list): argv, unused due to apputils.
+    Entry point when the scanner is run as a library.
     """
-    forseti_config = FLAGS.forseti_config
+
     if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
@@ -102,7 +104,8 @@ def main(_):
         sys.exit()
 
     runnable_scanners = scanner_builder.ScannerBuilder(
-        global_configs, scanner_configs, snapshot_timestamp).build()
+        global_configs, scanner_configs, CONFIG, model_name,
+        snapshot_timestamp).build()
 
     # pylint: disable=bare-except
     for scanner in runnable_scanners:
@@ -114,6 +117,12 @@ def main(_):
     # pylint: enable=bare-except
 
     LOGGER.info('Scan complete!')
+    
+
+def main(_):
+    """Entry point when the scanner is run as an executable."""
+ 
+    run(FLAGS.forseti_config)
 
 
 if __name__ == '__main__':

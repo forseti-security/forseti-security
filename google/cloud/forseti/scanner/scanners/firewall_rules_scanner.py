@@ -13,6 +13,7 @@
 # limitations under the License.
 """Scanner for the firewall rule engine."""
 
+import ast
 from datetime import datetime
 import itertools
 import os
@@ -23,6 +24,7 @@ from google.cloud.forseti.notifier import notifier
 
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.data_access import firewall_rule_dao
+from google.cloud.forseti.common.gcp_type import firewall_rule
 from google.cloud.forseti.common.gcp_type import resource as resource_type
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.scanner.audit import firewall_rules_engine
@@ -36,8 +38,8 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_firewall.{}.csv'
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
-                 rules):
+    def __init__(self, global_configs, scanner_configs, config, model_name,
+                 snapshot_timestamp, rules):
         """Initialization.
 
         Args:
@@ -50,6 +52,8 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         super(FirewallPolicyScanner, self).__init__(
             global_configs,
             scanner_configs,
+            config,
+            model_name,
             snapshot_timestamp,
             rules)
         self.rules_engine = firewall_rules_engine.FirewallRulesEngine(
@@ -176,20 +180,42 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             list: List of firewall policy data.
             int: The resource count.
         """
+
+        model_manager = self.config[0].model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            num_resources = 0
+            firewalls = []
+            
+            for i in data_access.scanner_iter(session,
+                                              "firewall"):
+                print i
+                print '-'
+                num_resources += 1
+                
+                firewall_data_for_scanner = ast.literal_eval(i.data)
+                firewall_data_for_scanner['project_id'] = i.parent.display_name
+
+                firewalls.append(firewall_rule.FirewallRule.from_dict(
+                    firewall_data_for_scanner,
+                    i.parent.display_name,
+                    True))
+       
+        
         firewall_policies = (firewall_rule_dao
                              .FirewallRuleDao(self.global_configs)
                              .get_firewall_rules(self.snapshot_timestamp))
 
 
-        if not firewall_policies:
+        if not firewalls:
             LOGGER.warn('No firewall policies found. Exiting.')
             sys.exit(1)
 
         resource_counts = {
-            resource_type.ResourceType.FIREWALL_RULE: len(firewall_policies),
+            resource_type.ResourceType.FIREWALL_RULE: len(firewalls),
         }
 
-        return firewall_policies, resource_counts
+        return firewalls, resource_counts
 
     def run(self):
         """Runs the data collection."""
