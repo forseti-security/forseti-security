@@ -310,6 +310,24 @@ class ApiClientImpl(ApiClient):
             yield item
 
     @create_lazy('compute', _create_compute)
+    def is_compute_api_enabled(self, projectid):
+        """Verifies the Compute API is enabled on a project.
+
+        Returns:
+            bool: True if API is enabled, else False.
+        """
+        return self.client.is_api_enabled(projectid)
+
+    @create_lazy('compute', _create_compute)
+    def fetch_compute_project(self, projectid):
+        """Verifies the Compute API is enabled on a project.
+
+        Returns:
+            dict: Compute project metadata resource.
+        """
+        return self.client.get_project(projectid)
+
+    @create_lazy('compute', _create_compute)
     def iter_computeinstances(self, projectid):
         """Compute Engine Instance Iterator from gcp API call
 
