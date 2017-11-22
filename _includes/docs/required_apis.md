@@ -9,3 +9,4 @@
 |Cloud SQL API|`sql-component.googleapis.com`|
 |Compute Engine API|`compute.googleapis.com`|
 |Deployment Manager API|`deploymentmanager.googleapis.com`|
+|Identity and Access Management (IAM) API|`iam.googleapis.com`|
