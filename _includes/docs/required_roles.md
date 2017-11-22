@@ -2,6 +2,7 @@
 
  `forseti_inventory` and `forseti_scanner` require:
  
+ * `roles/bigquery.dataViewer`
  * `roles/browser`
  * `roles/compute.networkViewer`
  * `roles/iam.securityReviewer`
