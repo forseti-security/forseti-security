@@ -147,6 +147,10 @@ class ForsetiGcpSetup(object):
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
 
+        self.host_project_id = kwargs.get('host_project', self.project_id)
+        self.xpn_name = kwargs.get('vpc') or 'default'
+        self.subnetwork = kwargs.get('subnet') or 'default'
+
     def run_setup(self):
         """Run the setup steps."""
         # Pre-flight checks.
@@ -664,6 +668,9 @@ class ForsetiGcpSetup(object):
             'SERVICE_ACCT_GCP_READER': self.gcp_service_account,
             'SERVICE_ACCT_GSUITE_READER': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
+            'HOST_PROJECT': self.host_project_id,
+            'XPN_NAME': self.xpn_name,
+            'SUBNETWORK': self.subnetwork
         }
 
         # Create Deployment template with values filled in.

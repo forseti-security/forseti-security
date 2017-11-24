@@ -80,3 +80,15 @@ properties:
     type: integer
     default: 3306
     description: The port for the database.
+
+  network-host-project:
+    type: string
+    description: the id of the shared network host project
+
+  xpn-name:
+    type: string
+    description: the name of the shared network
+
+  subnetwork:
+    type: string
+    description: the name of the subnet

@@ -40,6 +40,14 @@ def run():
     group.add_argument('--cloudsql-region',
                        help='The Cloud SQL region')
 
+    network = parser.add_argument_group(title='network')
+    network.add_argument('--host-project',
+                         help='The host project id')
+    network.add_argument('--vpc',
+                         help='The VPC name where Forseti VM will run')
+    network.add_argument('--subnet',
+                         help='The subnetwork name where Forseti VM will run')
+
     email_params = parser.add_argument_group(title='email')
     email_params.add_argument('--sendgrid-api-key',
                               help='Sendgrid API key')
