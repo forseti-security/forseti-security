@@ -62,7 +62,7 @@ resources:
     scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
     network-host-project: {HOST_PROJECT}
-    xpn-name: {XPN_NAME}
+    vpc-name: {XPN_NAME}
     subnetwork: {SUBNETWORK}
 
     # --- Forseti version

@@ -146,9 +146,8 @@ class ForsetiGcpSetup(object):
         self.notification_recipient_email = (
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
-
         self.host_project_id = kwargs.get('host_project', self.project_id)
-        self.xpn_name = kwargs.get('vpc') or 'default'
+        self.vpc_name = kwargs.get('vpc') or 'default'
         self.subnetwork = kwargs.get('subnet') or 'default'
 
     def run_setup(self):
@@ -163,6 +162,7 @@ class ForsetiGcpSetup(object):
         self.get_organization()
         self.check_billing_enabled()
         self.has_permissions()
+        self.get_host_project()
 
         self.enable_apis()
 
@@ -351,6 +351,13 @@ class ForsetiGcpSetup(object):
             print('You need to have an active project! Exiting.')
             sys.exit(1)
         print('Project id: %s' % self.project_id)
+
+    def get_host_project(self):
+        """Get the host project."""
+        if not self.host_project_id:
+            self.get_project()
+            self.host_project_id = self.project_id
+        print('VPC Host Project %s' % self.host_project_id)
 
     def check_billing_enabled(self):
         """Check if billing is enabled."""
@@ -669,7 +676,7 @@ class ForsetiGcpSetup(object):
             'SERVICE_ACCT_GSUITE_READER': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
             'HOST_PROJECT': self.host_project_id,
-            'XPN_NAME': self.xpn_name,
+            'XPN_NAME': self.vpc_name,
             'SUBNETWORK': self.subnetwork
         }
 
