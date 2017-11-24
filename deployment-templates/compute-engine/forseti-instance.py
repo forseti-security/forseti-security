@@ -102,7 +102,7 @@ python build_protos.py --clean
                     'https://www.googleapis.com/compute/v1/'
                     'projects/{}/global/networks/{}'.format(
                         context.properties['network-host-project'],
-                        context.properties['xpn-name'])),
+                        context.properties['vpc-name'])),
                 'accessConfigs': [{
                     'name': 'External NAT',
                     'type': 'ONE_TO_ONE_NAT'
