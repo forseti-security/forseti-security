@@ -53,6 +53,7 @@ resources:
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1604-lts
     instance-type: n1-standard-2
+    region: $(ref.cloudsql-instance.region)
     zone: $(ref.cloudsql-instance.region)-c
 
     service-account: $(ref.forseti-gcp-reader.email)
@@ -60,6 +61,9 @@ resources:
       - https://www.googleapis.com/auth/cloud-platform
     scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
+    network-host-project: {HOST_PROJECT}
+    vpc-name: {XPN_NAME}
+    subnetwork: {SUBNETWORK}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
