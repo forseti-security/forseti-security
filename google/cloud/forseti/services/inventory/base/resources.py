@@ -443,10 +443,10 @@ class DataSetIterator(ResourceIterator):
 class ComputeIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        projectid = self.resource['projectId']
         if (self.resource.enumerable() and
                 self.resource.compute_api_enabled(gcp)):
-            data = gcp.fetch_compute_project(projectid=projectid)
+            data = gcp.fetch_compute_project(
+                projectid=self.resource['projectId'])
             yield FACTORIES['compute'].create_new(data)
 
 
@@ -456,7 +456,7 @@ class InstanceIterator(ResourceIterator):
         if (self.resource.enumerable() and
                 self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computeinstances(
-                    projectid=self.resource['name']):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['instance'].create_new(data)
 
 
@@ -466,7 +466,7 @@ class FirewallIterator(ResourceIterator):
         if (self.resource.enumerable() and
                 self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computefirewalls(
-                    projectid=self.resource['name']):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['firewall'].create_new(data)
 
 
@@ -476,16 +476,18 @@ class InstanceGroupIterator(ResourceIterator):
         if (self.resource.enumerable() and
                 self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computeinstancegroups(
-                    projectid=self.resource['name']):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroup'].create_new(data)
 
 
 class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_backendservices(
-                projectid=self.resource['name']):
-            yield FACTORIES['backendservice'].create_new(data)
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_backendservices(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['backendservice'].create_new(data)
 
 
 class CloudSqlIterator(ResourceIterator):
