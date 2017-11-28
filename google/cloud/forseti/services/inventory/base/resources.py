@@ -222,6 +222,10 @@ class Project(Resource):
     def enumerable(self):
         return self['lifecycleState'] not in ['DELETE_REQUESTED']
 
+    @cached('compute_api_enabled')
+    def compute_api_enabled(self, client):
+        return client.is_compute_api_enabled(projectid=self['projectId'])
+
     def type(self):
         return 'project'
 
@@ -441,7 +445,7 @@ class ComputeIterator(ResourceIterator):
         gcp = self.client
         projectid = self.resource['projectId']
         if (self.resource.enumerable() and
-                gcp.is_compute_api_enabled(projectid=projectid)):
+                self.resource.compute_api_enabled(gcp)):
             data = gcp.fetch_compute_project(projectid=projectid)
             yield FACTORIES['compute'].create_new(data)
 
@@ -449,25 +453,31 @@ class ComputeIterator(ResourceIterator):
 class InstanceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_computeinstances(
-                projectid=self.resource['name']):
-            yield FACTORIES['instance'].create_new(data)
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_computeinstances(
+                    projectid=self.resource['name']):
+                yield FACTORIES['instance'].create_new(data)
 
 
 class FirewallIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_computefirewalls(
-                projectid=self.resource['name']):
-            yield FACTORIES['firewall'].create_new(data)
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_computefirewalls(
+                    projectid=self.resource['name']):
+                yield FACTORIES['firewall'].create_new(data)
 
 
 class InstanceGroupIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_computeinstancegroups(
-                projectid=self.resource['name']):
-            yield FACTORIES['instancegroup'].create_new(data)
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_computeinstancegroups(
+                    projectid=self.resource['name']):
+                yield FACTORIES['instancegroup'].create_new(data)
 
 
 class BackendServiceIterator(ResourceIterator):
@@ -574,9 +584,13 @@ FACTORIES = {
         'contains': [
             BucketIterator,
             DataSetIterator,
-            ComputeIterator,
             CloudSqlIterator,
             ServiceAccountIterator,
+            ComputeIterator,
+            InstanceIterator,
+            FirewallIterator,
+            InstanceGroupIterator,
+            BackendServiceIterator,
             ProjectRoleIterator
             ]}),
 
@@ -603,32 +617,28 @@ FACTORIES = {
         'dependsOn': ['project'],
         'cls': ComputeProject,
         'contains': [
-            InstanceIterator,
-            FirewallIterator,
-            InstanceGroupIterator,
-            BackendServiceIterator
-        ]}),
+            ]}),
 
     'instance': ResourceFactory({
-        'dependsOn': ['compute'],
+        'dependsOn': ['project'],
         'cls': Instance,
         'contains': [
             ]}),
 
     'firewall': ResourceFactory({
-        'dependsOn': ['compute'],
+        'dependsOn': ['project'],
         'cls': Firewall,
         'contains': [
             ]}),
 
     'instancegroup': ResourceFactory({
-        'dependsOn': ['compute'],
+        'dependsOn': ['project'],
         'cls': InstanceGroup,
         'contains': [
             ]}),
 
     'backendservice': ResourceFactory({
-        'dependsOn': ['compute'],
+        'dependsOn': ['project'],
         'cls': BackendService,
         'contains': [
             ]}),
