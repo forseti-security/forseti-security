@@ -132,7 +132,7 @@ def run_crawler(storage,
     client_config = {
         'groups_service_account_key_file': config.get_gsuite_sa_path(),
         'domain_super_admin_email': config.get_gsuite_admin_email(),
-        'max_admin_api_calls_per_day': 150000,
+        'max_admin_api_calls_per_100_seconds': 1500,
         'max_appengine_api_calls_per_second': 20,
         'max_bigquery_api_calls_per_100_seconds': 17000,
         'max_crm_api_calls_per_100_seconds': 400,
