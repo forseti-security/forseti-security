@@ -46,7 +46,6 @@ DEPLOYMENTNAME=""
 # These should not be considered to be configurable but they are placed
 # here to avoid repetition.
 FORSETI_DB_NAME="forseti_security"
-EXPLAIN_DB_NAME="explain_security"
 COMPUTE_REGION="us-central1"
 COMPUTE_ZONE="us-central1-c"
 
@@ -332,7 +331,9 @@ echo "        - 'roles/cloudsql.viewer',"
 echo "        - 'roles/compute.securityAdmin',"
 echo "        - 'roles/storage.admin',"
 echo "    - Project level:"
+echo "        - 'roles/storage.admin'"
 echo "        - 'roles/cloudsql.client'"
+echo "        - 'roles/logging.logWriter'"
 read -p "Do you want to use the script to assign the roles? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
@@ -376,12 +377,16 @@ then
 	gcloud projects add-iam-policy-binding $PROJECT_ID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/cloudsql.client
+
+	gcloud projects add-iam-policy-binding $PROJECT_ID \
+	 --member=serviceAccount:$SCRAPINGSA \
+	 --role=roles/logging.logWriter
 else
 	echo "Roles assigning skipped, if you haven't done it, you can do so in cloud console."
 fi
 
 #Choose deployment branch
-DownloadBranch=$( git rev-parse --abbrev-ref HEAD )
+DownloadBranch=$( git -C $repodir rev-parse --abbrev-ref HEAD )
 echo -e "${TYELLOW}Choosing Github Branch${TNC}"
 echo -e "By default, the current branch ${TYELLOW} $DownloadBranch ${TNC} of IAM Explain will be deployed."
 read -p "Do you want to change to another one? (y/n)" -n 1 -r
@@ -409,7 +414,7 @@ fi
 
 # sql instance name
 echo -e "${TYELLOW}Choosing SQL Instance name${TNC}"
-SQLINSTANCE="iam-explain-no-external-"$LABEL_SAFE_TIMESTAMP
+SQLINSTANCE="forseti-security-no-external-"$LABEL_SAFE_TIMESTAMP
 echo "Do you want to use the generated sql instance name:"
 echo "    $SQLINSTANCE"
 read -p "for this deployment? (y/n)" -n 1 -r
@@ -444,7 +449,7 @@ function read_deployment_name() {
 }
 
 # Deployment name
-read_deployment_name "iam-explain"
+read_deployment_name "forseti-security"
 
 # Prepare the deployment template yaml file
 echo "Customizing deployment template..."
@@ -456,7 +461,7 @@ sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPINGSA'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
-sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
+sed -i -e 's/ forseti-security-sql-instance/ '$SQLINSTANCE'/g' \
 $repodir/deployment-templates/deploy-explain.yaml
 sed -i -e 's/BRANCHNAME/'$BRANCHNAME'/g' \
 $repodir/deployment-templates/deploy-explain.yaml

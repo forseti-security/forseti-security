@@ -25,7 +25,7 @@ from tests.iam.utils.db import create_test_engine
 
 
 class ResourceMock(Resource):
-    def __init__(self, key, data, res_type, parent=None, warning=None):
+    def __init__(self, key, data, res_type, parent=None, warning=[]):
         self._key = key
         self._data = data
         self._res_type = res_type

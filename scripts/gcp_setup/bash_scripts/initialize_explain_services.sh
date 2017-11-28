@@ -30,7 +30,7 @@ set -o nounset
 # script will fail immediately rather than partially succeeding.
 echo "CloudSQL Instance connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "Local SQL port is: ${SQL_PORT}"
-echo "Explain DB name: ${EXPLAIN_DB_NAME}"
+echo "Explain DB name: ${FORSETI_DB_NAME}"
 echo "GSuite admin email: ${GSUITE_ADMIN_EMAIL}"
 echo "Root resource ID: ${ROOT_RESOURCE_ID}"
 if ! [[ -f $GSUITE_ADMIN_CREDENTIAL_PATH ]]; then
@@ -43,11 +43,11 @@ SQL_SERVER_LOCAL_ADDRESS="mysql://root@127.0.0.1:${SQL_PORT}"
 
 
 FORSETI_COMMAND="$(which forseti_api) '[::]:50051'"
-FORSETI_COMMAND+=" ${SQL_SERVER_LOCAL_ADDRESS}/${EXPLAIN_DB_NAME}"
+FORSETI_COMMAND+=" ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}"
 FORSETI_COMMAND+=" ${GSUITE_ADMIN_CREDENTIAL_PATH}"
 FORSETI_COMMAND+=" ${GSUITE_ADMIN_EMAIL}"
 FORSETI_COMMAND+=" ${ROOT_RESOURCE_ID}"
-FORSETI_COMMAND+=" playground explain inventory"
+FORSETI_COMMAND+=" playground explain inventory model"
 
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"

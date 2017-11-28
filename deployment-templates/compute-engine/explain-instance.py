@@ -41,7 +41,7 @@ def GenerateConfig(context):
         '$(ref.cloudsql-instance.region)',
         '$(ref.cloudsql-instance.name)')
 
-    EXPLAIN_DB_NAME = context.properties['explain-db-name']
+    FORSETI_DB_NAME = context.properties['forseti-db-name']
     GSUITE_SERVICE_ACCOUNT_PATH = context.properties['gsuite-service-accout-path']
     GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
     ROOT_RESOURCE_ID = context.properties['root-resource-id']
@@ -51,12 +51,12 @@ def GenerateConfig(context):
     EXPORT_INITIALIZE_VARS = (
         'export SQL_PORT={0}\n'
         'export SQL_INSTANCE_CONN_STRING="{1}"\n'
-        'export EXPLAIN_DB_NAME="{2}"\n'
+        'export FORSETI_DB_NAME="{2}"\n'
         'export GSUITE_ADMIN_EMAIL="{3}"\n'
         'export GSUITE_ADMIN_CREDENTIAL_PATH="{4}"\n'
         'export ROOT_RESOURCE_ID="{5}"\n')
     EXPORT_INITIALIZE_VARS = EXPORT_INITIALIZE_VARS.format(
-        SQL_PORT, SQL_INSTANCE_CONN_STRING, EXPLAIN_DB_NAME,
+        SQL_PORT, SQL_INSTANCE_CONN_STRING, FORSETI_DB_NAME,
         GSUITE_ADMIN_EMAIL, GSUITE_SERVICE_ACCOUNT_PATH, ROOT_RESOURCE_ID)
 
 
