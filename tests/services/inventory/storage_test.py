@@ -11,20 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-""" Unit Tests: Inventory storage for IAM Explain. """
+"""Unit Tests: Inventory storage for IAM Explain."""
 
 import unittest
-from sqlalchemy import event
-
-from google.cloud.forseti.services.inventory.storage import Storage, initialize
-from google.cloud.forseti.services import db
-from google.cloud.forseti.services.inventory.base.resources import Resource
 from tests.services.utils.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services import db
+from google.cloud.forseti.services.inventory.base.resources import Resource
+from google.cloud.forseti.services.inventory.storage import initialize
+from google.cloud.forseti.services.inventory.storage import Storage
 
 
 class ResourceMock(Resource):
+
     def __init__(self, key, data, res_type, parent=None):
         self._key = key
         self._data = data
@@ -72,13 +71,13 @@ class StorageTest(ForsetiTestCase):
         res_obj2 = ResourceMock('6', {'id': 'test'}, 'object', res_buc2)
 
         resources = [
-                res_org,
-                res_proj1,
-                res_buc1,
-                res_proj2,
-                res_buc2,
-                res_obj2
-            ]
+            res_org,
+            res_proj1,
+            res_buc1,
+            res_proj2,
+            res_buc2,
+            res_obj2
+        ]
 
         with sessionmaker() as session:
             with Storage(session) as storage:

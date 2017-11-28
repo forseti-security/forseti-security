@@ -14,10 +14,12 @@
 """Installing test models against a session."""
 
 from collections import defaultdict
+from google.cloud.forseti.services import utils
 
-from google.cloud.forseti.services.utils import full_to_type_name
 
-class ModelCreatorClient:
+class ModelCreatorClient(object):
+    """Model creator client."""
+
     def __init__(self, session, data_access):
         self.session = session
         self.data_access = data_access
@@ -34,23 +36,27 @@ class ModelCreatorClient:
         return self.data_access.add_member(self.session, child, parents)
 
     def add_role(self, role_name, permissions):
-        return self.data_access.add_role_by_name(self.session, role_name, permissions)
+        return self.data_access.add_role_by_name(self.session,
+                                                 role_name,
+                                                 permissions)
 
     def get_iam_policy(self, full_resource_name):
-        policy_dict = self.data_access.get_iam_policy(self.session,
-                                                      full_to_type_name(full_resource_name))
+        policy_dict = self.data_access.get_iam_policy(
+            self.session, utils.full_to_type_name(full_resource_name))
+
         class PolicyAccessor(dict):
+
             def __init__(self, *args, **kwargs):
                 super(PolicyAccessor, self).__init__(*args, **kwargs)
                 self.policy = self
                 self.bindings = self['bindings'] if 'bindings' in self else []
                 self.etag = self['etag'] if 'etag' in self else None
+
         return PolicyAccessor(policy_dict)
 
     def set_iam_policy(self, full_resource_name, policy):
-        return self.data_access.set_iam_policy(self.session,
-                                               full_to_type_name(full_resource_name),
-                                               policy)
+        return self.data_access.set_iam_policy(
+            self.session, utils.full_to_type_name(full_resource_name), policy)
 
     def commit(self):
         self.session.commit()
@@ -58,7 +64,9 @@ class ModelCreatorClient:
         self.session.commit()
 
 
-class ModelCreator:
+class ModelCreator(object):
+    """Model creator."""
+
     def __init__(self, model, client):
         self._install_model(model, client)
         client.commit()
@@ -72,7 +80,7 @@ class ModelCreator:
     def _recursive_install_resources(self, node, model, client, parent):
         """Install resources."""
 
-        client.add_resource(node, parent, parent == '')
+        client.add_resource(node, parent, bool(not parent))
         for root, tree in model.iteritems():
             self._recursive_install_resources(root, tree, client, node)
 
@@ -113,7 +121,7 @@ class ModelCreator:
             self._recursive_invert_membership(root, tree, parent_relationship)
 
         if self._cyclic(parent_relationship):
-            raise Exception("Cyclic membership relation not supported!")
+            raise Exception('Cyclic membership relation not supported!')
 
         installed_members = set()
         while len(parent_relationship) > 0:
@@ -135,5 +143,5 @@ class ModelCreator:
             if len(reply.policy.bindings) > 0:
                 raise Exception('policy should have been empty')
             client.set_iam_policy(resource_name,
-                                  {'bindings':bindings,
-                                   'etag':reply.policy.etag})
+                                  {'bindings': bindings,
+                                   'etag': reply.policy.etag})

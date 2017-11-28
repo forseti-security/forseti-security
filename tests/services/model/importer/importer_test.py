@@ -11,32 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-""" Unit Tests: Importer for IAM Explain. """
+"""Unit Tests: Importer for IAM Explain."""
 
 import os
-from shutil import copyfile
 import tempfile
 import unittest
-
-from google.cloud.forseti.services.dao import ModelManager, create_engine
-from google.cloud.forseti.services.inventory.storage import InventoryState
-from google.cloud.forseti.services.model.importer import importer
-from tests.services.utils.gcp_env import gcp_configured, gcp_env
+from tests.services.utils.gcp_env import gcp_configured
+from tests.services.utils.gcp_env import gcp_env
 from tests.services.utils.protect import copy_file_decrypt
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services.dao import create_engine
+from google.cloud.forseti.services.dao import ModelManager
+from google.cloud.forseti.services.inventory.storage import InventoryState
+from google.cloud.forseti.services.model.importer import importer
 
 
 class ServiceConfig(object):
-    """
-    ServiceConfig is a helper class to implement dependency injection
-    to IAM Explain services.
+    """Helper class to implement dependency injection to IAM Explain services.
     """
 
-    def __init__(self, explain_connect_string, forseti_connect_string):
-        engine = create_engine(explain_connect_string, echo=False)
+    def __init__(self, db_connect_string):
+        engine = create_engine(db_connect_string, echo=False)
         self.model_manager = ModelManager(engine)
-        self.forseti_connect_string = forseti_connect_string
 
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background."""
@@ -67,13 +63,11 @@ class ImporterTest(ForsetiTestCase):
         """Test the basic importer for the inventory."""
 
         env = gcp_env()
-        FORSETI_CONNECT = ''
-        EXPLAIN_CONNECT = 'sqlite:///{}'.format(
+        db_connect = 'sqlite:///{}'.format(
             get_api_file_path('inventory_1_basic.db.encrypted',
                               env.passphrase))
 
-        self.service_config = ServiceConfig(EXPLAIN_CONNECT,
-                                            FORSETI_CONNECT)
+        self.service_config = ServiceConfig(db_connect)
 
         self.source = 'INVENTORY'
         self.model_manager = self.service_config.model_manager

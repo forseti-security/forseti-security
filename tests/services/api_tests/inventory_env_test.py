@@ -14,24 +14,22 @@
 
 """Tests the IAM Explain inventory."""
 
-import unittest
 import time
-from sqlalchemy import event
-
-from google.cloud.forseti.common.util.threadpool import ThreadPool
-from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
-from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
-from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
-from google.cloud.forseti.services.dao import ModelManager
-from google.cloud.forseti.services.client import ClientComposition
-from google.cloud.forseti.services import db
-from google.cloud.forseti.services.inventory.storage import Storage
-
+import unittest
 from tests.services.api_tests.api_tester import ApiTestRunner
-from tests.services.utils.db import create_test_engine, cleanup
-from tests.services.utils.gcp_env import gcp_configured, gcp_env
+from tests.services.utils.db import create_test_engine
+from tests.services.utils.gcp_env import gcp_configured
+from tests.services.utils.gcp_env import gcp_env
 from tests.services.utils.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.util.threadpool import ThreadPool
+from google.cloud.forseti.services import db
+from google.cloud.forseti.services.client import ClientComposition
+from google.cloud.forseti.services.dao import ModelManager
+from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
+from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.inventory.storage import Storage
+from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 
 
 class TestServiceConfig(MockServerConfig):
@@ -86,15 +84,17 @@ class ApiTest(ForsetiTestCase):
     def setUp(self):
         self.setup = create_tester()
 
-    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
+    @unittest.skipUnless(gcp_configured(), 'requires a real gcp environment')
     def test_basic(self):
         """Test: Create inventory, foreground & no import."""
 
         def test(client):
             """API test callback."""
+            progress = None
+            inventory_index = None
 
             for progress in client.inventory.create(background=False,
-                                                    import_as=""):
+                                                    import_as=''):
                 continue
             self.assertTrue(progress.final_message)
 
@@ -116,15 +116,17 @@ class ApiTest(ForsetiTestCase):
 
         self.setup.run(test)
 
-    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
+    @unittest.skipUnless(gcp_configured(), 'requires a real gcp environment')
     def test_basic_background(self):
         """Test: Create inventory, foreground & no import."""
 
         def test(client):
             """API test callback."""
+            progress = None
+            inventory_index = None
 
             for progress in client.inventory.create(background=True,
-                                                    import_as=""):
+                                                    import_as=''):
                 continue
             self.assertTrue(progress.final_message)
 

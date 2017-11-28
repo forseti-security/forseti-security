@@ -15,7 +15,7 @@
 """Utils for IAM Explain testing."""
 
 import sys
-from simplecrypt import encrypt, decrypt
+import simplecrypt
 
 
 def copy_file_encrypt(dst_filename, src_filename, passphrase):
@@ -23,7 +23,7 @@ def copy_file_encrypt(dst_filename, src_filename, passphrase):
 
     with file(src_filename, 'rb') as infile:
         with file(dst_filename, 'wb') as outfile:
-            outfile.write(encrypt(passphrase, infile.read()))
+            outfile.write(simplecrypt.encrypt(passphrase, infile.read()))
     return dst_filename
 
 
@@ -32,7 +32,7 @@ def copy_file_decrypt(dst_filename, src_filename, passphrase):
 
     with file(src_filename, 'rb') as infile:
         with file(dst_filename, 'wb') as outfile:
-            outfile.write(decrypt(passphrase, infile.read()))
+            outfile.write(simplecrypt.decrypt(passphrase, infile.read()))
     return dst_filename
 
 

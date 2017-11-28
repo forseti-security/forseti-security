@@ -11,21 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Unit Tests: IAM Explain CLI."""
 
-""" Unit Tests: IAM Explain CLI. """
-
-import shlex
-import mock
-import os
-import json
-import unittest
-import StringIO
-from copy import copy
 from argparse import ArgumentParser
-
+from copy import copy
+import json
+import os
+import shlex
+import StringIO
+import unittest
+import mock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services import cli
-
 CLIENT = mock.Mock()
 
 CLIENT.playground = CLIENT
@@ -50,6 +47,7 @@ class ArgumentParserError(Exception):
 
 
 class MockArgumentParser(ArgumentParser):
+
     def error(self, message):
         raise ArgumentParserError(message)
 
@@ -65,6 +63,7 @@ def test_cmds(args):
 
 
 class ImporterTest(ForsetiTestCase):
+
     def setUp(self):
         """Foo."""
         ForsetiTestCase.setUp(self)
@@ -81,42 +80,42 @@ class ImporterTest(ForsetiTestCase):
          CLIENT.explain.denormalize,
          [],
          {},
-         "{}",
+         '{}',
          {}),
 
         ('playground list_members',
          CLIENT.playground.list_members,
          [''],
          {},
-         "{}",
+         '{}',
          {}),
 
         ('inventory create --background --import_as "bar"',
          CLIENT.inventory.create,
          [True, 'bar'],
          {},
-         "{}",
+         '{}',
          {}),
 
         ('inventory get 1',
          CLIENT.inventory.get,
          [1],
          {},
-         "{}",
+         '{}',
          {}),
 
         ('inventory delete 1',
          CLIENT.inventory.delete,
          [1],
          {},
-         "{}",
+         '{}',
          {}),
 
         ('inventory delete 1',
          CLIENT.inventory.delete,
          [1],
          {},
-         "{}",
+         '{}',
          {'endpoint': 'localhost:50051'}),
 
         ('inventory delete 1',
@@ -188,9 +187,8 @@ class ImporterTest(ForsetiTestCase):
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
-
-
         ])
+
     def test_cli(self, test_cases):
         """Test if the CLI hits specific client methods."""
         for commandline, client_func, func_args,\

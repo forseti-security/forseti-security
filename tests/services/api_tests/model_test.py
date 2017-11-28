@@ -11,24 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests the IAM Explain model."""
 
 import unittest
-
-from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
-from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
-from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
-from google.cloud.forseti.services.model.service import GrpcModellerFactory
-from google.cloud.forseti.services.dao import ModelManager
-
 from tests.services.api_tests.api_tester import ModelTestRunner
 from tests.services.utils.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services.dao import ModelManager
+from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
+from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.model.service import GrpcModellerFactory
+from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 
 
 class TestServiceConfig(object):
     """ServiceConfig stub."""
+
     def __init__(self):
         self.engine = create_test_engine()
         self.model_manager = ModelManager(self.engine)
@@ -44,58 +42,59 @@ class TestServiceConfig(object):
 
 
 MODEL = {
-        'resources': {
-                'organization/org1': {
-                        'project/project1': {
-                                'bucket/bucket1': {},
-                            },
-                        'project/project2': {
-                                'bucket/bucket2': {},
-                                'vm/instance-1': {},
-                            },
-                    },
+    'resources': {
+        'organization/org1': {
+            'project/project1': {
+                'bucket/bucket1': {},
             },
-        'memberships': {
-                'group/a': {
-                        'user/a': {},
-                        'user/b': {},
-                        'user/c': {},
-                        'group/b': {
-                                'user/a': {},
-                                'user/d': {},
-                            },
-                    },
-                'user/e': {},
+            'project/project2': {
+                'bucket/bucket2': {},
+                'vm/instance-1': {},
             },
-        'roles': {
-                'a': ['a', 'b', 'c', 'd', 'e'],
-                'b': ['a', 'b', 'c'],
-                'c': ['f', 'g', 'h'],
-                'd': ['f', 'g', 'i']
+        },
+    },
+    'memberships': {
+        'group/a': {
+            'user/a': {},
+            'user/b': {},
+            'user/c': {},
+            'group/b': {
+                'user/a': {},
+                'user/d': {},
             },
-        'bindings': {
-                'organization/org1': {
-                        'b': ['group/a'],
-                    },
-                'project/project2': {
-                        'a': ['group/b'],
-                    },
-                'vm/instance-1': {
-                        'a': ['user/a'],
-                    },
-            },
-    }
+        },
+        'user/e': {},
+    },
+    'roles': {
+        'a': ['a', 'b', 'c', 'd', 'e'],
+        'b': ['a', 'b', 'c'],
+        'c': ['f', 'g', 'h'],
+        'd': ['f', 'g', 'i']
+    },
+    'bindings': {
+        'organization/org1': {
+            'b': ['group/a'],
+        },
+        'project/project2': {
+            'a': ['group/b'],
+        },
+        'vm/instance-1': {
+            'a': ['user/a'],
+        },
+    },
+}
 
 
 def create_tester():
     """Creates a model based test runner."""
-    return ModelTestRunner(MODEL,
-                           TestServiceConfig(),
-                           [GrpcExplainerFactory,
-                            GrpcPlaygrounderFactory,
-                            GrpcInventoryFactory,
-                            GrpcModellerFactory,
-                            ])
+    return ModelTestRunner(
+        MODEL, TestServiceConfig(),
+        [
+            GrpcExplainerFactory,
+            GrpcPlaygrounderFactory,
+            GrpcInventoryFactory,
+            GrpcModellerFactory,
+        ])
 
 
 class ModelTest(ForsetiTestCase):

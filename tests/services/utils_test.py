@@ -11,18 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Unit Tests: Importer for IAM Explain."""
 
-""" Unit Tests: Importer for IAM Explain. """
-
-import mock
 import unittest
-
+import mock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.services.utils import logcall
+from google.cloud.forseti.services.utils import split_type_name
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
-from google.cloud.forseti.services.utils import split_type_name
 
 
 class IamUtilsTest(ForsetiTestCase):
