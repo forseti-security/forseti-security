@@ -126,6 +126,7 @@ class InventoryImporter(object):
             'serviceaccount',
             'bucket',
             'dataset',
+            'compute_project',
             'instancegroup',
             'instance',
             'firewall',
@@ -402,6 +403,9 @@ class InventoryImporter(object):
             'dataset': (None,
                         self._convert_dataset,
                         None),
+            'compute_project': (None,
+                                self._convert_computeproject,
+                                None),
             'instancegroup': (None,
                               self._convert_instancegroup,
                               None),
@@ -485,6 +489,25 @@ class InventoryImporter(object):
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
                 data=dataset.get_data_raw(),
+                parent=parent))
+
+    def _convert_computeproject(self, computeproject):
+        """Convert a computeproject to a database object.
+        Args:
+            computeproject (object): computeproject to store.
+        """
+        data = computeproject.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            computeproject)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=computeproject.get_key(),
+                type=computeproject.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=computeproject.get_data_raw(),
                 parent=parent))
 
     def _convert_instancegroup(self, instancegroup):

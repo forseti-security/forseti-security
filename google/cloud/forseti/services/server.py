@@ -15,8 +15,7 @@
 """ IAM Explain server program. """
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=protected-access,no-self-use,
-# pylint: disable=line-too-long,protected-access,useless-suppression
+# pylint: disable=line-too-long,useless-suppression
 
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import ThreadPool
