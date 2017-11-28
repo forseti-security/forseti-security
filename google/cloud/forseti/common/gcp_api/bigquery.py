@@ -162,16 +162,10 @@ class BigQueryClient(object):
         """
         try:
             results = self.repository.datasets.list(
-                resource=project_id,
-                fields='datasets/datasetReference,nextPageToken',
-                all=True)
-            flattened = api_helpers.flatten_list_results(results, 'datasets')
+                resource=project_id, all=True)
+            return api_helpers.flatten_list_results(results, 'datasets')
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
-
-        datasets = [result.get('datasetReference') for result in flattened
-                    if 'datasetReference' in result]
-        return datasets
 
     def get_dataset_access(self, project_id, dataset_id):
         """Return the access portion of the dataset resource object.

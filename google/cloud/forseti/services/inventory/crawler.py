@@ -18,9 +18,9 @@
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,protected-access
 
-from google.cloud.forseti.services.inventory.inventory2 import resources
-from google.cloud.forseti.services.inventory.inventory2 import gcp
-from google.cloud.forseti.services.inventory.inventory2 import crawler
+from google.cloud.forseti.services.inventory.base import resources
+from google.cloud.forseti.services.inventory.base import gcp
+from google.cloud.forseti.services.inventory.base import crawler
 
 
 class CrawlerConfig(crawler.CrawlerConfig):
@@ -132,7 +132,7 @@ def run_crawler(storage,
     client_config = {
         'groups_service_account_key_file': config.get_gsuite_sa_path(),
         'domain_super_admin_email': config.get_gsuite_admin_email(),
-        'max_admin_api_calls_per_day': 150000,
+        'max_admin_api_calls_per_100_seconds': 1500,
         'max_appengine_api_calls_per_second': 20,
         'max_bigquery_api_calls_per_100_seconds': 17000,
         'max_crm_api_calls_per_100_seconds': 400,
