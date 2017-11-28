@@ -131,11 +131,11 @@ BigQuery scanner rules serve as blacklists.
 rules:
   - name: sample BigQuery rule to search for public datasets
     dataset_id: '*'
-    special_group: '*'
+    special_group: 'allAuthenticatedUsers'
     user_email: '*'
     domain: '*'
     group_email: '*'
-    role: 'allAuthenticatedUsers'
+    role: '*'
     resource:
       - type: organization
         resource_ids:

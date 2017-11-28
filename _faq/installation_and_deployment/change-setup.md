@@ -7,4 +7,4 @@ order: 3
 You can edit your Forseti deployment script (refer to 
 ["Updating Forseti"]({% link _docs/howto/deploy/change-gcp-deployment.md %})) 
 or your Forseti configuration file (refer to 
-["Configuring Forseti"]({% link _docs/howto/configure/configuring-forseti.md %}#updating-configuration-for-gcp-deployments)).
+["Configuring Forseti"]({% link _docs/howto/configure/configuring-forseti.md %}#move-configuration-to-gcs)).

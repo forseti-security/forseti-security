@@ -96,6 +96,15 @@ Following are example commands to install `mysql_config`:
   # OSX, using homebrew
   $ brew install mysql
   ```
+  
+### Installing ssl dev
+
+The crypto libraries require `ssl-dev` and `libffi-dev`.
+
+  ```bash
+  # Ubuntu
+  $ sudo apt-get install ssl-dev libffi-dev
+  ```
 
 ### Creating a virtualenv
 

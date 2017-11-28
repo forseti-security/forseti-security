@@ -108,9 +108,20 @@ You can invoke the Forseti Notifier with the following command:
 forseti_notifier --forseti_config path/to/forseti_conf.yaml
 ```
 
-## Updating configuration for GCP deployments
-If you've updated a forseti_conf.yaml for a GCP deployment, refer to 
-["GCP Deployment: Move Configuration to GCS"]({% link _docs/howto/deploy/gcp-deployment.md %}#move-configuration-to-gcs)
-for instructions on how to copy it to the bucket associated with your deployment. After 
-copying your conf file to the bucket, the next time Forseti runs, it will download the
-new configuration automatically.
+### Move Configuration to GCS
+
+If you are running Forseti on GCP, you should copy your edited forseti_conf.yaml to 
+your GCS `SCANNER_BUCKET`. When Forseti runs again (via cronjob), it will execute a
+script that downloads the latest conf and rules files.
+
+Use the following commands to copy your conf and rules files to GCS:
+
+```
+gsutil cp configs/forseti_conf.yaml gs://YOUR_SCANNER_BUCKET/configs/forseti_conf.yaml
+```
+
+Next, edit your rules and copy the rules directory to the GCS `SCANNER_BUCKET`:
+
+```
+gsutil cp -r rules gs://YOUR_SCANNER_BUCKET/
+```
