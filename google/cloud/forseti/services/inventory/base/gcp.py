@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" GCP API client fassade. """
+""" GCP API client fassade."""
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc
 # pylint: disable=missing-param-doc,invalid-name,too-many-instance-attributes
-# pylint: disable=too-many-public-methods,arguments-differ,line-too-long
+# pylint: disable=too-many-public-methods,arguments-differ
 
-from google.cloud.forseti.services.inventory.gcp_api2 import admin_directory
-from google.cloud.forseti.services.inventory.gcp_api2 import bigquery
-from google.cloud.forseti.services.inventory.gcp_api2 import cloud_resource_manager
-from google.cloud.forseti.services.inventory.gcp_api2 import cloudsql
-from google.cloud.forseti.services.inventory.gcp_api2 import compute
-from google.cloud.forseti.services.inventory.gcp_api2 import iam
-from google.cloud.forseti.services.inventory.gcp_api2 import storage
+from google.cloud.forseti.common.gcp_api import admin_directory
+from google.cloud.forseti.common.gcp_api import bigquery
+from google.cloud.forseti.common.gcp_api import cloud_resource_manager
+from google.cloud.forseti.common.gcp_api import cloudsql
+from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.gcp_api import iam
+from google.cloud.forseti.common.gcp_api import storage
 
 
 class ApiClient(object):
@@ -254,17 +254,9 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of projects
         """
-        if self.cached_projects is None:
-            self.cached_projects = []
-            for page in self.crm.get_projects(parent_id):
-                if 'projects' in page:
-                    for project in page['projects']:
-                        self.cached_projects.append(project)
-
-        for project in self.cached_projects:
-            parent_info = project['parent']
-            if parent_info['type'] == parent_type and \
-               parent_info['id'] == parent_id:
+        for page in self.crm.get_projects(parent_id=parent_id,
+                                          parent_type=parent_type):
+            for project in page.get('projects', []):
                 yield project
 
     @create_lazy('crm', _create_crm)
@@ -274,16 +266,8 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of folders
         """
-        if self.cached_folders is None:
-            self.cached_folders = []
-            for response in self.crm.get_folders(parent_id):
-                if 'folders' in response:
-                    for folder in response['folders']:
-                        self.cached_folders.append(folder)
-
-        for folder in self.cached_folders:
-            if folder['parent'] == parent_id:
-                yield folder
+        for folder in self.crm.get_folders(parent_id):
+            yield folder
 
     @create_lazy('storage', _create_storage)
     def iter_buckets(self, projectid):
@@ -292,11 +276,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of buckets
         """
-        response = self.storage.get_buckets(projectid)
-        if 'items' not in response:
-            return
-
-        for bucket in response['items']:
+        for bucket in self.storage.get_buckets(projectid):
             yield bucket
 
     @create_lazy('storage', _create_storage)
@@ -316,8 +296,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of datasets
         """
-        response = self.bigquery.get_datasets_for_projectid(projectid)
-        for dataset in response:
+        for dataset in self.bigquery.get_datasets_for_projectid(projectid):
             yield dataset
 
     @create_lazy('cloudsql', _create_cloudsql)
@@ -327,11 +306,26 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of cloudsql instance
         """
-        result = self.cloudsql.get_instances(projectid)
-        if 'items' not in result:
-            return
-        for item in result['items']:
+        for item in self.cloudsql.get_instances(projectid):
             yield item
+
+    @create_lazy('compute', _create_compute)
+    def is_compute_api_enabled(self, projectid):
+        """Verifies the Compute API is enabled on a project.
+
+        Returns:
+            bool: True if API is enabled, else False.
+        """
+        return self.compute.is_api_enabled(projectid)
+
+    @create_lazy('compute', _create_compute)
+    def fetch_compute_project(self, projectid):
+        """Compute project data from gcp API call.
+
+        Returns:
+            dict: Compute project metadata resource.
+        """
+        return self.compute.get_project(projectid)
 
     @create_lazy('compute', _create_compute)
     def iter_computeinstances(self, projectid):
@@ -340,8 +334,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of Compute Engine Instance
         """
-        result = self.compute.get_instances(projectid)
-        for instance in result:
+        for instance in self.compute.get_instances(projectid):
             yield instance
 
     @create_lazy('compute', _create_compute)
@@ -351,8 +344,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of Compute Engine Firewall
         """
-        result = self.compute.get_firewall_rules(projectid)
-        for rule in result:
+        for rule in self.compute.get_firewall_rules(projectid):
             yield rule
 
     @create_lazy('compute', _create_compute)
@@ -362,8 +354,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of Compute Instance group
         """
-        result = self.compute.get_instance_groups(projectid)
-        for instancegroup in result:
+        for instancegroup in self.compute.get_instance_groups(projectid):
             yield instancegroup
 
     @create_lazy('compute', _create_compute)
@@ -373,8 +364,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of backend service
         """
-        result = self.compute.get_backend_services(projectid)
-        for backendservice in result:
+        for backendservice in self.compute.get_backend_services(projectid):
             yield backendservice
 
     @create_lazy('iam', _create_iam)
@@ -384,7 +374,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of service account
         """
-        for serviceaccount in self.iam.get_serviceaccounts(projectid):
+        for serviceaccount in self.iam.get_service_accounts(projectid):
             yield serviceaccount
 
     @create_lazy('iam', _create_iam)
@@ -408,13 +398,13 @@ class ApiClientImpl(ApiClient):
             yield role
 
     @create_lazy('iam', _create_iam)
-    def iter_curated_roles(self, orgid):
+    def iter_curated_roles(self):
         """Curated role Iterator in an organization from gcp API call
 
         Yields:
             dict: Generator of curated roles
         """
-        for role in self.iam.get_curated_roles(orgid):
+        for role in self.iam.get_curated_roles():
             yield role
 
     @create_lazy('crm', _create_crm)
@@ -433,7 +423,7 @@ class ApiClientImpl(ApiClient):
         Returns:
             dict: Organization IAM policy
         """
-        return self.crm.get_org_iam_policies(orgid, orgid)
+        return self.crm.get_org_iam_policies(orgid)
 
     @create_lazy('crm', _create_crm)
     def get_project_iam_policy(self, projectid):
@@ -442,7 +432,7 @@ class ApiClientImpl(ApiClient):
         Returns:
             dict: Project IAM Policy
         """
-        return self.crm.get_project_iam_policies(projectid, projectid)
+        return self.crm.get_project_iam_policies(projectid)
 
     @create_lazy('storage', _create_storage)
     def get_bucket_gcs_policy(self, bucketid):
@@ -451,10 +441,7 @@ class ApiClientImpl(ApiClient):
         Returns:
             dict: Bucket GCS policy
         """
-        result = self.storage.get_bucket_acls(bucketid)
-        if 'items' not in result:
-            return []
-        return result['items']
+        return self.storage.get_bucket_acls(bucketid)
 
     @create_lazy('storage', _create_storage)
     def get_bucket_iam_policy(self, bucketid):
@@ -472,10 +459,7 @@ class ApiClientImpl(ApiClient):
         Returns:
             dict: Object GCS policy
         """
-        result = self.storage.get_object_acls(bucket_name, object_name)
-        if 'items' not in result:
-            return []
-        return result['items']
+        return self.storage.get_object_acls(bucket_name, object_name)
 
     @create_lazy('storage', _create_storage)
     def get_object_iam_policy(self, bucket_name, object_name):

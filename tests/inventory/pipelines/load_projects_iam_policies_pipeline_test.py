@@ -57,6 +57,7 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
             fake_iam_policies.EXPECTED_LOADABLE_PROJECT_IAM_POLICY,
             loadable_iam_policies)
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     def test_api_is_called_to_retrieve_org_policies(self):
         """Test that api is called to retrieve org policies."""
 
@@ -90,6 +91,7 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve()
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     @mock.patch.object(
         load_projects_iam_policies_pipeline.base_pipeline, 'LOGGER')
     def test_api_error_is_handled_when_retrieving(self, mock_logger):

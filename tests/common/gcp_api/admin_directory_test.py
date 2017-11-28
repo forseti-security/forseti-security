@@ -92,6 +92,18 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.ad_api_client.get_group_members('11111')
 
+    def test_get_users(self):
+        http_mocks.mock_http_response(fake_admin.FAKE_USERS_LIST_RESPONSE)
+        response = self.ad_api_client.get_users()
+
+        self.assertEqual(1, len(response))
+
+    def test_get_users_raises(self):
+        http_mocks.mock_http_response(fake_admin.UNAUTHORIZED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ad_api_client.get_users()
+
 
 if __name__ == '__main__':
     unittest.main()
