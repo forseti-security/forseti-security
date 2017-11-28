@@ -18,8 +18,8 @@ import unittest
 
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.services.inventory.inventory2.storage import Memory as MemoryStorage
-from google.cloud.forseti.services.inventory.inventory2.progress import Progresser
+from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
+from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 from google.cloud.forseti.services.server import InventoryConfig
 from tests.iam.utils.gcp_env import gcp_configured, gcp_env

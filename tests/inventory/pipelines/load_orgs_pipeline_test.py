@@ -64,6 +64,7 @@ class LoadOrgsPipelineTest(ForsetiTestCase):
         orgs = list(self.pipeline._transform(fake_orgs.FAKE_ORGS))
         self.assertEquals(fake_orgs.EXPECTED_LOADABLE_ORGS, orgs)
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     def test_api_is_called_to_retrieve_orgs(self):
         """Test that api is called to retrieve orgs."""
 
@@ -72,6 +73,7 @@ class LoadOrgsPipelineTest(ForsetiTestCase):
         self.pipeline.api_client.get_organizations.assert_called_once_with(
             self.pipeline.RESOURCE_NAME)
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     @mock.patch(
         'google.cloud.forseti.inventory.pipelines.base_pipeline.LOGGER')
     def test_retrieve_errors_are_handled(self, mock_logger):

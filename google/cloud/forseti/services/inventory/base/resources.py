@@ -232,6 +232,10 @@ class Project(Resource):
     def enumerable(self):
         return self['lifecycleState'] not in ['DELETE_REQUESTED']
 
+    @cached('compute_api_enabled')
+    def compute_api_enabled(self, client):
+        return client.is_compute_api_enabled(projectid=self['projectId'])
+
     def type(self):
         return 'project'
 
@@ -282,6 +286,14 @@ class DataSet(Resource):
 
     def type(self):
         return 'dataset'
+
+
+class ComputeProject(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'compute_project'
 
 
 class Instance(Resource):
@@ -438,10 +450,21 @@ class DataSetIterator(ResourceIterator):
                 yield FACTORIES['dataset'].create_new(data)
 
 
+class ComputeIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            data = gcp.fetch_compute_project(
+                projectid=self.resource['projectId'])
+            yield FACTORIES['compute'].create_new(data)
+
+
 class InstanceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computeinstances(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instance'].create_new(data)
@@ -450,7 +473,8 @@ class InstanceIterator(ResourceIterator):
 class FirewallIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computefirewalls(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['firewall'].create_new(data)
@@ -459,7 +483,8 @@ class FirewallIterator(ResourceIterator):
 class InstanceGroupIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computeinstancegroups(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroup'].create_new(data)
@@ -468,7 +493,8 @@ class InstanceGroupIterator(ResourceIterator):
 class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_backendservices(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['backendservice'].create_new(data)
@@ -512,7 +538,7 @@ class OrganizationRoleIterator(ResourceIterator):
 class OrganizationCuratedRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        for data in gcp.iter_curated_roles(orgid=self.resource['name']):
+        for data in gcp.iter_curated_roles():
             yield FACTORIES['role'].create_new(data)
 
 
@@ -570,12 +596,13 @@ FACTORIES = {
         'contains': [
             BucketIterator,
             DataSetIterator,
+            CloudSqlIterator,
+            ServiceAccountIterator,
+            ComputeIterator,
             InstanceIterator,
             FirewallIterator,
             InstanceGroupIterator,
             BackendServiceIterator,
-            CloudSqlIterator,
-            ServiceAccountIterator,
             ProjectRoleIterator
             ]}),
 
@@ -583,7 +610,7 @@ FACTORIES = {
         'dependsOn': ['project'],
         'cls': GcsBucket,
         'contains': [
-            #ObjectIterator
+            # ObjectIterator
             ]}),
 
     'object': ResourceFactory({
@@ -595,6 +622,12 @@ FACTORIES = {
     'dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': DataSet,
+        'contains': [
+            ]}),
+
+    'compute': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeProject,
         'contains': [
             ]}),
 

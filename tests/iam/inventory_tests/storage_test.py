@@ -20,7 +20,7 @@ from sqlalchemy import event
 
 from google.cloud.forseti.services.inventory.storage import Storage, initialize
 from google.cloud.forseti.services import db
-from google.cloud.forseti.services.inventory.inventory2.resources import Resource
+from google.cloud.forseti.services.inventory.base.resources import Resource
 from tests.iam.utils.db import create_test_engine
 
 

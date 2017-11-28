@@ -18,9 +18,9 @@
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
-from google.cloud.forseti.services.inventory.inventory2 import resources
-from google.cloud.forseti.services.inventory.inventory2 import gcp
-from google.cloud.forseti.services.inventory.inventory2 import crawler
+from google.cloud.forseti.services.inventory.base import resources
+from google.cloud.forseti.services.inventory.base import gcp
+from google.cloud.forseti.services.inventory.base import crawler
 
 
 class CrawlerConfig(crawler.CrawlerConfig):
