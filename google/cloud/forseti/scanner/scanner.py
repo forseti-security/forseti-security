@@ -27,6 +27,7 @@ from google.cloud.forseti.common.data_access import dao
 from google.cloud.forseti.common.data_access import errors as db_errors
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.scanner import dao as scanner_dao
 from google.cloud.forseti.scanner import scanner_builder
 
 
@@ -106,6 +107,10 @@ def run(forseti_config, model_name=None):
     if not snapshot_timestamp:
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
+
+    violation_access = scanner_dao.define_violation(
+        model_name, SERVICE_CONFIG.engine)
+    SERVICE_CONFIG.violation_access = violation_access
 
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, SERVICE_CONFIG, model_name,

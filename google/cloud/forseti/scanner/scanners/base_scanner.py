@@ -22,6 +22,8 @@ from google.cloud.forseti.common.data_access import errors as db_errors
 from google.cloud.forseti.common.data_access import violation_dao
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.scanner import dao as scanner_dao
+
 
 
 LOGGER = log_util.get_logger(__name__)
@@ -68,15 +70,10 @@ class BaseScanner(object):
             list: Violations that encountered an error during insert.
         """
         (inserted_row_count, violation_errors) = (0, [])
-        try:
-            vdao = violation_dao.ViolationDao(self.global_configs)
-            (inserted_row_count, violation_errors) = vdao.insert_violations(
-                violations,
-                snapshot_timestamp=self.snapshot_timestamp)
-        except db_errors.MySQLError as err:
-            LOGGER.error('Error importing violations to database: %s\n%s',
-                         err, violations)
 
+        violation_access = self.service_config[0].violation_access(
+            self.service_config[0].engine)
+        violation_access.create(violations)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))
