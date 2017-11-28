@@ -222,6 +222,10 @@ class Project(Resource):
     def enumerable(self):
         return self['lifecycleState'] not in ['DELETE_REQUESTED']
 
+    @cached('compute_api_enabled')
+    def compute_api_enabled(self, client=None):
+        return client.is_compute_api_enabled(projectid=self['projectId'])
+
     def type(self):
         return 'project'
 
@@ -448,7 +452,8 @@ class ComputeIterator(ResourceIterator):
 class InstanceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computeinstances(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instance'].create_new(data)
@@ -457,7 +462,8 @@ class InstanceIterator(ResourceIterator):
 class FirewallIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computefirewalls(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['firewall'].create_new(data)
@@ -466,7 +472,8 @@ class FirewallIterator(ResourceIterator):
 class InstanceGroupIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_computeinstancegroups(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroup'].create_new(data)
@@ -475,7 +482,8 @@ class InstanceGroupIterator(ResourceIterator):
 class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
             for data in gcp.iter_backendservices(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['backendservice'].create_new(data)
