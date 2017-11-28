@@ -310,6 +310,15 @@ class ApiClientImpl(ApiClient):
             yield item
 
     @create_lazy('compute', _create_compute)
+    def is_compute_api_enabled(self, projectid):
+        """Verifies the Compute API is enabled on a project.
+
+        Returns:
+            bool: True if API is enabled, else False.
+        """
+        return self.compute.is_api_enabled(projectid)
+
+    @create_lazy('compute', _create_compute)
     def fetch_compute_project(self, projectid):
         """Compute project data from gcp API call.
 
