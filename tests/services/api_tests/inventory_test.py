@@ -28,11 +28,11 @@ from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.services.server import InventoryConfig
 
-from tests.iam.api_tests.api_tester import ApiTestRunner
-from tests.iam.utils.db import create_test_engine
-from tests.iam.utils.gcp_env import gcp_configured, gcp_env
+from tests.services.api_tests.api_tester import ApiTestRunner
+from tests.services.utils.db import create_test_engine
+from tests.services.utils.gcp_env import gcp_configured, gcp_env
+from tests.services.utils.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
-from tests.iam.utils.mock import MockServerConfig
 
 
 class TestServiceConfig(MockServerConfig):

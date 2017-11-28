@@ -20,12 +20,12 @@ from sqlalchemy.orm.exc import NoResultFound
 import unittest
 
 from google.cloud.forseti.services.dao import session_creator
-from tests.iam.unit_tests.test_models import RESOURCE_EXPANSION_1,\
+from tests.services.test_models import RESOURCE_EXPANSION_1,\
     RESOURCE_EXPANSION_2, MEMBER_TESTING_1, RESOURCE_PATH_TESTING_1,\
     ROLES_PERMISSIONS_TESTING_1, DENORMALIZATION_TESTING_1,\
     ROLES_PREFIX_TESTING_1, MEMBER_TESTING_2, MEMBER_TESTING_3,\
     EXPLAIN_GRANTED_1, GROUP_IN_GROUP_TESTING_1, ACCESS_BY_PERMISSIONS_1
-from tests.iam.unit_tests.model_tester import ModelCreator, ModelCreatorClient
+from tests.services.model_tester import ModelCreator, ModelCreatorClient
 
 
 class DaoTest(ForsetiTestCase):
