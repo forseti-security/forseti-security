@@ -39,6 +39,7 @@ from sqlalchemy import DateTime
 from sqlalchemy import or_
 from sqlalchemy import and_
 from sqlalchemy import not_
+from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
@@ -53,7 +54,7 @@ from google.cloud.forseti.services.utils import get_sql_dialect
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
+# pylint: disable=missing-param-doc,missing-raises-doc
 # pylint: disable=missing-yield-type-doc,too-many-branches
 
 POOL_RECYCLE_SECONDS = 300
@@ -228,6 +229,8 @@ def define_model(model_name, dbengine, model_seed):
 
     class Member(base):
         """Row entry for a policy member."""
+
+        TYPE_GROUP = 'group'
 
         __tablename__ = members_tablename
         name = Column(String(256), primary_key=True)
@@ -493,8 +496,7 @@ def define_model(model_name, dbengine, model_seed):
                 session.query(Resource)
                 .filter(Resource.type == resource_type))
 
-            for resource in qry.yield_per(PER_YIELD):
-                yield resource
+            return iter(qry.yield_per(PER_YIELD))
 
         @classmethod
         def explain_denied(cls, session, member_name, resource_type_names,
@@ -584,41 +586,86 @@ def define_model(model_name, dbengine, model_seed):
                                    reverse_expand_members=True):
             """Return the set of resources the member has access to."""
 
-            if reverse_expand_members:
-                member_names = [m.name for m in
-                                cls.reverse_expand_members(
-                                    session,
-                                    [member_name], False)]
-            else:
-                member_names = [member_name]
+            expanded = aliased(Resource)
+            resource = aliased(Resource)
+            role = aliased(Role)
+            group_in_group = aliased(GroupInGroup)
+            expanded_member = aliased(Member)
+            direct_member = aliased(Member)
+            group = aliased(Member)
+            b_members = binding_members
 
-            roles = cls.get_roles_by_permission_names(
-                session, permission_names)
+            if expand_resources:
+                qry = (
+                    session.query(role, expanded)
+                    .filter(expanded.full_name.startswith(resource.full_name))
+                    )
+            else:
+                qry = (
+                    session.query(role, resource)
+                    )
 
             qry = (
-                session.query(Binding)
-                .join(binding_members)
-                .join(Member)
-                .filter(Binding.role_name.in_([r.name for r in roles]))
-                .filter(Member.name.in_(member_names)))
+                qry
 
-            bindings = qry.yield_per(1024)
-            if not expand_resources:
-                return [(binding.role_name,
-                         [binding.resource_type_name]) for binding in bindings]
+                # Reduce to mentioned permissions
+                .filter(Permission.name.in_(permission_names))
 
-            r_type_names = [binding.resource_type_name for binding in bindings]
-            expansion = cls.expand_resources_by_type_names(
-                session,
-                r_type_names)
+                # Associate roles to selected permissions
+                .filter(role.name == role_permissions.c.roles_name)
+                .filter(Permission.name == role_permissions.c.permissions_name)
 
-            res_exp = {k.type_name:
-                       [v.type_name for v in values]
-                       for k, values in expansion.iteritems()}
+                # Associate role <-> binding <-> resource
+                .filter(resource.type_name == Binding.resource_type_name)
+                .filter(role.name == Binding.role_name)
 
-            return [(binding.role_name,
-                     res_exp[binding.resource_type_name])
-                    for binding in bindings]
+                )
+
+            if reverse_expand_members:
+                qry = (qry.filter(or_(
+
+                    # Directly mentioned in policy
+                    and_(
+                        b_members.c.bindings_id == Binding.id,
+                        b_members.c.members_name == member_name,
+                        ),
+
+                    # Transitive group membership
+                    and_(
+                        b_members.c.bindings_id == Binding.id,
+                        b_members.c.members_name == direct_member.name,
+                        direct_member.type == Member.TYPE_GROUP,
+                        group_in_group.parent == direct_member.name,
+                        group_in_group.member == group.name,
+                        group.name == group_members.c.group_name,
+                        expanded_member.name == group_members.c.members_name,
+                        expanded_member.name == member_name,
+                        ),
+
+                    # Expanded member is direct member of group in policy
+                    and_(
+                        b_members.c.bindings_id == Binding.id,
+                        b_members.c.members_name == group_members.c.group_name,
+                        expanded_member.name == group_members.c.members_name,
+                        expanded_member.name == member_name,
+                        )
+                    )))
+
+            else:
+                qry = (
+                    qry
+                    .filter(b_members.c.bindings_id == Binding.id)
+                    .filter(b_members.c.members_name == member_name)
+                    )
+
+            qry = qry.order_by(role.name.asc()).distinct()
+
+            result = collections.defaultdict(list)
+
+            for role, resource in qry.yield_per(PER_YIELD):
+                result[role.name].append(resource.type_name)
+
+            return result.iteritems()
 
         @classmethod
         def query_access_by_permission(cls,
@@ -737,62 +784,89 @@ def define_model(model_name, dbengine, model_seed):
 
             if not role_names and not role_prefixes:
                 raise Exception('No roles or role prefixes specified')
-            qry = session.query(Role, Permission).join(
-                role_permissions).join(Permission)
+
+            qry = (
+                session.query(Role, Permission)
+                .filter(Role.name == role_permissions.c.roles_name)
+                .filter(Permission.name == role_permissions.c.permissions_name)
+                )
+
             if role_names:
                 qry = qry.filter(Role.name.in_(role_names))
+
             if role_prefixes:
                 qry = qry.filter(
                     or_(*[Role.name.startswith(prefix)
                           for prefix in role_prefixes]))
-            return qry.all()
+
+            return iter(qry.yield_per(PER_YIELD))
 
         @classmethod
         def denormalize(cls, session):
             """Denormalize the model into access triples."""
 
-            qry = (session.query(Binding)
-                   .join(binding_members)
-                   .join(Member))
+            child = aliased(Resource)
+            parent = aliased(Resource)
+            expanded_member = aliased(Member)
+            group_member = aliased(Member)
+            group_in_group = aliased(Member)
+            perm = aliased(Permission)
+            role = aliased(Role)
 
-            members = set()
-            for binding in qry.yield_per(PER_YIELD):
-                for member in binding.members:
-                    members.add(member.name)
+            qry = (
+                session.query(perm.name,
+                              child.type_name,
+                              expanded_member.name,)
 
-            expanded_members = cls.expand_members_map(session, members)
-            role_permissions_map = collections.defaultdict(set)
+                # Connect the Role with the included permission
+                .filter(role.name == role_permissions.c.roles_name)
+                .filter(perm.name == role_permissions.c.permissions_name)
 
-            qry = (session.query(Role, Permission)
-                   .join(role_permissions)
-                   .filter(
-                       Role.name == role_permissions.c.roles_name)
-                   .filter(
-                       Permission.name == role_permissions.c.permissions_name))
+                # Connect the Role with the binding
+                .filter(Binding.role_name == role.name)
 
-            for role, permission in qry.yield_per(PER_YIELD):
-                role_permissions_map[role.name].add(permission.name)
+                # Connect the Resource with the binding
+                .filter(Binding.resource_type_name == parent.type_name)
 
-            for binding, member in (
-                    session.query(Binding, Member)
-                    .join(binding_members)
-                    .filter(binding_members.c.bindings_id == Binding.id)
-                    .filter(binding_members.c.members_name == Member.name)
-                    .yield_per(PER_YIELD)):
+                # Expand the child resources
+                .filter(child.full_name.startswith(parent.full_name))
 
-                resource_type_name = binding.resource_type_name
-                resource_mapping = cls.expand_resources_by_type_names(
-                    session,
-                    [resource_type_name])
+                # Connect the binding with the member
+                .filter(or_(
 
-                resource_mapping = {k.type_name: set([m.type_name for m in v])
-                                    for k, v in resource_mapping.iteritems()}
+                    # expanded_member is directly in a group member
+                    and_(
+                        # group_member is the direct policy member
+                        Binding.id == binding_members.c.bindings_id,
+                        group_member.name == binding_members.c.members_name,
+                        group_member.type == Member.TYPE_GROUP,
 
-                for expanded_member in expanded_members[member.name]:
-                    for permission in role_permissions_map[binding.role_name]:
-                        for res in resource_mapping[resource_type_name]:
-                            triple = (permission, res, expanded_member)
-                            yield triple
+                        # expanded_member is directly in the group_member group
+                        group_member.name == group_members.c.group_name,
+                        expanded_member.name == group_members.c.members_name),
+
+                    # expanded_member is transitively in a group member
+                    and_(
+                        # group_member is the direct policy member
+                        Binding.id == binding_members.c.bindings_id,
+                        group_member.name == binding_members.c.members_name,
+                        group_member.type == Member.TYPE_GROUP,
+
+                        # there is a group_in_group that is in group_member
+                        group_member.name == GroupInGroup.parent,
+                        group_in_group.name == GroupInGroup.member,
+
+                        # expanded_member is a direct member of group_in_group
+                        group_in_group.name == group_members.c.group_name,
+                        expanded_member.name == group_members.c.members_name),
+
+                    # expanded_member is a direct policy member
+                    and_(
+                        Binding.id == binding_members.c.bindings_id,
+                        expanded_member.name == binding_members.c.members_name)
+                    ))).distinct()
+
+            return iter(qry.yield_per(PER_YIELD))
 
         @classmethod
         def set_iam_policy(cls, session, resource_type_name, policy):
@@ -916,8 +990,12 @@ def define_model(model_name, dbengine, model_seed):
         def list_roles_by_prefix(cls, session, role_prefix):
             """Provides a list of roles matched via name prefix."""
 
-            return [r.name for r in session.query(Role)
-                    .filter(Role.name.startswith(role_prefix)).all()]
+            qry = (
+                session.query(Role.name)
+                .filter(Role.name.startswith(role_prefix))
+                )
+
+            return iter([n for (n,) in qry.yield_per(PER_YIELD)])
 
         @classmethod
         def add_role_by_name(cls, session, role_name, permission_names):
@@ -988,8 +1066,12 @@ def define_model(model_name, dbengine, model_seed):
         def list_group_members(cls, session, member_name_prefix):
             """Returns members filtered by prefix."""
 
-            return [m.name for m in session.query(Member).filter(
-                Member.member_name.startswith(member_name_prefix)).all()]
+            qry = (
+                session.query(Member)
+                .filter(Member.member_name.startswith(member_name_prefix))
+                )
+
+            return [m.name for m in qry.yield_per(PER_YIELD)]
 
         @classmethod
         def iter_resources_by_prefix(cls,
@@ -1020,8 +1102,7 @@ def define_model(model_name, dbengine, model_seed):
                 qry = qry.filter(Resource.name.startswith(
                     name_prefix))
 
-            for resource in qry.yield_per(1024):
-                yield resource
+            return iter(qry.yield_per(PER_YIELD))
 
         @classmethod
         def list_resources_by_prefix(cls,
@@ -1048,17 +1129,18 @@ def define_model(model_name, dbengine, model_seed):
                 .filter(Resource.type_name == resource_type_name).one())
 
             # Find all children
-            res_qry = (session.query(Resource)
-                       .filter(Resource.full_name.startswith(
-                           resource.full_name)))
+            res_qry = (
+                session.query(Resource)
+                .filter(Resource.full_name.startswith(resource.full_name)))
 
             res_type_names = [r.type_name for r in res_qry.yield_per(1024)]
             binding_qry = (
                 session.query(Binding)
                 .filter(Binding.resource_type_name.in_(res_type_names)))
-            binding_qry.delete(synchronize_session='fetch')
 
+            binding_qry.delete(synchronize_session='fetch')
             res_qry.delete(synchronize_session='fetch')
+
             session.commit()
 
         @classmethod
@@ -1340,36 +1422,51 @@ def define_model(model_name, dbengine, model_seed):
         def expand_members(cls, session, member_names):
             """Expand group membership towards the members."""
 
-            members = session.query(Member).filter(
-                Member.name.in_(member_names)).all()
+            expanded_member = aliased(Member)
+            group_member = aliased(Member)
+            group_in_group = aliased(Member)
 
-            def is_group(member):
-                """Returns true iff the member is a group."""
-                return member.type == 'group'
+            qry_direct = (
+                session.query(expanded_member)
 
-            group_set = set()
-            non_group_set = set()
-            new_group_set = set()
+                # Find directly mentioned non-groups and groups
+                .filter(expanded_member.name.in_(member_names))
+                )
 
-            def add_to_sets(members):
-                """Adds new members to the sets."""
-                for member in members:
-                    if is_group(member):
-                        if member not in group_set:
-                            new_group_set.add(member)
-                        group_set.add(member)
-                    else:
-                        non_group_set.add(member)
+            qry_member = (
+                session.query(expanded_member)
 
-            add_to_sets(members)
+                # Find directly mentioned groups and resolve to members
+                .filter(group_member.name.in_(member_names))
+                .filter(group_member.type == Member.TYPE_GROUP)
+                .filter(group_member.name == group_members.c.group_name)
+                .filter(expanded_member.name == group_members.c.members_name)
+                )
 
-            while new_group_set:
-                groups_to_walk = new_group_set
-                new_group_set = set()
-                for group in groups_to_walk:
-                    add_to_sets(group.children)
+            qry_indirect_member = (
+                session.query(expanded_member)
 
-            return group_set.union(non_group_set)
+                # Find the groups in member_names
+                .filter(group_member.name.in_(member_names))
+                .filter(group_member.type == Member.TYPE_GROUP)
+
+                # there is a group_in_group that is in group_member
+                .filter(group_member.name == GroupInGroup.parent)
+                .filter(group_in_group.name == GroupInGroup.member)
+
+                # expanded_member is a direct member of group_in_group
+                .filter(group_in_group.name == group_members.c.group_name)
+                .filter(expanded_member.name == group_members.c.members_name)
+                )
+
+            qry = (
+                qry_direct
+                .union(qry_member)
+                .union(qry_indirect_member)
+                .distinct()
+                )
+
+            return set(qry.all())
 
         @classmethod
         def resource_ancestors(cls, session, resource_type_names):
@@ -1410,59 +1507,47 @@ def define_model(model_name, dbengine, model_seed):
         def find_resource_path(cls, session, resource_type_name):
             """Find resource ancestors by type/name format."""
 
+            parent = aliased(Resource)
+            child = aliased(Resource)
+
             qry = (
-                session.query(Resource)
-                .filter(Resource.type_name == resource_type_name))
+                session.query(parent)
+                .filter(child.type_name == resource_type_name)
+                .filter(child.full_name.startswith(parent.full_name))
+                .order_by(parent.full_name.desc())
+                )
 
-            resources = qry.all()
-            return cls._find_resource_path(session, resources)
-
-        @classmethod
-        def _find_resource_path(cls, _, resources):
-            """Find the list of transitive ancestors for the given resource."""
-
-            if not resources:
-                return []
-
-            path = []
-            resource = resources[0]
-
-            path.append(resource)
-            while resource.parent:
-                resource = resource.parent
-                path.append(resource)
-
-            return path
+            return qry.all()
 
         @classmethod
         def get_roles_by_permission_names(cls, session, permission_names):
             """Return the list of roles covering the specified permissions."""
 
-            permission_set = set(permission_names)
-            qry = session.query(Permission)
-            if permission_set:
-                qry = qry.filter(Permission.name.in_(permission_set))
-            permissions = qry.all()
+            # All roles contain a superset of the empty permission set
+            if not permission_names:
+                return iter(session.query(Role).yield_per(PER_YIELD))
 
-            roles = set()
-            for permission in permissions:
-                for role in permission.roles:
-                    roles.add(role)
+            # Each role will contain a superset of permission_names
+            qry = (
+                session.query(Role)
+                .filter(Role.name == role_permissions.c.roles_name)
+                .filter(Permission.name == role_permissions.c.permissions_name)
+                .filter(Permission.name.in_(permission_names))
+                .group_by(Role)
+                .having(func.count(Permission.name) == len(permission_names))
+                )
 
-            result_set = set()
-            for role in roles:
-                role_permissions = set(
-                    [p.name for p in role.permissions])
-                if permission_set.issubset(role_permissions):
-                    result_set.add(role)
-
-            return result_set
+            return iter(qry.yield_per(PER_YIELD))
 
         @classmethod
         def get_member(cls, session, name):
             """Get member by name."""
 
-            return session.query(Member).filter(Member.name == name).all()
+            qry = (
+                session.query(Member)
+                .filter(Member.name == name)
+                )
+            return qry.yield_per(PER_YIELD).all()
 
     base.metadata.create_all(dbengine)
     return sessionmaker(bind=dbengine), ModelAccess

@@ -53,20 +53,20 @@ class DaoTest(ForsetiTestCase):
 
         expectations = {
                 '' : {
-                    'cloud.admin',
-                    'cloud.reader',
-                    'cloud.writer',
-                    'db.viewer',
-                    'db.writer'
+                    u'cloud.admin',
+                    u'cloud.reader',
+                    u'cloud.writer',
+                    u'db.viewer',
+                    u'db.writer'
                     },
                 'cloud' : {
-                    'cloud.admin',
-                    'cloud.reader',
-                    'cloud.writer',
+                    u'cloud.admin',
+                    u'cloud.reader',
+                    u'cloud.writer',
                     },
                 'db' : {
-                    'db.viewer',
-                    'db.writer',
+                    u'db.viewer',
+                    u'db.writer',
                     },
                 'admin' : set(),
             }
@@ -659,6 +659,7 @@ class DaoTest(ForsetiTestCase):
                                                         user,
                                                         permissions,
                                                         expansion)
+
             mapping = defaultdict(set)
             for role, resources in result:
                 for resource in resources:
