@@ -14,24 +14,23 @@
 
 """Tests the IAM Explain inventory."""
 
-import unittest
 import time
-from sqlalchemy import event
-
+import unittest
+from tests.services.api_tests.api_tester import ApiTestRunner
+from tests.services.utils.db import create_test_engine
+from tests.services.utils.gcp_env import gcp_configured
+from tests.services.utils.gcp_env import gcp_env
+from tests.services.utils.mock import MockServerConfig
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util.threadpool import ThreadPool
+from google.cloud.forseti.services import db
+from google.cloud.forseti.services.client import ClientComposition
+from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
-from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
-from google.cloud.forseti.services.dao import ModelManager
-from google.cloud.forseti.services.client import ClientComposition
-from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.storage import Storage
-
-from tests.iam.api_tests.api_tester import ApiTestRunner
-from tests.iam.utils.db import create_test_engine, cleanup
-from tests.iam.utils.gcp_env import gcp_configured, gcp_env
-from tests.iam.utils.mock import MockServerConfig
-from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
+from google.cloud.forseti.services.server import InventoryConfig
 
 
 class TestServiceConfig(MockServerConfig):
@@ -43,22 +42,13 @@ class TestServiceConfig(MockServerConfig):
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.workers = ThreadPool(10)
         self.env = gcp_env()
-
-    def get_root_resource_id(self):
-        return self.env.root_id
-
-    def get_gsuite_sa_path(self):
-        return self.env.gsuite_sa
-
-    def get_gsuite_admin_email(self):
-        return self.env.gsuite_admin_email
+        self.inventory_config = InventoryConfig(self.env.organization_id,
+                                                self.env.gsuite_sa,
+                                                self.env.gsuite_admin_email)
 
     def run_in_background(self, function):
         """Stub."""
         self.workers.add_func(function)
-
-    def get_storage_class(self):
-        return Storage
 
     def get_engine(self):
         return self.engine
@@ -68,6 +58,12 @@ class TestServiceConfig(MockServerConfig):
 
     def client(self):
         return ClientComposition(self.endpoint)
+
+    def get_storage_class(self):
+        return Storage
+
+    def get_inventory_config(self):
+        return self.inventory_config
 
 
 def create_tester():
@@ -86,15 +82,17 @@ class ApiTest(ForsetiTestCase):
     def setUp(self):
         self.setup = create_tester()
 
-    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
+    @unittest.skipUnless(gcp_configured(), 'requires a real gcp environment')
     def test_basic(self):
         """Test: Create inventory, foreground & no import."""
 
         def test(client):
             """API test callback."""
+            progress = None
+            inventory_index = None
 
             for progress in client.inventory.create(background=False,
-                                                    import_as=""):
+                                                    import_as=''):
                 continue
             self.assertTrue(progress.final_message)
 
@@ -116,15 +114,17 @@ class ApiTest(ForsetiTestCase):
 
         self.setup.run(test)
 
-    @unittest.skipUnless(gcp_configured(), "requires a real gcp environment")
+    @unittest.skipUnless(gcp_configured(), 'requires a real gcp environment')
     def test_basic_background(self):
         """Test: Create inventory, foreground & no import."""
 
         def test(client):
             """API test callback."""
+            progress = None
+            inventory_index = None
 
             for progress in client.inventory.create(background=True,
-                                                    import_as=""):
+                                                    import_as=''):
                 continue
             self.assertTrue(progress.final_message)
 

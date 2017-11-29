@@ -11,17 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-""" Unit Tests: Database abstraction objects for IAM Explain. """
+"""Unit Tests: Database abstraction objects for IAM Explain."""
 
 import os
 import unittest
-
-from tests.iam.utils.db import create_test_engine_with_file
+from tests.services.utils.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
-
-from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.common.util.threadpool import ThreadPool
+from google.cloud.forseti.services.dao import ModelManager
 
 
 class ModelManagerTest(ForsetiTestCase):
@@ -67,10 +64,8 @@ class ModelManagerTest(ForsetiTestCase):
                          'Expecting no models to exist after deletion')
 
     def test_concurrent_access(self):
+        """Start with no models, create multiple, delete them again, concurrent.
         """
-        Start with no models, create multiple, delete them again, concurrent.
-        """
-        return
         num_threads = 16
         thread_pool = ThreadPool(num_threads)
 
@@ -87,7 +82,6 @@ class ModelManagerTest(ForsetiTestCase):
         thread_pool.join()
         self.assertTrue(len(self.model_manager.models()) == 0,
                         'Expecting no models to stick around')
-
 
 
 if __name__ == '__main__':

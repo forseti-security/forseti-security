@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""CLI Tests for IAM package."""
+"""Loading Forseti database examples for test setup."""
