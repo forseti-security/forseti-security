@@ -146,7 +146,8 @@ class ForsetiGcpSetup(object):
         self.notification_recipient_email = (
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
-        self.host_project_id = kwargs.get('network_host_project_id', self.project_id)
+        self.host_project_id = kwargs.get('network_host_project_id',
+                                          self.project_id)
         self.vpc_name = kwargs.get('vpc_name') or 'default'
         self.subnetwork = kwargs.get('subnet_name') or 'default'
 
