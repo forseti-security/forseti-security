@@ -22,7 +22,6 @@ from google.cloud.forseti.services.inventory.crawler import run_crawler
 from google.cloud.forseti.services.server import InventoryConfig
 
 
-# pylint: disable=bad-indentation
 class NullProgresser(Progresser):
     """No-op progresser to suppress output."""
 
@@ -58,8 +57,8 @@ class CrawlerTest(ForsetiTestCase):
 
         ForsetiTestCase.tearDown(self)
 
-    def test_crawling_to_memmory_storage(self):
-        """Crawl an environment, test that there are items in storage."""
+    def test_crawling_to_memory_storage(self):
+        """Crawl mock environment, test that there are items in storage."""
 
         config = InventoryConfig(
             gcp_api_mocks.ORGANIZATION_ID,
