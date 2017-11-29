@@ -46,7 +46,7 @@ def run():
                               'resources.')
     network.add_argument('--vpc-name',
                          help='The VPC name where Forseti VM will run.')
-    network.add_argument('--subnet-name',
+    network.add_argument('--subnetwork-name',
                          help='The subnetwork name where Forseti VM will run.')
 
     email_params = parser.add_argument_group(title='email')

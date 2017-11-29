@@ -63,7 +63,7 @@ resources:
     database-name: forseti_security
     network-host-project-id: {NETWORK_HOST_PROJECT_ID}
     vpc-name: {VPC_NAME}
-    subnetwork-name: SUBNETWORK_NAME
+    subnetwork-name: {SUBNETWORK_NAME}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
