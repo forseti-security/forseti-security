@@ -11,25 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests the IAM Explain playground."""
 
 import unittest
-
+from tests.services.api_tests.api_tester import ApiTestRunner
+from tests.services.utils.db import cleanup
+from tests.services.utils.db import create_test_engine
+from tests.services.utils.mock import MockServerConfig
+from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
-from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
-from google.cloud.forseti.services.dao import ModelManager
-
-from tests.iam.api_tests.api_tester import ApiTestRunner
-from tests.iam.utils.db import create_test_engine, cleanup
-from tests.iam.utils.mock import MockServerConfig
-from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 
 
 class TestServiceConfig(MockServerConfig):
     """ServiceConfig Stub."""
+
     def __init__(self):
         # TODO: Enable FK constraint enforcement and fix test
         self.engine = create_test_engine(enforce_fks=False)
@@ -78,8 +77,8 @@ class ApiTest(ForsetiTestCase):
                 len(client.list_models().models),
                 0,
                 'Expect no previous models')
-            model1 = client.new_model("EMPTY", name='model1').model.handle
-            model2 = client.new_model("EMPTY", name='model2').model.handle
+            model1 = client.new_model('EMPTY', name='model1').model.handle
+            model2 = client.new_model('EMPTY', name='model2').model.handle
 
             self.assertTrue(self.has_n_models(client, 2))
             client.delete_model(model1)
@@ -113,41 +112,41 @@ class ApiTest(ForsetiTestCase):
             reply = client.new_model('EMPTY', name='test1')
             client.switch_model(reply.model.handle)
             self.assertEqual(
-                len(client.playground.list_members("").member_names),
+                len(client.playground.list_members('').member_names),
                 0,
                 'Expect no members in the empty model')
             client.playground.add_member('user/user1')
             self.assertEqual(
-                len(client.playground.list_members("").member_names),
+                len(client.playground.list_members('').member_names),
                 1,
                 'Expect one members in the empty model')
             client.playground.add_member('group/group1')
             self.assertEqual(
-                len(client.playground.list_members("").member_names),
+                len(client.playground.list_members('').member_names),
                 2,
                 'Expect two members in the empty model')
             client.playground.add_member('user/user2', ['group/group1'])
             self.assertEqual(
-                len(client.playground.list_members("").member_names),
+                len(client.playground.list_members('').member_names),
                 3,
                 'Expect three members in the empty model')
             self.assertEqual(
-                len(client.playground.list_members("user").member_names),
+                len(client.playground.list_members('user').member_names),
                 2)
             self.assertEqual(
-                len(client.playground.list_members("group").member_names),
+                len(client.playground.list_members('group').member_names),
                 1)
             client.playground.del_member('user/user1')
             self.assertEqual(
-                len(client.playground.list_members("user").member_names),
+                len(client.playground.list_members('user').member_names),
                 1)
             self.assertEqual(
-                len(client.playground.list_members("group").member_names),
+                len(client.playground.list_members('group').member_names),
                 1)
             client.playground.del_member('group/group1')
             client.playground.del_member('user/user2')
             self.assertEqual(
-                len(client.playground.list_members("").member_names),
+                len(client.playground.list_members('').member_names),
                 0,
                 'Expect no members in the empty model')
 

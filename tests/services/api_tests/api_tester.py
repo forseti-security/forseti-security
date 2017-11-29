@@ -11,17 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""API testing helper classes."""
 
-import grpc
-from concurrent import futures
 from collections import defaultdict
-
+from concurrent import futures
+import grpc
 from google.cloud.forseti.services.client import ClientComposition
 from tests.unittest_utils import get_available_port
 
 
 class ApiTestRunner(object):
     """Test runner for end-to-end API testing."""
+
     def __init__(self, service_config, service_factories, port=None):
         super(ApiTestRunner, self).__init__()
         self.service_config = service_config
@@ -59,6 +60,7 @@ class ApiTestRunner(object):
 
 class ModelTestRunner(ApiTestRunner):
     """Test runner for testing on declarative models."""
+
     def __init__(self, model, *args, **kwargs):
         super(ModelTestRunner, self).__init__(*args, **kwargs)
         self.model = model
@@ -73,7 +75,7 @@ class ModelTestRunner(ApiTestRunner):
     def _recursive_install_resources(self, node, model, client, parent):
         """Install resources."""
 
-        client.add_resource(node, parent, parent == '')
+        client.add_resource(node, parent, bool(not parent))
         for root, tree in model.iteritems():
             self._recursive_install_resources(root, tree, client, node)
 
@@ -118,7 +120,7 @@ class ModelTestRunner(ApiTestRunner):
             self._recursive_invert_membership(root, tree, parent_relationship)
 
         if self._cyclic(parent_relationship):
-            raise Exception("Cyclic membership relation not supported!")
+            raise Exception('Cyclic membership relation not supported!')
 
         installed_members = set()
         while parent_relationship:
@@ -150,8 +152,8 @@ class ModelTestRunner(ApiTestRunner):
             self.counter += 1
         except AttributeError:
             self.counter = 0
-        finally:
-            return str(self.counter)
+
+        return str(self.counter)
 
     def run(self, test_callback):
         def callback_wrapper(client):

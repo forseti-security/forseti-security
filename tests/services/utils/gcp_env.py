@@ -18,6 +18,7 @@ import os
 
 
 class GcpEnvironment(object):
+
     def __init__(self):
         self.root_id = os.environ.get('EXPLAIN_GCP_ORG_ID')
         self.gsuite_sa = os.environ.get('EXPLAIN_GCP_GROUPS_SA')
