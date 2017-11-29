@@ -28,9 +28,9 @@ class ForwardingRule(object):
 
 class ForwardingRuleScannerTest(ForsetiTestCase):
 
-    def test_fowarding_rules_scanner_all_match(self):
+    def test_forwarding_rules_scanner_all_match(self):
         rules_local_path = get_datafile_path(__file__,
-            'foward_rule_test_1.yaml')
+            'forward_rule_test_1.yaml')
         scanner = forwarding_rule_scanner.ForwardingRuleScanner({}, {}, '', rules_local_path)
 
         gcp_forwarding_rules_resource_data = [
@@ -97,9 +97,9 @@ class ForwardingRuleScannerTest(ForsetiTestCase):
         violations = scanner._find_violations(gcp_forwarding_rules_resource_objs)
         self.assertEqual(0, len(violations))
 
-    def test_fowarding_rules_scanner_no_match(self):
+    def test_forwarding_rules_scanner_no_match(self):
         rules_local_path = get_datafile_path(__file__,
-            'foward_rule_test_1.yaml')
+            'forward_rule_test_1.yaml')
         scanner = forwarding_rule_scanner.ForwardingRuleScanner({}, {}, '', rules_local_path)
 
         gcp_forwarding_rules_resource_data = [

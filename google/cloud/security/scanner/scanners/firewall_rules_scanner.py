@@ -25,16 +25,16 @@ from google.cloud.security.common.data_access import csv_writer
 from google.cloud.security.common.data_access import firewall_rule_dao
 from google.cloud.security.common.gcp_type import resource as resource_type
 from google.cloud.security.common.gcp_type import resource_util
-from google.cloud.security.scanner.audit import fw_rules_engine
+from google.cloud.security.scanner.audit import firewall_rules_engine
 from google.cloud.security.scanner.scanners import base_scanner
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class FwPolicyScanner(base_scanner.BaseScanner):
+class FirewallPolicyScanner(base_scanner.BaseScanner):
     """Scanner for firewall data."""
 
-    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_fw.{}.csv'
+    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_firewall.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
@@ -47,12 +47,12 @@ class FwPolicyScanner(base_scanner.BaseScanner):
             rules (str): Fully-qualified path and filename of the rules file.
         """
 
-        super(FwPolicyScanner, self).__init__(
+        super(FirewallPolicyScanner, self).__init__(
             global_configs,
             scanner_configs,
             snapshot_timestamp,
             rules)
-        self.rules_engine = fw_rules_engine.FirewallRuleEngine(
+        self.rules_engine = firewall_rules_engine.FirewallRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)

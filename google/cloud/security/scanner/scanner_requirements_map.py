@@ -31,8 +31,8 @@ REQUIREMENTS_MAP = {
          'class_name': 'CloudSqlAclScanner',
          'rules_filename': 'cloudsql_rules.yaml'},
     'firewall_rule':
-        {'module_name': 'fw_rules_scanner',
-         'class_name': 'FwPolicyScanner',
+        {'module_name': 'firewall_rules_scanner',
+         'class_name': 'FirewallPolicyScanner',
          'rules_filename': 'firewall_rules.yaml'},
     'forwarding_rule':
         {'module_name': 'forwarding_rule_scanner',
