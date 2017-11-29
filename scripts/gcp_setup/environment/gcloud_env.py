@@ -149,7 +149,7 @@ class ForsetiGcpSetup(object):
         self.network_host_project_id = kwargs.get('network_host_project_id',
                                                   self.project_id)
         self.vpc_name = kwargs.get('vpc_name') or 'default'
-        self.subnetwork_name = kwargs.get('subnet_name') or 'default'
+        self.subnetwork_name = kwargs.get('subnetwork_name') or 'default'
 
     def run_setup(self):
         """Run the setup steps."""
