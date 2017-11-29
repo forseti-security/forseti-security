@@ -17,16 +17,20 @@ from collections import defaultdict
 from concurrent import futures
 import grpc
 from google.cloud.forseti.services.client import ClientComposition
+from tests.unittest_utils import get_available_port
 
 
 class ApiTestRunner(object):
     """Test runner for end-to-end API testing."""
 
-    def __init__(self, service_config, service_factories, port=50058):
+    def __init__(self, service_config, service_factories, port=None):
         super(ApiTestRunner, self).__init__()
         self.service_config = service_config
         self.service_factories = service_factories
-        self.service_port = port
+        if port:
+            self.service_port = port
+        else:
+            self.service_port = get_available_port()
 
     def run(self, test_callback):
         """Test runner."""
