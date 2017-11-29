@@ -81,7 +81,7 @@ properties:
     default: 3306
     description: The port for the database.
 
-  network-host-project:
+  network-host-project-id:
     type: string
     description: The id of the project that is hosting the shared network resources.
 
@@ -89,6 +89,6 @@ properties:
     type: string
     description: The name of the shared network.
 
-  subnetwork:
+  subnetwork-name:
     type: string
     description: The name of the subnet.
