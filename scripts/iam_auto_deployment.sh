@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
+
 # Preparation
 TRED='\e[91m'
 TYELLOW='\e[93m'
 TGREEN='\e[92m'
 TNC='\033[0m'
+LABEL_SAFE_TIMESTAMP=$(date --utc +%Ft%Tz | sed -e 's/:/-/g')
 # Set the toplevel forseti folder.
 if command -v git > /dev/null; then
 	repodir="$(git rev-parse --show-toplevel 2> /dev/null || echo "/home/$USER/forseti-security")"
@@ -25,7 +28,41 @@ else
 	repodir="/home/$USER/forseti-security"
 fi
 
+# Config variables: the following variables are set during config and
+# are used to prepare, conifgure, or execute deployment. They are
+# pre-set here in order to document document the variables and to ensure
+# that they are in the shells global namespace.
+ROOTTYPE=""
+ROOTID=""
+SCRAPINGSA=""
+GSUITE_ADMINISTRATOR=""
+BRANCHNAME=""
+SQLINSTANCE=""
+PROJECT_ID=""
+DEPLOYMENTNAME=""
+
+# WARNING: THESE VALUES ARE NOT CONFIGURABLE!
+# These defaults match values contained in the example deployment YAMLs.
+# These should not be considered to be configurable but they are placed
+# here to avoid repetition.
+FORSETI_DB_NAME="forseti_security"
+COMPUTE_REGION="us-central1"
+COMPUTE_ZONE="us-central1-c"
+
+
 echo -e "${TGREEN}Welcome to IAM Explain${TNC}"
+
+# Get project information
+echo -e "${TYELLOW}Getting Project ID from your Cloud SDK config${TNC}"
+
+PROJECT_ID="$(gcloud config get-value project)"
+echo "Using '${PROJECT_ID}', would you like to continue?"
+read -p "Shall we proceed? (Y/n)" -n 1 -r
+echo
+if [[ "${REPLY:-y}" =~ ^[Nn]$ ]]; then
+	echo "Project not confirmed. Set with 'gcloud config set project YOUR-PROJECT-ID'"
+	exit 1
+fi
 
 # Set Organization ID
 echo -e "${TYELLOW}Setting up organization ID${TNC}"
@@ -148,12 +185,6 @@ then
 	done
 fi
 
-# Get project information
-echo "Fetching deployment project ID from your Cloud SDK config"
-
-PROJECT_ID="$(gcloud config get-value project)"
-echo "Found: ${PROJECT_ID}"
-
 # Checking user authority
 echo -e "${TYELLOW}Please make sure you have adequate permissions on GCP and GSuite in order to deploy IAM Explain ${TNC}"
 read -p "Press any key to proceed" -n 1 -r
@@ -208,20 +239,25 @@ echo "    Cloud SQL Admin API: sqladmin.googleapis.com"
 echo "    Cloud SQL API: sql-component.googleapis.com"
 echo "    Compute Engine API: compute.googleapis.com"
 echo "    Deployment Manager API: deploymentmanager.googleapis.com"
+echo "    Google Cloud Container Builder API: cloudbuild.googleapis.com"
 echo "    Google Identity and Access Management (IAM) API: iam.googleapis.com"
+echo "    Google BigQuery API: bigquery-json.googleapis.com"
+echo "    Google Cloud Storage API: storage.googleapis.com"
 read -p "Do you want to use the script to enable them? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-	gcloud beta service-management enable admin.googleapis.com
-	gcloud beta service-management enable appengine.googleapis.com
-	gcloud beta service-management enable cloudresourcemanager.googleapis.com
-	gcloud beta service-management enable sqladmin.googleapis.com
-	gcloud beta service-management enable sql-component.googleapis.com
-	gcloud beta service-management enable compute.googleapis.com
-	gcloud beta service-management enable deploymentmanager.googleapis.com
-	gcloud beta service-management enable iam.googleapis.com
-	gcloud beta service-management enable bigquery-json.googleapis.com
+	gcloud services enable admin.googleapis.com
+	gcloud services enable appengine.googleapis.com
+	gcloud services enable cloudresourcemanager.googleapis.com
+	gcloud services enable sqladmin.googleapis.com
+	gcloud services enable sql-component.googleapis.com
+	gcloud services enable compute.googleapis.com
+	gcloud services enable deploymentmanager.googleapis.com
+	gcloud services enable cloudbuild.googleapis.com
+	gcloud services enable iam.googleapis.com
+	gcloud services enable bigquery-json.googleapis.com
+	gcloud services enable storage-api.googleapis.com
 else
 	echo "API Enabling skipped, if you haven't enable them, you can do so in cloud console."
 fi
@@ -295,7 +331,9 @@ echo "        - 'roles/cloudsql.viewer',"
 echo "        - 'roles/compute.securityAdmin',"
 echo "        - 'roles/storage.admin',"
 echo "    - Project level:"
+echo "        - 'roles/storage.admin'"
 echo "        - 'roles/cloudsql.client'"
+echo "        - 'roles/logging.logWriter'"
 read -p "Do you want to use the script to assign the roles? (y/n)" -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
@@ -331,27 +369,24 @@ then
 	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/storage.admin
-	
+
+	gcloud projects add-iam-policy-binding $PROJECT_ID \
+	 --member=serviceAccount:$SCRAPINGSA \
+	 --role=roles/storage.admin
+
 	gcloud projects add-iam-policy-binding $PROJECT_ID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/cloudsql.client
+
+	gcloud projects add-iam-policy-binding $PROJECT_ID \
+	 --member=serviceAccount:$SCRAPINGSA \
+	 --role=roles/logging.logWriter
 else
 	echo "Roles assigning skipped, if you haven't done it, you can do so in cloud console."
 fi
 
-# Prepare the deployment template yaml file
-echo "Customizing deployment template..."
-cp $repodir/deployment-templates/deploy-explain.yaml.sample \
-$repodir/deployment-templates/deploy-explain.yaml
-sed -i -e 's/ROOT_RESOURCE_ID/'$ROOTTYPE$"\/"$ROOTID'/g' \
-$repodir/deployment-templates/deploy-explain.yaml
-sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPINGSA'/g' \
-$repodir/deployment-templates/deploy-explain.yaml
-sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
-$repodir/deployment-templates/deploy-explain.yaml
-
 #Choose deployment branch
-DownloadBranch=$( git rev-parse --abbrev-ref HEAD )
+DownloadBranch=$( git -C $repodir rev-parse --abbrev-ref HEAD )
 echo -e "${TYELLOW}Choosing Github Branch${TNC}"
 echo -e "By default, the current branch ${TYELLOW} $DownloadBranch ${TNC} of IAM Explain will be deployed."
 read -p "Do you want to change to another one? (y/n)" -n 1 -r
@@ -376,13 +411,10 @@ then
 else
 	BRANCHNAME=$DownloadBranch
 fi
-sed -i -e 's/BRANCHNAME/'$BRANCHNAME'/g' \
-$repodir/deployment-templates/deploy-explain.yaml
 
 # sql instance name
 echo -e "${TYELLOW}Choosing SQL Instance name${TNC}"
-timestamp=$(date --utc +%Ft%Tz | sed -e 's/:/-/g')
-SQLINSTANCE="iam-explain-no-external-"$timestamp
+SQLINSTANCE="forseti-security-no-external-"$LABEL_SAFE_TIMESTAMP
 echo "Do you want to use the generated sql instance name:"
 echo "    $SQLINSTANCE"
 read -p "for this deployment? (y/n)" -n 1 -r
@@ -395,24 +427,44 @@ then
 		"sql instance can still occupy the name space, even though they are not shown above:"
 	read SQLINSTANCE
 fi
-sed -i -e 's/ iam-explain-sql-instance/ '$SQLINSTANCE'/g' \
-$repodir/deployment-templates/deploy-explain.yaml
+
+# Taking as an argument a basename, this generates a default deployment
+# name and directs a user to accept this name or provide their own.
+function read_deployment_name() {
+	# Deployment name
+	local DEFAULT_BASENAME="${1}"
+	echo -e "\n${TYELLOW}Choosing deployment name${TNC}"
+	DEPLOYMENTNAME="${DEFAULT_BASENAME}-${LABEL_SAFE_TIMESTAMP}"
+	echo "Do you want to use the generated deployment name:"
+	echo "    $DEPLOYMENTNAME"
+	read -p "for this deployment? (y/n)" -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Yy]$ ]]
+	then
+		echo "Here are existing deployments in this project:"
+		gcloud deployment-manager deployments list
+		echo "Choose a deployment name that is not used above"
+		read DEPLOYMENTNAME
+	fi
+}
 
 # Deployment name
-echo -e "${TYELLOW}Choosing deployment name${TNC}"
-DEPLOYMENTNAME="iam-explain-"$timestamp
-echo "Do you want to use the generated deployment name:"
-echo "    $DEPLOYMENTNAME"
-read -p "for this deployment? (y/n)" -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
-	echo "Here are existing deployments in this project:"
-	gcloud deployment-manager deployments list
-	echo "Choose a deployment name that is not used above"
-	read DEPLOYMENTNAME
-fi
+read_deployment_name "forseti-security"
 
+# Prepare the deployment template yaml file
+echo "Customizing deployment template..."
+cp $repodir/deployment-templates/deploy-explain.yaml.sample \
+$repodir/deployment-templates/deploy-explain.yaml
+sed -i -e 's/ROOT_RESOURCE_ID/'$ROOTTYPE$"\/"$ROOTID'/g' \
+$repodir/deployment-templates/deploy-explain.yaml
+sed -i -e 's/YOUR_SERVICE_ACCOUNT/'$SCRAPINGSA'/g' \
+$repodir/deployment-templates/deploy-explain.yaml
+sed -i -e 's/GSUITE_ADMINISTRATOR/'$GSUITE_ADMINISTRATOR'/g' \
+$repodir/deployment-templates/deploy-explain.yaml
+sed -i -e 's/ forseti-security-sql-instance/ '$SQLINSTANCE'/g' \
+$repodir/deployment-templates/deploy-explain.yaml
+sed -i -e 's/BRANCHNAME/'$BRANCHNAME'/g' \
+$repodir/deployment-templates/deploy-explain.yaml
 
 # Deploy the IAM Explain
 echo -e "${TYELLOW}Start to deploy${TNC}"
@@ -425,7 +477,7 @@ VMNAME=$(echo "$response" | grep " compute." | sed -e 's/ .*//g')
 echo -e "${TYELLOW}Generate and copy the gsuite service account key file${TNC}"
 # Creating gsuite service account key
 gcloud iam service-accounts keys create \
-    ~/gsuite.json \
+    "${HOME}/gsuite.json" \
     --iam-account $GSUITESA
 
 for (( TRIAL=1; TRIAL<=5; TRIAL++ ))
@@ -441,9 +493,9 @@ do
 	for (( trial=1; trial<=10; trial++ ))
 	do
 		sleep 2
-		gcloud compute scp ~/gsuite.json \
+		gcloud compute scp "${HOME}/gsuite.json" \
 			ubuntu@$VMNAME:/home/ubuntu/gsuite.json \
-			--zone=us-central1-c &&
+			--zone=$COMPUTE_ZONE &&
 		{
 			cpResponse="SUCCESS"
 			break
@@ -454,8 +506,8 @@ do
 	fi
 done
 echo "Destroying the gsuite service account key..."
-shred -vzn 3 gsuite.json
-rm -f gsuite.json
+shred -vzn 3 "${HOME}/gsuite.json"
+rm -f "${HOME}/gsuite.json"
 
 if [[ $cpResponse != "SUCCESS" ]]; then
 	echo "Service account key copy failed."
