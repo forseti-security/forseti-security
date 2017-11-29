@@ -61,9 +61,12 @@ class RulesEngineTest(ForsetiTestCase):
         fake_project = project_resource.Project('proj1', 1111)
         fake_result = rule.RuleResult(
             rule_id=rules_eng.rules[0].rule_id,
-            resource=fake_project,
             result=True,
-            metadata={})
+            current_state=fake_project,
+            expected_state=fake_project,
+            snapshot_id=None,
+            resource_owners=[],
+            info='')
         expected_results = [fake_result]
         mock_rule_audit.side_effect = [
             fake_result,

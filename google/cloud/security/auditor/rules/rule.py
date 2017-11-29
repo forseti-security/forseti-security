@@ -131,11 +131,16 @@ class Rule(object):
             for (var_name, res_prop) in resource_vars.iteritems()
         }
         cond_parser = condition_parser.ConditionParser(config_var_params)
+        current_state = resource
+        expected_state = resource
         return RuleResult(
-            self.rule_id,
-            resource,
-            cond_parser.eval_filter(self.condition),
-            {})
+            rule_id=self.rule_id,
+            result=cond_parser.eval_filter(self.condition),
+            current_state=current_state,
+            expected_state=expected_state,
+            snapshot_id=None, # TODO: make the result snapshot-aware
+            resource_owners=[],
+            info=None)
 
     @property
     def type(self):
@@ -151,11 +156,19 @@ class Rule(object):
 #
 # Properties::
 #   rule_id (str): The rule id.
-#   resource (Resource): The GCP Resource.
 #   result (boolean): True if the rule condition is met, otherwise False.
-#   metadata (dict): Additional data related to the Resource and
-#       rule evaluation.
+#   current_state (dict): The GCP Resource in json/dict format.
+#   expected_state (dict): The GCP Resource in json/dict format.
+#   snapshot_id (str): The snapshot id.
+#   resource_owners (list): A list of the owners (IAM members as a string).
+#   info (str): Additional information about the rule.
 RuleResult = namedtuple('RuleResult',
-                        ['rule_id', 'resource', 'result', 'metadata'])
+                        ['rule_id',
+                         'result',
+                         'current_state',
+                         'expected_state',
+                         'snapshot_id',
+                         'resource_owners',
+                         'info'])
 
 

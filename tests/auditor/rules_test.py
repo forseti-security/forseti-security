@@ -44,9 +44,12 @@ class RulesTest(ForsetiTestCase):
         actual_result = test_rule.audit(fake_project)
         expected_result = rule.RuleResult(
             rule_id=test_rule.rule_id,
-            resource=fake_project,
             result=True,
-            metadata={})
+            current_state=fake_project,
+            expected_state=fake_project,
+            snapshot_id=None,
+            resource_owners=[],
+            info='')
         mock_cond_parser.eval_filter.assert_called_with(test_rule.condition)
         self.assertEquals(expected_result, actual_result)
 
