@@ -114,14 +114,6 @@ class Memory(Storage):
         """Read a resource object from storage"""
         return self.mem[key]
 
-    def update(self, resource):
-        """Update a resource in the storage.
-
-        Args:
-            resource (object): Resource object to store in db.
-        """
-        self.mem[resource.key()] = resource
-
     def error(self, message):
         """Ingore the error message"""
         pass
