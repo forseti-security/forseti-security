@@ -15,7 +15,6 @@
 """ Database access objects for Forseti Scanner. """
 
 import json
-from threading import Lock
 
 from sqlalchemy import Column
 from sqlalchemy import String, Integer, Text
@@ -29,6 +28,13 @@ def define_violation(model_name, dbengine):
     """Defines table class for violations.
 
     A violation table will be created on a per-model basis.
+
+    Args:
+        model_name (str): name of the current model
+        dbengine (engine): sqlalchemy database engine
+
+    Returns:
+        ViolationAcccess: facade for accessing violations.
     """
 
     base = declarative_base()
@@ -38,7 +44,7 @@ def define_violation(model_name, dbengine):
         """Row entry for a violation."""
 
         __tablename__ = violations_tablename
-    
+
         id = Column(Integer, primary_key=True)
         resource_type = Column(String(256), nullable=False)
         rule_name = Column(String(256))
@@ -47,7 +53,11 @@ def define_violation(model_name, dbengine):
         data = Column(Text)
 
         def __repr__(self):
-            """String representation."""
+            """String representation.
+
+            Returns:
+                str: string representation of the Violation row entry.
+            """
             string = ("<Violation(violation_type='{}', resource_type='{}' "
                       "rule_name='{}')>")
             return string.format(
@@ -59,19 +69,19 @@ def define_violation(model_name, dbengine):
 
         def __init__(self, dbengine):
             """Constructor for the Violation Access.
-    
+
             Args:
                 dbengine (engine): sqlalchemy database engine
             """
             self.engine = dbengine
             self.violationmaker = self._create_violation_session()
-    
+
         def _create_violation_session(self):
             """Create a session to read from the models table.
-            
+
             Returns:
-                A scoped session maker that will create a session that is
-                automatically released.
+                ScopedSessionmaker: A scoped session maker that will create
+                    a session that is automatically released.
             """
             return db.ScopedSessionMaker(
                 sessionmaker(
@@ -93,7 +103,7 @@ def define_violation(model_name, dbengine):
                         violation_type=violation.get('violation_type'),
                         data=json.dumps(violation.get('violation_data'))
                     )
-                    session.add(violation)
+                    session.add(violation)  # pylint: disable=no-member
 
     base.metadata.create_all(dbengine)
 

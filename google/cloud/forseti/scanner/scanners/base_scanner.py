@@ -18,12 +18,8 @@ import abc
 import os
 import shutil
 
-from google.cloud.forseti.common.data_access import errors as db_errors
-from google.cloud.forseti.common.data_access import violation_dao
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.scanner import dao as scanner_dao
-
 
 
 LOGGER = log_util.get_logger(__name__)
