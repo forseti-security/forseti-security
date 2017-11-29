@@ -146,10 +146,10 @@ class ForsetiGcpSetup(object):
         self.notification_recipient_email = (
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
-        self.host_project_id = kwargs.get('network_host_project_id',
-                                          self.project_id)
+        self.network_host_project_id = kwargs.get('network_host_project_id',
+                                                  self.project_id)
         self.vpc_name = kwargs.get('vpc_name') or 'default'
-        self.subnetwork = kwargs.get('subnet_name') or 'default'
+        self.subnetwork_name = kwargs.get('subnet_name') or 'default'
 
     def run_setup(self):
         """Run the setup steps."""
@@ -354,11 +354,11 @@ class ForsetiGcpSetup(object):
         print('Project id: %s' % self.project_id)
 
     def check_network_host_project_id(self):
-        """Get the host project."""
-        if not self.host_project_id:
+        """Check that network host project id is set."""
+        if not self.network_host_project_id:
             self.get_project()
-            self.host_project_id = self.project_id
-        print('VPC Host Project %s' % self.host_project_id)
+            self.network_host_project_id = self.project_id
+        print('VPC Host Project %s' % self.network_host_project_id)
 
     def check_billing_enabled(self):
         """Check if billing is enabled."""
@@ -676,9 +676,9 @@ class ForsetiGcpSetup(object):
             'SERVICE_ACCT_GCP_READER': self.gcp_service_account,
             'SERVICE_ACCT_GSUITE_READER': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
-            'HOST_PROJECT': self.host_project_id,
+            'NETWORK_HOST_PROJECT_ID': self.network_host_project_id,
             'VPC_NAME': self.vpc_name,
-            'SUBNETWORK': self.subnetwork
+            'SUBNETWORK_NAME': self.subnetwork_name
         }
 
         # Create Deployment template with values filled in.

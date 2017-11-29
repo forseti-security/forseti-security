@@ -68,7 +68,7 @@ def GenerateConfig(context):
                 'network': (
                     'https://www.googleapis.com/compute/v1/'
                     'projects/{}/global/networks/{}'.format(
-                        context.properties['host-project'],
+                        context.properties['network-host-project-id'],
                         context.properties['vpc-name'])),
                 'accessConfigs': [{
                     'name': 'External NAT',
@@ -77,9 +77,9 @@ def GenerateConfig(context):
                 'subnetwork': (
                     'https://www.googleapis.com/compute/v1/'
                     'projects/{}/regions/{}/subnetworks/{}'.format(
-                        context.properties['host-project'],
+                        context.properties['network-host-project-id'],
                         context.properties['region'],
-                        context.properties['subnetwork']))
+                        context.properties['subnetwork-name']))
             }],
             'serviceAccounts': [{
                 'email': context.properties['service-account'],
