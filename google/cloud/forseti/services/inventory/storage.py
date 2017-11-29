@@ -31,8 +31,7 @@ from google.cloud.forseti.services.inventory.base.storage import \
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-# pylint: disable=protected-access,no-self-use,line-too-long,useless-suppression
+# pylint: disable=missing-param-doc,too-many-instance-attributes
 
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
@@ -56,6 +55,7 @@ class InventoryTypeClass(object):
     RESOURCE = 'resource'
     IAM_POLICY = 'iam_policy'
     GCS_POLICY = 'gcs_policy'
+    SUPPORTED_TYPECLASS = [RESOURCE, IAM_POLICY, GCS_POLICY]
 
 
 class InventoryIndex(BASE):
@@ -173,7 +173,7 @@ class Inventory(BASE):
         """Creates a database row object from a crawled resource.
 
         Args:
-            index (int): Inventory index number to associate.
+            index (object): InventoryIndex to associate.
             resource (object): Crawled resource.
 
         Returns:
@@ -195,7 +195,7 @@ class Inventory(BASE):
                 parent_key=None if not parent else parent.key(),
                 parent_type=None if not parent else parent.type(),
                 other=None,
-                error=None))
+                error=resource.get_warning()))
 
         if iam_policy:
             rows.append(
@@ -224,11 +224,22 @@ class Inventory(BASE):
                     error=None))
         return rows
 
-    @classmethod
-    def update_resource(cls, resource):
-        """Update a resource."""
+    def copy_inplace(self, new_row):
+        """Update a database row object from a resource.
 
-        resource._row.error = resource._warning
+        Args:
+            new_row (object): the Inventory row of the new resource
+
+        """
+
+        self.type_class = new_row.type_class
+        self.key = new_row.key
+        self.type = new_row.type
+        self.data = new_row.data
+        self.parent_key = new_row.parent_key
+        self.parent_type = new_row.parent_type
+        self.other = new_row.other
+        self.error = new_row.error
 
     def __repr__(self):
         """String representation of the database row object."""
@@ -466,6 +477,31 @@ class Storage(BaseStorage):
                 [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS]))
             .one())
 
+    def _get_resource_rows(self, key):
+        """ Get the rows in the database for a certain resource
+
+        Args:
+            key (str): The key of the resource
+
+        Returns:
+            object: The inventory db rows of the resource,
+            IAM policy and GCS policy.
+
+        Raises:
+            Exception: if there is no such row or more than one.
+        """
+
+        qry = (
+            self.session.query(Inventory)
+            .filter(Inventory.index == self.index.id)
+            .filter(Inventory.key == key))
+        rows = qry.all()
+
+        if not rows:
+            raise Exception("resource {} not found in the table".format(key))
+        else:
+            return rows
+
     def open(self, handle=None):
         """Open the storage, potentially create a new index.
 
@@ -556,7 +592,6 @@ class Storage(BaseStorage):
             self.buffer.add(row)
 
         self.index.counter += len(rows)
-        resource._row = rows[0]
 
     def update(self, resource):
         """Update a resource in the storage.
@@ -571,25 +606,24 @@ class Storage(BaseStorage):
         if self.readonly:
             raise Exception('Opened storage readonly')
 
-        Inventory.update_resource(resource)
-        self.buffer.add(resource._row)
-
-    def read(self, key):
-        """Read a resource from the storage.
-
-        Args:
-            key (str): Key of the object to read.
-
-        Returns:
-            object: Row object read from database.
-        """
-
         self.buffer.flush()
-        return (
-            self.session.query(Inventory)
-            .filter(Inventory.index == self.index.id)
-            .filter(Inventory.key == key)
-            .one())
+
+        try:
+            new_rows = Inventory.from_resource(self.index, resource)
+            old_rows = self._get_resource_rows(resource.key())
+
+            new_dict = {row.type_class : row for row in new_rows}
+            old_dict = {row.type_class : row for row in old_rows}
+
+            for type_class in InventoryTypeClass.SUPPORTED_TYPECLASS:
+                if type_class in new_dict:
+                    if type_class in old_dict:
+                        old_dict[type_class].copy_inplace(new_dict[type_class])
+                    else:
+                        self.session.add(new_dict[type_class])
+            self.session.commit()
+        except Exception as e:
+            raise Exception('Resource Update Unsuccessful: {}'.format(e))
 
     def error(self, message):
         """Store a fatal error in storage. This will help debug problems.
