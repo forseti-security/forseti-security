@@ -42,7 +42,8 @@ def run():
 
     network = parser.add_argument_group(title='network')
     network.add_argument('--network-host-project-id',
-                         help='The project id that is hosting the network resources.')
+                         help='The project id that is hosting the network '
+                              'resources.')
     network.add_argument('--vpc-name',
                          help='The VPC name where Forseti VM will run.')
     network.add_argument('--subnet-name',
