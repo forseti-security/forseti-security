@@ -146,6 +146,10 @@ class ForsetiGcpSetup(object):
         self.notification_recipient_email = (
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
+        self.host_project_id = kwargs.get('network_host_project_id',
+                                          self.project_id)
+        self.vpc_name = kwargs.get('vpc_name') or 'default'
+        self.subnetwork = kwargs.get('subnet_name') or 'default'
 
     def run_setup(self):
         """Run the setup steps."""
@@ -159,6 +163,7 @@ class ForsetiGcpSetup(object):
         self.get_organization()
         self.check_billing_enabled()
         self.has_permissions()
+        self.check_network_host_project_id()
 
         self.enable_apis()
 
@@ -347,6 +352,13 @@ class ForsetiGcpSetup(object):
             print('You need to have an active project! Exiting.')
             sys.exit(1)
         print('Project id: %s' % self.project_id)
+
+    def check_network_host_project_id(self):
+        """Get the host project."""
+        if not self.host_project_id:
+            self.get_project()
+            self.host_project_id = self.project_id
+        print('VPC Host Project %s' % self.host_project_id)
 
     def check_billing_enabled(self):
         """Check if billing is enabled."""
@@ -664,6 +676,9 @@ class ForsetiGcpSetup(object):
             'SERVICE_ACCT_GCP_READER': self.gcp_service_account,
             'SERVICE_ACCT_GSUITE_READER': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
+            'HOST_PROJECT': self.host_project_id,
+            'VPC_NAME': self.vpc_name,
+            'SUBNETWORK': self.subnetwork
         }
 
         # Create Deployment template with values filled in.
