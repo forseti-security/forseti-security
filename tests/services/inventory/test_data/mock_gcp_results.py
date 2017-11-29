@@ -1111,14 +1111,10 @@ BUCKET_IAM_TEMPLATE = """
 """
 
 GCS_GET_BUCKET_IAM = {
-    "bucket1": [
-        json.loads(
-            BUCKET_IAM_TEMPLATE.format(name="bucket1", project="project3")),
-    ],
-    "bucket2": [
-        json.loads(
-            BUCKET_IAM_TEMPLATE.format(name="bucket2", project="project4")),
-    ]
+    "bucket1": json.loads(
+        BUCKET_IAM_TEMPLATE.format(name="bucket1", project="project3")),
+    "bucket2": json.loads(
+        BUCKET_IAM_TEMPLATE.format(name="bucket2", project="project4"))
 }
 
 GCS_GET_OBJECT_ACLS = {}
