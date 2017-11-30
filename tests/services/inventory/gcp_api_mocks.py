@@ -187,6 +187,16 @@ def _mock_gce():
             return results.GCE_GET_FORWARDING_RULES[projectid]
         return []
 
+    def _mock_gce_get_networks(projectid):
+        if projectid in results.GCE_GET_NETWORKS:
+            return results.GCE_GET_NETWORKS[projectid]
+        return []
+
+    def _mock_gce_get_subnetworks(projectid):
+        if projectid in results.GCE_GET_SUBNETWORKS:
+            return results.GCE_GET_SUBNETWORKS[projectid]
+        return []
+
     gce_patcher = mock.patch(
         MODULE_PATH + 'compute.ComputeClient', spec=True)
     mock_gce = gce_patcher.start().return_value
@@ -201,6 +211,8 @@ def _mock_gce():
         _mock_gce_get_instance_templates)
     mock_gce.get_backend_services.side_effect = _mock_gce_get_backend_services
     mock_gce.get_forwarding_rules.side_effect = _mock_gce_get_forwarding_rules
+    mock_gce.get_networks.side_effect = _mock_gce_get_networks
+    mock_gce.get_subnetworks.side_effect = _mock_gce_get_subnetworks
 
     return gce_patcher
 

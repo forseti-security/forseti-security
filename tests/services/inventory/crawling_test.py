@@ -111,10 +111,12 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroup': {'resource': 1},
             'instancegroupmanager': {'resource': 1},
             'instancetemplate': {'resource': 1},
+            'network': {'resource': 2},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'iam_policy': 4, 'resource': 4},
             'role': {'resource': 5},
-            'serviceaccount': {'resource': 2}
+            'serviceaccount': {'resource': 2},
+            'subnetwork': {'resource': 24},
         }
 
         self.assertEqual(expected_counts, result_counts)
@@ -181,8 +183,10 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroup': {'resource': 1},
             'instancegroupmanager': {'resource': 1},
             'instancetemplate': {'resource': 1},
+            'network': {'resource': 1},
             'project': {'iam_policy': 1, 'resource': 1},
-            'serviceaccount': {'resource': 1}
+            'serviceaccount': {'resource': 1},
+            'subnetwork': {'resource': 12},
         }
 
         self.assertEqual(expected_counts, result_counts)

@@ -92,7 +92,7 @@ def main():
     with gcp_api_mocks.mock_gcp():
         runner = ApiTestRunner(config, [GrpcInventoryFactory])
         runner.run(create_inventory)
-        time.sleep(3)
+        time.sleep(5)
 
     copy_db_file_to_test(tmpfile, 'forseti-test.db')
 

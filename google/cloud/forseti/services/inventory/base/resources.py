@@ -332,6 +332,22 @@ class InstanceTemplate(Resource):
         return 'instancetemplate'
 
 
+class Network(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'network'
+
+
+class Subnetwork(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'subnetwork'
+
+
 class BackendService(Resource):
     def key(self):
         return self['id']
@@ -529,6 +545,26 @@ class InstanceTemplateIterator(ResourceIterator):
                 yield FACTORIES['instancetemplate'].create_new(data)
 
 
+class NetworkIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_networks(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['network'].create_new(data)
+
+
+class SubnetworkIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_subnetworks(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['subnetwork'].create_new(data)
+
+
 class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
@@ -655,6 +691,8 @@ FACTORIES = {
             InstanceTemplateIterator,
             BackendServiceIterator,
             ForwardingRuleIterator,
+            NetworkIterator,
+            SubnetworkIterator,
             ProjectRoleIterator
             ]}),
 
@@ -722,6 +760,18 @@ FACTORIES = {
     'forwardingrule': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ForwardingRule,
+        'contains': [
+            ]}),
+
+    'network': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Network,
+        'contains': [
+            ]}),
+
+    'subnetwork': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Subnetwork,
         'contains': [
             ]}),
 

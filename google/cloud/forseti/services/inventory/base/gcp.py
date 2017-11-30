@@ -407,6 +407,26 @@ class ApiClientImpl(ApiClient):
         for serviceaccount in self.iam.get_service_accounts(projectid):
             yield serviceaccount
 
+    @create_lazy('compute', _create_compute)
+    def iter_networks(self, projectid):
+        """Network Iterator from gcp API call
+
+        Yields:
+            dict: Generator of network resources
+        """
+        for network in self.compute.get_networks(projectid):
+            yield network
+
+    @create_lazy('compute', _create_compute)
+    def iter_subnetworks(self, projectid):
+        """Subnetwork Iterator from gcp API call
+
+        Yields:
+            dict: Generator of subnetwork resources
+        """
+        for subnetwork in self.compute.get_subnetworks(projectid):
+            yield subnetwork
+
     @create_lazy('iam', _create_iam)
     def iter_project_roles(self, projectid):
         """Project role Iterator in a project from gcp API call

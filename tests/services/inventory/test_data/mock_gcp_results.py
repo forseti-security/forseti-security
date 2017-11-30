@@ -39,6 +39,8 @@ SERVICEACCOUNT_ID_PREFIX = "110"
 FORWARDING_RULE_ID_PREFIX = "111"
 INSTANCE_GROUP_MANAGER_ID_PREFIX = "112"
 INSTANCE_TEMPLATE_ID_PREFIX = "113"
+NETWORK_ID_PREFIX = "114"
+SUBNETWORK_ID_PREFIX = "115"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -1084,6 +1086,85 @@ GCE_GET_INSTANCE_TEMPLATES = {
                 network="default",
                 num=PROJECT_ID_PREFIX + "1")),
     ]
+}
+
+# Fields: id, name, project
+NETWORK_TEMPLATE = """
+{{
+ "kind": "compute#network",
+ "id": "114{id}",
+ "creationTimestamp": "2017-09-25T12:33:24.312-07:00",
+ "name": "{name}",
+ "description": "",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{name}",
+ "autoCreateSubnetworks": true,
+ "subnetworks": [
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/europe-west1/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/asia-east1/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-west1/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/asia-northeast1/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/southamerica-east1/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/europe-west3/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-east1/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-east4/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/europe-west2/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/asia-southeast1/subnetworks/{name}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/regions/australia-southeast1/subnetworks/{name}"
+ ]
+}}
+"""
+
+GCE_GET_NETWORKS = {
+    "project1": [
+        json.loads(
+            NETWORK_TEMPLATE.format(id=1, name="default", project="project1")),
+    ],
+    "project2": [
+        json.loads(
+            NETWORK_TEMPLATE.format(id=2, name="default", project="project2")),
+    ]
+}
+
+# Fields: id, name, project, ippart, region
+SUBNETWORK_TEMPLATE = """
+{{
+ "kind": "compute#subnetwork",
+ "id": "114{id}",
+ "creationTimestamp": "2017-03-27T15:45:47.874-07:00",
+ "name": "{name}",
+ "network": "https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{name}",
+ "ipCidrRange": "10.{ippart}.0.0/20",
+ "gatewayAddress": "10.{ippart}.0.1",
+ "region": "https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/subnetworks/{name}",
+ "privateIpGoogleAccess": false
+}}
+"""
+
+
+def _generate_subnetworks(project, startid):
+    """Generate one subnetwork resource per region."""
+    subnetworks = []
+    ippart = 128
+    id = startid
+    for region in ["asia-east1", "asia-northeast1", "asia-southeast1",
+                   "australia-southeast1", "europe-west1", "europe-west2",
+                   "europe-west3", "southamerica-east1", "us-central1",
+                   "us-east1", "us-east4", "us-west1"]:
+        subnetworks.append(
+            json.loads(
+                SUBNETWORK_TEMPLATE.format(
+                    id=id, name="default", project=project, ippart=ippart,
+                    region=region)))
+        ippart += 4
+        id += 1
+    return subnetworks
+
+
+GCE_GET_SUBNETWORKS = {
+    "project1": _generate_subnetworks("project1", 10),
+    "project2": _generate_subnetworks("project2", 30),
 }
 
 # Fields: name, num
