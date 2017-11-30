@@ -16,10 +16,9 @@
 
 import time
 import unittest
+from tests.services.inventory import gcp_api_mocks
 from tests.services.api_tests.api_tester import ApiTestRunner
 from tests.services.utils.db import create_test_engine
-from tests.services.utils.gcp_env import gcp_configured
-from tests.services.utils.gcp_env import gcp_env
 from tests.services.utils.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util.threadpool import ThreadPool
@@ -41,10 +40,9 @@ class TestServiceConfig(MockServerConfig):
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.workers = ThreadPool(10)
-        self.env = gcp_env()
-        self.inventory_config = InventoryConfig(self.env.organization_id,
-                                                self.env.gsuite_sa,
-                                                self.env.gsuite_admin_email)
+        self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
+                                                '',
+                                                '')
 
     def run_in_background(self, function):
         """Stub."""
@@ -79,10 +77,6 @@ def create_tester():
 class ApiTest(ForsetiTestCase):
     """Api Test."""
 
-    def setUp(self):
-        self.setup = create_tester()
-
-    @unittest.skipUnless(gcp_configured(), 'requires a real gcp environment')
     def test_basic(self):
         """Test: Create inventory, foreground & no import."""
 
@@ -112,11 +106,12 @@ class ApiTest(ForsetiTestCase):
 
             self.assertEqual([], [i for i in client.inventory.list()])
 
-        self.setup.run(test)
+        with gcp_api_mocks.mock_gcp():
+            setup = create_tester()
+            setup.run(test)
 
-    @unittest.skipUnless(gcp_configured(), 'requires a real gcp environment')
     def test_basic_background(self):
-        """Test: Create inventory, foreground & no import."""
+        """Test: Create inventory, background & no import."""
 
         def test(client):
             """API test callback."""
@@ -128,8 +123,11 @@ class ApiTest(ForsetiTestCase):
                 continue
             self.assertTrue(progress.final_message)
 
-            while not [x for x in client.inventory.list()]:
-                time.sleep(3)
+            while True:
+                # Give background running time to complete.
+                time.sleep(2)
+                if [x for x in client.inventory.list()]:
+                    break
 
             self.assertGreater(len([x for x in client.inventory.list()]),
                                0,
@@ -147,7 +145,9 @@ class ApiTest(ForsetiTestCase):
 
             self.assertEqual([], [i for i in client.inventory.list()])
 
-        self.setup.run(test)
+        with gcp_api_mocks.mock_gcp():
+            setup = create_tester()
+            setup.run(test)
 
 
 if __name__ == '__main__':
