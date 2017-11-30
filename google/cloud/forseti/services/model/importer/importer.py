@@ -135,7 +135,7 @@ class InventoryImporter(object):
             'backendservice',
             'forwardingrule',
             'network',
-            'subnetwork'
+            'subnetwork',
             'cloudsqlinstance'
             ]
 
