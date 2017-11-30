@@ -36,7 +36,7 @@ class TestServiceConfig(MockServerConfig):
     """ServiceConfig Stub."""
 
     def __init__(self):
-        self.engine = create_test_engine(enforce_fks=False)
+        self.engine = create_test_engine()
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.workers = ThreadPool(10)
@@ -139,11 +139,11 @@ class ApiTest(ForsetiTestCase):
                              (client.inventory.get(inventory_index.id)
                               .inventory))
 
-            #self.assertEqual(inventory_index,
-            #                 (client.inventory.delete(inventory_index.id)
-            #                  .inventory))
+            self.assertEqual(inventory_index,
+                             (client.inventory.delete(inventory_index.id)
+                              .inventory))
 
-            #self.assertEqual([], [i for i in client.inventory.list()])
+            self.assertEqual([], [i for i in client.inventory.list()])
 
         with gcp_api_mocks.mock_gcp():
             setup = create_tester()
