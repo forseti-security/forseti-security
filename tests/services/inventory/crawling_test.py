@@ -57,6 +57,21 @@ class CrawlerTest(ForsetiTestCase):
 
         ForsetiTestCase.tearDown(self)
 
+    def _get_resource_counts_from_storage(self, storage):
+        result_counts = {}
+        for item in storage.mem.values():
+            item_type = item.type()
+            result_counts.setdefault(item_type, {'resource': 0})
+            result_counts[item_type]['resource'] += 1
+            if item.getIamPolicy():
+                result_counts[item_type].setdefault('iam_policy', 0)
+                result_counts[item_type]['iam_policy'] += 1
+            if item.getGCSPolicy():
+                result_counts[item_type].setdefault('gcs_policy', 0)
+                result_counts[item_type]['gcs_policy'] += 1
+
+        return result_counts
+
     def test_crawling_to_memory_storage(self):
         """Crawl mock environment, test that there are items in storage."""
 
@@ -76,17 +91,8 @@ class CrawlerTest(ForsetiTestCase):
                              progresser.errors,
                              'No errors should have occurred')
 
-        result_counts = {}
-        for item in storage.mem.values():
-            item_type = item.type()
-            result_counts.setdefault(item_type, {'resource': 0})
-            result_counts[item_type]['resource'] += 1
-            if item.getIamPolicy():
-                result_counts[item_type].setdefault('iam_policy', 0)
-                result_counts[item_type]['iam_policy'] += 1
-            if item.getGCSPolicy():
-                result_counts[item_type].setdefault('gcs_policy', 0)
-                result_counts[item_type]['gcs_policy'] += 1
+
+            result_counts = self._get_resource_counts_from_storage(storage)
 
         expected_counts = {
             'backendservice': {'resource': 1},
@@ -110,6 +116,73 @@ class CrawlerTest(ForsetiTestCase):
         }
 
         self.assertEqual(expected_counts, result_counts)
+
+    def test_crawling_from_folder(self):
+        """Crawl from folder, verify expected resources crawled."""
+
+        config = InventoryConfig(
+            'folders/1032',
+            '',
+            '')
+
+        with MemoryStorage() as storage:
+            progresser = NullProgresser()
+            with gcp_api_mocks.mock_gcp():
+                run_crawler(storage,
+                            progresser,
+                            config)
+
+            self.assertEqual(0,
+                             progresser.errors,
+                             'No errors should have occurred')
+
+
+            result_counts = self._get_resource_counts_from_storage(storage)
+
+        expected_counts = {
+            'bucket': {'gcs_policy': 1, 'iam_policy': 1, 'resource': 1},
+            'folder': {'iam_policy': 2, 'resource': 2},
+            'project': {'iam_policy': 1, 'resource': 1},
+            'role': {'resource': 1}
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
+    def test_crawling_from_project(self):
+        """Crawl from project, verify expected resources crawled."""
+
+        config = InventoryConfig(
+            'projects/1041',
+            '',
+            '')
+
+        with MemoryStorage() as storage:
+            progresser = NullProgresser()
+            with gcp_api_mocks.mock_gcp():
+                run_crawler(storage,
+                            progresser,
+                            config)
+
+            self.assertEqual(0,
+                             progresser.errors,
+                             'No errors should have occurred')
+
+
+            result_counts = self._get_resource_counts_from_storage(storage)
+
+        expected_counts = {
+            'backendservice': {'resource': 1},
+            'compute_project': {'resource': 1},
+            'firewall': {'resource': 3},
+            'forwardingrule': {'resource': 1},
+            'instance': {'resource': 3},
+            'instancegroup': {'resource': 1},
+            'project': {'iam_policy': 1, 'resource': 1},
+            'serviceaccount': {'resource': 1}
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
 
 
 if __name__ == '__main__':

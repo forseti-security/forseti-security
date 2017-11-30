@@ -11,7 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Mock responses to GCP API calls, for testing."""
+"""Mock responses to GCP API calls, for testing.
+
+When updating this file, also update the model test database by running
+tests/services/model/importer/update_test_dbs.py.
+"""
 
 import json
 
