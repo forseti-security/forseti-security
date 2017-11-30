@@ -24,6 +24,8 @@ from sqlalchemy.orm import sessionmaker
 from google.cloud.forseti.services import db
 
 
+# pylint: disable=no-member
+
 def define_violation(model_name, dbengine):
     """Defines table class for violations.
 
@@ -85,7 +87,8 @@ def define_violation(model_name, dbengine):
             """
             return db.ScopedSessionMaker(
                 sessionmaker(
-                    bind=self.engine),
+                    bind=self.engine,
+                    expire_on_commit=False),
                 auto_commit=True)
 
         def create(self, violations):
@@ -103,7 +106,17 @@ def define_violation(model_name, dbengine):
                         violation_type=violation.get('violation_type'),
                         data=json.dumps(violation.get('violation_data'))
                     )
-                    session.add(violation)  # pylint: disable=no-member
+                    session.add(violation)
+
+        def list(self):
+            """List all violations from the db table.
+
+            Returns:
+                list: List of Violation row entry objects.
+            """
+            with self.violationmaker() as session:
+                return session.query(self.TBL_VIOLATIONS).all()
+
 
     base.metadata.create_all(dbengine)
 
