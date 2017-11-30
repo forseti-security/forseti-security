@@ -324,6 +324,14 @@ class BackendService(Resource):
         return 'backendservice'
 
 
+class ForwardingRule(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'forwardingrule'
+
+
 class Role(Resource):
     def key(self):
         return self['name']
@@ -495,6 +503,16 @@ class BackendServiceIterator(ResourceIterator):
                 yield FACTORIES['backendservice'].create_new(data)
 
 
+class ForwardingRuleIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_forwardingrules(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['forwardingrule'].create_new(data)
+
+
 class CloudSqlIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
@@ -598,6 +616,7 @@ FACTORIES = {
             FirewallIterator,
             InstanceGroupIterator,
             BackendServiceIterator,
+            ForwardingRuleIterator,
             ProjectRoleIterator
             ]}),
 
@@ -647,6 +666,12 @@ FACTORIES = {
     'backendservice': ResourceFactory({
         'dependsOn': ['project'],
         'cls': BackendService,
+        'contains': [
+            ]}),
+
+    'forwardingrule': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ForwardingRule,
         'contains': [
             ]}),
 

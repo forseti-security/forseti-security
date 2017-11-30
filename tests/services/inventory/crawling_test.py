@@ -96,6 +96,7 @@ class CrawlerTest(ForsetiTestCase):
             'dataset': {'resource': 1},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
+            'forwardingrule': {'resource': 1},
             'gsuite_group': {'resource': 3},
             'gsuite_group_member': {'resource': 1},
             'gsuite_user': {'resource': 3},

@@ -367,6 +367,16 @@ class ApiClientImpl(ApiClient):
         for backendservice in self.compute.get_backend_services(projectid):
             yield backendservice
 
+    @create_lazy('compute', _create_compute)
+    def iter_forwardingrules(self, projectid):
+        """Forwarding Rule Iterator from gcp API call
+
+        Yields:
+            dict: Generator of forwarding rule resources
+        """
+        for forwardingrule in self.compute.get_forwarding_rules(projectid):
+            yield forwardingrule
+
     @create_lazy('iam', _create_iam)
     def iter_serviceaccounts(self, projectid):
         """Service Account Iterator in a project from gcp API call

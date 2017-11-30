@@ -32,6 +32,7 @@ FIREWALL_ID_PREFIX = "107"
 INSTANCE_GROUP_ID_PREFIX = "108"
 BACKEND_SERVICES_ID_PREFIX = "109"
 SERVICEACCOUNT_ID_PREFIX = "110"
+FORWARDING_RULES_ID_PREFIX = "111"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -918,6 +919,36 @@ GCE_GET_BACKEND_SERVICES = {
                 project="project1",
                 ig_name="bs-1-ig-1",
                 hc_name="bs-1-hc")),
+    ]
+}
+
+# Fields: id, name, project, ip, target
+FORWARDING_RULES_TEMPLATE = """
+{{
+  "kind": "compute#forwardingRule",
+  "description": "",
+  "IPAddress": "{ip}",
+  "region": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1",
+  "loadBalancingScheme": "EXTERNAL",
+  "target": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/{target}",
+  "portRange": "80-80",
+  "IPProtocol": "TCP",
+  "creationTimestamp": "2017-05-05T12:00:01.000-07:00",
+  "id": "111{id}",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/forwardingRules/{name}",
+  "name": "{name}"
+}}
+"""
+
+GCE_GET_FORWARDING_RULES = {
+    "project1": [
+        json.loads(
+            FORWARDING_RULES_TEMPLATE.format(
+                id=1,
+                name="lb-1",
+                project="project1",
+                ip="172.16.1.2",
+                target="targetHttpProxies/lb-1-target-proxy")),
     ]
 }
 

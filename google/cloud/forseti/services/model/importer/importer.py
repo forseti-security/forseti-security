@@ -131,6 +131,7 @@ class InventoryImporter(object):
             'instance',
             'firewall',
             'backendservice',
+            'forwardingrule',
             'cloudsqlinstance'
             ]
 
@@ -419,6 +420,9 @@ class InventoryImporter(object):
             'backendservice': (None,
                                self._convert_backendservice,
                                None),
+            'forwardingrule': (None,
+                               self._convert_forwardingrule,
+                               None),
             'cloudsqlinstance': (None,
                                  self._convert_cloudsqlinstance,
                                  None),
@@ -589,6 +593,26 @@ class InventoryImporter(object):
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
                 data=backendservice.get_data_raw(),
+                parent=parent))
+
+    def _convert_forwardingrule(self, forwardingrule):
+        """Convert a forwarding rule to a database object.
+
+        Args:
+            forwardingrule (object): ForwardingRule to store.
+        """
+        data = forwardingrule.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            forwardingrule)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=forwardingrule.get_key(),
+                type=forwardingrule.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=forwardingrule.get_data_raw(),
                 parent=parent))
 
     def _convert_cloudsqlinstance(self, cloudsqlinstance):
