@@ -87,13 +87,16 @@ class CrawlerTest(ForsetiTestCase):
             if item.getGCSPolicy():
                 result_counts[item_type].setdefault('gcs_policy', 0)
                 result_counts[item_type]['gcs_policy'] += 1
+            if item.getDatasetPolicy():
+                result_counts[item_type].setdefault('dataset_policy', 0)
+                result_counts[item_type]['dataset_policy'] += 1
 
         expected_counts = {
             'backendservice': {'resource': 1},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
-            'dataset': {'resource': 1},
+            'dataset': {'dataset_policy': 1, 'resource': 1},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 3},
