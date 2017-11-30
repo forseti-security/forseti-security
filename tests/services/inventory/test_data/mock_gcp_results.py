@@ -1130,7 +1130,7 @@ GCE_GET_NETWORKS = {
 SUBNETWORK_TEMPLATE = """
 {{
  "kind": "compute#subnetwork",
- "id": "114{id}",
+ "id": "115{id}",
  "creationTimestamp": "2017-03-27T15:45:47.874-07:00",
  "name": "{name}",
  "network": "https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{name}",
