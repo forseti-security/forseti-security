@@ -140,7 +140,6 @@ class CrawlerTest(ForsetiTestCase):
                              progresser.errors,
                              'No errors should have occurred')
 
-
             result_counts = self._get_resource_counts_from_storage(storage)
 
         expected_counts = {
@@ -190,7 +189,6 @@ class CrawlerTest(ForsetiTestCase):
         }
 
         self.assertEqual(expected_counts, result_counts)
-
 
 
 if __name__ == '__main__':
