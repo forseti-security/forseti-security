@@ -377,6 +377,26 @@ class ApiClientImpl(ApiClient):
         for forwardingrule in self.compute.get_forwarding_rules(projectid):
             yield forwardingrule
 
+    @create_lazy('compute', _create_compute)
+    def iter_ig_managers(self, projectid):
+        """Instance Group Manager Iterator from gcp API call
+
+        Yields:
+            dict: Generator of instance group manager resources
+        """
+        for igmanager in self.compute.get_instance_group_managers(projectid):
+            yield igmanager
+
+    @create_lazy('compute', _create_compute)
+    def iter_instancetemplates(self, projectid):
+        """Instance Template Iterator from gcp API call
+
+        Yields:
+            dict: Generator of instance template resources
+        """
+        for instancetemplate in self.compute.get_instance_templates(projectid):
+            yield instancetemplate
+
     @create_lazy('iam', _create_iam)
     def iter_serviceaccounts(self, projectid):
         """Service Account Iterator in a project from gcp API call

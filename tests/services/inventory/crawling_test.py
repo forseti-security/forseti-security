@@ -109,6 +109,8 @@ class CrawlerTest(ForsetiTestCase):
             'gsuite_user_member': {'resource': 3},
             'instance': {'resource': 4},
             'instancegroup': {'resource': 1},
+            'instancegroupmanager': {'resource': 1},
+            'instancetemplate': {'resource': 1},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'iam_policy': 4, 'resource': 4},
             'role': {'resource': 5},
@@ -177,6 +179,8 @@ class CrawlerTest(ForsetiTestCase):
             'forwardingrule': {'resource': 1},
             'instance': {'resource': 3},
             'instancegroup': {'resource': 1},
+            'instancegroupmanager': {'resource': 1},
+            'instancetemplate': {'resource': 1},
             'project': {'iam_policy': 1, 'resource': 1},
             'serviceaccount': {'resource': 1}
         }

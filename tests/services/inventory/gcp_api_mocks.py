@@ -167,6 +167,16 @@ def _mock_gce():
             return results.GCE_GET_INSTANCE_GROUPS[projectid]
         return []
 
+    def _mock_gce_get_instance_group_managers(projectid):
+        if projectid in results.GCE_GET_INSTANCE_GROUP_MANAGERS:
+            return results.GCE_GET_INSTANCE_GROUP_MANAGERS[projectid]
+        return []
+
+    def _mock_gce_get_instance_templates(projectid):
+        if projectid in results.GCE_GET_INSTANCE_TEMPLATES:
+            return results.GCE_GET_INSTANCE_TEMPLATES[projectid]
+        return []
+
     def _mock_gce_get_backend_services(projectid):
         if projectid in results.GCE_GET_BACKEND_SERVICES:
             return results.GCE_GET_BACKEND_SERVICES[projectid]
@@ -185,6 +195,10 @@ def _mock_gce():
     mock_gce.get_instances.side_effect = _mock_gce_get_instances
     mock_gce.get_firewall_rules.side_effect = _mock_gce_get_firewall_rules
     mock_gce.get_instance_groups.side_effect = _mock_gce_get_instance_groups
+    mock_gce.get_instance_group_managers.side_effect = (
+        _mock_gce_get_instance_group_managers)
+    mock_gce.get_instance_templates.side_effect = (
+        _mock_gce_get_instance_templates)
     mock_gce.get_backend_services.side_effect = _mock_gce_get_backend_services
     mock_gce.get_forwarding_rules.side_effect = _mock_gce_get_forwarding_rules
 

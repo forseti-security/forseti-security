@@ -316,6 +316,22 @@ class InstanceGroup(Resource):
         return 'instancegroup'
 
 
+class InstanceGroupManager(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'instancegroupmanager'
+
+
+class InstanceTemplate(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'instancetemplate'
+
+
 class BackendService(Resource):
     def key(self):
         return self['id']
@@ -493,6 +509,26 @@ class InstanceGroupIterator(ResourceIterator):
                 yield FACTORIES['instancegroup'].create_new(data)
 
 
+class InstanceGroupManagerIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_ig_managers(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['instancegroupmanager'].create_new(data)
+
+
+class InstanceTemplateIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_instancetemplates(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['instancetemplate'].create_new(data)
+
+
 class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
@@ -615,6 +651,8 @@ FACTORIES = {
             InstanceIterator,
             FirewallIterator,
             InstanceGroupIterator,
+            InstanceGroupManagerIterator,
+            InstanceTemplateIterator,
             BackendServiceIterator,
             ForwardingRuleIterator,
             ProjectRoleIterator
@@ -660,6 +698,18 @@ FACTORIES = {
     'instancegroup': ResourceFactory({
         'dependsOn': ['project'],
         'cls': InstanceGroup,
+        'contains': [
+            ]}),
+
+    'instancegroupmanager': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': InstanceGroupManager,
+        'contains': [
+            ]}),
+
+    'instancetemplate': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': InstanceTemplate,
         'contains': [
             ]}),
 

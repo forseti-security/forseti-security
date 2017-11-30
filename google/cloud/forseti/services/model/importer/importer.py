@@ -128,6 +128,8 @@ class InventoryImporter(object):
             'dataset',
             'compute_project',
             'instancegroup',
+            'instancegroupmanager',
+            'instancetemplate',
             'instance',
             'firewall',
             'backendservice',
@@ -411,6 +413,12 @@ class InventoryImporter(object):
             'instancegroup': (None,
                               self._convert_instancegroup,
                               None),
+            'instancegroupmanager': (None,
+                              self._convert_instancegroupmanager,
+                              None),
+            'instancetemplate': (None,
+                              self._convert_instancetemplate,
+                              None),
             'instance': (None,
                          self._convert_instance,
                          None),
@@ -533,6 +541,46 @@ class InventoryImporter(object):
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
                 data=instancegroup.get_data_raw(),
+                parent=parent))
+
+    def _convert_instancegroupmanager(self, instancegroupmanager):
+        """Convert a instancegroupmanager to a database object.
+
+        Args:
+            instancegroupmanager (object): InstanceGroupManager to store.
+        """
+        data = instancegroupmanager.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            instancegroupmanager)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=instancegroupmanager.get_key(),
+                type=instancegroupmanager.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=instancegroupmanager.get_data_raw(),
+                parent=parent))
+
+    def _convert_instancetemplate(self, instancetemplate):
+        """Convert a instancetemplate to a database object.
+
+        Args:
+            instancetemplate (object): InstanceTemplate to store.
+        """
+        data = instancetemplate.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            instancetemplate)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=instancetemplate.get_key(),
+                type=instancetemplate.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=instancetemplate.get_data_raw(),
                 parent=parent))
 
     def _convert_instance(self, instance):

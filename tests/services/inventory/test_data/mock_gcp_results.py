@@ -34,9 +34,11 @@ GCE_PROJECT_ID_PREFIX = "105"
 GCE_INSTANCE_ID_PREFIX = "106"
 FIREWALL_ID_PREFIX = "107"
 INSTANCE_GROUP_ID_PREFIX = "108"
-BACKEND_SERVICES_ID_PREFIX = "109"
+BACKEND_SERVICE_ID_PREFIX = "109"
 SERVICEACCOUNT_ID_PREFIX = "110"
-FORWARDING_RULES_ID_PREFIX = "111"
+FORWARDING_RULE_ID_PREFIX = "111"
+INSTANCE_GROUP_MANAGER_ID_PREFIX = "112"
+INSTANCE_TEMPLATE_ID_PREFIX = "113"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -849,7 +851,7 @@ GCE_GET_FIREWALLS = {
                 id=2, project="project2", network="default")),
 }
 
-# Fields: id, name, project, network
+# Fields: id, name, project, network, instance1, instance2, instance3
 GCE_INSTANCE_GROUPS_TEMPLATE = """
 {{
  "kind": "compute#instanceGroup",
@@ -862,7 +864,12 @@ GCE_INSTANCE_GROUPS_TEMPLATE = """
  "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/instanceGroups/{name}",
  "size": 3,
  "region": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1",
- "subnetwork": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/subnetworks/{network}"
+ "subnetwork": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/subnetworks/{network}",
+ "instance_urls": [
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance1}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance2}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance3}"
+ ]
 }}
 """
 
@@ -870,7 +877,13 @@ GCE_GET_INSTANCE_GROUPS = {
     "project1": [
         json.loads(
             GCE_INSTANCE_GROUPS_TEMPLATE.format(
-                id=1, name="bs-1-ig-1", project="project1", network="default")),
+                id=1,
+                name="bs-1-ig-1",
+                project="project1",
+                network="default",
+                instance1="iap_instance1",
+                instance2="iap_instance2",
+                instance3="iap_instance3")),
     ]
 }
 
@@ -953,6 +966,123 @@ GCE_GET_FORWARDING_RULES = {
                 project="project1",
                 ip="172.16.1.2",
                 target="targetHttpProxies/lb-1-target-proxy")),
+    ]
+}
+
+# Fields: id, name, project, template
+INSTANCE_GROUP_MANAGER_TEMPLATE = """
+{{
+ "kind": "compute#instanceGroupManager",
+ "id": "112{id}",
+ "creationTimestamp": "2017-08-24T11:10:06.770-07:00",
+ "name": "{name}",
+ "region": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1",
+ "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/{project}/global/instanceTemplates/{template}",
+ "instanceGroup": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/instanceGroups/{name}",
+ "baseInstanceName": "{name}",
+ "currentActions": {{
+  "none": 3,
+  "creating": 0,
+  "creatingWithoutRetries": 0,
+  "recreating": 0,
+  "deleting": 0,
+  "abandoning": 0,
+  "restarting": 0,
+  "refreshing": 0
+ }},
+ "targetSize": 3,
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/instanceGroupManagers/{name}"
+}}
+"""
+
+GCE_GET_INSTANCE_GROUP_MANAGERS = {
+    "project1": [
+        json.loads(
+            INSTANCE_GROUP_MANAGER_TEMPLATE.format(
+                id=1, name="igm-1", project="project1", template="it-1")),
+    ]
+}
+
+# Fields: id, name, project, network, num
+INSTANCE_TEMPLATES_TEMPLATE = """
+{{
+ "kind": "compute#instanceTemplate",
+ "id": "113{id}",
+ "creationTimestamp": "2017-05-26T22:07:36.275-07:00",
+ "name": "{name}",
+ "description": "",
+ "properties": {{
+  "tags": {{
+   "items": [
+    "iap-tag"
+   ]
+  }},
+  "machineType": "f1-micro",
+  "canIpForward": false,
+  "networkInterfaces": [
+   {{
+    "kind": "compute#networkInterface",
+    "network": "https://www.googleapis.com/compute/v1/projects/{project}/global/networks/{network}",
+    "accessConfigs": [
+     {{
+      "kind": "compute#accessConfig",
+      "type": "ONE_TO_ONE_NAT",
+      "name": "External NAT"
+     }}
+    ]
+   }}
+  ],
+  "disks": [
+   {{
+    "kind": "compute#attachedDisk",
+    "type": "PERSISTENT",
+    "mode": "READ_WRITE",
+    "deviceName": "{name}",
+    "boot": true,
+    "initializeParams": {{
+     "sourceImage": "projects/debian-cloud/global/images/debian-8-jessie-v20170523",
+     "diskSizeGb": "10",
+     "diskType": "pd-standard"
+    }},
+    "autoDelete": true
+   }}
+  ],
+  "metadata": {{
+   "kind": "compute#metadata",
+   "fingerprint": "Ab2_F_dLE3A="
+  }},
+  "serviceAccounts": [
+   {{
+    "email": "{num}-compute@developer.gserviceaccount.com",
+    "scopes": [
+     "https://www.googleapis.com/auth/devstorage.read_only",
+     "https://www.googleapis.com/auth/logging.write",
+     "https://www.googleapis.com/auth/monitoring.write",
+     "https://www.googleapis.com/auth/servicecontrol",
+     "https://www.googleapis.com/auth/service.management.readonly",
+     "https://www.googleapis.com/auth/trace.append"
+    ]
+   }}
+  ],
+  "scheduling": {{
+   "onHostMaintenance": "MIGRATE",
+   "automaticRestart": true,
+   "preemptible": false
+  }}
+ }},
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/global/instanceTemplates/{name}"
+}}
+"""
+
+GCE_GET_INSTANCE_TEMPLATES = {
+    "project1": [
+        json.loads(
+            INSTANCE_TEMPLATES_TEMPLATE.format(
+                id=1,
+                name="it-1",
+                project="project1",
+                network="default",
+                num=PROJECT_ID_PREFIX + "1")),
     ]
 }
 
@@ -1146,10 +1276,12 @@ BUCKET_IAM_TEMPLATE = """
 """
 
 GCS_GET_BUCKET_IAM = {
-    "bucket1": json.loads(
-        BUCKET_IAM_TEMPLATE.format(name="bucket1", project="project3")),
-    "bucket2": json.loads(
-        BUCKET_IAM_TEMPLATE.format(name="bucket2", project="project4"))
+    "bucket1":
+        json.loads(
+            BUCKET_IAM_TEMPLATE.format(name="bucket1", project="project3")),
+    "bucket2":
+        json.loads(
+            BUCKET_IAM_TEMPLATE.format(name="bucket2", project="project4"))
 }
 
 GCS_GET_OBJECT_ACLS = {}
