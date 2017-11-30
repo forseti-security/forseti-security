@@ -14,11 +14,9 @@
 """Unit Tests: Importer for IAM Explain."""
 
 import os
+import shutil
 import tempfile
 import unittest
-from tests.services.utils.gcp_env import gcp_configured
-from tests.services.utils.gcp_env import gcp_env
-from tests.services.utils.protect import copy_file_decrypt
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
@@ -44,13 +42,12 @@ def get_db_file_path(db_name):
     return os.path.join(module_dir, 'test_data', db_name)
 
 
-def get_api_file_path(filename, passphrase):
-    """Return the decrypted API recording."""
+def get_db_file_copy(filename):
+    """Return a temp copy of the test db."""
     fd, dstfilename = tempfile.mkstemp()
+    shutil.copyfile(get_db_file_path(filename), dstfilename)
     try:
-        module_dir = os.path.dirname(os.path.abspath(__file__))
-        encrypted_filename = os.path.join(module_dir, 'test_data', filename)
-        return copy_file_decrypt(dstfilename, encrypted_filename, passphrase)
+        return dstfilename
     finally:
         os.close(fd)
 
@@ -58,14 +55,13 @@ def get_api_file_path(filename, passphrase):
 class ImporterTest(ForsetiTestCase):
     """Test importer based on database dump."""
 
-    @unittest.skipUnless(gcp_configured(), "Don't replay when recordings run")
     def test_inventory_importer_basic(self):
         """Test the basic importer for the inventory."""
 
-        env = gcp_env()
         db_connect = 'sqlite:///{}'.format(
-            get_api_file_path('inventory_1_basic.db.encrypted',
-                              env.passphrase))
+            get_db_file_copy('forseti-test.db'))
+
+        print db_connect
 
         self.service_config = ServiceConfig(db_connect)
 
@@ -88,6 +84,7 @@ class ImporterTest(ForsetiTestCase):
             import_runner.run()
 
         model = self.model_manager.model(self.model_name)
+        print model
         self.assertIn(model.state,
                       [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS],
                       'Model state should be success or partial success')
