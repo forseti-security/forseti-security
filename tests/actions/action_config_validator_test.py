@@ -20,18 +20,19 @@ from tests.unittest_utils import ForsetiTestCase
 from tests.actions import action_config_data
 
 
-class ActionsConfigValidatorTest(ForsetiTestCase):
-  """."""
+class ActionConfigValidatorTest(ForsetiTestCase):
+  """action_config_validator unit tests."""
+
   def setUp(self):
     self.valid_config = action_config_data.VALID_CONFIG1
     self.invalid_config = action_config_data.INVALID_CONFIG1
 
   def test_load_actions(self):
-    _, errors = acv.ActionsConfigValidator._load_actions(self.valid_config)
+    _, errors = acv._load_actions(self.valid_config)
     self.assertEqual([], errors)
 
   def test_load_actions_errors(self):
-    _, errors = acv.ActionsConfigValidator._load_actions(self.invalid_config)
+    _, errors = acv._load_actions(self.invalid_config)
     expected_errors = [
         acv.MissingRequiredActionField('id'),
         acv.DuplicateActionIdError('action.1')
@@ -40,13 +41,13 @@ class ActionsConfigValidatorTest(ForsetiTestCase):
 
   def test_check_action_type(self):
     for action in self.valid_config.get('actions', []):
-      result = acv.ActionsConfigValidator._check_action_type(action)
+      result = acv._check_action_type(action)
       self.assertIsNone(result)
 
   def test_check_action_type_errors(self):
     errors = []
     for action in self.invalid_config.get('actions', []):
-      result = acv.ActionsConfigValidator._check_action_type(action)
+      result = acv._check_action_type(action)
       if result is not None:
         errors.append(result)
     expected = [acv.ActionTypeDoesntExist(
@@ -56,15 +57,15 @@ class ActionsConfigValidatorTest(ForsetiTestCase):
   # TODO: once the code for the rules has been submitted, this can be enabled.
   # def test_check_trigger(self):
   #   for action in self.valid_config.get('actions', []):
-  #     result = acv.ActionsConfigValidator._check_trigger(action)
+  #     result = acv._check_trigger(action)
   #     self.assertIsNone(result)
 
   def test_check_trigger_errors(self):
     errors = []
     for action in self.invalid_config.get('actions', []):
-      result = acv.ActionsConfigValidator._check_trigger(action)
+      result = acv._check_trigger(action)
       if result is not None:
-        errors.append(result)
+        errors.extend(result)
     expected = [
         acv.TriggerDoesntExist('rules.rule_doesnt_exist.*'),
         acv.TriggerDoesntExist('rules.rule_doesnt_exist.*'),
