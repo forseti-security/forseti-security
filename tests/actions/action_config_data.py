@@ -12,4 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for notifier."""
+import os
+import yaml
+
+TEST_CONFIG_PATH = os.path.abspath(os.path.dirname(__file__))
+
+
+def _load_yaml(filename):
+  with open(os.path.join(TEST_CONFIG_PATH, filename)) as fp:
+    return yaml.safe_load(fp)
+
+VALID_CONFIG1 = _load_yaml('test_data/valid_config.yaml')
+INVALID_CONFIG1 = _load_yaml('test_data/invalid_config.yaml')

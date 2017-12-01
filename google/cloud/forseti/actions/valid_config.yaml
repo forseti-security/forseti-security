@@ -1,0 +1,6 @@
+actions:
+  - id: action.1
+    type: google.cloud.security.action_engine.actions.RuleNotifier
+    triggers: 
+    - rules.firewall_rule.*
+    group_by: resource.project

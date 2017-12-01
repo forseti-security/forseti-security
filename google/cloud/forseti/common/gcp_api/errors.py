@@ -22,7 +22,8 @@ class Error(Exception):
 class ApiExecutionError(Error):
     """Error for API executions."""
 
-    CUSTOM_ERROR_MESSAGE = 'GCP API Error: unable to get {0} from GCP:\n{1}'
+    CUSTOM_ERROR_MESSAGE = (
+        'GCP API Error: unable to get {0} from GCP:\n{1}\n{2}')
 
     def __init__(self, resource_name, e):
         """Initialize.
@@ -32,7 +33,9 @@ class ApiExecutionError(Error):
             e (Exception): The exception.
         """
         super(ApiExecutionError, self).__init__(
-            self.CUSTOM_ERROR_MESSAGE.format(resource_name, e))
+            self.CUSTOM_ERROR_MESSAGE.format(
+                resource_name, e, e.content.decode('utf-8')))
+        self.http_error = e
 
 
 class ApiNotEnabledError(Error):
@@ -50,6 +53,7 @@ class ApiNotEnabledError(Error):
         """
         super(ApiNotEnabledError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(error_url, e))
+        self.http_error = e
 
 
 class ApiInitializationError(Error):

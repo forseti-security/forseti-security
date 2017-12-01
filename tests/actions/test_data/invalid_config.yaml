@@ -12,4 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for notifier."""
+actions:
+  - type: google.cloud.security.actions.ActionDoesntExist
+    triggers: 
+    - rules.rule_doesnt_exist.*
+    group_by: resource.project
+
+  - id: action.1
+    type: google.cloud.security.actions.sample_action.SampleAction
+    triggers: 
+    - rules.rule_doesnt_exist.*
+    group_by: resource.project
+
+  - id: action.1
+    type: google.cloud.security.actions.sample_action.SampleAction
+    triggers: 
+    - rules.rule_doesnt_exist.*
+    group_by: resource.project
