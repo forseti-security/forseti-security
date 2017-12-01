@@ -192,6 +192,11 @@ class InventoryImporter(object):
             traceback.print_exc(file=buf)
             buf.seek(0)
             message = buf.read()
+            try:
+                self.session.commit()
+            except Exception as e:
+                self.session.rollback()
+                message += "Session can't be flushed because: " + str(e)
             self.model.set_error(message)
         else:
             self.model.add_warning(inventory.index.warnings)
