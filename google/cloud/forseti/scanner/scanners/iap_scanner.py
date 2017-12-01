@@ -353,8 +353,8 @@ class IapScanner(base_scanner.BaseScanner):
 
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iap.{}.csv'
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
-                 rules):
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules):
         """Initialization.
 
         Args:
@@ -364,7 +364,8 @@ class IapScanner(base_scanner.BaseScanner):
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IapScanner, self).__init__(
-            global_configs, scanner_configs, snapshot_timestamp, rules)
+            global_configs, scanner_configs, service_config, model_name,
+            snapshot_timestamp, rules)
         self.rules_engine = iap_rules_engine.IapRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
