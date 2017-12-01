@@ -20,8 +20,8 @@ from oauth2client import client
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_cloudbilling_responses as fake_cloudbilling
 from tests.common.gcp_api.test_data import http_mocks
-from google.cloud.security.common.gcp_api import cloudbilling
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import cloudbilling
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 
 
 class CloudBillingTest(unittest_utils.ForsetiTestCase):

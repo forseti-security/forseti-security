@@ -20,9 +20,9 @@ import MySQLdb
 import unittest
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.gcp_api import compute
-from google.cloud.security.inventory.pipelines import load_firewall_rules_pipeline
+from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.inventory.pipelines import load_firewall_rules_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_firewall_rules
 # pylint: enable=line-too-long
@@ -59,7 +59,7 @@ class LoadFirewallRulesTest(ForsetiTestCase):
             counter +=1
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     def test_can_retrieve_firewall_rules_from_gcp(
             self, mock_get_projects, mock_conn):
         mock_get_projects.return_value = [

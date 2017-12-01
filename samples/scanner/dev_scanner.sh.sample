@@ -15,6 +15,6 @@
 
 # Wrapper script to run scanner in development mode.
 
-PYTHONPATH=./ python google/cloud/security/scanner/scanner.py \
+PYTHONPATH=./ python google/cloud/forseti/scanner/scanner.py \
         --forseti_config <path to config> \
         --rules <path to rules>

@@ -100,7 +100,14 @@ DATASETS_LIST_REQUEST_RESPONSE = """
 }
 """
 
-DATASETS_LIST_EXPECTED = [{'datasetId': 'test', 'projectId': 'bq-test'}]
+DATASETS_LIST_EXPECTED = [{
+    'datasetReference': {
+        'datasetId': 'test',
+        'projectId': 'bq-test'
+    },
+    'id': 'bq-test:test',
+    'kind': 'bigquery#dataset'
+}]
 
 PERMISSION_DENIED = """
 {

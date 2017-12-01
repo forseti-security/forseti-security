@@ -19,7 +19,7 @@ import json
 import parameterized
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type import firewall_rule
+from google.cloud.forseti.common.gcp_type import firewall_rule
 from tests.inventory.pipelines.test_data import fake_firewall_rules
 
 class FirewallRuleTest(ForsetiTestCase):

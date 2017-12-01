@@ -21,8 +21,8 @@ from oauth2client import client
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import http_mocks
 from tests.common.gcp_type.test_data import fake_cloudsql
-from google.cloud.security.common.gcp_api import cloudsql
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import cloudsql
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 
 
 class CloudsqlTest(unittest_utils.ForsetiTestCase):

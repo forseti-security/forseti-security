@@ -20,14 +20,14 @@ import unittest
 
 # pylint: disable=line-too-long
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import appengine_dao
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.gcp_api import appengine
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import base_pipeline
-from google.cloud.security.inventory.pipelines import load_appengine_pipeline
+from google.cloud.forseti.common.data_access import appengine_dao
+from google.cloud.forseti.common.data_access import errors as data_access_errors
+from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_api import appengine
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.inventory import errors as inventory_errors
+from google.cloud.forseti.inventory.pipelines import base_pipeline
+from google.cloud.forseti.inventory.pipelines import load_appengine_pipeline
 from tests.inventory.pipelines.test_data import fake_appengine_applications
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_projects
@@ -64,7 +64,7 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
             list(actual))
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     def test_api_is_called_to_retrieve_applications(
             self, mock_get_projects, mock_conn):
         """Test that API is called to retrieve instances."""
@@ -75,8 +75,8 @@ class LoadAppenginePipelineTest(ForsetiTestCase):
             self.pipeline.api_client.get_app.call_count)
 
     @mock.patch.object(MySQLdb, 'connect')
-    @mock.patch('google.cloud.security.inventory.pipelines.base_pipeline.BasePipeline.safe_api_call')
-    @mock.patch('google.cloud.security.common.data_access.project_dao.ProjectDao.get_projects')
+    @mock.patch('google.cloud.forseti.inventory.pipelines.base_pipeline.BasePipeline.safe_api_call')
+    @mock.patch('google.cloud.forseti.common.data_access.project_dao.ProjectDao.get_projects')
     def test_retrieve_data_is_correct(
             self, mock_get_projects, mock_safe_api_call, mock_conn):
         """Test _retrieve() data is correct."""

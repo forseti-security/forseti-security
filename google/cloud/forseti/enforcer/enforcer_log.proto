@@ -1,0 +1,107 @@
+// Copyright 2017 The Forseti Security Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+package google.cloud.forseti.enforcer.enforcer_log;
+
+enum RunContext {
+  // how was this result generated
+  RUN_CONTEXT_UNSPECIFIED = 0;
+  ENFORCER_BATCH = 1;        // Standard enforcement run
+  ENFORCER_ONE_PROJECT = 2;  // single-project enforcement
+  ROLLBACK_ONE_PROJECT = 3;  // single-project rollback
+}
+
+enum EnforcementStatus {
+  ENFORCEMENT_STATUS_UNSPECIFIED = 0;
+  SUCCESS = 1;
+  ERROR = 2;
+  SKIPPED = 3;
+  PROJECT_DELETED = 4;
+}
+
+message RuleSet {
+  optional string json = 1;  // output suitable for rollback
+  optional string hash = 2;  // sha256sum of json for comparison
+}
+
+message BatchResult {
+  // batch_id allows all of the ChangeLog entries from a single run
+  // to be grouped together for analysis.
+  optional int64 batch_id = 1;
+
+  // microsecond timestamps correspond to total enforcement run time
+  optional int64 timestamp_start_msec = 2;
+  optional int64 timestamp_end_msec = 3;
+
+  optional int64 projects_total = 4;
+
+  // success + error + optout = projects_total
+  optional int64 projects_success = 5;  // Includes deleted projects
+  optional int64 projects_error = 6;
+  optional int64 projects_skipped = 7;
+
+  // Count of enforced projects with at least one rule changed this batch run
+  optional int64 projects_changed = 8;
+
+  // Count of projects which had no rules changed
+  // Equivalent to (projects_total - projects_changed)
+  optional int64 projects_unchanged = 9;
+}
+
+message GceFirewallEnforcementResult {
+  optional RuleSet rules_before = 5;
+  optional RuleSet rules_after = 6;
+
+  // set of rule names from rules_before and rules_after
+  repeated string rules_added = 7;
+  repeated string rules_removed = 8;
+  repeated string rules_updated = 9;
+  repeated string rules_unchanged = 10;
+
+  // Count of rules_added + rules_removed + rules_updated
+  optional int64 rules_modified_count = 11;
+
+  // Set when all previous rules were deleted and all current rules were added.
+  // This could be because a project is newly enforced, or the firewall policy
+  // applied to the project was changed.
+  optional bool all_rules_changed = 15;
+
+  // policy definition which was applied
+  optional string policy_path = 16;
+}
+
+message ProjectResult {
+  optional string project_id = 1;     // unique among non-deleted projects
+  optional int64 project_number = 2;  // globally unique
+
+  optional int64 timestamp_sec = 3;  // Time project enforcement occurred
+  optional int64 batch_id = 4;
+
+  // How this entry was generated
+  optional RunContext run_context = 5;
+
+  // Enforcement status
+  optional EnforcementStatus status = 6;
+
+  // If Status is not SUCCESS, what was the reason?
+  optional string status_reason = 7;
+
+  optional GceFirewallEnforcementResult gce_firewall_enforcement = 8;
+}
+
+message EnforcerLog {
+  repeated ProjectResult results = 1;
+  optional BatchResult summary = 2;
+}

@@ -15,7 +15,7 @@
 """Test data for firewall api responses."""
 
 from googleapiclient import http
-from google.cloud.security.common.gcp_api import _base_repository
+from google.cloud.forseti.common.gcp_api import _base_repository
 
 
 def mock_http_response(response, status='200'):

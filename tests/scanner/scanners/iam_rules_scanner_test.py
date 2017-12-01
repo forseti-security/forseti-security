@@ -17,17 +17,17 @@ from datetime import datetime
 import mock
 import unittest
 
-from google.cloud.security.common.gcp_type import folder
-from google.cloud.security.common.gcp_type import organization
-from google.cloud.security.common.gcp_type import project
-from google.cloud.security.scanner.scanners import iam_rules_scanner
+from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import organization
+from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.scanner.scanners import iam_rules_scanner
 from tests.unittest_utils import ForsetiTestCase
 
 
 class IamRulesScannerTest(ForsetiTestCase):
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine',
         autospec=True)
     def setUp(self, mock_rules_engine):
 
@@ -53,7 +53,7 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.assertEquals(expected, actual)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.organization_dao',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.organization_dao',
         autospec=True)
     def test_get_org_policies_works(self, mock_dao):
         """Test that get_org_policies() works."""
@@ -70,7 +70,7 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.assertEqual(fake_policies, policies)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.folder_dao',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.folder_dao',
         autospec=True)
     def test_get_folder_policies_works(self, mock_dao):
         """Test that get_folder_iam_policies() works."""
@@ -88,7 +88,7 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.assertEqual(fake_folder_policies, policies)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.project_dao',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.project_dao',
         autospec=True)
     def test_get_project_policies(self, mock_dao):
         """Test that get_org_policies() works."""
@@ -106,16 +106,16 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.assertEqual(fake_policies, policies)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.notifier',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
         iam_rules_scanner.IamPolicyScanner,
         '_upload_csv', autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.os',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.os',
         autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.datetime',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.datetime',
         autospec=True)
     @mock.patch.object(
         iam_rules_scanner.csv_writer,
@@ -165,16 +165,16 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.assertEquals(0, mock_notifier.process.call_count)
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.notifier',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
         iam_rules_scanner.IamPolicyScanner,
         '_upload_csv', autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.os',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.os',
         autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iam_rules_scanner.datetime',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.datetime',
         autospec=True)
     @mock.patch.object(
         iam_rules_scanner.csv_writer,

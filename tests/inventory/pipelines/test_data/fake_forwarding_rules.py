@@ -15,7 +15,7 @@
 
 """Test forwarding rules data."""
 
-from google.cloud.security.common.util import parser
+from google.cloud.forseti.common.util import parser
 
 
 FAKE_FORWARDING_RULE1 = {

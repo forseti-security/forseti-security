@@ -15,7 +15,7 @@
 import mock
 import unittest
 
-import google.cloud.security.actions.action_config_validator as acv
+import google.cloud.forseti.actions.action_config_validator as acv
 from tests.unittest_utils import ForsetiTestCase
 from tests.actions import action_config_data
 

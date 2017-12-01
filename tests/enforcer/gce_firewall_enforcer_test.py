@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for google.cloud.security.enforcer.gce_firewall_enforcer."""
+"""Tests for google.cloud.forseti.enforcer.gce_firewall_enforcer."""
 
 import copy
 import json
@@ -26,7 +26,7 @@ import parameterized
 from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import ForsetiTestCase
 
-from google.cloud.security.enforcer import gce_firewall_enforcer as fe
+from google.cloud.forseti.enforcer import gce_firewall_enforcer as fe
 
 class HelperFunctionTest(ForsetiTestCase):
     """Unit tests for helper functions."""
@@ -232,7 +232,7 @@ class FirewallRulesTest(ForsetiTestCase):
         self.gce_service = mock.MagicMock()
 
         self.mock_api_version = mock.patch(
-            'google.cloud.security.enforcer.gce_firewall_enforcer'
+            'google.cloud.forseti.enforcer.gce_firewall_enforcer'
             '.API_VERSION', 'beta').start()
 
         self.firewall_api = fe.ComputeFirewallAPI(

@@ -21,13 +21,13 @@ import ratelimiter
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_iam_policies
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import project_dao as proj_dao
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import log_util
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import load_projects_iam_policies_pipeline
+from google.cloud.forseti.common.data_access import errors as data_access_errors
+from google.cloud.forseti.common.data_access import project_dao as proj_dao
+from google.cloud.forseti.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.inventory import errors as inventory_errors
+from google.cloud.forseti.inventory.pipelines import load_projects_iam_policies_pipeline
 
 
 class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
@@ -57,6 +57,7 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
             fake_iam_policies.EXPECTED_LOADABLE_PROJECT_IAM_POLICY,
             loadable_iam_policies)
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     def test_api_is_called_to_retrieve_org_policies(self):
         """Test that api is called to retrieve org policies."""
 
@@ -90,6 +91,7 @@ class LoadProjectsIamPoliciesPipelineTest(ForsetiTestCase):
         with self.assertRaises(inventory_errors.LoadDataPipelineError):
             self.pipeline._retrieve()
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     @mock.patch.object(
         load_projects_iam_policies_pipeline.base_pipeline, 'LOGGER')
     def test_api_error_is_handled_when_retrieving(self, mock_logger):

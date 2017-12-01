@@ -14,7 +14,7 @@
 
 """Fake AppEngine application data."""
 
-from google.cloud.security.common.util import parser
+from google.cloud.forseti.common.util import parser
 
 FAKE_PROJECT_APPLICATIONS_MAP = {
     'project1': {

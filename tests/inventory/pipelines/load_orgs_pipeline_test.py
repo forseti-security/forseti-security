@@ -20,12 +20,12 @@ import mock
 import unittest
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import organization_dao as org_dao
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import load_orgs_pipeline
+from google.cloud.forseti.common.data_access import errors as data_access_errors
+from google.cloud.forseti.common.data_access import organization_dao as org_dao
+from google.cloud.forseti.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.inventory import errors as inventory_errors
+from google.cloud.forseti.inventory.pipelines import load_orgs_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_orgs
 # pylint: enable=line-too-long
@@ -64,6 +64,7 @@ class LoadOrgsPipelineTest(ForsetiTestCase):
         orgs = list(self.pipeline._transform(fake_orgs.FAKE_ORGS))
         self.assertEquals(fake_orgs.EXPECTED_LOADABLE_ORGS, orgs)
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     def test_api_is_called_to_retrieve_orgs(self):
         """Test that api is called to retrieve orgs."""
 
@@ -72,8 +73,9 @@ class LoadOrgsPipelineTest(ForsetiTestCase):
         self.pipeline.api_client.get_organizations.assert_called_once_with(
             self.pipeline.RESOURCE_NAME)
 
+    @unittest.skip("Pipelines will be removed in a future PR.")
     @mock.patch(
-        'google.cloud.security.inventory.pipelines.base_pipeline.LOGGER')
+        'google.cloud.forseti.inventory.pipelines.base_pipeline.LOGGER')
     def test_retrieve_errors_are_handled(self, mock_logger):
         """Test that errors are handled when retrieving."""
 

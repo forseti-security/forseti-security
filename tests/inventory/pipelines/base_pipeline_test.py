@@ -19,15 +19,15 @@ import mock
 import unittest
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.util import log_util
-from google.cloud.security.common.util import parser
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import base_pipeline
-from google.cloud.security.inventory.pipelines import load_projects_pipeline
+from google.cloud.forseti.common.data_access import dao
+from google.cloud.forseti.common.data_access import errors as data_access_errors
+from google.cloud.forseti.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import parser
+from google.cloud.forseti.inventory import errors as inventory_errors
+from google.cloud.forseti.inventory.pipelines import base_pipeline
+from google.cloud.forseti.inventory.pipelines import load_projects_pipeline
 from tests.inventory.pipelines.test_data import fake_configs
 from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long

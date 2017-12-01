@@ -17,10 +17,21 @@
 import collections
 import contextlib
 import json
+import logging
+import mock
 import os
 import tempfile
 import unittest
+import socket
 
+def get_available_port():
+    """Get a port that is available to use"""
+    sckt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sckt.bind(("",0))
+    sckt.listen(1)
+    port = sckt.getsockname()[1]
+    sckt.close()
+    return port
 
 @contextlib.contextmanager
 def create_temp_file(data):
@@ -33,8 +44,13 @@ def create_temp_file(data):
         os.unlink(temp.name)
 
 
+
 class ForsetiTestCase(unittest.TestCase):
     """Forseti base class for tests."""
+
+    def __init__(self, *args, **kwargs):
+        super(ForsetiTestCase, self,).__init__(*args, **kwargs)
+        logging.getLogger().setLevel(logging.DEBUG)
 
     def assertStartsWith(self, actual, expected_start):
         """Assert that actual.startswith(expected_start) is True.

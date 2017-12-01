@@ -17,7 +17,7 @@ import time
 import unittest
 import mock
 from tests import unittest_utils
-from google.cloud.security.common.util import delay
+from google.cloud.forseti.common.util import delay
 
 
 class DelayTest(unittest_utils.ForsetiTestCase):

@@ -20,10 +20,10 @@ import unittest
 import MySQLdb
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import errors
-from google.cloud.security.scanner import scanner
-from google.cloud.security.scanner.audit import iam_rules_engine as ire
-from google.cloud.security.scanner.scanners import iam_rules_scanner as irs
+from google.cloud.forseti.common.data_access import errors
+from google.cloud.forseti.scanner import scanner
+from google.cloud.forseti.scanner.audit import iam_rules_engine as ire
+from google.cloud.forseti.scanner.scanners import iam_rules_scanner as irs
 from tests.inventory.pipelines.test_data import fake_iam_policies
 
 
@@ -145,7 +145,7 @@ class ScannerRunnerTest(ForsetiTestCase):
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch(
-        'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
+        'google.cloud.forseti.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
     )
     def test_get_timestamp_handles_error(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""
@@ -158,7 +158,7 @@ class ScannerRunnerTest(ForsetiTestCase):
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch(
-        'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
+        'google.cloud.forseti.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
     )
     def test_get_timestamp(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""
@@ -169,7 +169,7 @@ class ScannerRunnerTest(ForsetiTestCase):
 
     @mock.patch.object(MySQLdb, 'connect')
     @mock.patch(
-        'google.cloud.security.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
+        'google.cloud.forseti.common.data_access.dao.Dao.get_latest_snapshot_timestamp'
     )
     def test_get_timestamp_db_errors(self, mock_get_ss_timestamp, mock_conn):
         """Test that get_timestamp() works."""

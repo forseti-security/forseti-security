@@ -18,9 +18,9 @@ import mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.util import file_loader
-from google.cloud.security.inventory import api_map
-from google.cloud.security.inventory import pipeline_builder
+from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.inventory import api_map
+from google.cloud.forseti.inventory import pipeline_builder
 from tests.inventory.test_data import fake_runnable_pipelines
 
 
@@ -169,7 +169,7 @@ class PipelineBuilderTest(ForsetiTestCase):
 
         self.assertEquals('bar', my_pipeline_builder._get_api('foo'))
 
-    @mock.patch('google.cloud.security.common.gcp_api.admin_directory.AdminDirectoryClient')
+    @mock.patch('google.cloud.forseti.common.gcp_api.admin_directory.AdminDirectoryClient')
     def testInitializeApiWithEmptyInitializedApiMap(self, mock_admin):
         my_pipeline_builder = pipeline_builder.PipelineBuilder(
             FAKE_TIMESTAMP, 'foo_path', mock.MagicMock(),
@@ -182,7 +182,7 @@ class PipelineBuilderTest(ForsetiTestCase):
         self.assertTrue('admin_api' in my_pipeline_builder.initialized_api_map)
         self.assertTrue('AdminDirectoryClient()'in str(admin_api))
 
-    @mock.patch('google.cloud.security.common.gcp_api.admin_directory.AdminDirectoryClient')
+    @mock.patch('google.cloud.forseti.common.gcp_api.admin_directory.AdminDirectoryClient')
     def testInitializeApiWithNonEmptyInitializedApiMap(self, mock_admin):
         my_pipeline_builder = pipeline_builder.PipelineBuilder(
             FAKE_TIMESTAMP, 'foo_path', mock.MagicMock(),

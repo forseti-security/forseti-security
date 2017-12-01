@@ -22,7 +22,7 @@ from datetime import datetime
 
 import MySQLdb
 
-from google.cloud.security.notifier.pipelines import base_notification_pipeline as bnp
+from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
 from tests.unittest_utils import ForsetiTestCase
 
 class FakePipeline(bnp.BaseNotificationPipeline):
@@ -34,7 +34,7 @@ class BaseNotificationPipelineTest(ForsetiTestCase):
     """Tests for base_notification_pipeline."""
 
     @mock.patch(
-        'google.cloud.security.common.data_access._db_connector.DbConnector',
+        'google.cloud.forseti.common.data_access._db_connector.DbConnector',
         autospec=True)
     def setUp(self, mock_conn):
         """Setup."""
@@ -51,7 +51,7 @@ class BaseNotificationPipelineTest(ForsetiTestCase):
             'abc', '123', None, fake_global_conf, {}, fake_pipeline_conf)
 
     @mock.patch(
-        'google.cloud.security.common.data_access.violation_dao.ViolationDao',
+        'google.cloud.forseti.common.data_access.violation_dao.ViolationDao',
         autospec=True)
     def test_get_violation_dao(self, mock_violation_dao):
         """Test _get_violation_dao()."""

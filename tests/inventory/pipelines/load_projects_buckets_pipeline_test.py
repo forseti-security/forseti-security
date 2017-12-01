@@ -19,13 +19,13 @@ import mock
 import unittest
 
 # pylint: disable=line-too-long
-from google.cloud.security.common.data_access import errors as data_access_errors
-from google.cloud.security.common.data_access import project_dao as proj_dao
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_api import storage
-from google.cloud.security.common.util import log_util
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import load_projects_buckets_pipeline
+from google.cloud.forseti.common.data_access import errors as data_access_errors
+from google.cloud.forseti.common.data_access import project_dao as proj_dao
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import storage
+from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.inventory import errors as inventory_errors
+from google.cloud.forseti.inventory.pipelines import load_projects_buckets_pipeline
 from tests.inventory.pipelines.test_data import fake_buckets
 from tests.inventory.pipelines.test_data import fake_configs
 # pylint: enable=line-too-long
@@ -77,7 +77,7 @@ class LoadProjectsBucketsPipelineTest(ForsetiTestCase):
             1, self.pipeline.api_client.get_buckets.call_count)
 
     @mock.patch(
-        'google.cloud.security.inventory.pipelines.base_pipeline.LOGGER')
+        'google.cloud.forseti.inventory.pipelines.base_pipeline.LOGGER')
     def test_api_error_is_handled_when_retrieving(self, mock_logger):
         """Test that exceptions are handled when retrieving.
 
