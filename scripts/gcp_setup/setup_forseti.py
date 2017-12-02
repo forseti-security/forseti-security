@@ -31,8 +31,8 @@ def run():
     parser.add_argument('--no-iam-check',
                         action='store_true',
                         help='Bypass IAM check for user running script')
-    parser.add_argument('--branch',
-                        help='Which Forseti branch to deploy')
+    parser.add_argument('--config',
+                        help='Forseti setup config values')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',

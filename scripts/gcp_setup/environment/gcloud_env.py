@@ -19,6 +19,7 @@ This has been tested with python 2.7.
 
 from __future__ import print_function
 
+import configparser
 import datetime
 import json
 import os
@@ -28,17 +29,23 @@ import sys
 import time
 
 
+CONFIG_FILENAME_FMT = 'forseti-setup-{}.cfg'
+
 DEFAULT_BUCKET_FMT = 'gs://{}-data-{}'
 DEFAULT_CLOUDSQL_INSTANCE_NAME = 'forseti-security'
 
-GCLOUD_MIN_VERSION = (163, 0, 0)
+GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
 
 GSUITE_KEY_SCP_ATTEMPTS = 5
 GSUITE_KEY_NAME = 'gsuite_key.json'
 
-ORG_IAM_ROLES = [
+SERVICE_ACCT_FMT = 'forseti-{}-{}-{}'
+SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
+
+# Roles
+GCP_READ_IAM_ROLES = [
     'roles/browser',
     'roles/compute.networkViewer',
     'roles/iam.securityReviewer',
@@ -46,9 +53,13 @@ ORG_IAM_ROLES = [
     'roles/bigquery.dataViewer',
     'roles/servicemanagement.quotaViewer',
     'roles/cloudsql.viewer',
+]
+
+GCP_WRITE_IAM_ROLES = [
     'roles/compute.securityAdmin',
 ]
 
+# Required APIs
 PROJECT_IAM_ROLES = [
     'roles/storage.objectViewer',
     'roles/storage.objectCreator',
@@ -75,13 +86,14 @@ REQUIRED_APIS = [
      'service': 'iam.googleapis.com'},
 ]
 
-SERVICE_ACCT_FMT = 'forseti-{}-reader-{}'
-SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
-
+# Paths
 ROOT_DIR_PATH = os.path.dirname(
     os.path.dirname(
         os.path.dirname(
             os.path.dirname(__file__))))
+
+FORSETI_SRC_PATH = os.path.join(
+    ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
 
 VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
 
@@ -99,6 +111,148 @@ def org_id_from_org_name(org_name):
     return org_name[len('organizations/'):]
 
 
+def run_command(cmd_args):
+    """Wrapper to run a command in subprocess.
+
+    Args:
+        cmd_args (str): The list of command arguments.
+
+    Returns:
+        int: The return code. 0 is "ok", anything else is "error".
+        str: Output, if command was successful.
+        err: Error output, if there was an error.
+    """
+    proc = subprocess.Popen(cmd_args,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+    return proc.returncode, out, err
+
+def print_banner(text):
+    """Print a banner.
+
+    Args:
+        text (str): Text to put in the banner.
+    """
+    print('')
+    print('+-------------------------------------------------------')
+    print('|  %s' % text)
+    print('+-------------------------------------------------------')
+    print('')
+
+def get_forseti_version():
+    """Get Forseti version from version file."""
+    version = None
+    version_re = re.compile(VERSIONFILE_REGEX)
+    version_file = os.path.join(
+        FORSETI_SRC_PATH, '__init__.py')
+    with open(version_file, 'rt') as vfile:
+        for line in vfile.readlines():
+            version_match = version_re.match(line)
+            if version_match:
+                version = version_match.group(1)
+                break
+    return version
+
+def get_remote_branches():
+    """Get remote git branches.
+
+    Returns:
+        list: A list of branches.
+    """
+    branches = []
+    return_code, out, err = run_command(
+        ['git', 'branch', '-r'])
+    if return_code:
+        print(err)
+    else:
+        branches = [b.strip() for b in out.strip().split('\n')]
+    return branches
+
+def checkout_git_branch():
+    """Let user choose git branch and check it out.
+
+    Returns:
+        str: The checked out branch, if exists.
+    """
+    branch = None
+    branches = get_remote_branches()
+    choice_index = -1
+    while choice_index < 0 or choice_index > len(branches):
+        branches = get_remote_branches()
+        print('Remote branches:')
+        for (i, b) in enumerate(branches):
+            print('[%s] %s' % (i+1, b[len('origin/'):]))
+        try:
+            choice_index = int(raw_input(
+                'Enter your numerical choice: ').strip())
+        except ValueError as ve:
+            print('Invalid input choice, try again.')
+    branch = branches[choice_index-1][len('origin/'):]
+    return_code, out, err = run_command(
+        ['git', 'checkout', branch])
+    if return_code:
+        print(err)
+    return branch
+
+def check_proper_gcloud():
+    """Check gcloud version and presence of alpha components."""
+    return_code, out, err = run_command(
+        ['gcloud', '--version'])
+
+    version_regex = re.compile(GCLOUD_VERSION_REGEX)
+    alpha_regex = re.compile(GCLOUD_ALPHA_REGEX)
+
+    version = None
+    alpha_match = None
+
+    if return_code:
+        print('Error trying to determine your gcloud version:')
+        print(err)
+        sys.exit(1)
+    else:
+        for line in out.split('\n'):
+            version_match = version_regex.match(line)
+            if version_match:
+                version = tuple(
+                    [int(i) for i in version_match.group(1).split('.')])
+                continue
+            alpha_match = alpha_regex.match(line)
+            if alpha_match:
+                break
+
+    print('Current gcloud version: {}'.format(version))
+    print('Has alpha components? {}'.format(alpha_match is not None))
+    if version < GCLOUD_MIN_VERSION or not alpha_match:
+        print('You need the following gcloud setup:\n\n'
+              'gcloud version >= {}\n'
+              'gcloud alpha components\n\n'
+              'To install gcloud alpha components: '
+              'gcloud components install alpha\n\n'
+              'To update gcloud: gcloud components update\n'.
+              format('.'.join(
+                  [str(i) for i in GCLOUD_MIN_VERSION])))
+        sys.exit(1)
+
+def enable_apis():
+    """Enable necessary APIs for Forseti Security.
+
+    Technically, this could be done in Deployment Manager, but if you
+    delete the deployment, you'll disable the APIs. This could cause errors
+    if there are resources still in use (e.g. Compute Engine), and then
+    your deployment won't be cleanly deleted.
+    """
+    print_banner('Enabling required APIs')
+    for api in REQUIRED_APIS:
+        print('Enabling the {} API...'.format(api['name']))
+        return_code, _, err = run_command(
+            ['gcloud', 'services', 'enable', api['service'], '--async'])
+        if return_code:
+            print(err)
+        else:
+            print('Done.')
+
+
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
 class ForsetiGcpSetup(object):
@@ -110,28 +264,30 @@ class ForsetiGcpSetup(object):
         Args:
             kwargs (dict): The kwargs.
         """
-        self.timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-        self.timeonly = self.timestamp[8:]
+        self.datetimestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        self.timestamp = self.datetimestamp[8:]
+
         self.force_no_cloudshell = kwargs.get('no_cloudshell')
         self.skip_iam_check = kwargs.get('no_iam_check')
-        self.branch = kwargs.get('branch')
+        self.branch = None
+        self.config_filename = (kwargs.get('config') or 
+            CONFIG_FILENAME_FMT.format(self.datetimestamp))
 
         self.is_devshell = False
         self.authed_user = None
         self.project_id = None
         self.organization_id = None
 
-        self.gcp_service_account = SERVICE_ACCT_FMT.format(
-            'gcp', self.timeonly)
+        self.gcp_service_account = None
         self.gsuite_service_account = SERVICE_ACCT_FMT.format(
-            'gsuite', self.timeonly)
+            'gsuite', 'reader', self.timestamp)
         self.gsuite_svc_acct_key_location = None
 
         self.bucket_name = None
         self.bucket_location = kwargs.get('gcs_location') or 'us-central1'
         self.cloudsql_instance = '{}-{}'.format(
             DEFAULT_CLOUDSQL_INSTANCE_NAME,
-            self.timestamp)
+            self.datetimestamp)
         self.cloudsql_region = kwargs.get('cloudsql_region') or 'us-central1'
         self.gce_zone = '{}-c'.format(self.cloudsql_region)
 
@@ -150,20 +306,21 @@ class ForsetiGcpSetup(object):
     def run_setup(self):
         """Run the setup steps."""
         # Pre-flight checks.
-        self._print_banner('Pre-flight checks')
-        self.infer_version()
+        print_banner('Pre-flight checks')
+        infer_version()
+        check_proper_gcloud()
         self.gcloud_info()
         self.check_cloudshell()
-        self.get_authed_user()
-        self.get_project()
+        self.check_auth_user()
+        self.check_project_id()
         self.get_organization()
         self.check_billing_enabled()
         self.has_permissions()
 
-        self.enable_apis()
+        enable_apis()
 
         # Generate names and config.
-        self._print_banner('Generate configs')
+        print_banner('Generate configs')
         self.generate_bucket_name()
         self.generate_deployment_templates()
         self.generate_forseti_conf()
@@ -184,37 +341,6 @@ class ForsetiGcpSetup(object):
         self.post_install_instructions(deploy_success=(not return_code))
 
     @staticmethod
-    def _print_banner(text):
-        """Print a banner.
-
-        Args:
-            text (str): Text to put in the banner.
-        """
-        print('')
-        print('+-------------------------------------------------------')
-        print('|  %s' % text)
-        print('+-------------------------------------------------------')
-        print('')
-
-    @staticmethod
-    def run_command(cmd_args):
-        """Wrapper to run a command in subprocess.
-
-        Args:
-            cmd_args (str): The list of command arguments.
-
-        Returns:
-            int: The return code. 0 is "ok", anything else is "error".
-            str: Output, if command was successful.
-            err: Error output, if there was an error.
-        """
-        proc = subprocess.Popen(cmd_args,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = proc.communicate()
-        return proc.returncode, out, err
-
-    @staticmethod
     def _sanitize_conf_values(conf_values):
         """Sanitize the forseti_conf values not to be zero-length strings.
 
@@ -231,68 +357,39 @@ class ForsetiGcpSetup(object):
         return conf_values
 
     def infer_version(self):
-        """Infer the Forseti version, if --branch wasn't supplied as an arg."""
-        if not self.branch:
-            version_re = re.compile(VERSIONFILE_REGEX)
-            version_file = os.path.join(
-                ROOT_DIR_PATH, 'google', 'cloud', 'security', '__init__.py')
-            version = None
-            with open(version_file, 'rt') as vfile:
-                for line in vfile.readlines():
-                    version_match = version_re.match(line)
-                    if version_match:
-                        version = version_match.group(1)
-                        break
+        """Infer the Forseti version, or ask user to input one not listed."""
+        return_code, out, err = run_command(
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+        if return_code:
+            print(err)
+            print('Will try to infer the Forseti version instead.')
+        else:
+            self.branch = out.strip()
+
+        if not self.branch or self.branch == 'master':
+            version = get_forseti_version()
             if version:
                 self.branch = 'v%s' % version
+
+        user_choice = None
+        while user_choice != 'y' and user_choice != 'n':
+            user_choice = raw_input(
+                'Install Forseti branch/tag %s? (y/n) '
+                % self.branch).lower().strip()
+
+        if user_choice == 'n':
+            branch = checkout_git_branch()
+            if branch:
+                self.branch = branch
             else:
-                self.branch = 'master'
+                print('No branch was chosen; using %s' % self.branch)
 
-        print('Forseti version: %s' % self.branch)
-
-    def check_proper_gcloud(self):
-        """Check gcloud version and presence of alpha components."""
-        return_code, out, err = self.run_command(
-            ['gcloud', '--version'])
-
-        version_regex = re.compile(GCLOUD_VERSION_REGEX)
-        alpha_regex = re.compile(GCLOUD_ALPHA_REGEX)
-
-        version = None
-        alpha_match = None
-
-        if return_code:
-            print('Error trying to determine your gcloud version:')
-            print(err)
-            sys.exit(1)
-        else:
-            for line in out.split('\n'):
-                version_match = version_regex.match(line)
-                if version_match:
-                    version = tuple(
-                        [int(i) for i in version_match.group(1).split('.')])
-                    continue
-                alpha_match = alpha_regex.match(line)
-                if alpha_match:
-                    break
-
-        print('Current gcloud version: {}'.format(version))
-        print('Has alpha components? {}'.format(alpha_match is not None))
-        if version < GCLOUD_MIN_VERSION or not alpha_match:
-            print('You need the following gcloud setup:\n\n'
-                  'gcloud version >= {}\n'
-                  'gcloud alpha components\n\n'
-                  'To install gcloud alpha components: '
-                  'gcloud components install alpha\n\n'
-                  'To update gcloud: gcloud components update\n'.
-                  format('.'.join(
-                      [str(i) for i in GCLOUD_MIN_VERSION])))
-            sys.exit(1)
+        print('Forseti branch/tag: %s' % self.branch)
 
     def gcloud_info(self):
         """Read gcloud info, and check if running in Cloud Shell."""
         # Read gcloud info
-        return_code, out, err = self.run_command(
+        return_code, out, err = run_command(
             ['gcloud', 'info', '--format=json'])
         if return_code:
             print(err)
@@ -333,7 +430,7 @@ class ForsetiGcpSetup(object):
         else:
             print('Bypass Cloud Shell check, continuing...')
 
-    def get_authed_user(self):
+    def check_auth_user(self):
         """Get the current authed user."""
         if not self.authed_user:
             print('Error getting authed user. You may need to run '
@@ -341,7 +438,7 @@ class ForsetiGcpSetup(object):
             sys.exit(1)
         print('You are: {}'.format(self.authed_user))
 
-    def get_project(self):
+    def check_project_id(self):
         """Get the project."""
         if not self.project_id:
             print('You need to have an active project! Exiting.')
@@ -350,7 +447,7 @@ class ForsetiGcpSetup(object):
 
     def check_billing_enabled(self):
         """Check if billing is enabled."""
-        return_code, out, err = self.run_command(
+        return_code, out, err = run_command(
             ['gcloud', 'alpha', 'billing', 'projects', 'describe',
              self.project_id, '--format=json'])
         if return_code:
@@ -378,7 +475,7 @@ class ForsetiGcpSetup(object):
 
     def get_organization(self):
         """Infer the organization from the project's parent."""
-        return_code, out, err = self.run_command(
+        return_code, out, err = run_command(
             ['gcloud', 'projects', 'describe',
              self.project_id, '--format=json'])
         if return_code:
@@ -425,7 +522,7 @@ class ForsetiGcpSetup(object):
         parent_type = 'folders'
         parent_id = folder_id
         while parent_type != 'organizations':
-            return_code, out, err = self.run_command(
+            return_code, out, err = run_command(
                 ['gcloud', 'alpha', 'resource-manager', 'folders',
                  'describe', parent_id, '--format=json'])
             if return_code:
@@ -447,7 +544,7 @@ class ForsetiGcpSetup(object):
         on the organization IAM policy.
         """
         if not self.skip_iam_check:
-            self._print_banner('Checking permissions')
+            print_banner('Checking permissions')
 
             if self._is_org_admin() and self._can_modify_project_iam():
                 print('You have the necessary roles to grant roles that '
@@ -459,7 +556,7 @@ class ForsetiGcpSetup(object):
                       'project to run this setup. Exiting.')
                 sys.exit(1)
         else:
-            self._print_banner('Permission check skipped')
+            print_banner('Permission check skipped')
 
     def _is_org_admin(self):
         """Check if current user is an org admin.
@@ -504,7 +601,7 @@ class ForsetiGcpSetup(object):
             bool: True if has roles, otherwise False.
         """
         has_roles = False
-        return_code, out, err = self.run_command(
+        return_code, out, err = run_command(
             ['gcloud', resource_type, 'get-iam-policy',
              resource_id, '--format=json'])
         if return_code:
@@ -530,25 +627,6 @@ class ForsetiGcpSetup(object):
                       resource_type)
 
         return has_roles
-
-    def enable_apis(self):
-        """Enable necessary APIs for Forseti Security.
-
-        Technically, this could be done in Deployment Manager, but if you
-        delete the deployment, you'll disable the APIs. This could cause errors
-        if there are resources still in use (e.g. Compute Engine), and then
-        your deployment won't be cleanly deleted.
-        """
-        self._print_banner('Enabling required APIs')
-        for api in REQUIRED_APIS:
-            print('Enabling the {} API...'.format(api['name']))
-            return_code, _, err = self.run_command(
-                ['gcloud', 'alpha', 'service-management',
-                 'enable', api['service']])
-            if return_code:
-                print(err)
-            else:
-                print('Done.')
 
     def _full_service_acct_email(self, account_id):
         """Generate the full service account email.
@@ -585,7 +663,7 @@ class ForsetiGcpSetup(object):
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
-        Org:
+        Org/Folder/Project:
             AppEngine App Viewer
             Cloud SQL Viewer
             Network Viewer
@@ -599,7 +677,7 @@ class ForsetiGcpSetup(object):
             Storage Object Viewer
             Storage Object Creator
         """
-        self._print_banner('Assigning roles to the GCP service account')
+        print_banner('Assigning roles to the GCP service account')
         if not self.organization_id:
             self._no_organization()
 
@@ -638,7 +716,7 @@ class ForsetiGcpSetup(object):
     def generate_bucket_name(self):
         """Generate bucket name for the rules."""
         self.bucket_name = DEFAULT_BUCKET_FMT.format(
-            self.project_id, self.timeonly)
+            self.project_id, self.timestamp)
 
     def generate_deployment_templates(self):
         """Generate deployment templates."""
@@ -654,7 +732,7 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 ROOT_DIR_PATH,
                 'deployment-templates',
-                'deploy-forseti-{}.yaml'.format(self.timestamp)))
+                'deploy-forseti-{}.yaml'.format(self.datetimestamp)))
 
         deploy_values = {
             'CLOUDSQL_REGION': self.cloudsql_region,
@@ -750,15 +828,15 @@ class ForsetiGcpSetup(object):
             int: The return code value of running `gcloud` command to create
                 the deployment.
         """
-        self._print_banner('Create Forseti deployment')
+        print_banner('Create Forseti deployment')
         print ('This may take a few minutes.')
-        self.deployment_name = 'forseti-security-{}'.format(self.timestamp)
+        self.deployment_name = 'forseti-security-{}'.format(self.datetimestamp)
         print('Deployment name: %s' % self.deployment_name)
         print('Deployment Manager Dashboard: '
               'https://console.cloud.google.com/deployments/details/'
               '{}?project={}&organizationId={}\n'.format(
                   self.deployment_name, self.project_id, self.organization_id))
-        return_code, out, err = self.run_command(
+        return_code, out, err = run_command(
             ['gcloud', 'deployment-manager', 'deployments', 'create',
              self.deployment_name, '--config={}'.format(self.deploy_tpl_path)])
         time.sleep(2)
@@ -780,10 +858,10 @@ class ForsetiGcpSetup(object):
         copy_config_ok = False
         copy_rules_ok = False
 
-        self._print_banner('Copy configs to bucket')
+        print_banner('Copy configs to bucket')
 
         print('Copy forseti_conf.yaml to {}'.format(self.bucket_name))
-        return_code, out, err = self.run_command(
+        return_code, out, err = run_command(
             ['gsutil', 'cp', self.forseti_conf_path,
              '{}/configs/forseti_conf.yaml'.format(self.bucket_name)])
         if return_code:
@@ -796,7 +874,7 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 ROOT_DIR_PATH, 'rules'))
         print('Copy rules to {}'.format(self.bucket_name))
-        return_code, out, err = self.run_command(
+        return_code, out, err = run_command(
             ['gsutil', 'cp', '-r', rules_dir, self.bucket_name])
         if return_code:
             print(err)
@@ -811,12 +889,12 @@ class ForsetiGcpSetup(object):
 
         Use 2**<attempt #> seconds of sleep() between attempts.
         """
-        self._print_banner('Copy G Suite key to Forseti VM')
+        print_banner('Copy G Suite key to Forseti VM')
         self.download_gsuite_svc_acct_key()
         print('scp-ing your gsuite_key.json to your Forseti GCE instance...')
         for i in range(1, GSUITE_KEY_SCP_ATTEMPTS+1):
             print('Attempt {} of {} ...'.format(i, GSUITE_KEY_SCP_ATTEMPTS))
-            return_code, out, err = self.run_command(
+            return_code, out, err = run_command(
                 ['gcloud',
                  'compute',
                  'scp',
@@ -852,7 +930,7 @@ class ForsetiGcpSetup(object):
         Args:
             deploy_success (bool): Whether deployment was successful.
         """
-        self._print_banner('Post-setup instructions')
+        print_banner('Post-setup instructions')
 
         if deploy_success:
             print('Forseti Security (branch/version: %s) has been '
