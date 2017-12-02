@@ -14,7 +14,6 @@
 
 """Actions configuration validator."""
 
-from collections import defaultdict
 import importlib
 import os
 import yaml
@@ -170,7 +169,7 @@ class ConfigParseError(Error):
     def __init__(self, errors):
         """Initialize ConfigParseError.
 
-        Arg:
+        Args:
           errors (list): A list of errors parsing the config.
         """
         super(ConfigParseError, self).__init__(
