@@ -12,5 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""A sample action class for examples and testing."""
+
 class SampleAction(object):
-  """."""
+    """SampleAction object."""
