@@ -48,7 +48,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         rules_local_path = unittest_utils.get_datafile_path(os.path.join(
             os.path.dirname( __file__), 'audit'), 'firewall_test_rules.yaml')
         self.scanner = firewall_rules_scanner.FirewallPolicyScanner(
-            {}, {}, '', rules_local_path)
+            {}, {}, mock.MagicMock(), '', '', rules_local_path)
         self.mock_rules_engine = mre
         self.project0 = fre.resource_util.create_resource(
             resource_id='test_project', resource_type='project')
@@ -365,10 +365,12 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         rules_local_path = os.path.join(os.path.dirname(
             os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
         scanner = firewall_rules_scanner.FirewallPolicyScanner(
-            {}, {}, '', rules_local_path)
+            {}, {}, mock.MagicMock(), '', '', rules_local_path)
         resource = self.project_resource_map[project]
         policy = fre.firewall_rule.FirewallRule.from_dict(
             policy_dict, validate=True)
+        policy.hierarchical_name = (
+            'organization/88888/project/myproject/firewall/99999/')
         mock_org_rel_dao = mock.Mock()
         mock_org_rel_dao.find_ancestors.side_effect = (
             lambda x,y: self.ancestry[x])
