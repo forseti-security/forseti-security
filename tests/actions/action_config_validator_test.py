@@ -51,7 +51,7 @@ class ActionConfigValidatorTest(ForsetiTestCase):
       if result is not None:
         errors.append(result)
     expected = [acv.ActionTypeDoesntExist(
-        'google.cloud.security.actions.ActionDoesntExist')]
+        'google.cloud.forseti.actions.ActionDoesntExist')]
     self.assert_errors_equal(expected, errors)
 
   # TODO: once the code for the rules has been submitted, this can be enabled.
