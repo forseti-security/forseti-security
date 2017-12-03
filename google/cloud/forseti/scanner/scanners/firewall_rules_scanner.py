@@ -194,9 +194,9 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
                 firewall_policies.append(
                     firewall_rule.FirewallRule.from_dict(
-                        firewall_data_for_scanner,
-                        i.parent.display_name,
-                        True))
+                        firewall_dict=firewall_data_for_scanner,
+                        project_id=i.parent.display_name,
+                        validate=True))
 
         if not firewall_policies:
             LOGGER.warn('No firewall policies found. Exiting.')

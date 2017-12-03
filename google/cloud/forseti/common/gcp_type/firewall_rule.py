@@ -66,7 +66,8 @@ class FirewallRule(object):
         self.resource_id = kwargs.get('id')
         self.create_time = kwargs.get('firewall_rule_create_time')
         self.name = kwargs.get('firewall_rule_name')
-        self.hierarchical_name = kwargs.get('firewall_rule_hierarchical_name')
+        self.hierarchical_name = kwargs.get(
+            'firewall_rule_hierarchical_name', '')
         self.kind = kwargs.get('firewall_rule_kind')
         self.network = kwargs.get('firewall_rule_network')
         self._priority = kwargs.get('firewall_rule_priority')
