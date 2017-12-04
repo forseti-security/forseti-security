@@ -22,5 +22,11 @@ def _load_yaml(filename):
   with open(os.path.join(TEST_CONFIG_PATH, filename)) as fp:
     return yaml.safe_load(fp)
 
+BAD_CONFIG_PATH = os.path.join(
+    TEST_CONFIG_PATH, 'test_data/bad.yaml')
 VALID_CONFIG1 = _load_yaml('test_data/valid_config.yaml')
+VALID_CONFIG1_PATH = os.path.join(
+    TEST_CONFIG_PATH, 'test_data/valid_config.yaml')
 INVALID_CONFIG1 = _load_yaml('test_data/invalid_config.yaml')
+INVALID_CONFIG1_PATH = os.path.join(
+    TEST_CONFIG_PATH, 'test_data/invalid_config.yaml')

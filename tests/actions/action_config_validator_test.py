@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import mock
+import os
 import unittest
 
 import google.cloud.forseti.actions.action_config_validator as acv
@@ -72,6 +73,26 @@ class ActionConfigValidatorTest(ForsetiTestCase):
         acv.TriggerDoesntExist('rules.rule_doesnt_exist.*')
     ]
     self.assert_errors_equal(expected, errors)
+
+  def test_load_and_validate_yaml(self):
+    acv._load_and_validate_yaml(action_config_data.VALID_CONFIG1_PATH)
+
+  def test_load_and_validate_yaml_errors(self):
+    with self.assertRaises(acv.ConfigLoadError):
+      acv._load_and_validate_yaml(action_config_data.BAD_CONFIG_PATH)
+
+  def test_validate(self):
+    config = acv._load_and_validate_yaml(action_config_data.VALID_CONFIG1_PATH)
+    self.assertSameStructure(action_config_data.VALID_CONFIG1, config)
+
+  def test_validate_load_error(self):
+    with self.assertRaises(acv.ConfigLoadError):
+      acv.validate(os.path.join(
+          action_config_data.TEST_CONFIG_PATH, 'test_data/bad.yaml'))
+
+  def test_validate_action_errors(self):
+    with self.assertRaises(acv.ConfigLoadError):
+      config = acv.validate(action_config_data.INVALID_CONFIG1_PATH)
 
   def assert_errors_equal(self, expected, errors):
     self.assertEqual(len(expected), len(errors))

@@ -76,7 +76,7 @@ def _load_and_validate_yaml(path):
     with open(os.path.abspath(path), 'rb') as filep:
         try:
             config = yaml.safe_load(filep)
-        except ValueError as yaml_error:
+        except yaml.YAMLError as yaml_error:
             raise ConfigLoadError(yaml_error)
     return config
 
