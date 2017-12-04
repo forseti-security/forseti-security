@@ -38,9 +38,6 @@ GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
 
-GSUITE_KEY_SCP_ATTEMPTS = 5
-GSUITE_KEY_NAME = 'gsuite_key.json'
-
 SERVICE_ACCT_FMT = 'forseti-{}-{}-{}'
 SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
 
@@ -221,7 +218,8 @@ def check_proper_gcloud():
             if alpha_match:
                 break
 
-    print('Current gcloud version: {}'.format(version))
+    print('Current gcloud version: {}'.format('.'.join(
+        [str(d) for d in version])))
     print('Has alpha components? {}'.format(alpha_match is not None))
     if version < GCLOUD_MIN_VERSION or not alpha_match:
         print('You need the following gcloud setup:\n\n'
@@ -268,7 +266,6 @@ class ForsetiGcpSetup(object):
         self.timestamp = self.datetimestamp[8:]
 
         self.force_no_cloudshell = kwargs.get('no_cloudshell')
-        self.skip_iam_check = kwargs.get('no_iam_check')
         self.branch = None
         self.config_filename = (kwargs.get('config') or 
             CONFIG_FILENAME_FMT.format(self.datetimestamp))
@@ -277,11 +274,13 @@ class ForsetiGcpSetup(object):
         self.authed_user = None
         self.project_id = None
         self.organization_id = None
+        self.target_ids = None
+        self.enable_write_access = False
+        self.user_can_grant_roles = False
 
         self.gcp_service_account = None
         self.gsuite_service_account = SERVICE_ACCT_FMT.format(
             'gsuite', 'reader', self.timestamp)
-        self.gsuite_svc_acct_key_location = None
 
         self.bucket_name = None
         self.bucket_location = kwargs.get('gcs_location') or 'us-central1'
@@ -307,7 +306,7 @@ class ForsetiGcpSetup(object):
         """Run the setup steps."""
         # Pre-flight checks.
         print_banner('Pre-flight checks')
-        infer_version()
+        self.infer_version()
         check_proper_gcloud()
         self.gcloud_info()
         self.check_cloudshell()
@@ -315,7 +314,9 @@ class ForsetiGcpSetup(object):
         self.check_project_id()
         self.get_organization()
         self.check_billing_enabled()
-        self.has_permissions()
+        self.determine_access_target()
+        self.inform_access_on_target()
+        self.should_enable_write_access()
 
         enable_apis()
 
@@ -329,14 +330,12 @@ class ForsetiGcpSetup(object):
         # 1. Create deployment.
         # 2. If fails, continue to next step.
         # 3. Otherwise, copy configs (forseti_conf.yaml, rules) to bucket.
-        # 4. Grant service account roles and create and download
-        #    G Suite service account key.
+        # 4. Grant service account roles.
         # 5. Poll the Forseti VM until it responds, then scp the key.
         return_code = self.create_deployment()
         if not return_code:
             self.copy_config_to_bucket()
             self.grant_gcp_svc_acct_roles()
-            self.copy_gsuite_key()
 
         self.post_install_instructions(deploy_success=(not return_code))
 
@@ -473,6 +472,118 @@ class ForsetiGcpSetup(object):
                   self.project_id, self.organization_id))
         sys.exit(1)
 
+    def determine_access_target(self):
+        """Determine where to enable Forseti access.
+
+        Either org, folder, or project level.
+        """
+        print_banner('Forseti access target')
+        choices = ['organizations', 'folders', 'projects']
+        choice_index = -1
+        while not self.target_ids:
+            try:
+                print('Forseti can be configured to access organizations, '
+                      'folders, or projects.')
+                for (i, c) in enumerate(choices):
+                    print('[%s] %s' % (i+1, c))
+                choice_input = raw_input(
+                    'At what level do you want to enable Forseti '
+                    'read (and optionally write) access? ').strip()
+                choice_index = int(choice_input)
+            except ValueError as verr:
+                print('Invalid choice, try again.')
+
+            if choice_index > 0 and choice_index < len(choices):
+                self.access_target = choices[choice_index-1]
+                if self.access_target == 'organizations':
+                    self.choose_organizations()
+                elif self.access_target == 'folders':
+                    self.choose_folders()
+                else:
+                    self.choose_projects()
+
+    def choose_organizations(self):
+        """Allow user to input comma separated list of organization ids."""
+        ids = None
+        while not ids:
+            ids = []
+            orgs = None
+            return_code, out, err = run_command([
+                'gcloud', 'organizations', 'list', '--format=json'])
+            if return_code:
+                print(err)
+            else:
+                try:
+                    orgs = json.loads(out)
+                except ValueError as verr:
+                    print(verr)
+
+            if not orgs:
+                print('\nYou don\'t have access to any organizations. '
+                      'Choose another option to enable Forseti access.')
+                return
+
+            print('\nHere are the organizations you have access to:')
+            for org in orgs:
+                print('Organization ID=%s (description="%s")' %
+                    (org_id_from_org_name(org['name']), org['displayName']))
+
+            choices = raw_input(
+                'Enter the organization ids, separated by commas, where '
+                'you want Forseti to crawl for data: ').split(',')
+            try:
+                for choice in choices:
+                    # Ensure that the ids are numbers
+                    target_id = int(choice.strip())
+                    if target_id > 0:
+                        ids.append(str(target_id))
+            except ValueError as verr:
+                print('Invalid choices %s, try again' % choices)
+
+        self.target_ids = ids
+        print('Forseti will be granted access for the '
+              'organization id(s): %s' %
+              ','.join(self.target_ids))
+
+    def choose_folders(self):
+        """Allow user to input comma separated list of folder ids."""
+        ids = None
+        while not ids:
+            ids = []
+            choices = raw_input(
+                'Enter the folder ids, separated by commas, where you want '
+                'Forseti to crawl for data: ').split(',')
+            try:
+                for choice in choices:
+                    # Ensure that the ids are numbers
+                    target_id = int(choice.strip())
+                    if target_id > 0:
+                        ids.append(str(target_id))
+            except ValueError as verr:
+                print('Invalid choices %s, try again' % choices)
+
+        self.target_ids = ids
+        print('Forseti will be granted access for the folder id(s): %s' %
+              ','.join(self.target_ids))
+
+    def choose_projects(self):
+        """Allow user to input comma separated list of project ids."""
+        ids = None
+        while not ids:
+            ids = []
+            choices = raw_input(
+                'Enter the project ids (NOT PROJECT NUMBERS), '
+                'separated by commas, where you want '
+                'Forseti to crawl for data: ').split(',')
+            for choice in choices:
+                target_id = choice.strip()
+                if target_id:
+                    ids.append(str(target_id))
+
+        self.target_ids = ids
+        print('Forseti will be granted access for the project id(s): %s' %
+              ','.join(self.target_ids))
+
     def get_organization(self):
         """Infer the organization from the project's parent."""
         return_code, out, err = run_command(
@@ -537,96 +648,22 @@ class ForsetiGcpSetup(object):
                 self._no_organization()
         self.organization_id = parent_id
 
-    def has_permissions(self):
-        """Check if current user is an org admin and project owner.
+    def should_enable_write_access(self):
+        """Ask if user wants to enable write access for Forseti."""
+        choice = None
+        while choice != 'y' and choice != 'n':
+            choice = raw_input(
+                'Enable write access for Forseti? '
+                'This allows Forseti to make changes to policies '
+                '(e.g. for Enforcer) (y/n) ').strip().lower()
 
-        User must be an org admin in order to assign a service account roles
-        on the organization IAM policy.
-        """
-        if not self.skip_iam_check:
-            print_banner('Checking permissions')
-
-            if self._is_org_admin() and self._can_modify_project_iam():
-                print('You have the necessary roles to grant roles that '
-                      'Forseti needs. Continuing...')
-            else:
-                print('You do not have the necessary roles to grant roles that '
-                      'Forseti needs. Please have someone who is an Org Admin '
-                      'and either Project Editor or Project Owner for this '
-                      'project to run this setup. Exiting.')
-                sys.exit(1)
+        if choice == 'y':
+            self.enable_write_access = True
+            self.gcp_service_account = SERVICE_ACCT_FMT.format(
+                'gcp', 'readwrite', self.timestamp)
         else:
-            print_banner('Permission check skipped')
-
-    def _is_org_admin(self):
-        """Check if current user is an org admin.
-
-        Returns:
-            bool: Whether current user is Org Admin.
-        """
-        is_org_admin = self._has_roles(
-            'organizations',
-            self.organization_id,
-            ['roles/resourcemanager.organizationAdmin'])
-
-        print('%s is Org Admin? %s' % (self.authed_user, is_org_admin))
-        return is_org_admin
-
-    def _can_modify_project_iam(self):
-        """Check whether user can modify the current project's IAM policy.
-
-        To make it simple, check that user is either Project Editor or Owner.
-
-        Returns:
-            bool: If user can modify a project.
-        """
-        can_modify_project = self._has_roles(
-            'projects',
-            self.project_id,
-            ['roles/editor', 'roles/owner'])
-
-        print('%s is either Project Editor or Owner? %s' %
-              (self.authed_user, can_modify_project))
-        return can_modify_project
-
-    def _has_roles(self, resource_type, resource_id, roles):
-        """Check if user has one or more roles in a resource.
-
-        Args:
-            resource_type (str): The resource type.
-            resource_id (str): The resource id.
-            roles (list): The roles to check user's membership in.
-
-        Returns:
-            bool: True if has roles, otherwise False.
-        """
-        has_roles = False
-        return_code, out, err = run_command(
-            ['gcloud', resource_type, 'get-iam-policy',
-             resource_id, '--format=json'])
-        if return_code:
-            print(err)
-        else:
-            try:
-                # Search resource's policy bindings for:
-                # 1) Members who have certain roles.
-                # 2) Whether the current authed user is in the members list.
-                iam_policy = json.loads(out)
-                role_members = []
-                for binding in iam_policy.get('bindings', []):
-                    if binding['role'] in roles:
-                        role_members.extend(binding['members'])
-
-                for member in role_members:
-                    if member.find(self.authed_user) > -1:
-                        has_roles = True
-                        break
-            except ValueError as verr:
-                print(verr)
-                print('Error reading output of %s.getIamPolicy().' %
-                      resource_type)
-
-        return has_roles
+            self.gcp_service_account = SERVICE_ACCT_FMT.format(
+                'gcp', 'reader', self.timestamp)
 
     def _full_service_acct_email(self, account_id):
         """Generate the full service account email.
@@ -640,25 +677,23 @@ class ForsetiGcpSetup(object):
         """
         return SERVICE_ACCT_EMAIL_FMT.format(account_id, self.project_id)
 
-    def download_gsuite_svc_acct_key(self):
-        """Download the service account key."""
-        print('\nDownloading G Suite service account key for %s'
-              % self.gsuite_service_account)
-        proc = subprocess.Popen(
-            ['gcloud', 'iam', 'service-accounts', 'keys',
-             'create', GSUITE_KEY_NAME,
-             '--iam-account=%s' % (self._full_service_acct_email(
-                 self.gsuite_service_account))],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        _, err = proc.communicate()
-        if proc.returncode:
-            print(err)
+    def inform_access_on_target(self):
+        """Inform user that they need IAM access to grant Forseti access."""
+        print_banner('Current IAM access')
+        choice = None
+        while choice != 'y' and choice != 'n':
+            choice = raw_input('Do you have access to grant Forseti IAM '
+                'roles on the target %s? (y/n) ' %
+                self.access_target).strip().lower()
 
-        self.gsuite_svc_acct_key_location = os.path.abspath(
-            os.path.join(
-                os.getcwd(),
-                GSUITE_KEY_NAME))
+        if choice == 'y':
+            self.user_can_grant_roles = True
+            print('Ok, will attempt to grant the roles on the target %s for %s' %
+                  (self.access_target, self.gcp_service_account))
+        else:
+            self.user_can_grant_roles = False
+            print('Will NOT attempt to grant roles on the target %s for %s. ' %
+                  (self.access_target, self.gcp_service_account))
 
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
@@ -681,37 +716,62 @@ class ForsetiGcpSetup(object):
         if not self.organization_id:
             self._no_organization()
 
+        access_target_roles = GCP_READ_IAM_ROLES
+        if self.enable_write_access:
+            access_target_roles.extend(GCP_WRITE_IAM_ROLES)
+
         roles = {
-            'organizations': ORG_IAM_ROLES,
+            self.access_target: access_target_roles,
             'projects': PROJECT_IAM_ROLES
         }
 
+        # Keep track of the roles that user couldn'tgrant.
+        assign_roles_cmds = []
+
         for (resource_type, roles) in roles.iteritems():
             if resource_type == 'organizations':
-                resource_id = self.organization_id
+                resource_args = ['organizations']
+            elif resource_type == 'folders':
+                resource_args = ['alpha', 'resource-manager', 'folders']
             else:
-                resource_id = self.project_id
+                resource_args = ['projects']
 
-            for role in roles:
-                iam_role_cmd = [
-                    'gcloud',
-                    resource_type,
-                    'add-iam-policy-binding',
-                    resource_id,
-                    '--member=serviceAccount:%s' % (
-                        self._full_service_acct_email(
-                            self.gcp_service_account)),
-                    '--role=%s' % role,
-                ]
-                print('Assigning %s on %s...' % (role, resource_id))
-                proc = subprocess.Popen(iam_role_cmd,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-                _, err = proc.communicate()
-                if proc.returncode:
-                    print(err)
-                else:
-                    print('Done.')
+            for resource_id in self.target_ids:
+                for role in roles:
+                    iam_role_cmd = ['gcloud']
+                    iam_role_cmd.extend(resource_args)
+                    iam_role_cmd.extend([
+                        'add-iam-policy-binding',
+                        resource_id,
+                        '--member=serviceAccount:%s' % (
+                            self._full_service_acct_email(
+                                self.gcp_service_account)),
+                        '--role=%s' % role,
+                    ])
+                    if self.user_can_grant_roles:
+                        print('Assigning %s on %s...' % (role, resource_id))
+                        proc = subprocess.Popen(iam_role_cmd,
+                                                stdout=subprocess.PIPE,
+                                                stderr=subprocess.PIPE)
+                        _, err = proc.communicate()
+                        if proc.returncode:
+                            print(err)
+                            assign_roles_cmds.append(iam_role_cmd)
+                        else:
+                            print('Done.')
+                    else:
+                        assign_roles_cmds.append(iam_role_cmd)
+
+        if assign_roles_cmds:
+            print('One or more roles could not be assigned. Writing a '
+                  'script with the commands to assign those roles. Please '
+                  'give this script to someone (like an admin) who can '
+                  'assign these roles for you. If you do not assign these '
+                  'roles, Forseti may not work properly!')
+            with open('grant_forseti_roles.sh', 'wt') as roles_script:
+                roles_script.write('#!/bin/bash')
+                for cmd in assign_roles_cmds:
+                    roles_script.write(cmd)
 
     def generate_bucket_name(self):
         """Generate bucket name for the rules."""
@@ -883,43 +943,6 @@ class ForsetiGcpSetup(object):
             copy_rules_ok = True
 
         return copy_config_ok, copy_rules_ok
-
-    def copy_gsuite_key(self):
-        """scp the G Suite key to the VM after deployment.
-
-        Use 2**<attempt #> seconds of sleep() between attempts.
-        """
-        print_banner('Copy G Suite key to Forseti VM')
-        self.download_gsuite_svc_acct_key()
-        print('scp-ing your gsuite_key.json to your Forseti GCE instance...')
-        for i in range(1, GSUITE_KEY_SCP_ATTEMPTS+1):
-            print('Attempt {} of {} ...'.format(i, GSUITE_KEY_SCP_ATTEMPTS))
-            return_code, out, err = run_command(
-                ['gcloud',
-                 'compute',
-                 'scp',
-                 '--zone={}'.format(self.gce_zone),
-                 '--quiet',
-                 self.gsuite_svc_acct_key_location,
-                 'ubuntu@{}-vm:/home/ubuntu/{}'.format(
-                     self.deployment_name, GSUITE_KEY_NAME),
-                ])
-            if return_code:
-                print(err)
-                if i+1 < GSUITE_KEY_SCP_ATTEMPTS:
-                    sleep_time = 2**(i+1)
-                    print('Trying again in %s seconds.' % (sleep_time))
-                    time.sleep(sleep_time)
-            else:
-                print(out)
-                print('Done')
-                break
-
-        print('Delete downloaded %s' % GSUITE_KEY_NAME)
-        try:
-            os.remove(self.gsuite_svc_acct_key_location)
-        except OSError as ose:
-            print(ose)
 
     def post_install_instructions(self, deploy_success):
         """Show post-install instructions.
