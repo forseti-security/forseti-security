@@ -115,7 +115,7 @@ class CrawlerTest(ForsetiTestCase):
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'iam_policy': 4, 'resource': 4},
             'role': {'resource': 5},
-            'serviceaccount': {'resource': 2},
+            'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'subnetwork': {'resource': 24},
         }
 
@@ -184,7 +184,7 @@ class CrawlerTest(ForsetiTestCase):
             'instancetemplate': {'resource': 1},
             'network': {'resource': 1},
             'project': {'iam_policy': 1, 'resource': 1},
-            'serviceaccount': {'resource': 1},
+            'serviceaccount': {'iam_policy': 1, 'resource': 1},
             'subnetwork': {'resource': 12},
         }
 

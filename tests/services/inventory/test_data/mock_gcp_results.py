@@ -1395,6 +1395,33 @@ IAM_GET_SERVICEACCOUNTS = {
     ]
 }
 
+SERVICEACCOUNT_IAM_POLICY = """
+{
+ "bindings": [
+  {
+   "role": "roles/iam.serviceAccountKeyAdmin",
+   "members": [
+    "user:c_user@forseti.test"
+   ]
+  }
+ ]
+}
+"""
+
+SERVICEACCOUNT_EMPTY_IAM_POLICY = """
+{
+ "etag": "ACAB"
+}
+"""
+
+SERVICEACCOUNT1 = IAM_GET_SERVICEACCOUNTS["project1"][0]["name"]
+SERVICEACCOUNT2 = IAM_GET_SERVICEACCOUNTS["project2"][0]["name"]
+
+IAM_GET_SERVICEACCOUNT_IAM_POLICY = {
+    SERVICEACCOUNT1: json.loads(SERVICEACCOUNT_IAM_POLICY),
+    SERVICEACCOUNT2: json.loads(SERVICEACCOUNT_EMPTY_IAM_POLICY),
+}
+
 # Fields: project, role
 PROJECT_ROLES_TEMPLATE = """
 {{

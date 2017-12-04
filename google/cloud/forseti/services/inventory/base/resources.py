@@ -381,6 +381,10 @@ class CloudSqlInstance(Resource):
 
 
 class ServiceAccount(Resource):
+    @cached('iam_policy')
+    def getIamPolicy(self, client=None):
+        return client.get_serviceaccount_iam_policy(self['name'])
+
     def key(self):
         return self['uniqueId']
 

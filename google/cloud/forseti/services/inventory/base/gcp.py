@@ -484,6 +484,19 @@ class ApiClientImpl(ApiClient):
         """
         return self.crm.get_project_iam_policies(projectid)
 
+    @create_lazy('iam', _create_iam)
+    def get_serviceaccount_iam_policy(self, name):
+        """Service Account IAM policy from gcp API call.
+
+        Args:
+            name (str): The service account name to query, must be in the format
+                projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+
+        Returns:
+            dict: Service Account IAM policy.
+        """
+        return self.iam.get_service_account_iam_policy(name)
+
     @create_lazy('storage', _create_storage)
     def get_bucket_gcs_policy(self, bucketid):
         """Bucket GCS policy from gcp API call
