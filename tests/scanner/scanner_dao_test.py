@@ -16,10 +16,10 @@
 
 import ast
 import unittest
-from tests.unittest_utils import ForsetiTestCase
 
 from google.cloud.forseti.scanner import dao as scanner_dao
 from tests.iam.utils.db import create_test_engine
+from tests.unittest_utils import ForsetiTestCase
 
 
 FAKE_VIOLATIONS = [
