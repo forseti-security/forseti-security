@@ -392,6 +392,16 @@ class ServiceAccount(Resource):
         return 'serviceaccount'
 
 
+class ServiceAccountKey(Resource):
+    def key(self):
+        # Key name is in the format:
+        # projects/{project_id}/serviceAccounts/{service_account}/keys/{key_id}
+        return self['name'].split('/')[-1]
+
+    def type(self):
+        return 'serviceaccount_key'
+
+
 class GsuiteUser(Resource):
     def key(self):
         return self['id']
@@ -607,6 +617,14 @@ class ServiceAccountIterator(ResourceIterator):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
+class ServiceAccountKeyIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        for data in gcp.iter_serviceaccount_exported_keys(
+                name=self.resource['name']):
+            yield FACTORIES['serviceaccount_key'].create_new(data)
+
+
 class ProjectRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
@@ -788,6 +806,13 @@ FACTORIES = {
     'serviceaccount': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ServiceAccount,
+        'contains': [
+            ServiceAccountKeyIterator
+            ]}),
+
+    'serviceaccount_key': ResourceFactory({
+        'dependsOn': ['serviceaccount'],
+        'cls': ServiceAccountKey,
         'contains': [
             ]}),
 

@@ -428,6 +428,17 @@ class ApiClientImpl(ApiClient):
             yield serviceaccount
 
     @create_lazy('iam', _create_iam)
+    def iter_serviceaccount_exported_keys(self, name):
+        """Service Account User Managed Key Iterator from gcp API call
+
+        Yields:
+            dict: Generator of service account user managed (exported) keys
+        """
+        for key in self.iam.get_service_account_keys(
+                name, key_type=iam.IAMClient.USER_MANAGED):
+          yield key
+
+    @create_lazy('iam', _create_iam)
     def iter_project_roles(self, projectid):
         """Project role Iterator in a project from gcp API call
 
