@@ -19,7 +19,7 @@ This has been tested with python 2.7.
 
 from __future__ import print_function
 
-import configparser
+#import configparser
 import datetime
 import json
 import os
@@ -95,6 +95,19 @@ FORSETI_SRC_PATH = os.path.join(
 VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
 
 
+def id_from_name(name, resource_type):
+    """Extract the id (number) from the resource name.
+
+    Args:
+        name (str): The name of the resource, formatted as
+            "${RESOURCE_TYPE}/${RESOURCE_ID}".
+        resource_type (str): The resource type.
+
+    Returns:
+        str: The resource id.
+    """
+    return name[len('%s/' % resource_type):]
+
 def org_id_from_org_name(org_name):
     """Extract the organization id (number) from the organization name.
 
@@ -103,10 +116,9 @@ def org_id_from_org_name(org_name):
             "organizations/${ORGANIZATION_ID}".
 
     Returns:
-        str: just the organization_id.
+        str: The organization id.
     """
-    return org_name[len('organizations/'):]
-
+    return id_from_name(org_name, 'organizations')
 
 def run_command(cmd_args):
     """Wrapper to run a command in subprocess.
@@ -138,7 +150,11 @@ def print_banner(text):
     print('')
 
 def get_forseti_version():
-    """Get Forseti version from version file."""
+    """Get Forseti version from version file.
+
+    Returns:
+        str: The version.
+    """
     version = None
     version_re = re.compile(VERSIONFILE_REGEX)
     version_file = os.path.join(
@@ -178,15 +194,15 @@ def checkout_git_branch():
     while choice_index < 0 or choice_index > len(branches):
         branches = get_remote_branches()
         print('Remote branches:')
-        for (i, b) in enumerate(branches):
-            print('[%s] %s' % (i+1, b[len('origin/'):]))
+        for (i, branch) in enumerate(branches):
+            print('[%s] %s' % (i+1, branch[len('origin/'):]))
         try:
             choice_index = int(raw_input(
                 'Enter your numerical choice: ').strip())
-        except ValueError as ve:
+        except ValueError:
             print('Invalid input choice, try again.')
     branch = branches[choice_index-1][len('origin/'):]
-    return_code, out, err = run_command(
+    return_code, _, err = run_command(
         ['git', 'checkout', branch])
     if return_code:
         print(err)
@@ -250,6 +266,19 @@ def enable_apis():
         else:
             print('Done.')
 
+def full_service_acct_email(account_id, project_id):
+    """Generate the full service account email.
+
+    Args:
+        account_id (str): The service account id, i.e. the part before
+            the "@".
+        project_id (str): The project id the service account belongs to
+
+    Returns:
+        str: The full service account email.
+    """
+    return SERVICE_ACCT_EMAIL_FMT.format(account_id, project_id)
+
 
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
@@ -267,14 +296,18 @@ class ForsetiGcpSetup(object):
 
         self.force_no_cloudshell = kwargs.get('no_cloudshell')
         self.branch = None
-        self.config_filename = (kwargs.get('config') or 
-            CONFIG_FILENAME_FMT.format(self.datetimestamp))
+        self.config_filename = (kwargs.get('config') or
+                                CONFIG_FILENAME_FMT.format(
+                                    self.datetimestamp))
 
         self.is_devshell = False
         self.authed_user = None
         self.project_id = None
         self.organization_id = None
+
+        self.access_target = None
         self.target_ids = None
+
         self.enable_write_access = False
         self.user_can_grant_roles = False
 
@@ -310,13 +343,13 @@ class ForsetiGcpSetup(object):
         check_proper_gcloud()
         self.gcloud_info()
         self.check_cloudshell()
-        self.check_auth_user()
+        self.check_authed_user()
         self.check_project_id()
         self.get_organization()
         self.check_billing_enabled()
         self.determine_access_target()
-        self.inform_access_on_target()
         self.should_enable_write_access()
+        self.inform_access_on_target()
 
         enable_apis()
 
@@ -429,7 +462,7 @@ class ForsetiGcpSetup(object):
         else:
             print('Bypass Cloud Shell check, continuing...')
 
-    def check_auth_user(self):
+    def check_authed_user(self):
         """Get the current authed user."""
         if not self.authed_user:
             print('Error getting authed user. You may need to run '
@@ -484,16 +517,16 @@ class ForsetiGcpSetup(object):
             try:
                 print('Forseti can be configured to access organizations, '
                       'folders, or projects.')
-                for (i, c) in enumerate(choices):
-                    print('[%s] %s' % (i+1, c))
+                for (i, choice) in enumerate(choices):
+                    print('[%s] %s' % (i+1, choice))
                 choice_input = raw_input(
                     'At what level do you want to enable Forseti '
                     'read (and optionally write) access? ').strip()
                 choice_index = int(choice_input)
-            except ValueError as verr:
+            except ValueError:
                 print('Invalid choice, try again.')
 
-            if choice_index > 0 and choice_index < len(choices):
+            if choice_index and choice_index < len(choices):
                 self.access_target = choices[choice_index-1]
                 if self.access_target == 'organizations':
                     self.choose_organizations()
@@ -525,8 +558,8 @@ class ForsetiGcpSetup(object):
 
             print('\nHere are the organizations you have access to:')
             for org in orgs:
-                print('Organization ID=%s (description="%s")' %
-                    (org_id_from_org_name(org['name']), org['displayName']))
+                print('ID=%s (description="%s")' %
+                      (org_id_from_org_name(org['name']), org['displayName']))
 
             choices = raw_input(
                 'Enter the organization ids, separated by commas, where '
@@ -535,14 +568,14 @@ class ForsetiGcpSetup(object):
                 for choice in choices:
                     # Ensure that the ids are numbers
                     target_id = int(choice.strip())
-                    if target_id > 0:
+                    if target_id:
                         ids.append(str(target_id))
-            except ValueError as verr:
+            except ValueError:
                 print('Invalid choices %s, try again' % choices)
 
         self.target_ids = ids
         print('Forseti will be granted access for the '
-              'organization id(s): %s' %
+              'organization(s): %s' %
               ','.join(self.target_ids))
 
     def choose_folders(self):
@@ -557,13 +590,13 @@ class ForsetiGcpSetup(object):
                 for choice in choices:
                     # Ensure that the ids are numbers
                     target_id = int(choice.strip())
-                    if target_id > 0:
+                    if target_id:
                         ids.append(str(target_id))
-            except ValueError as verr:
+            except ValueError:
                 print('Invalid choices %s, try again' % choices)
 
         self.target_ids = ids
-        print('Forseti will be granted access for the folder id(s): %s' %
+        print('Forseti will be granted access for the folder(s): %s' %
               ','.join(self.target_ids))
 
     def choose_projects(self):
@@ -581,7 +614,7 @@ class ForsetiGcpSetup(object):
                     ids.append(str(target_id))
 
         self.target_ids = ids
-        print('Forseti will be granted access for the project id(s): %s' %
+        print('Forseti will be granted access for the project(s): %s' %
               ','.join(self.target_ids))
 
     def get_organization(self):
@@ -650,6 +683,7 @@ class ForsetiGcpSetup(object):
 
     def should_enable_write_access(self):
         """Ask if user wants to enable write access for Forseti."""
+        print_banner('Enable Forseti write access')
         choice = None
         while choice != 'y' and choice != 'n':
             choice = raw_input(
@@ -665,36 +699,25 @@ class ForsetiGcpSetup(object):
             self.gcp_service_account = SERVICE_ACCT_FMT.format(
                 'gcp', 'reader', self.timestamp)
 
-    def _full_service_acct_email(self, account_id):
-        """Generate the full service account email.
-
-        Args:
-            account_id (str): The service account id, i.e. the part before
-                the "@".
-
-        Returns:
-            str: The full service account email.
-        """
-        return SERVICE_ACCT_EMAIL_FMT.format(account_id, self.project_id)
-
     def inform_access_on_target(self):
         """Inform user that they need IAM access to grant Forseti access."""
         print_banner('Current IAM access')
         choice = None
         while choice != 'y' and choice != 'n':
             choice = raw_input('Do you have access to grant Forseti IAM '
-                'roles on the target %s? (y/n) ' %
-                self.access_target).strip().lower()
+                               'roles on the target %s? (y/n) ' %
+                               self.access_target).strip().lower()
 
         if choice == 'y':
             self.user_can_grant_roles = True
-            print('Ok, will attempt to grant the roles on the target %s for %s' %
+            print('Ok, will attempt to grant roles on the target %s for %s.' %
                   (self.access_target, self.gcp_service_account))
         else:
             self.user_can_grant_roles = False
-            print('Will NOT attempt to grant roles on the target %s for %s. ' %
+            print('Will NOT attempt to grant roles on the target %s for %s.' %
                   (self.access_target, self.gcp_service_account))
 
+    # pylint: disable=too-many-branches
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
@@ -744,8 +767,9 @@ class ForsetiGcpSetup(object):
                         'add-iam-policy-binding',
                         resource_id,
                         '--member=serviceAccount:%s' % (
-                            self._full_service_acct_email(
-                                self.gcp_service_account)),
+                            full_service_acct_email(
+                                self.gcp_service_account,
+                                self.project_id)),
                         '--role=%s' % role,
                     ])
                     if self.user_can_grant_roles:
@@ -769,9 +793,9 @@ class ForsetiGcpSetup(object):
                   'assign these roles for you. If you do not assign these '
                   'roles, Forseti may not work properly!')
             with open('grant_forseti_roles.sh', 'wt') as roles_script:
-                roles_script.write('#!/bin/bash')
+                roles_script.write('#!/bin/bash\n\n')
                 for cmd in assign_roles_cmds:
-                    roles_script.write(cmd)
+                    roles_script.write('%s\n' % cmd)
 
     def generate_bucket_name(self):
         """Generate bucket name for the rules."""
@@ -834,8 +858,6 @@ class ForsetiGcpSetup(object):
             'EMAIL_SENDER': self.notification_sender_email,
             'SENDGRID_API_KEY': self.sendgrid_api_key,
             'SCANNER_BUCKET': self.bucket_name[len('gs://'):],
-            'GROUPS_SERVICE_ACCOUNT_KEY_FILE':
-                '/home/ubuntu/{}'.format(GSUITE_KEY_NAME),
             'DOMAIN_SUPER_ADMIN_EMAIL': self.gsuite_superadmin_email,
             'ENABLE_GROUP_SCANNER': 'true',
         })

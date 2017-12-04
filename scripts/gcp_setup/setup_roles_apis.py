@@ -158,7 +158,9 @@ def _assign_roles(args, project_id):
         args (object): The args.
         project_id (str): The project id.
     """
-    api_roles = gcloud_env.ORG_IAM_ROLES
+    api_roles = []
+    api_roles.extend(gcloud_env.GCP_READ_IAM_ROLES)
+    api_roles.extend(gcloud_env.GCP_WRITE_IAM_ROLES)
     util_roles = gcloud_env.PROJECT_IAM_ROLES
 
     print('\n\nAssigning roles:\n')
@@ -181,7 +183,7 @@ def _assign_roles(args, project_id):
 
         print('EXECUTE: %s' % ' '.join(cmd))
         if not args.dry_run:
-            retcode, _, err = gcloud_env.ForsetiGcpSetup.run_command(cmd)
+            retcode, _, err = gcloud_env.run_command(cmd)
             if retcode:
                 print(err)
             else:
@@ -195,7 +197,7 @@ def _assign_roles(args, project_id):
 
         print('EXECUTE: %s' % ' '.join(cmd))
         if not args.dry_run:
-            retcode, _, err = gcloud_env.ForsetiGcpSetup.run_command(cmd)
+            retcode, _, err = gcloud_env.run_command(cmd)
             if retcode:
                 print(err)
             else:

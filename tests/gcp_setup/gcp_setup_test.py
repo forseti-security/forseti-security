@@ -73,6 +73,8 @@ FAKE_IAM_POLICY = {
     ]
 }
 
+GCLOUD_MIN_VERSION = (163, 0, 0)
+
 
 # Thank you https://stackoverflow.com/questions/4219717/how-to-assert-output-with-nosetest-unittest-in-python/17981937#17981937
 @contextmanager
@@ -91,38 +93,40 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def setUp(self):
         self.gcp_setup = gcloud_env.ForsetiGcpSetup()
-        self.gcp_setup.run_command = mock.MagicMock()
+        gcloud_env.run_command = mock.MagicMock()
+        gcloud_env.GCLOUD_MIN_VERSION = GCLOUD_MIN_VERSION
+        self.gcloud_min_ver_formatted = '.'.join([str(d) for d in GCLOUD_MIN_VERSION])
 
     def test_check_proper_gcloud(self):
         """Test check_proper_gcloud() works with proper version/alpha."""
-        self.gcp_setup.run_command.return_value = [
+        gcloud_env.run_command.return_value = [
             0,
-            'Google Cloud SDK 163.0.0\nalpha 12345\netc',
+            'Google Cloud SDK %s\nalpha 12345\netc' % self.gcloud_min_ver_formatted,
             None
         ]
         output_head = 'Current gcloud version'
         with captured_output() as (out, err):
-            self.gcp_setup.check_proper_gcloud()
+            gcloud_env.check_proper_gcloud()
             output = out.getvalue()[:len(output_head)]
             self.assertEqual(output_head, output)
 
     def test_check_proper_gcloud_failed_command(self):
         """Test check_proper_gcloud() exits when command fails."""
-        self.gcp_setup.run_command.return_value = [
+        gcloud_env.run_command.return_value = [
             1,
-            'Google Cloud SDK 163.0.0\nalpha 12345\netc',
+            'Google Cloud SDK %s\nalpha 12345\netc' % self.gcloud_min_ver_formatted,
             None
         ]
         output_head = 'Error'
         with self.assertRaises(SystemExit):
             with captured_output() as (out, err):
-                self.gcp_setup.check_proper_gcloud()
+                gcloud_env.check_proper_gcloud()
                 output = out.getvalue()[:len(output_head)]
                 self.assertEqual(output_head, output)
 
     def test_check_proper_gcloud_low_version(self):
         """Test check_proper_gcloud() exits with low gcloud version."""
-        self.gcp_setup.run_command.return_value = [
+        gcloud_env.run_command.return_value = [
             0,
             'Google Cloud SDK 162.9.9\nalpha 12345\netc',
             None
@@ -132,29 +136,29 @@ class GcloudEnvTest(ForsetiTestCase):
                        'You need')
         with self.assertRaises(SystemExit):
             with captured_output() as (out, err):
-                self.gcp_setup.check_proper_gcloud()
+                gcloud_env.check_proper_gcloud()
                 output = out.getvalue()[:len(output_head)]
                 self.assertEqual(output_head, output)
 
     def test_check_proper_gcloud_no_alpha(self):
         """Test check_proper_gcloud() exits with no alpha components."""
-        self.gcp_setup.run_command.return_value = [
+        gcloud_env.run_command.return_value = [
             0,
-            'Google Cloud SDK 163.0.0\netc',
+            'Google Cloud SDK %s\netc' % self.gcloud_min_ver_formatted,
             None
         ]
-        output_head = ('Current gcloud version: 163.0.0\n'
+        output_head = ('Current gcloud version: %s\n'
                        'Has alpha components? False\n'
-                       'You need')
+                       'You need' % self.gcloud_min_ver_formatted)
         with self.assertRaises(SystemExit):
             with captured_output() as (out, err):
-                self.gcp_setup.check_proper_gcloud()
+                gcloud_env.check_proper_gcloud()
                 output = out.getvalue()[:len(output_head)]
                 self.assertEqual(output_head, output)
 
     def test_gcloud_info_works_nocloudshell(self):
         """Test gcloud_info()."""
-        self.gcp_setup.run_command.return_value = [
+        gcloud_env.run_command.return_value = [
             0,
             json.dumps(FAKE_GCLOUD_INFO),
             None
@@ -166,25 +170,25 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def test_gcloud_info_cmd_fails(self):
         """Test gcloud_info() exits when command fails."""
-        self.gcp_setup.run_command.return_value = [
+        gcloud_env.run_command.return_value = [
             1,
             None,
             'Error output'
         ]
         with self.assertRaises(SystemExit):
             with captured_output():
-                self.gcp_setup.check_proper_gcloud()
+                gcloud_env.check_proper_gcloud()
 
     def test_gcloud_info_json_fails(self):
         """Test gcloud_info() exits when json output fails."""
-        self.gcp_setup.run_command.return_value = [
+        gcloud_env.run_command.return_value = [
             0,
             'invalid json',
             None,
         ]
         with self.assertRaises(SystemExit):
             with captured_output():
-                self.gcp_setup.check_proper_gcloud()
+                self.gcp_setup.gcloud_info()
 
     def test_check_cloudshell_no_flag_no_cloudshell(self):
         """Test check_cloudshell() when no cloudshell and no flag to bypass."""
@@ -220,29 +224,29 @@ class GcloudEnvTest(ForsetiTestCase):
             output = out.getvalue().strip()[:len(output_head)]
             self.assertEqual(output_head, output)
 
-    def test_get_authed_user(self):
-        """Test get_authed_user()."""
+    def test_check_authed_user(self):
+        """Test check_authed_user()."""
         with self.assertRaises(SystemExit):
             with captured_output():
-                self.gcp_setup.get_authed_user()
+                self.gcp_setup.check_authed_user()
 
         self.gcp_setup.authed_user = FAKE_ACCOUNT
         output_head = 'You are'
         with captured_output() as (out, err):
-            self.gcp_setup.get_authed_user()
+            self.gcp_setup.check_authed_user()
             output = out.getvalue()[:len(output_head)]
             self.assertEqual(output_head, output)
 
-    def test_get_project(self):
-        """Test get_project()."""
+    def test_check_project_id(self):
+        """Test check_project_id()."""
         with self.assertRaises(SystemExit):
             with captured_output():
-                self.gcp_setup.get_project()
+                self.gcp_setup.check_project_id()
 
         self.gcp_setup.project_id = FAKE_PROJECT
         output_head = 'Project id'
         with captured_output() as (out, err):
-            self.gcp_setup.get_project()
+            self.gcp_setup.check_project_id()
             output = out.getvalue()[:len(output_head)]
             self.assertEqual(output_head, output)
 
@@ -271,7 +275,7 @@ class GcloudEnvTest(ForsetiTestCase):
             'parent': 'organizations/1111122222'
         })
         self.gcp_setup.project_id = FAKE_PROJECT
-        self.gcp_setup.run_command.side_effect = [
+        gcloud_env.run_command.side_effect = [
             [0, project_desc, None],
             [0, folder_12345_desc, None],
             [0, folder_23456_desc, None],
@@ -286,37 +290,6 @@ class GcloudEnvTest(ForsetiTestCase):
             all_output = [s for s in out.getvalue().split('\n') if len(s)]
             output = all_output[-1][:len(output_head)]
             self.assertEqual(output_head, output)
-
-    def test_has_roles(self):
-        """Test _has_roles()."""
-        self.gcp_setup.authed_user = FAKE_ACCOUNT
-        self.gcp_setup.run_command.return_value = [
-            0,
-            json.dumps(FAKE_IAM_POLICY),
-            None
-        ]
-
-        with captured_output():
-            # Does FAKE_ACCOUNT have "roles/fakeViewerRole"?
-            actual = self.gcp_setup._has_roles('X', 1, ['roles/fakeViewerRole'])
-            self.assertTrue(actual)
-
-            # Does FAKE_ACCOUNT have "roles/fakeViewerRole" or
-            # "roles/fakeAdminRole?
-            actual = self.gcp_setup._has_roles('X', 1, [
-                'roles/fakeViewerRole', 'roles/fakeAdminRole'])
-            self.assertTrue(actual)
-
-            # Does FAKE_ACCOUNT have "roles/fakeViewerRole" or
-            # "roles/fakeEditorRole?
-            actual = self.gcp_setup._has_roles('X', 1, [
-                'roles/fakeEditorRole', 'roles/fakeViewerRole'])
-            self.assertTrue(actual)
-
-            # Does FAKE_ACCOUNT have "roles/fakeAdminRole"?
-            actual = self.gcp_setup._has_roles('X', 1, [
-                'roles/fakeAdminRole'])
-            self.assertFalse(actual)
 
     def test_sanitize_conf_values(self):
         """Test _sanitize_conf_values()."""
