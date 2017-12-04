@@ -436,7 +436,7 @@ class ApiClientImpl(ApiClient):
         """
         for key in self.iam.get_service_account_keys(
                 name, key_type=iam.IAMClient.USER_MANAGED):
-          yield key
+            yield key
 
     @create_lazy('iam', _create_iam)
     def iter_project_roles(self, projectid):
