@@ -287,47 +287,7 @@ class RuleBook(bre.BaseRuleBook):
                     resource_type=resource_type)
                 self.org_policy_rules_map[gcp_resource] = sorted(expanded_rules)
 
-    @staticmethod
-    def get_resource_ancestors(starting_resource, policy):
-        """Find the ancestors for a given resource.
 
-        Take advantage of the full name from the data model which has
-        the entire hierarchy.
-
-        Example of a hierarchical name:
-        organization/88888/project/myproject/firewall/99999/
-
-        Args:
-            starting_resource (Resource): The GCP resource associated with the
-                policy binding.  This is where we move up the resource
-                hierarchy.
-            policy (FirewallRule): FirewallRule object
-
-        Returns:
-            list: A list of GCP resources in ascending order in the resource
-                hierarchy.
-        """
-        ancestor_resources = [starting_resource]
-
-        # policy.hierarchical_name has a trailing / that needs to be removed.
-        hierarchical_name = policy.hierarchical_name.rsplit('/', 1)[0]
-        hierarchical_name_parts = hierarchical_name.split('/')
-
-        should_append_ancestor = False
-        while hierarchical_name_parts:
-            resource_id = hierarchical_name_parts.pop()
-            resource_type = hierarchical_name_parts.pop()
-
-            if not should_append_ancestor:
-                if resource_type == 'project':
-                    should_append_ancestor = True
-                    continue
-
-            if should_append_ancestor:
-                ancestor_resources.append(
-                    resource_util.create_resource(resource_id, resource_type))
-
-        return ancestor_resources
 
     def find_violations(self, resource, policy):
         """Find policy binding violations in the rule book.
@@ -345,7 +305,10 @@ class RuleBook(bre.BaseRuleBook):
         """
         violations = itertools.chain()
 
-        resource_ancestors = self.get_resource_ancestors(resource, policy)
+        resource_ancestors = (
+            org_resource_rel_dao.find_ancestors_by_hierarchial_name(
+                resource, policy))
+
         for curr_resource in resource_ancestors:
             if curr_resource in self.org_policy_rules_map:
                 org_policy_rules = self.org_policy_rules_map.get(

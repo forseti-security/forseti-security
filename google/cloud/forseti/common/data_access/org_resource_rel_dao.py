@@ -18,7 +18,10 @@ from google.cloud.forseti.common.data_access import folder_dao
 from google.cloud.forseti.common.data_access import organization_dao
 from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.common.gcp_type import resource_util
 
+
+# pylint: disable=invalid-name
 
 class OrgResourceRelDao(object):
     """DAO for organization resource entity relationships."""
@@ -105,3 +108,48 @@ class OrgResourceRelDao(object):
                 resource_lookup.get('get'))(
                     unloaded_resource.id, snapshot_timestamp)
         return loaded_resource
+
+
+def find_ancestors_by_hierarchial_name(starting_resource, policy):
+    """Find the ancestors for a given resource.
+
+    Take advantage of the full name from the data model which has
+    the entire hierarchy.
+
+    Example of a hierarchical name:
+    organization/88888/project/myproject/firewall/99999/
+
+    Keeping this outside of the class, because the class is mocked out during
+    testing.
+
+    Args:
+        starting_resource (Resource): The GCP resource associated with the
+            policy binding.  This is where we move up the resource
+            hierarchy.
+        policy (FirewallRule): FirewallRule object
+
+    Returns:
+        list: A list of GCP resources in ascending order in the resource
+            hierarchy.
+    """
+    ancestor_resources = [starting_resource]
+
+    # policy.hierarchical_name has a trailing / that needs to be removed.
+    hierarchical_name = policy.hierarchical_name.rsplit('/', 1)[0]
+    hierarchical_name_parts = hierarchical_name.split('/')
+
+    should_append_ancestor = False
+    while hierarchical_name_parts:
+        resource_id = hierarchical_name_parts.pop()
+        resource_type = hierarchical_name_parts.pop()
+
+        if not should_append_ancestor:
+            if resource_type == 'project':
+                should_append_ancestor = True
+                continue
+
+        if should_append_ancestor:
+            ancestor_resources.append(
+                resource_util.create_resource(resource_id, resource_type))
+
+    return ancestor_resources

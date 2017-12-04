@@ -1620,53 +1620,6 @@ class RuleEngineTest(ForsetiTestCase):
         sorted(violations, key=lambda k: k.resource_id)
         self.assertItemsEqual(expected, violations)
 
-    def test_get_resource_ancestors_from_hierarchical_name(self):
-
-        # resource is organization
-        mock_starting_resource = mock.MagicMock()
-        mock_starting_resource.type = 'organization'
-
-        mock_policy = mock.MagicMock()
-        mock_policy.hierarchical_name = (
-            'organization/org1/')
-        
-        resource_ancestors = fre.RuleBook.get_resource_ancestors(
-            mock_starting_resource, mock_policy)
-        self.assertEquals(1, len(resource_ancestors))
-
-        # resource is project
-        mock_starting_resource = mock.MagicMock()
-        mock_starting_resource.type = 'project'
-
-        mock_policy = mock.MagicMock()
-        mock_policy.hierarchical_name = (
-            'organization/org1/folder/folder2/project/project3/')
-
-        resource_ancestors = fre.RuleBook.get_resource_ancestors(
-            mock_starting_resource, mock_policy)
-
-        self.assertEquals(3, len(resource_ancestors))
-        self.assertEquals(mock_starting_resource, resource_ancestors[0])
-        self.assertEquals('folder2', resource_ancestors[1].id)
-        self.assertEquals('org1', resource_ancestors[2].id)        
-
-        # resource has multiple folders
-        mock_starting_resource = mock.MagicMock()
-        mock_starting_resource.type = 'project'        
-
-        mock_policy = mock.MagicMock()
-        mock_policy.hierarchical_name = (
-            'organization/org1/folder/folder2/folder/folder3/project/project4/')
-
-        resource_ancestors = fre.RuleBook.get_resource_ancestors(
-            mock_starting_resource, mock_policy)
-        
-        self.assertEquals(4, len(resource_ancestors))
-        self.assertEquals(mock_starting_resource, resource_ancestors[0])
-        self.assertEquals('folder3', resource_ancestors[1].id)
-        self.assertEquals('folder2', resource_ancestors[2].id)        
-        self.assertEquals('org1', resource_ancestors[3].id)        
-
 
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()
