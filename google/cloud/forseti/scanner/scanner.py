@@ -86,6 +86,9 @@ def run(forseti_config, model_name=None):
     Args:
         forseti_config (dict): Forseti 1.0 config
         model_name (str): name of the data model
+
+    Returns:
+        int: Status code.
     """
 
     if forseti_config is None:
@@ -126,6 +129,7 @@ def run(forseti_config, model_name=None):
     # pylint: enable=bare-except
 
     LOGGER.info('Scan complete!')
+    return 0
 
 
 def main(_):
@@ -133,9 +137,13 @@ def main(_):
 
     Args:
         _ (list): args that aren't used
+
+    Returns:
+        int: Status code.
     """
 
     run(FLAGS.forseti_config)
+    return 0
 
 
 if __name__ == '__main__':
