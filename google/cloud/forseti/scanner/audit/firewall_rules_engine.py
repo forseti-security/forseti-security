@@ -291,6 +291,12 @@ class RuleBook(bre.BaseRuleBook):
     def get_resource_ancestors(starting_resource, policy):
         """Find the ancestors for a given resource.
 
+        Take advantage of the full name from the data model which has
+        the entire hierarchy.
+
+        Example of a hierarchical name:
+        organization/88888/project/myproject/firewall/99999/
+
         Args:
             starting_resource (Resource): The GCP resource associated with the
                 policy binding.  This is where we move up the resource
@@ -303,36 +309,23 @@ class RuleBook(bre.BaseRuleBook):
         """
         ancestor_resources = [starting_resource]
 
-        if starting_resource.type == 'organization':
-            return ancestor_resources
-
-        # Skip complex reverse hierarchy traversal since hierarchy
-        # is low height, so manually determining the parents.
-        # This will be re-implemented in auditor.
-
         # policy.hierarchical_name has a trailing / that needs to be removed.
         hierarchical_name = policy.hierarchical_name.rsplit('/', 1)[0]
         hierarchical_name_parts = hierarchical_name.split('/')
 
-        hierarchy_map = {}
+        should_append_ancestor = False
         while hierarchical_name_parts:
-            resource_name = hierarchical_name_parts.pop(0)
-            resource_id = hierarchical_name_parts.pop(0)
-            hierarchy_map[resource_name] = resource_id
+            resource_id = hierarchical_name_parts.pop()
+            resource_type = hierarchical_name_parts.pop()
 
-        if starting_resource.type == 'project':
-            if hierarchy_map.get('folder') is not None:
+            if should_append_ancestor is False:
+                if resource_type == 'project':
+                    should_append_ancestor = True
+                    continue
+
+            if should_append_ancestor:
                 ancestor_resources.append(
-                    resource_util.create_resource(
-                        hierarchy_map.get('folder'),
-                        'folder'))
-
-        # By default, every resource must have a organization as a parent.
-        if hierarchy_map.get('organization') is not None:
-            ancestor_resources.append(
-                resource_util.create_resource(
-                    hierarchy_map.get('organization'),
-                    'organization'))
+                    resource_util.create_resource(resource_id, resource_type))
 
         return ancestor_resources
 

@@ -19,11 +19,9 @@ import parameterized
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type.firewall_rule import FirewallRule
-from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
-from tests.scanner.audit.data import test_rules
 
 
 class RuleTest(ForsetiTestCase):
@@ -999,6 +997,7 @@ class RuleTest(ForsetiTestCase):
         for expected_dict, violation in zip(expected, violations):
             self.assertItemsEqual(expected_dict.values(), list(violation))
 
+
 class RuleBookTest(ForsetiTestCase):
 
     def setUp(self):
@@ -1101,8 +1100,8 @@ class RuleBookTest(ForsetiTestCase):
         rule_book = fre.RuleBook({})
         rule_book.add_rules(rule_defs)
         for rule_def in rule_defs:
-          rule_id = rule_def.get('rule_id')
-          self.assertTrue(rule_book.rules_map.get(rule_id) is not None)
+            rule_id = rule_def.get('rule_id')
+            self.assertTrue(rule_book.rules_map.get(rule_id) is not None)
 
     @parameterized.parameterized.expand([
         (
@@ -1401,7 +1400,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_4 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
-                'hierarchical_name': 'organization/org/folder/folder3/project/project2/firewall/policy1/',
+                'hierarchical_name': 'organization/org/folder/folder3/project/project3/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1626,9 +1625,14 @@ class RuleEngineTest(ForsetiTestCase):
         # resource is organization
         mock_starting_resource = mock.MagicMock()
         mock_starting_resource.type = 'organization'
+
+        mock_policy = mock.MagicMock()
+        mock_policy.hierarchical_name = (
+            'organization/org1/')
+        
         resource_ancestors = fre.RuleBook.get_resource_ancestors(
-            mock_starting_resource, mock.MagicMock())
-        self.assertEquals([mock_starting_resource], resource_ancestors)
+            mock_starting_resource, mock_policy)
+        self.assertEquals(1, len(resource_ancestors))
 
         # resource is project
         mock_starting_resource = mock.MagicMock()
@@ -1645,7 +1649,24 @@ class RuleEngineTest(ForsetiTestCase):
         self.assertEquals(mock_starting_resource, resource_ancestors[0])
         self.assertEquals('folder2', resource_ancestors[1].id)
         self.assertEquals('org1', resource_ancestors[2].id)        
+
+        # resource has multiple folders
+        mock_starting_resource = mock.MagicMock()
+        mock_starting_resource.type = 'project'        
+
+        mock_policy = mock.MagicMock()
+        mock_policy.hierarchical_name = (
+            'organization/org1/folder/folder2/folder/folder3/project/project4/')
+
+        resource_ancestors = fre.RuleBook.get_resource_ancestors(
+            mock_starting_resource, mock_policy)
         
+        self.assertEquals(4, len(resource_ancestors))
+        self.assertEquals(mock_starting_resource, resource_ancestors[0])
+        self.assertEquals('folder3', resource_ancestors[1].id)
+        self.assertEquals('folder2', resource_ancestors[2].id)        
+        self.assertEquals('org1', resource_ancestors[3].id)        
+
 
 if __name__ == '__main__':
   unittest.main()
