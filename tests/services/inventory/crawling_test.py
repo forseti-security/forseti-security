@@ -59,16 +59,18 @@ class CrawlerTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     def _get_resource_counts_from_storage(self, storage):
-        result_counts = collections.defaultdict(collections.defaultdict(int))
+        result_counts = {}
         for item in storage.mem.values():
             item_type = item.type()
-            result_counts[item_type]['resource'] += 1
+            item_counts = result_counts.setdefault(
+                item_type, collections.defaultdict(int))
+            item_counts['resource'] += 1
             if item.getIamPolicy():
-                result_counts[item_type]['iam_policy'] += 1
+                item_counts['iam_policy'] += 1
             if item.getGCSPolicy():
-                result_counts[item_type]['gcs_policy'] += 1
+                item_counts['gcs_policy'] += 1
             if item.getDatasetPolicy():
-                result_counts[item_type]['dataset_policy'] += 1
+                item_counts['dataset_policy'] += 1
 
         return result_counts
 
