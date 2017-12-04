@@ -316,12 +316,52 @@ class InstanceGroup(Resource):
         return 'instancegroup'
 
 
+class InstanceGroupManager(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'instancegroupmanager'
+
+
+class InstanceTemplate(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'instancetemplate'
+
+
+class Network(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'network'
+
+
+class Subnetwork(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'subnetwork'
+
+
 class BackendService(Resource):
     def key(self):
         return self['id']
 
     def type(self):
         return 'backendservice'
+
+
+class ForwardingRule(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'forwardingrule'
 
 
 class Role(Resource):
@@ -485,6 +525,46 @@ class InstanceGroupIterator(ResourceIterator):
                 yield FACTORIES['instancegroup'].create_new(data)
 
 
+class InstanceGroupManagerIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_ig_managers(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['instancegroupmanager'].create_new(data)
+
+
+class InstanceTemplateIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_instancetemplates(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['instancetemplate'].create_new(data)
+
+
+class NetworkIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_networks(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['network'].create_new(data)
+
+
+class SubnetworkIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_subnetworks(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['subnetwork'].create_new(data)
+
+
 class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
@@ -493,6 +573,16 @@ class BackendServiceIterator(ResourceIterator):
             for data in gcp.iter_backendservices(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['backendservice'].create_new(data)
+
+
+class ForwardingRuleIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_forwardingrules(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['forwardingrule'].create_new(data)
 
 
 class CloudSqlIterator(ResourceIterator):
@@ -597,7 +687,12 @@ FACTORIES = {
             InstanceIterator,
             FirewallIterator,
             InstanceGroupIterator,
+            InstanceGroupManagerIterator,
+            InstanceTemplateIterator,
             BackendServiceIterator,
+            ForwardingRuleIterator,
+            NetworkIterator,
+            SubnetworkIterator,
             ProjectRoleIterator
             ]}),
 
@@ -644,9 +739,39 @@ FACTORIES = {
         'contains': [
             ]}),
 
+    'instancegroupmanager': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': InstanceGroupManager,
+        'contains': [
+            ]}),
+
+    'instancetemplate': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': InstanceTemplate,
+        'contains': [
+            ]}),
+
     'backendservice': ResourceFactory({
         'dependsOn': ['project'],
         'cls': BackendService,
+        'contains': [
+            ]}),
+
+    'forwardingrule': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ForwardingRule,
+        'contains': [
+            ]}),
+
+    'network': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Network,
+        'contains': [
+            ]}),
+
+    'subnetwork': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Subnetwork,
         'contains': [
             ]}),
 

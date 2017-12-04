@@ -14,8 +14,8 @@
 """Unit Tests: Inventory storage for IAM Explain."""
 
 import unittest
-from tests.services.utils.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
+from tests.services.utils.db import create_test_engine
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.base.resources import Resource
 from google.cloud.forseti.services.inventory.storage import initialize
