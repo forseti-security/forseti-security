@@ -318,7 +318,7 @@ class RuleBook(bre.BaseRuleBook):
             resource_id = hierarchical_name_parts.pop()
             resource_type = hierarchical_name_parts.pop()
 
-            if should_append_ancestor is False:
+            if not should_append_ancestor:
                 if resource_type == 'project':
                     should_append_ancestor = True
                     continue
