@@ -15,8 +15,8 @@
 
 import os
 import unittest
-from tests.services.utils.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
+from tests.services.utils.db import create_test_engine_with_file
 from google.cloud.forseti.common.util.threadpool import ThreadPool
 from google.cloud.forseti.services.dao import ModelManager
 

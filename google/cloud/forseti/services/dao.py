@@ -88,6 +88,9 @@ class Model(MODEL_BASE):
     message = Column(Text())
     warnings = Column(Text())
 
+    # Non-SQL attributes
+    warning_store = list()
+
     def kick_watchdog(self):
         """Used during import to notify the import is still progressing."""
 
@@ -99,12 +102,11 @@ class Model(MODEL_BASE):
         Args:
             warning (str): Warning message
         """
+        self.warning_store.append(warning)
 
-        warning_message = '{}\n'.format(warning)
-        if not self.warnings:
-            self.warnings = warning_message
-        else:
-            self.warnings += warning_message
+    def get_warnings(self):
+        """Returns any stored warnings."""
+        return '\n'.join(self.warning_store)
 
     def set_inprogress(self):
         """Set state to 'in progress'."""
@@ -117,7 +119,8 @@ class Model(MODEL_BASE):
                 message (str): Success message or ''
         """
 
-        if self.warnings:
+        if self.get_warnings():
+            self.warnings = self.get_warnings()
             self.state = "PARTIAL_SUCCESS"
         else:
             self.state = "SUCCESS"
@@ -127,6 +130,7 @@ class Model(MODEL_BASE):
         """Indicate a broken import."""
 
         self.state = "BROKEN"
+        self.warnings = self.get_warnings()
         self.message = message
 
     def __repr__(self):

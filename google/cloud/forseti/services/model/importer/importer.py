@@ -128,9 +128,14 @@ class InventoryImporter(object):
             'dataset',
             'compute_project',
             'instancegroup',
+            'instancegroupmanager',
+            'instancetemplate',
             'instance',
             'firewall',
             'backendservice',
+            'forwardingrule',
+            'network',
+            'subnetwork',
             'cloudsqlinstance'
             ]
 
@@ -410,6 +415,12 @@ class InventoryImporter(object):
             'instancegroup': (None,
                               self._convert_instancegroup,
                               None),
+            'instancegroupmanager': (None,
+                                     self._convert_instancegroupmanager,
+                                     None),
+            'instancetemplate': (None,
+                                 self._convert_instancetemplate,
+                                 None),
             'instance': (None,
                          self._convert_instance,
                          None),
@@ -419,6 +430,15 @@ class InventoryImporter(object):
             'backendservice': (None,
                                self._convert_backendservice,
                                None),
+            'forwardingrule': (None,
+                               self._convert_forwardingrule,
+                               None),
+            'network': (None,
+                        self._convert_network,
+                        None),
+            'subnetwork': (None,
+                           self._convert_subnetwork,
+                           None),
             'cloudsqlinstance': (None,
                                  self._convert_cloudsqlinstance,
                                  None),
@@ -531,6 +551,46 @@ class InventoryImporter(object):
                 data=instancegroup.get_data_raw(),
                 parent=parent))
 
+    def _convert_instancegroupmanager(self, instancegroupmanager):
+        """Convert a instancegroupmanager to a database object.
+
+        Args:
+            instancegroupmanager (object): InstanceGroupManager to store.
+        """
+        data = instancegroupmanager.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            instancegroupmanager)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=instancegroupmanager.get_key(),
+                type=instancegroupmanager.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=instancegroupmanager.get_data_raw(),
+                parent=parent))
+
+    def _convert_instancetemplate(self, instancetemplate):
+        """Convert a instancetemplate to a database object.
+
+        Args:
+            instancetemplate (object): InstanceTemplate to store.
+        """
+        data = instancetemplate.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            instancetemplate)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=instancetemplate.get_key(),
+                type=instancetemplate.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=instancetemplate.get_data_raw(),
+                parent=parent))
+
     def _convert_instance(self, instance):
         """Convert a instance to a database object.
 
@@ -589,6 +649,66 @@ class InventoryImporter(object):
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
                 data=backendservice.get_data_raw(),
+                parent=parent))
+
+    def _convert_forwardingrule(self, forwardingrule):
+        """Convert a forwarding rule to a database object.
+
+        Args:
+            forwardingrule (object): ForwardingRule to store.
+        """
+        data = forwardingrule.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            forwardingrule)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=forwardingrule.get_key(),
+                type=forwardingrule.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=forwardingrule.get_data_raw(),
+                parent=parent))
+
+    def _convert_network(self, network):
+        """Convert a network to a database object.
+
+        Args:
+            network (object): Network to store.
+        """
+        data = network.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            network)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=network.get_key(),
+                type=network.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=network.get_data_raw(),
+                parent=parent))
+
+    def _convert_subnetwork(self, subnetwork):
+        """Convert a subnetwork to a database object.
+
+        Args:
+            subnetwork (object): Subnetwork to store.
+        """
+        data = subnetwork.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            subnetwork)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=subnetwork.get_key(),
+                type=subnetwork.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=subnetwork.get_data_raw(),
                 parent=parent))
 
     def _convert_cloudsqlinstance(self, cloudsqlinstance):
