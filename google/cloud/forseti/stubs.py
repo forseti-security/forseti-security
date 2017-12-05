@@ -26,12 +26,6 @@ https://github.com/google/google-apputils/blob/master/google/apputils/run_script
 from google.apputils import run_script_module
 
 
-def RunForsetiInventory():
-    """Run Forseti Inventory module."""
-    import google.cloud.forseti.inventory.inventory_loader as forseti_inventory
-    run_script_module.RunScriptModule(forseti_inventory)
-
-
 def RunForsetiScanner():
     """Run Forseti Scanner module."""
     import google.cloud.forseti.scanner.scanner as forseti_scanner

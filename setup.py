@@ -116,7 +116,6 @@ setup(
     keywords='gcp google cloud platform security tools',
     entry_points={
         'console_scripts': [
-            'forseti_inventory = google.cloud.forseti.stubs:RunForsetiInventory',
             'forseti_scanner = google.cloud.forseti.stubs:RunForsetiScanner',
             'forseti_enforcer = google.cloud.forseti.stubs:RunForsetiEnforcer',
             'forseti_notifier = google.cloud.forseti.stubs:RunForsetiNotifier',
