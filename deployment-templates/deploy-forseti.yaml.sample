@@ -62,9 +62,11 @@ resources:
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
     service-account-gsuite: SERVICE_ACCOUNT_GSUITE
+    gsuite-admin-email: GSUITE_ADMIN_EMAIL
 
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security
+    root-resource-id: ROOT_RESOURCE_ID
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
@@ -89,3 +91,9 @@ resources:
     # Cloud SQL
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
+
+    # Forseti run frequency
+    # WARNING: only change this value if you know exactly what you're doing!
+    # This is a crontab schedule. The default is "run at minute 0", i.e. run
+    # Forseti at minute 0 of every hour.
+    run-frequency: "0 * * * *"

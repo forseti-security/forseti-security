@@ -166,7 +166,7 @@ class GcloudEnvTest(ForsetiTestCase):
         with captured_output() as (out, err):
             self.gcp_setup.gcloud_info()
             output = out.getvalue().strip()
-            self.assertEqual('Got gcloud info', output)
+            self.assertEqual('Read gcloud info successfully', output)
 
     def test_gcloud_info_cmd_fails(self):
         """Test gcloud_info() exits when command fails."""

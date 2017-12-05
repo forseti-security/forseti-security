@@ -86,6 +86,9 @@ REQUIRED_APIS = [
      'service': 'iam.googleapis.com'},
 ]
 
+# Org Resource Types
+RESOURCE_TYPES = ['organization', 'folder', 'project']
+
 # Paths
 ROOT_DIR_PATH = os.path.dirname(
     os.path.dirname(
@@ -291,6 +294,18 @@ def full_service_acct_email(account_id, project_id):
     """
     return SERVICE_ACCT_EMAIL_FMT.format(account_id, project_id)
 
+def format_resource_id(resource_type, resource_id):
+    """Format the resource id as $RESOURCE_TYPE/$RESOURCE_ID.
+
+    Args:
+        resource_type (str): The resource type.
+        resource_id (str): The resource id.
+
+    Returns:
+        str: The formatted resource id.
+    """
+    return '%s/%s' % (resource_type, resource_id)
+
 def sanitize_conf_values(conf_values):
     """Sanitize the forseti_conf values not to be zero-length strings.
 
@@ -333,7 +348,8 @@ class ForsetiGcpSetup(object):
         self.organization_id = None
 
         self.access_target = None
-        self.target_ids = None
+        self.target_id = None
+        self.resource_root_id = None
 
         self.enable_write_access = False
         self.user_can_grant_roles = False
@@ -387,8 +403,9 @@ class ForsetiGcpSetup(object):
         # Generate names and config.
         print_banner('Generate configs')
         self.generate_bucket_name()
-        self.generate_deployment_templates()
+        self.get_email_settings()
         self.generate_forseti_conf()
+        self.generate_deployment_templates()
 
         # Actual deployment.
         # 1. Create deployment.
@@ -450,7 +467,7 @@ class ForsetiGcpSetup(object):
                 props = config.get('properties', {})
                 metrics = props.get('metrics', {})
                 self.is_devshell = metrics.get('environment') == 'devshell'
-                print('Got gcloud info')
+                print('Read gcloud info successfully')
             except ValueError as verr:
                 print(verr)
                 sys.exit(1)
@@ -526,12 +543,12 @@ class ForsetiGcpSetup(object):
         Either org, folder, or project level.
         """
         print_banner('Forseti access target')
-        choices = ['organizations', 'folders', 'projects']
+        choices = RESOURCE_TYPES
         choice_index = -1
-        while not self.target_ids:
+        while not self.target_id:
             try:
-                print('Forseti can be configured to access organizations, '
-                      'folders, or projects.')
+                print('Forseti can be configured to access an organization, '
+                      'folder, or project.')
                 for (i, choice) in enumerate(choices):
                     print('[%s] %s' % (i+1, choice))
                 choice_input = raw_input(
@@ -544,18 +561,22 @@ class ForsetiGcpSetup(object):
 
             if choice_index and choice_index <= len(choices):
                 self.access_target = choices[choice_index-1]
-                if self.access_target == 'organizations':
-                    self.choose_organizations()
-                elif self.access_target == 'folders':
-                    self.choose_folders()
+                if self.access_target == 'organization':
+                    self.choose_organization()
+                elif self.access_target == 'folder':
+                    self.choose_folder()
                 else:
-                    self.choose_projects()
+                    self.choose_project()
 
-    def choose_organizations(self):
-        """Allow user to input comma separated list of organization ids."""
-        ids = None
-        while not ids:
-            ids = []
+        self.resource_root_id = format_resource_id(
+            '%ss' % self.access_target, self.target_id)
+
+        print('Forseti will be granted access to: %s' %
+              self.resource_root_id)
+
+    def choose_organization(self):
+        """Allow user to input organization id."""
+        while not self.target_id:
             orgs = None
             return_code, out, err = run_command([
                 'gcloud', 'organizations', 'list', '--format=json'])
@@ -577,61 +598,32 @@ class ForsetiGcpSetup(object):
                 print('ID=%s (description="%s")' %
                       (org_id_from_org_name(org['name']), org['displayName']))
 
-            choices = raw_input(
-                'Enter the organization ids, separated by commas, where '
-                'you want Forseti to crawl for data: ').split(',')
+            choice = raw_input('Enter the organization id where '
+                               'you want Forseti to crawl for data: ').strip()
             try:
-                for choice in choices:
-                    # Ensure that the ids are numbers
-                    target_id = int(choice.strip())
-                    if target_id:
-                        ids.append(str(target_id))
+                # make sure that the choice is an int before converting to str
+                self.target_id = str(int(choice))
             except ValueError:
-                print('Invalid choices %s, try again' % choices)
+                print('Invalid choice %s, try again' % choice)
 
-        self.target_ids = ids
-        print('Forseti will be granted access for the '
-              'organization(s): %s' %
-              ','.join(self.target_ids))
-
-    def choose_folders(self):
-        """Allow user to input comma separated list of folder ids."""
-        ids = None
-        while not ids:
-            ids = []
-            choices = raw_input(
-                'Enter the folder ids, separated by commas, where you want '
-                'Forseti to crawl for data: ').split(',')
+    def choose_folder(self):
+        """Allow user to input folder id."""
+        while not self.target_id:
+            choice = raw_input(
+                'Enter the folder id where you want '
+                'Forseti to crawl for data: ').strip()
             try:
-                for choice in choices:
-                    # Ensure that the ids are numbers
-                    target_id = int(choice.strip())
-                    if target_id:
-                        ids.append(str(target_id))
+                # make sure that the choice is an int before converting to str
+                self.target_id = str(int(choice))
             except ValueError:
-                print('Invalid choices %s, try again' % choices)
+                print('Invalid choice %s, try again' % choice)
 
-        self.target_ids = ids
-        print('Forseti will be granted access for the folder(s): %s' %
-              ','.join(self.target_ids))
-
-    def choose_projects(self):
-        """Allow user to input comma separated list of project ids."""
-        ids = None
-        while not ids:
-            ids = []
-            choices = raw_input(
-                'Enter the project ids (NOT PROJECT NUMBERS), '
-                'separated by commas, where you want '
-                'Forseti to crawl for data: ').split(',')
-            for choice in choices:
-                target_id = choice.strip()
-                if target_id:
-                    ids.append(str(target_id))
-
-        self.target_ids = ids
-        print('Forseti will be granted access for the project(s): %s' %
-              ','.join(self.target_ids))
+    def choose_project(self):
+        """Allow user to input project id."""
+        while not self.target_id:
+            self.target_id = raw_input(
+                'Enter the project id (NOT PROJECT NUMBER), '
+                'where you want Forseti to crawl for data: ').strip()
 
     def get_organization(self):
         """Infer the organization from the project's parent."""
@@ -731,16 +723,16 @@ class ForsetiGcpSetup(object):
         while choice != 'y' and choice != 'n':
             choice = raw_input('Do you have access to grant Forseti IAM '
                                'roles on the target %s? (y/n) ' %
-                               self.access_target).strip().lower()
+                               self.resource_root_id).strip().lower()
 
         if choice == 'y':
             self.user_can_grant_roles = True
             print('Ok, will attempt to grant roles on the target %s.' %
-                  self.access_target)
+                  self.resource_root_id)
         else:
             self.user_can_grant_roles = False
             print('Will NOT attempt to grant roles on the target %s.' %
-                  self.access_target)
+                  self.resource_root_id)
 
     def create_reuse_service_acct(self, acct_type):
         """Create or reuse service account.
@@ -768,11 +760,22 @@ class ForsetiGcpSetup(object):
             except ValueError:
                 print('Invalid choice "%s", try again' % choice_input)
 
-        # If the choice is "Create service account", do nothing here.
-        # The default is to create the service account with a generated
-        # name. Otherwise, present the user with options to choose from
+        # If the choice is "Create service account", create the service
+        # account. The default is to create the service account with a 
+        # generated name.
+        # Otherwise, present the user with options to choose from
         # available service accounts in this project.
-        if choice_index == 2:
+        if choice_index == 1:
+            new_acct_id = getattr(self, acct_type)
+            return_code, out, err = run_command(
+                ['gcloud', 'iam', 'service-accounts', 'create',
+                 new_acct_id[:new_acct_id.index('@')]])
+            if return_code:
+                print(err)
+                print('Could not create the service account. Terminating '
+                      'because this is an unexpected error.')
+                sys.exit(1)
+        else:
             svc_accts = []
             return_code, out, err = run_command(
                 ['gcloud', 'iam', 'service-accounts', 'list', '--format=json'])
@@ -807,7 +810,6 @@ class ForsetiGcpSetup(object):
 
         print('Using %s for %s' % (getattr(self, acct_type), acct_type))
 
-    # pylint: disable=too-many-branches
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
@@ -831,7 +833,7 @@ class ForsetiGcpSetup(object):
             access_target_roles.extend(GCP_WRITE_IAM_ROLES)
 
         roles = {
-            self.access_target: access_target_roles,
+            '%ss' % self.access_target: access_target_roles,
             'projects': PROJECT_IAM_ROLES
         }
 
@@ -846,30 +848,29 @@ class ForsetiGcpSetup(object):
             else:
                 resource_args = ['projects']
 
-            for resource_id in self.target_ids:
-                for role in roles:
-                    iam_role_cmd = ['gcloud']
-                    iam_role_cmd.extend(resource_args)
-                    iam_role_cmd.extend([
-                        'add-iam-policy-binding',
-                        resource_id,
-                        '--member=serviceAccount:%s' % (
-                            self.gcp_service_account),
-                        '--role=%s' % role,
-                    ])
-                    if self.user_can_grant_roles and not self.dry_run:
-                        print('Assigning %s on %s...' % (role, resource_id))
-                        proc = subprocess.Popen(iam_role_cmd,
-                                                stdout=subprocess.PIPE,
-                                                stderr=subprocess.PIPE)
-                        _, err = proc.communicate()
-                        if proc.returncode:
-                            print(err)
-                            assign_roles_cmds.append(iam_role_cmd)
-                        else:
-                            print('Done.')
-                    else:
+            for role in roles:
+                iam_role_cmd = ['gcloud']
+                iam_role_cmd.extend(resource_args)
+                iam_role_cmd.extend([
+                    'add-iam-policy-binding',
+                    self.target_id,
+                    '--member=serviceAccount:%s' % (
+                        self.gcp_service_account),
+                    '--role=%s' % role,
+                ])
+                if self.user_can_grant_roles and not self.dry_run:
+                    print('Assigning %s on %s...' % (role, self.target_id))
+                    proc = subprocess.Popen(iam_role_cmd,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+                    _, err = proc.communicate()
+                    if proc.returncode:
+                        print(err)
                         assign_roles_cmds.append(iam_role_cmd)
+                    else:
+                        print('Done.')
+                else:
+                    assign_roles_cmds.append(iam_role_cmd)
 
         if assign_roles_cmds:
             print('One or more roles could not be assigned. Writing a '
@@ -912,6 +913,8 @@ class ForsetiGcpSetup(object):
             'SERVICE_ACCOUNT_GCP': self.gcp_service_account,
             'SERVICE_ACCOUNT_GSUITE': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
+            'GSUITE_ADMIN_EMAIL': self.gsuite_superadmin_email,
+            'ROOT_RESOURCE_ID': self.resource_root_id,
         }
 
         # Create Deployment template with values filled in.
@@ -927,17 +930,17 @@ class ForsetiGcpSetup(object):
 
     def generate_forseti_conf(self):
         """Generate Forseti conf file."""
-        # Create a forseti_conf_dm.yaml config file with values filled in.
+        # Create a forseti_conf_$TIMESTAMP.yaml config file with
+        # values filled in.
         # forseti_conf.yaml in file
-        print('Generate forseti_conf_dm.yaml...\n')
+        print('Generate forseti_conf_%s.yaml...\n' % self.datetimestamp)
         forseti_conf_in = os.path.abspath(
             os.path.join(
                 ROOT_DIR_PATH, 'configs', 'forseti_conf.yaml.in'))
         forseti_conf_gen = os.path.abspath(
             os.path.join(
-                ROOT_DIR_PATH, 'configs', 'forseti_conf_dm.yaml'))
-
-        self._get_user_input()
+                ROOT_DIR_PATH, 'configs',
+                'forseti_conf_%s.yaml' % self.datetimestamp))
 
         conf_values = sanitize_conf_values({
             'EMAIL_RECIPIENT': self.notification_recipient_email,
@@ -955,10 +958,11 @@ class ForsetiGcpSetup(object):
                 out_tmpl.write(out_contents)
                 self.forseti_conf_path = forseti_conf_gen
 
-        print('\nCreated forseti_conf_dm.yaml config file:\n    %s\n' %
-              self.forseti_conf_path)
+        print('\nCreated forseti_conf_%s.yaml config file:\n    %s\n' %
+              (self.datetimestamp,
+               self.forseti_conf_path))
 
-    def _get_user_input(self):
+    def get_email_settings(self):
         """Ask user for specific setup values."""
         if not self.sendgrid_api_key:
             # Ask for SendGrid API Key
@@ -1088,12 +1092,14 @@ class ForsetiGcpSetup(object):
               'found here:\n\n    {}\n\n'.format(self.deploy_tpl_path))
 
         if self.dry_run:
-            print('A default configuration file (configs/forseti_conf_dm.yaml) '
+            print('A default configuration file (configs/forseti_conf_%s.yaml) '
                   'has been generated. After you create your deployment, copy '
                   'this file to the bucket created in the deployment:\n\n'
-                  '    gsutil cp forseti_conf_dm.yaml '
+                  '    gsutil cp forseti_conf_%s.yaml '
                   '%s/configs/forseti_conf.yaml\n\n' %
-                  self.bucket_name)
+                  (self.datetimestamp,
+                   self.bucket_name,
+                   self.datetimestamp))
         else:
             print('You can view the details of your deployment in the '
                   'Cloud Console:\n\n    '
@@ -1103,7 +1109,7 @@ class ForsetiGcpSetup(object):
                       self.project_id,
                       self.organization_id))
 
-            print('A default configuration file (configs/forseti_conf_dm.yaml) '
+            print('A default configuration file (configs/forseti_conf_{}.yaml) '
                   'has been generated. If you wish to change your '
                   'Forseti configuration or rules, e.g. enabling G Suite '
                   'Groups collection, either download the conf file in '
@@ -1111,15 +1117,16 @@ class ForsetiGcpSetup(object):
                   'the guide below to copy the files to Cloud Storage:\n\n'
                   '    http://forsetisecurity.org/docs/howto/deploy/'
                   'gcp-deployment.html#move-configuration-to-gcs\n\n'.format(
+                      self.datetimestamp,
                       self.bucket_name))
 
         if self.has_roles_script:
-            print('Some roles could not be assigned to the %s where you want '
+            print('Some roles could not be assigned to %s where you want '
                   'to grant Forseti access. A script `grant_forseti_roles.sh` '
                   'has been generated with the necessary commands to assign '
                   'those roles. Please run this script to assign the Forseti '
                   'roles so that Forseti will work properly.\n\n' %
-                  self.access_target)
+                  self.resource_root_id)
 
         if self.skip_email:
             print('If you would like to enable email notifications via '

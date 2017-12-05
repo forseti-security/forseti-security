@@ -30,7 +30,7 @@ set -o nounset
 # script will fail immediately rather than partially succeeding.
 echo "CloudSQL Instance connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "Local SQL port is: ${SQL_PORT}"
-echo "Explain DB name: ${FORSETI_DB_NAME}"
+echo "Forseti DB name: ${FORSETI_DB_NAME}"
 echo "GSuite admin email: ${GSUITE_ADMIN_EMAIL}"
 echo "Root resource ID: ${ROOT_RESOURCE_ID}"
 if ! [[ -f $GSUITE_ADMIN_CREDENTIAL_PATH ]]; then
@@ -73,7 +73,7 @@ sudo mv /tmp/forseti.service /lib/systemd/system/forseti.service
 
 SQL_PROXY_SERVICE="$(cat << EOF
 [Unit]
-Description=Explain Cloud SQL Proxy
+Description=Cloud SQL Proxy
 [Service]
 Restart=always
 RestartSec=3
