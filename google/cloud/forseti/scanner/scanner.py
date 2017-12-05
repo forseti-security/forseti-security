@@ -56,8 +56,6 @@ LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
-SERVICE_CONFIG = None
-
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
@@ -78,7 +76,7 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     return latest_timestamp
 
-def run(forseti_config, model_name=None):
+def run(forseti_config, model_name=None, service_config=None):
     """Run the scanners.
 
     Entry point when the scanner is run as a library.
@@ -86,6 +84,7 @@ def run(forseti_config, model_name=None):
     Args:
         forseti_config (dict): Forseti 1.0 config
         model_name (str): name of the data model
+        service_config (ServiceConfig): Forseti 2.0 service configs
 
     Returns:
         int: Status code.
@@ -112,11 +111,11 @@ def run(forseti_config, model_name=None):
         sys.exit()
 
     violation_access = scanner_dao.define_violation(
-        model_name, SERVICE_CONFIG.engine)
-    SERVICE_CONFIG.violation_access = violation_access
+        model_name, service_config.engine)
+    service_config.violation_access = violation_access
 
     runnable_scanners = scanner_builder.ScannerBuilder(
-        global_configs, scanner_configs, SERVICE_CONFIG, model_name,
+        global_configs, scanner_configs, service_config, model_name,
         snapshot_timestamp).build()
 
     # pylint: disable=bare-except

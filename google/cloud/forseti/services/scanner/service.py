@@ -37,9 +37,10 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             metadata_dict[key] = value
         return metadata_dict[self.HANDLE_KEY]
 
-    def __init__(self, scanner_api):
+    def __init__(self, scanner_api, service_config):
         super(GrpcScanner, self).__init__()
         self.scanner = scanner_api
+        self.service_config = service_config
 
     def Ping(self, request, _):
         """Provides the capability to check for service availability."""
@@ -50,7 +51,8 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         """Run scanner."""
 
         model_name = self._get_handle(context)
-        result = self.scanner.run(request.config_dir, model_name)
+        result = self.scanner.run(request.config_dir, model_name,
+                                  self.service_config)
 
         reply = scanner_pb2.RunReply()
         reply.status = result
@@ -65,7 +67,7 @@ class GrpcScannerFactory(object):
 
     def create_and_register_service(self, server):
         """Create and register the IAM Scanner service."""
-        scanner.SERVICE_CONFIG = self.config
-        service = GrpcScanner(scanner_api=scanner)
+        service = GrpcScanner(scanner_api=scanner,
+                              service_config=self.config)
         scanner_pb2_grpc.add_ScannerServicer_to_server(service, server)
         return service
