@@ -55,7 +55,9 @@ class InventoryTypeClass(object):
     RESOURCE = 'resource'
     IAM_POLICY = 'iam_policy'
     GCS_POLICY = 'gcs_policy'
-    SUPPORTED_TYPECLASS = [RESOURCE, IAM_POLICY, GCS_POLICY]
+    DATASET_POLICY = 'dataset_policy'
+    SUPPORTED_TYPECLASS = frozenset(
+        [RESOURCE, IAM_POLICY, GCS_POLICY, DATASET_POLICY])
 
 
 class InventoryIndex(BASE):
@@ -183,6 +185,7 @@ class Inventory(BASE):
         parent = resource.parent()
         iam_policy = resource.getIamPolicy()
         gcs_policy = resource.getGCSPolicy()
+        dataset_policy = resource.getDatasetPolicy()
 
         rows = []
         rows.append(
@@ -218,6 +221,19 @@ class Inventory(BASE):
                     key=resource.key(),
                     type=resource.type(),
                     data=json.dumps(gcs_policy),
+                    parent_key=resource.key(),
+                    parent_type=resource.type(),
+                    other=None,
+                    error=None))
+
+        if dataset_policy:
+            rows.append(
+                Inventory(
+                    index=index.id,
+                    type_class=InventoryTypeClass.DATASET_POLICY,
+                    key=resource.key(),
+                    type=resource.type(),
+                    data=json.dumps(dataset_policy),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=None,
@@ -657,12 +673,15 @@ class Storage(BaseStorage):
              type_list=None,
              fetch_iam_policy=False,
              fetch_gcs_policy=False,
+             fetch_dataset_policy=False,
              with_parent=False):
         """Iterate the objects in the storage.
 
         Args:
             type_list (list): List of types to iterate over, or [] for all.
             fetch_iam_policy (bool): Yield iam policies.
+            fetch_gcs_policy (bool): Yield gcs policies.
+            fetch_dataset_policy (bool): Yield dataset policies.
             with_parent (bool): Join parent with results, yield tuples.
 
         Yields:
@@ -679,6 +698,10 @@ class Storage(BaseStorage):
         elif fetch_gcs_policy:
             filters.append(
                 Inventory.type_class == InventoryTypeClass.GCS_POLICY)
+
+        elif fetch_dataset_policy:
+            filters.append(
+                Inventory.type_class == InventoryTypeClass.DATASET_POLICY)
 
         else:
             filters.append(
