@@ -14,6 +14,10 @@
 
 """Email utility module."""
 
+# The pre-commit linter will complain about useless disable of no-member, but
+# this is needed because quiet the Sendgrid no-member error on Travis.
+# pylint: disable=no-member,useless-suppression
+
 import base64
 import os
 import urllib2
