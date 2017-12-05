@@ -292,9 +292,9 @@ class GcloudEnvTest(ForsetiTestCase):
             self.assertEqual(output_head, output)
 
     def test_sanitize_conf_values(self):
-        """Test _sanitize_conf_values()."""
+        """Test sanitize_conf_values()."""
         self.assertTrue(
-            all(self.gcp_setup._sanitize_conf_values(
+            all(gcloud_env.sanitize_conf_values(
                 {
                     'test': None,
                     'test2': 3,
@@ -302,7 +302,7 @@ class GcloudEnvTest(ForsetiTestCase):
                 }
             )))
         self.assertTrue(
-            all(self.gcp_setup._sanitize_conf_values(
+            all(gcloud_env.sanitize_conf_values(
                 {
                     'test': '',
                     'test2': 1,
