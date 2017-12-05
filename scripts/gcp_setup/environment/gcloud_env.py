@@ -19,6 +19,7 @@ This has been tested with python 2.7.
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=too-many-public-methods
+# pylint: disable=too-many-branches
 
 from __future__ import print_function
 
@@ -59,7 +60,6 @@ GCP_WRITE_IAM_ROLES = [
     'roles/compute.securityAdmin',
 ]
 
-# Required APIs
 PROJECT_IAM_ROLES = [
     'roles/storage.objectViewer',
     'roles/storage.objectCreator',
@@ -67,6 +67,11 @@ PROJECT_IAM_ROLES = [
     'roles/logging.logWriter',
 ]
 
+SVC_ACCT_ROLES = [
+    'roles/iam.serviceAccountKeyAdmin',
+]
+
+# Required APIs
 REQUIRED_APIS = [
     {'name': 'Admin SDK',
      'service': 'admin.googleapis.com'},
@@ -761,7 +766,7 @@ class ForsetiGcpSetup(object):
                 print('Invalid choice "%s", try again' % choice_input)
 
         # If the choice is "Create service account", create the service
-        # account. The default is to create the service account with a 
+        # account. The default is to create the service account with a
         # generated name.
         # Otherwise, present the user with options to choose from
         # available service accounts in this project.
@@ -796,7 +801,7 @@ class ForsetiGcpSetup(object):
             while acct_idx < 1 or acct_idx > len(svc_accts):
                 for (i, acct) in enumerate(svc_accts):
                     print('[%s] %s (%s)' %
-                          (i+1, acct['displayName'], acct['email']))
+                          (i+1, acct.get('displayName', ''), acct['email']))
 
                 choice_input = raw_input(
                     'Enter the number of your choice: ').strip()
@@ -834,26 +839,35 @@ class ForsetiGcpSetup(object):
 
         roles = {
             '%ss' % self.access_target: access_target_roles,
-            'projects': PROJECT_IAM_ROLES
+            'forseti_project': PROJECT_IAM_ROLES,
+            'service_accounts': SVC_ACCT_ROLES,
         }
 
         # Keep track of the roles that user couldn'tgrant.
         assign_roles_cmds = []
 
         for (resource_type, roles) in roles.iteritems():
+            resource_id = self.target_id
+
             if resource_type == 'organizations':
                 resource_args = ['organizations']
             elif resource_type == 'folders':
                 resource_args = ['alpha', 'resource-manager', 'folders']
-            else:
+            elif resource_type == 'projects':
                 resource_args = ['projects']
+            elif resource_type == 'forseti_project':
+                resource_args = ['projects']
+                resource_id = self.project_id
+            elif resource_type == 'service_accounts':
+                resource_args = ['iam', 'service-accounts']
+                resource_id = self.gcp_service_account
 
             for role in roles:
                 iam_role_cmd = ['gcloud']
                 iam_role_cmd.extend(resource_args)
                 iam_role_cmd.extend([
                     'add-iam-policy-binding',
-                    self.target_id,
+                    resource_id,
                     '--member=serviceAccount:%s' % (
                         self.gcp_service_account),
                     '--role=%s' % role,

@@ -168,6 +168,9 @@ python build_protos.py --clean
 # Install Forseti
 python setup.py install
 
+# Rotate gsuite key
+sudo su $USER -c python $FORSETI_HOME/scripts/rotate_gsuite_key.py
+
 # Export variables required by initialize_explain_services.sh.
 {export_initialize_vars}
 
