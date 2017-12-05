@@ -128,6 +128,7 @@ class InventoryImporter(object):
             'appengine_version',
             'appengine_instance',
             'serviceaccount',
+            'serviceaccount_key',
             'bucket',
             'dataset',
             'compute_project',
@@ -331,7 +332,7 @@ class InventoryImporter(object):
             KeyError: if member could not be found in any cache.
         """
 
-        bindings = policy.get_data()['bindings']
+        bindings = policy.get_data().get('bindings', [])
         for binding in bindings:
             role = binding['role']
             if role not in self.role_cache:
@@ -416,6 +417,9 @@ class InventoryImporter(object):
             'serviceaccount': (None,
                                self._convert_serviceaccount,
                                None),
+            'serviceaccount_key': (None,
+                                   self._convert_serviceaccount_key,
+                                   None),
             'bucket': (None,
                        self._convert_bucket,
                        None),
@@ -777,15 +781,37 @@ class InventoryImporter(object):
         data = service_account.get_data()
         parent, full_res_name, type_name = self._full_resource_name(
             service_account)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=service_account.get_key(),
+            type=service_account.get_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=service_account.get_data_raw(),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(service_account, resource)
+
+    def _convert_serviceaccount_key(self, service_account_key):
+        """Convert a service account key to a database object.
+
+        Args:
+            service_account_key (object): Service account key to store.
+        """
+
+        data = service_account_key.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            service_account_key)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=service_account.get_key(),
-                type=service_account.get_type(),
+                name=service_account_key.get_key(),
+                type=service_account_key.get_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=service_account.get_data_raw(),
+                data=service_account_key.get_data_raw(),
                 parent=parent))
 
     def _convert_folder(self, folder):
