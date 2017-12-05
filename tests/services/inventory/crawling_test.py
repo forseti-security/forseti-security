@@ -13,7 +13,6 @@
 # limitations under the License.
 """Unit Tests: Inventory crawler for IAM Explain."""
 
-import collections
 import unittest
 from tests.services.inventory import gcp_api_mocks
 from tests.unittest_utils import ForsetiTestCase
@@ -63,13 +62,16 @@ class CrawlerTest(ForsetiTestCase):
         for item in storage.mem.values():
             item_type = item.type()
             item_counts = result_counts.setdefault(
-                item_type, collections.defaultdict(int))
+                item_type, {'resource': 0})
             item_counts['resource'] += 1
             if item.getIamPolicy():
+                item_counts.setdefault('iam_policy', 0)
                 item_counts['iam_policy'] += 1
             if item.getGCSPolicy():
+                gcs_count = item_counts.setdefault('gcs_policy', 0)
                 item_counts['gcs_policy'] += 1
             if item.getDatasetPolicy():
+                dataset_count = item_counts.setdefault('dataset_policy', 0)
                 item_counts['dataset_policy'] += 1
 
         return result_counts
@@ -96,6 +98,10 @@ class CrawlerTest(ForsetiTestCase):
             result_counts = self._get_resource_counts_from_storage(storage)
 
         expected_counts = {
+            'appengine_app': {'resource': 2},
+            'appengine_instance': {'resource': 3},
+            'appengine_service': {'resource': 1},
+            'appengine_version': {'resource': 1},
             'backendservice': {'resource': 1},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
@@ -145,6 +151,10 @@ class CrawlerTest(ForsetiTestCase):
             result_counts = self._get_resource_counts_from_storage(storage)
 
         expected_counts = {
+            'appengine_app': {'resource': 1},
+            'appengine_instance': {'resource': 3},
+            'appengine_service': {'resource': 1},
+            'appengine_version': {'resource': 1},
             'bucket': {'gcs_policy': 1, 'iam_policy': 1, 'resource': 1},
             'folder': {'iam_policy': 2, 'resource': 2},
             'project': {'iam_policy': 1, 'resource': 1},
