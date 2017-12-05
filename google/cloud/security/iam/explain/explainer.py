@@ -14,17 +14,15 @@
 
 """ Explain API. """
 
-from google.cloud.security.iam import dao
 from google.cloud.security.iam.explain.importer import importer
 
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc
+# pylint: disable=missing-yield-type-doc,invalid-name
 
 
-# pylint: disable=invalid-name,no-self-use
 class Explainer(object):
     """Implements the IAM Explain API."""
 
@@ -70,26 +68,30 @@ class Explainer(object):
                                                            expand_groups)
             return mapping
 
-    def CreateModel(self, source, name):
+    def CreateModel(self, source, name, inventory_id, background):
         """Creates a model from the import source."""
 
         model_manager = self.config.model_manager
         model_handle = model_manager.create(name=name)
         scoped_session, data_access = model_manager.get(model_handle)
-        with scoped_session as session:
 
-            def doImport():
-                """Import runnable."""
+        def doImport():
+            """Import runnable."""
+            with scoped_session as session:
                 importer_cls = importer.by_source(source)
                 import_runner = importer_cls(
                     session,
                     model_manager.model(model_handle, expunge=False),
                     data_access,
-                    self.config)
+                    self.config,
+                    inventory_id)
                 import_runner.run()
 
+        if background:
             self.config.run_in_background(doImport)
-            return model_manager.model(model_handle, expunge=True)
+        else:
+            doImport()
+        return model_manager.model(model_handle, expunge=True)
 
     def GetAccessByPermissions(self, model_name, role_name, permission_name,
                                expand_groups, expand_resources):
@@ -159,20 +161,3 @@ class Explainer(object):
             for tpl in data_access.denormalize(session):
                 permission, resource, member = tpl
                 yield permission, resource, member
-
-
-if __name__ == "__main__":
-    class DummyConfig(object):
-        """Dummy configuration."""
-
-        def __init__(self):
-            engine = dao.create_engine('sqlite:////tmp/test.db')
-            self.model_manager = dao.ModelManager(engine)
-
-        def run_in_background(self, function):
-            """Dummy implementation."""
-
-            function()
-
-    e = Explainer(config=DummyConfig())
-    e.CreateModel("TEST", 'test')

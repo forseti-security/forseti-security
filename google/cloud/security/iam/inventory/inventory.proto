@@ -1,0 +1,85 @@
+// Copyright 2017 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package inventory;
+
+service Inventory {
+  rpc Ping(PingRequest) returns (PingReply) {}
+
+  rpc Create(CreateRequest) returns (stream Progress) {}
+
+  rpc List(ListRequest) returns (stream InventoryIndex) {}
+
+  rpc Get(GetRequest) returns (GetReply) {}
+
+  rpc Delete(DeleteRequest) returns (DeleteReply) {}
+
+}
+
+message PingRequest {
+  string data = 1;
+}
+
+message PingReply {
+  string data = 1;
+}
+
+message Progress {
+	int32 id = 1;
+	bool final_message = 2;
+	string step = 3;
+	int32 warnings = 4;
+	int32 errors = 5;
+	string last_warning = 6;
+	string last_error = 7;
+}
+
+message CreateRequest {
+	bool background = 1;
+	string model_name = 2;
+}
+
+message ListRequest {
+}
+
+message InventoryIndex {
+	int32 id = 1;
+	google.protobuf.Timestamp start_time = 2;
+	google.protobuf.Timestamp complete_time = 3;
+	int32 schema_version = 4;
+	int32 count_objects = 5;
+	string status = 6;
+	string warnings = 7;
+	string errors = 8;
+}
+
+message GetRequest {
+	int32 id = 1;
+}
+
+message GetReply {
+	InventoryIndex inventory = 1;
+}
+
+message DeleteRequest {
+	int32 id = 1;
+}
+
+message DeleteReply {
+	InventoryIndex inventory = 1;
+}
