@@ -174,7 +174,7 @@ python setup.py install
 {export_forseti_vars}
 
 # Rotate gsuite key
-sudo su $USER -c python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gcp_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH
+sudo su $USER -c "python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gcp_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
 
 # Start Explain service depends on vars defined above.
 bash ./scripts/gcp_setup/bash_scripts/initialize_explain_services.sh
@@ -185,7 +185,7 @@ sleep 5
 systemctl start forseti
 echo "Success! The Forseti API server has been started."
 
-sudo su $USER -c $FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh
+sudo su $USER -c "$FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh"
 (echo "{run_frequency} $FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab"
 
