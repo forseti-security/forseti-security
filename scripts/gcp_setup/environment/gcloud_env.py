@@ -873,7 +873,7 @@ class ForsetiGcpSetup(object):
                     '--role=%s' % role,
                 ])
                 if self.user_can_grant_roles and not self.dry_run:
-                    print('Assigning %s on %s...' % (role, self.target_id))
+                    print('Assigning %s on %s...' % (role, resource_id))
                     proc = subprocess.Popen(iam_role_cmd,
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE)
@@ -947,7 +947,7 @@ class ForsetiGcpSetup(object):
         # Create a forseti_conf_$TIMESTAMP.yaml config file with
         # values filled in.
         # forseti_conf.yaml in file
-        print('Generate forseti_conf_%s.yaml...\n' % self.datetimestamp)
+        print('\nGenerate forseti_conf_%s.yaml...' % self.datetimestamp)
         forseti_conf_in = os.path.abspath(
             os.path.join(
                 ROOT_DIR_PATH, 'configs', 'forseti_conf.yaml.in'))

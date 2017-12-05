@@ -174,7 +174,7 @@ python setup.py install
 {export_forseti_vars}
 
 # Rotate gsuite key
-sudo su $USER -c "python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gcp_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
+sudo su $USER -c "python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
 
 # Start Explain service depends on vars defined above.
 bash ./scripts/gcp_setup/bash_scripts/initialize_explain_services.sh
@@ -210,7 +210,7 @@ echo "Execution of startup script finished"
     # Env variables for Forseti
     export_forseti_vars=EXPORT_FORSETI_VARS,
 
-    gcp_service_acct=context.properties['service-account'],
+    gsuite_service_acct=context.properties['service-account-gsuite'],
 
     # Forseti run frequency
     run_frequency=context.properties['run-frequency'],
