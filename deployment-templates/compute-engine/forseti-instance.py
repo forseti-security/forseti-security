@@ -63,12 +63,11 @@ mv forseti-security-{release_version} forseti-security
         GSUITE_ADMIN_CREDENTIAL_PATH,
         ROOT_RESOURCE_ID)
 
-    EXPORT_FORSETI_VARS = """
-export FORSETI_HOME={forseti_home}
-export FORSETI_CONF={forseti_conf}
-""".format(
-        forseti_home=FORSETI_HOME,
-        forseti_conf=FORSETI_CONF)
+    EXPORT_FORSETI_VARS = (
+        'export FORSETI_HOME={forseti_home}\n'
+        'export FORSETI_CONF={forseti_conf}\n'
+        ).format(forseti_home=FORSETI_HOME,
+                 forseti_conf=FORSETI_CONF)
 
     resources = []
 
@@ -168,14 +167,14 @@ python build_protos.py --clean
 # Install Forseti
 python setup.py install
 
-# Rotate gsuite key
-sudo su $USER -c python $FORSETI_HOME/scripts/rotate_gsuite_key.py $GSUITE_ADMIN_CREDENTIAL_PATH
-
 # Export variables required by initialize_explain_services.sh.
 {export_initialize_vars}
 
 # Export variables required by run_forseti.sh
 {export_forseti_vars}
+
+# Rotate gsuite key
+sudo su $USER -c python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gcp_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH
 
 # Start Explain service depends on vars defined above.
 bash ./scripts/gcp_setup/bash_scripts/initialize_explain_services.sh
@@ -210,6 +209,8 @@ echo "Execution of startup script finished"
 
     # Env variables for Forseti
     export_forseti_vars=EXPORT_FORSETI_VARS,
+
+    gcp_service_acct=context.properties['service-account'],
 
     # Forseti run frequency
     run_frequency=context.properties['run-frequency'],

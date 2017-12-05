@@ -26,12 +26,19 @@ import sys
 
 from gcp_setup.environment import gcloud_env
 
-def run(argv):
+def run():
     """Rotate G Suite key."""
-    if len(argv) < 2:
-        print('%s: Missing path to key. Exiting.' % argv[0])
-        sys.exit(1)
-    key_path = argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'service-account',
+        help='The service account to rotate a key for')
+    parser.add_argument(
+        'key-path',
+        help='The path to the key, if it exists')
+    args = vars(parser.parse_args())
+    target_svc_acct = args['service-account']
+    key_path = args['key-path']
+
     curr_private_key_id = None
     service_account = None
     if os.path.exists(key_path):
@@ -46,6 +53,12 @@ def run(argv):
 
     # delete current key
     if curr_private_key_id and service_account:
+        if service_account != target_svc_acct:
+            print('The service account for the key id=%s does not match '
+                  'the target service account for which you want to rotate '
+                  'the key! Exiting.' % curr_private_key_id)
+            sys.exit(1)
+
         print('Delete key id=%s' % curr_private_key_id)
         return_code, out, err = gcloud_env.run_command([
             'gcloud', 'iam', 'service-accounts', 'keys',
@@ -54,20 +67,20 @@ def run(argv):
         if return_code:
             print(err)
         else:
-            print(out)
+            print('Done')
 
     # create new key
-    if service_account:
-        print('Create new key for %s' % service_account)
+    if target_svc_acct:
+        print('Create new key for %s' % target_svc_acct)
         return_code, out, err = gcloud_env.run_command([
             'gcloud', 'iam', 'service-accounts', 'keys',
             'create', key_path,
-            '--iam-account=%s' % service_account])
+            '--iam-account=%s' % target_svc_acct])
         if return_code:
             print(err)
         else:
-            print(out)
+            print('Done')
 
 
 if __name__ == '__main__':
-    run(sys.argv)
+    run()
