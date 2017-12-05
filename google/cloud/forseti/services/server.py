@@ -15,7 +15,8 @@
 """ IAM Explain server program. """
 
 # TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=protected-access,no-self-use,line-too-long,protected-access,useless-suppression
+# pylint: disable=missing-type-doc,missing-param-doc
+# pylint: disable=line-too-long,useless-suppression
 
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import ThreadPool
@@ -32,10 +33,6 @@ from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.inventory.storage import Storage
-
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-param-doc,missing-type-doc,missing-raises-doc
 
 
 STATIC_SERVICE_MAPPING = {
@@ -86,6 +83,9 @@ class AbstractServiceConfig(object):
     @abstractmethod
     def run_in_background(self, function):
         """Runs a function in a thread pool in the background.
+
+        Args:
+            function (Function): Function to be executed.
 
         Raises:
             NotImplementedError: Abstract.
@@ -236,14 +236,12 @@ class ServiceConfig(AbstractServiceConfig):
     def __init__(self,
                  inventory_config,
                  explain_connect_string,
-                 forseti_connect_string,
                  endpoint):
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
         self.engine = create_engine(explain_connect_string, pool_recycle=3600)
         self.model_manager = ModelManager(self.engine)
-        self.forseti_connect_string = forseti_connect_string
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
 
@@ -287,7 +285,11 @@ class ServiceConfig(AbstractServiceConfig):
         return ClientComposition(self.endpoint)
 
     def run_in_background(self, function):
-        """Runs a function in a thread pool in the background."""
+        """Runs a function in a thread pool in the background.
+
+        Args:
+            function (Function): Function to be executed.
+        """
 
         self.thread_pool.apply_async(function)
 
@@ -302,10 +304,14 @@ class ServiceConfig(AbstractServiceConfig):
 
 
 def serve(endpoint, services,
-          explain_connect_string, forseti_connect_string,
+          explain_connect_string,
           gsuite_sa_path, gsuite_admin_email,
           root_resource_id, max_workers=32, wait_shutdown_secs=3):
-    """Instantiate the services and serves them via gRPC."""
+    """Instantiate the services and serves them via gRPC.
+
+    Raises:
+        Exception: No services to start
+    """
 
     factories = []
     for service in services:
@@ -320,7 +326,6 @@ def serve(endpoint, services,
                                        gsuite_admin_email)
     config = ServiceConfig(inventory_config,
                            explain_connect_string,
-                           forseti_connect_string,
                            endpoint)
     inventory_config.set_service_config(config)
 
@@ -342,10 +347,9 @@ if __name__ == "__main__":
     import sys
     EP = sys.argv[1] if len(sys.argv) > 1 else '[::]:50051'
     FORSETI_DB = sys.argv[2] if len(sys.argv) > 2 else ''
-    EXPLAIN_DB = sys.argv[3] if len(sys.argv) > 3 else ''
-    GSUITE_SA = sys.argv[4] if len(sys.argv) > 4 else ''
-    GSUITE_ADMIN_EMAIL = sys.argv[5] if len(sys.argv) > 5 else ''
-    ROOT_RESOURCE_ID = sys.argv[6] if len(sys.argv) > 6 else ''
-    SVCS = sys.argv[7:] if len(sys.argv) > 7 else []
-    serve(EP, SVCS, EXPLAIN_DB, FORSETI_DB,
-          GSUITE_SA, GSUITE_ADMIN_EMAIL, ROOT_RESOURCE_ID)
+    GSUITE_SA = sys.argv[3] if len(sys.argv) > 3 else ''
+    GSUITE_ADMIN_EMAIL = sys.argv[4] if len(sys.argv) > 4 else ''
+    ROOT_RESOURCE_ID = sys.argv[5] if len(sys.argv) > 5 else ''
+    SVCS = sys.argv[6:] if len(sys.argv) > 6 else []
+    serve(EP, SVCS, FORSETI_DB, GSUITE_SA,
+          GSUITE_ADMIN_EMAIL, ROOT_RESOURCE_ID)

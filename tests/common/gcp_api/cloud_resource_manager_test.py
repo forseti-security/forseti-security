@@ -69,8 +69,9 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(response)
 
         result = list(self.crm_api_client.get_projects(
-            'projects', parent_id=fake_crm_responses.FAKE_ORG_ID,
-            parent_type='organization', lifecycleState=LifecycleState.ACTIVE))
+            parent_id=fake_crm_responses.FAKE_ORG_ID,
+            parent_type='organization',
+            lifecycleState=LifecycleState.ACTIVE))
         self.assertEquals(fake_projects.EXPECTED_FAKE_ACTIVE_PROJECTS1, result)
 
     def test_get_projects_all(self):
@@ -78,7 +79,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         response = json.dumps(fake_projects.FAKE_PROJECTS_API_RESPONSE1)
         http_mocks.mock_http_response(response)
 
-        result = list(self.crm_api_client.get_projects('projects'))
+        result = list(self.crm_api_client.get_projects())
         self.assertEquals(fake_projects.EXPECTED_FAKE_PROJECTS1, result)
 
     def test_get_projects_api_error(self):
@@ -87,7 +88,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
                                       '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            list(self.crm_api_client.get_projects('projects'))
+            list(self.crm_api_client.get_projects())
 
     def test_get_project_ancestry(self):
         """Validate get_project_ancestry() with test project."""
@@ -111,8 +112,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         """Test get project IAM policies."""
         http_mocks.mock_http_response(fake_crm_responses.GET_IAM_POLICY)
 
-        response = self.crm_api_client.get_project_iam_policies('foo',
-                                                                self.project_id)
+        response = self.crm_api_client.get_project_iam_policies(self.project_id)
         self.assertTrue('bindings' in response)
 
     def test_get_project_iam_policies_errors(self):
@@ -121,7 +121,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
                                       '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.crm_api_client.get_project_iam_policies('foo', self.project_id)
+            self.crm_api_client.get_project_iam_policies(self.project_id)
 
     def test_get_project_org_policies(self):
         """Test get project org policies."""
@@ -162,7 +162,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_orgs_response)
         expected_orgs = fake_orgs.EXPECTED_FAKE_ORGS_FROM_API
 
-        result = self.crm_api_client.get_organizations('organizations')
+        result = self.crm_api_client.get_organizations()
         self.assertEquals(expected_orgs, result)
 
     def test_get_organizations_multiple_pages(self):
@@ -172,7 +172,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
             mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
-        results = self.crm_api_client.get_organizations('organizations')
+        results = self.crm_api_client.get_organizations()
         self.assertEquals(fake_crm_responses.EXPECTED_ORGANIZATIONS_FROM_SEARCH,
                           [r.get('name') for r in results])
 
@@ -182,17 +182,16 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
                                       '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            list(self.crm_api_client.get_organizations('organizations'))
+            list(self.crm_api_client.get_organizations())
 
     def test_get_org_iam_policies(self):
         """Test get org IAM policies."""
         http_mocks.mock_http_response(fake_crm_responses.GET_IAM_POLICY)
         org_id = fake_crm_responses.FAKE_ORG_ID
 
-        response = self.crm_api_client.get_org_iam_policies(
-            'organizations', org_id)
+        response = self.crm_api_client.get_org_iam_policies(org_id)
 
-        self.assertTrue('bindings' in response.get('iam_policy', {}),
+        self.assertTrue('bindings' in response,
                         msg='Response {} does not contain "bindings".'.format(
                             response))
 
@@ -203,7 +202,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         org_id = fake_crm_responses.FAKE_ORG_ID
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.crm_api_client.get_org_iam_policies('foo', org_id)
+            self.crm_api_client.get_org_iam_policies(org_id)
 
     def test_get_org_org_policies(self):
         """Test get org org policies."""
@@ -247,7 +246,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(fake_folders_response)
         expected_folders = fake_folders.EXPECTED_FAKE_FOLDERS1
 
-        result = self.crm_api_client.get_folders('folders', show_deleted=True)
+        result = self.crm_api_client.get_folders(show_deleted=True)
         self.assertEquals(expected_folders, result)
 
     def test_get_folders_parent(self):
@@ -258,7 +257,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         expected_folders = fake_folders.EXPECTED_FAKE_FOLDERS_LIST1
         parent = 'organizations/9999'
 
-        result = self.crm_api_client.get_folders('folders', parent=parent)
+        result = self.crm_api_client.get_folders(parent=parent)
         self.assertEquals(expected_folders, result)
 
     def test_get_folders_active(self):
@@ -270,7 +269,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
 
         expected_folders = fake_folders.EXPECTED_FAKE_ACTIVE_FOLDERS1
 
-        result = self.crm_api_client.get_folders('folders', show_deleted=False)
+        result = self.crm_api_client.get_folders(show_deleted=False)
         self.assertEquals(expected_folders, result)
 
     def test_get_folders_raises_error(self):
@@ -279,19 +278,19 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
                                       '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.crm_api_client.get_folders('folders')
+            self.crm_api_client.get_folders()
 
         with self.assertRaises(api_errors.ApiExecutionError):
-            self.crm_api_client.get_folders('folders', parent='folders/111')
+            self.crm_api_client.get_folders(parent='folders/111')
 
     def test_get_folder_iam_policies(self):
         """Test get folder IAM policies."""
         http_mocks.mock_http_response(fake_crm_responses.GET_IAM_POLICY)
         folder_id = fake_crm_responses.FAKE_FOLDER_ID
 
-        response = self.crm_api_client.get_folder_iam_policies('foo', folder_id)
+        response = self.crm_api_client.get_folder_iam_policies(folder_id)
 
-        self.assertTrue('bindings' in response.get('iam_policy', {}),
+        self.assertTrue('bindings' in response,
                         msg='Response {} does not contain "bindings".'.format(
                             response))
 
@@ -302,7 +301,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.crm_api_client.get_folder_iam_policies(
-                'foo', fake_crm_responses.FAKE_FOLDER_ID)
+                fake_crm_responses.FAKE_FOLDER_ID)
 
     def test_get_folder_org_policies(self):
         """Test get folder org policies."""

@@ -31,11 +31,11 @@ resources:
   properties:
     region: us-central1
     # EDIT DISCOURAGED
-    # E.g. use 'iam-explain-sql-instance' or something similar,
+    # E.g. use 'forseti-security-sql-instance' or something similar,
     # Not recommended to change unless instance name is already used
-    instance-name: iam-explain-sql-instance
+    instance-name: forseti-security-sql-instance
 
-- name: explain_security
+- name: forseti_security
   type: cloudsql-database.py
 
 # Explain
@@ -81,11 +81,5 @@ resources:
     # EDIT DISCOURAGED
     # No need to set this unless you have deployed Forseti,
     # Don't change unless you know why you have to change this.
-    database-name-forseti: ''
-
-    # EDIT DISCOURAGED
-    # No need to set this unless you have deployed Forseti,
-    # Don't change unless you know why you have to change this.
     forseti-db-name: 'forseti_security'
-    explain-db-name: 'explain_security'
 
