@@ -123,6 +123,10 @@ class InventoryImporter(object):
             'folder',
             'project',
             'role',
+            'appengine_app',
+            'appengine_service',
+            'appengine_version',
+            'appengine_instance',
             'serviceaccount',
             'bucket',
             'dataset',
@@ -397,6 +401,18 @@ class InventoryImporter(object):
             'role': (self._convert_role_pre,
                      self._convert_role,
                      self._convert_role_post),
+            'appengine_app': (None,
+                              self._convert_appengine_resource,
+                              None),
+            'appengine_service': (None,
+                                  self._convert_appengine_resource,
+                                  None),
+            'appengine_version': (None,
+                                  self._convert_appengine_resource,
+                                  None),
+            'appengine_instance': (None,
+                                   self._convert_appengine_resource,
+                                   None),
             'serviceaccount': (None,
                                self._convert_serviceaccount,
                                None),
@@ -491,6 +507,26 @@ class InventoryImporter(object):
         Args:
             gcsobject (object): Object to store.
         """
+
+    def _convert_appengine_resource(self, gae_resource):
+        """Convert an AppEngine resource to a database object.
+
+        Args:
+            gae_resource (dict): An appengine resource to store.
+        """
+        data = gae_resource.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            gae_resource)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=gae_resource.get_key(),
+            type=gae_resource.get_type(),
+            display_name=data.get('name', ''),
+            data=gae_resource.get_data_raw(),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(gae_resource, resource)
 
     def _convert_dataset(self, dataset):
         """Convert a dataset to a database object.

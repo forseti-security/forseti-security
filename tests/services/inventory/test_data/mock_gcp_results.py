@@ -135,6 +135,106 @@ AD_GET_GROUP_MEMBERS = {
     ]
 }
 
+# Fields: project
+APPENGINE_APP_TEMPLATE = """
+{{
+ "name": "apps/{project}",
+ "id": "{project}",
+ "authDomain": "forseti.test",
+ "locationId": "us-central",
+ "codeBucket": "staging.{project}.a.b.c",
+ "servingStatus": "SERVING",
+ "defaultHostname": "{project}.a.b.c",
+ "defaultBucket": "{project}.a.b.c",
+ "gcrDomain": "us.gcr.io"
+}}
+"""
+
+GAE_GET_APP = {
+    "project3": json.loads(
+        APPENGINE_APP_TEMPLATE.format(
+            project="project3")),
+    "project4": json.loads(
+        APPENGINE_APP_TEMPLATE.format(
+            project="project4")),
+}
+
+# Fields: project, service, version
+APPENGINE_SERVICE_TEMPLATE = """
+{{
+ "name": "apps/{project}/services/{service}",
+ "id": "{service}",
+ "split": {{
+  "allocations": {{
+   "{version}": 1
+  }}
+ }}
+}}
+"""
+
+GAE_GET_SERVICES = {
+    "project4": [
+        json.loads(
+            APPENGINE_SERVICE_TEMPLATE.format(
+                project="project4", service="default", version="1")),
+    ],
+}
+
+# Fields: project, service, version
+APPENGINE_VERSION_TEMPLATE = """
+{{
+ "name": "apps/{project}/services/{service}/versions/{version}",
+ "id": "{version}",
+ "instanceClass": "F1",
+ "runtime": "python27",
+ "threadsafe": true,
+ "env": "standard",
+ "servingStatus": "SERVING",
+ "createdBy": "a_user@forseti.test",
+ "createTime": "2017-09-11T22:48:32Z",
+ "diskUsageBytes": "2036",
+ "versionUrl": "https://{version}-dot-{project}.a.b.c"
+}}
+"""
+
+GAE_GET_VERSIONS = {
+    "project4": {"default": [
+        json.loads(
+            APPENGINE_VERSION_TEMPLATE.format(
+                project="project4", service="default", version="1")),
+    ]},
+}
+
+# Fields: project, service, version, instance
+APPENGINE_INSTANCE_TEMPLATE = """
+{{
+ "name": "apps/{project}/services/{service}/versions/{version}/instances/{instance}",
+ "id": "{instance}",
+ "appEngineRelease": "1.9.54",
+ "availability": "DYNAMIC",
+ "startTime": "2017-09-11T22:49:03.485539Z",
+ "requests": 3,
+ "memoryUsage": "22802432"
+}}
+"""
+
+GAE_GET_INSTANCES = {
+    "project4": {"default": {"1": [
+        json.loads(
+            APPENGINE_INSTANCE_TEMPLATE.format(
+                project="project4", service="default", version="1",
+                instance="1")),
+        json.loads(
+            APPENGINE_INSTANCE_TEMPLATE.format(
+                project="project4", service="default", version="1",
+                instance="2")),
+        json.loads(
+            APPENGINE_INSTANCE_TEMPLATE.format(
+                project="project4", service="default", version="1",
+                instance="3")),
+    ]}},
+}
+
 BQ_GET_DATASETS_FOR_PROJECTID = {
     PROJECT_ID_PREFIX + "3": [{
         "datasetReference": {

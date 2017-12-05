@@ -31,6 +31,7 @@ ORGANIZATION_ID = results.ORGANIZATION_ID
 def mock_gcp():
     """Mock the GCP API client libraries to return fake data."""
     ad_patcher = _mock_admin_directory()
+    appengine_patcher = _mock_appengine()
     bq_patcher = _mock_bigquery()
     cloudsql_patcher = _mock_cloudsql()
     crm_patcher = _mock_crm()
@@ -41,6 +42,7 @@ def mock_gcp():
         yield
     finally:
         ad_patcher.stop()
+        appengine_patcher.stop()
         bq_patcher.stop()
         cloudsql_patcher.stop()
         crm_patcher.stop()
@@ -69,6 +71,45 @@ def _mock_admin_directory():
     mock_ad.get_group_members.side_effect = _mock_ad_get_group_members
 
     return ad_patcher
+
+
+def _mock_appengine():
+    """Mock appengine client."""
+
+    def _mock_gae_get_app(projectid):
+        if projectid in results.GAE_GET_APP:
+            return results.GAE_GET_APP[projectid]
+        return {}
+
+    def _mock_gae_list_services(projectid):
+        if projectid in results.GAE_GET_SERVICES:
+            return results.GAE_GET_SERVICES[projectid]
+        return []
+
+    def _mock_gae_list_versions(projectid, serviceid):
+        if projectid in results.GAE_GET_VERSIONS:
+            if serviceid in results.GAE_GET_VERSIONS[projectid]:
+                return results.GAE_GET_VERSIONS[projectid][serviceid]
+        return []
+
+    def _mock_gae_list_instances(projectid, serviceid, versionid):
+        if projectid in results.GAE_GET_INSTANCES:
+            gae_project = results.GAE_GET_INSTANCES[projectid]
+            if serviceid in gae_project:
+                if versionid in gae_project[serviceid]:
+                    return gae_project[serviceid][versionid]
+        return []
+
+    appengine_patcher = mock.patch(
+        MODULE_PATH + 'appengine.AppEngineClient', spec=True)
+    mock_gae = appengine_patcher.start().return_value
+
+    mock_gae.get_app.side_effect = _mock_gae_get_app
+    mock_gae.list_services.side_effect = _mock_gae_list_services
+    mock_gae.list_versions.side_effect = _mock_gae_list_versions
+    mock_gae.list_instances.side_effect = _mock_gae_list_instances
+
+    return appengine_patcher
 
 
 def _mock_bigquery():
