@@ -444,7 +444,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_service_config[0].model_manager = mock.MagicMock()
         mock_service_config[0].model_manager.get.return_value = mock.MagicMock(), mock_data_access
 
-
         scanner = firewall_rules_scanner.FirewallPolicyScanner(
             {}, {}, mock_service_config, '', '', rules_local_path)
 
