@@ -44,7 +44,7 @@ mv forseti-security-{release_version} forseti-security
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     FORSETI_CONF = '%s/configs/forseti_conf.yaml' % FORSETI_HOME
 
-    GSUITE_SERVICE_ACCOUNT_PATH = '/home/ubuntu/gsuite_key.json'
+    GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
     GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
     ROOT_RESOURCE_ID = context.properties['root-resource-id']
 
@@ -60,7 +60,7 @@ mv forseti-security-{release_version} forseti-security
         CLOUDSQL_CONN_STRING,
         FORSETI_DB_NAME,
         GSUITE_ADMIN_EMAIL,
-        GSUITE_SERVICE_ACCOUNT_PATH,
+        GSUITE_ADMIN_CREDENTIAL_PATH,
         ROOT_RESOURCE_ID)
 
     EXPORT_FORSETI_VARS = """
@@ -169,7 +169,7 @@ python build_protos.py --clean
 python setup.py install
 
 # Rotate gsuite key
-sudo su $USER -c python $FORSETI_HOME/scripts/rotate_gsuite_key.py
+sudo su $USER -c python $FORSETI_HOME/scripts/rotate_gsuite_key.py $GSUITE_ADMIN_CREDENTIAL_PATH
 
 # Export variables required by initialize_explain_services.sh.
 {export_initialize_vars}
