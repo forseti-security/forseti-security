@@ -26,9 +26,12 @@ import sys
 
 from gcp_setup.environment import gcloud_env
 
-def run():
+def run(argv):
     """Rotate G Suite key."""
-    key_path = os.environ.get('GSUITE_ADMIN_CREDENTIAL_PATH')
+    if len(argv) < 2:
+        print('%s: Missing path to key. Exiting.' % argv[0])
+        sys.exit(1)
+    key_path = argv[1]
     curr_private_key_id = None
     service_account = None
     if os.path.exists(key_path):
@@ -67,4 +70,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    run(sys.argv)
