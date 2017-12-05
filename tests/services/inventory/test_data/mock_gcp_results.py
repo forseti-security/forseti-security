@@ -41,6 +41,7 @@ INSTANCE_GROUP_MANAGER_ID_PREFIX = "112"
 INSTANCE_TEMPLATE_ID_PREFIX = "113"
 NETWORK_ID_PREFIX = "114"
 SUBNETWORK_ID_PREFIX = "115"
+SERVICEACCOUNT_KEY_ID_PREFIX = "116"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -1393,6 +1394,51 @@ IAM_GET_SERVICEACCOUNTS = {
             SERVICEACCOUNT_TEMPLATE.format(
                 project="project2", num=PROJECT_ID_PREFIX + "2", id=2)),
     ]
+}
+
+SERVICEACCOUNT_IAM_POLICY = """
+{
+ "bindings": [
+  {
+   "role": "roles/iam.serviceAccountKeyAdmin",
+   "members": [
+    "user:c_user@forseti.test"
+   ]
+  }
+ ]
+}
+"""
+
+SERVICEACCOUNT_EMPTY_IAM_POLICY = """
+{
+ "etag": "ACAB"
+}
+"""
+
+SERVICEACCOUNT1 = IAM_GET_SERVICEACCOUNTS["project1"][0]["name"]
+SERVICEACCOUNT2 = IAM_GET_SERVICEACCOUNTS["project2"][0]["name"]
+
+IAM_GET_SERVICEACCOUNT_IAM_POLICY = {
+    SERVICEACCOUNT1: json.loads(SERVICEACCOUNT_IAM_POLICY),
+    SERVICEACCOUNT2: json.loads(SERVICEACCOUNT_EMPTY_IAM_POLICY),
+}
+
+# Fields: sa_name, id
+SERVICEACCOUNT_EXPORT_KEY_TEMPLATE = """
+{{
+ "name": "{sa_name}/keys/116{id}",
+ "validAfterTime": "2017-11-22T17:49:56Z",
+ "validBeforeTime": "2027-11-20T17:49:56Z",
+ "keyAlgorithm": "KEY_ALG_RSA_2048"
+}}
+"""
+
+IAM_GET_SERVICEACCOUNT_KEYS = {
+    SERVICEACCOUNT1: [
+        json.loads(
+            SERVICEACCOUNT_EXPORT_KEY_TEMPLATE.format(
+                sa_name=SERVICEACCOUNT1, id=1)),
+    ],
 }
 
 # Fields: project, role

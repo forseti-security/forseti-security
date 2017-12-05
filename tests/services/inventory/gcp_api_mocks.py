@@ -280,6 +280,15 @@ def _mock_iam():
     def _mock_iam_get_curated_roles():
         return results.IAM_GET_CURATED_ROLES
 
+    def _mock_iam_get_service_account_iam_policy(name):
+        return results.IAM_GET_SERVICEACCOUNT_IAM_POLICY[name]
+
+    def _mock_iam_get_service_account_keys(name, key_type):
+        del key_type
+        if name in results.IAM_GET_SERVICEACCOUNT_KEYS:
+            return results.IAM_GET_SERVICEACCOUNT_KEYS[name]
+        return []
+
     iam_patcher = mock.patch(
         MODULE_PATH + 'iam.IAMClient', spec=True)
     mock_iam = iam_patcher.start().return_value
@@ -287,5 +296,9 @@ def _mock_iam():
     mock_iam.get_project_roles.side_effect = _mock_iam_get_project_roles
     mock_iam.get_organization_roles.side_effect = _mock_iam_get_org_roles
     mock_iam.get_curated_roles.side_effect = _mock_iam_get_curated_roles
+    mock_iam.get_service_account_iam_policy.side_effect = (
+        _mock_iam_get_service_account_iam_policy)
+    mock_iam.get_service_account_keys.side_effect = (
+        _mock_iam_get_service_account_keys)
 
     return iam_patcher
