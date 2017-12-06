@@ -117,11 +117,12 @@ class OrgResourceRelDaoTest(ForsetiTestCase):
             [],
             actual3)
 
-    def test_get_resource_ancestors_from_hierarchical_name(self):
+    def test_get_resource_ancestors_from_full_name(self):
 
         # resource is organization
         mock_starting_resource = mock.MagicMock()
         mock_starting_resource.type = 'organization'
+        mock_starting_resource.id = 'org1'
         resource_ancestors = (
             org_resource_rel_dao.find_ancestors_by_hierarchial_name(
                 mock_starting_resource,
@@ -131,6 +132,7 @@ class OrgResourceRelDaoTest(ForsetiTestCase):
 
         # resource is project
         mock_starting_resource.type = 'project'
+        mock_starting_resource.id = 'project3'
         resource_ancestors = (
             org_resource_rel_dao.find_ancestors_by_hierarchial_name(
                 mock_starting_resource,
@@ -143,6 +145,7 @@ class OrgResourceRelDaoTest(ForsetiTestCase):
 
         # resource has multiple folders, and subproject resources
         mock_starting_resource.type = 'firewall'        
+        mock_starting_resource.id = 'firewall5'
         resource_ancestors = (
             org_resource_rel_dao.find_ancestors_by_hierarchial_name(
                 mock_starting_resource,

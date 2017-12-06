@@ -1365,7 +1365,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_1 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
-                'hierarchical_name': 'organization/org/folder/folder1/project/project0/firewall/policy1/',
+                'full_name': 'organization/org/folder/folder1/project/project0/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
@@ -1377,7 +1377,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_2 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
-                'hierarchical_name': 'organization/org/folder/folder2/project/project1/firewall/policy1/',
+                'full_name': 'organization/org/folder/folder2/project/project1/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1389,7 +1389,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_3 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
-                'hierarchical_name': 'organization/org/folder/folder3/folder/folder4/project/project2/firewall/policy1/',
+                'full_name': 'organization/org/folder/folder3/folder/folder4/project/project2/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'egress',
                 'denied': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1400,7 +1400,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_4 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
-                'hierarchical_name': 'organization/org/folder/folder3/project/project3/firewall/policy1/',
+                'full_name': 'organization/org/folder/folder3/project/project3/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1537,7 +1537,7 @@ class RuleEngineTest(ForsetiTestCase):
             'test_project',
             {
                 'name': 'policy1',
-                'hierarchical_name': ('organization/org/folder/folder1/'
+                'full_name': ('organization/org/folder/folder1/'
                                       'project/project0/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',
@@ -1562,7 +1562,7 @@ class RuleEngineTest(ForsetiTestCase):
             'project1',
             {
                 'name': 'policy1',
-                'hierarchical_name': ('organization/org/folder/test_instances/'
+                'full_name': ('organization/org/folder/test_instances/'
                                       'project/project1/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',
@@ -1587,7 +1587,7 @@ class RuleEngineTest(ForsetiTestCase):
             'honeypot_exception',
             {
                 'name': 'policy1',
-                'hierarchical_name': ('organization/org/folder/folder1/'
+                'full_name': ('organization/org/folder/folder1/'
                                       'project/project0/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',

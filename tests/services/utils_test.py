@@ -17,6 +17,7 @@ import unittest
 import mock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.utils import autoclose_stream
+from google.cloud.forseti.services.utils import get_resources_from_full_name
 from google.cloud.forseti.services.utils import logcall
 from google.cloud.forseti.services.utils import split_type_name
 from google.cloud.forseti.services.utils import to_full_resource_name
@@ -79,6 +80,26 @@ class IamUtilsTest(ForsetiTestCase):
         self.assertEqual(
             split_type_name('foo/bar'),
             ['foo', 'bar'])
+
+    def test_get_resources_from_full_name(self):
+        """Test resources can be parsed from full name in reverse order."""
+
+        fake_full_name = ('organization/org1/folder/folder2/folder/folder3/'
+                          'project/project4/firewall/firewall5/')
+        expected_resources = {
+            0: ('firewall', 'firewall5'),
+            1: ('project', 'project4'),
+            2: ('folder', 'folder3'),
+            3: ('folder', 'folder2'),
+            4: ('organization', 'org1'),
+        }
+
+        resources = get_resources_from_full_name(fake_full_name)
+        counter = 0
+        for resource_type, resource_id in resources:
+            self.assertEquals(expected_resources[counter],
+                              (resource_type, resource_id))
+            counter += 1
 
 
 if __name__ == '__main__':

@@ -307,7 +307,7 @@ class RuleBook(bre.BaseRuleBook):
 
         resource_ancestors = (
             org_resource_rel_dao.find_ancestors_by_hierarchial_name(
-                resource, policy.hierarchical_name))
+                resource, policy.full_name))
 
         for curr_resource in resource_ancestors:
             if curr_resource in self.org_policy_rules_map:

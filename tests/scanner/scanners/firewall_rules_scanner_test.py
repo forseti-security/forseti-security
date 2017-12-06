@@ -302,7 +302,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'test_project',
                 {
                     'name': 'policy1',
-                    'hierarchical_name': ('organization/org/folder/folder1/'
+                    'full_name': ('organization/org/folder/folder1/'
                                           'project/project0/firewall/policy1/'),
                     'network': 'network1',
                     'direction': 'ingress',
@@ -315,7 +315,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'project1',
                 {
                     'name': 'policy1',
-                    'hierarchical_name':
+                    'full_name':
                         ('organization/org/folder/test_instances/'
                          'project/project1/firewall/policy1/'),
                     'network': 'network1',
@@ -345,7 +345,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_resource1.type = 'firewall'
         mock_resource1.data = (
             "{'name': 'policy1',"
-            " 'hierarchical_name': ('organization/org/folder/folder1/'"
+            " 'full_name': ('organization/org/folder/folder1/'"
             "                       'project/project0/firewall/policy1/'),"
             " 'network': 'network1',"
             " 'direction': 'ingress',"
@@ -362,7 +362,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_resource2.type = 'firewall'
         mock_resource2.data = (
             "{'name': 'policy1',"
-            " 'hierarchical_name': ('organization/org/folder/test_instances/'"
+            " 'full_name': ('organization/org/folder/test_instances/'"
             "                       'project/project1/firewall/policy1/'),"
             " 'network': 'network1',"
             " 'direction': 'ingress',"
@@ -386,13 +386,13 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
 
         _, expected_firewall1 = resource_and_policies[0]
         retrieved_firewall1 = results[0][0]
-        self.assertEquals(expected_firewall1.get('hierarchical_name'),
-                          retrieved_firewall1.hierarchical_name)
+        self.assertEquals(expected_firewall1.get('full_name'),
+                          retrieved_firewall1.full_name)
 
         _, expected_firewall2 = resource_and_policies[1]
         retrieved_firewall2 = results[0][1]
-        self.assertEquals(expected_firewall2.get('hierarchical_name'),
-                          retrieved_firewall2.hierarchical_name)
+        self.assertEquals(expected_firewall2.get('full_name'),
+                          retrieved_firewall2.full_name)
 
     @mock.patch.object(
         firewall_rules_scanner.FirewallPolicyScanner,
@@ -429,7 +429,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_resource1.type = 'firewall'
         mock_resource1.data = (
             "{'name': 'policy888',"
-            " 'hierarchical_name': ('organization/org/folder/test_instances/'"
+            " 'full_name': ('organization/org/folder/test_instances/'"
             "                       'project/project888/firewall/policy888/'),"
             " 'network': 'network1',"
             " 'direction': 'ingress',"

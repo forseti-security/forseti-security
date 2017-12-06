@@ -66,8 +66,8 @@ class FirewallRule(object):
         self.resource_id = kwargs.get('id')
         self.create_time = kwargs.get('firewall_rule_create_time')
         self.name = kwargs.get('firewall_rule_name')
-        self.hierarchical_name = kwargs.get(
-            'firewall_rule_hierarchical_name', '')
+        self.full_name = kwargs.get(
+            'firewall_rule_full_name', '')
         self.kind = kwargs.get('firewall_rule_kind')
         self.network = kwargs.get('firewall_rule_network')
         self._priority = kwargs.get('firewall_rule_priority')
@@ -150,8 +150,8 @@ class FirewallRule(object):
         in_dict = {
             'firewall_rule_id': firewall_dict.get('id'),
             'firewall_rule_name': firewall_dict.get('name'),
-            'firewall_rule_hierarchical_name':
-                firewall_dict.get('hierarchical_name'),
+            'firewall_rule_full_name':
+                firewall_dict.get('full_name'),
             'firewall_rule_description': firewall_dict.get('description'),
             'firewall_rule_kind': firewall_dict.get('kind'),
             'firewall_rule_network': firewall_dict.get('network'),
