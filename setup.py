@@ -108,7 +108,7 @@ setup(
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
     package_data={
-        '': ['cloud/security/common/email_templates/*.jinja']
+        '': ['cloud/forseti/common/email_templates/*.jinja']
     },
     namespace_packages=NAMESPACE_PACKAGES,
     google_test_dir='tests',
@@ -116,7 +116,6 @@ setup(
     keywords='gcp google cloud platform security tools',
     entry_points={
         'console_scripts': [
-            'forseti_inventory = google.cloud.forseti.stubs:RunForsetiInventory',
             'forseti_scanner = google.cloud.forseti.stubs:RunForsetiScanner',
             'forseti_enforcer = google.cloud.forseti.stubs:RunForsetiEnforcer',
             'forseti_notifier = google.cloud.forseti.stubs:RunForsetiNotifier',
