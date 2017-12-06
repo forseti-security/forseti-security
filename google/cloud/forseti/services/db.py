@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Database session handling for IAM Explain. """
+"""Database session handling for Forseti Server."""
 
 from sqlalchemy.orm import sessionmaker
 

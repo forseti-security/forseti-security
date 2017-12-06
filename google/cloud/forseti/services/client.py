@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" IAM Explain gRPC client. """
+"""Forseti gRPC client."""
 
 import binascii
 import os
@@ -58,7 +58,7 @@ class ClientConfig(dict):
         return self['handle']
 
 
-class IAMClient(object):
+class ForsetiClient(object):
     """Client base class."""
 
     def __init__(self, config):
@@ -69,7 +69,7 @@ class IAMClient(object):
         return [('handle', self.config.handle())]
 
 
-class ScannerClient(IAMClient):
+class ScannerClient(ForsetiClient):
     """Scanner service allows the client to scan a model."""
 
     def __init__(self, config):
@@ -94,7 +94,7 @@ class ScannerClient(IAMClient):
                              metadata=self.metadata())
 
 
-class ModelClient(IAMClient):
+class ModelClient(ForsetiClient):
     """Model service allows the client to create models from inventory.
 
     Model provides the following functionality:
@@ -138,7 +138,7 @@ class ModelClient(IAMClient):
             metadata=self.metadata())
 
 
-class InventoryClient(IAMClient):
+class InventoryClient(ForsetiClient):
     """Inventory service allows the client to create GCP inventory.
 
     Inventory provides the following functionality:
@@ -187,7 +187,7 @@ class InventoryClient(IAMClient):
         return self.stub.List(request)
 
 
-class ExplainClient(IAMClient):
+class ExplainClient(ForsetiClient):
     """Explain service allows the client to reason about a model.
 
     Explain provides the following functionality:
@@ -308,7 +308,7 @@ class ExplainClient(IAMClient):
             metadata=self.metadata())
 
 
-class PlaygroundClient(IAMClient):
+class PlaygroundClient(ForsetiClient):
     """Provides an interface to add entities into the IAM model.
 
         It allows the modification of:
