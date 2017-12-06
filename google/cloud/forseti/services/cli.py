@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" IAM Explain CLI. """
+"""Forseti CLI."""
 
 # pylint: disable=too-many-locals
 
@@ -1029,7 +1029,7 @@ def main(args,
         client (obj): API client to use.
         outputs (list): Supported output formats.
         parser_cls (type): Argument parser type to instantiate.
-        services (list): Supported IAM Explain services.
+        services (list): Supported Forseti Server services.
 
     Returns:
         object: Environment configuration.

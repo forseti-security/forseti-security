@@ -119,8 +119,8 @@ setup(
             'forseti_scanner = google.cloud.forseti.stubs:RunForsetiScanner',
             'forseti_enforcer = google.cloud.forseti.stubs:RunForsetiEnforcer',
             'forseti_notifier = google.cloud.forseti.stubs:RunForsetiNotifier',
-            'forseti_api = google.cloud.forseti.stubs:RunForsetiApi',
-            'forseti_iam = google.cloud.forseti.stubs:RunExplainCli',
+            'forseti_server = google.cloud.forseti.stubs:RunForsetiServer',
+            'forseti = google.cloud.forseti.stubs:RunForsetiCli',
         ]
     },
     zip_safe=False,   # Set to False: apputils doesn't like zip_safe eggs

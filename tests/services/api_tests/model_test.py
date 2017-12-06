@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests the IAM Explain model."""
+"""Tests the Forseti Server model service."""
 
 import unittest
 from tests.services.api_tests.api_tester import ModelTestRunner

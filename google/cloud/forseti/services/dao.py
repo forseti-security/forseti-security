@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Database abstraction objects for IAM Explain. """
+"""Database abstraction objects for Forseti Server."""
 
 # pylint: disable=too-many-lines,singleton-comparison
 
@@ -77,7 +77,7 @@ MODEL_BASE = declarative_base()
 
 
 class Model(MODEL_BASE):
-    """IAM Explain model object in database."""
+    """Explain model object in database."""
 
     __tablename__ = 'model'
     name = Column(String(32), primary_key=True)
