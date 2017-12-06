@@ -65,6 +65,7 @@ class BaseScanner(object):
         Returns:
             list: Violations that encountered an error during insert.
         """
+        # TODO: Capture violations errors with the new violation_access.
         (inserted_row_count, violation_errors) = (0, [])
 
         violation_access = self.service_config[0].violation_access(
