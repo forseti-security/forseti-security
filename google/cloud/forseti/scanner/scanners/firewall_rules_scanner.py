@@ -189,13 +189,13 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
             for i in data_access.scanner_iter(session, "firewall"):
                 firewall_data_for_scanner = ast.literal_eval(i.data)
-                firewall_data_for_scanner['project_id'] = i.parent.display_name
+                firewall_data_for_scanner['project_id'] = i.parent.name
                 firewall_data_for_scanner['full_name'] = i.full_name
 
                 firewall_policies.append(
                     firewall_rule.FirewallRule.from_dict(
                         firewall_dict=firewall_data_for_scanner,
-                        project_id=i.parent.display_name,
+                        project_id=i.parent.name,
                         validate=True))
 
         if not firewall_policies:
