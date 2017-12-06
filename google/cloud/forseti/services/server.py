@@ -364,7 +364,7 @@ def main():
     args = vars(parser.parse_args())
 
     serve(args['endpoint'], args['services'], args['forseti_db'],
-          args['gsuite_service_acct'], args['gsuite_admin_email'],
+          args['gsuite_private_keyfile'], args['gsuite_admin_email'],
           args['root_resource_id'])
 
 
