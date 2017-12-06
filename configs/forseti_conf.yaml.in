@@ -118,6 +118,7 @@ scanner:
     rules_path: /home/ubuntu/forseti-security/rules
 
     # Enable the scanners as default to true when integrated for Forseti 2.0.
+    # group scanner needs {ENABLE_GROUP_SCANNER} placeholder
 
     scanners:
         - name: bigquery
@@ -131,7 +132,7 @@ scanner:
         - name: forwarding_rule
           enabled: false
         - name: group
-          enabled: {ENABLE_GROUP_SCANNER}
+          enabled: false
         - name: iam_policy
           enabled: false
         - name: iap
