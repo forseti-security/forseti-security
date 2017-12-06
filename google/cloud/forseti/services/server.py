@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" IAM Explain server program. """
+"""Forseti Server program."""
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-param-doc
@@ -231,7 +231,7 @@ class InventoryConfig(AbstractInventoryConfig):
 
 
 class ServiceConfig(AbstractServiceConfig):
-    """Implements composed dependency injection to IAM Explain services."""
+    """Implements composed dependency injection to Forseti Server services."""
 
     def __init__(self,
                  inventory_config,

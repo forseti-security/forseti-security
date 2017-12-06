@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit Tests: Importer for IAM Explain."""
+"""Unit Tests: Importer for Forseti Server."""
 
 import unittest
 import mock
@@ -23,8 +23,8 @@ from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
 
 
-class IamUtilsTest(ForsetiTestCase):
-    """Test IAM utils."""
+class ServerUtilsTest(ForsetiTestCase):
+    """Test Forseti Server utils."""
 
     def test_autoclose_stream_decorator(self):
         """Test autoclose_stream wrapper."""
