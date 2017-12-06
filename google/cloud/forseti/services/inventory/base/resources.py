@@ -242,9 +242,12 @@ class GcsBucket(Resource):
     def getIamPolicy(self, client=None):
         return client.get_bucket_iam_policy(self.key())
 
-    @cached('gcs_policy')
     def getGCSPolicy(self, client=None):
-        return client.get_bucket_gcs_policy(self.key())
+        # Full projection returns GCS policy with the resource.
+        try:
+            return self['acl']
+        except KeyError:
+            return []
 
     def type(self):
         return 'bucket'
@@ -259,10 +262,12 @@ class GcsObject(Resource):
         return client.get_object_iam_policy(self.parent()['name'],
                                             self['name'])
 
-    @cached('gcs_policy')
     def getGCSPolicy(self, client=None):
-        return client.get_object_gcs_policy(self.parent()['name'],
-                                            self['name'])
+        # Full projection returns GCS policy with the resource.
+        try:
+            return self['acl']
+        except KeyError:
+            return []
 
     def type(self):
         return 'storage_object'

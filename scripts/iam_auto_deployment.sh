@@ -329,7 +329,6 @@ echo "        - 'roles/appengine.appViewer',"
 echo "        - 'roles/servicemanagement.quotaViewer',"
 echo "        - 'roles/cloudsql.viewer',"
 echo "        - 'roles/compute.securityAdmin',"
-echo "        - 'roles/storage.admin',"
 echo "    - Project level:"
 echo "        - 'roles/storage.admin'"
 echo "        - 'roles/cloudsql.client'"
@@ -365,10 +364,6 @@ then
 	$CmdPrefix add-iam-policy-binding $ROOTID \
 	 --member=serviceAccount:$SCRAPINGSA \
 	 --role=roles/compute.securityAdmin
-
-	$CmdPrefix add-iam-policy-binding $ROOTID \
-	 --member=serviceAccount:$SCRAPINGSA \
-	 --role=roles/storage.admin
 
 	gcloud projects add-iam-policy-binding $PROJECT_ID \
 	 --member=serviceAccount:$SCRAPINGSA \
