@@ -14,17 +14,16 @@
 """Scanner runner script test."""
 
 from datetime import datetime
-
-import mock
 import unittest
+import mock
 import MySQLdb
 
 from tests.unittest_utils import ForsetiTestCase
+from tests.scanner.test_data import fake_iam_policies
 from google.cloud.forseti.common.data_access import errors
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.scanner.audit import iam_rules_engine as ire
 from google.cloud.forseti.scanner.scanners import iam_rules_scanner as irs
-from tests.inventory.pipelines.test_data import fake_iam_policies
 
 
 class ScannerRunnerTest(ForsetiTestCase):
