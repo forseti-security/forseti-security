@@ -18,8 +18,6 @@ import abc
 import os
 import shutil
 
-from google.cloud.forseti.common.data_access import errors as db_errors
-from google.cloud.forseti.common.data_access import violation_dao
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import log_util
 
@@ -34,18 +32,22 @@ class BaseScanner(object):
     OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
-                 rules):
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules):
         """Constructor for the base pipeline.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
+            service_config (ServiceConfig): Forseti 2.0 service configs
+            model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
+        self.service_config = service_config
+        self.model_name = model_name
         self.snapshot_timestamp = snapshot_timestamp
         self.rules = rules
 
@@ -63,16 +65,13 @@ class BaseScanner(object):
         Returns:
             list: Violations that encountered an error during insert.
         """
+        # TODO: Capture violations errors with the new violation_access.
+        # Add a unit test for the errors.
         (inserted_row_count, violation_errors) = (0, [])
-        try:
-            vdao = violation_dao.ViolationDao(self.global_configs)
-            (inserted_row_count, violation_errors) = vdao.insert_violations(
-                violations,
-                snapshot_timestamp=self.snapshot_timestamp)
-        except db_errors.MySQLError as err:
-            LOGGER.error('Error importing violations to database: %s\n%s',
-                         err, violations)
 
+        violation_access = self.service_config[0].violation_access(
+            self.service_config[0].engine)
+        violation_access.create(violations)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))

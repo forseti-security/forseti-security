@@ -37,7 +37,7 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         self.fake_scanner_configs = {'output_path': '/fake/output/path'}
         self.scanner = iam_rules_scanner.IamPolicyScanner(
-            {}, {}, '', '')
+            {}, {}, mock.MagicMock(), '', '', '')
 
     def test_get_output_filename(self):
         """Test that the output filename of the scanner is correct.

@@ -78,7 +78,7 @@ class IapScannerTest(ForsetiTestCase):
 
         self.fake_scanner_configs = {'output_path': 'gs://fake/output/path'}
         self.scanner = iap_scanner.IapScanner(
-            {}, {}, '',
+            {}, {}, mock.MagicMock(), '', '',
             get_datafile_path(__file__, 'iap_scanner_test_data.yaml'))
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._get_backend_services = lambda: self.backend_services.values()
