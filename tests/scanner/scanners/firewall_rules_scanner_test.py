@@ -15,14 +15,16 @@
 """Scanner runner script test."""
 
 from datetime import datetime
+import json
 import mock
-import unittest
 import os
+import unittest
 
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.scanner.scanners import firewall_rules_scanner
 from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
 from tests import unittest_utils
+from tests.scanner.scanners.data import fake_firewall_rules as fake_data
 
 
 class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
@@ -298,33 +300,8 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
 
     def test_retrieve(self):
         resource_and_policies = [
-            (
-                'test_project',
-                {
-                    'name': 'policy1',
-                    'full_name': ('organization/org/folder/folder1/'
-                                          'project/project0/firewall/policy1/'),
-                    'network': 'network1',
-                    'direction': 'ingress',
-                    'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
-                    'sourceRanges': ['0.0.0.0/0'],
-                    'targetTags': ['linux'],
-                },
-            ),
-            (
-                'project1',
-                {
-                    'name': 'policy1',
-                    'full_name':
-                        ('organization/org/folder/test_instances/'
-                         'project/project1/firewall/policy1/'),
-                    'network': 'network1',
-                    'direction': 'ingress',
-                    'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
-                    'sourceRanges': ['11.0.0.1'],
-                    'targetTags': ['test'],
-                },
-            ),
+            ('test_project', fake_data.FAKE_FIREWALL_RULE_FOR_TEST_PROJECT),
+            ('project1', fake_data.FAKE_FIREWALL_RULE_FOR_PROJECT1),
         ]
         fake_firewall_rules = []
         expected = {}
@@ -343,16 +320,8 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_resource1.type_name = 'firewall/policy1'
         mock_resource1.name = 'policy1'
         mock_resource1.type = 'firewall'
-        mock_resource1.data = (
-            "{'name': 'policy1',"
-            " 'full_name': ('organization/org/folder/folder1/'"
-            "                       'project/project0/firewall/policy1/'),"
-            " 'network': 'network1',"
-            " 'direction': 'ingress',"
-            " 'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],"
-            " 'sourceRanges': ['0.0.0.0/0'],"
-            " 'targetTags': ['linux'],"
-            "}")
+        mock_resource1.data = json.dumps(
+            fake_data.FAKE_FIREWALL_RULE_FOR_TEST_PROJECT)
 
         mock_resource2 = mock.MagicMock()
         mock_resource2.full_name = ('organization/org/folder/test_instances/'
@@ -360,16 +329,8 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_resource2.type_name = 'firewall/policy1'
         mock_resource2.name = 'policy1'
         mock_resource2.type = 'firewall'
-        mock_resource2.data = (
-            "{'name': 'policy1',"
-            " 'full_name': ('organization/org/folder/test_instances/'"
-            "                       'project/project1/firewall/policy1/'),"
-            " 'network': 'network1',"
-            " 'direction': 'ingress',"
-            " 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],"
-            " 'sourceRanges': ['11.0.0.1'],"
-            " 'targetTags': ['test'],"
-            "}")
+        mock_resource2.data = json.dumps(
+            fake_data.FAKE_FIREWALL_RULE_FOR_PROJECT1)
 
         mock_data_access = mock.MagicMock()
         mock_data_access.scanner_iter.return_value = [mock_resource1,
@@ -400,18 +361,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         autospec=True)
     def test_run_no_email(self, mock_output_results_to_db):
         resource_and_policies = [
-            (
-                'project1',
-                {
-                    'project': 'project1',
-                    'name': 'policy2',
-                    'network': 'network1',
-                    'direction': 'ingress',
-                    'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
-                    'sourceRanges': ['11.0.0.1'],
-                    'targetTags': ['test'],
-                },
-            ),
+            ('project1', fake_data.FAKE_FIREWALL_RULE_FOR_PROJECT1),
         ]
         fake_firewall_rules = []
         for project, policy_dict in resource_and_policies:
@@ -423,26 +373,19 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
 
         mock_resource1 = mock.MagicMock()
         mock_resource1.full_name = ('organization/org/folder/test_instances/'
-                                    'project/project888/firewall/policy1/')
+                                    'project/project1/firewall/policy1/')
         mock_resource1.type_name = 'firewall/policy888'
-        mock_resource1.name = 'policy888'
+        mock_resource1.name = 'policy1'
         mock_resource1.type = 'firewall'
-        mock_resource1.data = (
-            "{'name': 'policy888',"
-            " 'full_name': ('organization/org/folder/test_instances/'"
-            "                       'project/project888/firewall/policy888/'),"
-            " 'network': 'network1',"
-            " 'direction': 'ingress',"
-            " 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],"
-            " 'sourceRanges': ['11.0.0.1'],"
-            " 'targetTags': ['test'],"
-            "}")
+        mock_resource1.data = json.dumps(
+            fake_data.FAKE_FIREWALL_RULE_FOR_PROJECT1)
 
         mock_data_access = mock.MagicMock()
         mock_data_access.scanner_iter.return_value = [mock_resource1]
         mock_service_config = mock.MagicMock()
         mock_service_config[0].model_manager = mock.MagicMock()
-        mock_service_config[0].model_manager.get.return_value = mock.MagicMock(), mock_data_access
+        mock_service_config[0].model_manager.get.return_value = (
+            mock.MagicMock(), mock_data_access)
 
         scanner = firewall_rules_scanner.FirewallPolicyScanner(
             {}, {}, mock_service_config, '', '', rules_local_path)
@@ -452,8 +395,9 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
 
         self.assertEquals(1, mock_output_results_to_db.call_count)
         violation_output_to_db = mock_output_results_to_db.call_args[0][1][0]
-        self.assertEquals([mock_resource1.name],
-                           violation_output_to_db.get('violation_data').get('policy_names'))
+        self.assertEquals(
+            [mock_resource1.name],
+            violation_output_to_db.get('violation_data').get('policy_names'))
 
     def assert_rule_violation_lists_equal(self, expected, violations):
         sorted(expected, key=lambda k: k.resource_id)
