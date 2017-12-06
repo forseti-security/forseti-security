@@ -270,17 +270,8 @@ def _mock_gcs():
             return results.GCS_GET_OBJECTS[bucket_name]
         return []
 
-    def _mock_gcs_get_bucket_acls(bucketid):
-        return results.GCS_GET_BUCKET_ACLS[bucketid]
-
     def _mock_gcs_get_bucket_iam(bucketid):
         return results.GCS_GET_BUCKET_IAM[bucketid]
-
-    def _mock_gcs_get_object_acls(bucket_name, object_name):
-        if (bucket_name in results.GCS_GET_OBJECT_ACLS and
-                object_name in results.GCS_GET_OBJECT_ACLS[bucket_name]):
-            return results.GCS_GET_OBJECT_ACLS[bucket_name][object_name]
-        return []
 
     def _mock_gcs_get_object_iam(bucket_name, object_name):
         if (bucket_name in results.GCS_GET_OBJECT_IAM and
@@ -293,9 +284,7 @@ def _mock_gcs():
     mock_gcs = gcs_patcher.start().return_value
     mock_gcs.get_buckets.side_effect = _mock_gcs_get_buckets
     mock_gcs.get_objects.side_effect = _mock_gcs_get_objects
-    mock_gcs.get_bucket_acls.side_effect = _mock_gcs_get_bucket_acls
     mock_gcs.get_bucket_iam_policy.side_effect = _mock_gcs_get_bucket_iam
-    mock_gcs.get_object_acls.side_effect = _mock_gcs_get_object_acls
     mock_gcs.get_object_iam_policy.side_effect = _mock_gcs_get_object_iam
 
     return gcs_patcher

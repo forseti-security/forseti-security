@@ -558,15 +558,6 @@ class ApiClientImpl(ApiClient):
         return self.iam.get_service_account_iam_policy(name)
 
     @create_lazy('storage', _create_storage)
-    def get_bucket_gcs_policy(self, bucketid):
-        """Bucket GCS policy from gcp API call
-
-        Returns:
-            dict: Bucket GCS policy
-        """
-        return self.storage.get_bucket_acls(bucketid)
-
-    @create_lazy('storage', _create_storage)
     def get_bucket_iam_policy(self, bucketid):
         """Bucket IAM policy Iterator from gcp API call
 
@@ -574,15 +565,6 @@ class ApiClientImpl(ApiClient):
             dict: Bucket IAM policy
         """
         return self.storage.get_bucket_iam_policy(bucketid)
-
-    @create_lazy('storage', _create_storage)
-    def get_object_gcs_policy(self, bucket_name, object_name):
-        """Object GCS policy for an object from gcp API call
-
-        Returns:
-            dict: Object GCS policy
-        """
-        return self.storage.get_object_acls(bucket_name, object_name)
 
     @create_lazy('storage', _create_storage)
     def get_object_iam_policy(self, bucket_name, object_name):
