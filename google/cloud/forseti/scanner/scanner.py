@@ -105,6 +105,8 @@ def run(forseti_config, model_name=None, service_config=None):
 
     log_util.set_logger_level_from_config(scanner_configs.get('loglevel'))
 
+    # TODO: Figure out if we still need to get the latest model here,
+    # or should it be set in the server context before calling the scanner.
     snapshot_timestamp = _get_timestamp(global_configs)
     if not snapshot_timestamp:
         LOGGER.warn('No snapshot timestamp found. Exiting.')
