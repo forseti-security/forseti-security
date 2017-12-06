@@ -856,7 +856,7 @@ class ForsetiGcpSetup(object):
             elif resource_type == 'projects':
                 resource_args = ['projects']
             elif (resource_type == 'forseti_project' or
-                    resource_type == 'service_accounts'):
+                  resource_type == 'service_accounts'):
                 # tried to use
                 # `gcloud iam service-accounts add-iam-policy-binding`
                 # but it wasn't enough, so adding the role on the project.

@@ -27,6 +27,8 @@ service Inventory {
 
   rpc Get(GetRequest) returns (GetReply) {}
 
+  rpc GetLatest(GetLatestRequest) returns (GetLatestReply) {}
+
   rpc Delete(DeleteRequest) returns (DeleteReply) {}
 
 }
@@ -73,6 +75,13 @@ message GetRequest {
 }
 
 message GetReply {
+	InventoryIndex inventory = 1;
+}
+
+message GetLatestRequest {
+}
+
+message GetLatestReply {
 	InventoryIndex inventory = 1;
 }
 

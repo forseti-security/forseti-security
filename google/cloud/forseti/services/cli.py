@@ -202,6 +202,10 @@ def define_inventory_parser(parent):
         type=int,
         help='Inventory id to get')
 
+    _ = action_subparser.add_parser(
+        'get_latest',
+        help='Get latest inventory')
+
 
 def define_config_parser(parent):
     """Define the config service parser.
@@ -714,6 +718,11 @@ def run_inventory(client, config, output, _):
         result = client.get(config.id)
         output.write(result)
 
+    def do_get_latest_inventory():
+        """Get latest inventory."""
+        result = client.get_latest()
+        output.write(result)
+
     def do_delete_inventory():
         """Delete an inventory."""
         result = client.delete(config.id)
@@ -723,6 +732,7 @@ def run_inventory(client, config, output, _):
         'create': do_create_inventory,
         'list': do_list_inventory,
         'get': do_get_inventory,
+        'get_latest': do_get_latest_inventory,
         'delete': do_delete_inventory}
 
     actions[config.action]()

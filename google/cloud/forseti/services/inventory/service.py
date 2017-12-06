@@ -115,6 +115,21 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         return inventory_pb2.GetReply(
             inventory=inventory_pb_from_object(inventory_index))
 
+    def GetLatest(self, request, _):
+        """Gets latest inventory.
+
+        Args:
+            _ (object): Unused.
+            _ (object): Unused.
+
+        Returns:
+            object: Inventory API object that is requested.
+        """
+
+        inventory_index = self.inventory.GetLatest()
+        return inventory_pb2.GetLatestReply(
+            inventory=inventory_pb_from_object(inventory_index))
+
     def Delete(self, request, _):
         """Deletes existing inventory.
 

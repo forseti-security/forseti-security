@@ -250,6 +250,17 @@ class Inventory(object):
             result = DataAccess.get(session, inventory_id)
             return result
 
+    def GetLatest(self):
+        """Get latest inventory.
+
+        Returns:
+            object: Inventory metatdata
+        """
+
+        with self.config.scoped_session() as session:
+            result = DataAccess.get_latest(session)
+            return result
+
     def Delete(self, inventory_id):
         """Delete an inventory by id.
 

@@ -13,20 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Put the config files in place.
-gsutil cp gs://$SCANNER_BUCKET/configs/forseti_conf.yaml $FORSETI_CONF
-gsutil cp -r gs://$SCANNER_BUCKET/rules $FORSETI_HOME/
+#source /home/ubuntu/forseti_env.sh
 
-if [ ! -f "$FORSETI_CONF" ]; then
-    echo Forseti conf not found, exiting.
-    exit 1
-fi
+# Put the config files in place.
+#gsutil cp gs://$SCANNER_BUCKET/configs/forseti_conf.yaml $FORSETI_CONF
+#gsutil cp -r gs://$SCANNER_BUCKET/rules $FORSETI_HOME/
+
+#if [ ! -f "$FORSETI_CONF" ]; then
+#    echo "Forseti conf not found, exiting."
+#    exit 1
+#fi
 
 # inventory command
-/usr/local/bin/forseti_inventory --forseti_config $FORSETI_CONF
+#forseti_iam inventory create
+INVENTORY=$(forseti_iam inventory get_latest)
+if [ -z "${INVENTORY}" ]; then
+    echo "No inventory exists; exiting."
+    exit 1
+fi
+INVENTORY_ID=$(echo "${INVENTORY}" | sed -nE 's/.*"id": ([0-9]+),.*/\1/p')
+echo "Latest inventory id ${INVENTORY_ID}"
+
+MODEL_INFO=$(forseti_iam model create inventory model_${INVENTORY_ID} --id ${INVENTORY_ID})
+MODEL_HANDLE=$(echo "${MODEL_INFO}" | sed -nE 's/.*"handle": "([0-9a-z]+)",.*/\1/p')
+echo "Created model ${MODEL_HANDLE}"
+
+forseti_iam model use ${MODEL_HANDLE}
+echo "Using model ${MODEL_HANDLE}"
 
 # scanner command
-/usr/local/bin/forseti_scanner --forseti_config $FORSETI_CONF
-
-# notifier command
-/usr/local/bin/forseti_notifier --forseti_config $FORSETI_CONF
+# forseti_iam scanner run ${FORSETI_HOME}/configs
