@@ -25,19 +25,23 @@ LOGGER = log_util.get_logger(__name__)
 class ForwardingRuleScanner(base_scanner.BaseScanner):
     """Pipeline for forwarding rules from dao"""
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
-                 rules):
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
+            service_config (ServiceConfig): Forseti 2.0 service configs
+            model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(ForwardingRuleScanner, self).__init__(
             global_configs,
             scanner_configs,
+            service_config,
+            model_name,
             snapshot_timestamp,
             rules)
 
