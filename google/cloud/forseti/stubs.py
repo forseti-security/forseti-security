@@ -51,6 +51,6 @@ def RunForsetiServer():
 
 
 def RunForsetiCli():
-    """Run Explain CLI."""
+    """Run Forseti CLI."""
     import google.cloud.forseti.services.cli as forseti_cli
     run_script_module.RunScriptModule(forseti_cli)
