@@ -13,9 +13,9 @@
 # limitations under the License.
 """Scanner for the firewall rule engine."""
 
-import ast
 from datetime import datetime
 import itertools
+import json
 import os
 import sys
 
@@ -188,7 +188,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             firewall_policies = []
 
             for i in data_access.scanner_iter(session, "firewall"):
-                firewall_data_for_scanner = ast.literal_eval(i.data)
+                firewall_data_for_scanner = json.loads(i.data)
                 firewall_data_for_scanner['project_id'] = i.parent.name
                 firewall_data_for_scanner['full_name'] = i.full_name
 

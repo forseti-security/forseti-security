@@ -14,8 +14,8 @@
 
 """ Unit Tests for Scanner DAO. """
 
-import ast
 from itertools import izip
+import json
 import unittest
 
 from google.cloud.forseti.services.scanner import dao as scanner_dao
@@ -78,7 +78,7 @@ class ScannerDaoTest(ForsetiTestCase):
                         'key %s differs' % key)
                 else:
                     self.assertEquals(
-                        fake.get(key), ast.literal_eval(getattr(saved, 'data')),
+                        fake.get(key), json.loads(getattr(saved, 'data')),
                         'key %s differs' % key)
 
 
