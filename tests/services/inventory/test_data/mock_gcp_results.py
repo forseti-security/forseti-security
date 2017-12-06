@@ -1376,64 +1376,6 @@ GCS_GET_BUCKETS = {
 
 GCS_GET_OBJECTS = {}
 
-# Fields: name, num
-BUCKET_ACLS_TEMPLATE = """
-[
-  {{
-   "kind": "storage#bucketAccessControl",
-   "id": "{name}/project-owners-{num}",
-   "selfLink": "https://www.googleapis.com/storage/v1/b/{name}/acl/project-owners-{num}",
-   "bucket": "{name}",
-   "entity": "project-owners-{num}",
-   "role": "OWNER",
-   "projectTeam": {{
-    "projectNumber": "{num}",
-    "team": "owners"
-   }},
-   "etag": "CAE="
-  }},
-  {{
-   "kind": "storage#bucketAccessControl",
-   "id": "{name}/project-editors-{num}",
-   "selfLink": "https://www.googleapis.com/storage/v1/b/{name}/acl/project-editors-{num}",
-   "bucket": "{name}",
-   "entity": "project-editors-{num}",
-   "role": "OWNER",
-   "projectTeam": {{
-    "projectNumber": "{num}",
-    "team": "editors"
-   }},
-   "etag": "CAE="
-  }},
-  {{
-   "kind": "storage#bucketAccessControl",
-   "id": "{name}/project-viewers-{num}",
-   "selfLink": "https://www.googleapis.com/storage/v1/b/{name}/acl/project-viewers-{num}",
-   "bucket": "{name}",
-   "entity": "project-viewers-{num}",
-   "role": "READER",
-   "projectTeam": {{
-    "projectNumber": "{num}",
-    "team": "viewers"
-   }},
-   "etag": "CAE="
-  }}
-]
-"""
-
-GCS_GET_BUCKET_ACLS = {
-    "bucket1": [
-        json.loads(
-            BUCKET_ACLS_TEMPLATE.format(
-                name="bucket1", num=PROJECT_ID_PREFIX + "3")),
-    ],
-    "bucket2": [
-        json.loads(
-            BUCKET_ACLS_TEMPLATE.format(
-                name="bucket2", num=PROJECT_ID_PREFIX + "4")),
-    ]
-}
-
 BUCKET_IAM_TEMPLATE = """
 {{
  "kind": "storage#policy",
@@ -1465,8 +1407,6 @@ GCS_GET_BUCKET_IAM = {
         json.loads(
             BUCKET_IAM_TEMPLATE.format(name="bucket2", project="project4"))
 }
-
-GCS_GET_OBJECT_ACLS = {}
 
 GCS_GET_OBJECT_IAM = {}
 
