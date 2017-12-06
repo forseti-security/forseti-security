@@ -25,7 +25,7 @@
 #fi
 
 # inventory command
-#forseti_iam inventory create
+forseti_iam inventory create
 INVENTORY=$(forseti_iam inventory get_latest)
 if [ -z "${INVENTORY}" ]; then
     echo "No inventory exists; exiting."
