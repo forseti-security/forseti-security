@@ -27,8 +27,8 @@ from google.cloud.forseti.common.data_access import dao
 from google.cloud.forseti.common.data_access import errors as db_errors
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.scanner import dao as scanner_dao
 from google.cloud.forseti.scanner import scanner_builder
+from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 
 # Setup flags
