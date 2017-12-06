@@ -15,6 +15,7 @@
 """ Unit Tests for Scanner DAO. """
 
 import ast
+from itertools import izip
 import unittest
 
 from google.cloud.forseti.services.scanner import dao as scanner_dao
@@ -67,33 +68,18 @@ class ScannerDaoTest(ForsetiTestCase):
         violation_access.create(FAKE_VIOLATIONS)
         saved_violations = violation_access.list()
 
-        self.assertEquals(len(FAKE_VIOLATIONS), len(saved_violations))
-
-        fake_violations111 = FAKE_VIOLATIONS[0]
-        saved_violation111 = saved_violations[0]
-        self.assertEquals(fake_violations111.get('resource_type'),
-                          saved_violation111.resource_type)
-        self.assertEquals(fake_violations111.get('rule_name'),
-                          saved_violation111.rule_name)
-        self.assertEquals(fake_violations111.get('rule_index'),
-                          saved_violation111.rule_index)
-        self.assertEquals(fake_violations111.get('violation_type'),
-                          saved_violation111.violation_type)
-        self.assertDictEqual(fake_violations111.get('violation_data'),
-                             ast.literal_eval(saved_violation111.data))
-
-        fake_violations222 = FAKE_VIOLATIONS[1]
-        saved_violation222 = saved_violations[1]
-        self.assertEquals(fake_violations222.get('resource_type'),
-                          saved_violation222.resource_type)
-        self.assertEquals(fake_violations222.get('rule_name'),
-                          saved_violation222.rule_name)
-        self.assertEquals(fake_violations222.get('rule_index'),
-                          saved_violation222.rule_index)
-        self.assertEquals(fake_violations222.get('violation_type'),
-                          saved_violation222.violation_type)
-        self.assertDictEqual(fake_violations222.get('violation_data'),
-                             ast.literal_eval(saved_violation222.data))
+        keys = ['resource_type', 'rule_name', 'rule_index', 'violation_type',
+                'violation_data']
+        for fake, saved in izip(FAKE_VIOLATIONS, saved_violations):
+            for key in keys:
+                if key != 'violation_data':
+                    self.assertEquals(
+                        fake.get(key), getattr(saved, key),
+                        'key %s differs' % key)
+                else:
+                    self.assertEquals(
+                        fake.get(key), ast.literal_eval(getattr(saved, 'data')),
+                        'key %s differs' % key)
 
 
 if __name__ == '__main__':
