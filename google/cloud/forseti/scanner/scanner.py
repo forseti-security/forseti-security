@@ -28,10 +28,12 @@ from google.cloud.forseti.common.data_access import errors as db_errors
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.scanner import scanner_builder
+from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 
 # Setup flags
 FLAGS = flags.FLAGS
+
 
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
@@ -74,13 +76,20 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     return latest_timestamp
 
-def main(_):
+def run(forseti_config, model_name=None, service_config=None):
     """Run the scanners.
 
+    Entry point when the scanner is run as a library.
+
     Args:
-        _ (list): argv, unused due to apputils.
+        forseti_config (dict): Forseti 1.0 config
+        model_name (str): name of the data model
+        service_config (ServiceConfig): Forseti 2.0 service configs
+
+    Returns:
+        int: Status code.
     """
-    forseti_config = FLAGS.forseti_config
+
     if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
@@ -96,13 +105,20 @@ def main(_):
 
     log_util.set_logger_level_from_config(scanner_configs.get('loglevel'))
 
+    # TODO: Figure out if we still need to get the latest model here,
+    # or should it be set in the server context before calling the scanner.
     snapshot_timestamp = _get_timestamp(global_configs)
     if not snapshot_timestamp:
         LOGGER.warn('No snapshot timestamp found. Exiting.')
         sys.exit()
 
+    violation_access = scanner_dao.define_violation(
+        model_name, service_config.engine)
+    service_config.violation_access = violation_access
+
     runnable_scanners = scanner_builder.ScannerBuilder(
-        global_configs, scanner_configs, snapshot_timestamp).build()
+        global_configs, scanner_configs, service_config, model_name,
+        snapshot_timestamp).build()
 
     # pylint: disable=bare-except
     for scanner in runnable_scanners:
@@ -114,6 +130,21 @@ def main(_):
     # pylint: enable=bare-except
 
     LOGGER.info('Scan complete!')
+    return 0
+
+
+def main(_):
+    """Entry point when the scanner is run as an executable.
+
+    Args:
+        _ (list): args that aren't used
+
+    Returns:
+        int: Status code.
+    """
+
+    run(FLAGS.forseti_config)
+    return 0
 
 
 if __name__ == '__main__':

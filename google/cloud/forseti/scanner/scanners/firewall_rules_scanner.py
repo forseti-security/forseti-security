@@ -15,6 +15,7 @@
 
 from datetime import datetime
 import itertools
+import json
 import os
 import sys
 
@@ -22,7 +23,7 @@ from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier import notifier
 
 from google.cloud.forseti.common.data_access import csv_writer
-from google.cloud.forseti.common.data_access import firewall_rule_dao
+from google.cloud.forseti.common.gcp_type import firewall_rule
 from google.cloud.forseti.common.gcp_type import resource as resource_type
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.scanner.audit import firewall_rules_engine
@@ -36,13 +37,15 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_firewall.{}.csv'
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
-                 rules):
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
+            service_config (ServiceConfig): Forseti 2.0 service configs
+            model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
@@ -50,6 +53,8 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         super(FirewallPolicyScanner, self).__init__(
             global_configs,
             scanner_configs,
+            service_config,
+            model_name,
             snapshot_timestamp,
             rules)
         self.rules_engine = firewall_rules_engine.FirewallRulesEngine(
@@ -176,10 +181,22 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             list: List of firewall policy data.
             int: The resource count.
         """
-        firewall_policies = (firewall_rule_dao
-                             .FirewallRuleDao(self.global_configs)
-                             .get_firewall_rules(self.snapshot_timestamp))
 
+        model_manager = self.service_config[0].model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            firewall_policies = []
+
+            for i in data_access.scanner_iter(session, "firewall"):
+                firewall_data_for_scanner = json.loads(i.data)
+                firewall_data_for_scanner['project_id'] = i.parent.name
+                firewall_data_for_scanner['full_name'] = i.full_name
+
+                firewall_policies.append(
+                    firewall_rule.FirewallRule.from_dict(
+                        firewall_dict=firewall_data_for_scanner,
+                        project_id=i.parent.name,
+                        validate=True))
 
         if not firewall_policies:
             LOGGER.warn('No firewall policies found. Exiting.')
