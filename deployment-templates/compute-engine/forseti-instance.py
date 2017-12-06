@@ -185,6 +185,17 @@ sleep 5
 systemctl start forseti
 echo "Success! The Forseti API server has been started."
 
+# Create a Forseti env script
+FORSETI_ENV="$(cat <<EOF
+#!/bin/bash
+# Forseti environment variables
+export FORSETI_HOME=/home/ubuntu/forseti-security
+export FORSETI_CONF=$FORSETI_HOME/configs/forseti_conf.yaml
+export SCANNER_BUCKET={scanner_bucket}
+EOF
+)"
+echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
+
 sudo su $USER -c "$FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh"
 (echo "{run_frequency} $FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab"
