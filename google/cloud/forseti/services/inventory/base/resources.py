@@ -20,6 +20,7 @@
 # pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc,attribute-defined-outside-init
 # pylint: disable=useless-suppression,cell-var-from-loop,protected-access,too-many-instance-attributes
 
+import ctypes
 import json
 
 
@@ -284,6 +285,42 @@ class DataSet(Resource):
         return 'dataset'
 
 
+class AppEngineApp(Resource):
+    def key(self):
+        # Apps do not have globally unique IDs, use size_t hash of name
+        return '%u' % ctypes.c_size_t(hash(self['name'])).value
+
+    def type(self):
+        return 'appengine_app'
+
+
+class AppEngineService(Resource):
+    def key(self):
+        # Services do not have globally unique IDs, use size_t hash of name
+        return '%u' % ctypes.c_size_t(hash(self['name'])).value
+
+    def type(self):
+        return 'appengine_service'
+
+
+class AppEngineVersion(Resource):
+    def key(self):
+        # Versions do not have globally unique IDs, use size_t hash of name
+        return '%u' % ctypes.c_size_t(hash(self['name'])).value
+
+    def type(self):
+        return 'appengine_version'
+
+
+class AppEngineInstance(Resource):
+    def key(self):
+        # Instances do not have globally unique IDs, use size_t hash of name
+        return '%u' % ctypes.c_size_t(hash(self['name'])).value
+
+    def type(self):
+        return 'appengine_instance'
+
+
 class ComputeProject(Resource):
     def key(self):
         return self['id']
@@ -381,11 +418,25 @@ class CloudSqlInstance(Resource):
 
 
 class ServiceAccount(Resource):
+    @cached('iam_policy')
+    def getIamPolicy(self, client=None):
+        return client.get_serviceaccount_iam_policy(self['name'])
+
     def key(self):
         return self['uniqueId']
 
     def type(self):
         return 'serviceaccount'
+
+
+class ServiceAccountKey(Resource):
+    def key(self):
+        # Key name is in the format:
+        # projects/{project_id}/serviceAccounts/{service_account}/keys/{key_id}
+        return self['name'].split('/')[-1]
+
+    def type(self):
+        return 'serviceaccount_key'
 
 
 class GsuiteUser(Resource):
@@ -484,6 +535,41 @@ class DataSetIterator(ResourceIterator):
             for data in gcp.iter_datasets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
+
+
+class AppEngineAppIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.enumerable():
+            data = gcp.fetch_gae_app(projectid=self.resource['projectId'])
+            if data:
+                yield FACTORIES['appengine_app'].create_new(data)
+
+
+class AppEngineServiceIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        for data in gcp.iter_gae_services(projectid=self.resource['id']):
+            yield FACTORIES['appengine_service'].create_new(data)
+
+
+class AppEngineVersionIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        for data in gcp.iter_gae_versions(
+                projectid=self.resource.parent()['id'],
+                serviceid=self.resource['id']):
+            yield FACTORIES['appengine_version'].create_new(data)
+
+
+class AppEngineInstanceIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        for data in gcp.iter_gae_instances(
+                projectid=self.resource.parent().parent()['id'],
+                serviceid=self.resource.parent()['id'],
+                versionid=self.resource['id']):
+            yield FACTORIES['appengine_instance'].create_new(data)
 
 
 class ComputeIterator(ResourceIterator):
@@ -603,6 +689,14 @@ class ServiceAccountIterator(ResourceIterator):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
+class ServiceAccountKeyIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        for data in gcp.iter_serviceaccount_exported_keys(
+                name=self.resource['name']):
+            yield FACTORIES['serviceaccount_key'].create_new(data)
+
+
 class ProjectRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
@@ -683,6 +777,7 @@ FACTORIES = {
             DataSetIterator,
             CloudSqlIterator,
             ServiceAccountIterator,
+            AppEngineAppIterator,
             ComputeIterator,
             InstanceIterator,
             FirewallIterator,
@@ -694,6 +789,33 @@ FACTORIES = {
             NetworkIterator,
             SubnetworkIterator,
             ProjectRoleIterator
+            ]}),
+
+    'appengine_app': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': AppEngineApp,
+        'contains': [
+            AppEngineServiceIterator,
+            ]}),
+
+    'appengine_service': ResourceFactory({
+        'dependsOn': ['appengine_app'],
+        'cls': AppEngineService,
+        'contains': [
+            AppEngineVersionIterator,
+            ]}),
+
+    'appengine_version': ResourceFactory({
+        'dependsOn': ['appengine_service'],
+        'cls': AppEngineVersion,
+        'contains': [
+            AppEngineInstanceIterator,
+            ]}),
+
+    'appengine_instance': ResourceFactory({
+        'dependsOn': ['appengine_version'],
+        'cls': AppEngineInstance,
+        'contains': [
             ]}),
 
     'bucket': ResourceFactory({
@@ -784,6 +906,13 @@ FACTORIES = {
     'serviceaccount': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ServiceAccount,
+        'contains': [
+            ServiceAccountKeyIterator
+            ]}),
+
+    'serviceaccount_key': ResourceFactory({
+        'dependsOn': ['serviceaccount'],
+        'cls': ServiceAccountKey,
         'contains': [
             ]}),
 
