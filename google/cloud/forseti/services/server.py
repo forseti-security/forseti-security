@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" IAM Explain server program. """
+"""Forseti Server program."""
 
-# TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-param-doc
 # pylint: disable=line-too-long,useless-suppression
+
+import argparse
 
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import ThreadPool
@@ -231,7 +232,7 @@ class InventoryConfig(AbstractInventoryConfig):
 
 
 class ServiceConfig(AbstractServiceConfig):
-    """Implements composed dependency injection to IAM Explain services."""
+    """Implements composed dependency injection to Forseti Server services."""
 
     def __init__(self,
                  inventory_config,
@@ -342,14 +343,30 @@ def serve(endpoint, services,
             server.stop(wait_shutdown_secs).wait()
             return
 
+def main():
+    """Run."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('endpoint', default='[::]:50051', help='Server endpoint')
+    parser.add_argument(
+        'forseti_db',
+        help=('Forseti database string, formatted as '
+              '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
+    parser.add_argument(
+        'gsuite_private_keyfile',
+        help='Path to G Suite service account private keyfile')
+    parser.add_argument('gsuite_admin_email', help='G Suite admin email')
+    parser.add_argument(
+        'root_resource_id',
+        help=('Root resource to start crawling from, formatted as '
+              '"<resource_type>/<resource_id>" '
+              '(e.g. "organizations/12345677890")'))
+    parser.add_argument('services', nargs='*', default=[], help='Forseti services')
+    args = vars(parser.parse_args())
+
+    serve(args['endpoint'], args['services'], args['forseti_db'],
+          args['gsuite_private_keyfile'], args['gsuite_admin_email'],
+          args['root_resource_id'])
+
 
 if __name__ == "__main__":
-    import sys
-    EP = sys.argv[1] if len(sys.argv) > 1 else '[::]:50051'
-    FORSETI_DB = sys.argv[2] if len(sys.argv) > 2 else ''
-    GSUITE_SA = sys.argv[3] if len(sys.argv) > 3 else ''
-    GSUITE_ADMIN_EMAIL = sys.argv[4] if len(sys.argv) > 4 else ''
-    ROOT_RESOURCE_ID = sys.argv[5] if len(sys.argv) > 5 else ''
-    SVCS = sys.argv[6:] if len(sys.argv) > 6 else []
-    serve(EP, SVCS, FORSETI_DB, GSUITE_SA,
-          GSUITE_ADMIN_EMAIL, ROOT_RESOURCE_ID)
+    main()

@@ -57,7 +57,8 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
                 members=tuple(members)),
         ]
 
-        scanner = iam_rules_scanner.IamPolicyScanner({}, {}, '', '')
+        scanner = iam_rules_scanner.IamPolicyScanner(
+            {}, {}, mock.MagicMock(), '', '', '')
 
         all_violations = scanner._flatten_violations(unflattened_violations)
         total_resources = {

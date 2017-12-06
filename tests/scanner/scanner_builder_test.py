@@ -48,7 +48,7 @@ class ScannerBuilderTest(ForsetiTestCase):
                        mock_iam_rules_engine):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_ENABLED,
-            FAKE_TIMESTAMP)
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
         self.assertEquals(4, len(runnable_pipelines))
@@ -61,7 +61,7 @@ class ScannerBuilderTest(ForsetiTestCase):
     def testAllDisabled(self):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_DISABLED,
-            FAKE_TIMESTAMP)
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
         self.assertEquals(0, len(runnable_pipelines))
@@ -71,7 +71,7 @@ class ScannerBuilderTest(ForsetiTestCase):
     def testOneEnabled(self, mock_iam_rules_engine):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ONE_ENABLED,
-            FAKE_TIMESTAMP)
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
         self.assertEquals(1, len(runnable_pipelines))
@@ -86,7 +86,7 @@ class ScannerBuilderTest(ForsetiTestCase):
     def testTwoEnabled(self, mock_bucket_rules_engine, mock_iam_rules_engine):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.TWO_ENABLED,
-            FAKE_TIMESTAMP)
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
         self.assertEquals(2, len(runnable_pipelines))

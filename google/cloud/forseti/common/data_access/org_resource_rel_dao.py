@@ -18,7 +18,11 @@ from google.cloud.forseti.common.data_access import folder_dao
 from google.cloud.forseti.common.data_access import organization_dao
 from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.common.gcp_type import resource_util
+from google.cloud.forseti.services import utils
 
+
+# pylint: disable=invalid-name
 
 class OrgResourceRelDao(object):
     """DAO for organization resource entity relationships."""
@@ -105,3 +109,38 @@ class OrgResourceRelDao(object):
                 resource_lookup.get('get'))(
                     unloaded_resource.id, snapshot_timestamp)
         return loaded_resource
+
+
+def find_ancestors_by_hierarchial_name(starting_resource,
+                                       full_name):
+    """Find the ancestors for a given resource.
+
+    Take advantage of the full name from the data model which has
+    the entire hierarchy.
+
+    Keeping this outside of the class, because the class is mocked out during
+    testing.
+
+    Args:
+        starting_resource (Resource): The GCP resource associated with the
+            policy binding.  This is where we move up the resource
+            hierarchy.
+        full_name (str): Full name of the resource in hierarchical format.
+            Example of a full_name:
+            organization/88888/project/myproject/firewall/99999/
+
+    Returns:
+        list: A list of GCP resources in ascending order in the resource
+            hierarchy.
+    """
+    ancestor_resources = [starting_resource]
+
+    resources = utils.get_resources_from_full_name(full_name)
+    for resource_type, resource_id in resources:
+        if (resource_type == starting_resource.type and
+                resource_id == starting_resource.id):
+            continue
+        ancestor_resources.append(
+            resource_util.create_resource(resource_id, resource_type))
+
+    return ancestor_resources

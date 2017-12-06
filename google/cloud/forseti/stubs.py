@@ -44,13 +44,13 @@ def RunForsetiNotifier():
     run_script_module.RunScriptModule(forseti_notifier)
 
 
-def RunForsetiApi():
+def RunForsetiServer():
     """Run Forseti API server."""
-    import google.cloud.forseti.services.server as forseti_api
-    run_script_module.RunScriptModule(forseti_api)
+    import google.cloud.forseti.services.server as forseti_server
+    run_script_module.RunScriptModule(forseti_server)
 
 
-def RunExplainCli():
-    """Run Explain CLI."""
-    import google.cloud.forseti.services.cli as iam_cli
-    run_script_module.RunScriptModule(iam_cli)
+def RunForsetiCli():
+    """Run Forseti CLI."""
+    import google.cloud.forseti.services.cli as forseti_cli
+    run_script_module.RunScriptModule(forseti_cli)

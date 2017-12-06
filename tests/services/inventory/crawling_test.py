@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit Tests: Inventory crawler for IAM Explain."""
+"""Unit Tests: Inventory crawler for Forseti Server."""
 
+import logging
 import unittest
 from tests.services.inventory import gcp_api_mocks
 from tests.unittest_utils import ForsetiTestCase
@@ -38,6 +39,7 @@ class NullProgresser(Progresser):
         self.warnings += 1
 
     def on_error(self, error):
+        logging.error("Progressor Error: %s", error)
         self.errors += 1
 
     def get_summary(self):
