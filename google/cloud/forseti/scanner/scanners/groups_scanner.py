@@ -31,13 +31,15 @@ MY_CUSTOMER = 'my_customer'
 class GroupsScanner(base_scanner.BaseScanner):
     """Scanner for IAM data."""
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
-                 rules_file):
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules_file):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
+            service_config (ServiceConfig): Forseti 2.0 service configs
+            model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules_file (str): Fully-qualified path and filename of the rules
                 file.
@@ -45,6 +47,8 @@ class GroupsScanner(base_scanner.BaseScanner):
         super(GroupsScanner, self).__init__(
             global_configs,
             scanner_configs,
+            service_config,
+            model_name,
             snapshot_timestamp,
             rules_file)
         self.dao = group_dao.GroupDao(global_configs)

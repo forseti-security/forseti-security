@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" IAM Explain utilities. """
+"""Forseti Server utilities."""
 
+from itertools import izip
 import logging
-
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -116,3 +116,23 @@ def get_sql_dialect(session):
     """Return the active SqlAlchemy dialect."""
 
     return session.bind.dialect.name
+
+def get_resources_from_full_name(full_name):
+    """Parse resource info from full name.
+
+    Args:
+        full_name (str): Full name of the resource in hierarchical format.
+            Example of a full_name:
+            organization/88888/project/myproject/firewall/99999/
+            full_name has a trailing / that needs to be removed.
+
+
+    Yields:
+        iterator: strings of resource_type and resource_id
+    """
+
+    full_name_parts = full_name.split('/')[:-1]
+    full_name_parts.reverse()
+    resource_iter = iter(full_name_parts)
+    for resource_id, resource_type in izip(resource_iter, resource_iter):
+        yield resource_type, resource_id

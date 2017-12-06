@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the IAM Explain inventory."""
+"""Tests the Forseti Server inventory service."""
 
 import time
 import unittest
