@@ -16,15 +16,17 @@
 from argparse import ArgumentParser
 from copy import copy
 import json
+import mock
 import os
-import shutil
 import shlex
+import shutil
 import StringIO
 import tempfile
 import unittest
-import mock
-from tests.unittest_utils import ForsetiTestCase
+
 from google.cloud.forseti.services import cli
+from tests.unittest_utils import ForsetiTestCase
+
 CLIENT = mock.Mock()
 
 CLIENT.playground = CLIENT
