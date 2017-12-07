@@ -27,6 +27,7 @@ from __future__ import print_function
 import datetime
 import json
 import os
+import random
 import re
 import subprocess
 import sys
@@ -954,6 +955,7 @@ class ForsetiGcpSetup(object):
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
             'GSUITE_ADMIN_EMAIL': self.gsuite_superadmin_email,
             'ROOT_RESOURCE_ID': self.resource_root_id,
+            'rand_minute': random.randint(0, 59)
         }
 
         # Create Deployment template with values filled in.

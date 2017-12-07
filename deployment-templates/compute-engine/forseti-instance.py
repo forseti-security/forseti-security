@@ -14,6 +14,8 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+import random
+
 def GenerateConfig(context):
     """Generate configuration."""
 
@@ -68,6 +70,9 @@ mv forseti-security-{release_version} forseti-security
         'export FORSETI_CONF={forseti_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
                  forseti_conf=FORSETI_CONF)
+
+    RUN_FREQUENCY = context.properties['run-frequency'].format(
+        rand_minute=random.randint(0, 59))
 
     resources = []
 
@@ -224,7 +229,7 @@ echo "Execution of startup script finished"
     gsuite_service_acct=context.properties['service-account-gsuite'],
 
     # Forseti run frequency
-    run_frequency=context.properties['run-frequency'],
+    run_frequency=RUN_FREQUENCY,
 )
                 }]
             }
