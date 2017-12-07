@@ -31,7 +31,7 @@ set -o nounset
 echo "CloudSQL Instance connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "Local SQL port is: ${SQL_PORT}"
 echo "Forseti DB name: ${FORSETI_DB_NAME}"
-echo "GSuite admin email: ${GSUITE_ADMIN_EMAIL}"
+echo "G Suite admin email: ${GSUITE_ADMIN_EMAIL}"
 echo "Root resource ID: ${ROOT_RESOURCE_ID}"
 if ! [[ -f $GSUITE_ADMIN_CREDENTIAL_PATH ]]; then
     echo "Could not find gsuite admin credentials." >&2
@@ -57,7 +57,7 @@ SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
 # Cannot use "read -d" since it returns a nonzero exit status.
 API_SERVICE="$(cat << EOF
 [Unit]
-Description=Explain API Server
+Description=Forseti API Server
 [Service]
 Restart=always
 RestartSec=3
@@ -93,14 +93,14 @@ $SQL_PROXY_COMMAND &&
 $FORSETI_COMMAND
 EOF
 )"
-echo "$FOREGROUND_RUNNER" > /tmp/iamexplain-foreground.sh
-chmod 755 /tmp/iamexplain-foreground.sh
-sudo mv /tmp/iamexplain-foreground.sh /usr/bin/iamexplain-foreground.sh
+echo "$FOREGROUND_RUNNER" > /tmp/forseti-foreground.sh
+chmod 755 /tmp/forseti-foreground.sh
+sudo mv /tmp/forseti-foreground.sh /usr/bin/forseti-foreground.sh
 
-echo "Explain services are now registered with systemd. Services can be started"
+echo "Forseti services are now registered with systemd. Services can be started"
 echo "immediately by running the following:"
 echo "    systemctl start cloudsqlproxy"
 echo "    systemctl start forseti"
 echo ""
-echo "Additionally, the IAM Explain server can be run in the foreground by using"
-echo "the foreground runner script: /usr/bin/iamexplain-foreground.sh"
+echo "Additionally, the Forseti server can be run in the foreground by using"
+echo "the foreground runner script: /usr/bin/forseti-foreground.sh"
