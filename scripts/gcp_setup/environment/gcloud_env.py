@@ -791,15 +791,19 @@ class ForsetiGcpSetup(object):
         # Otherwise, present the user with options to choose from
         # available service accounts in this project.
         if choice_index == 1:
-            new_acct_id = getattr(self, acct_type)
-            return_code, out, err = run_command(
-                ['gcloud', 'iam', 'service-accounts', 'create',
-                 new_acct_id[:new_acct_id.index('@')]])
-            if return_code:
-                print(err)
-                print('Could not create the service account. Terminating '
-                      'because this is an unexpected error.')
-                sys.exit(1)
+            if self.dry_run:
+                print('This is a dry run, so don\'t actually create '
+                      'the service account.')
+            else:
+                new_acct_id = getattr(self, acct_type)
+                return_code, out, err = run_command(
+                    ['gcloud', 'iam', 'service-accounts', 'create',
+                     new_acct_id[:new_acct_id.index('@')]])
+                if return_code:
+                    print(err)
+                    print('Could not create the service account. Terminating '
+                          'because this is an unexpected error.')
+                    sys.exit(1)
         else:
             svc_accts = []
             return_code, out, err = run_command(
