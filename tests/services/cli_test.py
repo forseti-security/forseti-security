@@ -199,7 +199,7 @@ class ImporterTest(ForsetiTestCase):
         """Test if the CLI hits specific client methods."""
         tmp_config = os.path.join(self.test_dir, '.forseti')
         with mock.patch.dict(
-            os.environ, {'FORSETI_CLIENT_CONFIG': tmp_config}) as mock_config:
+            os.environ, {'FORSETI_CLIENT_CONFIG': tmp_config}):
             for commandline, client_func, func_args,\
                 func_kwargs, config_string, config_expect\
                     in test_cases:
