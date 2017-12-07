@@ -18,7 +18,7 @@ import unittest
 import mock
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.util import class_loader_util
+from google.cloud.forseti.common.util import class_loader_util
 
 
 class ClassLoaderUtilTest(ForsetiTestCase):
@@ -32,7 +32,7 @@ class ClassLoaderUtilTest(ForsetiTestCase):
     def test_dne_class_load_fails(self):
         """Test that a class that does not exist fails."""
         with self.assertRaises(class_loader_util.InvalidForsetiClassError):
-            class_loader_util.load_class('google.cloud.security.FakeClass')
+            class_loader_util.load_class('google.cloud.forseti.FakeClass')
 
 
 if __name__ == '__main__':

@@ -38,7 +38,7 @@ INVALID_RULES1_DUP_IDS = [
 FAKE_RULES_CONFIG1 = {
     'rules': [
         {
-            'type': 'google.cloud.security.auditor.rules.rule.Rule',
+            'type': 'google.cloud.forseti.auditor.rules.rule.Rule',
             'id': 'rules.fake.1',
             'description': 'Fake rule',
             'configuration': {
@@ -47,7 +47,7 @@ FAKE_RULES_CONFIG1 = {
                 ],
                 'resources': [
                     {
-                        'type': 'google.cloud.security.common.gcp_type.project.Project',
+                        'type': 'google.cloud.forseti.common.gcp_type.project.Project',
                         'variables': {'xyz': 'id'}
                     }
                 ],
@@ -55,7 +55,7 @@ FAKE_RULES_CONFIG1 = {
             }
         },
         {
-            'type': 'google.cloud.security.auditor.rules.rule.Rule',
+            'type': 'google.cloud.forseti.auditor.rules.rule.Rule',
             'id': 'rules.fake.2',
             'description': 'Fake rule 2',
             'configuration': {
@@ -64,7 +64,7 @@ FAKE_RULES_CONFIG1 = {
                 ],
                 'resources': [
                     {
-                        'type': 'google.cloud.security.common.gcp_type.organization.Organization',
+                        'type': 'google.cloud.forseti.common.gcp_type.organization.Organization',
                         'variables': {'abc': 'organization_id'}
                     }
                 ],
@@ -77,7 +77,7 @@ FAKE_RULES_CONFIG1 = {
 FAKE_INVALID_RULES_CONFIG1 = {
     'rules': [
         {
-            'type': 'google.cloud.security.auditor.rules.rule.NonexistentRule',
+            'type': 'google.cloud.forseti.auditor.rules.rule.NonexistentRule',
             'id': 'rules.fake.1',
             'description': 'Fake rule',
             'configuration': {
@@ -86,7 +86,7 @@ FAKE_INVALID_RULES_CONFIG1 = {
                 ],
                 'resources': [
                     {
-                        'type': 'google.cloud.security.common.gcp_type.project.Project',
+                        'type': 'google.cloud.forseti.common.gcp_type.project.Project',
                         'variables': {'xyz': 'id'}
                     }
                 ],

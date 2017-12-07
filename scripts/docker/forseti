@@ -16,9 +16,10 @@
 # You still need to do all the other prereq GCP setup (e.g.
 # setting up service accounts, GCP infrastructure).
 
-FROM forseti/base
+ARG BASE_IMAGE=forseti/base
+FROM ${BASE_IMAGE}
 
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 RUN python setup.py install
-RUN yes | which forseti_inventory
+RUN yes | which forseti_server

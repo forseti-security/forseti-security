@@ -16,7 +16,7 @@
 # Invalid rules
 
 rules:
-  - type: google.cloud.security.auditor.rules.rule.Rule
+  - type: google.cloud.forseti.auditor.rules.rule.Rule
     description: Test invalid rule
     id: rules.invalid_rule.1
     configuration:
@@ -24,12 +24,12 @@ rules:
         - myvar1
         - extravar1
       resources:
-        - type: google.cloud.security.common.gcp_type.fake_resource
+        - type: google.cloud.forseti.common.gcp_type.fake_resource
           variables:
             myvar1: myprop1
       condition: myvar1 > 100
 
-  - type: google.cloud.security.auditor.rules.rule.Rule
+  - type: google.cloud.forseti.auditor.rules.rule.Rule
     description: Test invalid rule
     id: rules.invalid_rule.1
     configuration:
@@ -37,16 +37,16 @@ rules:
         - authorized_networks
         - junk
       resources:
-        - type: google.cloud.security.common.gcp_type.cloudsql
+        - type: google.cloud.forseti.common.gcp_type.cloudsql
           variables:
             authorized_networks: authorized_networks
             asdf: asdf
-        - type: google.cloud.security.common.gcp_type.aabbcc
+        - type: google.cloud.forseti.common.gcp_type.aabbcc
           variables:
             jkl: aaa
       condition: authorized_networks != xyz
 
-  - type: google.cloud.security.auditor.rules.rule.Rule
+  - type: google.cloud.forseti.auditor.rules.rule.Rule
     description: Test invalid rule 2
     id: rules.invalid_rule.2
     configuration:
@@ -54,11 +54,11 @@ rules:
         - authorized_networks
         - junk
       resources:
-        - type: google.cloud.security.common.gcp_type.fake_resource
+        - type: google.cloud.forseti.common.gcp_type.fake_resource
           variables:
             authorized_networks: authorized_networks
             asdf: asdf
-        - type: google.cloud.security.common.gcp_type.aabbcc
+        - type: google.cloud.forseti.common.gcp_type.aabbcc
           variables:
             jkl: aaa
       condition: authorized_networks != xyz

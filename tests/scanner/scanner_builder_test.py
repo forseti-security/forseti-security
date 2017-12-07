@@ -18,7 +18,7 @@ import mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.scanner import scanner_builder
+from google.cloud.forseti.scanner import scanner_builder
 from tests.scanner.test_data import fake_runnable_scanners
 
 
@@ -33,13 +33,13 @@ FAKE_GLOBAL_CONFIGS = {
 class ScannerBuilderTest(ForsetiTestCase):
     """Tests for the scanner builder."""
 
-    @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
+    @mock.patch('google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine',
                 autospec=True)
-    @mock.patch('google.cloud.security.scanner.scanners.cloudsql_rules_scanner.cloudsql_rules_engine',
+    @mock.patch('google.cloud.forseti.scanner.scanners.cloudsql_rules_scanner.cloudsql_rules_engine',
                 autospec=True)
-    @mock.patch('google.cloud.security.scanner.scanners.bucket_rules_scanner.buckets_rules_engine',
+    @mock.patch('google.cloud.forseti.scanner.scanners.bucket_rules_scanner.buckets_rules_engine',
                 autospec=True)
-    @mock.patch('google.cloud.security.scanner.scanners.bigquery_scanner.bigquery_rules_engine',
+    @mock.patch('google.cloud.forseti.scanner.scanners.bigquery_scanner.bigquery_rules_engine',
                 autospec=True)
     def testAllEnabled(self,
                        mock_bigquery_rules_engine,
@@ -48,7 +48,7 @@ class ScannerBuilderTest(ForsetiTestCase):
                        mock_iam_rules_engine):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_ENABLED,
-            FAKE_TIMESTAMP)
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
         self.assertEquals(4, len(runnable_pipelines))
@@ -61,17 +61,17 @@ class ScannerBuilderTest(ForsetiTestCase):
     def testAllDisabled(self):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_DISABLED,
-            FAKE_TIMESTAMP)
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
         self.assertEquals(0, len(runnable_pipelines))
 
-    @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
+    @mock.patch('google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine',
                 autospec=True)
     def testOneEnabled(self, mock_iam_rules_engine):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ONE_ENABLED,
-            FAKE_TIMESTAMP)
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
         self.assertEquals(1, len(runnable_pipelines))
@@ -79,14 +79,14 @@ class ScannerBuilderTest(ForsetiTestCase):
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
 
-    @mock.patch('google.cloud.security.scanner.scanners.iam_rules_scanner.iam_rules_engine',
+    @mock.patch('google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine',
                 autospec=True)
-    @mock.patch('google.cloud.security.scanner.scanners.bucket_rules_scanner.buckets_rules_engine',
+    @mock.patch('google.cloud.forseti.scanner.scanners.bucket_rules_scanner.buckets_rules_engine',
                 autospec=True)
     def testTwoEnabled(self, mock_bucket_rules_engine, mock_iam_rules_engine):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.TWO_ENABLED,
-            FAKE_TIMESTAMP)
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
 
         self.assertEquals(2, len(runnable_pipelines))

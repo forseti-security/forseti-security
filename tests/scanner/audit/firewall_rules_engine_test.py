@@ -18,12 +18,10 @@ import unittest
 import parameterized
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type.firewall_rule import FirewallRule
-from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import firewall_rules_engine as fre
-from google.cloud.security.scanner.audit import rules as scanner_rules
+from google.cloud.forseti.common.gcp_type.firewall_rule import FirewallRule
+from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
+from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
-from tests.scanner.audit.data import test_rules
 
 
 class RuleTest(ForsetiTestCase):
@@ -999,11 +997,12 @@ class RuleTest(ForsetiTestCase):
         for expected_dict, violation in zip(expected, violations):
             self.assertItemsEqual(expected_dict.values(), list(violation))
 
+
 class RuleBookTest(ForsetiTestCase):
 
     def setUp(self):
         self.mock_org_rel_dao = mock.patch(
-            'google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao').start()
+            'google.cloud.forseti.common.data_access.org_resource_rel_dao.OrgResourceRelDao').start()
 
     @parameterized.parameterized.expand([
         (
@@ -1101,8 +1100,8 @@ class RuleBookTest(ForsetiTestCase):
         rule_book = fre.RuleBook({})
         rule_book.add_rules(rule_defs)
         for rule_def in rule_defs:
-          rule_id = rule_def.get('rule_id')
-          self.assertTrue(rule_book.rules_map.get(rule_id) is not None)
+            rule_id = rule_def.get('rule_id')
+            self.assertTrue(rule_book.rules_map.get(rule_id) is not None)
 
     @parameterized.parameterized.expand([
         (
@@ -1366,6 +1365,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_1 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
+                'full_name': 'organization/org/folder/folder1/project/project0/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
@@ -1377,6 +1377,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_2 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
+                'full_name': 'organization/org/folder/folder2/project/project1/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1388,6 +1389,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_3 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
+                'full_name': 'organization/org/folder/folder3/folder/folder4/project/project2/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'egress',
                 'denied': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1398,6 +1400,7 @@ class RuleBookTest(ForsetiTestCase):
         policy_violates_rule_4 = fre.firewall_rule.FirewallRule.from_dict(
             {
                 'name': 'policy1',
+                'full_name': 'organization/org/folder/folder3/project/project3/firewall/policy1/',
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1473,9 +1476,9 @@ class RuleBookTest(ForsetiTestCase):
             (exception, policy_violates_rule_1, []),
         )
         for resource, policy, expected_violation in resources_and_policies:
-          violations = rule_book.find_violations(resource, policy)
-          self.assert_rule_violation_lists_equal(
-              expected_violation, list(violations))
+            violations = rule_book.find_violations(resource, policy)
+            self.assert_rule_violation_lists_equal(
+                expected_violation, list(violations))
 
     def assert_rule_violation_lists_equal(self, expected, violations):
         sorted(expected, key=lambda k: k.resource_id)
@@ -1534,6 +1537,8 @@ class RuleEngineTest(ForsetiTestCase):
             'test_project',
             {
                 'name': 'policy1',
+                'full_name': ('organization/org/folder/folder1/'
+                                      'project/project0/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
@@ -1557,6 +1562,8 @@ class RuleEngineTest(ForsetiTestCase):
             'project1',
             {
                 'name': 'policy1',
+                'full_name': ('organization/org/folder/test_instances/'
+                                      'project/project1/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1580,6 +1587,8 @@ class RuleEngineTest(ForsetiTestCase):
             'honeypot_exception',
             {
                 'name': 'policy1',
+                'full_name': ('organization/org/folder/folder1/'
+                                      'project/project0/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
@@ -1611,5 +1620,6 @@ class RuleEngineTest(ForsetiTestCase):
         sorted(violations, key=lambda k: k.resource_id)
         self.assertItemsEqual(expected, violations)
 
+
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()

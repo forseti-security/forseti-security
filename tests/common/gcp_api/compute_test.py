@@ -21,8 +21,8 @@ import parameterized
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_compute_responses as fake_compute
 from tests.common.gcp_api.test_data import http_mocks
-from google.cloud.security.common.gcp_api import compute
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 
 ERROR_TEST_CASES = [
     ('api_not_enabled', fake_compute.API_NOT_ENABLED, '403',

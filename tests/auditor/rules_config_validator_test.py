@@ -21,7 +21,7 @@ for the json schema validator.
 import mock
 import unittest
 
-from google.cloud.security.auditor import rules_config_validator as rcv
+from google.cloud.forseti.auditor import rules_config_validator as rcv
 from tests.auditor.test_data import test_auditor_data
 from tests.unittest_utils import ForsetiTestCase
 
@@ -62,7 +62,7 @@ class RulesConfigValidatorTest(ForsetiTestCase):
         """Test validate() works for well formed generic configurations."""
         pass
 
-    @mock.patch('google.cloud.security.auditor.rules_config_validator.DuplicateRuleIdError', autospec=True)
+    @mock.patch('google.cloud.forseti.auditor.rules_config_validator.DuplicateRuleIdError', autospec=True)
     def test_duplicate_rule_ids_error(self, mock_dup_id_error):
         """Test that validate() fails when finding duplicate ids."""
         self.validator._validate_schema = mock.MagicMock(

@@ -22,8 +22,8 @@ from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_admin_directory_responses as fake_admin
 from tests.common.gcp_api.test_data import fake_key_file
 from tests.common.gcp_api.test_data import http_mocks
-from google.cloud.security.common.gcp_api import admin_directory as admin
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import admin_directory as admin
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 
 
 class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
@@ -91,6 +91,18 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.ad_api_client.get_group_members('11111')
+
+    def test_get_users(self):
+        http_mocks.mock_http_response(fake_admin.FAKE_USERS_LIST_RESPONSE)
+        response = self.ad_api_client.get_users()
+
+        self.assertEqual(1, len(response))
+
+    def test_get_users_raises(self):
+        http_mocks.mock_http_response(fake_admin.UNAUTHORIZED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.ad_api_client.get_users()
 
 
 if __name__ == '__main__':

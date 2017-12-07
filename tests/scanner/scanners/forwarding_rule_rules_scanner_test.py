@@ -17,10 +17,9 @@
 import mock
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.scanner.scanners import forwarding_rule_scanner
-from google.cloud.security.scanner.audit import forwarding_rule_rules_engine as fre
+from google.cloud.forseti.scanner.scanners import forwarding_rule_scanner
 from tests.unittest_utils import get_datafile_path
-from google.cloud.security.common.gcp_type import forwarding_rule as fr
+from google.cloud.forseti.common.gcp_type import forwarding_rule as fr
 
 
 class ForwardingRule(object):
@@ -31,7 +30,8 @@ class ForwardingRuleScannerTest(ForsetiTestCase):
     def test_forwarding_rules_scanner_all_match(self):
         rules_local_path = get_datafile_path(__file__,
             'forward_rule_test_1.yaml')
-        scanner = forwarding_rule_scanner.ForwardingRuleScanner({}, {}, '', rules_local_path)
+        scanner = forwarding_rule_scanner.ForwardingRuleScanner(
+            {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
         gcp_forwarding_rules_resource_data = [
             {
@@ -100,7 +100,8 @@ class ForwardingRuleScannerTest(ForsetiTestCase):
     def test_forwarding_rules_scanner_no_match(self):
         rules_local_path = get_datafile_path(__file__,
             'forward_rule_test_1.yaml')
-        scanner = forwarding_rule_scanner.ForwardingRuleScanner({}, {}, '', rules_local_path)
+        scanner = forwarding_rule_scanner.ForwardingRuleScanner(
+            {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
         gcp_forwarding_rules_resource_data = [
             {

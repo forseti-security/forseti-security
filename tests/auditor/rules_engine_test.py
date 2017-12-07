@@ -17,11 +17,11 @@
 import mock
 import unittest
 
-from google.cloud.security.auditor import condition_parser
-from google.cloud.security.auditor import rules_engine
-from google.cloud.security.auditor import rules_config_validator
-from google.cloud.security.auditor.rules import rule
-from google.cloud.security.common.gcp_type import project as project_resource
+from google.cloud.forseti.auditor import condition_parser
+from google.cloud.forseti.auditor import rules_engine
+from google.cloud.forseti.auditor import rules_config_validator
+from google.cloud.forseti.auditor.rules import rule
+from google.cloud.forseti.common.gcp_type import project as project_resource
 from tests.auditor.test_data import test_auditor_data
 from tests.unittest_utils import ForsetiTestCase
 

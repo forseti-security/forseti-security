@@ -23,14 +23,14 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-import google.cloud.security
+import google.cloud.forseti
 
-FORSETI_VERSION = google.cloud.security.__version__
+FORSETI_VERSION = google.cloud.forseti.__version__
 
 NAMESPACE_PACKAGES = [
     'google',
     'google.cloud',
-    'google.cloud.security'
+    'google.cloud.forseti'
 ]
 
 INSTALL_REQUIRES = [
@@ -50,21 +50,22 @@ INSTALL_REQUIRES = [
     'sendgrid==3.6.3',
     'SQLAlchemy==1.1.9',
     'pygraph>=0.2.1',
-    'unicodecsv==0.14.1',
+    'unicodecsv>=0.14.1',
 ]
 
 SETUP_REQUIRES = [
-    'google-apputils==0.4.2',
-    'python-gflags==3.1.1',
-    'grpcio==1.4.0',
-    'grpcio-tools==1.4.0',
+    'google-apputils>=0.4.2',
+    'python-gflags>=3.1.1',
+    'grpcio',
+    'grpcio-tools',
     'protobuf>=3.2.0',
 ]
 
 TEST_REQUIRES = [
-    'mock==2.0.0',
-    'SQLAlchemy==1.1.9',
-    'parameterized==0.6.1',
+    'mock>=2.0.0',
+    'SQLAlchemy>=1.1.9',
+    'parameterized>=0.6.1',
+    'simple-crypt>=4.1.7',
 ]
 
 if sys.version_info < (2, 7):
@@ -73,9 +74,11 @@ if sys.version_info < (2, 7):
 if sys.version_info.major > 2:
     sys.exit('Sorry, Python 3 is not supported.')
 
+
 def build_protos():
     """Build protos."""
     subprocess.check_call(['python', 'build_protos.py', '--clean'])
+
 
 class PostInstallCommand(install):
     """Post installation command."""
@@ -83,6 +86,7 @@ class PostInstallCommand(install):
     def run(self):
         build_protos()
         install.do_egg_install(self)
+
 
 setup(
     name='forseti-security',
@@ -106,7 +110,7 @@ setup(
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
     package_data={
-        '': ['cloud/security/common/email_templates/*.jinja']
+        '': ['cloud/forseti/common/email_templates/*.jinja']
     },
     namespace_packages=NAMESPACE_PACKAGES,
     google_test_dir='tests',
@@ -114,12 +118,11 @@ setup(
     keywords='gcp google cloud platform security tools',
     entry_points={
         'console_scripts': [
-            'forseti_inventory = google.cloud.security.stubs:RunForsetiInventory',
-            'forseti_scanner = google.cloud.security.stubs:RunForsetiScanner',
-            'forseti_enforcer = google.cloud.security.stubs:RunForsetiEnforcer',
-            'forseti_notifier = google.cloud.security.stubs:RunForsetiNotifier',
-            'forseti_api = google.cloud.security.stubs:RunForsetiApi',
-            'forseti_iam = google.cloud.security.stubs:RunExplainCli',
+            'forseti_scanner = google.cloud.forseti.stubs:RunForsetiScanner',
+            'forseti_enforcer = google.cloud.forseti.stubs:RunForsetiEnforcer',
+            'forseti_notifier = google.cloud.forseti.stubs:RunForsetiNotifier',
+            'forseti_server = google.cloud.forseti.stubs:RunForsetiServer',
+            'forseti = google.cloud.forseti.stubs:RunForsetiCli',
         ]
     },
     zip_safe=False,   # Set to False: apputils doesn't like zip_safe eggs

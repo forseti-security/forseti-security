@@ -17,7 +17,7 @@ import logging
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.util import log_util
+from google.cloud.forseti.common.util import log_util
 
 
 class LogUtilTest(ForsetiTestCase):

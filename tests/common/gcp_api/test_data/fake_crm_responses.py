@@ -58,7 +58,7 @@ GET_PROJECT_ANCESTRY_RESPONSE = """
 }
 """
 
-EXPECTED_PROJECT_ANCESTRY_IDs = ["forseti-system-test", "3333333", "2222222"]
+EXPECTED_PROJECT_ANCESTRY_IDS = ["forseti-system-test", "3333333", "2222222"]
 
 GET_IAM_POLICY = """
 {
@@ -143,6 +143,37 @@ GET_FOLDER = """
  "createTime": "2017-02-09T22:02:07.769Z"
 }
 """
+
+GET_ORG_POLICY_NO_POLICY = """
+{
+  "constraint": "constraints/compute.disableSerialPortAccess",
+  "etag": "BwVUSr8Q7Ng="
+}
+"""
+
+GET_EFFECTIVE_ORG_POLICY = """
+{
+  "constraint": "constraints/compute.disableSerialPortAccess",
+  "booleanPolicy": {
+   "enforced": true
+  }
+}
+"""
+
+LIST_ORG_POLICIES = """
+{
+ "policies": [
+  {
+    "constraint": "constraints/compute.disableSerialPortAccess",
+    "booleanPolicy": {
+     "enforced": true
+    }
+  }
+ ]
+}
+"""
+
+TEST_ORG_POLICY_CONSTRAINT = "constraints/compute.disableSerialPortAccess"
 
 # Errors
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for google.cloud.security.enforcer.enforcer."""
+"""Tests for google.cloud.forseti.enforcer.enforcer."""
 
 import copy
 import json
@@ -26,8 +26,8 @@ from tests.unittest_utils import ForsetiTestCase
 from google.protobuf import text_format
 from tests.unittest_utils import get_datafile_path
 
-from google.cloud.security.enforcer import enforcer_log_pb2
-from google.cloud.security.enforcer import enforcer
+from google.cloud.forseti.enforcer import enforcer_log_pb2
+from google.cloud.forseti.enforcer import enforcer
 
 # Used anywhere a real timestamp could be generated to ensure consistent
 # comparisons in tests

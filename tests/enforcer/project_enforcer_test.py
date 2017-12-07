@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for google.cloud.security.enforcer.project_enforcer."""
+"""Tests for google.cloud.forseti.enforcer.project_enforcer."""
 
 import copy
 import json
@@ -24,8 +24,8 @@ import mock
 from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import ForsetiTestCase
 
-from google.cloud.security.enforcer import enforcer_log_pb2
-from google.cloud.security.enforcer import project_enforcer
+from google.cloud.forseti.enforcer import enforcer_log_pb2
+from google.cloud.forseti.enforcer import project_enforcer
 
 # Used anywhere a real timestamp could be generated to ensure consistent
 # comparisons in tests

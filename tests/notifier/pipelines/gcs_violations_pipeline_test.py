@@ -20,7 +20,7 @@ import unittest
 
 from datetime import datetime
 
-from google.cloud.security.notifier.pipelines import gcs_violations_pipeline
+from google.cloud.forseti.notifier.pipelines import gcs_violations_pipeline
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -52,7 +52,7 @@ class GcsViolationsPipelineTest(ForsetiTestCase):
             fake_pipeline_conf)
 
     @mock.patch(
-        'google.cloud.security.notifier.pipelines.gcs_violations_pipeline.datetime',
+        'google.cloud.forseti.notifier.pipelines.gcs_violations_pipeline.datetime',
         autospec=True)
     def test_get_output_filename(self, mock_datetime):
         """Test _get_output_filename()."""
@@ -68,7 +68,7 @@ class GcsViolationsPipelineTest(ForsetiTestCase):
             actual_filename)
 
     @mock.patch(
-        'google.cloud.security.common.gcp_api.storage.StorageClient',
+        'google.cloud.forseti.common.gcp_api.storage.StorageClient',
         autospec=True)
     @mock.patch('tempfile.NamedTemporaryFile')
     def test_run(self, mock_tempfile, mock_storage):

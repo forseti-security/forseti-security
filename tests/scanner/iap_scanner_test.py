@@ -21,15 +21,15 @@ import mock
 import unittest
 import yaml
 
-from google.cloud.security.common.gcp_type import backend_service as backend_service_type
-from google.cloud.security.common.gcp_type import firewall_rule as firewall_rule_type
-from google.cloud.security.common.gcp_type import instance_group as instance_group_type
-from google.cloud.security.common.gcp_type import instance_group_manager as instance_group_manager_type
-from google.cloud.security.common.gcp_type import instance as instance_type
-from google.cloud.security.common.gcp_type import instance_template as instance_template_type
-from google.cloud.security.common.gcp_type import project as project_type
-from google.cloud.security.common.gcp_type import network as network_type
-from google.cloud.security.scanner.scanners import iap_scanner
+from google.cloud.forseti.common.gcp_type import backend_service as backend_service_type
+from google.cloud.forseti.common.gcp_type import firewall_rule as firewall_rule_type
+from google.cloud.forseti.common.gcp_type import instance_group as instance_group_type
+from google.cloud.forseti.common.gcp_type import instance_group_manager as instance_group_manager_type
+from google.cloud.forseti.common.gcp_type import instance as instance_type
+from google.cloud.forseti.common.gcp_type import instance_template as instance_template_type
+from google.cloud.forseti.common.gcp_type import project as project_type
+from google.cloud.forseti.common.gcp_type import network as network_type
+from google.cloud.forseti.scanner.scanners import iap_scanner
 from tests.unittest_utils import ForsetiTestCase
 from tests.unittest_utils import get_datafile_path
 
@@ -65,20 +65,20 @@ class IapScannerTest(ForsetiTestCase):
 
         # patch the daos
         self.org_patcher = mock.patch(
-            'google.cloud.security.common.data_access.'
+            'google.cloud.forseti.common.data_access.'
             'org_resource_rel_dao.OrgResourceRelDao')
         self.mock_org_rel_dao = self.org_patcher.start()
         self.mock_org_rel_dao.return_value = FakeOrgDao()
 
         self.project_patcher = mock.patch(
-            'google.cloud.security.common.data_access.'
+            'google.cloud.forseti.common.data_access.'
             'project_dao.ProjectDao')
         self.mock_project_dao = self.project_patcher.start()
         self.mock_project_dao.return_value = FakeProjectDao()
 
         self.fake_scanner_configs = {'output_path': 'gs://fake/output/path'}
         self.scanner = iap_scanner.IapScanner(
-            {}, {}, '',
+            {}, {}, mock.MagicMock(), '', '',
             get_datafile_path(__file__, 'iap_scanner_test_data.yaml'))
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._get_backend_services = lambda: self.backend_services.values()
@@ -470,10 +470,10 @@ class IapScannerTest(ForsetiTestCase):
             iap_resources[self.backend_services['bs1'].key])
 
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iap_scanner.datetime',
+        'google.cloud.forseti.scanner.scanners.iap_scanner.datetime',
         autospec=True)
     @mock.patch(
-        'google.cloud.security.scanner.scanners.iap_scanner.notifier',
+        'google.cloud.forseti.scanner.scanners.iap_scanner.notifier',
         autospec=True)
     @mock.patch.object(
         iap_scanner.IapScanner,

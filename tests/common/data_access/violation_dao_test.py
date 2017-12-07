@@ -19,12 +19,12 @@ import mock
 import MySQLdb
 import unittest
 
-from google.cloud.security.common.data_access import _db_connector
-from google.cloud.security.common.data_access import errors
-from google.cloud.security.common.data_access import violation_dao
-from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import iam_policy as iam
-from google.cloud.security.scanner.audit import rules
+from google.cloud.forseti.common.data_access import _db_connector
+from google.cloud.forseti.common.data_access import errors
+from google.cloud.forseti.common.data_access import violation_dao
+from google.cloud.forseti.common.data_access.sql_queries import select_data
+from google.cloud.forseti.common.gcp_type import iam_policy as iam
+from google.cloud.forseti.scanner.audit import rules
 from tests.common.data_access.test_data import fake_violation_dao_data as fake_data
 
 
