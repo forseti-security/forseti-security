@@ -173,12 +173,6 @@ class InventoryClient(ForsetiClient):
             id=inventory_id)
         return self.stub.Get(request)
 
-    def get_latest(self):
-        """Returns all information about latest inventory."""
-
-        request = inventory_pb2.GetLatestRequest()
-        return self.stub.GetLatest(request)
-
     def delete(self, inventory_id):
         """Delete an inventory."""
 

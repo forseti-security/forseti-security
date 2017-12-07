@@ -22,7 +22,6 @@ from sqlalchemy import Text
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
-from sqlalchemy import func
 from sqlalchemy.orm import aliased
 
 
@@ -424,28 +423,6 @@ class DataAccess(object):
         result = (
             session.query(InventoryIndex)
             .filter(InventoryIndex.id == inventory_id)
-            .one())
-        session.expunge(result)
-        return result
-
-    @classmethod
-    def get_latest(cls, session):
-        """Get latest inventory index entry.
-
-        Args:
-            session (object): Database session
-
-        Returns:
-            int: Entry corresponding the id
-        """
-
-        max_id = (
-            session.query(func.max(InventoryIndex.id))
-            .filter(InventoryIndex.status == 'SUCCESS')
-            .scalar())
-        result = (
-            session.query(InventoryIndex)
-            .filter(InventoryIndex.id == max_id)
             .one())
         session.expunge(result)
         return result
