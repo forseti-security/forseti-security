@@ -179,6 +179,7 @@ python setup.py install
 {export_forseti_vars}
 
 # Rotate gsuite key
+# TODO: consider moving this to the forseti_server
 sudo su $USER -c "python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
 
 # Start Forseti service depends on vars defined above.
