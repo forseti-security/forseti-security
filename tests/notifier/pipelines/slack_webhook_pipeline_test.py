@@ -16,7 +16,7 @@
 import mock
 import unittest
 
-from google.cloud.security.notifier.pipelines import slack_webhook_pipeline
+from google.cloud.forseti.notifier.pipelines import slack_webhook_pipeline
 from tests.unittest_utils import ForsetiTestCase
 
 

@@ -18,7 +18,7 @@ from datetime import datetime
 import mock
 import unittest
 
-from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline
+from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline
 from tests.unittest_utils import ForsetiTestCase
 
 

@@ -15,8 +15,164 @@
 """Test data for IAM GCP api responses."""
 
 FAKE_PROJECT_ID = "forseti-system-test"
+FAKE_ORG_ID = "1234567890"
 FAKE_SERVICEACCOUNT_NAME = (
     "projects/forseti-system-test/serviceAccounts/...")
+
+GET_ROLES_PAGE_1 = """
+{
+ "roles": [
+  {
+   "name": "roles/appengine.appAdmin",
+   "title": "App Engine Admin",
+   "description": "Full management of App Engine apps (but not storage).",
+   "includedPermissions": [
+    "appengine.applications.disable",
+    "appengine.applications.get",
+    "appengine.applications.update",
+    "appengine.instances.delete",
+    "appengine.instances.get",
+    "appengine.instances.list",
+    "appengine.instances.update",
+    "appengine.operations.cancel",
+    "appengine.operations.delete",
+    "appengine.operations.get",
+    "appengine.operations.list",
+    "appengine.runtimes.actAsAdmin",
+    "appengine.services.delete",
+    "appengine.services.get",
+    "appengine.services.list",
+    "appengine.services.update",
+    "appengine.versions.create",
+    "appengine.versions.delete",
+    "appengine.versions.get",
+    "appengine.versions.list",
+    "appengine.versions.update",
+    "resourcemanager.projects.get",
+    "resourcemanager.projects.list"
+   ],
+   "stage": "GA",
+   "etag": "AA=="
+  }
+ ],
+ "nextPageToken": "1"
+}
+"""
+
+GET_ROLES_PAGE_2 = """
+{
+ "roles": [
+  {
+   "name": "roles/appengine.appViewer",
+   "title": "App Engine Viewer",
+   "description": "Ability to view App Engine app status.",
+   "includedPermissions": [
+    "appengine.applications.get",
+    "appengine.instances.get",
+    "appengine.instances.list",
+    "appengine.operations.get",
+    "appengine.operations.list",
+    "appengine.services.get",
+    "appengine.services.list",
+    "appengine.versions.get",
+    "appengine.versions.list",
+    "resourcemanager.projects.get",
+    "resourcemanager.projects.list"
+   ],
+   "stage": "GA",
+   "etag": "AA=="
+  }
+ ],
+ "nextPageToken": "2"
+}
+"""
+
+GET_ROLES_PAGE_3 = """
+{
+ "roles": [
+  {
+   "name": "roles/appengine.codeViewer",
+   "title": "App Engine Code Viewer",
+   "description": "Ability to view App Engine app status and deployed source code.",
+   "includedPermissions": [
+    "appengine.applications.get",
+    "appengine.instances.get",
+    "appengine.instances.list",
+    "appengine.operations.get",
+    "appengine.operations.list",
+    "appengine.services.get",
+    "appengine.services.list",
+    "appengine.versions.get",
+    "appengine.versions.getFileContents",
+    "appengine.versions.list",
+    "resourcemanager.projects.get",
+    "resourcemanager.projects.list"
+   ],
+   "stage": "GA",
+   "etag": "AA=="
+  }
+ ]
+}
+"""
+
+GET_ROLES_RESPONSES = [GET_ROLES_PAGE_1,
+                       GET_ROLES_PAGE_2,
+                       GET_ROLES_PAGE_3]
+
+EXPECTED_ROLE_NAMES = [
+    "roles/appengine.appAdmin",
+    "roles/appengine.appViewer",
+    "roles/appengine.codeViewer"]
+
+GET_PROJECT_ROLES = """
+{
+ "roles": [
+  {
+   "name": "projects/forseti-system-test/roles/customrole",
+   "title": "customrole",
+   "description": "Created on: 2017-11-08",
+   "includedPermissions": [
+    "compute.firewalls.create",
+    "compute.firewalls.delete",
+    "compute.firewalls.get",
+    "compute.firewalls.list",
+    "compute.firewalls.update",
+    "compute.globalOperations.list",
+    "compute.networks.updatePolicy",
+    "compute.projects.get"
+   ],
+   "etag": "BwVdgFmZ7Dg="
+  }
+ ]
+}
+"""
+
+EXPECTED_PROJECT_ROLE_NAMES = ["projects/forseti-system-test/roles/customrole"]
+
+GET_ORGANIZATION_ROLES = """
+{
+ "roles": [
+  {
+   "name": "organizations/1234567890/roles/orgrole",
+   "title": "orgrole",
+   "description": "Created on: 2017-11-08",
+   "includedPermissions": [
+    "compute.firewalls.create",
+    "compute.firewalls.delete",
+    "compute.firewalls.get",
+    "compute.firewalls.list",
+    "compute.firewalls.update",
+    "compute.globalOperations.list",
+    "compute.networks.updatePolicy",
+    "compute.projects.get"
+   ],
+   "etag": "BwVdgFmZ7Dg="
+  }
+ ]
+}
+"""
+
+EXPECTED_ORGANIZATION_ROLE_NAMES = ["organizations/1234567890/roles/orgrole"]
 
 GET_PROJECTS_SERVICEACCOUNTS = """
 {

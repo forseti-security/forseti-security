@@ -20,8 +20,8 @@ from oauth2client import client
 
 from tests.common.gcp_api.test_data import http_mocks
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.util import errors
-from google.cloud.security.common.util import file_loader
+from google.cloud.forseti.common.util import errors
+from google.cloud.forseti.common.util import file_loader
 
 
 class FileLoaderTest(ForsetiTestCase):

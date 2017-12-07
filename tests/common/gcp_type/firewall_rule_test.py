@@ -13,35 +13,36 @@
 # limitations under the License.
 
 """Tests for firewall_rule."""
-import mock
-import unittest
 import json
+import unittest
+import mock
 import parameterized
 
+from tests.common.gcp_type.test_data import fake_firewall_rules
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type import firewall_rule
-from tests.inventory.pipelines.test_data import fake_firewall_rules
+from google.cloud.forseti.common.gcp_type import firewall_rule
+
 
 class FirewallRuleTest(ForsetiTestCase):
     """Tests for firewall_rule."""
 
     def test_from_json(self):
       json_dict = {
-	  'kind': 'compute#firewall',
-	  'id': '8',
-	  'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
-	  'name': 'default',
-	  'description': '',
-	  'network': 'network name',
-	  'priority': 1000,
-	  'sourceRanges': ['0.0.0.0/0'],
-	  'allowed': [
-	      {
-		  'IPProtocol': 'tcp',
-		  'ports': ['22']
-	      }
-	  ],
-	  'direction': 'INGRESS',
+          'kind': 'compute#firewall',
+          'id': '8',
+          'creationTimestamp': '2017-05-01T22:08:53.399-07:00',
+          'name': 'default',
+          'description': '',
+          'network': 'network name',
+          'priority': 1000,
+          'sourceRanges': ['0.0.0.0/0'],
+          'allowed': [
+              {
+                  'IPProtocol': 'tcp',
+                  'ports': ['22']
+              }
+          ],
+          'direction': 'INGRESS',
           'selfLink': 'https:// insert link here',
       }
       json_string = json.dumps(json_dict)
@@ -137,25 +138,25 @@ class FirewallRuleTest(ForsetiTestCase):
 
     def test_from_dict(self):
       firewall_dict = {
-	  'name': 'default',
-	  'network': 'network name',
-	  'priority': 1000,
-	  'sourceRanges': ['0.0.0.0/0'],
-	  'allowed': ['*'],
-	  'direction': 'INGRESS',
+          'name': 'default',
+          'network': 'network name',
+          'priority': 1000,
+          'sourceRanges': ['0.0.0.0/0'],
+          'allowed': ['*'],
+          'direction': 'INGRESS',
       }
       firewall_dict_2 = {
-	  'name': 'default',
-	  'network': 'network name',
-	  'priority': 1000,
-	  'sourceRanges': ['0.0.0.0/0'],
-	  'allowed': [
-	      {
-		  'IPProtocol': 'tcp',
-		  'ports': ['22']
-	      }
-	  ],
-	  'direction': 'INGRESS',
+          'name': 'default',
+          'network': 'network name',
+          'priority': 1000,
+          'sourceRanges': ['0.0.0.0/0'],
+          'allowed': [
+              {
+                  'IPProtocol': 'tcp',
+                  'ports': ['22']
+              }
+          ],
+          'direction': 'INGRESS',
       }
       rule = firewall_rule.FirewallRule.from_dict(firewall_dict)
       rule_2 = firewall_rule.FirewallRule.from_dict(firewall_dict)

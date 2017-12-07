@@ -112,25 +112,27 @@ scanner:
     # searched in /path/to/forseti_security/rules/
     # rules_path: RULES_PATH
 
+    # Enable the scanners as default to true when integrated for Forseti 2.0.
+
     scanners:
         - name: bigquery
-          enabled: true
+          enabled: false
         - name: bucket_acl
-          enabled: true
+          enabled: false
         - name: cloudsql_acl
-          enabled: true
+          enabled: false
         - name: firewall_rule
           enabled: true
         - name: forwarding_rule
-          enabled: true
+          enabled: false
         - name: group
-          enabled: true
+          enabled: false
         - name: iam_policy
-          enabled: true
+          enabled: false
         - name: iap
-          enabled: true
+          enabled: false
         - name: instance_network_interface
-          enabled: true
+          enabled: false
 
 ##############################################################################
 

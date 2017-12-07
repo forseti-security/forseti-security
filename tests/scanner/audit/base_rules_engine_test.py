@@ -18,9 +18,9 @@ import mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.scanner.audit import base_rules_engine as bre
-from google.cloud.security.scanner.audit import rules as audit_rules
-from google.cloud.security.scanner.audit import errors as audit_errors
+from google.cloud.forseti.scanner.audit import base_rules_engine as bre
+from google.cloud.forseti.scanner.audit import rules as audit_rules
+from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 
 class BaseRulesEngineTest(ForsetiTestCase):

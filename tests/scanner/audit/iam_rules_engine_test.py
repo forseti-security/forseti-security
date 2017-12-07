@@ -21,17 +21,17 @@ import yaml
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import _db_connector
-from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
-from google.cloud.security.common.gcp_type import folder
-from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
-from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
-from google.cloud.security.common.gcp_type.organization import Organization
-from google.cloud.security.common.gcp_type.project import Project
-from google.cloud.security.common.util import file_loader
-from google.cloud.security.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.security.scanner.audit import iam_rules_engine as ire
-from google.cloud.security.scanner.audit import rules as scanner_rules
+from google.cloud.forseti.common.data_access import _db_connector
+from google.cloud.forseti.common.data_access import org_resource_rel_dao as org_rel_dao
+from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyBinding
+from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyMember
+from google.cloud.forseti.common.gcp_type.organization import Organization
+from google.cloud.forseti.common.gcp_type.project import Project
+from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
+from google.cloud.forseti.scanner.audit import iam_rules_engine as ire
+from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 from tests.scanner.audit.data import test_rules
 
@@ -58,7 +58,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             parent=self.folder1)
 
         # patch the organization resource relation dao
-        self.patcher = mock.patch('google.cloud.security.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
+        self.patcher = mock.patch('google.cloud.forseti.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
         self.mock_org_rel_dao = self.patcher.start()
         self.mock_org_rel_dao.return_value = None
 

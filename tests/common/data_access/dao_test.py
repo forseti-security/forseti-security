@@ -20,10 +20,10 @@ from tests.unittest_utils import ForsetiTestCase
 import mock
 import unittest
 
-from google.cloud.security.common.data_access import _db_connector
-from google.cloud.security.common.data_access import errors
-from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access.sql_queries import select_data
+from google.cloud.forseti.common.data_access import _db_connector
+from google.cloud.forseti.common.data_access import errors
+from google.cloud.forseti.common.data_access import dao
+from google.cloud.forseti.common.data_access.sql_queries import select_data
 
 
 class DaoTest(ForsetiTestCase):

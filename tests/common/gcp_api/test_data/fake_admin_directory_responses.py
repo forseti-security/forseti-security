@@ -112,6 +112,30 @@ FAKE_MEMBERS_LIST_RESPONSE2 = """
 }
 """
 
+FAKE_USERS_LIST_RESPONSE = """
+{
+ "kind": "admin#directory#users",
+ "etag": "etag",
+ "users": [{
+  "kind": "admin#directory#user",
+  "id": "12345",
+  "etag": "a",
+  "primaryEmail": "auser@mydomain.test",
+  "name": {
+   "givenName": "A",
+   "familyName": "User",
+   "fullName": "A User"
+  },
+  "emails": [
+   {
+    "address": "auser@mydomain.test",
+    "primary": true
+   }
+  ]
+ }]
+}
+"""
+
 UNAUTHORIZED = """
 {
  "error": {

@@ -14,7 +14,7 @@
 
 """BigQuery data to be used in the unit tests."""
 
-from google.cloud.security.scanner.audit.bigquery_rules_engine import Rule
+from google.cloud.forseti.scanner.audit.bigquery_rules_engine import Rule
 
 
 BIGQUERY_DATA = [

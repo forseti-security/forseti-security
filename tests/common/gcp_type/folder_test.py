@@ -18,10 +18,10 @@ import mock
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.security.common.gcp_type import folder
-from google.cloud.security.common.gcp_type import project
-from google.cloud.security.common.gcp_type import resource
+from google.cloud.forseti.common.gcp_api import cloud_resource_manager as crm
+from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.gcp_type import resource
 
 
 class FolderTest(ForsetiTestCase):

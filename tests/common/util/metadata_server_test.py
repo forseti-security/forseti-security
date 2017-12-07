@@ -21,8 +21,8 @@ import socket
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.util import metadata_server
-from google.cloud.security.common.util import errors
+from google.cloud.forseti.common.util import metadata_server
+from google.cloud.forseti.common.util import errors
 
 from StringIO import StringIO
 

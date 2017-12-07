@@ -19,7 +19,7 @@ import unittest
 
 import pyparsing
 
-from google.cloud.security.auditor import condition_parser as cp
+from google.cloud.forseti.auditor import condition_parser as cp
 from tests.unittest_utils import ForsetiTestCase
 
 

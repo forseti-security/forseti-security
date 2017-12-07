@@ -18,14 +18,14 @@ from tests.unittest_utils import ForsetiTestCase
 import mock
 import unittest
 
-from google.cloud.security.common.data_access import _db_connector
-from google.cloud.security.common.data_access import folder_dao
-from google.cloud.security.common.data_access import org_resource_rel_dao
-from google.cloud.security.common.data_access import organization_dao
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.gcp_type import folder
-from google.cloud.security.common.gcp_type import organization
-from google.cloud.security.common.gcp_type import project
+from google.cloud.forseti.common.data_access import _db_connector
+from google.cloud.forseti.common.data_access import folder_dao
+from google.cloud.forseti.common.data_access import org_resource_rel_dao
+from google.cloud.forseti.common.data_access import organization_dao
+from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import organization
+from google.cloud.forseti.common.gcp_type import project
 
 
 class OrgResourceRelDaoTest(ForsetiTestCase):
@@ -116,6 +116,48 @@ class OrgResourceRelDaoTest(ForsetiTestCase):
         self.assertEqual(
             [],
             actual3)
+
+    def test_get_resource_ancestors_from_full_name(self):
+
+        # resource is organization
+        mock_starting_resource = mock.MagicMock()
+        mock_starting_resource.type = 'organization'
+        mock_starting_resource.id = 'org1'
+        resource_ancestors = (
+            org_resource_rel_dao.find_ancestors_by_hierarchial_name(
+                mock_starting_resource,
+                'organization/org1/'))
+
+        self.assertEquals(1, len(resource_ancestors))
+
+        # resource is project
+        mock_starting_resource.type = 'project'
+        mock_starting_resource.id = 'project3'
+        resource_ancestors = (
+            org_resource_rel_dao.find_ancestors_by_hierarchial_name(
+                mock_starting_resource,
+                'organization/org1/folder/folder2/project/project3/'))
+
+        self.assertEquals(3, len(resource_ancestors))
+        self.assertEquals(mock_starting_resource, resource_ancestors[0])
+        self.assertEquals('folder2', resource_ancestors[1].id)
+        self.assertEquals('org1', resource_ancestors[2].id)        
+
+        # resource has multiple folders, and subproject resources
+        mock_starting_resource.type = 'firewall'        
+        mock_starting_resource.id = 'firewall5'
+        resource_ancestors = (
+            org_resource_rel_dao.find_ancestors_by_hierarchial_name(
+                mock_starting_resource,
+                ('organization/org1/folder/folder2/folder/folder3/'
+                 'project/project4/firewall/firewall5/')))
+        
+        self.assertEquals(5, len(resource_ancestors))
+        self.assertEquals(mock_starting_resource, resource_ancestors[0])
+        self.assertEquals('project4', resource_ancestors[1].id)
+        self.assertEquals('folder3', resource_ancestors[2].id)
+        self.assertEquals('folder2', resource_ancestors[3].id)        
+        self.assertEquals('org1', resource_ancestors[4].id)
 
 
 if __name__ == '__main__':

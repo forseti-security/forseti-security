@@ -18,9 +18,9 @@ from tests.unittest_utils import ForsetiTestCase
 import mock
 import unittest
 
-from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import errors
-from google.cloud.security.common.data_access import group_dao
+from google.cloud.forseti.common.data_access import dao
+from google.cloud.forseti.common.data_access import errors
+from google.cloud.forseti.common.data_access import group_dao
 from tests.common.data_access.test_data import fake_group_dao_data as fake_data
 
 

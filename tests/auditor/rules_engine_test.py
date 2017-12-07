@@ -17,11 +17,11 @@
 import mock
 import unittest
 
-from google.cloud.security.auditor import condition_parser
-from google.cloud.security.auditor import rules_engine
-from google.cloud.security.auditor import rules_config_validator
-from google.cloud.security.auditor.rules import rule
-from google.cloud.security.common.gcp_type import project as project_resource
+from google.cloud.forseti.auditor import condition_parser
+from google.cloud.forseti.auditor import rules_engine
+from google.cloud.forseti.auditor import rules_config_validator
+from google.cloud.forseti.auditor.rules import rule
+from google.cloud.forseti.common.gcp_type import project as project_resource
 from tests.auditor.test_data import test_auditor_data
 from tests.unittest_utils import ForsetiTestCase
 
@@ -88,7 +88,7 @@ class RulesTest(ForsetiTestCase):
         with self.assertRaises(rule.InvalidRuleTypeError):
             new_rule = rule.Rule.create_rule(fake_invalid_rule_def)
 
-    @mock.patch('google.cloud.security.auditor.condition_parser.ConditionParser', autospec=True)
+    @mock.patch('google.cloud.forseti.auditor.condition_parser.ConditionParser', autospec=True)
     def test_audit(self, mock_condition_parser_class):
         """Test audit()."""
         mock_cond_parser = mock_condition_parser_class.return_value

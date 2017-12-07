@@ -14,6 +14,8 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+SQL_PORT = '3306'
+
 def GenerateConfig(context):
     """Generate configuration."""
 
@@ -24,6 +26,7 @@ def GenerateConfig(context):
         """.format(
             context.properties['src-path'],
             context.properties['branch-name'])
+
     else:
         DOWNLOAD_FORSETI = """
             wget -qO- {}/archive/v{}.tar.gz | tar xvz
@@ -33,11 +36,29 @@ def GenerateConfig(context):
             context.properties['release-version'],
             context.properties['release-version'])
 
-    SQL_INSTANCE = context.properties['sql-instance']
-    EXPLAIN_DATABASE_NAME = context.properties['database-name-forseti']
-    FORSETI_DATABASE_NAME = context.properties['database-name-explain']
+    SQL_INSTANCE_CONN_STRING = '{}:{}:{}'.format(
+        context.env['project'],
+        '$(ref.cloudsql-instance.region)',
+        '$(ref.cloudsql-instance.name)')
+
+    FORSETI_DB_NAME = context.properties['forseti-db-name']
+    GSUITE_SERVICE_ACCOUNT_PATH = context.properties['gsuite-service-accout-path']
+    GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
+    ROOT_RESOURCE_ID = context.properties['root-resource-id']
 
     resources = []
+
+    EXPORT_INITIALIZE_VARS = (
+        'export SQL_PORT={0}\n'
+        'export SQL_INSTANCE_CONN_STRING="{1}"\n'
+        'export FORSETI_DB_NAME="{2}"\n'
+        'export GSUITE_ADMIN_EMAIL="{3}"\n'
+        'export GSUITE_ADMIN_CREDENTIAL_PATH="{4}"\n'
+        'export ROOT_RESOURCE_ID="{5}"\n')
+    EXPORT_INITIALIZE_VARS = EXPORT_INITIALIZE_VARS.format(
+        SQL_PORT, SQL_INSTANCE_CONN_STRING, FORSETI_DB_NAME,
+        GSUITE_ADMIN_EMAIL, GSUITE_SERVICE_ACCOUNT_PATH, ROOT_RESOURCE_ID)
+
 
     resources.append({
         'name': '{}-explain-vm'.format(context.env['deployment']),
@@ -94,25 +115,24 @@ sudo apt-get upgrade -y
 # Forseti setup
 sudo apt-get install -y git unzip
 # Forseti dependencies
-sudo apt-get install -y libmysqlclient-dev python-pip python-dev
-
+sudo apt-get install -y libmysqlclient-dev python-pip python-dev libssl-dev build-essential libffi-dev
 USER_HOME=/home/ubuntu
 
 # Install fluentd if necessary
 FLUENTD=$(ls /usr/sbin/google-fluentd)
 if [ -z "$FLUENTD" ]; then
-      cd $USER_HOME
-      curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
-      bash install-logging-agent.sh
+    cd $USER_HOME
+    curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
+    bash install-logging-agent.sh
 fi
 
 # Check whether Cloud SQL proxy is installed
-CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
-if [ -z "$CLOUD_SQL_PROXY" ]; then
-        cd $USER_HOME
-        wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64
-        mv cloud_sql_proxy.linux.amd64 cloud_sql_proxy
-        chmod +x cloud_sql_proxy
+if ! [[ -x /usr/bin/cloud_sql_proxy ]]; then
+    cd $USER_HOME
+    wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 \
+            -O /tmp/cloud_sql_proxy
+    chmod 755 /tmp/cloud_sql_proxy
+    sudo mv /tmp/cloud_sql_proxy /usr/bin/cloud_sql_proxy
 fi
 
 # Install Forseti Security
@@ -125,54 +145,26 @@ pip install google-apputils grpcio grpcio-tools protobuf
 cd $USER_HOME
 
 # Download Forseti src; see DOWNLOAD_FORSETI
-{}
+{download_forseti_bash}
 python setup.py install
 
+# Export variables required by initialize_explain_services.sh.
+{export_initialize_vars}
 
-# Create upstart script for API server
-read -d '' API_SERVER << EOF
-[Unit]
-Description=Explain API Server
-[Service]
-Restart=always
-RestartSec=3
-ExecStart=/usr/local/bin/forseti_api '[::]:50051' 'mysql://root@127.0.0.1:3306/{}' 'mysql://root@127.0.0.1:3306/{}' playground explain
-[Install]
-WantedBy=multi-user.target
-Wants=cloudsqlproxy.service
-EOF
-echo "$API_SERVER" > /lib/systemd/system/forseti.service
+# Start explain service depends on vars defined above.
+bash ./scripts/gcp_setup/bash_scripts/initialize_explain_services.sh
 
-read -d '' SQL_PROXY << EOF
-[Unit]
-Description=Explain Cloud SQL Proxy
-[Service]
-Restart=always
-RestartSec=3
-ExecStart=/home/ubuntu/cloud_sql_proxy -instances={}=tcp:3306
-[Install]
-WantedBy=forseti.service
-EOF
-echo "$SQL_PROXY" > /lib/systemd/system/cloudsqlproxy.service
-
+echo "Starting services."
 systemctl start cloudsqlproxy
-sleep 1
+sleep 5
 systemctl start forseti
+echo "Success! The Forseti API server has been started."
 
 
-""".format(
-
-    # install forseti
-    DOWNLOAD_FORSETI,
-    EXPLAIN_DATABASE_NAME.split(':')[-1],
-    FORSETI_DATABASE_NAME.split(':')[-1],
-
-    # cloud_sql_proxy
-    SQL_INSTANCE,
-)
+""".format(download_forseti_bash=DOWNLOAD_FORSETI,
+           export_initialize_vars=EXPORT_INITIALIZE_VARS)
                 }]
             }
         }
     })
-
     return {'resources': resources}
