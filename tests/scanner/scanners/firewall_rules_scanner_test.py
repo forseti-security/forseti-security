@@ -336,8 +336,8 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_data_access.scanner_iter.return_value = [mock_resource1,
                                                       mock_resource2]
         mock_service_config = mock.MagicMock()
-        mock_service_config[0].model_manager = mock.MagicMock()
-        mock_service_config[0].model_manager.get.return_value = mock.MagicMock(), mock_data_access
+        mock_service_config.model_manager = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = mock.MagicMock(), mock_data_access
 
 
         scanner = firewall_rules_scanner.FirewallPolicyScanner(
@@ -383,8 +383,8 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_data_access = mock.MagicMock()
         mock_data_access.scanner_iter.return_value = [mock_resource1]
         mock_service_config = mock.MagicMock()
-        mock_service_config[0].model_manager = mock.MagicMock()
-        mock_service_config[0].model_manager.get.return_value = (
+        mock_service_config.model_manager = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = (
             mock.MagicMock(), mock_data_access)
 
         scanner = firewall_rules_scanner.FirewallPolicyScanner(

@@ -39,7 +39,7 @@ class BaseScanner(object):
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
-            service_config (ServiceConfig): Forseti 2.0 service configs
+            service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
@@ -69,8 +69,8 @@ class BaseScanner(object):
         # Add a unit test for the errors.
         (inserted_row_count, violation_errors) = (0, [])
 
-        violation_access = self.service_config[0].violation_access(
-            self.service_config[0].engine)
+        violation_access = self.service_config.violation_access(
+            self.service_config.engine)
         violation_access.create(violations)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
