@@ -18,7 +18,6 @@ Usage:
   Run scanner:
   $ forseti_scanner --forseti_config
 """
-import sys
 
 import gflags as flags
 
