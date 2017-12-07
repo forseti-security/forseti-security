@@ -47,7 +47,7 @@ FORSETI_COMMAND+=" ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}"
 FORSETI_COMMAND+=" ${GSUITE_ADMIN_CREDENTIAL_PATH}"
 FORSETI_COMMAND+=" ${GSUITE_ADMIN_EMAIL}"
 FORSETI_COMMAND+=" ${ROOT_RESOURCE_ID}"
-FORSETI_COMMAND+=" playground explain inventory model"
+FORSETI_COMMAND+=" playground explain inventory model scanner"
 
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
@@ -68,7 +68,7 @@ Wants=cloudsqlproxy.service
 EOF
 )"
 echo "$API_SERVICE" > /tmp/forseti.service
-sudo cp /tmp/forseti.service /lib/systemd/system/forseti.service
+sudo mv /tmp/forseti.service /lib/systemd/system/forseti.service
 
 
 SQL_PROXY_SERVICE="$(cat << EOF
@@ -83,7 +83,7 @@ WantedBy=forseti.service
 EOF
 )"
 echo "$SQL_PROXY_SERVICE" > /tmp/cloudsqlproxy.service
-sudo cp /tmp/cloudsqlproxy.service /lib/systemd/system/cloudsqlproxy.service
+sudo mv /tmp/cloudsqlproxy.service /lib/systemd/system/cloudsqlproxy.service
 
 
 # Define a foreground runner. This runner will start the CloudSQL
