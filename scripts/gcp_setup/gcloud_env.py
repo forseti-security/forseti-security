@@ -100,8 +100,7 @@ RESOURCE_TYPES = ['organization', 'folder', 'project']
 # Paths
 ROOT_DIR_PATH = os.path.dirname(
     os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(__file__))))
+        os.path.dirname(__file__)))
 
 FORSETI_SRC_PATH = os.path.join(
     ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
@@ -888,7 +887,7 @@ class ForsetiGcpSetup(object):
                 if self.user_can_grant_roles and not self.dry_run:
                     print('Assigning %s on %s...' % (role, resource_id))
                     return_code, _, err = utils.run_command(iam_role_cmd)
-                    if returncode:
+                    if return_code:
                         print(err)
                         assign_roles_cmds.append(iam_role_cmd)
                     else:
