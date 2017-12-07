@@ -352,6 +352,7 @@ class ForsetiGcpSetup(object):
         self.project_id = None
         self.organization_id = None
 
+        self.setup_explain = True
         self.access_target = None
         self.target_id = None
         self.resource_root_id = None
@@ -396,6 +397,7 @@ class ForsetiGcpSetup(object):
         self.check_project_id()
         self.get_organization()
         self.check_billing_enabled()
+        self.should_setup_explain()
         self.determine_access_target()
         self.should_enable_write_access()
         self.format_service_acct_ids()
@@ -542,6 +544,17 @@ class ForsetiGcpSetup(object):
                   self.project_id, self.organization_id))
         sys.exit(1)
 
+    def should_setup_explain(self):
+        """Ask user if they want to configure setup for Explain."""
+        print_banner('Enable IAM Explain')
+        print('IAM Explain requires granting Forseti access on the '
+              'organization-level IAM.\n')
+        choice = None
+        while not choice:
+            choice = raw_input(
+                'Do you want to enable IAM Explain? (y/n) ').strip()
+        self.setup_explain = choice == 'y'
+
     def determine_access_target(self):
         """Determine where to enable Forseti access.
 
@@ -551,18 +564,23 @@ class ForsetiGcpSetup(object):
         choices = RESOURCE_TYPES
         choice_index = -1
         while not self.target_id:
-            try:
-                print('Forseti can be configured to access an organization, '
-                      'folder, or project.')
-                for (i, choice) in enumerate(choices):
-                    print('[%s] %s' % (i+1, choice))
-                choice_input = raw_input(
-                    'At what level do you want to enable Forseti '
-                    'read (and optionally write) access? ').strip()
-                choice_index = int(choice_input)
-            except ValueError:
-                print('Invalid choice, try again.')
-                continue
+            if self.setup_explain:
+                # If user wants to setup Explain, they must setup
+                # access on an organization.
+                choice_index = 1
+            else:
+                try:
+                    print('Forseti can be configured to access an '
+                          'organization, folder, or project.')
+                    for (i, choice) in enumerate(choices):
+                        print('[%s] %s' % (i+1, choice))
+                    choice_input = raw_input(
+                        'At what level do you want to enable Forseti '
+                        'read (and optionally write) access? ').strip()
+                    choice_index = int(choice_input)
+                except ValueError:
+                    print('Invalid choice, try again.')
+                    continue
 
             if choice_index and choice_index <= len(choices):
                 self.access_target = choices[choice_index-1]
