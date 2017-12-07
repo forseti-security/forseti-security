@@ -77,6 +77,8 @@ REQUIRED_APIS = [
      'service': 'admin.googleapis.com'},
     {'name': 'AppEngine Admin',
      'service': 'appengine.googleapis.com'},
+    {'name': 'BigQuery',
+     'service': 'bigquery-json.googleapis.com'},
     {'name': 'Cloud Resource Manager',
      'service': 'cloudresourcemanager.googleapis.com'},
     {'name': 'Cloud SQL',
