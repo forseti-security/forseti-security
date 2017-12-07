@@ -12,14 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Errors for Inventory."""
-
-
-class Error(Exception):
-    """Base error class for Inventory."""
-    pass
-
-
-class LoadDataPipelineError(Error):
-    """Error in the data loading pipeline."""
-    pass
+"""Test data for scanner/scanners tests."""

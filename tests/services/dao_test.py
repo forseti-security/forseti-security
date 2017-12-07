@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit Tests: Database abstraction objects for IAM Explain."""
+"""Unit Tests: Database abstraction objects for Forseti Server."""
 
 from collections import defaultdict
 import unittest

@@ -20,6 +20,7 @@
 # pylint: disable=too-many-public-methods,arguments-differ
 
 from google.cloud.forseti.common.gcp_api import admin_directory
+from google.cloud.forseti.common.gcp_api import appengine
 from google.cloud.forseti.common.gcp_api import bigquery
 from google.cloud.forseti.common.gcp_api import cloud_resource_manager
 from google.cloud.forseti.common.gcp_api import cloudsql
@@ -129,6 +130,7 @@ class ApiClientImpl(ApiClient):
     """The gcp api client Implementation"""
     def __init__(self, config):
         self.ad = None
+        self.appengine = None
         self.bigquery = None
         self.crm = None
         self.cloudsql = None
@@ -146,6 +148,13 @@ class ApiClientImpl(ApiClient):
             object: Client
         """
         return admin_directory.AdminDirectoryClient(self.config)
+
+    def _create_appengine(self):
+        """Create AppEngine API client
+        Returns:
+            object: Client
+        """
+        return appengine.AppEngineClient(self.config)
 
     def _create_bq(self):
         """Create bigquery API client
@@ -268,6 +277,46 @@ class ApiClientImpl(ApiClient):
         """
         for folder in self.crm.get_folders(parent_id):
             yield folder
+
+    @create_lazy('appengine', _create_appengine)
+    def fetch_gae_app(self, projectid):
+        """Fetch the AppEngine App.
+
+        Returns:
+            dict: AppEngine App resource.
+        """
+        return self.appengine.get_app(projectid)
+
+    @create_lazy('appengine', _create_appengine)
+    def iter_gae_services(self, projectid):
+        """AppEngine Service Iterator from gcp API call.
+
+        Yields:
+            dict: Generator of AppEngine Service resources.
+        """
+        for service in self.appengine.list_services(projectid):
+            yield service
+
+    @create_lazy('appengine', _create_appengine)
+    def iter_gae_versions(self, projectid, serviceid):
+        """AppEngine Version Iterator from gcp API call.
+
+        Yields:
+            dict: Generator of AppEngine Version resources.
+        """
+        for version in self.appengine.list_versions(projectid, serviceid):
+            yield version
+
+    @create_lazy('appengine', _create_appengine)
+    def iter_gae_instances(self, projectid, serviceid, versionid):
+        """AppEngine Instance Iterator from gcp API call.
+
+        Yields:
+            dict: Generator of AppEngine Instance resources.
+        """
+        for instance in self.appengine.list_instances(
+                projectid, serviceid, versionid):
+            yield instance
 
     @create_lazy('storage', _create_storage)
     def iter_buckets(self, projectid):
@@ -428,6 +477,17 @@ class ApiClientImpl(ApiClient):
             yield serviceaccount
 
     @create_lazy('iam', _create_iam)
+    def iter_serviceaccount_exported_keys(self, name):
+        """Service Account User Managed Key Iterator from gcp API call
+
+        Yields:
+            dict: Generator of service account user managed (exported) keys
+        """
+        for key in self.iam.get_service_account_keys(
+                name, key_type=iam.IAMClient.USER_MANAGED):
+            yield key
+
+    @create_lazy('iam', _create_iam)
     def iter_project_roles(self, projectid):
         """Project role Iterator in a project from gcp API call
 
@@ -484,14 +544,18 @@ class ApiClientImpl(ApiClient):
         """
         return self.crm.get_project_iam_policies(projectid)
 
-    @create_lazy('storage', _create_storage)
-    def get_bucket_gcs_policy(self, bucketid):
-        """Bucket GCS policy from gcp API call
+    @create_lazy('iam', _create_iam)
+    def get_serviceaccount_iam_policy(self, name):
+        """Service Account IAM policy from gcp API call.
+
+        Args:
+            name (str): The service account name to query, must be in the format
+                projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
 
         Returns:
-            dict: Bucket GCS policy
+            dict: Service Account IAM policy.
         """
-        return self.storage.get_bucket_acls(bucketid)
+        return self.iam.get_service_account_iam_policy(name)
 
     @create_lazy('storage', _create_storage)
     def get_bucket_iam_policy(self, bucketid):
@@ -501,15 +565,6 @@ class ApiClientImpl(ApiClient):
             dict: Bucket IAM policy
         """
         return self.storage.get_bucket_iam_policy(bucketid)
-
-    @create_lazy('storage', _create_storage)
-    def get_object_gcs_policy(self, bucket_name, object_name):
-        """Object GCS policy for an object from gcp API call
-
-        Returns:
-            dict: Object GCS policy
-        """
-        return self.storage.get_object_acls(bucket_name, object_name)
 
     @create_lazy('storage', _create_storage)
     def get_object_iam_policy(self, bucket_name, object_name):

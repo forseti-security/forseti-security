@@ -41,6 +41,7 @@ INSTANCE_GROUP_MANAGER_ID_PREFIX = "112"
 INSTANCE_TEMPLATE_ID_PREFIX = "113"
 NETWORK_ID_PREFIX = "114"
 SUBNETWORK_ID_PREFIX = "115"
+SERVICEACCOUNT_KEY_ID_PREFIX = "116"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -133,6 +134,106 @@ AD_GET_GROUP_MEMBERS = {
             AD_GROUP_MEMBER_TEMPLATE.format(
                 id=5, email="b_grp@forseti.test", type="GROUP")),
     ]
+}
+
+# Fields: project
+APPENGINE_APP_TEMPLATE = """
+{{
+ "name": "apps/{project}",
+ "id": "{project}",
+ "authDomain": "forseti.test",
+ "locationId": "us-central",
+ "codeBucket": "staging.{project}.a.b.c",
+ "servingStatus": "SERVING",
+ "defaultHostname": "{project}.a.b.c",
+ "defaultBucket": "{project}.a.b.c",
+ "gcrDomain": "us.gcr.io"
+}}
+"""
+
+GAE_GET_APP = {
+    "project3": json.loads(
+        APPENGINE_APP_TEMPLATE.format(
+            project="project3")),
+    "project4": json.loads(
+        APPENGINE_APP_TEMPLATE.format(
+            project="project4")),
+}
+
+# Fields: project, service, version
+APPENGINE_SERVICE_TEMPLATE = """
+{{
+ "name": "apps/{project}/services/{service}",
+ "id": "{service}",
+ "split": {{
+  "allocations": {{
+   "{version}": 1
+  }}
+ }}
+}}
+"""
+
+GAE_GET_SERVICES = {
+    "project4": [
+        json.loads(
+            APPENGINE_SERVICE_TEMPLATE.format(
+                project="project4", service="default", version="1")),
+    ],
+}
+
+# Fields: project, service, version
+APPENGINE_VERSION_TEMPLATE = """
+{{
+ "name": "apps/{project}/services/{service}/versions/{version}",
+ "id": "{version}",
+ "instanceClass": "F1",
+ "runtime": "python27",
+ "threadsafe": true,
+ "env": "standard",
+ "servingStatus": "SERVING",
+ "createdBy": "a_user@forseti.test",
+ "createTime": "2017-09-11T22:48:32Z",
+ "diskUsageBytes": "2036",
+ "versionUrl": "https://{version}-dot-{project}.a.b.c"
+}}
+"""
+
+GAE_GET_VERSIONS = {
+    "project4": {"default": [
+        json.loads(
+            APPENGINE_VERSION_TEMPLATE.format(
+                project="project4", service="default", version="1")),
+    ]},
+}
+
+# Fields: project, service, version, instance
+APPENGINE_INSTANCE_TEMPLATE = """
+{{
+ "name": "apps/{project}/services/{service}/versions/{version}/instances/{instance}",
+ "id": "{instance}",
+ "appEngineRelease": "1.9.54",
+ "availability": "DYNAMIC",
+ "startTime": "2017-09-11T22:49:03.485539Z",
+ "requests": 3,
+ "memoryUsage": "22802432"
+}}
+"""
+
+GAE_GET_INSTANCES = {
+    "project4": {"default": {"1": [
+        json.loads(
+            APPENGINE_INSTANCE_TEMPLATE.format(
+                project="project4", service="default", version="1",
+                instance="1")),
+        json.loads(
+            APPENGINE_INSTANCE_TEMPLATE.format(
+                project="project4", service="default", version="1",
+                instance="2")),
+        json.loads(
+            APPENGINE_INSTANCE_TEMPLATE.format(
+                project="project4", service="default", version="1",
+                instance="3")),
+    ]}},
 }
 
 BQ_GET_DATASETS_FOR_PROJECTID = {
@@ -1275,64 +1376,6 @@ GCS_GET_BUCKETS = {
 
 GCS_GET_OBJECTS = {}
 
-# Fields: name, num
-BUCKET_ACLS_TEMPLATE = """
-[
-  {{
-   "kind": "storage#bucketAccessControl",
-   "id": "{name}/project-owners-{num}",
-   "selfLink": "https://www.googleapis.com/storage/v1/b/{name}/acl/project-owners-{num}",
-   "bucket": "{name}",
-   "entity": "project-owners-{num}",
-   "role": "OWNER",
-   "projectTeam": {{
-    "projectNumber": "{num}",
-    "team": "owners"
-   }},
-   "etag": "CAE="
-  }},
-  {{
-   "kind": "storage#bucketAccessControl",
-   "id": "{name}/project-editors-{num}",
-   "selfLink": "https://www.googleapis.com/storage/v1/b/{name}/acl/project-editors-{num}",
-   "bucket": "{name}",
-   "entity": "project-editors-{num}",
-   "role": "OWNER",
-   "projectTeam": {{
-    "projectNumber": "{num}",
-    "team": "editors"
-   }},
-   "etag": "CAE="
-  }},
-  {{
-   "kind": "storage#bucketAccessControl",
-   "id": "{name}/project-viewers-{num}",
-   "selfLink": "https://www.googleapis.com/storage/v1/b/{name}/acl/project-viewers-{num}",
-   "bucket": "{name}",
-   "entity": "project-viewers-{num}",
-   "role": "READER",
-   "projectTeam": {{
-    "projectNumber": "{num}",
-    "team": "viewers"
-   }},
-   "etag": "CAE="
-  }}
-]
-"""
-
-GCS_GET_BUCKET_ACLS = {
-    "bucket1": [
-        json.loads(
-            BUCKET_ACLS_TEMPLATE.format(
-                name="bucket1", num=PROJECT_ID_PREFIX + "3")),
-    ],
-    "bucket2": [
-        json.loads(
-            BUCKET_ACLS_TEMPLATE.format(
-                name="bucket2", num=PROJECT_ID_PREFIX + "4")),
-    ]
-}
-
 BUCKET_IAM_TEMPLATE = """
 {{
  "kind": "storage#policy",
@@ -1365,8 +1408,6 @@ GCS_GET_BUCKET_IAM = {
             BUCKET_IAM_TEMPLATE.format(name="bucket2", project="project4"))
 }
 
-GCS_GET_OBJECT_ACLS = {}
-
 GCS_GET_OBJECT_IAM = {}
 
 # Fields: project, num, id
@@ -1393,6 +1434,51 @@ IAM_GET_SERVICEACCOUNTS = {
             SERVICEACCOUNT_TEMPLATE.format(
                 project="project2", num=PROJECT_ID_PREFIX + "2", id=2)),
     ]
+}
+
+SERVICEACCOUNT_IAM_POLICY = """
+{
+ "bindings": [
+  {
+   "role": "roles/iam.serviceAccountKeyAdmin",
+   "members": [
+    "user:c_user@forseti.test"
+   ]
+  }
+ ]
+}
+"""
+
+SERVICEACCOUNT_EMPTY_IAM_POLICY = """
+{
+ "etag": "ACAB"
+}
+"""
+
+SERVICEACCOUNT1 = IAM_GET_SERVICEACCOUNTS["project1"][0]["name"]
+SERVICEACCOUNT2 = IAM_GET_SERVICEACCOUNTS["project2"][0]["name"]
+
+IAM_GET_SERVICEACCOUNT_IAM_POLICY = {
+    SERVICEACCOUNT1: json.loads(SERVICEACCOUNT_IAM_POLICY),
+    SERVICEACCOUNT2: json.loads(SERVICEACCOUNT_EMPTY_IAM_POLICY),
+}
+
+# Fields: sa_name, id
+SERVICEACCOUNT_EXPORT_KEY_TEMPLATE = """
+{{
+ "name": "{sa_name}/keys/116{id}",
+ "validAfterTime": "2017-11-22T17:49:56Z",
+ "validBeforeTime": "2027-11-20T17:49:56Z",
+ "keyAlgorithm": "KEY_ALG_RSA_2048"
+}}
+"""
+
+IAM_GET_SERVICEACCOUNT_KEYS = {
+    SERVICEACCOUNT1: [
+        json.loads(
+            SERVICEACCOUNT_EXPORT_KEY_TEMPLATE.format(
+                sa_name=SERVICEACCOUNT1, id=1)),
+    ],
 }
 
 # Fields: project, role

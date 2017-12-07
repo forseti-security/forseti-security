@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit Tests: Inventory storage for IAM Explain."""
+"""Unit Tests: Inventory storage for Forseti Server."""
 
 import unittest
 from tests.unittest_utils import ForsetiTestCase

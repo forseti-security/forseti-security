@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Explain gRPC service. """
+"""Forseti Server model gRPC service."""
 
 from google.cloud.forseti.services.model import model_pb2
 from google.cloud.forseti.services.model import model_pb2_grpc
@@ -91,7 +91,7 @@ class GrpcModellerFactory(object):
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the IAM Explain service."""
+        """Create and register the Model service."""
 
         service = GrpcModeller(modeller_api=modeller.Modeller(self.config))
         model_pb2_grpc.add_ModellerServicer_to_server(service, server)

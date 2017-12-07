@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit Tests: Importer for IAM Explain."""
+"""Unit Tests: Importer for Forseti Server."""
 
 import os
 import shutil
@@ -25,7 +25,7 @@ from google.cloud.forseti.services.model.importer import importer
 
 
 class ServiceConfig(object):
-    """Helper class to implement dependency injection to IAM Explain services.
+    """Helper class to implement dependency injection to Forseti Server services.
     """
 
     def __init__(self, db_connect_string):
