@@ -22,7 +22,6 @@ import unittest
 from contextlib import contextmanager
 from StringIO import StringIO
 
-from scripts.gcp_setup import setup_roles_apis
 from scripts.gcp_setup.environment import gcloud_env
 from tests.unittest_utils import ForsetiTestCase
 
@@ -309,78 +308,6 @@ class GcloudEnvTest(ForsetiTestCase):
                     'test3': None,
                 }
             )))
-
-
-class SetupRolesTest(ForsetiTestCase):
-
-    def setUp(self):
-        self.parser = setup_roles_apis._create_arg_parser()
-        self.args1 = ['--org-id', '1234', '--user', 'abc']
-        self.args2 = ['--folder-id', '4567', '--group', 'def']
-        self.args3 = ['--project-id', 'xyz', '--service-account', 'pqrs']
-
-    def test_parse_args(self):
-        """Test the arg parser with valid args."""
-        args1 = self.parser.parse_args(self.args1)
-        self.assertEqual(int(self.args1[1]), args1.org_id)
-        self.assertEqual(self.args1[3], args1.user)
-
-        args2 = self.parser.parse_args(self.args2)
-        self.assertEqual(int(self.args2[1]), args2.folder_id)
-        self.assertEqual(self.args2[3], args2.group)
-
-        args3 = self.parser.parse_args(self.args3)
-        self.assertEqual(self.args3[1], args3.project_id)
-        self.assertEqual(self.args3[3], args3.service_account)
-
-    def test_parse_args_fails(self):
-        """Test some failing cases for the arg parser."""
-        with captured_output() as (out, err):
-            # Raises because --org-id should be an int
-            with self.assertRaises(SystemExit):
-                self.parser.parse_args(['--org-id', 'abc'])
-
-            # Raises because --folder-id should be an int
-            with self.assertRaises(SystemExit):
-                self.parser.parse_args(['--folder-id', 'abc'])
-
-            # Raises because no --user/--group/--service-account
-            with self.assertRaises(SystemExit):
-                self.parser.parse_args(['--project-id', 'abc'])
-
-    def test_get_resource_info(self):
-        """Test _get_resource_info()."""
-        args1 = self.parser.parse_args(self.args1)
-        res_args1, res_id1 = setup_roles_apis._get_resource_info(args1)
-        self.assertEquals(int(self.args1[1]), res_id1)
-        self.assertEquals(['organizations'], res_args1)
-
-        args2 = self.parser.parse_args(self.args2)
-        res_args2, res_id2 = setup_roles_apis._get_resource_info(args2)
-        self.assertEquals(int(self.args2[1]), res_id2)
-        self.assertEquals(['alpha', 'resource-manager', 'folders'], res_args2)
-
-        args3 = self.parser.parse_args(self.args3)
-        res_args3, res_id3 = setup_roles_apis._get_resource_info(args3)
-        self.assertEquals(self.args3[1], res_id3)
-        self.assertEquals(['projects'], res_args3)
-
-    def test_get_member(self):
-        """Test _get_member()."""
-        args1 = self.parser.parse_args(self.args1)
-        member_type1, member_name1 = setup_roles_apis._get_member(args1)
-        self.assertEquals('user', member_type1)
-        self.assertEquals(self.args1[3], member_name1)
-
-        args2 = self.parser.parse_args(self.args2)
-        member_type2, member_name2 = setup_roles_apis._get_member(args2)
-        self.assertEquals('group', member_type2)
-        self.assertEquals(self.args2[3], member_name2)
-
-        args3 = self.parser.parse_args(self.args3)
-        member_type3, member_name3 = setup_roles_apis._get_member(args3)
-        self.assertEquals('serviceAccount', member_type3)
-        self.assertEquals(self.args3[3], member_name3)
 
 
 if __name__ == '__main__':
