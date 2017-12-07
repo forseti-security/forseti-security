@@ -117,7 +117,7 @@ def run(forseti_config, model_name=None, service_config=None):
 
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, service_config, model_name,
-        model_name).build()
+        None).build()
 
     # pylint: disable=bare-except
     for scanner in runnable_scanners:
