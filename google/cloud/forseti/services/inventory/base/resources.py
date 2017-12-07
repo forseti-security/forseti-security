@@ -406,6 +406,18 @@ class ForwardingRule(Resource):
         return 'forwardingrule'
 
 
+class CuratedRole(Resource):
+    def key(self):
+        return self['name']
+
+    def type(self):
+        return 'role'
+
+    def parent(self):
+        # Curated roles have no parent.
+        return None
+
+
 class Role(Resource):
     def key(self):
         return self['name']
@@ -723,7 +735,7 @@ class OrganizationCuratedRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         for data in gcp.iter_curated_roles():
-            yield FACTORIES['role'].create_new(data)
+            yield FACTORIES['curated_role'].create_new(data)
 
 
 class GsuiteGroupIterator(ResourceIterator):
@@ -924,6 +936,12 @@ FACTORIES = {
     'role': ResourceFactory({
         'dependsOn': ['organization', 'project'],
         'cls': Role,
+        'contains': [
+            ]}),
+
+    'curated_role': ResourceFactory({
+        'dependsOn': [],
+        'cls': CuratedRole,
         'contains': [
             ]}),
 
