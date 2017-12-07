@@ -16,10 +16,10 @@
 source /home/ubuntu/forseti_env.sh
 
 # Put the config files in place.
-gsutil cp gs://$SCANNER_BUCKET/configs/forseti_conf.yaml $FORSETI_CONF
-gsutil cp -r gs://$SCANNER_BUCKET/rules $FORSETI_HOME/
+gsutil cp gs://${SCANNER_BUCKET}/configs/forseti_conf.yaml ${FORSETI_CONF}
+gsutil cp -r gs://${SCANNER_BUCKET}/rules ${FORSETI_HOME}/
 
-if [ ! -f "$FORSETI_CONF" ]; then
+if [ ! -f "${FORSETI_CONF}" ]; then
     echo "Forseti conf not found, exiting."
     exit 1
 fi
@@ -30,7 +30,7 @@ forseti inventory create --import_as ${MODEL_ID}
 forseti model use ${MODEL_ID}
 
 # scanner command TBD
-forseti scanner run ${FORSETI_HOME}/configs
+forseti scanner run ${FORSETI_CONF}
 
 # Inventory cleanup TBD
 # ...
