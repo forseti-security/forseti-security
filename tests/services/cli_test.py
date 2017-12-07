@@ -17,8 +17,10 @@ from argparse import ArgumentParser
 from copy import copy
 import json
 import os
+import shutil
 import shlex
 import StringIO
+import tempfile
 import unittest
 import mock
 from tests.unittest_utils import ForsetiTestCase
@@ -69,9 +71,11 @@ class ImporterTest(ForsetiTestCase):
         ForsetiTestCase.setUp(self)
         self.orig_env = copy(os.environ)
         os.environ['IAM_MODEL'] = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+        self.test_dir = tempfile.mkdtemp()
 
     def tearDown(self):
         """Bar."""
+        shutil.rmtree(self.test_dir)
         os.environ = self.orig_env
         ForsetiTestCase.tearDown(self)
 
@@ -191,36 +195,39 @@ class ImporterTest(ForsetiTestCase):
 
     def test_cli(self, test_cases):
         """Test if the CLI hits specific client methods."""
-        for commandline, client_func, func_args,\
-            func_kwargs, config_string, config_expect\
-                in test_cases:
-            try:
-                args = shlex.split(commandline)
-                env_config = cli.DefaultConfig(
-                    json.load(StringIO.StringIO(config_string)))
+        tmp_config = os.path.join(self.test_dir, '.forseti')
+        with mock.patch.dict(
+            os.environ, {'FORSETI_CLIENT_CONFIG': tmp_config}) as mock_config:
+            for commandline, client_func, func_args,\
+                func_kwargs, config_string, config_expect\
+                    in test_cases:
+                try:
+                    args = shlex.split(commandline)
+                    env_config = cli.DefaultConfig(
+                        json.load(StringIO.StringIO(config_string)))
 
-                config = cli.main(
-                    args,
-                    env_config,
-                    CLIENT,
-                    parser_cls=MockArgumentParser)
+                    config = cli.main(
+                        args,
+                        env_config,
+                        CLIENT,
+                        parser_cls=MockArgumentParser)
 
-                if client_func is not None:
-                    client_func.assert_called_with(*func_args, **func_kwargs)
+                    if client_func is not None:
+                        client_func.assert_called_with(*func_args, **func_kwargs)
 
-                # Check attribute values
-                for attribute, value in config_expect.iteritems():
-                    self.assertEqual(
-                        getattr(config, attribute),
-                        value,
-                        'Attribute value unexpected: {}, {}'.format(
-                            attribute,
-                            value))
+                    # Check attribute values
+                    for attribute, value in config_expect.iteritems():
+                        self.assertEqual(
+                            getattr(config, attribute),
+                            value,
+                            'Attribute value unexpected: {}, {}'.format(
+                                attribute,
+                                value))
 
-            except ArgumentParserError as e:
-                self.fail('Argument parser failed on {}, {}'.format(
-                    commandline,
-                    e.message))
+                except ArgumentParserError as e:
+                    self.fail('Argument parser failed on {}, {}'.format(
+                        commandline,
+                        e.message))
 
 
 if __name__ == '__main__':
