@@ -24,7 +24,7 @@ import json
 import os
 import sys
 
-from gcp_setup.environment import gcloud_env
+from gcp_setup import utils
 
 def run():
     """Rotate G Suite key."""
@@ -60,7 +60,7 @@ def run():
             sys.exit(1)
 
         print('Delete key id=%s' % curr_private_key_id)
-        return_code, out, err = gcloud_env.run_command([
+        return_code, out, err = utils.run_command([
             'gcloud', 'iam', 'service-accounts', 'keys',
             'delete', curr_private_key_id, '--quiet',
             '--iam-account=%s' % service_account])
@@ -72,7 +72,7 @@ def run():
     # create new key
     if target_svc_acct:
         print('Create new key for %s' % target_svc_acct)
-        return_code, out, err = gcloud_env.run_command([
+        return_code, out, err = utils.run_command([
             'gcloud', 'iam', 'service-accounts', 'keys',
             'create', key_path,
             '--iam-account=%s' % target_svc_acct])

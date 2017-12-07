@@ -19,7 +19,7 @@ This has been tested with python 2.7.
 
 import argparse
 
-from environment import gcloud_env
+import gcloud_env
 
 
 def run():
@@ -31,8 +31,8 @@ def run():
     parser.add_argument('--no-iam-check',
                         action='store_true',
                         help='Bypass IAM check for user running script')
-    parser.add_argument('--config',
-                        help='Forseti setup config values')
+    parser.add_argument('--advanced',
+                        help='Advanced setup mode (more options)')
 
     parser.add_argument('--dry-run',
                         action='store_true',

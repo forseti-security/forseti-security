@@ -22,7 +22,8 @@ import unittest
 from contextlib import contextmanager
 from StringIO import StringIO
 
-from scripts.gcp_setup.environment import gcloud_env
+from scripts.gcp_setup import gcloud_env
+from scripts.gcp_setup import utils
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -92,13 +93,13 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def setUp(self):
         self.gcp_setup = gcloud_env.ForsetiGcpSetup()
-        gcloud_env.run_command = mock.MagicMock()
+        utils.run_command = mock.MagicMock()
         gcloud_env.GCLOUD_MIN_VERSION = GCLOUD_MIN_VERSION
         self.gcloud_min_ver_formatted = '.'.join([str(d) for d in GCLOUD_MIN_VERSION])
 
     def test_check_proper_gcloud(self):
         """Test check_proper_gcloud() works with proper version/alpha."""
-        gcloud_env.run_command.return_value = [
+        utils.run_command.return_value = [
             0,
             'Google Cloud SDK %s\nalpha 12345\netc' % self.gcloud_min_ver_formatted,
             None
@@ -111,7 +112,7 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def test_check_proper_gcloud_failed_command(self):
         """Test check_proper_gcloud() exits when command fails."""
-        gcloud_env.run_command.return_value = [
+        utils.run_command.return_value = [
             1,
             'Google Cloud SDK %s\nalpha 12345\netc' % self.gcloud_min_ver_formatted,
             None
@@ -125,7 +126,7 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def test_check_proper_gcloud_low_version(self):
         """Test check_proper_gcloud() exits with low gcloud version."""
-        gcloud_env.run_command.return_value = [
+        utils.run_command.return_value = [
             0,
             'Google Cloud SDK 162.9.9\nalpha 12345\netc',
             None
@@ -141,7 +142,7 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def test_check_proper_gcloud_no_alpha(self):
         """Test check_proper_gcloud() exits with no alpha components."""
-        gcloud_env.run_command.return_value = [
+        utils.run_command.return_value = [
             0,
             'Google Cloud SDK %s\netc' % self.gcloud_min_ver_formatted,
             None
@@ -157,7 +158,7 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def test_gcloud_info_works_nocloudshell(self):
         """Test gcloud_info()."""
-        gcloud_env.run_command.return_value = [
+        utils.run_command.return_value = [
             0,
             json.dumps(FAKE_GCLOUD_INFO),
             None
@@ -169,7 +170,7 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def test_gcloud_info_cmd_fails(self):
         """Test gcloud_info() exits when command fails."""
-        gcloud_env.run_command.return_value = [
+        utils.run_command.return_value = [
             1,
             None,
             'Error output'
@@ -180,7 +181,7 @@ class GcloudEnvTest(ForsetiTestCase):
 
     def test_gcloud_info_json_fails(self):
         """Test gcloud_info() exits when json output fails."""
-        gcloud_env.run_command.return_value = [
+        utils.run_command.return_value = [
             0,
             'invalid json',
             None,
@@ -274,7 +275,7 @@ class GcloudEnvTest(ForsetiTestCase):
             'parent': 'organizations/1111122222'
         })
         self.gcp_setup.project_id = FAKE_PROJECT
-        gcloud_env.run_command.side_effect = [
+        utils.run_command.side_effect = [
             [0, project_desc, None],
             [0, folder_12345_desc, None],
             [0, folder_23456_desc, None],

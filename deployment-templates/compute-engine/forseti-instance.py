@@ -172,7 +172,7 @@ python build_protos.py --clean
 # Install Forseti
 python setup.py install
 
-# Export variables required by initialize_explain_services.sh.
+# Export variables required by initialize_forseti_services.sh.
 {export_initialize_vars}
 
 # Export variables required by run_forseti.sh
@@ -181,8 +181,8 @@ python setup.py install
 # Rotate gsuite key
 sudo su $USER -c "python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
 
-# Start Explain service depends on vars defined above.
-bash ./scripts/gcp_setup/bash_scripts/initialize_explain_services.sh
+# Start Forseti service depends on vars defined above.
+bash ./scripts/gcp_setup/bash_scripts/initialize_forseti_services.sh
 
 echo "Starting services."
 systemctl start cloudsqlproxy
