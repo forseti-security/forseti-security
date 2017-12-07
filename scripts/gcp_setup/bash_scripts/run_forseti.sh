@@ -25,21 +25,12 @@ if [ ! -f "$FORSETI_CONF" ]; then
 fi
 
 # inventory command
-forseti inventory create
-INVENTORY=$(forseti inventory get_latest)
-if [ -z "${INVENTORY}" ]; then
-    echo "No inventory exists; exiting."
-    exit 1
-fi
-INVENTORY_ID=$(echo "${INVENTORY}" | sed -nE 's/.*"id": ([0-9]+),.*/\1/p')
-echo "Latest inventory id ${INVENTORY_ID}"
-
-MODEL_INFO=$(forseti model create inventory model_${INVENTORY_ID} --id ${INVENTORY_ID})
-MODEL_HANDLE=$(echo "${MODEL_INFO}" | sed -nE 's/.*"handle": "([0-9a-z]+)",.*/\1/p')
-echo "Created model ${MODEL_HANDLE}"
-
-forseti model use ${MODEL_HANDLE}
-echo "Using model ${MODEL_HANDLE}"
+MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
+forseti inventory create --import_as ${MODEL_ID}
+forseti model use ${MODEL_ID}
 
 # scanner command TBD
-# forseti scanner run ${FORSETI_HOME}/configs
+forseti scanner run ${FORSETI_HOME}/configs
+
+# Inventory cleanup TBD
+# ...
