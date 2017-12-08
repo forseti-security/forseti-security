@@ -69,6 +69,7 @@ class Crawler(crawler.Crawler):
             resource.getGCSPolicy(self.get_client())
             resource.getDatasetPolicy(self.get_client())
             resource.getCloudSQLPolicy(self.get_client())
+            resource.getBillingInfo(self.get_client())
 
             storage.write(resource)
         except Exception as e:

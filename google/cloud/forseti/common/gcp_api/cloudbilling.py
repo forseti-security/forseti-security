@@ -146,7 +146,7 @@ class CloudBillingClient(object):
 
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
-                GCP ClodSQL API fails
+                GCP API fails.
         """
 
         try:

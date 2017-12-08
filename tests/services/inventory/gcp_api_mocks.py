@@ -33,6 +33,7 @@ def mock_gcp():
     ad_patcher = _mock_admin_directory()
     appengine_patcher = _mock_appengine()
     bq_patcher = _mock_bigquery()
+    cloudbilling_patcher = _mock_cloudbilling()
     cloudsql_patcher = _mock_cloudsql()
     crm_patcher = _mock_crm()
     gce_patcher = _mock_gce()
@@ -44,6 +45,7 @@ def mock_gcp():
         ad_patcher.stop()
         appengine_patcher.stop()
         bq_patcher.stop()
+        cloudbilling_patcher.stop()
         cloudsql_patcher.stop()
         crm_patcher.stop()
         gce_patcher.stop()
@@ -128,6 +130,21 @@ def _mock_bigquery():
     mock_bq.get_dataset_access = _mock_bq_get_dataset_access
 
     return bq_patcher
+
+
+def _mock_cloudbilling():
+    """Mock Cloud Billing client."""
+    def _mock_billing_get_billing_info(projectid):
+        if projectid in results.BILLING_GET_INFO:
+            return results.BILLING_GET_INFO[projectid]
+        return {}
+
+    cloudbilling_patcher = mock.patch(
+        MODULE_PATH + 'cloudbilling.CloudBillingClient', spec=True)
+    mock_billing = cloudbilling_patcher.start().return_value
+    mock_billing.get_billing_info.side_effect = _mock_billing_get_billing_info
+
+    return cloudbilling_patcher
 
 
 def _mock_cloudsql():

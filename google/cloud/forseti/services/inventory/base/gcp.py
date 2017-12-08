@@ -23,6 +23,7 @@ from google.cloud.forseti.common.gcp_api import admin_directory
 from google.cloud.forseti.common.gcp_api import appengine
 from google.cloud.forseti.common.gcp_api import bigquery
 from google.cloud.forseti.common.gcp_api import cloud_resource_manager
+from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import iam
@@ -133,6 +134,7 @@ class ApiClientImpl(ApiClient):
         self.appengine = None
         self.bigquery = None
         self.crm = None
+        self.cloudbilling = None
         self.cloudsql = None
         self.compute = None
         self.iam = None
@@ -169,6 +171,13 @@ class ApiClientImpl(ApiClient):
             object: Client
         """
         return cloud_resource_manager.CloudResourceManagerClient(self.config)
+
+    def _create_cloudbilling(self):
+        """Create cloud billing API client
+        Returns:
+            object: Client
+        """
+        return cloudbilling.CloudBillingClient(self.config)
 
     def _create_cloudsql(self):
         """Create cloud sql API client
@@ -583,3 +592,12 @@ class ApiClientImpl(ApiClient):
             dict: Dataset Policy
         """
         return self.bigquery.get_dataset_access(projectid, datasetid)
+
+    @create_lazy('cloudbilling', _create_cloudbilling)
+    def get_project_billing_info(self, projectid):
+        """Project Billing Info from gcp API call
+
+        Returns:
+            dict: Project Billing Info resource.
+        """
+        return self.cloudbilling.get_billing_info(projectid)
