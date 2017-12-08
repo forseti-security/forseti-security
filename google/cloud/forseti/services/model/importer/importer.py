@@ -132,6 +132,7 @@ class InventoryImporter(object):
             'bucket',
             'dataset',
             'compute_project',
+            'image',
             'instancegroup',
             'instancegroupmanager',
             'instancetemplate',
@@ -432,6 +433,9 @@ class InventoryImporter(object):
             'compute_project': (None,
                                 self._convert_computeproject,
                                 None),
+            'image': (None,
+                      self._convert_image,
+                      None),
             'instancegroup': (None,
                               self._convert_instancegroup,
                               None),
@@ -569,6 +573,26 @@ class InventoryImporter(object):
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
                 data=computeproject.get_data_raw(),
+                parent=parent))
+
+    def _convert_image(self, image):
+        """Convert a image to a database object.
+
+        Args:
+            image (object): Image to store.
+        """
+        data = image.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            image)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=image.get_key(),
+                type=image.get_type(),
+                display_name=data.get('displayName', ''),
+                email=data.get('email', ''),
+                data=image.get_data_raw(),
                 parent=parent))
 
     def _convert_instancegroup(self, instancegroup):
