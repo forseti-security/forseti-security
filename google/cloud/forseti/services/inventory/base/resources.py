@@ -562,7 +562,8 @@ class ObjectIterator(ResourceIterator):
 class DataSetIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.billing_enabled()):
             for data in gcp.iter_datasets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
@@ -705,7 +706,8 @@ class ForwardingRuleIterator(ResourceIterator):
 class CloudSqlIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.billing_enabled()):
             for data in gcp.iter_cloudsqlinstances(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)

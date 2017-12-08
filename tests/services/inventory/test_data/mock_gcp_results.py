@@ -1627,8 +1627,8 @@ BILLING_GET_INFO = {
             BILLING_ENABLED_TEMPLATE.format(project="project2")),
     "project3":
         json.loads(
-            BILLING_DISABLED_TEMPLATE.format(project="project3")),
+            BILLING_ENABLED_TEMPLATE.format(project="project3")),
     "project4":
         json.loads(
-            BILLING_ENABLED_TEMPLATE.format(project="project4")),
+            BILLING_DISABLED_TEMPLATE.format(project="project4")),
 }
