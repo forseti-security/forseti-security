@@ -60,6 +60,14 @@ class CloudBillingTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
              self.billing_api_client.get_billing_info(self.project_id)
 
+    def test_get_billing_info_not_found(self):
+        """Test get project billing info handles project not found error."""
+        http_mocks.mock_http_response(fake_cloudbilling.PROJECT_NOT_FOUND,
+                                      '404')
+        result = self.billing_api_client.get_billing_info(self.project_id)
+
+        self.assertEquals({}, result)
+
 
 if __name__ == '__main__':
     unittest.main()
