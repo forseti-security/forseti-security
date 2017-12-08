@@ -153,5 +153,7 @@ class CloudBillingClient(object):
             name = self.repository.projects.get_name(project_id)
             return self.repository.projects.get_billing_info(name)
         except (errors.HttpError, HttpLib2Error) as e:
+            if isinstance(e, errors.HttpError) and e.resp.status == 404:
+                return {}
             LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError('billing_info', e)
