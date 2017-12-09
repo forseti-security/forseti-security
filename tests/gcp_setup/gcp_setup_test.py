@@ -22,8 +22,8 @@ import unittest
 from contextlib import contextmanager
 from StringIO import StringIO
 
-from scripts.gcp_setup import gcloud_env
-from scripts.gcp_setup import utils
+from scripts.gcp_setup.environment import gcloud_env
+from scripts.gcp_setup.environment import utils
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -250,8 +250,8 @@ class GcloudEnvTest(ForsetiTestCase):
             output = out.getvalue()[:len(output_head)]
             self.assertEqual(output_head, output)
 
-    def test_get_organization(self):
-        """Test get_organization().
+    def test_lookup_organization(self):
+        """Test lookup_organization().
 
         Find organization from a project nested inside 3 folders.
         """
@@ -284,7 +284,7 @@ class GcloudEnvTest(ForsetiTestCase):
 
         output_head = 'Organization id'
         with captured_output() as (out, err):
-            self.gcp_setup.get_organization()
+            self.gcp_setup.lookup_organization()
             # collect all the output, the last line (excluding blank line)
             # should be 'Organization id: ...'
             all_output = [s for s in out.getvalue().split('\n') if len(s)]
