@@ -32,6 +32,7 @@ def run():
                         action='store_true',
                         help='Bypass IAM check for user running script')
     parser.add_argument('--advanced',
+                        action='store_true',
                         help='Advanced setup mode (more options)')
 
     parser.add_argument('--dry-run',

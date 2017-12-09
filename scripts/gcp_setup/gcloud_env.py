@@ -80,6 +80,8 @@ REQUIRED_APIS = [
      'service': 'appengine.googleapis.com'},
     {'name': 'BigQuery',
      'service': 'bigquery-json.googleapis.com'},
+    {'name': 'Cloud Billing',
+     'service': 'cloudbilling.googleapis.com'},
     {'name': 'Cloud Resource Manager',
      'service': 'cloudresourcemanager.googleapis.com'},
     {'name': 'Cloud SQL',
@@ -381,7 +383,7 @@ class ForsetiGcpSetup(object):
         self.check_cloudshell()
         self.check_authed_user()
         self.check_project_id()
-        self.get_organization()
+        self.lookup_organization()
         self.check_billing_enabled()
         self.should_setup_explain()
         self.determine_access_target()
@@ -422,12 +424,15 @@ class ForsetiGcpSetup(object):
         else:
             self.branch = out.strip()
 
+        user_choice = None
         if not self.branch or self.branch == 'master':
             version = get_forseti_version()
             if version:
                 self.branch = 'v%s' % version
 
-        user_choice = None
+        if not self.advanced_mode:
+            user_choice = 'y'
+
         while user_choice != 'y' and user_choice != 'n':
             user_choice = raw_input(
                 'Install Forseti branch/tag %s? (y/n) '
@@ -535,6 +540,10 @@ class ForsetiGcpSetup(object):
         print('IAM Explain requires granting Forseti access on the '
               'organization-level IAM.\n')
         choice = None
+        if not self.advanced_mode:
+            choice = 'y'
+            print('Automatically enabling IAM Explain (basic setup mode).')
+
         while not choice:
             choice = raw_input(
                 'Do you want to enable IAM Explain? (y/n) ').strip()
@@ -546,8 +555,12 @@ class ForsetiGcpSetup(object):
         Either org, folder, or project level.
         """
         print_banner('Forseti access target')
-        choices = RESOURCE_TYPES
         choice_index = -1
+
+        if not self.advanced_mode:
+            self.access_target = RESOURCE_TYPES[0]
+            self.target_id = self.organization_id
+
         while not self.target_id:
             if self.setup_explain:
                 # If user wants to setup Explain, they must setup
@@ -557,7 +570,7 @@ class ForsetiGcpSetup(object):
                 try:
                     print('Forseti can be configured to access an '
                           'organization, folder, or project.')
-                    for (i, choice) in enumerate(choices):
+                    for (i, choice) in enumerate(RESOURCE_TYPES):
                         print('[%s] %s' % (i+1, choice))
                     choice_input = raw_input(
                         'At what level do you want to enable Forseti '
@@ -567,8 +580,8 @@ class ForsetiGcpSetup(object):
                     print('Invalid choice, try again.')
                     continue
 
-            if choice_index and choice_index <= len(choices):
-                self.access_target = choices[choice_index-1]
+            if choice_index and choice_index <= len(RESOURCE_TYPES):
+                self.access_target = RESOURCE_TYPES[choice_index-1]
                 if self.access_target == 'organization':
                     self.choose_organization()
                 elif self.access_target == 'folder':
@@ -637,7 +650,7 @@ class ForsetiGcpSetup(object):
                 'Enter the project id (NOT PROJECT NUMBER), '
                 'where you want Forseti to crawl for data: ').strip()
 
-    def get_organization(self):
+    def lookup_organization(self):
         """Infer the organization from the project's parent."""
         return_code, out, err = utils.run_command(
             ['gcloud', 'projects', 'describe',
@@ -705,6 +718,9 @@ class ForsetiGcpSetup(object):
         """Ask if user wants to enable write access for Forseti."""
         print_banner('Enable Forseti write access')
         choice = None
+        if not self.advanced_mode:
+            choice = 'y'
+
         while choice != 'y' and choice != 'n':
             choice = raw_input(
                 'Enable write access for Forseti? '
@@ -713,6 +729,8 @@ class ForsetiGcpSetup(object):
 
         if choice == 'y':
             self.enable_write_access = True
+            print('Forseti will have write access on %s.' %
+                  self.resource_root_id)
 
     def format_service_acct_ids(self):
         """Format the service account ids."""
@@ -732,6 +750,10 @@ class ForsetiGcpSetup(object):
         """Inform user that they need IAM access to grant Forseti access."""
         print_banner('Current IAM access')
         choice = None
+
+        if not self.advanced_mode:
+            choice = 'y'
+
         while choice != 'y' and choice != 'n':
             choice = raw_input('Do you have access to grant Forseti IAM '
                                'roles on the target %s? (y/n) ' %
@@ -739,7 +761,7 @@ class ForsetiGcpSetup(object):
 
         if choice == 'y':
             self.user_can_grant_roles = True
-            print('Ok, will attempt to grant roles on the target %s.' %
+            print('Will attempt to grant roles on the target %s.' %
                   self.resource_root_id)
         else:
             self.user_can_grant_roles = False
@@ -756,21 +778,24 @@ class ForsetiGcpSetup(object):
 
         choices = ['Create %s' % acct_type, 'Reuse %s' % acct_type]
         choice_index = -1
-        while True:
-            for (i, choice) in enumerate(choices):
-                print('[%s] %s' % (i+1, choice))
+        if not self.advanced_mode:
+            choice_index = 1
+        else:
+            while True:
+                for (i, choice) in enumerate(choices):
+                    print('[%s] %s' % (i+1, choice))
 
-            choice_input = raw_input(
-                'Enter the number of your choice: ').strip()
+                choice_input = raw_input(
+                    'Enter the number of your choice: ').strip()
 
-            try:
-                choice_index = int(choice_input)
-                if choice_index < 1 or choice_index > len(choices):
-                    raise ValueError
-                else:
-                    break
-            except ValueError:
-                print('Invalid choice "%s", try again' % choice_input)
+                try:
+                    choice_index = int(choice_input)
+                    if choice_index < 1 or choice_index > len(choices):
+                        raise ValueError
+                    else:
+                        break
+                except ValueError:
+                    print('Invalid choice "%s", try again' % choice_input)
 
         # If the choice is "Create service account", create the service
         # account. The default is to create the service account with a
