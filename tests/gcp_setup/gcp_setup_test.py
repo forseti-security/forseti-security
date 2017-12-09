@@ -482,6 +482,30 @@ class GcloudEnvTest(ForsetiTestCase):
             self.gcp_setup.should_enable_write_access()
             self.assertFalse(self.gcp_setup.enable_write_access)
 
+    def test_format_service_acct_ids(self):
+        """Test format_service_acct_ids()."""
+        self.gcp_setup.project_id = 'fake-project'
+        self.gcp_setup.timestamp = '1'
+        gcp_email_1 = gcloud_env.full_service_acct_email(
+            gcloud_env.SERVICE_ACCT_FMT.format(
+                'gcp', 'reader', self.gcp_setup.timestamp),
+            self.gcp_setup.project_id)
+        gsuite_email_1 = gcloud_env.full_service_acct_email(
+            gcloud_env.SERVICE_ACCT_FMT.format(
+                'gsuite', 'reader', self.gcp_setup.timestamp),
+            self.gcp_setup.project_id)
+        self.gcp_setup.format_service_acct_ids()
+        self.assertEquals(gcp_email_1, self.gcp_setup.gcp_service_account)
+        self.assertEquals(gsuite_email_1, self.gcp_setup.gsuite_service_account)
+
+        self.gcp_setup.enable_write_access = True
+        gcp_email_2 = gcloud_env.full_service_acct_email(
+            gcloud_env.SERVICE_ACCT_FMT.format(
+                'gcp', 'readwrite', self.gcp_setup.timestamp),
+            self.gcp_setup.project_id)
+        self.gcp_setup.format_service_acct_ids()
+        self.assertEquals(gcp_email_2, self.gcp_setup.gcp_service_account)
+
     def test_inform_access_on_target_basic(self):
         """Test inform_access_on_target()."""
         with captured_output() as (out, err):
