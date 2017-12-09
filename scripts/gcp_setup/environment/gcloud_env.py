@@ -102,7 +102,8 @@ RESOURCE_TYPES = ['organization', 'folder', 'project']
 # Paths
 ROOT_DIR_PATH = os.path.dirname(
     os.path.dirname(
-        os.path.dirname(__file__)))
+        os.path.dirname(
+            os.path.dirname(__file__))))
 
 FORSETI_SRC_PATH = os.path.join(
     ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
@@ -110,30 +111,19 @@ FORSETI_SRC_PATH = os.path.join(
 VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
 
 
-def id_from_name(name, resource_type):
+def id_from_name(name):
     """Extract the id (number) from the resource name.
 
     Args:
         name (str): The name of the resource, formatted as
             "${RESOURCE_TYPE}/${RESOURCE_ID}".
-        resource_type (str): The resource type.
 
     Returns:
         str: The resource id.
     """
-    return name[len('%s/' % resource_type):]
-
-def org_id_from_org_name(org_name):
-    """Extract the organization id (number) from the organization name.
-
-    Args:
-        org_name (str): The name of the organization, formatted as
-            "organizations/${ORGANIZATION_ID}".
-
-    Returns:
-        str: The organization id.
-    """
-    return id_from_name(org_name, 'organizations')
+    if not name or name.index('/') < 0:
+        return name
+    return name[name.index('/')+1:]
 
 def print_banner(text):
     """Print a banner.
@@ -158,7 +148,7 @@ def get_forseti_version():
     version_file = os.path.join(
         FORSETI_SRC_PATH, '__init__.py')
     with open(version_file, 'rt') as vfile:
-        for line in vfile.readlines():
+        for line in vfile:
             version_match = version_re.match(line)
             if version_match:
                 version = version_match.group(1)
@@ -177,7 +167,9 @@ def get_remote_branches():
     if return_code:
         print(err)
     else:
-        branches = [b.strip() for b in out.strip().split('\n')]
+        out = out.strip()
+        if out:
+            branches = [b.strip() for b in out.split('\n')]
     return branches
 
 def checkout_git_branch():
@@ -375,6 +367,8 @@ class ForsetiGcpSetup(object):
 
     def run_setup(self):
         """Run the setup steps."""
+        print_banner('Forseti %s Setup' % get_forseti_version())
+
         # Pre-flight checks.
         print_banner('Pre-flight checks')
         self.check_run_properties()
@@ -623,7 +617,7 @@ class ForsetiGcpSetup(object):
             print('\nHere are the organizations you have access to:')
             for org in orgs:
                 print('ID=%s (description="%s")' %
-                      (org_id_from_org_name(org['name']), org['displayName']))
+                      (id_from_name(org['name']), org['displayName']))
 
             choice = raw_input('Enter the organization id where '
                                'you want Forseti to crawl for data: ').strip()
@@ -1147,14 +1141,12 @@ class ForsetiGcpSetup(object):
               'found here:\n\n    {}\n\n'.format(self.deploy_tpl_path))
 
         if self.dry_run:
-            print('A default configuration file (configs/forseti_conf_%s.yaml) '
-                  'has been generated. After you create your deployment, copy '
-                  'this file to the bucket created in the deployment:\n\n'
-                  '    gsutil cp forseti_conf_%s.yaml '
-                  '%s/configs/forseti_conf.yaml\n\n' %
-                  (self.datetimestamp,
-                   self.bucket_name,
-                   self.datetimestamp))
+            print('A Forseti configuration file has been generated. '
+                  'After you create your deployment, copy this file to '
+                  'the bucket created in the deployment:\n\n'
+                  '    gsutil cp %s %s/configs/forseti_conf.yaml\n\n' %
+                  (self.forseti_conf_path,
+                   self.bucket_name))
         else:
             print('You can view the details of your deployment in the '
                   'Cloud Console:\n\n    '
@@ -1164,7 +1156,7 @@ class ForsetiGcpSetup(object):
                       self.project_id,
                       self.organization_id))
 
-            print('A default configuration file (configs/forseti_conf_{}.yaml) '
+            print('A Forseti configuration file (configs/forseti_conf_{}.yaml) '
                   'has been generated. If you wish to change your '
                   'Forseti configuration or rules, e.g. enabling G Suite '
                   'Groups collection, either download the conf file in '
