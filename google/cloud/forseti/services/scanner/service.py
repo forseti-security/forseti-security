@@ -17,6 +17,10 @@
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
+from google.cloud.forseti.common.util import log_util
+
+
+LOGGER = log_util.get_logger(__name__)
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -51,6 +55,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         """Run scanner."""
 
         model_name = self._get_handle(context)
+        LOGGER.info('Run scanner service with model: %s' % model_name)
         result = self.scanner.run(request.config_dir, model_name,
                                   self.service_config)
 

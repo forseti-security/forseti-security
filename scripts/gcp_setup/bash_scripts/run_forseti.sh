@@ -30,6 +30,7 @@ echo "Run inventory creation"
 forseti inventory create --import_as ${MODEL_ID}
 forseti model use ${MODEL_ID}
 echo "Created inventory and using model ${MODEL_ID}"
+echo "Forseti config: $(forseti config show)"
 
 # scanner command TBD
 echo "Run scanner with ${FORSETI_CONF}"

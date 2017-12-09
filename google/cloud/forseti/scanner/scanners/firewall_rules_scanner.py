@@ -200,7 +200,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
         if not firewall_policies:
             LOGGER.warn('No firewall policies found. Exiting.')
-            sys.exit(1)
+            return None, 0
 
         resource_counts = {
             resource_type.ResourceType.FIREWALL_RULE: len(firewall_policies),
