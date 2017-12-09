@@ -32,7 +32,7 @@ forseti model use ${MODEL_ID}
 echo "Created inventory and using model ${MODEL_ID}"
 
 # scanner command TBD
-echo "Run scanner with ${FORSETI_CONF}""
+echo "Run scanner with ${FORSETI_CONF}"
 forseti scanner run ${FORSETI_CONF}
 echo "Ran scanner"
 
