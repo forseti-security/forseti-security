@@ -28,7 +28,11 @@ fi
 MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
 echo "Run inventory creation"
 forseti inventory create --import_as ${MODEL_ID}
+sleep 10s
 forseti model use ${MODEL_ID}
+# Sometimes there's a lag between when the model
+# successfully saves to the database.
+sleep 10s
 echo "Created inventory and using model ${MODEL_ID}"
 echo "Forseti config: $(forseti config show)"
 

@@ -17,7 +17,6 @@ from datetime import datetime
 import itertools
 import json
 import os
-import sys
 
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier import notifier

@@ -164,7 +164,7 @@ pip install grpcio grpcio-tools google-apputils
 cd forseti-security
 
 # Set ownership of config and rules to $USER
-chown -R $USER {forseti_home}/configs {forseti_home}/rules
+chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/scripts/gcp_setup/bash_sripts/run_forseti.sh
 
 # Build protos.
 python build_protos.py --clean
@@ -194,6 +194,9 @@ echo "Success! The Forseti API server has been started."
 # Create a Forseti env script
 FORSETI_ENV="$(cat <<EOF
 #!/bin/bash
+
+export PATH=$PATH:/usr/local/bin
+
 # Forseti environment variables
 export FORSETI_HOME=/home/ubuntu/forseti-security
 export FORSETI_CONF=$FORSETI_HOME/configs/forseti_conf.yaml
