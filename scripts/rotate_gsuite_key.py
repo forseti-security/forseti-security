@@ -24,7 +24,7 @@ import json
 import os
 import sys
 
-from gcp_setup import utils
+from gcp_setup.environment import utils
 
 def run():
     """Rotate G Suite key."""

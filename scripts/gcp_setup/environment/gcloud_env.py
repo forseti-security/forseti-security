@@ -332,7 +332,7 @@ class ForsetiGcpSetup(object):
                                 CONFIG_FILENAME_FMT.format(
                                     self.datetimestamp))
 
-        self.advanced_mode = False
+        self.advanced_mode = bool(kwargs.get('advanced'))
         self.dry_run = bool(kwargs.get('dry_run'))
 
         self.is_devshell = False
@@ -377,6 +377,7 @@ class ForsetiGcpSetup(object):
         """Run the setup steps."""
         # Pre-flight checks.
         print_banner('Pre-flight checks')
+        self.check_run_properties()
         self.infer_version()
         check_proper_gcloud()
         self.gcloud_info()
@@ -413,6 +414,11 @@ class ForsetiGcpSetup(object):
             self.grant_gcp_svc_acct_roles()
 
         self.post_install_instructions(deploy_success=(not return_code))
+
+    def check_run_properties(self):
+        """Check script run properties."""
+        print('Dry run? %s' % self.dry_run)
+        print('Advanced mode? %s' % self.advanced_mode)
 
     def infer_version(self):
         """Infer the Forseti version, or ask user to input one not listed."""

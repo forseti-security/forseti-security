@@ -26,11 +26,15 @@ fi
 
 # inventory command
 MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
+echo "Run inventory creation"
 forseti inventory create --import_as ${MODEL_ID}
 forseti model use ${MODEL_ID}
+echo "Created inventory and using model ${MODEL_ID}"
 
 # scanner command TBD
+echo "Run scanner with ${FORSETI_CONF}""
 forseti scanner run ${FORSETI_CONF}
+echo "Ran scanner"
 
 # Inventory cleanup TBD
 # ...

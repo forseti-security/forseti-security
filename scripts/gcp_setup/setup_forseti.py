@@ -19,7 +19,7 @@ This has been tested with python 2.7.
 
 import argparse
 
-import gcloud_env
+from environment import gcloud_env
 
 
 def run():
