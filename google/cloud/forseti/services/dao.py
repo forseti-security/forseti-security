@@ -24,7 +24,6 @@ import struct
 import hmac
 from threading import Lock
 
-
 from sqlalchemy import Column
 from sqlalchemy import event
 from sqlalchemy import Integer
@@ -33,6 +32,7 @@ from sqlalchemy import String
 from sqlalchemy import Sequence
 from sqlalchemy import ForeignKey
 from sqlalchemy import Text
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from sqlalchemy import create_engine as sqlalchemy_create_engine
 from sqlalchemy import Table
 from sqlalchemy import DateTime
@@ -43,6 +43,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import reconstructor
 from sqlalchemy.sql import select
 from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
@@ -87,10 +88,16 @@ class Model(MODEL_BASE):
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
     message = Column(Text())
-    warnings = Column(Text())
+    warnings = Column(MEDIUMTEXT())
 
-    # Non-SQL attributes
-    warning_store = list()
+    def __init__(self, *args, **kwargs):
+        super(Model, self).__init__(*args, **kwargs)
+        # Non-SQL attributes
+        self.warning_store = list()
+
+    @reconstructor
+    def init_on_load(self):
+        self.warning_store = list()
 
     def kick_watchdog(self):
         """Used during import to notify the import is still progressing."""
