@@ -1183,10 +1183,35 @@ class ForsetiGcpSetup(object):
 
         if self.gsuite_superadmin_email:
             print('To complete setup for G Suite Groups data collection, '
-                  'follow the steps in the guide below:\n\n'
-                  '    '
+                  'follow the steps below:\n\n'
+                  '    1. Click on: '
+                  'https://console.cloud.google.com/iam-admin/serviceaccounts/'
+                  'project?project={}&organizationId={}\n\n'
+                  '    2. Locate the service account to enable '
+                  'G Suite Groups collection:{}\n\n'
+                  '    3. Select Edit and then the Enable G Suite Domain-wide '
+                  'Delegation checkbox. Save.\n\n'
+                  '    4. On the service account row, click View Client ID. '
+                  'On the Client ID for Service account client panel that '
+                  'appears, copy the Client ID value, which will be a large '
+                  'number.\n\n'
+                  '    5. Click on: '
+                  'https://admin.google.com/ManageOauthClients\n\n'
+                  '    6. In the Client Name box, paste the Client ID you '
+                  'copied above.\n\n'
+                  '    7. In the One or More API Scopes box, paste the '
+                  'following scope:\n\n'
+                  '        https://www.googleapis.com/auth/admin.directory.'
+                  'group.readonly,\n'
+                  '        https://www.googleapis.com/auth/admin.directory.'
+                  'user.readonly\n\n'
+                  '    8. Click Authorize\n\n'
+                  'or refer to the guides:'
                   'http://forsetisecurity.org/docs/howto/configure/'
-                  'gsuite-group-collection\n\n')
+                  'gsuite-group-collection\n\n'.format(
+                      self.project_id,
+                      self.organization_id,
+                      self.gsuite_service_account))
         else:
             print('If you want to enable G Suite Groups collection in '
                   'Forseti, for example, to use IAM Explain), follow '
