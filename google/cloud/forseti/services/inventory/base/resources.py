@@ -350,6 +350,14 @@ class Firewall(Resource):
         return 'firewall'
 
 
+class Image(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'image'
+
+
 class InstanceGroup(Resource):
     def key(self):
         return self['id']
@@ -618,6 +626,16 @@ class FirewallIterator(ResourceIterator):
                 yield FACTORIES['firewall'].create_new(data)
 
 
+class ImageIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if (self.resource.enumerable() and
+                self.resource.compute_api_enabled(gcp)):
+            for data in gcp.iter_images(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['image'].create_new(data)
+
+
 class InstanceGroupIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
@@ -796,6 +814,7 @@ FACTORIES = {
             ServiceAccountIterator,
             AppEngineAppIterator,
             ComputeIterator,
+            ImageIterator,
             InstanceIterator,
             FirewallIterator,
             InstanceGroupIterator,
@@ -869,6 +888,12 @@ FACTORIES = {
     'firewall': ResourceFactory({
         'dependsOn': ['project'],
         'cls': Firewall,
+        'contains': [
+            ]}),
+
+    'image': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Image,
         'contains': [
             ]}),
 

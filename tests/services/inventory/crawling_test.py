@@ -116,6 +116,7 @@ class CrawlerTest(ForsetiTestCase):
             'gsuite_group_member': {'resource': 1},
             'gsuite_user': {'resource': 3},
             'gsuite_user_member': {'resource': 3},
+            'image': {'resource': 2},
             'instance': {'resource': 4},
             'instancegroup': {'resource': 1},
             'instancegroupmanager': {'resource': 1},
