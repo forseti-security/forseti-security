@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" IAMQL grammar definition. """
+""" IAMQL grammar & compiler implementation. """
 
 import pprint
 
@@ -31,111 +31,106 @@ from pyparsing import Keyword
 from sqlalchemy.orm import aliased
 from sqlalchemy import and_
 
-entity_attributes = {
-    'resource': {
-        'path': {
-            'type': unicode,
-            },
-        'type': {
-            'type': unicode,
-            },
-        'name': {
-            'type': unicode,
-            },
-        'display_name': {
-            'type': unicode,
-            },
-        },
 
-    'role': {
-        'name': {
-            'type': unicode,
+class Metadata(object):
+    entity_attributes = {
+        'resource': {
+            'path': {
+                'type': unicode,
+                },
+            'type': {
+                'type': unicode,
+                },
+            'name': {
+                'type': unicode,
+                },
+            'display_name': {
+                'type': unicode,
+                },
             },
-        'title': {
-            'type': unicode,
+        'role': {
+            'name': {
+                'type': unicode,
+                },
+            'title': {
+                'type': unicode,
+                },
+            'description': {
+                'type': unicode,
+                },
             },
-        'description': {
-            'type': unicode,
+        'permission': {
+            'name': {
+                'type': unicode,
+                },
             },
-        },
-
-    'permission': {
-        'name': {
-            'type': unicode,
+        'member': {
+            'name': {
+                'type': unicode,
+                },
+            'type': {
+                'type': unicode,
+                },
             },
-        },
+        'group': {},
+        'user': {},
+        'binding': {},
+        }
 
-    'member': {
-        'name': {
-            'type': unicode,
-            },
-        'type': {
-            'type': unicode,
-            },
-        },
-
-    'group': {},
-
-    'user': {},
-
-    'binding': {},
-
-    }
-
-allowed_joins = {
-    'role': [
-        ('has',
-         ['permission'],
-         lambda dao, r, p: (
-             and_(dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
-                  dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
-             )),
-        ],
-    'binding': [
-        ('grants',
-         ['resource', 'role', 'member'],
-         lambda dao, binding, resource, role, member: (
-             and_(binding.table.resource_type_name == resource.table.type_name,
-                  binding.table.role_name == role.table.name,
-                  dao.TBL_BINDING_MEMBERS.c.members_name == member.table.name,
-                  dao.TBL_BINDING_MEMBERS.c.bindings_id == binding.table.id)
-             )),
-        ],
-    'permission': [
-        ('included',
-         ['role'],
-         lambda dao, p, r: (
-             and_(dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
-                  dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
-             )),
-        ],
-    'resource': [
-        ('child',
-         ['resource'],
-         lambda dao, child, parent: (
-             and_(child.table.parent_type_name == parent.table.type_name)
-             )),
-        ('parent',
-         ['resource'],
-         lambda dao, parent, child: (
-             and_(child.table.parent_type_name == parent.table.type_name)
-             )),
-        ('ancestor',
-         ['resource'],
-         lambda dao, ancestor, descendant: (
-             and_(
-                 ancestor.table.full_name.startswith(
-                     descendant.table.full_name))
-             )),
-        ('descendant',
-         ['resource'],
-         lambda dao, descendant, ancestor: (
-             and_(
-                 ancestor.table.full_name.startswith(
-                     descendant.table.full_name))
-             )),
-        ],
-    }
+    allowed_joins = {
+        'role': [
+            ('has',
+             ['permission'],
+             lambda dao, r, p: (
+                 and_(dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
+                      dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
+                 )),
+            ],
+        'binding': [
+            ('grants',
+             ['resource', 'role', 'member'],
+             lambda dao, binding, resource, role, member: (
+                 and_(binding.table.resource_type_name == resource.table.type_name,
+                      binding.table.role_name == role.table.name,
+                      dao.TBL_BINDING_MEMBERS.c.members_name == member.table.name,
+                      dao.TBL_BINDING_MEMBERS.c.bindings_id == binding.table.id)
+                 )),
+            ],
+        'permission': [
+            ('included',
+             ['role'],
+             lambda dao, p, r: (
+                 and_(dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
+                      dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
+                 )),
+            ],
+        'resource': [
+            ('child',
+             ['resource'],
+             lambda dao, child, parent: (
+                 and_(child.table.parent_type_name == parent.table.type_name)
+                 )),
+            ('parent',
+             ['resource'],
+             lambda dao, parent, child: (
+                 and_(child.table.parent_type_name == parent.table.type_name)
+                 )),
+            ('ancestor',
+             ['resource'],
+             lambda dao, ancestor, descendant: (
+                 and_(
+                     ancestor.table.full_name.startswith(
+                         descendant.table.full_name))
+                 )),
+            ('descendant',
+             ['resource'],
+             lambda dao, descendant, ancestor: (
+                 and_(
+                     ancestor.table.full_name.startswith(
+                         descendant.table.full_name))
+                 )),
+            ],
+        }
 
 
 class Variable(dict):
@@ -159,8 +154,127 @@ class Variable(dict):
     table = property(_get_table, _set_table, _del_table)
 
 
+class QueryContext(object):
+    def __init__(self, compilation_context, query_node):
+        self._variables = {}
+
+    @property
+    def variables(self):
+        return self._variables
+
+
 class CompilationContext(object):
-    pass
+
+    def __init__(self, data_access, entity_attributes, allowed_joins, session):
+        self.entity_attributes = entity_attributes
+        self.allowed_joins = allowed_joins
+        self.session = session
+
+        self.data_access = data_access
+
+        self.queries = {}
+        self.cur_query = None
+        self.variables = {}
+        self.entities = []
+        self.join_clauses = []
+        self.artefact = None
+
+    def get_table_by_entity(self, entity):
+        type_mapping = {
+                'resource': self.data_access.TBL_RESOURCE,
+                'role': self.data_access.TBL_ROLE,
+                'permission': self.data_access.TBL_PERMISSION,
+                'binding': self.data_access.TBL_BINDING,
+                'member': self.data_access.TBL_MEMBER,
+            }
+
+        return type_mapping[entity]
+
+    def on_enter_query(self, query):
+        pass
+
+    def on_leave_query(self, query):
+        qry = self.session.query(*self.entities)
+        for clause in self.join_clauses:
+            qry = qry.filter(clause)
+        self.artefact = qry.distinct()
+        print self.artefact
+
+    def on_enter_projection(self, projection):
+        for identifier in projection.entities:
+            variable = self.variables[identifier]
+            self.entities.append(variable.table)
+
+    def on_leave_projection(self, projection):
+        pass
+
+    def on_enter_entity_definition(self, node):
+        ident = node.identifier
+        entity = node.entity
+
+        table = aliased(self.get_table_by_entity(entity),
+                        name=ident)
+        self.variables[ident] = Variable({'identifier': ident,
+                                          'entity': entity,
+                                          'table': table})
+
+    def on_leave_entity_definition(self, entity_definition):
+        pass
+
+    def on_enter_selection(self, selection):
+        pass
+
+    def on_leave_selection(self, selection):
+        pass
+
+    def on_enter_join(self, join):
+        obj = self.variables[join.object]
+        obj_type = obj.entity
+        for join_spec in self.allowed_joins[obj_type]:
+            relation, arglist, generator = join_spec
+            if relation == join.relation:
+                for arg_pos, arg_type in enumerate(arglist):
+                    var = self.variables[join.arglist[arg_pos]]
+                    if var.entity != arg_type:
+                        raise TypeError(
+                            'Relation: {}, expected: {}, actual: {}'
+                            .format(relation, arg_type, ))
+
+                self.join_clauses.append(
+                    generator(self.data_access,
+                              obj,
+                              *map(lambda ident:
+                                   self.variables[ident], join.arglist)))
+                return
+        raise Exception('Undefined join relationship: {}'.format(join))
+
+    def on_leave_join(self, join):
+        pass
+
+    def enter(self, node):
+        handlers = {
+                Join: self.on_enter_join,
+                Query: self.on_enter_query,
+                Projection: self.on_enter_projection,
+                Selection: self.on_enter_selection,
+                EntityDefinition: self.on_enter_entity_definition,
+            }
+        self._exec_matching_handler(handlers, node)
+
+    def leave(self, node):
+        handlers = {
+                Join: self.on_leave_join,
+                Query: self.on_leave_query,
+                Projection: self.on_leave_projection,
+                Selection: self.on_leave_selection,
+                EntityDefinition: self.on_leave_entity_definition,
+            }
+        self._exec_matching_handler(handlers, node)
+
+    def _exec_matching_handler(self, handlers, node):
+        for cls, handler in handlers.iteritems():
+            if isinstance(node, cls):
+                handler(node)
 
 
 class QueryCompiler(object):
@@ -173,17 +287,6 @@ class QueryCompiler(object):
         self.projection = []
         self.joins = []
         self.last_defined_variable = None
-
-    def get_table_by_entity(self, entity):
-        type_mapping = {
-                'resource': self.data_access.TBL_RESOURCE,
-                'role': self.data_access.TBL_ROLE,
-                'permission': self.data_access.TBL_PERMISSION,
-                'binding': self.data_access.TBL_BINDING,
-                'member': self.data_access.TBL_MEMBER,
-            }
-
-        return type_mapping[entity]
 
     def visit(self, node, transformed_children):
         handlers = {
@@ -217,30 +320,18 @@ class QueryCompiler(object):
         self.node.compile()
 
     def generate_join_filter(self, join):
-        obj = self.variables[join.object]
-        obj_type = obj.entity
-        for join_spec in allowed_joins[obj_type]:
-            relation, arglist, generator = join_spec
-            if relation == join.relation:
-                for arg_pos, arg_type in enumerate(arglist):
-                    var = self.variables[join.arglist[arg_pos]]
-                    if var.entity != arg_type:
-                        raise TypeError(
-                            'Relation: {}, expected: {}, actual: {}'
-                            .format(relation, arg_type, ))
-
-                return generator(self.data_access,
-                                 obj,
-                                 *map(lambda ident:
-                                      self.variables[ident], join.arglist))
-
-        raise Exception('Undefined join relationship: {}'.format(join))
+        pass
 
     def compile(self):
         ast = BNF().parseString(self.iam_query, parseAll=True)
         query_set = ast[0]
-        query_set.typecheck()
-        query_set.accept(self)
+
+        context = CompilationContext(self.data_access,
+                                     Metadata.entity_attributes,
+                                     Metadata.allowed_joins,
+                                     self.session)
+
+        return query_set.compile(context)
 
         entities = []
         for identifier in self.projection:
@@ -311,14 +402,21 @@ class Node(list):
         return self._parent._find_ancestor(cls)
 
     def typecheck(self):
-        if not self._connected:
-            self._connect()
-        for item in self:
-            if isinstance(item, Node):
-                item.typecheck()
+        return []
 
     def compile(self, context):
-        pass
+        if not self._connected:
+            self._connect()
+
+        context.enter(self)
+        for item in self:
+            if isinstance(item, Node):
+                item.compile(context)
+        context.leave(self)
+
+
+class QuerySet(Node):
+    pass
 
 
 class Selection(Node):
@@ -363,9 +461,8 @@ class QueryName(Node):
     def __str__(self):
         return self[0]
 
-
-class QuerySet(Node):
-    pass
+    def __hash__(self):
+        return self[0].__hash__()
 
 
 class EntityDefinition(Node):
@@ -418,7 +515,7 @@ class Attribute(Node):
             raise Exception('Unable to find ancestor node')
 
         entity = entity_def.entity
-        self.attribute_type = entity_attributes[entity][self.name]['type']
+        self.attribute_type = Metadata.entity_attributes[entity][self.name]['type']
 
     def type_of(self):
         return (self.attribute_type
