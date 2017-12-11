@@ -14,6 +14,8 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
+import random
+
 def GenerateConfig(context):
     """Generate configuration."""
 
@@ -22,18 +24,17 @@ def GenerateConfig(context):
 
     if USE_BRANCH:
         DOWNLOAD_FORSETI = """
-git clone {}.git --branch {} --single-branch forseti-security
+git clone {src_path}.git --branch {branch_name} --single-branch forseti-security
         """.format(
-            context.properties['src-path'],
-            context.properties['branch-name'])
+            src_path=context.properties['src-path'],
+            branch_name=context.properties['branch-name'])
     else:
         DOWNLOAD_FORSETI = """
-wget -qO- {}/archive/v{}.tar.gz | tar xvz
-mv forseti-security-{} forseti-security
+wget -qO- {src_path}/archive/v{release_version}.tar.gz | tar xvz
+mv forseti-security-{release_version} forseti-security
         """.format(
-            context.properties['src-path'],
-            context.properties['release-version'],
-            context.properties['release-version'])
+            src_path=context.properties['src-path'],
+            release_version=context.properties['release-version'])
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
@@ -41,34 +42,37 @@ mv forseti-security-{} forseti-security
         '$(ref.cloudsql-instance.name)')
 
     SCANNER_BUCKET = context.properties['scanner-bucket']
+    FORSETI_DB_NAME = context.properties['database-name']
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    FORSETI_CONF = FORSETI_HOME + '/configs/forseti_conf.yaml'
+    FORSETI_CONF = '%s/configs/forseti_conf.yaml' % FORSETI_HOME
 
-    inventory_command = (
-        '/usr/local/bin/forseti_inventory --forseti_config {} '
-            .format(
-                FORSETI_CONF,
-            )
-    )
+    GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
+    GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
+    ROOT_RESOURCE_ID = context.properties['root-resource-id']
 
-    scanner_command = (
-        ('/usr/local/bin/forseti_scanner --forseti_config {} ')
-            .format(
-                FORSETI_CONF,
-            )
-    )
+    EXPORT_INITIALIZE_VARS = (
+        'export SQL_PORT={0}\n'
+        'export SQL_INSTANCE_CONN_STRING="{1}"\n'
+        'export FORSETI_DB_NAME="{2}"\n'
+        'export GSUITE_ADMIN_EMAIL="{3}"\n'
+        'export GSUITE_ADMIN_CREDENTIAL_PATH="{4}"\n'
+        'export ROOT_RESOURCE_ID="{5}"\n')
+    EXPORT_INITIALIZE_VARS = EXPORT_INITIALIZE_VARS.format(
+        context.properties['db-port'],
+        CLOUDSQL_CONN_STRING,
+        FORSETI_DB_NAME,
+        GSUITE_ADMIN_EMAIL,
+        GSUITE_ADMIN_CREDENTIAL_PATH,
+        ROOT_RESOURCE_ID)
 
-    notifier_command = (
-        ('/usr/local/bin/forseti_notifier --forseti_config {} ')
-            .format(
-                FORSETI_CONF,
-            )
-    )
+    EXPORT_FORSETI_VARS = (
+        'export FORSETI_HOME={forseti_home}\n'
+        'export FORSETI_CONF={forseti_conf}\n'
+        ).format(forseti_home=FORSETI_HOME,
+                 forseti_conf=FORSETI_CONF)
 
-    NEW_BUILD_PROTOS = """
-# Build protos separately.
-python build_protos.py --clean
-"""
+    RUN_FREQUENCY = context.properties['run-frequency'].format(
+        rand_minute=random.randint(0, 59))
 
     resources = []
 
@@ -124,8 +128,9 @@ sudo apt-get upgrade -y
 
 # Forseti setup.
 sudo apt-get install -y git unzip
+
 # Forseti dependencies
-sudo apt-get install -y libffi-dev libssl-dev libmysqlclient-dev python-pip python-dev
+sudo apt-get install -y libffi-dev libssl-dev libmysqlclient-dev python-pip python-dev build-essential
 
 USER=ubuntu
 USER_HOME=/home/ubuntu
@@ -139,95 +144,96 @@ if [ -z "$FLUENTD" ]; then
 fi
 
 # Check whether Cloud SQL proxy is installed.
-CLOUD_SQL_PROXY=$(ls $USER_HOME/cloud_sql_proxy)
+CLOUD_SQL_PROXY=$(which cloud_sql_proxy)
 if [ -z "$CLOUD_SQL_PROXY" ]; then
         cd $USER_HOME
-        wget https://dl.google.com/cloudsql/cloud_sql_proxy.{}
-        mv cloud_sql_proxy.{} cloud_sql_proxy
-        chmod +x cloud_sql_proxy
+        wget https://dl.google.com/cloudsql/cloud_sql_proxy.{cloudsql_arch}
+        sudo mv cloud_sql_proxy.{cloudsql_arch} /usr/local/bin/cloud_sql_proxy
+        chmod +x /usr/local/bin/cloud_sql_proxy
 fi
-
-$USER_HOME/cloud_sql_proxy -instances={}=tcp:{} &
 
 # Install Forseti Security.
 cd $USER_HOME
 rm -rf *forseti*
 pip install --upgrade pip
 pip install --upgrade setuptools
-pip install grpcio==1.4.0 grpcio-tools==1.4.0 google-apputils
+pip install grpcio grpcio-tools google-apputils
 
-# Download Forseti src; see DOWNLOAD_FORSETI.
-{}
+# Download Forseti source code
+{download_forseti}
 cd forseti-security
 
 # Set ownership of config and rules to $USER
-chown -R $USER {}/configs {}/rules
+chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/scripts/gcp_setup/bash_sripts/run_forseti.sh
 
 # Build protos.
-{}
+python build_protos.py --clean
 
+# Install Forseti
 python setup.py install
 
-# Create the startup run script.
-read -d '' RUN_FORSETI << EOF
+# Export variables required by initialize_forseti_services.sh.
+{export_initialize_vars}
+
+# Export variables required by run_forseti.sh
+{export_forseti_vars}
+
+# Rotate gsuite key
+# TODO: consider moving this to the forseti_server
+sudo su $USER -c "python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
+
+# Start Forseti service depends on vars defined above.
+bash ./scripts/gcp_setup/bash_scripts/initialize_forseti_services.sh
+
+echo "Starting services."
+systemctl start cloudsqlproxy
+sleep 5
+systemctl start forseti
+echo "Success! The Forseti API server has been started."
+
+# Create a Forseti env script
+FORSETI_ENV="$(cat <<EOF
 #!/bin/bash
 
-# Put the config files in place.
-gsutil cp gs://{}/configs/forseti_conf.yaml {}
-gsutil cp -r gs://{}/rules {}/
+export PATH=$PATH:/usr/local/bin
 
-if [ ! -f {} ]; then
-    echo Forseti conf not found, exiting.
-    exit 1
-fi
-
-# inventory command
-{}
-# scanner command
-{}
-# notifier command
-{}
-
+# Forseti environment variables
+export FORSETI_HOME=/home/ubuntu/forseti-security
+export FORSETI_CONF=$FORSETI_HOME/configs/forseti_conf.yaml
+export SCANNER_BUCKET={scanner_bucket}
 EOF
-echo "$RUN_FORSETI" > $USER_HOME/run_forseti.sh
-chmod +x $USER_HOME/run_forseti.sh
-sudo su $USER -c $USER_HOME/run_forseti.sh
+)"
+echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 
-(echo "0 * * * * $USER_HOME/run_forseti.sh") | crontab -u $USER -
+sudo su $USER -c "$FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh"
+(echo "{run_frequency} $FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh") | crontab -u $USER -
+echo "Added the run_forseti.sh to crontab"
+
+echo "Execution of startup script finished"
 """.format(
-    # cloud_sql_proxy properties.
-    context.properties['cloudsqlproxy-os-arch'],
-    context.properties['cloudsqlproxy-os-arch'],
-    CLOUDSQL_CONN_STRING,
-    context.properties['db-port'],
+    # Cloud SQL properties
+    cloudsql_arch = context.properties['cloudsqlproxy-os-arch'],
 
     # Install Forseti.
-    DOWNLOAD_FORSETI,
+    download_forseti=DOWNLOAD_FORSETI,
 
     # Set ownership for Forseti conf and rules dirs
-    FORSETI_HOME,
-    FORSETI_HOME,
-
-    # New style build protos.
-    NEW_BUILD_PROTOS,
+    forseti_home=FORSETI_HOME,
 
     # Download the Forseti conf and rules.
-    SCANNER_BUCKET,
-    FORSETI_CONF,
-    SCANNER_BUCKET,
-    FORSETI_HOME,
+    scanner_bucket=SCANNER_BUCKET,
+    forseti_conf=FORSETI_CONF,
 
-    # Run run_forseti.sh.
-    FORSETI_CONF,
+    # Env variables for Explain
+    export_initialize_vars=EXPORT_INITIALIZE_VARS,
 
-    # - forseti_inventory
-    inventory_command,
+    # Env variables for Forseti
+    export_forseti_vars=EXPORT_FORSETI_VARS,
 
-    # - forseti_scanner
-    scanner_command,
+    gsuite_service_acct=context.properties['service-account-gsuite'],
 
-    # - forseti_notifier
-    notifier_command,
+    # Forseti run frequency
+    run_frequency=RUN_FREQUENCY,
 )
                 }]
             }

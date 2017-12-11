@@ -16,29 +16,38 @@
 
 This has been tested with python 2.7.
 """
+# pylint: disable=too-many-lines
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-branches
 
 from __future__ import print_function
 
 import datetime
 import json
 import os
+import random
 import re
-import subprocess
 import sys
 import time
 
+import utils
+
+
+CONFIG_FILENAME_FMT = 'forseti-setup-{}.cfg'
 
 DEFAULT_BUCKET_FMT = 'gs://{}-data-{}'
 DEFAULT_CLOUDSQL_INSTANCE_NAME = 'forseti-security'
 
-GCLOUD_MIN_VERSION = (163, 0, 0)
+GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
 
-GSUITE_KEY_SCP_ATTEMPTS = 5
-GSUITE_KEY_NAME = 'gsuite_key.json'
+SERVICE_ACCT_FMT = 'forseti-{}-{}-{}'
+SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
 
-ORG_IAM_ROLES = [
+# Roles
+GCP_READ_IAM_ROLES = [
     'roles/browser',
     'roles/compute.networkViewer',
     'roles/iam.securityReviewer',
@@ -46,6 +55,9 @@ ORG_IAM_ROLES = [
     'roles/bigquery.dataViewer',
     'roles/servicemanagement.quotaViewer',
     'roles/cloudsql.viewer',
+]
+
+GCP_WRITE_IAM_ROLES = [
     'roles/compute.securityAdmin',
 ]
 
@@ -56,11 +68,20 @@ PROJECT_IAM_ROLES = [
     'roles/logging.logWriter',
 ]
 
+SVC_ACCT_ROLES = [
+    'roles/iam.serviceAccountKeyAdmin',
+]
+
+# Required APIs
 REQUIRED_APIS = [
     {'name': 'Admin SDK',
      'service': 'admin.googleapis.com'},
     {'name': 'AppEngine Admin',
      'service': 'appengine.googleapis.com'},
+    {'name': 'BigQuery',
+     'service': 'bigquery-json.googleapis.com'},
+    {'name': 'Cloud Billing',
+     'service': 'cloudbilling.googleapis.com'},
     {'name': 'Cloud Resource Manager',
      'service': 'cloudresourcemanager.googleapis.com'},
     {'name': 'Cloud SQL',
@@ -75,31 +96,216 @@ REQUIRED_APIS = [
      'service': 'iam.googleapis.com'},
 ]
 
-SERVICE_ACCT_FMT = 'forseti-{}-reader-{}'
-SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
+# Org Resource Types
+RESOURCE_TYPES = ['organization', 'folder', 'project']
 
+# Paths
 ROOT_DIR_PATH = os.path.dirname(
     os.path.dirname(
         os.path.dirname(
             os.path.dirname(__file__))))
 
+FORSETI_SRC_PATH = os.path.join(
+    ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
+
 VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
 
 
-def org_id_from_org_name(org_name):
-    """Extract the organization id (number) from the organization name.
+def id_from_name(name):
+    """Extract the id (number) from the resource name.
 
     Args:
-        org_name (str): The name of the organization, formatted as
-            "organizations/${ORGANIZATION_ID}".
+        name (str): The name of the resource, formatted as
+            "${RESOURCE_TYPE}/${RESOURCE_ID}".
 
     Returns:
-        str: just the organization_id.
+        str: The resource id.
     """
-    return org_name[len('organizations/'):]
+    if not name or name.index('/') < 0:
+        return name
+    return name[name.index('/')+1:]
+
+def print_banner(text):
+    """Print a banner.
+
+    Args:
+        text (str): Text to put in the banner.
+    """
+    print('')
+    print('+-------------------------------------------------------')
+    print('|  %s' % text)
+    print('+-------------------------------------------------------')
+    print('')
+
+def get_forseti_version():
+    """Get Forseti version from version file.
+
+    Returns:
+        str: The version.
+    """
+    version = None
+    version_re = re.compile(VERSIONFILE_REGEX)
+    version_file = os.path.join(
+        FORSETI_SRC_PATH, '__init__.py')
+    with open(version_file, 'rt') as vfile:
+        for line in vfile:
+            version_match = version_re.match(line)
+            if version_match:
+                version = version_match.group(1)
+                break
+    return version
+
+def get_remote_branches():
+    """Get remote git branches.
+
+    Returns:
+        list: A list of branches.
+    """
+    branches = []
+    return_code, out, err = utils.run_command(
+        ['git', 'branch', '-r'])
+    if return_code:
+        print(err)
+    else:
+        out = out.strip()
+        if out:
+            branches = [b.strip() for b in out.split('\n')]
+    return branches
+
+def checkout_git_branch():
+    """Let user choose git branch and check it out.
+
+    Returns:
+        str: The checked out branch, if exists.
+    """
+    branch = None
+    branches = get_remote_branches()
+    choice_index = -1
+    while choice_index < 0 or choice_index > len(branches):
+        branches = get_remote_branches()
+        print('Remote branches:')
+        for (i, branch) in enumerate(branches):
+            print('[%s] %s' % (i+1, branch[len('origin/'):]))
+        try:
+            choice_index = int(raw_input(
+                'Enter your numerical choice: ').strip())
+        except ValueError:
+            print('Invalid input choice, try again.')
+    branch = branches[choice_index-1][len('origin/'):]
+    return_code, _, err = utils.run_command(
+        ['git', 'checkout', branch])
+    if return_code:
+        print(err)
+    return branch
+
+def check_proper_gcloud():
+    """Check gcloud version and presence of alpha components."""
+    return_code, out, err = utils.run_command(
+        ['gcloud', '--version'])
+
+    version_regex = re.compile(GCLOUD_VERSION_REGEX)
+    alpha_regex = re.compile(GCLOUD_ALPHA_REGEX)
+
+    version = None
+    alpha_match = None
+
+    if return_code:
+        print('Error trying to determine your gcloud version:')
+        print(err)
+        sys.exit(1)
+    else:
+        for line in out.split('\n'):
+            version_match = version_regex.match(line)
+            if version_match:
+                version = tuple(
+                    [int(i) for i in version_match.group(1).split('.')])
+                continue
+            alpha_match = alpha_regex.match(line)
+            if alpha_match:
+                break
+
+    print('Current gcloud version: {}'.format('.'.join(
+        [str(d) for d in version])))
+    print('Gcloud alpha components? {}'.format(alpha_match is not None))
+    if version < GCLOUD_MIN_VERSION or not alpha_match:
+        print('You need the following gcloud setup:\n\n'
+              'gcloud version >= {}\n'
+              'gcloud alpha components\n\n'
+              'To install gcloud alpha components: '
+              'gcloud components install alpha\n\n'
+              'To update gcloud: gcloud components update\n'.
+              format('.'.join(
+                  [str(i) for i in GCLOUD_MIN_VERSION])))
+        sys.exit(1)
+
+def enable_apis(dry_run=False):
+    """Enable necessary APIs for Forseti Security.
+
+    Technically, this could be done in Deployment Manager, but if you
+    delete the deployment, you'll disable the APIs. This could cause errors
+    if there are resources still in use (e.g. Compute Engine), and then
+    your deployment won't be cleanly deleted.
+
+    Args:
+        dry_run (bool): Whether this is a dry run. If True, don't actually
+            enable the APIs.
+    """
+    print_banner('Enabling required APIs')
+    if dry_run:
+        # TODO: should we generate a script with the APIs to enable?
+        print('This is a dry run, so skipping this step.')
+        return
+
+    for api in REQUIRED_APIS:
+        print('Enabling the {} API...'.format(api['name']))
+        return_code, _, err = utils.run_command(
+            ['gcloud', 'services', 'enable', api['service'], '--async'])
+        if return_code:
+            print(err)
+        else:
+            print('Done.')
+
+def full_service_acct_email(account_id, project_id):
+    """Generate the full service account email.
+
+    Args:
+        account_id (str): The service account id, i.e. the part before
+            the "@".
+        project_id (str): The project id the service account belongs to
+
+    Returns:
+        str: The full service account email.
+    """
+    return SERVICE_ACCT_EMAIL_FMT.format(account_id, project_id)
+
+def format_resource_id(resource_type, resource_id):
+    """Format the resource id as $RESOURCE_TYPE/$RESOURCE_ID.
+
+    Args:
+        resource_type (str): The resource type.
+        resource_id (str): The resource id.
+
+    Returns:
+        str: The formatted resource id.
+    """
+    return '%s/%s' % (resource_type, resource_id)
+
+def sanitize_conf_values(conf_values):
+    """Sanitize the forseti_conf values not to be zero-length strings.
+
+    Args:
+        conf_values (dict): The conf values to replace in the
+            forseti_conf.yaml.
+
+    Returns:
+        dict: The sanitized values.
+    """
+    for key in conf_values.keys():
+        if not conf_values[key]:
+            conf_values[key] = '""'
+    return conf_values
 
 
-# pylint: disable=too-many-instance-attributes
 class ForsetiGcpSetup(object):
     """Setup the Forseti Security GCP components."""
 
@@ -109,30 +315,43 @@ class ForsetiGcpSetup(object):
         Args:
             kwargs (dict): The kwargs.
         """
-        self.timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-        self.timeonly = self.timestamp[8:]
-        self.force_no_cloudshell = kwargs.get('no_cloudshell')
-        self.skip_iam_check = kwargs.get('no_iam_check')
-        self.branch = kwargs.get('branch')
+        self.datetimestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        self.timestamp = self.datetimestamp[8:]
+
+        self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
+        self.branch = None
+        self.config_filename = (kwargs.get('config') or
+                                CONFIG_FILENAME_FMT.format(
+                                    self.datetimestamp))
+
+        self.advanced_mode = bool(kwargs.get('advanced'))
+        self.dry_run = bool(kwargs.get('dry_run'))
 
         self.is_devshell = False
         self.authed_user = None
         self.project_id = None
         self.organization_id = None
 
-        self.gcp_service_account = SERVICE_ACCT_FMT.format(
-            'gcp', self.timeonly)
-        self.gsuite_service_account = SERVICE_ACCT_FMT.format(
-            'gsuite', self.timeonly)
-        self.gsuite_svc_acct_key_location = None
+        self.setup_explain = True
+        self.access_target = None
+        self.target_id = None
+        self.resource_root_id = None
+
+        self.enable_write_access = False
+        self.user_can_grant_roles = False
+
+        self.gcp_service_account = None
+        self.gsuite_service_account = None
 
         self.bucket_name = None
         self.bucket_location = kwargs.get('gcs_location') or 'us-central1'
         self.cloudsql_instance = '{}-{}'.format(
             DEFAULT_CLOUDSQL_INSTANCE_NAME,
-            self.timestamp)
+            self.datetimestamp)
         self.cloudsql_region = kwargs.get('cloudsql_region') or 'us-central1'
         self.gce_zone = '{}-c'.format(self.cloudsql_region)
+
+        self.has_roles_script = False
 
         self.deployment_name = False
         self.deploy_tpl_path = None
@@ -148,150 +367,90 @@ class ForsetiGcpSetup(object):
 
     def run_setup(self):
         """Run the setup steps."""
+        print_banner('Forseti %s Setup' % get_forseti_version())
+
         # Pre-flight checks.
-        self._print_banner('Pre-flight checks')
+        print_banner('Pre-flight checks')
+        self.check_run_properties()
         self.infer_version()
+        check_proper_gcloud()
         self.gcloud_info()
         self.check_cloudshell()
-        self.get_authed_user()
-        self.get_project()
-        self.get_organization()
+        self.check_authed_user()
+        self.check_project_id()
+        self.lookup_organization()
         self.check_billing_enabled()
-        self.has_permissions()
+        self.should_setup_explain()
+        self.determine_access_target()
+        self.should_enable_write_access()
+        self.format_service_acct_ids()
+        self.inform_access_on_target()
 
-        self.enable_apis()
+        enable_apis(self.dry_run)
+        self.create_reuse_service_acct('gcp_service_account')
+        self.create_reuse_service_acct('gsuite_service_account')
 
         # Generate names and config.
-        self._print_banner('Generate configs')
+        print_banner('Generate configs')
         self.generate_bucket_name()
-        self.generate_deployment_templates()
+        self.get_email_settings()
         self.generate_forseti_conf()
+        self.generate_deployment_templates()
 
         # Actual deployment.
         # 1. Create deployment.
-        # 2. If fails, continue to next step.
-        # 3. Otherwise, copy configs (forseti_conf.yaml, rules) to bucket.
-        # 4. Grant service account roles and create and download
-        #    G Suite service account key.
-        # 5. Poll the Forseti VM until it responds, then scp the key.
+        # 2. If deployment succeeds:
+        #    a. Copy configs (forseti_conf.yaml, rules) to bucket.
+        #    b. Grant service account roles.
         return_code = self.create_deployment()
         if not return_code:
             self.copy_config_to_bucket()
             self.grant_gcp_svc_acct_roles()
-            self.copy_gsuite_key()
 
         self.post_install_instructions(deploy_success=(not return_code))
 
-    @staticmethod
-    def _print_banner(text):
-        """Print a banner.
-
-        Args:
-            text (str): Text to put in the banner.
-        """
-        print('')
-        print('+-------------------------------------------------------')
-        print('|  %s' % text)
-        print('+-------------------------------------------------------')
-        print('')
-
-    @staticmethod
-    def _run_command(cmd_args):
-        """Wrapper to run a command in subprocess.
-
-        Args:
-            cmd_args (str): The list of command arguments.
-
-        Returns:
-            int: The return code. 0 is "ok", anything else is "error".
-            str: Output, if command was successful.
-            err: Error output, if there was an error.
-        """
-        proc = subprocess.Popen(cmd_args,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = proc.communicate()
-        return proc.returncode, out, err
-
-    @staticmethod
-    def _sanitize_conf_values(conf_values):
-        """Sanitize the forseti_conf values not to be zero-length strings.
-
-        Args:
-            conf_values (dict): The conf values to replace in the
-                forseti_conf.yaml.
-
-        Returns:
-            dict: The sanitized values.
-        """
-        for key in conf_values.keys():
-            if not conf_values[key]:
-                conf_values[key] = '""'
-        return conf_values
+    def check_run_properties(self):
+        """Check script run properties."""
+        print('Dry run? %s' % self.dry_run)
+        print('Advanced mode? %s' % self.advanced_mode)
 
     def infer_version(self):
-        """Infer the Forseti version, if --branch wasn't supplied as an arg."""
-        if not self.branch:
-            version_re = re.compile(VERSIONFILE_REGEX)
-            version_file = os.path.join(
-                ROOT_DIR_PATH, 'google', 'cloud', 'security', '__init__.py')
-            version = None
-            with open(version_file, 'rt') as vfile:
-                for line in vfile.readlines():
-                    version_match = version_re.match(line)
-                    if version_match:
-                        version = version_match.group(1)
-                        break
+        """Infer the Forseti version, or ask user to input one not listed."""
+        return_code, out, err = utils.run_command(
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+        if return_code:
+            print(err)
+            print('Will try to infer the Forseti version instead.')
+        else:
+            self.branch = out.strip()
+
+        user_choice = None
+        if not self.branch or self.branch == 'master':
+            version = get_forseti_version()
             if version:
                 self.branch = 'v%s' % version
+
+        if not self.advanced_mode:
+            user_choice = 'y'
+
+        while user_choice != 'y' and user_choice != 'n':
+            user_choice = raw_input(
+                'Install Forseti branch/tag %s? (y/n) '
+                % self.branch).lower().strip()
+
+        if user_choice == 'n':
+            branch = checkout_git_branch()
+            if branch:
+                self.branch = branch
             else:
-                self.branch = 'master'
+                print('No branch was chosen; using %s' % self.branch)
 
-        print('Forseti version: %s' % self.branch)
-
-    def check_proper_gcloud(self):
-        """Check gcloud version and presence of alpha components."""
-        return_code, out, err = self._run_command(
-            ['gcloud', '--version'])
-
-        version_regex = re.compile(GCLOUD_VERSION_REGEX)
-        alpha_regex = re.compile(GCLOUD_ALPHA_REGEX)
-
-        version = None
-        alpha_match = None
-
-        if return_code:
-            print('Error trying to determine your gcloud version:')
-            print(err)
-            sys.exit(1)
-        else:
-            for line in out.split('\n'):
-                version_match = version_regex.match(line)
-                if version_match:
-                    version = tuple(
-                        [int(i) for i in version_match.group(1).split('.')])
-                    continue
-                alpha_match = alpha_regex.match(line)
-                if alpha_match:
-                    break
-
-        print('Current gcloud version: {}'.format(version))
-        print('Has alpha components? {}'.format(alpha_match is not None))
-        if version < GCLOUD_MIN_VERSION or not alpha_match:
-            print('You need the following gcloud setup:\n\n'
-                  'gcloud version >= {}\n'
-                  'gcloud alpha components\n\n'
-                  'To install gcloud alpha components: '
-                  'gcloud components install alpha\n\n'
-                  'To update gcloud: gcloud components update\n'.
-                  format('.'.join(
-                      [str(i) for i in GCLOUD_MIN_VERSION])))
-            sys.exit(1)
+        print('Forseti branch/tag: %s' % self.branch)
 
     def gcloud_info(self):
         """Read gcloud info, and check if running in Cloud Shell."""
         # Read gcloud info
-        return_code, out, err = self._run_command(
+        return_code, out, err = utils.run_command(
             ['gcloud', 'info', '--format=json'])
         if return_code:
             print(err)
@@ -305,7 +464,7 @@ class ForsetiGcpSetup(object):
                 props = config.get('properties', {})
                 metrics = props.get('metrics', {})
                 self.is_devshell = metrics.get('environment') == 'devshell'
-                print('Got gcloud info')
+                print('Read gcloud info successfully')
             except ValueError as verr:
                 print(verr)
                 sys.exit(1)
@@ -332,7 +491,7 @@ class ForsetiGcpSetup(object):
         else:
             print('Bypass Cloud Shell check, continuing...')
 
-    def get_authed_user(self):
+    def check_authed_user(self):
         """Get the current authed user."""
         if not self.authed_user:
             print('Error getting authed user. You may need to run '
@@ -340,7 +499,7 @@ class ForsetiGcpSetup(object):
             sys.exit(1)
         print('You are: {}'.format(self.authed_user))
 
-    def get_project(self):
+    def check_project_id(self):
         """Get the project."""
         if not self.project_id:
             print('You need to have an active project! Exiting.')
@@ -349,7 +508,7 @@ class ForsetiGcpSetup(object):
 
     def check_billing_enabled(self):
         """Check if billing is enabled."""
-        return_code, out, err = self._run_command(
+        return_code, out, err = utils.run_command(
             ['gcloud', 'alpha', 'billing', 'projects', 'describe',
              self.project_id, '--format=json'])
         if return_code:
@@ -375,9 +534,125 @@ class ForsetiGcpSetup(object):
                   self.project_id, self.organization_id))
         sys.exit(1)
 
-    def get_organization(self):
+    def should_setup_explain(self):
+        """Ask user if they want to configure setup for Explain."""
+        print_banner('Enable IAM Explain')
+        print('IAM Explain requires granting Forseti access on the '
+              'organization-level IAM.\n')
+        choice = None
+        if not self.advanced_mode:
+            choice = 'y'
+            print('Automatically enabling IAM Explain (basic setup mode).')
+
+        while not choice:
+            choice = raw_input(
+                'Do you want to enable IAM Explain? (y/n) ').strip()
+        self.setup_explain = choice == 'y'
+
+    def determine_access_target(self):
+        """Determine where to enable Forseti access.
+
+        Either org, folder, or project level.
+        """
+        print_banner('Forseti access target')
+        choice_index = -1
+
+        if not self.advanced_mode:
+            self.access_target = RESOURCE_TYPES[0]
+            self.target_id = self.organization_id
+
+        while not self.target_id:
+            if self.setup_explain:
+                # If user wants to setup Explain, they must setup
+                # access on an organization.
+                choice_index = 1
+            else:
+                try:
+                    print('Forseti can be configured to access an '
+                          'organization, folder, or project.')
+                    for (i, choice) in enumerate(RESOURCE_TYPES):
+                        print('[%s] %s' % (i+1, choice))
+                    choice_input = raw_input(
+                        'At what level do you want to enable Forseti '
+                        'read (and optionally write) access? ').strip()
+                    choice_index = int(choice_input)
+                except ValueError:
+                    print('Invalid choice, try again.')
+                    continue
+
+            if choice_index and choice_index <= len(RESOURCE_TYPES):
+                self.access_target = RESOURCE_TYPES[choice_index-1]
+                if self.access_target == 'organization':
+                    self.choose_organization()
+                elif self.access_target == 'folder':
+                    self.choose_folder()
+                else:
+                    self.choose_project()
+
+        self.resource_root_id = format_resource_id(
+            '%ss' % self.access_target, self.target_id)
+
+        print('Forseti will be granted access to: %s' %
+              self.resource_root_id)
+
+    def choose_organization(self):
+        """Allow user to input organization id."""
+        while not self.target_id:
+            orgs = None
+            return_code, out, err = utils.run_command([
+                'gcloud', 'organizations', 'list', '--format=json'])
+            if return_code:
+                print(err)
+            else:
+                try:
+                    orgs = json.loads(out)
+                except ValueError as verr:
+                    print(verr)
+
+            if not orgs:
+                print('\nYou don\'t have access to any organizations. '
+                      'Choose another option to enable Forseti access.')
+                return
+
+            print('\nHere are the organizations you have access to:')
+            for org in orgs:
+                print('ID=%s (description="%s")' %
+                      (id_from_name(org['name']), org['displayName']))
+
+            choice = raw_input('Enter the organization id where '
+                               'you want Forseti to crawl for data: ').strip()
+            try:
+                # make sure that the choice is an int before converting to str
+                self.target_id = str(int(choice))
+            except ValueError:
+                print('Invalid choice %s, try again' % choice)
+
+    def choose_folder(self):
+        """Allow user to input folder id."""
+        while not self.target_id:
+            choice = raw_input(
+                'To find the folder, go to Cloud Console:\n\n'
+                '    https://console.cloud.google.com/'
+                'cloud-resource-manager?organizationId=%s\n\n'
+                'Enter the folder id where you want '
+                'Forseti to crawl for data: ' %
+                self.organization_id).strip()
+            try:
+                # make sure that the choice is an int before converting to str
+                self.target_id = str(int(choice))
+            except ValueError:
+                print('Invalid choice %s, try again' % choice)
+
+    def choose_project(self):
+        """Allow user to input project id."""
+        while not self.target_id:
+            self.target_id = raw_input(
+                'Enter the project id (NOT PROJECT NUMBER), '
+                'where you want Forseti to crawl for data: ').strip()
+
+    def lookup_organization(self):
         """Infer the organization from the project's parent."""
-        return_code, out, err = self._run_command(
+        return_code, out, err = utils.run_command(
             ['gcloud', 'projects', 'describe',
              self.project_id, '--format=json'])
         if return_code:
@@ -424,7 +699,7 @@ class ForsetiGcpSetup(object):
         parent_type = 'folders'
         parent_id = folder_id
         while parent_type != 'organizations':
-            return_code, out, err = self._run_command(
+            return_code, out, err = utils.run_command(
                 ['gcloud', 'alpha', 'resource-manager', 'folders',
                  'describe', parent_id, '--format=json'])
             if return_code:
@@ -439,152 +714,147 @@ class ForsetiGcpSetup(object):
                 self._no_organization()
         self.organization_id = parent_id
 
-    def has_permissions(self):
-        """Check if current user is an org admin and project owner.
+    def should_enable_write_access(self):
+        """Ask if user wants to enable write access for Forseti."""
+        print_banner('Enable Forseti write access')
+        choice = None
+        if not self.advanced_mode:
+            choice = 'y'
 
-        User must be an org admin in order to assign a service account roles
-        on the organization IAM policy.
-        """
-        if not self.skip_iam_check:
-            self._print_banner('Checking permissions')
+        while choice != 'y' and choice != 'n':
+            choice = raw_input(
+                'Enable write access for Forseti? '
+                'This allows Forseti to make changes to policies '
+                '(e.g. for Enforcer) (y/n) ').strip().lower()
 
-            if self._is_org_admin() and self._can_modify_project_iam():
-                print('You have the necessary roles to grant roles that '
-                      'Forseti needs. Continuing...')
-            else:
-                print('You do not have the necessary roles to grant roles that '
-                      'Forseti needs. Please have someone who is an Org Admin '
-                      'and either Project Editor or Project Owner for this '
-                      'project to run this setup. Exiting.')
-                sys.exit(1)
+        if choice == 'y':
+            self.enable_write_access = True
+            print('Forseti will have write access on %s.' %
+                  self.resource_root_id)
+
+    def format_service_acct_ids(self):
+        """Format the service account ids."""
+        modifier = 'reader'
+        if self.enable_write_access:
+            modifier = 'readwrite'
+
+        self.gcp_service_account = full_service_acct_email(
+            SERVICE_ACCT_FMT.format('gcp', modifier, self.timestamp),
+            self.project_id)
+
+        self.gsuite_service_account = full_service_acct_email(
+            SERVICE_ACCT_FMT.format('gsuite', 'reader', self.timestamp),
+            self.project_id)
+
+    def inform_access_on_target(self):
+        """Inform user that they need IAM access to grant Forseti access."""
+        print_banner('Current IAM access')
+        choice = None
+
+        if not self.advanced_mode:
+            choice = 'y'
+
+        while choice != 'y' and choice != 'n':
+            choice = raw_input('Do you have access to grant Forseti IAM '
+                               'roles on the target %s? (y/n) ' %
+                               self.resource_root_id).strip().lower()
+
+        if choice == 'y':
+            self.user_can_grant_roles = True
+            print('Will attempt to grant roles on the target %s.' %
+                  self.resource_root_id)
         else:
-            self._print_banner('Permission check skipped')
+            self.user_can_grant_roles = False
+            print('Will NOT attempt to grant roles on the target %s.' %
+                  self.resource_root_id)
 
-    def _is_org_admin(self):
-        """Check if current user is an org admin.
-
-        Returns:
-            bool: Whether current user is Org Admin.
-        """
-        is_org_admin = self._has_roles(
-            'organizations',
-            self.organization_id,
-            ['roles/resourcemanager.organizationAdmin'])
-
-        print('%s is Org Admin? %s' % (self.authed_user, is_org_admin))
-        return is_org_admin
-
-    def _can_modify_project_iam(self):
-        """Check whether user can modify the current project's IAM policy.
-
-        To make it simple, check that user is either Project Editor or Owner.
-
-        Returns:
-            bool: If user can modify a project.
-        """
-        can_modify_project = self._has_roles(
-            'projects',
-            self.project_id,
-            ['roles/editor', 'roles/owner'])
-
-        print('%s is either Project Editor or Owner? %s' %
-              (self.authed_user, can_modify_project))
-        return can_modify_project
-
-    def _has_roles(self, resource_type, resource_id, roles):
-        """Check if user has one or more roles in a resource.
+    def create_reuse_service_acct(self, acct_type):
+        """Create or reuse service account.
 
         Args:
-            resource_type (str): The resource type.
-            resource_id (str): The resource id.
-            roles (list): The roles to check user's membership in.
-
-        Returns:
-            bool: True if has roles, otherwise False.
+            acct_type (str): The account type.
         """
-        has_roles = False
-        return_code, out, err = self._run_command(
-            ['gcloud', resource_type, 'get-iam-policy',
-             resource_id, '--format=json'])
-        if return_code:
-            print(err)
+        print_banner('Create/Reuse %s' % acct_type)
+
+        choices = ['Create %s' % acct_type, 'Reuse %s' % acct_type]
+        choice_index = -1
+        if not self.advanced_mode:
+            choice_index = 1
         else:
-            try:
-                # Search resource's policy bindings for:
-                # 1) Members who have certain roles.
-                # 2) Whether the current authed user is in the members list.
-                iam_policy = json.loads(out)
-                role_members = []
-                for binding in iam_policy.get('bindings', []):
-                    if binding['role'] in roles:
-                        role_members.extend(binding['members'])
+            while True:
+                for (i, choice) in enumerate(choices):
+                    print('[%s] %s' % (i+1, choice))
 
-                for member in role_members:
-                    if member.find(self.authed_user) > -1:
-                        has_roles = True
+                choice_input = raw_input(
+                    'Enter the number of your choice: ').strip()
+
+                try:
+                    choice_index = int(choice_input)
+                    if choice_index < 1 or choice_index > len(choices):
+                        raise ValueError
+                    else:
                         break
-            except ValueError as verr:
-                print(verr)
-                print('Error reading output of %s.getIamPolicy().' %
-                      resource_type)
+                except ValueError:
+                    print('Invalid choice "%s", try again' % choice_input)
 
-        return has_roles
-
-    def enable_apis(self):
-        """Enable necessary APIs for Forseti Security.
-
-        Technically, this could be done in Deployment Manager, but if you
-        delete the deployment, you'll disable the APIs. This could cause errors
-        if there are resources still in use (e.g. Compute Engine), and then
-        your deployment won't be cleanly deleted.
-        """
-        self._print_banner('Enabling required APIs')
-        for api in REQUIRED_APIS:
-            print('Enabling the {} API...'.format(api['name']))
-            return_code, _, err = self._run_command(
-                ['gcloud', 'alpha', 'service-management',
-                 'enable', api['service']])
+        # If the choice is "Create service account", create the service
+        # account. The default is to create the service account with a
+        # generated name.
+        # Otherwise, present the user with options to choose from
+        # available service accounts in this project.
+        if choice_index == 1:
+            if self.dry_run:
+                print('This is a dry run, so don\'t actually create '
+                      'the service account.')
+            else:
+                new_acct_id = getattr(self, acct_type)
+                return_code, out, err = utils.run_command(
+                    ['gcloud', 'iam', 'service-accounts', 'create',
+                     new_acct_id[:new_acct_id.index('@')]])
+                if return_code:
+                    print(err)
+                    print('Could not create the service account. Terminating '
+                          'because this is an unexpected error.')
+                    sys.exit(1)
+        else:
+            svc_accts = []
+            return_code, out, err = utils.run_command(
+                ['gcloud', 'iam', 'service-accounts', 'list', '--format=json'])
             if return_code:
                 print(err)
+                print('Could not determine the service accounts, will just '
+                      'create a new service account.')
+                return
             else:
-                print('Done.')
+                try:
+                    svc_accts = json.loads(out)
+                except ValueError:
+                    print('Could not determine the service accounts, will just '
+                          'create a new service account.')
+                    return
 
-    def _full_service_acct_email(self, account_id):
-        """Generate the full service account email.
+            acct_idx = -1
+            while acct_idx < 1 or acct_idx > len(svc_accts):
+                for (i, acct) in enumerate(svc_accts):
+                    print('[%s] %s (%s)' %
+                          (i+1, acct.get('displayName', ''), acct['email']))
 
-        Args:
-            account_id (str): The service account id, i.e. the part before
-                the "@".
+                choice_input = raw_input(
+                    'Enter the number of your choice: ').strip()
 
-        Returns:
-            str: The full service account email.
-        """
-        return SERVICE_ACCT_EMAIL_FMT.format(account_id, self.project_id)
+                try:
+                    acct_idx = int(choice_input)
+                except ValueError:
+                    print('Invalid choice, try again')
 
-    def download_gsuite_svc_acct_key(self):
-        """Download the service account key."""
-        print('\nDownloading G Suite service account key for %s'
-              % self.gsuite_service_account)
-        proc = subprocess.Popen(
-            ['gcloud', 'iam', 'service-accounts', 'keys',
-             'create', GSUITE_KEY_NAME,
-             '--iam-account=%s' % (self._full_service_acct_email(
-                 self.gsuite_service_account))],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        _, err = proc.communicate()
-        if proc.returncode:
-            print(err)
+            setattr(self, acct_type, svc_accts[acct_idx-1]['email'])
 
-        self.gsuite_svc_acct_key_location = os.path.abspath(
-            os.path.join(
-                os.getcwd(),
-                GSUITE_KEY_NAME))
+        print('Using %s for %s' % (getattr(self, acct_type), acct_type))
 
     def grant_gcp_svc_acct_roles(self):
         """Grant the following IAM roles to GCP service account.
 
-        Org:
+        Org/Folder/Project:
             AppEngine App Viewer
             Cloud SQL Viewer
             Network Viewer
@@ -598,46 +868,73 @@ class ForsetiGcpSetup(object):
             Storage Object Viewer
             Storage Object Creator
         """
-        self._print_banner('Assigning roles to the GCP service account')
-        if not self.organization_id:
-            self._no_organization()
+        print_banner('Assigning roles to the GCP service account')
+        access_target_roles = GCP_READ_IAM_ROLES
+        if self.enable_write_access:
+            access_target_roles.extend(GCP_WRITE_IAM_ROLES)
 
         roles = {
-            'organizations': ORG_IAM_ROLES,
-            'projects': PROJECT_IAM_ROLES
+            '%ss' % self.access_target: access_target_roles,
+            'forseti_project': PROJECT_IAM_ROLES,
+            'service_accounts': SVC_ACCT_ROLES,
         }
 
+        # Keep track of the roles that user couldn'tgrant.
+        assign_roles_cmds = []
+
         for (resource_type, roles) in roles.iteritems():
+            resource_id = self.target_id
+
             if resource_type == 'organizations':
-                resource_id = self.organization_id
-            else:
+                resource_args = ['organizations']
+            elif resource_type == 'folders':
+                resource_args = ['alpha', 'resource-manager', 'folders']
+            elif resource_type == 'projects':
+                resource_args = ['projects']
+            elif resource_type == 'forseti_project':
+                resource_args = ['projects']
                 resource_id = self.project_id
+            elif resource_type == 'service_accounts':
+                resource_args = ['iam', 'service-accounts']
+                resource_id = self.gsuite_service_account
 
             for role in roles:
-                iam_role_cmd = [
-                    'gcloud',
-                    resource_type,
+                iam_role_cmd = ['gcloud']
+                iam_role_cmd.extend(resource_args)
+                iam_role_cmd.extend([
                     'add-iam-policy-binding',
                     resource_id,
                     '--member=serviceAccount:%s' % (
-                        self._full_service_acct_email(
-                            self.gcp_service_account)),
+                        self.gcp_service_account),
                     '--role=%s' % role,
-                ]
-                print('Assigning %s on %s...' % (role, resource_id))
-                proc = subprocess.Popen(iam_role_cmd,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-                _, err = proc.communicate()
-                if proc.returncode:
-                    print(err)
+                ])
+                if self.user_can_grant_roles and not self.dry_run:
+                    print('Assigning %s on %s...' % (role, resource_id))
+                    return_code, _, err = utils.run_command(iam_role_cmd)
+                    if return_code:
+                        print(err)
+                        assign_roles_cmds.append(iam_role_cmd)
+                    else:
+                        print('Done.')
                 else:
-                    print('Done.')
+                    assign_roles_cmds.append(iam_role_cmd)
+
+        if assign_roles_cmds:
+            print('One or more roles could not be assigned. Writing a '
+                  'script with the commands to assign those roles. Please '
+                  'give this script to someone (like an admin) who can '
+                  'assign these roles for you. If you do not assign these '
+                  'roles, Forseti may not work properly!')
+            self.has_roles_script = True
+            with open('grant_forseti_roles.sh', 'wt') as roles_script:
+                roles_script.write('#!/bin/bash\n\n')
+                for cmd in assign_roles_cmds:
+                    roles_script.write('%s\n' % ' '.join(cmd))
 
     def generate_bucket_name(self):
         """Generate bucket name for the rules."""
         self.bucket_name = DEFAULT_BUCKET_FMT.format(
-            self.project_id, self.timeonly)
+            self.project_id, self.timestamp)
 
     def generate_deployment_templates(self):
         """Generate deployment templates."""
@@ -653,16 +950,19 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 ROOT_DIR_PATH,
                 'deployment-templates',
-                'deploy-forseti-{}.yaml'.format(self.timestamp)))
+                'deploy-forseti-{}.yaml'.format(self.datetimestamp)))
 
         deploy_values = {
             'CLOUDSQL_REGION': self.cloudsql_region,
             'CLOUDSQL_INSTANCE_NAME': self.cloudsql_instance,
             'SCANNER_BUCKET': self.bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.bucket_location,
-            'SERVICE_ACCT_GCP_READER': self.gcp_service_account,
-            'SERVICE_ACCT_GSUITE_READER': self.gsuite_service_account,
+            'SERVICE_ACCOUNT_GCP': self.gcp_service_account,
+            'SERVICE_ACCOUNT_GSUITE': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
+            'GSUITE_ADMIN_EMAIL': self.gsuite_superadmin_email,
+            'ROOT_RESOURCE_ID': self.resource_root_id,
+            'rand_minute': random.randint(0, 59)
         }
 
         # Create Deployment template with values filled in.
@@ -678,25 +978,23 @@ class ForsetiGcpSetup(object):
 
     def generate_forseti_conf(self):
         """Generate Forseti conf file."""
-        # Create a forseti_conf_dm.yaml config file with values filled in.
+        # Create a forseti_conf_$TIMESTAMP.yaml config file with
+        # values filled in.
         # forseti_conf.yaml in file
-        print('Generate forseti_conf_dm.yaml...\n')
+        print('\nGenerate forseti_conf_%s.yaml...' % self.datetimestamp)
         forseti_conf_in = os.path.abspath(
             os.path.join(
                 ROOT_DIR_PATH, 'configs', 'forseti_conf.yaml.in'))
         forseti_conf_gen = os.path.abspath(
             os.path.join(
-                ROOT_DIR_PATH, 'configs', 'forseti_conf_dm.yaml'))
+                ROOT_DIR_PATH, 'configs',
+                'forseti_conf_%s.yaml' % self.datetimestamp))
 
-        self._get_user_input()
-
-        conf_values = self._sanitize_conf_values({
+        conf_values = sanitize_conf_values({
             'EMAIL_RECIPIENT': self.notification_recipient_email,
             'EMAIL_SENDER': self.notification_sender_email,
             'SENDGRID_API_KEY': self.sendgrid_api_key,
             'SCANNER_BUCKET': self.bucket_name[len('gs://'):],
-            'GROUPS_SERVICE_ACCOUNT_KEY_FILE':
-                '/home/ubuntu/{}'.format(GSUITE_KEY_NAME),
             'DOMAIN_SUPER_ADMIN_EMAIL': self.gsuite_superadmin_email,
             'ENABLE_GROUP_SCANNER': 'true',
         })
@@ -708,10 +1006,11 @@ class ForsetiGcpSetup(object):
                 out_tmpl.write(out_contents)
                 self.forseti_conf_path = forseti_conf_gen
 
-        print('\nCreated forseti_conf_dm.yaml config file:\n    %s\n' %
-              self.forseti_conf_path)
+        print('\nCreated forseti_conf_%s.yaml config file:\n    %s\n' %
+              (self.datetimestamp,
+               self.forseti_conf_path))
 
-    def _get_user_input(self):
+    def get_email_settings(self):
         """Ask user for specific setup values."""
         if not self.sendgrid_api_key:
             # Ask for SendGrid API Key
@@ -749,15 +1048,20 @@ class ForsetiGcpSetup(object):
             int: The return code value of running `gcloud` command to create
                 the deployment.
         """
-        self._print_banner('Create Forseti deployment')
+        print_banner('Create Forseti deployment')
+
+        if self.dry_run:
+            print('This is a dry run, so skipping this step.')
+            return 0
+
         print ('This may take a few minutes.')
-        self.deployment_name = 'forseti-security-{}'.format(self.timestamp)
+        self.deployment_name = 'forseti-security-{}'.format(self.datetimestamp)
         print('Deployment name: %s' % self.deployment_name)
         print('Deployment Manager Dashboard: '
               'https://console.cloud.google.com/deployments/details/'
               '{}?project={}&organizationId={}\n'.format(
                   self.deployment_name, self.project_id, self.organization_id))
-        return_code, out, err = self._run_command(
+        return_code, out, err = utils.run_command(
             ['gcloud', 'deployment-manager', 'deployments', 'create',
              self.deployment_name, '--config={}'.format(self.deploy_tpl_path)])
         time.sleep(2)
@@ -779,10 +1083,14 @@ class ForsetiGcpSetup(object):
         copy_config_ok = False
         copy_rules_ok = False
 
-        self._print_banner('Copy configs to bucket')
+        print_banner('Copy configs to bucket')
+
+        if self.dry_run:
+            print('This is a dry run, so skipping this step.')
+            return False, False
 
         print('Copy forseti_conf.yaml to {}'.format(self.bucket_name))
-        return_code, out, err = self._run_command(
+        return_code, out, err = utils.run_command(
             ['gsutil', 'cp', self.forseti_conf_path,
              '{}/configs/forseti_conf.yaml'.format(self.bucket_name)])
         if return_code:
@@ -795,7 +1103,7 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 ROOT_DIR_PATH, 'rules'))
         print('Copy rules to {}'.format(self.bucket_name))
-        return_code, out, err = self._run_command(
+        return_code, out, err = utils.run_command(
             ['gsutil', 'cp', '-r', rules_dir, self.bucket_name])
         if return_code:
             print(err)
@@ -804,43 +1112,6 @@ class ForsetiGcpSetup(object):
             copy_rules_ok = True
 
         return copy_config_ok, copy_rules_ok
-
-    def copy_gsuite_key(self):
-        """scp the G Suite key to the VM after deployment.
-
-        Use 2**<attempt #> seconds of sleep() between attempts.
-        """
-        self._print_banner('Copy G Suite key to Forseti VM')
-        self.download_gsuite_svc_acct_key()
-        print('scp-ing your gsuite_key.json to your Forseti GCE instance...')
-        for i in range(1, GSUITE_KEY_SCP_ATTEMPTS+1):
-            print('Attempt {} of {} ...'.format(i, GSUITE_KEY_SCP_ATTEMPTS))
-            return_code, out, err = self._run_command(
-                ['gcloud',
-                 'compute',
-                 'scp',
-                 '--zone={}'.format(self.gce_zone),
-                 '--quiet',
-                 self.gsuite_svc_acct_key_location,
-                 'ubuntu@{}-vm:/home/ubuntu/{}'.format(
-                     self.deployment_name, GSUITE_KEY_NAME),
-                ])
-            if return_code:
-                print(err)
-                if i+1 < GSUITE_KEY_SCP_ATTEMPTS:
-                    sleep_time = 2**(i+1)
-                    print('Trying again in %s seconds.' % (sleep_time))
-                    time.sleep(sleep_time)
-            else:
-                print(out)
-                print('Done')
-                break
-
-        print('Delete downloaded %s' % GSUITE_KEY_NAME)
-        try:
-            os.remove(self.gsuite_svc_acct_key_location)
-        except OSError as ose:
-            print(ose)
 
     def post_install_instructions(self, deploy_success):
         """Show post-install instructions.
@@ -851,9 +1122,12 @@ class ForsetiGcpSetup(object):
         Args:
             deploy_success (bool): Whether deployment was successful.
         """
-        self._print_banner('Post-setup instructions')
+        print_banner('Post-setup instructions')
 
-        if deploy_success:
+        if self.dry_run:
+            print('This was a dry run, so a deployment was not attempted. '
+                  'You can still create the deployment manually.\n')
+        elif deploy_success:
             print('Forseti Security (branch/version: %s) has been '
                   'deployed to GCP.\n' % self.branch)
         else:
@@ -865,21 +1139,40 @@ class ForsetiGcpSetup(object):
         print('Your generated Deployment Manager template can be '
               'found here:\n\n    {}\n\n'.format(self.deploy_tpl_path))
 
-        print('You can view the details of your deployment in the '
-              'Cloud Console:\n\n    '
-              'https://console.cloud.google.com/deployments/details/'
-              '{}?project={}&organizationId={}\n\n'.format(
-                  self.deployment_name, self.project_id, self.organization_id))
+        if self.dry_run:
+            print('A Forseti configuration file has been generated. '
+                  'After you create your deployment, copy this file to '
+                  'the bucket created in the deployment:\n\n'
+                  '    gsutil cp %s %s/configs/forseti_conf.yaml\n\n' %
+                  (self.forseti_conf_path,
+                   self.bucket_name))
+        else:
+            print('You can view the details of your deployment in the '
+                  'Cloud Console:\n\n    '
+                  'https://console.cloud.google.com/deployments/details/'
+                  '{}?project={}&organizationId={}\n\n'.format(
+                      self.deployment_name,
+                      self.project_id,
+                      self.organization_id))
 
-        print('A default configuration file (configs/forseti_conf_dm.yaml) '
-              'has been generated. If you wish to change your '
-              'Forseti configuration or rules, e.g. enabling G Suite '
-              'Groups collection, either download the conf file in your bucket '
-              '`{}` or edit your local copy, then follow the guide below to '
-              'copy the files to Cloud Storage:\n\n'
-              '    http://forsetisecurity.org/docs/howto/deploy/'
-              'gcp-deployment.html#move-configuration-to-gcs\n\n'.format(
-                  self.bucket_name))
+            print('A Forseti configuration file (configs/forseti_conf_{}.yaml) '
+                  'has been generated. If you wish to change your '
+                  'Forseti configuration or rules, e.g. enabling G Suite '
+                  'Groups collection, either download the conf file in '
+                  'your bucket `{}` or edit your local copy, then follow '
+                  'the guide below to copy the files to Cloud Storage:\n\n'
+                  '    http://forsetisecurity.org/docs/howto/deploy/'
+                  'gcp-deployment.html#move-configuration-to-gcs\n\n'.format(
+                      self.datetimestamp,
+                      self.bucket_name))
+
+        if self.has_roles_script:
+            print('Some roles could not be assigned to %s where you want '
+                  'to grant Forseti access. A script `grant_forseti_roles.sh` '
+                  'has been generated with the necessary commands to assign '
+                  'those roles. Please run this script to assign the Forseti '
+                  'roles so that Forseti will work properly.\n\n' %
+                  self.resource_root_id)
 
         if self.skip_email:
             print('If you would like to enable email notifications via '
