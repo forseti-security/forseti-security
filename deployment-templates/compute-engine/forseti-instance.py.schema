@@ -25,6 +25,7 @@ required:
 - zone
 - service-account
 - service-account-scopes
+- service-account-gsuite
 - scanner-bucket
 - database-name
 - src-path
@@ -56,6 +57,10 @@ properties:
     type: array
     default: ['https://www.googleapis.com/auth/cloud-platform']
     description: The GCP scopes to give the service account.
+
+  service-account-gsuite:
+    type: string
+    description: The service account used for G Suite domain-wide delegation.
 
   scanner-bucket:
     type: string

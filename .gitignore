@@ -16,12 +16,16 @@
 .DS_Store
 .*swp
 
-# Possible credentials
+# Possible credentials. Don't ignore all json files
+# though, because some are used for schema definitions.
 /*.json
 scripts/gcp_setup/*.json
 
-# Dev scripts
+# Scripts we don't want to commit
 scripts/dev*.sh
+grant_forseti_roles.sh
+run_server.sh
+run_client.sh
 
 # User-edited configs
 deployment-templates/*.yaml
@@ -38,6 +42,3 @@ out/
 # Coverage
 .coverage
 htmlcov/
-
-run_server.sh
-run_client.sh
