@@ -56,8 +56,9 @@ class InventoryTypeClass(object):
     IAM_POLICY = 'iam_policy'
     GCS_POLICY = 'gcs_policy'
     DATASET_POLICY = 'dataset_policy'
+    BILLING_INFO = 'billing_info'
     SUPPORTED_TYPECLASS = frozenset(
-        [RESOURCE, IAM_POLICY, GCS_POLICY, DATASET_POLICY])
+        [RESOURCE, IAM_POLICY, GCS_POLICY, DATASET_POLICY, BILLING_INFO])
 
 
 class InventoryIndex(BASE):
@@ -186,6 +187,7 @@ class Inventory(BASE):
         iam_policy = resource.getIamPolicy()
         gcs_policy = resource.getGCSPolicy()
         dataset_policy = resource.getDatasetPolicy()
+        billing_info = resource.getBillingInfo()
 
         rows = []
         rows.append(
@@ -234,6 +236,19 @@ class Inventory(BASE):
                     key=resource.key(),
                     type=resource.type(),
                     data=json.dumps(dataset_policy),
+                    parent_key=resource.key(),
+                    parent_type=resource.type(),
+                    other=None,
+                    error=None))
+
+        if billing_info:
+            rows.append(
+                Inventory(
+                    index=index.id,
+                    type_class=InventoryTypeClass.BILLING_INFO,
+                    key=resource.key(),
+                    type=resource.type(),
+                    data=json.dumps(billing_info),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=None,
@@ -674,6 +689,7 @@ class Storage(BaseStorage):
              fetch_iam_policy=False,
              fetch_gcs_policy=False,
              fetch_dataset_policy=False,
+             fetch_billing_info=False,
              with_parent=False):
         """Iterate the objects in the storage.
 
@@ -682,6 +698,7 @@ class Storage(BaseStorage):
             fetch_iam_policy (bool): Yield iam policies.
             fetch_gcs_policy (bool): Yield gcs policies.
             fetch_dataset_policy (bool): Yield dataset policies.
+            fetch_billing_info (bool): Yield project billing info.
             with_parent (bool): Join parent with results, yield tuples.
 
         Yields:
@@ -702,6 +719,10 @@ class Storage(BaseStorage):
         elif fetch_dataset_policy:
             filters.append(
                 Inventory.type_class == InventoryTypeClass.DATASET_POLICY)
+
+        elif fetch_billing_info:
+            filters.append(
+                Inventory.type_class == InventoryTypeClass.BILLING_INFO)
 
         else:
             filters.append(
