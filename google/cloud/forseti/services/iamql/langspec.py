@@ -288,40 +288,6 @@ class QueryCompiler(object):
         self.joins = []
         self.last_defined_variable = None
 
-    def visit(self, node, transformed_children):
-        handlers = {
-                EntityDefinition: self.visit_entity_definition,
-                Projection: self.visit_projection,
-                Join: self.visit_join,
-                EntityFilter: self.visit_entity_filter,
-            }
-        for base_type, handler in handlers.iteritems():
-            if isinstance(node, base_type):
-                return handler(node, transformed_children)
-        return node
-
-    def visit_entity_definition(self, node, transformed_children):
-        ident = node.identifier
-        entity = node.entity
-
-        table = aliased(self.get_table_by_entity(entity),
-                        name=ident)
-        self.variables[ident] = Variable({'identifier': ident,
-                                          'entity': entity,
-                                          'table': table})
-
-    def visit_projection(self, node, transformed_children):
-        self.projection = node.entities
-
-    def visit_join(self, node, transformed_children):
-        self.joins.append(node)
-
-    def visit_entity_filter(self, node, transformed_children):
-        self.node.compile()
-
-    def generate_join_filter(self, join):
-        pass
-
     def compile(self):
         ast = BNF().parseString(self.iam_query, parseAll=True)
         query_set = ast[0]
@@ -332,18 +298,6 @@ class QueryCompiler(object):
                                      self.session)
 
         return query_set.compile(context)
-
-        entities = []
-        for identifier in self.projection:
-            variable = self.variables[identifier]
-            entities.append(variable.table)
-
-        qry = self.session.query(*entities)
-        for join in self.joins:
-            join_clause = self.generate_join_filter(join)
-            qry = qry.filter(join_clause)
-        print qry
-        return qry.distinct()
 
 
 class Node(list):
@@ -416,7 +370,10 @@ class Node(list):
 
 
 class QuerySet(Node):
-    pass
+
+    def compile(self, context):
+        Node.compile(self, context)
+        return context.artefact
 
 
 class Selection(Node):
