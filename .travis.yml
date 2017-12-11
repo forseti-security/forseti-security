@@ -39,7 +39,7 @@ before_install:
 
 script:
   # Run code coverage.
-  - docker exec -it build /bin/sh -c "coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
+  - docker exec -it build /bin/sh -c "coverage run --source='google.cloud.forseti,scripts.gcp_setup.environment' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
   # Check code compliance.
   - docker exec -it build /bin/sh -c "pylint --rcfile=pylintrc google/ scripts/gcp_setup/"
 

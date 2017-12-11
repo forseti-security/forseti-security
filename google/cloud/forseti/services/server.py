@@ -346,21 +346,30 @@ def serve(endpoint, services,
 def main():
     """Run."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('endpoint', default='[::]:50051', help='Server endpoint')
     parser.add_argument(
-        'forseti_db',
+        '--endpoint',
+        default='[::]:50051',
+        help='Server endpoint')
+    parser.add_argument(
+        '--forseti_db',
         help=('Forseti database string, formatted as '
               '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
     parser.add_argument(
-        'gsuite_private_keyfile',
+        '--gsuite_private_keyfile',
         help='Path to G Suite service account private keyfile')
-    parser.add_argument('gsuite_admin_email', help='G Suite admin email')
     parser.add_argument(
-        'root_resource_id',
+        '--gsuite_admin_email',
+        help='G Suite admin email')
+    parser.add_argument(
+        '--root_resource_id',
         help=('Root resource to start crawling from, formatted as '
               '"<resource_type>/<resource_id>" '
               '(e.g. "organizations/12345677890")'))
-    parser.add_argument('services', nargs='*', default=[], help='Forseti services')
+    parser.add_argument(
+        '--services',
+        nargs='*',
+        default=[],
+        help='Forseti services')
     args = vars(parser.parse_args())
 
     serve(args['endpoint'], args['services'], args['forseti_db'],
