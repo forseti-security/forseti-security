@@ -427,6 +427,16 @@ class ApiClientImpl(ApiClient):
             yield forwardingrule
 
     @create_lazy('compute', _create_compute)
+    def iter_images(self, projectid):
+        """Image Iterator from gcp API call
+
+        Yields:
+            dict: Generator of image resources
+        """
+        for image in self.compute.get_images(projectid):
+            yield image
+
+    @create_lazy('compute', _create_compute)
     def iter_ig_managers(self, projectid):
         """Instance Group Manager Iterator from gcp API call
 
