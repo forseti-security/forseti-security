@@ -152,6 +152,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._firewalls = None
         self._forwarding_rules = None
         self._global_operations = None
+        self._images = None
         self._instance_group_managers = None
         self._instance_groups = None
         self._instance_templates = None
@@ -212,6 +213,14 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             self._global_operations = self._init_repository(
                 _ComputeGlobalOperationsRepository)
         return self._global_operations
+
+    @property
+    def images(self):
+        """Returns a _ComputeImagesRepository instance."""
+        if not self._images:
+            self._images = self._init_repository(
+                _ComputeImagesRepository)
+        return self._images
 
     @property
     def instance_group_managers(self):
@@ -388,6 +397,23 @@ class _ComputeGlobalOperationsRepository(
         """
         super(_ComputeGlobalOperationsRepository, self).__init__(
             component='globalOperations', entity_field='operation', **kwargs)
+
+
+class _ComputeImagesRepository(
+        repository_mixins.GetQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Compute Images repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeImagesRepository, self).__init__(
+            component='images', entity_field='image', **kwargs)
+
 
 class _ComputeInstanceGroupManagersRepository(
         repository_mixins.AggregatedListQueryMixin,
@@ -701,6 +727,37 @@ class ComputeClient(object):
             if api_not_enabled:
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
+
+    def get_image(self, project_id, image_name):
+        """Get an image from a project.
+
+        Args:
+            project_id (str): The project id.
+            image_name (str): The image name to get.
+
+        Returns:
+            dict: A Compute Image resource dict.
+            https://cloud.google.com/compute/docs/reference/latest/images
+        """
+        try:
+            return self.repository.images.get(project_id, target=image_name)
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+
+    def get_images(self, project_id):
+        """Get all images created in a project.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            list: A list of images for this project.
+        """
+        paged_results = self.repository.images.list(project_id)
+        return _flatten_list_results(project_id, paged_results, 'items')
 
     def get_instance_group_instances(self, project_id, instance_group_name,
                                      region=None, zone=None):
