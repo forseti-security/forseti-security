@@ -32,7 +32,6 @@ from sqlalchemy import String
 from sqlalchemy import Sequence
 from sqlalchemy import ForeignKey
 from sqlalchemy import Text
-from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from sqlalchemy import create_engine as sqlalchemy_create_engine
 from sqlalchemy import Table
 from sqlalchemy import DateTime
@@ -88,7 +87,7 @@ class Model(MODEL_BASE):
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
     message = Column(Text())
-    warnings = Column(MEDIUMTEXT())
+    warnings = Column(Text(16777215))
 
     def __init__(self, *args, **kwargs):
         super(Model, self).__init__(*args, **kwargs)
@@ -97,6 +96,7 @@ class Model(MODEL_BASE):
 
     @reconstructor
     def init_on_load(self):
+        """Initialization of model when reconstructed from query."""
         self.warning_store = list()
 
     def kick_watchdog(self):
