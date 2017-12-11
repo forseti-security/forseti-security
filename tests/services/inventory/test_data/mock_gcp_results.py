@@ -42,6 +42,7 @@ INSTANCE_TEMPLATE_ID_PREFIX = "113"
 NETWORK_ID_PREFIX = "114"
 SUBNETWORK_ID_PREFIX = "115"
 SERVICEACCOUNT_KEY_ID_PREFIX = "116"
+GCE_IMAGE_ID_PREFIX = "117"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -952,6 +953,71 @@ GCE_GET_FIREWALLS = {
         json.loads(
             GCE_FIREWALL_TEMPLATE_DEFAULT.format(
                 id=2, project="project2", network="default")),
+}
+
+# Fields: id, project
+GCE_IMAGES_TEMPLATE = """
+[
+{{
+ "kind": "compute#image",
+ "id": "117{id}1",
+ "creationTimestamp": "2017-11-15T21:59:58.627-08:00",
+ "name": "centos-6-custom-v20171116",
+ "description": "Custom CentOS 6 built on 20171116",
+ "sourceType": "RAW",
+ "deprecated": {{
+  "state": "DEPRECATED",
+  "replacement": "https://www.googleapis.com/compute/v1/projects/{project}/global/images/centos-6-custom-v20171208"
+ }},
+ "status": "READY",
+ "archiveSizeBytes": "688350464",
+ "diskSizeGb": "10",
+ "sourceDisk": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-b/disks/disk-install-centos-6-custom-dz0wt",
+ "sourceDiskId": "2345",
+ "licenses": [
+  "https://www.googleapis.com/compute/v1/projects/centos-cloud/global/licenses/centos-6"
+ ],
+ "family": "centos-6-custom",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/global/images/centos-6-custom-v20171116",
+ "labelFingerprint": "42WmSpB8rSM=",
+ "guestOsFeatures": [
+  {{
+   "type": "VIRTIO_SCSI_MULTIQUEUE"
+  }}
+ ]
+}},
+{{
+ "kind": "compute#image",
+ "id": "117{id}2",
+ "creationTimestamp": "2017-12-07T16:19:13.482-08:00",
+ "name": "centos-6-custom-v20171208",
+ "description": "Custom CentOS 6 built on 20171208",
+ "sourceType": "RAW",
+ "status": "READY",
+ "archiveSizeBytes": "788880064",
+ "diskSizeGb": "10",
+ "sourceDisk": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-b/disks/disk-install-centos-6-custom-62bzs",
+ "sourceDiskId": "5678",
+ "licenses": [
+  "https://www.googleapis.com/compute/v1/projects/centos-cloud/global/licenses/centos-6"
+ ],
+ "family": "centos-6-custom",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/global/images/centos-6-custom-v20171208",
+ "labelFingerprint": "42WmSpB8rSM=",
+ "guestOsFeatures": [
+  {{
+   "type": "VIRTIO_SCSI_MULTIQUEUE"
+  }}
+ ]
+}}
+]
+"""
+
+GCE_GET_IMAGES = {
+    "project2":
+        json.loads(
+            GCE_IMAGES_TEMPLATE.format(
+                id=1, project="project2")),
 }
 
 # Fields: id, name, project, network, instance1, instance2, instance3
