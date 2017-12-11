@@ -73,7 +73,7 @@ class InventoryIndex(BASE):
     schema_version = Column(Integer())
     progress = Column(Text())
     counter = Column(Integer())
-    warnings = Column(Text())
+    warnings = Column(Text(16777215))
     errors = Column(Text())
     message = Column(Text())
 
@@ -149,7 +149,7 @@ class InventoryIndex(BASE):
             message (str): Error message to set.
         """
 
-        self.message = message
+        self.errors = message
         session.add(self)
         session.flush()
 
