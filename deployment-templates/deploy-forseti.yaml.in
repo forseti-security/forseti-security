@@ -23,8 +23,6 @@ imports:
   name: cloudsql-database.py
 - path: compute-engine/forseti-instance.py
   name: forseti-instance.py
-- path: iam/service_acct.py
-  name: service_acct.py
 - path: storage/bucket.py
   name: bucket.py
 
@@ -55,11 +53,15 @@ resources:
     instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
-    service-account: $(ref.forseti-gcp-reader.email)
+    service-account: {SERVICE_ACCOUNT_GCP}
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
+    service-account-gsuite: {SERVICE_ACCOUNT_GSUITE}
+    gsuite-admin-email: {GSUITE_ADMIN_EMAIL}
+
     scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
+    root-resource-id: {ROOT_RESOURCE_ID}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
@@ -84,15 +86,9 @@ resources:
     cloudsqlproxy-os-arch: linux.amd64
     db-port: 3306
 
-# Service accounts
-- name: forseti-gcp-reader
-  type: service_acct.py
-  properties:
-    accountId: {SERVICE_ACCT_GCP_READER}
-    displayName: forseti-gcp-reader
-
-- name: forseti-gsuite-reader
-  type: service_acct.py
-  properties:
-    accountId: {SERVICE_ACCT_GSUITE_READER}
-    displayName: forseti-gsuite-reader
+    # Forseti run frequency
+    # WARNING: only change if you know exactly what you're doing!
+    # This is the Forseti crontab schedule.
+    # The default is "run at some random minute 0-59 (configured in
+    # forseti-instance.py), every other hour".
+    run-frequency: "{rand_minute} */2 * * *"
