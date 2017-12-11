@@ -148,7 +148,7 @@ class InventoryIndex(BASE):
             message (str): Error message to set.
         """
 
-        self.message = message
+        self.errors = message
         session.add(self)
         session.flush()
 
