@@ -159,6 +159,10 @@ class Resource(object):
     def getGroupMembers(self, client=None):
         return None
 
+    @cached('billing_info')
+    def getBillingInfo(self, client=None):
+        return None
+
     def stack(self):
         if self._stack is None:
             raise Exception('Stack not initialized yet')
@@ -223,14 +227,24 @@ class Project(Resource):
     def getIamPolicy(self, client=None):
         return client.get_project_iam_policy(self['projectId'])
 
+    @cached('billing_info')
+    def getBillingInfo(self, client=None):
+        return client.get_project_billing_info(self['projectId'])
+
     def key(self):
         return self['projectId']
 
     def enumerable(self):
         return self['lifecycleState'] not in ['DELETE_REQUESTED']
 
+    def billing_enabled(self):
+        return self.getBillingInfo().get('billingEnabled', False)
+
     @cached('compute_api_enabled')
     def compute_api_enabled(self, client=None):
+        if not self.billing_enabled():
+            # Compute API depends on billing being enabled
+            return False
         return client.is_compute_api_enabled(projectid=self['projectId'])
 
     def type(self):
@@ -556,7 +570,8 @@ class ObjectIterator(ResourceIterator):
 class DataSetIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.billing_enabled()):
             for data in gcp.iter_datasets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
@@ -709,7 +724,8 @@ class ForwardingRuleIterator(ResourceIterator):
 class CloudSqlIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if (self.resource.enumerable() and
+                self.resource.billing_enabled()):
             for data in gcp.iter_cloudsqlinstances(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)

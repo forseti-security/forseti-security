@@ -1665,3 +1665,36 @@ IAM_GET_CURATED_ROLES = [{
     "etag":
         "AA=="
 }]
+
+# Fields: project
+BILLING_ENABLED_TEMPLATE = """
+{{
+ "name": "projects/{project}/billingInfo",
+ "projectId": "{project}",
+ "billingAccountName": "billingAccounts/000000-111111-222222",
+ "billingEnabled": true
+}}
+"""
+
+# Fields: project
+BILLING_DISABLED_TEMPLATE = """
+{{
+ "name": "projects/{project}/billingInfo",
+ "projectId": "{project}"
+}}
+"""
+
+BILLING_GET_INFO = {
+    "project1":
+        json.loads(
+            BILLING_ENABLED_TEMPLATE.format(project="project1")),
+    "project2":
+        json.loads(
+            BILLING_ENABLED_TEMPLATE.format(project="project2")),
+    "project3":
+        json.loads(
+            BILLING_ENABLED_TEMPLATE.format(project="project3")),
+    "project4":
+        json.loads(
+            BILLING_DISABLED_TEMPLATE.format(project="project4")),
+}
