@@ -77,6 +77,7 @@ class Resource(object):
         self._leaf = contains is None
         self._contains = [] if contains is None else contains
         self._warning = []
+        self._enabled_service_names = None
 
     def is_leaf(self):
         return self._leaf
@@ -163,6 +164,10 @@ class Resource(object):
     def getBillingInfo(self, client=None):
         return None
 
+    @cached('enabled_apis')
+    def getEnabledAPIs(self, client=None):
+        return None
+
     def stack(self):
         if self._stack is None:
             raise Exception('Stack not initialized yet')
@@ -225,27 +230,56 @@ class Project(Resource):
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
-        return client.get_project_iam_policy(self['projectId'])
+        if self.enumerable():
+            return client.get_project_iam_policy(self['projectId'])
+        return {}
 
     @cached('billing_info')
     def getBillingInfo(self, client=None):
-        return client.get_project_billing_info(self['projectId'])
+        if self.enumerable():
+            return client.get_project_billing_info(self['projectId'])
+        return {}
+
+    @cached('enabled_apis')
+    def getEnabledAPIs(self, client=None):
+        enabled_apis = []
+        if self.enumerable():
+            enabled_apis = client.get_enabled_apis(self['projectId'])
+
+        self._enabled_service_names = frozenset(
+            (api.get('serviceName') for api in enabled_apis))
+        return enabled_apis
 
     def key(self):
         return self['projectId']
 
     def enumerable(self):
-        return self['lifecycleState'] not in ['DELETE_REQUESTED']
+        return self['lifecycleState'] == 'ACTIVE'
 
     def billing_enabled(self):
         return self.getBillingInfo().get('billingEnabled', False)
 
-    @cached('compute_api_enabled')
-    def compute_api_enabled(self, client=None):
-        if not self.billing_enabled():
-            # Compute API depends on billing being enabled
-            return False
-        return client.is_compute_api_enabled(projectid=self['projectId'])
+    def is_api_enabled(self, service_name):
+        """Returns True if the API service is enabled on the project."""
+        return service_name in self._enabled_service_names
+
+    def bigquery_api_enabled(self):
+        # Bigquery API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('bigquery-json.googleapis.com'))
+
+    def cloudsql_api_enabled(self):
+        # CloudSQL Admin API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('sqladmin.googleapis.com'))
+
+    def compute_api_enabled(self):
+        # Compute API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('compute.googleapis.com'))
+
+    def storage_api_enabled(self):
+        return self.is_api_enabled('storage-api.googleapis.com')
 
     def type(self):
         return 'project'
@@ -554,7 +588,7 @@ class FolderProjectIterator(ResourceIterator):
 class BucketIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if self.resource.storage_api_enabled():
             for data in gcp.iter_buckets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['bucket'].create_new(data)
@@ -570,8 +604,7 @@ class ObjectIterator(ResourceIterator):
 class DataSetIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.billing_enabled()):
+        if self.resource.bigquery_api_enabled():
             for data in gcp.iter_datasets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
@@ -615,7 +648,7 @@ class AppEngineInstanceIterator(ResourceIterator):
 class ComputeIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if self.resource.compute_api_enabled():
             data = gcp.fetch_compute_project(
                 projectid=self.resource['projectId'])
             yield FACTORIES['compute'].create_new(data)
@@ -624,8 +657,7 @@ class ComputeIterator(ResourceIterator):
 class InstanceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_computeinstances(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instance'].create_new(data)
@@ -634,8 +666,7 @@ class InstanceIterator(ResourceIterator):
 class FirewallIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_computefirewalls(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['firewall'].create_new(data)
@@ -644,8 +675,7 @@ class FirewallIterator(ResourceIterator):
 class ImageIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_images(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['image'].create_new(data)
@@ -654,8 +684,7 @@ class ImageIterator(ResourceIterator):
 class InstanceGroupIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_computeinstancegroups(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroup'].create_new(data)
@@ -664,8 +693,7 @@ class InstanceGroupIterator(ResourceIterator):
 class InstanceGroupManagerIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_ig_managers(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroupmanager'].create_new(data)
@@ -674,8 +702,7 @@ class InstanceGroupManagerIterator(ResourceIterator):
 class InstanceTemplateIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_instancetemplates(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancetemplate'].create_new(data)
@@ -684,8 +711,7 @@ class InstanceTemplateIterator(ResourceIterator):
 class NetworkIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_networks(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['network'].create_new(data)
@@ -694,8 +720,7 @@ class NetworkIterator(ResourceIterator):
 class SubnetworkIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_subnetworks(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['subnetwork'].create_new(data)
@@ -704,8 +729,7 @@ class SubnetworkIterator(ResourceIterator):
 class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_backendservices(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['backendservice'].create_new(data)
@@ -714,8 +738,7 @@ class BackendServiceIterator(ResourceIterator):
 class ForwardingRuleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_forwardingrules(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['forwardingrule'].create_new(data)
@@ -724,8 +747,7 @@ class ForwardingRuleIterator(ResourceIterator):
 class CloudSqlIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.billing_enabled()):
+        if self.resource.cloudsql_api_enabled():
             for data in gcp.iter_cloudsqlinstances(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)

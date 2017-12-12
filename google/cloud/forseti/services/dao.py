@@ -113,7 +113,9 @@ class Model(MODEL_BASE):
 
     def get_warnings(self):
         """Returns any stored warnings."""
-        return '\n'.join(self.warning_store)
+        if self.warning_store:
+            return "\n".join(self.warning_store)
+        return ""
 
     def set_inprogress(self):
         """Set state to 'in progress'."""
