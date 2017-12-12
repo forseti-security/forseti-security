@@ -275,7 +275,7 @@ class Project(Resource):
     def cloudsql_api_enabled(self):
         # CloudSQL Admin API depends on billing being enabled
         return (self.billing_enabled() and
-                self.is_api_enabled('sqladmin.googleapis.com'))
+                self.is_api_enabled('sql-component.googleapis.com'))
 
     def compute_api_enabled(self):
         # Compute API depends on billing being enabled
@@ -283,7 +283,7 @@ class Project(Resource):
                 self.is_api_enabled('compute.googleapis.com'))
 
     def storage_api_enabled(self):
-        return self.is_api_enabled('storage-api.googleapis.com')
+        return self.is_api_enabled('storage-component.googleapis.com')
 
     def type(self):
         return 'project'
