@@ -87,7 +87,7 @@ resource. Why a principal has permission on a resource, or why they don't have a
 permission and how to fix it. What roles grant a permission and which roles
 aren't in sync with recent changes.
 
-### [Email Notifications]({% link _docs/howto/email-notification %})
+### [Email Notifications]({% link _docs/howto/configure/email-notification %})
 
 When configured, Forseti Security can send email notifications for Inventory and
 Scanner using the SendGrid API. SendGrid is currently the only supported email
