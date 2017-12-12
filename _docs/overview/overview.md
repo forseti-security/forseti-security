@@ -33,8 +33,6 @@ Security modules. The core Forseti Security modules work together to take a
 snapshot of your GCP resources, monitor those resources, and notify you of
 access policy changes.
 
-![Forseti architecture diagram](/images/docs/overview/diagram.png)
-
 ### [Inventory]({% link _docs/quickstarts/inventory/index.md %})
 
 Inventory saves an hourly snapshot of your GCP resources to Cloud SQL, so you
