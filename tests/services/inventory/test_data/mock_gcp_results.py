@@ -1715,7 +1715,7 @@ BIGQUERY_API_ENABLED = """
 
 CLOUDSQL_API_ENABLED = """
 {
- "serviceName": "sqladmin.googleapis.com",
+ "serviceName": "sql-component.googleapis.com",
  "producerProjectId": "google.com:manifest-emblem-349"
 }
 """
@@ -1729,7 +1729,7 @@ COMPUTE_API_ENABLED = """
 
 STORAGE_API_ENABLED = """
 {
- "serviceName": "storage-api.googleapis.com",
+ "serviceName": "storage-component.googleapis.com",
  "producerProjectId": "cloud-storage-producer"
 }
 """
