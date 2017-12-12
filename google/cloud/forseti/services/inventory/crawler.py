@@ -70,6 +70,7 @@ class Crawler(crawler.Crawler):
             resource.getDatasetPolicy(self.get_client())
             resource.getCloudSQLPolicy(self.get_client())
             resource.getBillingInfo(self.get_client())
+            resource.getEnabledAPIs(self.get_client())
 
             storage.write(resource)
         except Exception as e:
@@ -135,6 +136,7 @@ def run_crawler(storage,
         'max_cloudbilling_api_calls_per_60_seconds': 300,
         'max_crm_api_calls_per_100_seconds': 400,
         'max_sqladmin_api_calls_per_100_seconds': 100,
+        'max_servicemanagement_api_calls_per_100_seconds': 200,
         'max_compute_api_calls_per_second': 20,
         'max_iam_api_calls_per_second': 20,
         'replay_file': config.get_replay_file(),
