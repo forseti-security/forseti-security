@@ -1698,3 +1698,58 @@ BILLING_GET_INFO = {
         json.loads(
             BILLING_DISABLED_TEMPLATE.format(project="project4")),
 }
+
+APPENGINE_API_ENABLED = """
+{
+ "serviceName": "appengine.googleapis.com",
+ "producerProjectId": "google.com:elegant-theorem-93918"
+}
+"""
+
+BIGQUERY_API_ENABLED = """
+{
+ "serviceName": "bigquery-json.googleapis.com",
+ "producerProjectId": "google.com:ultra-current-88221"
+}
+"""
+
+CLOUDSQL_API_ENABLED = """
+{
+ "serviceName": "sqladmin.googleapis.com",
+ "producerProjectId": "google.com:manifest-emblem-349"
+}
+"""
+
+COMPUTE_API_ENABLED = """
+{
+ "serviceName": "compute.googleapis.com",
+ "producerProjectId": "google.com:api-project-539346026206"
+}
+"""
+
+STORAGE_API_ENABLED = """
+{
+ "serviceName": "storage-api.googleapis.com",
+ "producerProjectId": "cloud-storage-producer"
+}
+"""
+
+SERVICEMANAGEMENT_ENABLED_APIS = {
+    "project1": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(COMPUTE_API_ENABLED),
+    ],
+    "project2": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(COMPUTE_API_ENABLED),
+        json.loads(CLOUDSQL_API_ENABLED),
+    ],
+    "project3": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(BIGQUERY_API_ENABLED),
+    ],
+    "project4": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(APPENGINE_API_ENABLED),
+    ],
+}
