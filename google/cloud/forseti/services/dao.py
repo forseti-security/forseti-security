@@ -109,7 +109,8 @@ class Model(MODEL_BASE):
         Args:
             warning (str): Warning message
         """
-        self.warning_store.append(warning)
+        if warning:
+            self.warning_store.append(warning)
 
     def get_warnings(self):
         """Returns any stored warnings."""
