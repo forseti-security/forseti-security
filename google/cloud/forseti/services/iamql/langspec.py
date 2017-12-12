@@ -299,6 +299,16 @@ class CompilationContext(object):
     def on_leave_or(self, operator, artefacts):
         return or_(*artefacts)
 
+    def on_leave_in(self, operator, artefacts):
+        attribute = artefacts[0]
+        literal_list = artefacts[1]
+        return attribute.in_(literal_list)
+
+    def on_leave_like(self, operator, artefacts):
+        attribute = artefacts[0]
+        literal = artefacts[1]
+        return attribute.like(literal)
+
     def enter(self, node):
         handlers = {
                 Join: self.on_enter_join,
@@ -323,6 +333,8 @@ class CompilationContext(object):
                 Not: self.on_leave_not,
                 And: self.on_leave_and,
                 Or: self.on_leave_or,
+                LikeOperator: self.on_leave_like,
+                InOperator: self.on_leave_in,
             }
         return self._exec_matching_handler(handlers, node, artefacts)
 
@@ -599,8 +611,26 @@ class InOperator(Node):
     pass
 
 
-class LikeOperator(Node):
+class LikeOperator(Operator):
     pass
+
+
+class LiteralList(Node):
+    @property
+    def value(self):
+        return [x.value for x in self]
+
+    def typecheck(self):
+        t = self.type_of()
+        for item in self:
+            item_type = item.type_of()
+            if t != item_type:
+                raise TypeError(
+                    'list type: {}, item type: {}'.format(
+                        t, item_type))
+
+    def type_of(self):
+        return [self[0].type_of()]
 
 
 def BNF():
@@ -665,7 +695,7 @@ def BNF():
 
     literal_list_item = Forward()
     literal_list_item << literal + Optional(COMMA + literal_list_item)
-    literal_list = LBRACK + literal_list_item + RBRACK
+    literal_list = LiteralList.build(LBRACK + literal_list_item + RBRACK)
 
     comparison = (
         LikeOperator.build(attribute + LIKE + string) |
