@@ -260,7 +260,11 @@ class Project(Resource):
         return self.getBillingInfo().get('billingEnabled', False)
 
     def is_api_enabled(self, service_name):
-        """Returns True if the API service is enabled on the project."""
+        """Returns True if the API service is enabled on the project.
+
+        Args:
+            service_name (str): The API service name to check.
+        """
         return service_name in self._enabled_service_names
 
     def bigquery_api_enabled(self):
