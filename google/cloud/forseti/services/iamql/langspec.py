@@ -25,11 +25,12 @@ from pyparsing import Forward
 from pyparsing import nums
 from pyparsing import alphas
 from pyparsing import alphanums
+from pyparsing import dblQuotedString
 from pyparsing import Suppress
 from pyparsing import Keyword
 
 from sqlalchemy.orm import aliased
-from sqlalchemy import and_
+from sqlalchemy import and_, not_, or_
 
 
 class Metadata(object):
@@ -82,26 +83,29 @@ class Metadata(object):
             ('has',
              ['permission'],
              lambda dao, r, p: (
-                 and_(dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
-                      dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
+                 and_(
+                    dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
+                    dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
                  )),
             ],
         'binding': [
             ('grants',
              ['resource', 'role', 'member'],
              lambda dao, binding, resource, role, member: (
-                 and_(binding.table.resource_type_name == resource.table.type_name,
-                      binding.table.role_name == role.table.name,
-                      dao.TBL_BINDING_MEMBERS.c.members_name == member.table.name,
-                      dao.TBL_BINDING_MEMBERS.c.bindings_id == binding.table.id)
+                 and_(
+                  binding.table.resource_type_name == resource.table.type_name,
+                  binding.table.role_name == role.table.name,
+                  dao.TBL_BINDING_MEMBERS.c.members_name == member.table.name,
+                  dao.TBL_BINDING_MEMBERS.c.bindings_id == binding.table.id)
                  )),
             ],
         'permission': [
             ('included',
              ['role'],
              lambda dao, p, r: (
-                 and_(dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
-                      dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
+                 and_(
+                    dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
+                    dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
                  )),
             ],
         'resource': [
@@ -177,6 +181,7 @@ class CompilationContext(object):
         self.variables = {}
         self.entities = []
         self.join_clauses = []
+        self.conditions = []
         self.artefact = None
 
     def get_table_by_entity(self, entity):
@@ -193,10 +198,12 @@ class CompilationContext(object):
     def on_enter_query(self, query):
         pass
 
-    def on_leave_query(self, query):
+    def on_leave_query(self, query, artefacts):
         qry = self.session.query(*self.entities)
         for clause in self.join_clauses:
             qry = qry.filter(clause)
+        for condition in self.conditions:
+            qry = qry.filter(condition)
         self.artefact = qry.distinct()
         print self.artefact
 
@@ -205,7 +212,7 @@ class CompilationContext(object):
             variable = self.variables[identifier]
             self.entities.append(variable.table)
 
-    def on_leave_projection(self, projection):
+    def on_leave_projection(self, projection, artefacts):
         pass
 
     def on_enter_entity_definition(self, node):
@@ -218,13 +225,13 @@ class CompilationContext(object):
                                           'entity': entity,
                                           'table': table})
 
-    def on_leave_entity_definition(self, entity_definition):
+    def on_leave_entity_definition(self, entity_definition, artefacts):
         pass
 
     def on_enter_selection(self, selection):
-        pass
+        print 'Selection = {}'.format(selection)
 
-    def on_leave_selection(self, selection):
+    def on_leave_selection(self, selection, artefacts):
         pass
 
     def on_enter_join(self, join):
@@ -248,8 +255,49 @@ class CompilationContext(object):
                 return
         raise Exception('Undefined join relationship: {}'.format(join))
 
-    def on_leave_join(self, join):
+    def on_leave_join(self, join, artefacts):
         pass
+
+    def on_leave_comparison(self, comparison, artefacts):
+        if isinstance(comparison.right, Attribute):
+            attribute = artefacts[1]
+            literal = artefacts[0]
+        elif isinstance(comparison.left, Attribute):
+            attribute = artefacts[0]
+            literal = artefacts[1]
+        else:
+            raise Exception('Comparison missing an attribute operand')
+
+        operation = comparison.op
+        op_functions = {
+                '==': attribute.__eq__,
+                '!=': attribute.__ne__,
+                '>': attribute.__gt__,
+                '<': attribute.__lt__,
+                '<=': attribute.__le__,
+                '>=': attribute.__ge__,
+            }
+        return op_functions[operation](literal)
+
+    def on_leave_attribute(self, attribute, artefacts):
+        variable = self.variables[attribute.entity_def.identifier]
+        return getattr(variable['table'], attribute.name)
+
+    def on_leave_scalar(self, scalar, artefacts):
+        return scalar.value
+
+    def on_leave_entityfilter(self, entity_filter, artefacts):
+        for artefact in artefacts:
+            self.conditions.append(artefact)
+
+    def on_leave_not(self, operator, artefacts):
+        return not_(*artefacts)
+
+    def on_leave_and(self, operator, artefacts):
+        return and_(*artefacts)
+
+    def on_leave_or(self, operator, artefacts):
+        return or_(*artefacts)
 
     def enter(self, node):
         handlers = {
@@ -261,20 +309,31 @@ class CompilationContext(object):
             }
         self._exec_matching_handler(handlers, node)
 
-    def leave(self, node):
+    def leave(self, node, artefacts):
         handlers = {
                 Join: self.on_leave_join,
                 Query: self.on_leave_query,
                 Projection: self.on_leave_projection,
                 Selection: self.on_leave_selection,
                 EntityDefinition: self.on_leave_entity_definition,
+                Comparison: self.on_leave_comparison,
+                Attribute: self.on_leave_attribute,
+                Scalar: self.on_leave_scalar,
+                EntityFilter: self.on_leave_entityfilter,
+                Not: self.on_leave_not,
+                And: self.on_leave_and,
+                Or: self.on_leave_or,
             }
-        self._exec_matching_handler(handlers, node)
+        return self._exec_matching_handler(handlers, node, artefacts)
 
-    def _exec_matching_handler(self, handlers, node):
+    def _exec_matching_handler(self, handlers, node, artefacts=None):
         for cls, handler in handlers.iteritems():
             if isinstance(node, cls):
-                handler(node)
+                if artefacts is not None:
+                    return handler(node, artefacts)
+                else:
+                    return handler(node)
+        return artefacts
 
 
 class QueryCompiler(object):
@@ -363,10 +422,11 @@ class Node(list):
             self._connect()
 
         context.enter(self)
+        artefacts = []
         for item in self:
             if isinstance(item, Node):
-                item.compile(context)
-        context.leave(self)
+                artefacts.append(item.compile(context))
+        return context.leave(self, artefacts)
 
 
 class QuerySet(Node):
@@ -433,28 +493,15 @@ class EntityDefinition(Node):
 
 
 class EntityFilter(Node):
-    def compile(self):
-        pass
+    pass
 
 
 class Not(Node):
-    def compile(self):
-        pass
-
-
-class And(Node):
-    def compile(self):
-        pass
-
-
-class Or(Node):
-    def compile(self):
-        pass
+    pass
 
 
 class Paren(Node):
-    def compile(self):
-        pass
+    pass
 
 
 class Attribute(Node):
@@ -466,26 +513,32 @@ class Attribute(Node):
     def name(self):
         return self[0]
 
-    def typecheck(self):
+    @property
+    def entity_def(self):
         entity_def = self._find_ancestor(EntityDefinition)
         if entity_def is None:
             raise Exception('Unable to find ancestor node')
+        return entity_def
 
-        entity = entity_def.entity
-        self.attribute_type = Metadata.entity_attributes[entity][self.name]['type']
+    def typecheck(self):
+        entity = self.entity_def.entity
+        self.attribute_type = (
+            Metadata.entity_attributes[entity][self.name]['type'])
+        return self.attribute_type
 
     def type_of(self):
         return (self.attribute_type
                 if self.attribute_type
                 else self.typecheck())
 
-    def compile(self):
-        pass
-
 
 class Operator(Node):
     def __init__(self, *args, **kwargs):
         super(Operator, self).__init__(*args, **kwargs)
+
+    @property
+    def op(self):
+        return self[1]
 
     @property
     def right(self):
@@ -500,13 +553,19 @@ class Operator(Node):
             self.left.typecheck()
             self.right.typecheck()
         except Exception:
-            import code
-            code.interact(local=locals())
             raise
 
         if self.right.type_of() != self.left.type_of():
             raise TypeError('type({}) != type({})'.format(self.left,
                                                           self.right))
+
+
+class And(Operator):
+    pass
+
+
+class Or(Operator):
+    pass
 
 
 class Scalar(Node):
@@ -517,13 +576,13 @@ class Scalar(Node):
 class String(Scalar):
     @property
     def value(self):
-        return self[0]
+        return self[0][1:-1]
 
     def type_of(self):
         return unicode
 
 
-class Number(Node):
+class Number(Scalar):
     @property
     def value(self):
         return self[0]
@@ -533,26 +592,15 @@ class Number(Node):
 
 
 class Comparison(Operator):
-    def compile(self):
-        ops = {
-                '==': self[0].compile().__eq__,
-                '!=': self[0].compile().__ne__,
-                '>': self[0].compile().__gt__,
-                '<': self[0].compile().__lt__,
-                '>=': self[0].compile().__ge__,
-                '<=': self[0].compile().__le__,
-            }
-        return ops[self[1]](self[2].compile())
+    pass
 
 
 class InOperator(Node):
-    def compile(self):
-        pass
+    pass
 
 
 class LikeOperator(Node):
-    def compile(self):
-        pass
+    pass
 
 
 def BNF():
@@ -582,6 +630,8 @@ def BNF():
     LBRACK = Suppress('[')
     RBRACK = Suppress(']')
 
+    UNDERSCORE = '_'
+
     EQ = Literal('==')
     NEQ = Literal('!=')
     GT = Literal('>')
@@ -604,11 +654,11 @@ def BNF():
         tbl_user |
         tbl_binding)
 
-    string = DOUBLE_QUOTE + Word(alphanums) + DOUBLE_QUOTE
+    string = dblQuotedString
     number = Word(nums)
     relation = Word(alphas)
     ident = Word(alphanums)
-    attribute = Attribute.build(Word(alphas))
+    attribute = Attribute.build(Word(alphas + '_'))
 
     comparator = EQ | NEQ | GT | LT | LTE | GTE
     literal = Number.build(number) | String.build(string)
