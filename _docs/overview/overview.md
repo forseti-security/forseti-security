@@ -16,7 +16,7 @@ provide their respective features, and provide a foundation that addons can
 build upon.
 
 Get started with
-[Forseti Security]({% link _docs/quickstarts/forseti-security/ %}).
+[Forseti Security]({% link _docs/quickstarts/forseti-security/index.html %}).
 
 ## When to use Forseti Security
 
@@ -89,7 +89,7 @@ resource. Why a principal has permission on a resource, or why they don't have a
 permission and how to fix it. What roles grant a permission and which roles
 aren't in sync with recent changes.
 
-### [Email Notifications]({% link _docs/howto/configure/email-notification %})
+### [Email Notifications]({% link _docs/howto/configure/email-notification.html %})
 
 When configured, Forseti Security can send email notifications for Inventory and
 Scanner using the SendGrid API. SendGrid is currently the only supported email
