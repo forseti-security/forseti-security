@@ -92,11 +92,10 @@ class Crawler(crawler.Crawler):
         else:
             progresser.on_new_object(resource)
 
-    def dispatch(self, callback, resource):
+    def dispatch(self, callback):
         """Dispatch crawling of a subtree.
         Args:
             callback (function): Callback to dispatch.
-            resource (object): The resource the callback references.
         """
         callback()
 
@@ -156,16 +155,11 @@ class ParallelCrawler(Crawler):
         """Process items in the queue until the shutdown event is set."""
         while not self._shutdown_event.is_set():
             try:
-                (callback, resource) = self._dispatch_queue.get(timeout=1)
+                callback = self._dispatch_queue.get(timeout=1)
             except Empty:
                 continue
 
-            try:
-                callback()
-            except Exception as e:
-                resource.parent.add_warning(e)
-                self.update(resource.parent)
-                self.on_child_error(e)
+            callback()
             self._dispatch_queue.task_done()
 
     def run(self, resource):
@@ -184,14 +178,13 @@ class ParallelCrawler(Crawler):
             time.sleep(2)
         return self.config.progresser
 
-    def dispatch(self, callback, resource):
+    def dispatch(self, callback):
         """Dispatch crawling of a subtree.
 
         Args:
             callback (function): Callback to dispatch.
-            resource (object): The resource the callback references.
         """
-        self._dispatch_queue.put((callback, resource))
+        self._dispatch_queue.put(callback)
 
     def write(self, resource):
         """Save resource to storage.

@@ -111,6 +111,15 @@ class Resource(object):
     def get_warning(self):
         return '\n'.join(self._warning)
 
+    def try_accept(self, visitor, stack=None):
+        """Handle exceptions on the call the accept."""
+        try:
+            self.accept(visitor, stack)
+        except Exception as e:
+            self.parent().add_warning(e)
+            visitor.update(resource.parent)
+            visitor.on_child_error(e)
+
     def accept(self, visitor, stack=None):
         stack = [] if not stack else stack
         self._stack = stack
@@ -118,21 +127,16 @@ class Resource(object):
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
-            try:
-                for resource in yielder.iter():
-                    res = resource
-                    new_stack = stack + [self]
+            for resource in yielder.iter():
+                res = resource
+                new_stack = stack + [self]
 
-                    if res.type() != 'project':
-                        res.accept(visitor, new_stack)
-
-                    # Parallelization for project resources.
-                    else:
-                        callback = partial(res.accept, visitor, new_stack)
-                        visitor.dispatch(callback, res)
-            except Exception as e:
-                self.add_warning(e)
-                visitor.on_child_error(e)
+                # Parallelization for project resources.
+                if res.type() == 'project':
+                    callback = partial(res.try_accept, visitor, new_stack)
+                    visitor.dispatch(callback)
+                else:
+                    res.try_accept(visitor, new_stack)
 
         if self._warning:
             visitor.update(self)

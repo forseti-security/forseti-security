@@ -45,12 +45,11 @@ class Crawler(object):
         """
         raise NotImplementedError('The visit function of the crawler')
 
-    def dispatch(self, callback, resource):
+    def dispatch(self, callback):
         """Dispatch crawling of a subtree.
 
         Args:
             callback (function): Callback to dispatch.
-            resource (object): The resource the callback references.
 
         Raises:
             NotImplementedError: Because not implemented.
