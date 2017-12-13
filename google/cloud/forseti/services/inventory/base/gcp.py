@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" GCP API client fassade."""
+"""GCP API client fassade."""
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc
@@ -27,6 +27,7 @@ from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import iam
+from google.cloud.forseti.common.gcp_api import servicemanagement
 from google.cloud.forseti.common.gcp_api import storage
 
 
@@ -138,6 +139,7 @@ class ApiClientImpl(ApiClient):
         self.cloudsql = None
         self.compute = None
         self.iam = None
+        self.servicemanagement = None
         self.storage = None
 
         self.config = config
@@ -199,6 +201,13 @@ class ApiClientImpl(ApiClient):
             object: Client
         """
         return iam.IAMClient(self.config)
+
+    def _create_servicemanagement(self):
+        """Create servicemanagement API client
+        Returns:
+            object: Client
+        """
+        return servicemanagement.ServiceManagementClient(self.config)
 
     def _create_storage(self):
         """Create storage API client
@@ -611,3 +620,12 @@ class ApiClientImpl(ApiClient):
             dict: Project Billing Info resource.
         """
         return self.cloudbilling.get_billing_info(projectid)
+
+    @create_lazy('servicemanagement', _create_servicemanagement)
+    def get_enabled_apis(self, projectid):
+        """Project enabled API services from gcp API call
+
+        Returns:
+            list: A list of ManagedService resource dicts.
+        """
+        return self.servicemanagement.get_enabled_apis(projectid)

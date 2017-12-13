@@ -39,6 +39,7 @@ def mock_gcp():
     gce_patcher = _mock_gce()
     gcs_patcher = _mock_gcs()
     iam_patcher = _mock_iam()
+    sm_patcher = _mock_servicemanagement()
     try:
         yield
     finally:
@@ -51,6 +52,7 @@ def mock_gcp():
         gce_patcher.stop()
         gcs_patcher.stop()
         iam_patcher.stop()
+        sm_patcher.stop()
 
 
 def _mock_admin_directory():
@@ -355,3 +357,18 @@ def _mock_iam():
         _mock_iam_get_service_account_keys)
 
     return iam_patcher
+
+
+def _mock_servicemanagement():
+    """Mock Service Management client."""
+    def _mock_sm_get_enabled_apis(projectid):
+        if projectid in results.SERVICEMANAGEMENT_ENABLED_APIS:
+            return results.SERVICEMANAGEMENT_ENABLED_APIS[projectid]
+        return []
+
+    sm_patcher = mock.patch(
+        MODULE_PATH + 'servicemanagement.ServiceManagementClient', spec=True)
+    mock_sm = sm_patcher.start().return_value
+    mock_sm.get_enabled_apis.side_effect = _mock_sm_get_enabled_apis
+
+    return sm_patcher
