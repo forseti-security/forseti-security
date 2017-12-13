@@ -117,7 +117,7 @@ class Resource(object):
             self.accept(visitor, stack)
         except Exception as e:
             self.parent().add_warning(e)
-            visitor.update(resource.parent)
+            visitor.update(self.parent())
             visitor.on_child_error(e)
 
     def accept(self, visitor, stack=None):
