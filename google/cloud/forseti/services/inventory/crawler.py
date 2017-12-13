@@ -16,7 +16,7 @@
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-param-doc,broad-except
 
 import threading
 import time
@@ -164,7 +164,7 @@ class ParallelCrawler(Crawler):
                 callback()
             except Exception as e:
                 resource.parent.add_warning(e)
-                visitor.update(resource.parent)
+                self.update(resource.parent)
                 self.on_child_error(e)
             self._dispatch_queue.task_done()
 
