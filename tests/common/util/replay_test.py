@@ -39,6 +39,8 @@ class ReplayTest(unittest_utils.ForsetiTestCase):
     def tearDown(self):
         """Clean up."""
         os.unlink(self.record_file)
+        os.environ[replay.RECORD_ENVIRONMENT_VAR] = ''
+        os.environ[replay.REPLAY_ENVIRONMENT_VAR] = ''
 
     def run_api_tests(self, record=False):
         """Run several API calls."""

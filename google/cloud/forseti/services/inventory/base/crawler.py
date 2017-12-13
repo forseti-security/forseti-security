@@ -45,11 +45,13 @@ class Crawler(object):
         """
         raise NotImplementedError('The visit function of the crawler')
 
-    def dispatch(self, callback):
+    def dispatch(self, callback, *args, **kwargs):
         """To start a new visitor or continue, Not Implemented.
 
         Args:
             callback (function): Callback to dispatch.
+            *args (list): Callback args.
+            **kwargs (dict): Callback keyword args.
 
         Raises:
             NotImplementedError: Because not implemented.
