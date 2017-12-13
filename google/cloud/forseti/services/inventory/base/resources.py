@@ -21,7 +21,7 @@
 # pylint: disable=useless-suppression,cell-var-from-loop,protected-access,too-many-instance-attributes
 
 import ctypes
-from concurrent.futures import as_completed
+from functools import partial
 import json
 
 
@@ -115,7 +115,6 @@ class Resource(object):
         stack = [] if not stack else stack
         self._stack = stack
         self._visitor = visitor
-        dispatched_resources = []
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
@@ -129,17 +128,12 @@ class Resource(object):
 
                     # Parallelization for project resources.
                     else:
-                        future = visitor.dispatch(
-                            res.accept, visitor, new_stack)
-                        dispatched_resources.append(future)
+                        callback = partial(res.accept, visitor, new_stack)
+                        visitor.dispatch(callback, res)
             except Exception as e:
                 self.add_warning(e)
                 visitor.on_child_error(e)
 
-        for future in as_completed(dispatched_resources):
-            if future.exception():
-                self.add_warning(future.exception())
-                visitor.on_child_error(future.exception())
         if self._warning:
             visitor.update(self)
 
