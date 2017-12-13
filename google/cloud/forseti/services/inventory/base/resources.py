@@ -131,8 +131,8 @@ class Resource(object):
                 res = resource
                 new_stack = stack + [self]
 
-                # Parallelization for project resources.
-                if res.type() == 'project':
+                # Parallelization for resource subtrees.
+                if res.should_dispatch():
                     callback = partial(res.try_accept, visitor, new_stack)
                     visitor.dispatch(callback)
                 else:
@@ -178,6 +178,9 @@ class Resource(object):
         if self._visitor is None:
             raise Exception('Visitor not initialized yet')
         return self._visitor
+
+    def should_dispatch(self):
+        return False
 
     def __repr__(self):
         return '{}<data="{}", parent_type="{}", parent_key="{}">'.format(
@@ -253,6 +256,10 @@ class Project(Resource):
 
     def key(self):
         return self['projectId']
+
+    def should_dispatch(self):
+        """Project resources should run in parallel threads."""
+        return True
 
     def enumerable(self):
         return self['lifecycleState'] == 'ACTIVE'
