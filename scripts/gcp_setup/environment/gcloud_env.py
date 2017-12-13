@@ -750,9 +750,7 @@ class ForsetiGcpSetup(object):
 
         if not self.gsuite_superadmin_email:
             # Ask for G Suite super admin email
-            print('\nTo read G Suite Groups data, for example, if you want to '
-                  'use IAM Explain, please provide a G Suite super admin '
-                  'email address. '
+            print('\nTo read G Suite Groups data.'
                   'This step is optional and can be configured later.')
             self.gsuite_superadmin_email = raw_input(
                 'What is your organization\'s G Suite super admin email? '
