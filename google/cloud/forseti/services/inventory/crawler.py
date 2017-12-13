@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Crawler implementation. """
+"""Crawler implementation."""
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
-from google.cloud.forseti.services.inventory.base import resources
-from google.cloud.forseti.services.inventory.base import gcp
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
 from google.cloud.forseti.services.inventory.base import crawler
+from google.cloud.forseti.services.inventory.base import gcp
+from google.cloud.forseti.services.inventory.base import resources
 
 
 class CrawlerConfig(crawler.CrawlerConfig):
@@ -40,6 +43,11 @@ class Crawler(crawler.Crawler):
     def __init__(self, config):
         super(Crawler, self).__init__()
         self.config = config
+        self.executor = ThreadPoolExecutor(max_workers=10)
+        self._write_lock = threading.Lock()
+
+    def __del__(self):
+        self.executor.shutdown(wait=True)
 
     def run(self, resource):
         """Run the crawler, given a start resource.
@@ -71,22 +79,23 @@ class Crawler(crawler.Crawler):
             resource.getCloudSQLPolicy(self.get_client())
             resource.getBillingInfo(self.get_client())
             resource.getEnabledAPIs(self.get_client())
-
-            storage.write(resource)
+            with self._write_lock:
+                storage.write(resource)
         except Exception as e:
             progresser.on_error(e)
             raise
         else:
             progresser.on_new_object(resource)
 
-    def dispatch(self, callback):
+    def dispatch(self, callback, *args, **kwargs):
         """Dispatch crawling of a subtree.
 
         Args:
             callback (function): Callback to dispatch.
+            *args (list): Callback args.
+            **kwargs (dict): Callback keyword args.
         """
-
-        callback()
+        return self.executor.submit(callback, *args, **kwargs)
 
     def get_client(self):
         """Get the GCP API client."""
