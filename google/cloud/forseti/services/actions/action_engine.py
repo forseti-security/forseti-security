@@ -172,12 +172,12 @@ class ActionEngine(object):
     def _create_actions(self):
         """Creates the actions from the configuration."""
         for action in self._action_configs:
-            cls = action.get('type')
-            if cls not in self.action_types:
-                action_cls = get_action_class(cls)
-                self.action_types[cls] = action_cls
+            class_str = action.get('type')
+            if class_str not in self.action_types:
+                action_cls = get_action_class(class_str)
+                self.action_types[class_str] = action_cls
             else:
-                action_cls = self.action_types[cls]
+                action_cls = self.action_types[class_str]
             self._actions.append(action_cls.from_dict(action))
 
     @property
