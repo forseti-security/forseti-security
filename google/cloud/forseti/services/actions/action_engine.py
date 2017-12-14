@@ -56,7 +56,7 @@ class Action(object):
 
     @classmethod
     def from_dict(cls, action_dict):
-        """Creates a SampleAction from a dictionary.
+        """Creates an instance SampleAction from a dictionary.
 
         Args:
           cls (SampleAction): A SampleAction class.
