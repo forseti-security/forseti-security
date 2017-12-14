@@ -549,8 +549,8 @@ class InventoryImporter(object):
 
         Args:
             dataset (object): Dataset to store.
+            policy (object): Dataset Policy to store.
         """
-        data = dataset.get_data()
         parent, full_res_name, type_name = self._full_resource_name(
             dataset)
         resource = self.dao.TBL_RESOURCE(

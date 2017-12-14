@@ -31,7 +31,7 @@ from google.cloud.forseti.services.inventory.base.storage import \
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,too-many-instance-attributes
+# pylint: disable=missing-param-doc,too-many-instance-attributes,too-many-locals
 
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
