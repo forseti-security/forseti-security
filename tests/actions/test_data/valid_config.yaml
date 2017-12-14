@@ -14,7 +14,7 @@
 
 actions:
   - id: action.1
-    type: google.cloud.forseti.actions.sample_action.SampleAction
+    type: google.cloud.forseti.services.actions.action_engine.SampleAction
     triggers: 
-    - rules.firewall_rule.*
+    - "*"
     group_by: resource.project
