@@ -48,6 +48,9 @@ class Metadata(object):
             'display_name': {
                 'type': unicode,
                 },
+            'email': {
+                'type': unicode,
+                },
             },
         'role': {
             'name': {
@@ -73,12 +76,62 @@ class Metadata(object):
                 'type': unicode,
                 },
             },
-        'group': {},
-        'user': {},
+        'group': {
+            'name': {
+                'type': unicode,
+                },
+            'type': {
+                'type': unicode,
+                },
+            },
+        'user': {
+            'name': {
+                'type': unicode,
+                },
+            'type': {
+                'type': unicode,
+                },
+            },
+        'serviceaccount': {
+            'name': {
+                'type': unicode,
+                },
+            'type': {
+                'type': unicode,
+                },
+            },
         'binding': {},
         }
 
     allowed_joins = {
+        'group': [
+            ('contains',
+             [['group', 'member', 'user', 'serviceaccount']],
+             lambda dao, parent, child: (
+                 and_(
+                  dao.TBL_MEMBERSHIP.c.group_name == parent.table.name,
+                  dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
+                 )),
+            ('transitivecontains',
+             [['member', 'user', 'serviceaccount']],
+             lambda dao, parent, child: (
+                 or_(
+                  and_(
+                   dao.TBL_MEMBERSHIP.c.group_name == parent.table.name,
+                   dao.TBL_MEMBERSHIP.c.members_name == child.table.name),
+                  and_(
+                   dao.TBL_GROUP_IN_GROUP.parent == parent.table.name,
+                   dao.TBL_GROUP_IN_GROUP.member == dao.TBL_MEMBERSHIP.c.group_name,
+                   dao.TBL_MEMBERSHIP.c.members_name == child.table.name),
+                 ))),
+            ('transitivecontains',
+             ['group'],
+             lambda dao, parent, child: (
+                 and_(
+                  dao.TBL_GROUP_IN_GROUP.parent == parent.table.member,
+                  dao.TBL_GROUP_IN_GROUP.member == child.table.member),
+                 )),
+            ],
         'role': [
             ('has',
              ['permission'],
@@ -90,7 +143,10 @@ class Metadata(object):
             ],
         'binding': [
             ('grants',
-             ['resource', 'role', 'member'],
+             ['resource', 'role', ['member',
+                                   'user',
+                                   'group',
+                                   'serviceaccount']],
              lambda dao, binding, resource, role, member: (
                  and_(
                   binding.table.resource_type_name == resource.table.type_name,
@@ -123,15 +179,17 @@ class Metadata(object):
              ['resource'],
              lambda dao, ancestor, descendant: (
                  and_(
-                     ancestor.table.full_name.startswith(
-                         descendant.table.full_name))
+                     descendant.table.full_name.startswith(
+                         ancestor.table.full_name),
+                     ancestor.table.type_name != descendant.table.type_name)
                  )),
             ('descendant',
              ['resource'],
              lambda dao, descendant, ancestor: (
                  and_(
-                     ancestor.table.full_name.startswith(
-                         descendant.table.full_name))
+                     descendant.table.full_name.startswith(
+                         ancestor.table.full_name),
+                     ancestor.table.type_name != descendant.table.type_name)
                  )),
             ],
         }
@@ -186,11 +244,30 @@ class CompilationContext(object):
 
     def get_table_by_entity(self, entity):
         type_mapping = {
-                'resource': self.data_access.TBL_RESOURCE,
-                'role': self.data_access.TBL_ROLE,
-                'permission': self.data_access.TBL_PERMISSION,
-                'binding': self.data_access.TBL_BINDING,
-                'member': self.data_access.TBL_MEMBER,
+                'resource': (
+                    self.data_access.TBL_RESOURCE,
+                    None),
+                'role': (
+                    self.data_access.TBL_ROLE,
+                    None),
+                'permission': (
+                    self.data_access.TBL_PERMISSION,
+                    None),
+                'binding': (
+                    self.data_access.TBL_BINDING,
+                    None),
+                'member': (
+                    self.data_access.TBL_MEMBER,
+                    None),
+                'group': (
+                    self.data_access.TBL_MEMBER,
+                    lambda t: t.type == 'group'),
+                'user': (
+                    self.data_access.TBL_MEMBER,
+                    lambda t: t.type == 'user'),
+                'serviceaccount': (
+                    self.data_access.TBL_MEMBER,
+                    lambda t: t.type == 'serviceAccount')
             }
 
         return type_mapping[entity]
@@ -219,8 +296,11 @@ class CompilationContext(object):
         ident = node.identifier
         entity = node.entity
 
-        table = aliased(self.get_table_by_entity(entity),
+        table_class, constraint_func = self.get_table_by_entity(entity)
+        table = aliased(table_class,
                         name=ident)
+        if constraint_func is not None:
+            self.conditions.append(constraint_func(table))
         self.variables[ident] = Variable({'identifier': ident,
                                           'entity': entity,
                                           'table': table})
@@ -242,10 +322,16 @@ class CompilationContext(object):
             if relation == join.relation:
                 for arg_pos, arg_type in enumerate(arglist):
                     var = self.variables[join.arglist[arg_pos]]
-                    if var.entity != arg_type:
-                        raise TypeError(
-                            'Relation: {}, expected: {}, actual: {}'
-                            .format(relation, arg_type, ))
+                    if isinstance(arg_type, list):
+                        if var.entity not in arg_type:
+                            raise TypeError(
+                                'Relation: {}, expected: {}, actual: {}'
+                                .format(relation, arg_type, var.entity))
+                    else:
+                        if var.entity != arg_type:
+                            raise TypeError(
+                                'Relation: {}, expected: {}, actual: {}'
+                                .format(relation, arg_type, var.entity))
 
                 self.join_clauses.append(
                     generator(self.data_access,
@@ -257,6 +343,14 @@ class CompilationContext(object):
 
     def on_leave_join(self, join, artefacts):
         pass
+
+    def on_leave_unsafe_join(self, join, artefacts):
+        self.conditions.append(artefacts[0] == artefacts[1])
+
+    def on_leave_unsafe_jointarget(self, target, artefacts):
+        variable = self.variables[target.name]
+        attribute_ref = target.attribute
+        return getattr(variable['table'], attribute_ref.name)
 
     def on_leave_comparison(self, comparison, artefacts):
         if isinstance(comparison.right, Attribute):
@@ -306,12 +400,11 @@ class CompilationContext(object):
 
     def on_leave_like(self, operator, artefacts):
         attribute = artefacts[0]
-        literal = artefacts[1]
-        return attribute.like(literal)
+        return attribute.like(operator.literal.value)
 
     def enter(self, node):
         handlers = {
-                Join: self.on_enter_join,
+                SafeJoin: self.on_enter_join,
                 Query: self.on_enter_query,
                 Projection: self.on_enter_projection,
                 Selection: self.on_enter_selection,
@@ -321,7 +414,9 @@ class CompilationContext(object):
 
     def leave(self, node, artefacts):
         handlers = {
-                Join: self.on_leave_join,
+                SafeJoin: self.on_leave_join,
+                UnsafeJoin: self.on_leave_unsafe_join,
+                UnsafeJoinTarget: self.on_leave_unsafe_jointarget,
                 Query: self.on_leave_query,
                 Projection: self.on_leave_projection,
                 Selection: self.on_leave_selection,
@@ -442,7 +537,6 @@ class Node(list):
 
 
 class QuerySet(Node):
-
     def compile(self, context):
         Node.compile(self, context)
         return context.artefact
@@ -462,7 +556,7 @@ class JoinList(Node):
     pass
 
 
-class Join(Node):
+class SafeJoin(Node):
     @property
     def object(self):
         return self[0]
@@ -474,6 +568,34 @@ class Join(Node):
     @property
     def arglist(self):
         return self[2]
+
+
+class UnsafeJoinTarget(Node):
+    @property
+    def name(self):
+        return self[0]
+
+    @property
+    def attribute(self):
+        return self[1]
+
+    def type_of(self):
+        return self.attribute.type_of()
+
+
+class UnsafeJoin(Node):
+    @property
+    def src(self):
+        return self[0]
+
+    @property
+    def dst(self):
+        return self[1]
+
+    def typecheck(self):
+        if self.src.type_of() != self.dst.type_of():
+            raise TypeError('type({}) != type({})'.format(self.src,
+                                                          self.dst))
 
 
 class Query(Node):
@@ -532,6 +654,9 @@ class Attribute(Node):
             raise Exception('Unable to find ancestor node')
         return entity_def
 
+    def _find_entity_def(self):
+        return self._find_ancestor(EntityDefinition)
+
     def typecheck(self):
         entity = self.entity_def.entity
         self.attribute_type = (
@@ -542,6 +667,15 @@ class Attribute(Node):
         return (self.attribute_type
                 if self.attribute_type
                 else self.typecheck())
+
+
+class AttributeRef(Node):
+    @property
+    def name(self):
+        return self[0]
+
+    def type_of(self):
+        return None
 
 
 class Operator(Node):
@@ -612,7 +746,9 @@ class InOperator(Node):
 
 
 class LikeOperator(Operator):
-    pass
+    @property
+    def literal(self):
+        return self[1]
 
 
 class LiteralList(Node):
@@ -647,6 +783,7 @@ def BNF():
     tbl_group = CaselessLiteral('group')
     tbl_user = CaselessLiteral('user')
     tbl_binding = CaselessLiteral('binding')
+    tbl_serviceaccount = CaselessLiteral('serviceaccount')
 
     LPAREN = Suppress('(')
     RPAREN = Suppress(')')
@@ -682,13 +819,16 @@ def BNF():
         tbl_member |
         tbl_group |
         tbl_user |
-        tbl_binding)
+        tbl_binding |
+        tbl_serviceaccount)
 
     string = dblQuotedString
     number = Word(nums)
     relation = Word(alphas)
     ident = Word(alphanums)
-    attribute = Attribute.build(Word(alphas + '_'))
+    attribute_ident = Word(alphas + '_')
+    attribute_ref = AttributeRef.build(attribute_ident)
+    attribute = Attribute.build(attribute_ident)
 
     comparator = EQ | NEQ | GT | LT | LTE | GTE
     literal = Number.build(number) | String.build(string)
@@ -698,7 +838,7 @@ def BNF():
     literal_list = LiteralList.build(LBRACK + literal_list_item + RBRACK)
 
     comparison = (
-        LikeOperator.build(attribute + LIKE + string) |
+        LikeOperator.build(attribute + Suppress(LIKE) + String.build(string)) |
         InOperator.build(attribute + IN + literal_list) |
         Comparison.build(attribute + comparator + literal) |
         Comparison.build(literal + comparator + attribute)
@@ -729,8 +869,16 @@ def BNF():
 
     join = Forward()
     join << (
-        Join.build(ident + DOT + relation +
-                   LPAREN + Group(entitylist) + RPAREN + SEMICOLON) +
+        (SafeJoin.build(
+            ident + DOT + relation + LPAREN +
+            Group(entitylist) + RPAREN)
+         |
+         UnsafeJoin.build(
+             UnsafeJoinTarget.build(ident + DOT + attribute_ref)
+             + Suppress(EQ) +
+             UnsafeJoinTarget.build(ident + DOT + attribute_ref))
+         ) +
+        SEMICOLON +
         Optional(join)
         )
 
