@@ -281,8 +281,13 @@ class CompilationContext(object):
             qry = qry.filter(clause)
         for condition in self.conditions:
             qry = qry.filter(condition)
-        self.artefact = qry.distinct()
-        print self.artefact
+        #self.artefact = qry.distinct()
+        self.artefact = qry
+
+        from sqlalchemy.dialects import mysql
+        print self.artefact.statement.compile(
+            dialect=mysql.dialect(),
+            compile_kwargs={"literal_binds": True})
 
     def on_enter_projection(self, projection):
         for identifier in projection.entities:
