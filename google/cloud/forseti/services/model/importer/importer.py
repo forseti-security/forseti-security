@@ -130,7 +130,6 @@ class InventoryImporter(object):
             'serviceaccount',
             'serviceaccount_key',
             'bucket',
-            'dataset',
             'compute_project',
             'image',
             'instancegroup',
@@ -144,6 +143,10 @@ class InventoryImporter(object):
             'subnetwork',
             'cloudsqlinstance'
             ]
+
+        bigquery_type_list = [
+            'dataset',
+        ]
 
         gsuite_type_list = [
             'gsuite_group',
@@ -173,6 +176,14 @@ class InventoryImporter(object):
                     last_res_type = self._store_resource(resource,
                                                          last_res_type)
                 self._store_resource(None, last_res_type)
+                self.session.flush()
+
+                for (policy, resource) in inventory.iter(
+                        bigquery_type_list, fetch_dataset_policy=True,
+                        with_resource=True):
+                    item_counter += 1
+                    self._convert_dataset(resource, policy)
+
                 self.session.flush()
 
                 for resource in inventory.iter(gsuite_type_list):
@@ -427,9 +438,6 @@ class InventoryImporter(object):
             'object': (None,
                        self._convert_object,
                        None),
-            'dataset': (None,
-                        self._convert_dataset,
-                        None),
             'compute_project': (None,
                                 self._convert_computeproject,
                                 None),
@@ -536,7 +544,7 @@ class InventoryImporter(object):
         self.session.add(resource)
         self._add_to_cache(gae_resource, resource)
 
-    def _convert_dataset(self, dataset):
+    def _convert_dataset(self, dataset, policy):
         """Convert a dataset to a database object.
 
         Args:
@@ -545,16 +553,28 @@ class InventoryImporter(object):
         data = dataset.get_data()
         parent, full_res_name, type_name = self._full_resource_name(
             dataset)
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=dataset.get_key(),
-                type=dataset.get_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=dataset.get_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=dataset.get_key(),
+            type=dataset.get_type(),
+            data=dataset.get_data_raw(),
+            parent=parent)
+        self.session.add(resource)
+
+        # TODO: Dataset policies should be integrated in the model, not stored
+        # as a resource.
+        policy_type_name = to_type_name(policy.get_type_class(),
+                                        policy.get_key())
+        policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
+        policy_res = self.dao.TBL_RESOURCE(
+            full_name=policy_res_name,
+            type_name=policy_type_name,
+            name=policy.get_key(),
+            type=policy.get_type_class(),
+            data=policy.get_data_raw(),
+            parent=resource)
+        self.session.add(policy_res)
 
     def _convert_computeproject(self, computeproject):
         """Convert a computeproject to a database object.
