@@ -46,7 +46,7 @@ class Crawler(object):
         raise NotImplementedError('The visit function of the crawler')
 
     def dispatch(self, callback):
-        """To start a new visitor or continue, Not Implemented.
+        """Dispatch crawling of a subtree.
 
         Args:
             callback (function): Callback to dispatch.

@@ -97,7 +97,8 @@ class CrawlerTest(ForsetiTestCase):
             with gcp_api_mocks.mock_gcp():
                 run_crawler(storage,
                             progresser,
-                            config)
+                            config,
+                            parallel=True)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -152,7 +153,8 @@ class CrawlerTest(ForsetiTestCase):
             with gcp_api_mocks.mock_gcp():
                 run_crawler(storage,
                             progresser,
-                            config)
+                            config,
+                            parallel=False)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -187,7 +189,8 @@ class CrawlerTest(ForsetiTestCase):
             with gcp_api_mocks.mock_gcp():
                 run_crawler(storage,
                             progresser,
-                            config)
+                            config,
+                            parallel=False)
 
             self.assertEqual(0,
                              progresser.errors,

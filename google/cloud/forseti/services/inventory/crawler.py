@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Crawler implementation. """
+"""Crawler implementation."""
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
-from google.cloud.forseti.services.inventory.base import resources
-from google.cloud.forseti.services.inventory.base import gcp
+import threading
+import time
+from Queue import Empty, Queue
+
 from google.cloud.forseti.services.inventory.base import crawler
+from google.cloud.forseti.services.inventory.base import gcp
+from google.cloud.forseti.services.inventory.base import resources
 
 
 class CrawlerConfig(crawler.CrawlerConfig):
@@ -34,6 +38,19 @@ class CrawlerConfig(crawler.CrawlerConfig):
         self.client = api_client
 
 
+class ParallelCrawlerConfig(crawler.CrawlerConfig):
+    """Multithreaded crawler configuration, to inject dependencies."""
+
+    def __init__(self, storage, progresser, api_client, threads=10,
+                 variables=None):
+        super(ParallelCrawlerConfig, self).__init__()
+        self.storage = storage
+        self.progresser = progresser
+        self.variables = {} if not variables else variables
+        self.threads = threads
+        self.client = api_client
+
+
 class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
@@ -43,7 +60,6 @@ class Crawler(crawler.Crawler):
 
     def run(self, resource):
         """Run the crawler, given a start resource.
-
         Args:
             resource (object): Resource to start with.
         """
@@ -53,15 +69,12 @@ class Crawler(crawler.Crawler):
 
     def visit(self, resource):
         """Handle a newly found resource.
-
         Args:
             resource (object): Resource to handle.
-
         Raises:
             Exception: Reraises any exception.
         """
 
-        storage = self.config.storage
         progresser = self.config.progresser
         try:
 
@@ -72,7 +85,7 @@ class Crawler(crawler.Crawler):
             resource.getBillingInfo(self.get_client())
             resource.getEnabledAPIs(self.get_client())
 
-            storage.write(resource)
+            self.write(resource)
         except Exception as e:
             progresser.on_error(e)
             raise
@@ -81,12 +94,18 @@ class Crawler(crawler.Crawler):
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
-
         Args:
             callback (function): Callback to dispatch.
         """
-
         callback()
+
+    def write(self, resource):
+        """Save resource to storage.
+
+        Args:
+            resource (object): Resource to handle.
+        """
+        self.config.storage.write(resource)
 
     def get_client(self):
         """Get the GCP API client."""
@@ -104,7 +123,6 @@ class Crawler(crawler.Crawler):
 
     def update(self, resource):
         """Update the row of an existing resource
-
         Raises:
             Exception: Reraises any exception.
         """
@@ -116,15 +134,104 @@ class Crawler(crawler.Crawler):
             raise
 
 
+class ParallelCrawler(Crawler):
+    """Multi-threaded Crawler implementation."""
+
+    def __init__(self, config):
+        super(ParallelCrawler, self).__init__(config)
+        self._write_lock = threading.Lock()
+        self._dispatch_queue = Queue()
+        self._shutdown_event = threading.Event()
+
+    def _start_workers(self):
+        """Start a pool of worker threads for processing the dispatch queue."""
+        self._shutdown_event.clear()
+        for _ in xrange(self.config.threads):
+            worker = threading.Thread(target=self._process_queue)
+            worker.daemon = True
+            worker.start()
+
+    def _process_queue(self):
+        """Process items in the queue until the shutdown event is set."""
+        while not self._shutdown_event.is_set():
+            try:
+                callback = self._dispatch_queue.get(timeout=1)
+            except Empty:
+                continue
+
+            callback()
+            self._dispatch_queue.task_done()
+
+    def run(self, resource):
+        """Run the crawler, given a start resource.
+
+        Args:
+            resource (object): Resource to start with.
+        """
+        try:
+            self._start_workers()
+            resource.accept(self)
+            self._dispatch_queue.join()
+        finally:
+            self._shutdown_event.set()
+            # Wait for threads to exit.
+            time.sleep(2)
+        return self.config.progresser
+
+    def dispatch(self, callback):
+        """Dispatch crawling of a subtree.
+
+        Args:
+            callback (function): Callback to dispatch.
+        """
+        self._dispatch_queue.put(callback)
+
+    def write(self, resource):
+        """Save resource to storage.
+
+        Args:
+            resource (object): Resource to handle.
+        """
+        with self._write_lock:
+            self.config.storage.write(resource)
+
+    def on_child_error(self, error):
+        """Process the error generated by child of a resource
+           Inventory does not stop for children errors but raise a warning
+        """
+
+        warning_message = '{}\n'.format(error)
+        with self._write_lock:
+            self.config.storage.warning(warning_message)
+
+        self.config.progresser.on_warning(error)
+
+    def update(self, resource):
+        """Update the row of an existing resource
+
+        Raises:
+            Exception: Reraises any exception.
+        """
+
+        try:
+            with self._write_lock:
+                self.config.storage.update(resource)
+        except Exception as e:
+            self.config.progresser.on_error(e)
+            raise
+
+
 def run_crawler(storage,
                 progresser,
-                config):
+                config,
+                parallel=True):
     """Run the crawler with a determined configuration.
 
     Args:
         storage (object): Storage implementation to use.
         progresser (object): Progresser to notify status updates.
         config (object): Inventory configuration.
+        parallel (bool): If true, use the parallel crawler implementation.
     """
 
     client_config = {
@@ -146,7 +253,12 @@ def run_crawler(storage,
     root_id = config.get_root_resource_id()
     client = gcp.ApiClientImpl(client_config)
     resource = resources.from_root_id(client, root_id)
-    config = CrawlerConfig(storage, progresser, client)
-    crawler_impl = Crawler(config)
+    if parallel:
+        config = ParallelCrawlerConfig(storage, progresser, client)
+        crawler_impl = ParallelCrawler(config)
+    else:
+        config = CrawlerConfig(storage, progresser, client)
+        crawler_impl = Crawler(config)
+
     progresser = crawler_impl.run(resource)
     return progresser.get_summary()

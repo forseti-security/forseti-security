@@ -21,6 +21,7 @@
 # pylint: disable=useless-suppression,cell-var-from-loop,protected-access,too-many-instance-attributes
 
 import ctypes
+from functools import partial
 import json
 
 
@@ -74,13 +75,9 @@ class Resource(object):
         self._data = data
         self._root = root
         self._stack = None
-        self._leaf = contains is None
         self._contains = [] if contains is None else contains
         self._warning = []
         self._enabled_service_names = None
-
-    def is_leaf(self):
-        return self._leaf
 
     def __getitem__(self, key):
         try:
@@ -114,6 +111,21 @@ class Resource(object):
     def get_warning(self):
         return '\n'.join(self._warning)
 
+    def try_accept(self, visitor, stack=None):
+        """Handle exceptions on the call the accept.
+
+        Args:
+            visitor (object): The class implementing the visitor pattern.
+            stack (list): The resource stack from the root to immediate parent
+                of this resource.
+        """
+        try:
+            self.accept(visitor, stack)
+        except Exception as e:
+            self.parent().add_warning(e)
+            visitor.update(self.parent())
+            visitor.on_child_error(e)
+
     def accept(self, visitor, stack=None):
         stack = [] if not stack else stack
         self._stack = stack
@@ -121,22 +133,17 @@ class Resource(object):
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
-            try:
-                for resource in yielder.iter():
-                    res = resource
+            for resource in yielder.iter():
+                res = resource
+                new_stack = stack + [self]
 
-                    def call_accept():
-                        res.accept(visitor, stack + [self])
+                # Parallelization for resource subtrees.
+                if res.should_dispatch():
+                    callback = partial(res.try_accept, visitor, new_stack)
+                    visitor.dispatch(callback)
+                else:
+                    res.try_accept(visitor, new_stack)
 
-                    if res.is_leaf():
-                        call_accept()
-
-                    # Potential parallelization for non-leaf resources
-                    else:
-                        visitor.dispatch(call_accept)
-            except Exception as e:
-                self.add_warning(e)
-                visitor.on_child_error(e)
         if self._warning:
             visitor.update(self)
 
@@ -177,6 +184,9 @@ class Resource(object):
         if self._visitor is None:
             raise Exception('Visitor not initialized yet')
         return self._visitor
+
+    def should_dispatch(self):
+        return False
 
     def __repr__(self):
         return '{}<data="{}", parent_type="{}", parent_key="{}">'.format(
@@ -252,6 +262,10 @@ class Project(Resource):
 
     def key(self):
         return self['projectId']
+
+    def should_dispatch(self):
+        """Project resources should run in parallel threads."""
+        return True
 
     def enumerable(self):
         return self['lifecycleState'] == 'ACTIVE'
