@@ -14,8 +14,8 @@ development efforts, please review our
 [contributing guidelines](/.github/CONTRIBUTING.md) and submit a pull request.
 
 ### forsetisecurity.org
-If you would like to contribute to forsetisecurity.org the website and its
-content is contained in the `gh-pages` branch. Visit its
+If you would like to contribute to forsetisecurity.org, the website and its
+content are contained in the `gh-pages` branch. Visit its
 [README](https://github.com/GoogleCloudPlatform/forseti-security/tree/gh-pages)
 for instructions on how to make changes.
 
