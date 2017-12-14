@@ -427,8 +427,7 @@ def define_model(model_name, dbengine, model_seed):
                     stmt = (
                         select([tbl1.c.parent, tbl2.c.member])
                         .select_from(expansion)
-                        .where(tbl3.c.parent == None)
-                        .distinct())
+                        .where(tbl3.c.parent == None))
 
                     # Execute the query and insert into the table
                     qry = (
@@ -658,7 +657,7 @@ def define_model(model_name, dbengine, model_seed):
                     .filter(b_members.c.members_name == member_name)
                     )
 
-            qry = qry.order_by(role.name.asc()).distinct()
+            qry = qry.order_by(role.name.asc())
 
             result = collections.defaultdict(list)
 
@@ -727,8 +726,6 @@ def define_model(model_name, dbengine, model_seed):
                                                    to_expand,
                                                    show_group_members=False,
                                                    member_contain_self=True)
-
-            qry = qry.distinct()
 
             cur_resource = None
             cur_role = None
@@ -864,7 +861,7 @@ def define_model(model_name, dbengine, model_seed):
                     and_(
                         Binding.id == binding_members.c.bindings_id,
                         expanded_member.name == binding_members.c.members_name)
-                    ))).distinct()
+                    )))
 
             return iter(qry.yield_per(PER_YIELD))
 
@@ -1463,7 +1460,6 @@ def define_model(model_name, dbengine, model_seed):
                 qry_direct
                 .union(qry_member)
                 .union(qry_indirect_member)
-                .distinct()
                 )
 
             return set(qry.all())
