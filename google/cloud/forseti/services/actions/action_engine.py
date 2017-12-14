@@ -56,48 +56,6 @@ class Action(object):
 
     @classmethod
     def from_dict(cls, action_dict):
-        """Creates Action from dictionary config.
-
-        Args:
-          cls (Action): The class.
-          action_dict (dict): The configuration dict.
-
-        Raises:
-          NotImplementedError: When not implemented.
-        """
-        raise NotImplementedError
-
-    def act(self, rule_results):
-        """Acts on rule results.
-
-        Args:
-          rule_results (list): A list of RuleResults.
-
-        Raises:
-          NotImplementedError: When not implemented.
-        """
-        raise NotImplementedError
-
-
-class SampleAction(Action):
-    """An example action."""
-
-    def __init__(self, config, action_id, action_type, code=0, info=''):
-        """Initializes SampleAction.
-
-        Args:
-          config (dict): The config dictionary.
-          action_id (str): A string action id.
-          action_type (str): A string action type.
-          code (int): The code to send as a result.
-          info (str): The info to send as a result.
-        """
-        super(SampleAction, self).__init__(config, action_id, action_type)
-        self.code = code
-        self.info = info
-
-    @classmethod
-    def from_dict(cls, action_dict):
         """Creates a SampleAction from a dictionary.
 
         Args:
@@ -124,6 +82,49 @@ class SampleAction(Action):
         Args:
           rule_results (list): A list of RuleResults.
 
+        Raises:
+          NotImplementedError: When not implemented.
+        """
+        raise NotImplementedError
+
+    def __eq__(self, other):
+        """Tests Action equality.
+
+        Args:
+          other (Action): Object to compare to.
+
+        Returns:
+          bool: Comparison result.
+        """
+        LOGGER.debug('Checking %s == %s', self, other)
+        return (self.config == other.config and
+                self.action_id == other.action_id and
+                self.type == other.type)
+
+
+class SampleAction(Action):
+    """An example action."""
+
+    def __init__(self, config, action_id, action_type, code=0, info=''):
+        """Initializes SampleAction.
+
+        Args:
+          config (dict): The config dictionary.
+          action_id (str): A string action id.
+          action_type (str): A string action type.
+          code (int): The code to send as a result.
+          info (str): The info to send as a result.
+        """
+        super(SampleAction, self).__init__(config, action_id, action_type)
+        self.code = code
+        self.info = info
+
+    def act(self, rule_results):
+        """Acts on rule results.
+
+        Args:
+          rule_results (list): A list of RuleResults.
+
         Yields:
           dict: A dictionary of rule results.
         """
@@ -134,20 +135,6 @@ class SampleAction(Action):
                 action_id=self.action_id,
                 info=self.info
             )
-
-    def __eq__(self, other):
-        """Tests SampleAction equality.
-
-        Args:
-          other (SampleAction): Object to compare to.
-
-        Returns:
-          bool: Comparison result.
-        """
-        LOGGER.debug('Checking %s == %s', self, other)
-        return (self.config == other.config and
-                self.action_id == other.action_id and
-                self.type == other.type)
 
 
 class ActionEngine(object):
@@ -221,11 +208,10 @@ def get_action_class(class_str):
     Raises:
       ActionImportError: If the class doesn't exist.
     """
-    parts = class_str.split('.')
-    module_str = '.'.join(parts[:-1])
+    (module_name, class_name) = class_str.rsplit('.', 1)
     try:
-        module = importlib.import_module(module_str)
-        module = getattr(module, parts[-1])
+        module = importlib.import_module(module_name)
+        module = getattr(module, class_name)
     except ImportError as e:
         raise ActionImportError(e)
     return module

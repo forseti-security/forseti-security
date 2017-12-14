@@ -26,10 +26,6 @@ class ActionTest(ForsetiTestCase):
   def setUp(self):
     self.action = ae.Action({}, 'id', 'type')
 
-  def test_from_dict(self):
-    with self.assertRaises(NotImplementedError):
-      ae.Action.from_dict({})
-
   def test_act(self):
     with self.assertRaises(NotImplementedError):
       self.action.act('result')
