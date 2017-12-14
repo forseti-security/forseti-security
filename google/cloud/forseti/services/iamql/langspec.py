@@ -132,6 +132,28 @@ class Metadata(object):
                   dao.TBL_GROUP_IN_GROUP.member == child.table.member),
                  )),
             ],
+        'member': [
+            ('transitivecontains',
+             [['group', 'member', 'user', 'serviceaccount']],
+             lambda dao, parent, child: (
+                 or_(
+                  and_(
+                   parent.table.type == 'group',
+                   or_(
+                    and_(
+                     dao.TBL_MEMBERSHIP.c.group_name == parent.table.name,
+                     dao.TBL_MEMBERSHIP.c.members_name == child.table.name),
+                    and_(
+                     dao.TBL_GROUP_IN_GROUP.parent == parent.table.name,
+                     dao.TBL_GROUP_IN_GROUP.member == dao.TBL_MEMBERSHIP.c.group_name,
+                     dao.TBL_MEMBERSHIP.c.members_name == child.table.name),
+                   )),
+                  and_(
+                   parent.table.type != 'group',
+                   parent.table.name == child.table.name
+                      ),
+                 ))),
+            ],
         'role': [
             ('has',
              ['permission'],
