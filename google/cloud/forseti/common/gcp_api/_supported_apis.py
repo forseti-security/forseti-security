@@ -40,10 +40,14 @@ SUPPORTED_APIS = {
         'supported_versions': ['v1', 'v2']
     },
     'compute': {
-        'default_version': 'beta',
+        'default_version': 'v1',
         'supported_versions': ['v1', 'beta']
     },
     'iam': {
+        'default_version': 'v1',
+        'supported_versions': ['v1']
+    },
+    'servicemanagement': {
         'default_version': 'v1',
         'supported_versions': ['v1']
     },

@@ -333,8 +333,8 @@ def define_scanner_parser(parent):
         help='Run the scanner')
 
     create_scanner_parser.add_argument(
-        'config_dir',
-        help='Scanner config directory')
+        'config_file',
+        help='Scanner config file')
 
 
 def define_explainer_parser(parent):
@@ -633,7 +633,7 @@ def run_scanner(client, config, output, _):
 
     def do_run():
         """Run a scanner."""
-        result = client.run(config.config_dir)
+        result = client.run(config.config_file)
         output.write(result)
 
     actions = {

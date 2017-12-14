@@ -178,10 +178,10 @@ class EmailUtil(object):
         content = base64.b64encode(file_content)
 
         attachment = mail.Attachment()
-        attachment.set_content(content)
-        attachment.set_type(content_type)
-        attachment.set_filename(filename)
-        attachment.set_disposition(disposition)
-        attachment.set_content_id(content_id)
+        attachment.content = content
+        attachment.type = content_type
+        attachment.filename = filename
+        attachment.disposition = disposition
+        attachment.content_id = content_id
 
         return attachment

@@ -24,7 +24,6 @@ import struct
 import hmac
 from threading import Lock
 
-
 from sqlalchemy import Column
 from sqlalchemy import event
 from sqlalchemy import Integer
@@ -42,6 +41,7 @@ from sqlalchemy import not_
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import reconstructor
 from sqlalchemy.sql import select
 from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
@@ -86,10 +86,17 @@ class Model(MODEL_BASE):
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
     message = Column(Text())
-    warnings = Column(Text())
+    warnings = Column(Text(16777215))
 
-    # Non-SQL attributes
-    warning_store = list()
+    def __init__(self, *args, **kwargs):
+        super(Model, self).__init__(*args, **kwargs)
+        # Non-SQL attributes
+        self.warning_store = list()
+
+    @reconstructor
+    def init_on_load(self):
+        """Initialization of model when reconstructed from query."""
+        self.warning_store = list()
 
     def kick_watchdog(self):
         """Used during import to notify the import is still progressing."""
@@ -102,11 +109,14 @@ class Model(MODEL_BASE):
         Args:
             warning (str): Warning message
         """
-        self.warning_store.append(warning)
+        if warning:
+            self.warning_store.append(warning)
 
     def get_warnings(self):
         """Returns any stored warnings."""
-        return '\n'.join(self.warning_store)
+        if self.warning_store:
+            return "\n".join(self.warning_store)
+        return ""
 
     def set_inprogress(self):
         """Set state to 'in progress'."""

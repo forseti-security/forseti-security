@@ -33,22 +33,26 @@ def mock_gcp():
     ad_patcher = _mock_admin_directory()
     appengine_patcher = _mock_appengine()
     bq_patcher = _mock_bigquery()
+    cloudbilling_patcher = _mock_cloudbilling()
     cloudsql_patcher = _mock_cloudsql()
     crm_patcher = _mock_crm()
     gce_patcher = _mock_gce()
     gcs_patcher = _mock_gcs()
     iam_patcher = _mock_iam()
+    sm_patcher = _mock_servicemanagement()
     try:
         yield
     finally:
         ad_patcher.stop()
         appengine_patcher.stop()
         bq_patcher.stop()
+        cloudbilling_patcher.stop()
         cloudsql_patcher.stop()
         crm_patcher.stop()
         gce_patcher.stop()
         gcs_patcher.stop()
         iam_patcher.stop()
+        sm_patcher.stop()
 
 
 def _mock_admin_directory():
@@ -130,6 +134,21 @@ def _mock_bigquery():
     return bq_patcher
 
 
+def _mock_cloudbilling():
+    """Mock Cloud Billing client."""
+    def _mock_billing_get_billing_info(projectid):
+        if projectid in results.BILLING_GET_INFO:
+            return results.BILLING_GET_INFO[projectid]
+        return {}
+
+    cloudbilling_patcher = mock.patch(
+        MODULE_PATH + 'cloudbilling.CloudBillingClient', spec=True)
+    mock_billing = cloudbilling_patcher.start().return_value
+    mock_billing.get_billing_info.side_effect = _mock_billing_get_billing_info
+
+    return cloudbilling_patcher
+
+
 def _mock_cloudsql():
     """Mock CloudSQL client."""
     def _mock_sql_get_instances(projectid):
@@ -203,6 +222,11 @@ def _mock_gce():
     def _mock_gce_get_firewall_rules(projectid):
         return results.GCE_GET_FIREWALLS[projectid]
 
+    def _mock_gce_get_images(projectid):
+        if projectid in results.GCE_GET_IMAGES:
+            return results.GCE_GET_IMAGES[projectid]
+        return []
+
     def _mock_gce_get_instance_groups(projectid):
         if projectid in results.GCE_GET_INSTANCE_GROUPS:
             return results.GCE_GET_INSTANCE_GROUPS[projectid]
@@ -245,6 +269,7 @@ def _mock_gce():
     mock_gce.get_project.side_effect = _mock_gce_get_project
     mock_gce.get_instances.side_effect = _mock_gce_get_instances
     mock_gce.get_firewall_rules.side_effect = _mock_gce_get_firewall_rules
+    mock_gce.get_images.side_effect = _mock_gce_get_images
     mock_gce.get_instance_groups.side_effect = _mock_gce_get_instance_groups
     mock_gce.get_instance_group_managers.side_effect = (
         _mock_gce_get_instance_group_managers)
@@ -332,3 +357,18 @@ def _mock_iam():
         _mock_iam_get_service_account_keys)
 
     return iam_patcher
+
+
+def _mock_servicemanagement():
+    """Mock Service Management client."""
+    def _mock_sm_get_enabled_apis(projectid):
+        if projectid in results.SERVICEMANAGEMENT_ENABLED_APIS:
+            return results.SERVICEMANAGEMENT_ENABLED_APIS[projectid]
+        return []
+
+    sm_patcher = mock.patch(
+        MODULE_PATH + 'servicemanagement.ServiceManagementClient', spec=True)
+    mock_sm = sm_patcher.start().return_value
+    mock_sm.get_enabled_apis.side_effect = _mock_sm_get_enabled_apis
+
+    return sm_patcher

@@ -70,11 +70,17 @@ class CrawlerTest(ForsetiTestCase):
                 item_counts.setdefault('iam_policy', 0)
                 item_counts['iam_policy'] += 1
             if item.getGCSPolicy():
-                gcs_count = item_counts.setdefault('gcs_policy', 0)
+                item_counts.setdefault('gcs_policy', 0)
                 item_counts['gcs_policy'] += 1
             if item.getDatasetPolicy():
-                dataset_count = item_counts.setdefault('dataset_policy', 0)
+                item_counts.setdefault('dataset_policy', 0)
                 item_counts['dataset_policy'] += 1
+            if item.getBillingInfo():
+                item_counts.setdefault('billing_info', 0)
+                item_counts['billing_info'] += 1
+            if item.getEnabledAPIs():
+                item_counts.setdefault('enabled_apis', 0)
+                item_counts['enabled_apis'] += 1
 
         return result_counts
 
@@ -91,7 +97,8 @@ class CrawlerTest(ForsetiTestCase):
             with gcp_api_mocks.mock_gcp():
                 run_crawler(storage,
                             progresser,
-                            config)
+                            config,
+                            parallel=True)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -116,13 +123,15 @@ class CrawlerTest(ForsetiTestCase):
             'gsuite_group_member': {'resource': 1},
             'gsuite_user': {'resource': 3},
             'gsuite_user_member': {'resource': 3},
+            'image': {'resource': 2},
             'instance': {'resource': 4},
             'instancegroup': {'resource': 1},
             'instancegroupmanager': {'resource': 1},
             'instancetemplate': {'resource': 1},
             'network': {'resource': 2},
             'organization': {'iam_policy': 1, 'resource': 1},
-            'project': {'iam_policy': 4, 'resource': 4},
+            'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
+                        'resource': 4},
             'role': {'resource': 5},
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
@@ -144,7 +153,8 @@ class CrawlerTest(ForsetiTestCase):
             with gcp_api_mocks.mock_gcp():
                 run_crawler(storage,
                             progresser,
-                            config)
+                            config,
+                            parallel=False)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -159,7 +169,8 @@ class CrawlerTest(ForsetiTestCase):
             'appengine_version': {'resource': 1},
             'bucket': {'gcs_policy': 1, 'iam_policy': 1, 'resource': 1},
             'folder': {'iam_policy': 2, 'resource': 2},
-            'project': {'iam_policy': 1, 'resource': 1},
+            'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
+                        'resource': 1},
             'role': {'resource': 1}
         }
 
@@ -178,7 +189,8 @@ class CrawlerTest(ForsetiTestCase):
             with gcp_api_mocks.mock_gcp():
                 run_crawler(storage,
                             progresser,
-                            config)
+                            config,
+                            parallel=False)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -197,7 +209,8 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroupmanager': {'resource': 1},
             'instancetemplate': {'resource': 1},
             'network': {'resource': 1},
-            'project': {'iam_policy': 1, 'resource': 1},
+            'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
+                        'resource': 1},
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
             'serviceaccount_key': {'resource': 1},
             'subnetwork': {'resource': 12},
