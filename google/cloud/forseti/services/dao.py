@@ -246,6 +246,7 @@ def define_model(model_name, dbengine, model_seed):
                 'display_name': (self.display_name, unicode),
                 'full_name': (self.full_name, unicode),
                 'policy_update_counter': (self.policy_update_counter, int),
+                'email': (self.email, unicode),
                 }
 
         def get_columns(self):
