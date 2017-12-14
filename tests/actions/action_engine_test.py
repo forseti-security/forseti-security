@@ -37,12 +37,10 @@ class ActionTest(ForsetiTestCase):
 
 class SampleActionTest(ForsetiTestCase):
 
-  def setUp(self):
-    self.success_action = ae.SampleAction({}, 'id', 'type', 0, 'info1')
-    self.error_action = ae.SampleAction({}, 'id', 'type', 1, 'info2')
-
   def test_from_dict(self):
     action = ae.SampleAction.from_dict({'id': 'id', 'type': 'type'})
+    self.assertEqual('id', action.action_id)
+    self.assertEqual('type', action.type)
 
   def test_from_dict_errors(self):
     with self.assertRaises(ae.MissingRequiredActionField):
@@ -53,24 +51,26 @@ class SampleActionTest(ForsetiTestCase):
       action = ae.SampleAction.from_dict({'id': 'id'})
 
   def test_act(self):
-    success_act_result = list(self.success_action.act(['result']))
+    success_action = ae.SampleAction({}, 'id', 'type', 0, 'info1')
+    error_action = ae.SampleAction({}, 'id', 'type', 1, 'info2')
+    success_act_result = list(success_action.act(['result']))
     self.assertSameStructure(
-        {
-            'rule_result': 'result',
-            'code': 0,
-            'action_id': 'id',
-            'info': 'info1'
-        },
+        ae.RuleResult(
+            rule_result='result',
+            code=0,
+            action_id='id',
+            info='info1'
+        ),
         success_act_result[0]
     )
-    error_act_result = list(self.error_action.act(['result']))
+    error_act_result = list(error_action.act(['result']))
     self.assertSameStructure(
-        {
-            'rule_result': 'result',
-            'code': 1,
-            'action_id': 'id',
-            'info': 'info2'
-        },
+        ae.RuleResult(
+            rule_result='result',
+            code=1,
+            action_id='id',
+            info='info2'
+        ),
         error_act_result[0]
     )
 
@@ -90,25 +90,49 @@ class ActionEngineTest(ForsetiTestCase):
       action_class = ae.get_action_class('doesnt.exist')
 
   def test_create_actions(self):
-    expected = ae.SampleAction.from_dict({
-        'id': 'action.1', 
+    expected = [
+        ae.SampleAction.from_dict(
+            {
+                'id': 'action.1', 
+                'type': ('google.cloud.forseti.services.actions.action_engine.'
+                         'SampleAction'),
+                'group_by': 'resource.project',
+                'triggers': ['*'],
+            }
+        ),
+        ae.SampleAction.from_dict(
+            {
+                'id': 'action.2', 
+                'type': ('google.cloud.forseti.services.actions.action_engine.'
+                         'Action'),
+                'group_by': 'resource.project',
+                'triggers': ['*'],
+            }
+        )
+    ]
+    self.action_engine._action_configs.append({
+        'id': 'action.2', 
         'type': ('google.cloud.forseti.services.actions.action_engine.'
-                 'SampleAction'),
+                 'Action'),
         'group_by': 'resource.project',
         'triggers': ['*'],
     })
+    self.action_engine.action_types[('google.cloud.forseti.services.actions.'
+                                     'action_engine.Action')] = ae.SampleAction
     self.action_engine._create_actions()
-    self.assertEqual(expected, self.action_engine.actions[0])
+    self.assertEqual(expected, self.action_engine.actions)
 
   def test_process_results(self):
     results = self.action_engine.process_results(['result'])
     expected = {
-        'result': [{
-            'rule_result': 'result',
-            'code': 0,
-            'action_id': 'action.1',
-            'info': '',
-        }],
+        'result': [
+            ae.RuleResult(
+                rule_result='result',
+                code=0,
+                action_id='action.1',
+                info=''
+            ),
+        ],
     }
     self.assertSameStructure(expected, results)
 

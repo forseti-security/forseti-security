@@ -15,11 +15,17 @@
 """The action and action engine API implementations."""
 
 import importlib
+from collections import namedtuple
+import threading
 
 from google.cloud.forseti.actions import action_config_validator
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
+
+
+RuleResult = namedtuple('RuleResult',
+                        ['rule_result', 'code', 'action_id', 'info'])
 
 
 class Action(object):
@@ -48,11 +54,12 @@ class Action(object):
                 '\taction_id=%s\n'
                 '\ttype=%s\n') % (self.config, self.action_id, self.type)
 
-    @staticmethod
-    def from_dict(action_dict):
+    @classmethod
+    def from_dict(cls, action_dict):
         """Creates Action from dictionary config.
 
         Args:
+          cls (Action): The class.
           action_dict (dict): The configuration dict.
 
         Raises:
@@ -89,11 +96,12 @@ class SampleAction(Action):
         self.code = code
         self.info = info
 
-    @staticmethod
-    def from_dict(action_dict):
+    @classmethod
+    def from_dict(cls, action_dict):
         """Creates a SampleAction from a dictionary.
 
         Args:
+          cls (SampleAction): A SampleAction class.
           action_dict (dict): A action configuration dictionary.
 
         Returns:
@@ -108,7 +116,7 @@ class SampleAction(Action):
         action_type = action_dict.get('type')
         if not action_type:
             raise MissingRequiredActionField('type')
-        return SampleAction(action_dict, action_id, action_type)
+        return cls(action_dict, action_id, action_type)
 
     def act(self, rule_results):
         """Acts on rule results.
@@ -120,12 +128,12 @@ class SampleAction(Action):
           dict: A dictionary of rule results.
         """
         for result in rule_results:
-            yield {
-                'rule_result': result,
-                'code': self.code,
-                'action_id': self.action_id,
-                'info': self.info
-            }
+            yield RuleResult(
+                rule_result=result,
+                code=self.code,
+                action_id=self.action_id,
+                info=self.info
+            )
 
     def __eq__(self, other):
         """Tests SampleAction equality.
@@ -155,6 +163,7 @@ class ActionEngine(object):
         self.config_dict = action_config_validator.validate(config_path)
         self._action_configs = self.config_dict.get('actions', [])
         self._actions = []
+        self._lock = threading.Lock()
         self.action_types = {
             'Action': Action,
             'SampleAction': SampleAction,
@@ -179,16 +188,9 @@ class ActionEngine(object):
           list: A list of Actions.
         """
         if not self._actions:
-            self._create_actions()
+            with self._lock:
+                self._create_actions()
         return self._actions
-
-    def list(self):
-        """Lists configured actions.
-
-        Returns:
-            list: A list of Actions.
-        """
-        return self.actions
 
     def process_results(self, rule_results):
         """Processes rule results.
@@ -203,15 +205,15 @@ class ActionEngine(object):
         for action in self.actions:
             results = action.act(rule_results)
             for result in results:
-                action_results[result['rule_result']].append(result)
+                action_results[result.rule_result].append(result)
         return action_results
 
 
-def get_action_class(cls):
+def get_action_class(class_str):
     """Imports the action class.
 
     Args:
-      cls (str): A string action class.
+      class_str (str): A string action class.
 
     Returns:
       Action: A child class of Action.
@@ -219,7 +221,7 @@ def get_action_class(cls):
     Raises:
       ActionImportError: If the class doesn't exist.
     """
-    parts = cls.split('.')
+    parts = class_str.split('.')
     module_str = '.'.join(parts[:-1])
     try:
         module = importlib.import_module(module_str)
