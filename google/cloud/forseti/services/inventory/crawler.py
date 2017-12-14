@@ -16,7 +16,7 @@
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,broad-except
+# pylint: disable=missing-param-doc
 
 import threading
 import time

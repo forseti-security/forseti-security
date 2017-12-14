@@ -112,7 +112,13 @@ class Resource(object):
         return '\n'.join(self._warning)
 
     def try_accept(self, visitor, stack=None):
-        """Handle exceptions on the call the accept."""
+        """Handle exceptions on the call the accept.
+
+        Args:
+            visitor (object): The class implementing the visitor pattern.
+            stack (list): The resource stack from the root to immediate parent
+                of this resource.
+        """
         try:
             self.accept(visitor, stack)
         except Exception as e:
