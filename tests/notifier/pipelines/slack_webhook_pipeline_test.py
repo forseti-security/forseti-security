@@ -13,7 +13,6 @@
 # limitations under the License.
 """Tests the email scanner summary pipeline."""
 
-import json
 import mock
 import unittest
 
@@ -36,12 +35,9 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
             }
         """
 
-        violation = {'violation_data': json.loads(violation_data),
-                     'resource_id': '123',
-                     'rule_name': 'Public buckets (allUsers)',
-                     'rule_index': 0L,
-                     'violation_type': 'BUCKET_VIOLATION',
-                     'id': 1L, 'resource_type': 'bucket'}
+        violation = {'violation_data': violation_data, 'resource_id': '123',
+                     'rule_name': 'Public buckets (allUsers)', 'rule_index': 0L,
+                     'violation_type': 'BUCKET_VIOLATION', 'id': 1L, 'resource_type': 'bucket'}
 
         with mock.patch.object(slack_webhook_pipeline.SlackWebhookPipeline, '__init__', lambda x: None):
             slack_pipeline = slack_webhook_pipeline.SlackWebhookPipeline()

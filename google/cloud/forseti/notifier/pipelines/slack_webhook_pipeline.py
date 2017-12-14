@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Slack webhook pipeline to perform notifications."""
-
+import json
 import requests
 
 # TODO: Investigate improving so we can avoid the pylint disable.
@@ -67,7 +67,7 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
 
         payload = {
             'type': self.resource,
-            'details': violation.get('violation_data')
+            'details': json.loads(violation.get('violation_data'))
         }
 
         return self._dump_slack_output(payload)

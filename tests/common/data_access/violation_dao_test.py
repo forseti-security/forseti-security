@@ -293,12 +293,6 @@ class ViolationDaoTest(ForsetiTestCase):
         self.assertEqual(
             fake_data.EXPECTED_MAP_BY_RESOURCE_1, actual)
 
-        violation_data = (
-            actual.get('policy_violations')[0].get('violation_data'))
-        self.assertTrue(
-            type(violation_data) is dict,
-            'violation_data must be dict type to be compatible with slack')
-
 
 if __name__ == '__main__':
     unittest.main()

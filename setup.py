@@ -90,7 +90,7 @@ setup(
     name='forseti-security',
     version=FORSETI_VERSION,
     description='Forseti Security tools',
-    author='Google LLC.',
+    author='Google Inc.',
     author_email='opensource@google.com',
     url='https://github.com/GoogleCloudPlatform/forseti-security',
     classifiers=[
