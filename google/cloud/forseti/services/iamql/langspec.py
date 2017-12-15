@@ -31,6 +31,7 @@ from pyparsing import Keyword
 
 from sqlalchemy.orm import aliased
 from sqlalchemy import and_, not_, or_
+from sqlalchemy.dialects import mysql
 
 
 class Metadata(object):
@@ -309,13 +310,7 @@ class CompilationContext(object):
             qry = qry.filter(clause)
         for condition in self.conditions:
             qry = qry.filter(condition)
-        #self.artefact = qry.distinct()
-        self.artefact = qry
-
-        from sqlalchemy.dialects import mysql
-        print self.artefact.statement.compile(
-            dialect=mysql.dialect(),
-            compile_kwargs={"literal_binds": True})
+        self.artefact = qry.distinct()
 
     def on_enter_projection(self, projection):
         for identifier in projection.entities:
@@ -496,7 +491,14 @@ class QueryCompiler(object):
                                      Metadata.allowed_joins,
                                      self.session)
 
-        return query_set.compile(context)
+        artefact = query_set.compile(context)
+        self.print_query(artefact)
+        return artefact
+
+    def print_query(self, artefact):
+        print self.artefact.statement.compile(
+            dialect=mysql.dialect(),
+            compile_kwargs={"literal_binds": True})
 
 
 class Node(list):
