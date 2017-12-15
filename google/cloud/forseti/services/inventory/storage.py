@@ -31,7 +31,7 @@ from google.cloud.forseti.services.inventory.base.storage import \
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,too-many-instance-attributes,too-many-locals
+# pylint: disable=missing-param-doc,too-many-instance-attributes
 
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
@@ -716,7 +716,6 @@ class Storage(BaseStorage):
              fetch_dataset_policy=False,
              fetch_billing_info=False,
              fetch_enabled_apis=False,
-             with_resource=False,
              with_parent=False):
         """Iterate the objects in the storage.
 
@@ -727,7 +726,6 @@ class Storage(BaseStorage):
             fetch_dataset_policy (bool): Yield dataset policies.
             fetch_billing_info (bool): Yield project billing info.
             fetch_enabled_apis (bool): Yield project enabled APIs info.
-            with_resource (bool): Join resource with results, yield tuples.
             with_parent (bool): Join parent with results, yield tuples.
 
         Yields:
@@ -775,18 +773,6 @@ class Storage(BaseStorage):
                         Inventory.parent_key == p_key,
                         Inventory.parent_type == p_type,
                         parent_inventory.index == self.index.id)))
-        elif with_resource:
-            res_inventory = aliased(Inventory)
-            r_key = res_inventory.key
-            r_type = res_inventory.type
-            base_query = (
-                self.session.query(Inventory, res_inventory)
-                .filter(and_(
-                    Inventory.parent_key == r_key,
-                    Inventory.parent_type == r_type,
-                    res_inventory.type_class == InventoryTypeClass.RESOURCE,
-                    res_inventory.index == self.index.id)))
-
         else:
             base_query = self.session.query(Inventory)
 

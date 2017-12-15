@@ -130,6 +130,7 @@ class InventoryImporter(object):
             'serviceaccount',
             'serviceaccount_key',
             'bucket',
+            'dataset',
             'compute_project',
             'image',
             'instancegroup',
@@ -143,10 +144,6 @@ class InventoryImporter(object):
             'subnetwork',
             'cloudsqlinstance'
             ]
-
-        bigquery_type_list = [
-            'dataset',
-        ]
 
         gsuite_type_list = [
             'gsuite_group',
@@ -178,12 +175,10 @@ class InventoryImporter(object):
                 self._store_resource(None, last_res_type)
                 self.session.flush()
 
-                for (policy, resource) in inventory.iter(
-                        bigquery_type_list, fetch_dataset_policy=True,
-                        with_resource=True):
+                for policy in inventory.iter(gcp_type_list,
+                                             fetch_dataset_policy=True):
                     item_counter += 1
-                    self._convert_dataset(resource, policy)
-
+                    self._convert_dataset_policy(policy)
                 self.session.flush()
 
                 for resource in inventory.iter(gsuite_type_list):
@@ -438,6 +433,9 @@ class InventoryImporter(object):
             'object': (None,
                        self._convert_object,
                        None),
+            'dataset': (None,
+                        self._convert_dataset,
+                        None),
             'compute_project': (None,
                                 self._convert_computeproject,
                                 None),
@@ -544,12 +542,11 @@ class InventoryImporter(object):
         self.session.add(resource)
         self._add_to_cache(gae_resource, resource)
 
-    def _convert_dataset(self, dataset, policy):
+    def _convert_dataset(self, dataset):
         """Convert a dataset to a database object.
 
         Args:
             dataset (object): Dataset to store.
-            policy (object): Dataset Policy to store.
         """
         parent, full_res_name, type_name = self._full_resource_name(
             dataset)
@@ -561,20 +558,28 @@ class InventoryImporter(object):
             data=dataset.get_data_raw(),
             parent=parent)
         self.session.add(resource)
+        self._add_to_cache(dataset, resource)
 
+    def _convert_dataset_policy(self, dataset_policy):
+        """Convert a dataset policy to a database object.
+
+        Args:
+            dataset_policy (object): Dataset policy to store.
+        """
         # TODO: Dataset policies should be integrated in the model, not stored
         # as a resource.
-        policy_type_name = to_type_name(policy.get_type_class(),
-                                        policy.get_key())
+        policy_type_name = to_type_name(dataset_policy.get_type_class(),
+                                        dataset_policy.get_key())
+        parent, full_res_name = self._get_parent(dataset_policy)
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
-        policy_res = self.dao.TBL_RESOURCE(
-            full_name=policy_res_name,
-            type_name=policy_type_name,
-            name=policy.get_key(),
-            type=policy.get_type_class(),
-            data=policy.get_data_raw(),
-            parent=resource)
-        self.session.add(policy_res)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=policy_res_name,
+                type_name=policy_type_name,
+                name=dataset_policy.get_key(),
+                type=dataset_policy.get_type_class(),
+                data=dataset_policy.get_data_raw(),
+                parent=parent))
 
     def _convert_computeproject(self, computeproject):
         """Convert a computeproject to a database object.
