@@ -269,6 +269,13 @@ def define_model(model_name, dbengine, model_seed):
         type = Column(String(64))
         member_name = Column(String(128))
 
+        CORE_TYPES = [
+            'group',
+            'serviceAccount',
+            'user',
+            'allUsers',
+            'allAuthenticatedUsers']
+
         parents = relationship(
             'Member',
             secondary=group_members,
@@ -499,6 +506,7 @@ def define_model(model_name, dbengine, model_seed):
                 lock_stmts = ['{} WRITE'.format(tbl) for tbl in locked_tables]
                 query = 'LOCK TABLES {}'.format(', '.join(lock_stmts))
                 session.execute(query)
+
             try:
                 # Remove all existing rows in the denormalization
                 session.execute(GroupInGroup.__table__.delete())
@@ -552,6 +560,7 @@ def define_model(model_name, dbengine, model_seed):
 
                     rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
+
             except Exception:
                 session.rollback()
                 raise
