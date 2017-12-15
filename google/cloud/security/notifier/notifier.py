@@ -56,7 +56,7 @@ flags.DEFINE_string('config', None, 'Config file to use', short_name='c')
 try:
     flags.DEFINE_string(
         'forseti_config',
-        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        'gs://nordforseti-data-111359/justin_config/forseti_conf.yaml',
         'Fully qualified path and filename of the Forseti config file.')
 except flags.DuplicateFlagError:
     pass
@@ -163,6 +163,8 @@ def main(_):
     if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
+
+    print(forseti_config)
 
     try:
         configs = file_loader.read_and_parse_file(forseti_config)

@@ -152,6 +152,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id='p1',
                 rule_id='rule1',
+                new_violation=1,
                 violation_type='violation1',
                 policy_names=['n1'],
                 recommended_actions=['a1'],
@@ -160,6 +161,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id='p2',
                 rule_id='rule2',
+                new_violation=1,
                 violation_type='violation2',
                 policy_names=['n2'],
                 recommended_actions=['a2'],
@@ -171,6 +173,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'resource_type': v.resource_type,
                 'rule_name': v.rule_id,
                 'rule_index': i+1,
+                'new_violation': 1,
                 'violation_type': v.violation_type,
                 'violation_data': {
                     'policy_names': v.policy_names,
@@ -233,6 +236,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id='p1',
                 rule_id='rule1',
+                new_violation=1,
                 violation_type='violation1',
                 policy_names=['n1'],
                 recommended_actions=['a1'],
@@ -241,6 +245,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id='p2',
                 rule_id='rule2',
+                new_violation=1,
                 violation_type='violation2',
                 policy_names=['n2'],
                 recommended_actions=['a2'],
@@ -259,6 +264,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'resource_type': v.resource_type,
                 'rule_name': v.rule_id,
                 'rule_index': i+1,
+                'new_violation': 1,
                 'violation_type': v.violation_type,
                 'violation_data': {
                     'policy_names': v.policy_names,
@@ -316,6 +322,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'no_rdp_to_linux',
+                    'new_violation': 1,
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {
@@ -339,6 +346,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'test_instances_rule',
+                    'new_violation': 1,
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {
@@ -503,6 +511,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                 'rule_name': 'no_rdp_to_linux',
                 'rule_index': 1,
+                'new_violation': 1,
                 'resource_type': 'firewall_rule',
                 'violation_data': {
                     'policy_names': ['policy1'],
@@ -516,6 +525,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                 'rule_name': 'test_instances_rule',
                 'rule_index': 0,
+                'new_violation': 1,
                 'resource_type': 'firewall_rule',
                 'violation_data': {
                     'policy_names': ['policy2'],

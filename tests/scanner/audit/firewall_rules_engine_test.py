@@ -1426,6 +1426,7 @@ class RuleBookTest(ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule1',
+                new_violation=1,
                 violation_type='FIREWALL_BLACKLIST_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']}
@@ -1436,6 +1437,7 @@ class RuleBookTest(ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule2',
+                new_violation=1,
                 violation_type='FIREWALL_WHITELIST_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']}
@@ -1446,6 +1448,7 @@ class RuleBookTest(ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule3',
+                new_violation=1,
                 violation_type='FIREWALL_REQUIRED_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'INSERT_FIREWALL_RULES': ['rule3: rule 0']}
@@ -1456,6 +1459,7 @@ class RuleBookTest(ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule4',
+                new_violation=1,
                 violation_type='FIREWALL_MATCHES_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={
@@ -1545,6 +1549,7 @@ class RuleEngineTest(ForsetiTestCase):
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'no_rdp_to_linux',
+                    'new_violation': 1,
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {
@@ -1568,6 +1573,7 @@ class RuleEngineTest(ForsetiTestCase):
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'test_instances_rule',
+                    'new_violation': 1,
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {

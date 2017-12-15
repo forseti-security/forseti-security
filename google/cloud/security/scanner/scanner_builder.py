@@ -74,6 +74,8 @@ class ScannerBuilder(object):
                 # Simple way to find the path to folders directory no matter
                 # where forseti runs.
                 rules_path = self.scanner_configs.get('rules_path')
+                print('rule path')
+                print(rules_path)
                 if rules_path is None:
                     scanner_path = inspect.getfile(scanner_class)
                     rules_path = scanner_path.split('/google/cloud/security')[0]

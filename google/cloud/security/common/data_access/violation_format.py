@@ -49,6 +49,7 @@ def format_violation(violation):
            resource_id,
            rule_name,
            violation.rule_index,
+           violation.new_violation,
            violation.violation_type,
            json.dumps(violation.violation_data))
 

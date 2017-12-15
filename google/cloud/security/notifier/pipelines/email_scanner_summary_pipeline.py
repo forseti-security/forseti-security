@@ -49,8 +49,14 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
                     'pluralized_resource_type': '{RESOURCE_TYPE}s'
                     'total': TOTAL,
                     'violations': {
-                        RESOURCE_ID: NUM_VIOLATIONS,
-                        RESOURCE_ID: NUM_VIOLATIONS,
+                        RESOURCE_ID: {
+                            new: NEW_NUM_VIOLATIONS,
+                            total: TOTAL_NUM_VIOLATIONS
+                        },
+                        RESOURCE_ID: {
+                            new: NEW_NUM_VIOLATIONS,
+                            total: TOTAL_NUM_VIOLATIONS
+                        },
                         ...
                     }
                 },
@@ -62,20 +68,22 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
 
         Returns:
             int: total_violations, an integer of the total violations.
+            int: total_new_violations, an integer of the total new violations.
             dict: resource_summaries, a dict of resource to violations.
                 {'organization':
                     {'pluralized_resource_type': 'Organizations',
                      'total': 1,
-                     'violations': OrderedDict([('660570133860', 67)])},
+                     'violations': OrderedDict([('660570133860', {new: 11, total: 11})])},
                  'project':
                     {'pluralized_resource_type': 'Projects',
                      'total': 41,
-                     'violations': OrderedDict([('foo1_project', 111),
-                                                ('foo2_project', 222),
-                                                ('foo3_project', 333)])}}
+                     'violations': OrderedDict([('foo1_project', {new: 11, total: 11}),
+                                                ('foo2_project', {new: 11, total: 11}),
+                                                ('foo3_project', {new: 11, total: 11})])}}
         """
         resource_summaries = {}
         total_violations = 0
+        total_new_violations = 0
 
         for violation in sorted(all_violations,
                                 key=lambda v: v.get('resource_id')):
@@ -92,16 +100,25 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
             # Keep track of # of violations per resource id.
             if (resource_id not in
                     resource_summaries[resource_type]['violations']):
-                resource_summaries[resource_type]['violations'][resource_id] = 0
+                resource_summaries[resource_type]['violations'][resource_id] = {
+                    'total': 0,
+                    'new': 0
+                    }
 
-            resource_summaries[resource_type]['violations'][resource_id] += 1
+            resource_summaries[resource_type]['violations'][resource_id]['total'] += 1
+
+            # Keep track of # of new violations per resource id.
+            if violation.get('new_violation'):
+                resource_summaries[resource_type]['violations'][resource_id]['new'] += 1
+                total_new_violations += 1
+
             total_violations += 1
 
-        return total_violations, resource_summaries
+        return total_violations, total_new_violations, resource_summaries
 
     def _send(  # pylint: disable=arguments-differ
             self, csv_name, output_filename, now_utc, violation_errors,
-            total_violations, resource_summaries, email_sender,
+            total_violations, total_new_violations, resource_summaries, email_sender,
             email_recipient, email_description):
         """Send a summary email of the scan.
 
@@ -111,14 +128,19 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
             now_utc (datetime): The UTC datetime right now.
             violation_errors (iterable): Iterable of violation errors.
             total_violations (int): The total violations.
+            total_new_violations (int): The total new violations.
             resource_summaries (dict): Maps resource to violations.
                 {'organization':
                     {'pluralized_resource_type': 'Organizations',
                      'total': 1,
+                     'new_violations': OrderedDict([('660570133860', 6)]),
                      'violations': OrderedDict([('660570133860', 67)])},
                  'project':
                     {'pluralized_resource_type': 'Projects',
                      'total': 41,
+                     'new_violations': OrderedDict([('foo1_project', 1),
+                                                ('foo2_project', 2),
+                                                ('foo3_project', 3)]),
                      'violations': OrderedDict([('foo1_project', 111),
                                                 ('foo2_project', 222),
                                                 ('foo3_project', 333)])}}
@@ -128,9 +150,12 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
                 subject of the email, e.g. 'Policy Scan'.
         """
         # Render the email template with values.
+        attachment = None
         scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
         email_content = EmailUtil.render_from_template(
             'scanner_summary.jinja', {
+                'total_violations': total_violations,
+                'total_new_violations': total_new_violations,
                 'scan_date':  scan_date,
                 'resource_summaries': resource_summaries,
                 'violation_errors': violation_errors,
@@ -138,13 +163,14 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
 
         # Create an attachment out of the csv file and base64 encode the
         # content.
-        attachment = EmailUtil.create_attachment(
-            file_location=csv_name,
-            content_type='text/csv',
-            filename=output_filename,
-            disposition='attachment',
-            content_id='Scanner Violations'
-        )
+        if total_violations:
+            attachment = EmailUtil.create_attachment(
+                file_location=csv_name,
+                content_type='text/csv',
+                filename=output_filename,
+                disposition='attachment',
+                content_id='Scanner Violations'
+            )
         scanner_subject = '{} Complete - {} violation(s) found'.format(
             email_description, total_violations)
         try:
@@ -176,9 +202,10 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
             email_description (str): Brief scan description to include in the
                 subject of the email, e.g. 'Policy Scan'.
         """
-        total_violations, resource_summaries = self._compose(
+
+        total_violations, total_new_violations, resource_summaries = self._compose(
             all_violations, total_resources)
 
         self._send(csv_name, output_filename, now_utc, violation_errors,
-                   total_violations, resource_summaries, email_sender,
+                   total_violations, total_new_violations, resource_summaries, email_sender,
                    email_recipient, email_description)

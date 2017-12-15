@@ -373,6 +373,7 @@ VIOLATION_FIELDNAMES = [
     'resource_type',
     'rule_index',
     'rule_name',
+    'new_violation',
     'violation_type',
     'violation_data'
 ]
@@ -493,6 +494,8 @@ def write_csv(resource_name, data, write_header=False):
             writer.writeheader()
 
         for i in data:
+            print('write row')
+            print(i)
             writer.writerow(i)
 
         # This must be closed before returned for loading.

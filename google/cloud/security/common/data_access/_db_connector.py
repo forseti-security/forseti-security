@@ -40,6 +40,8 @@ class DbConnector(object):
                 host=global_configs['db_host'],
                 user=global_configs['db_user'],
                 db=global_configs['db_name'],
+                passwd=global_configs.get("db_password", ""),
+                port=global_configs.get("db_port", "3306"),
                 local_infile=1)
         except OperationalError as e:
             LOGGER.error('Unable to create mysql connector:\n%s', e)

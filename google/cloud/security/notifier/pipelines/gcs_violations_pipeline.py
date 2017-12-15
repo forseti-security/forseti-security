@@ -51,7 +51,8 @@ class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
     def run(self):
         """Generate the temporary json file and upload to GCS."""
         with tempfile.NamedTemporaryFile() as tmp_violations:
-            tmp_violations.write(parser.json_stringify(self.violations))
+            tmp_violations.write(parser.json_stringify(
+                                    self._filter_only_new(self.violations)))
             tmp_violations.flush()
 
             gcs_upload_path = '{}/{}'.format(

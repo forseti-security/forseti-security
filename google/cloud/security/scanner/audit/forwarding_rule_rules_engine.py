@@ -31,8 +31,8 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
                                [
                                    'violation_type', 'target', 'rule_index',
                                    'load_balancing_scheme', 'port_range',
-                                   'resource_type', 'port', 'ip_protocol',
-                                   'ip_address', 'resource_id'])
+                                   'new_violation', 'resource_type', 'port',
+                                   'ip_protocol', 'ip_address', 'resource_id'])
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -91,6 +91,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
             ip_address=forwarding_rule.ip_address,
             resource_id=forwarding_rule.resource_id,
             rule_index=len(resource_rules),
+            new_violation=1,
             resource_type=ResourceType.FORWARDING_RULE)
 
     def add_rules(self, rules):

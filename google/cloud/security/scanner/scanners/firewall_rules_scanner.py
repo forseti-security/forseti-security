@@ -93,9 +93,6 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             resource_counts (int): Resource count.
         """
         resource_name = 'violations'
-        rule_indices = self.rules_engine.rule_book.rule_indices
-        all_violations = list(self._flatten_violations(all_violations,
-                                                       rule_indices))
         violation_errors = self._output_results_to_db(all_violations)
 
         # Write the CSV for all the violations.
@@ -145,6 +142,9 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                         'status': 'scanner_done',
                         'payload': payload
                     }
+
+                    print('firewall rule violations - NOTIFY')
+                    print(len(all_violations))
                     notifier.process(message)
 
     def _find_violations(self, policies):
@@ -191,8 +191,13 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
         return firewall_policies, resource_counts
 
-    def run(self):
+    def run(self, last_violations):
         """Runs the data collection."""
         policy_data, resource_counts = self._retrieve()
         all_violations = self._find_violations(policy_data)
+        rule_indices = self.rules_engine.rule_book.rule_indices
+        all_violations = list(self._flatten_violations(all_violations,
+                                                       rule_indices))
+        all_violations = (
+            self._check_new_violations(last_violations, all_violations))
         self._output_results(all_violations, resource_counts)

@@ -72,6 +72,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
+                'new_violation': violation.new_violation,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data
             }
@@ -82,7 +83,6 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): All violations
         """
-        all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
     # pylint: disable=invalid-name
@@ -173,9 +173,20 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             all_violations.extend(violations)
         return all_violations
 
-    def run(self):
+    def run(self, last_violations):
         """Runs the data collection."""
+        print("RUNNING INSTANCE NETWORK")
         instance_network_interface_data = self._retrieve()
         all_violations = (
             self._find_violations(instance_network_interface_data))
+
+        print("OMEGA - FIRST INSTANCE NETWORK")
+        print(len(all_violations))
+
+        all_violations = list(self._flatten_violations(all_violations))
+        all_violations = (
+            self._check_new_violations(last_violations, all_violations))
+
+        print("OMEGA - FIRST INSTANCE NETWORK - OUTPUT")
+        print(len(all_violations))
         self._output_results(all_violations)

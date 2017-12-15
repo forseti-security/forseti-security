@@ -306,6 +306,27 @@ class Dao(_db_connector.DbConnector):
                 OperationalError, ProgrammingError) as e:
             raise MySQLError(resource_name, e)
 
+    def get_previous_snapshot_timestamp(self):
+        """Select the previous timestamp of the last completed snapshot.
+
+        Returns:
+            str: The string timestamp of the previous complete snapshot.
+
+        Raises:
+            MySQLError: When no rows are found.
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                select_data.PREVIOUS_SNAPSHOT_TIMESTAMP)
+            row = cursor.fetchone()
+            if row:
+                return row[0]
+            raise NoResultsError('No snapshot cycle found.')
+        except (DataError, IntegrityError, InternalError, NotSupportedError,
+                OperationalError, ProgrammingError, NoResultsError) as e:
+            raise MySQLError('snapshot_cycles', e)
+
     def get_latest_snapshot_timestamp(self, statuses):
         """Select the latest timestamp of the completed snapshot.
 

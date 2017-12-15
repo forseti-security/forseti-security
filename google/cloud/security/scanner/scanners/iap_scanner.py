@@ -406,6 +406,7 @@ class IapScanner(base_scanner.BaseScanner):
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
+                'new_violation': violation.new_violation,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data
             }
@@ -419,7 +420,6 @@ class IapScanner(base_scanner.BaseScanner):
         """
         resource_name = 'violations'
 
-        all_violations = list(self._flatten_violations(all_violations))
         LOGGER.debug('Writing violations: %r', all_violations)
         violation_errors = self._output_results_to_db(all_violations)
 
@@ -568,10 +568,13 @@ class IapScanner(base_scanner.BaseScanner):
         LOGGER.debug('find_violations returning %r', ret)
         return ret
 
-    def run(self):
+    def run(self, last_violations):
         """Runs the data collection."""
 
         LOGGER.debug('In run')
         iap_data, resource_counts = self._retrieve()
         all_violations = self._find_violations(iap_data)
+        all_violations = list(self._flatten_violations(all_violations))
+        all_violations = (
+            self._check_new_violations(last_violations, all_violations))
         self._output_results(all_violations, resource_counts)
