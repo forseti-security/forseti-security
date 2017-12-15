@@ -84,13 +84,13 @@ class FirewallRulesEngine(bre.BaseRulesEngine):
         Args:
           global_configs (dict): Global configurations.
         """
+        del global_configs  # unused.
         with self._repository_lock:
             rule_file_dict = self._load_rule_definitions()
             rule_defs = rule_file_dict.get('rules', [])
             group_defs = rule_file_dict.get('rule_groups', [])
             org_policy = rule_file_dict.get('org_policy', [])
             self.rule_book = RuleBook(
-                global_configs,
                 rule_defs=rule_defs,
                 group_defs=group_defs,
                 org_policy=org_policy,
@@ -139,7 +139,6 @@ class RuleBook(bre.BaseRuleBook):
     """
 
     def __init__(self,
-                 global_configs,
                  rule_defs=None,
                  snapshot_timestamp=None,
                  group_defs=None,
@@ -147,7 +146,6 @@ class RuleBook(bre.BaseRuleBook):
         """Initialize.
 
         Args:
-          global_configs (dict): Global configurations.
           rule_defs (list): The parsed list of dictionary rules from the YAML
             definition file.
           snapshot_timestamp (str): The snapshot to work with.

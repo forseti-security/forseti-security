@@ -17,12 +17,12 @@
 import json
 
 
-# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-instance-attributes
 class BigqueryAccessControls(object):
     """BigQuery ACL Resource."""
 
     def __init__(self, project_id, dataset_id, special_group, user_email,
-                 domain, group_email, role, view, json):
+                 domain, group_email, role, view, raw_json):
         """Initialize.
 
         Args:
@@ -34,7 +34,7 @@ class BigqueryAccessControls(object):
             group_email (str): BigQuery access_group_by_email
             role (str): GCP role
             view (dict): The BigQuery view the acl applies to.
-            json (str): The raw json string for the acl.
+            raw_json (str): The raw json string for the acl.
 
         """
         self.project_id = project_id
@@ -45,11 +45,20 @@ class BigqueryAccessControls(object):
         self.group_email = group_email
         self.role = role
         self.view = view
-        self.json = json
+        self.json = raw_json
 
     @classmethod
     def from_dict(cls, project_id, dataset_id, acl):
-        """Returns a new BigqueryAccessControls object from dict."""
+        """Returns a new BigqueryAccessControls object from dict.
+
+        Args:
+            project_id (str): the project id
+            dataset_id (str): BigQuery dataset_id
+            acl (dict): The Bigquery Dataset Access ACL.
+
+        Returns:
+            BigqueryAccessControls: A new BigqueryAccessControls object.
+        """
         return cls(
             project_id=project_id,
             dataset_id=dataset_id,
@@ -59,12 +68,22 @@ class BigqueryAccessControls(object):
             group_email=acl.get('groupByEmail', ''),
             role=acl.get('role', ''),
             view=acl.get('view', {}),
-            json=json.dumps(acl)
+            raw_json=json.dumps(acl)
         )
 
     @staticmethod
     def from_json(project_id, dataset_id, acls):
-        """Yields a new BigqueryAccessControls object from for each acl."""
+        """Yields a new BigqueryAccessControls object from for each acl.
+
+        Args:
+            project_id (str): the project id
+            dataset_id (str): BigQuery dataset_id
+            acls (str): The json dataset access list.
+
+        Yields:
+            BigqueryAccessControls: A new BigqueryAccessControls object for
+                each acl in acls.
+        """
         acls = json.loads(acls)
         for acl in acls:
             yield BigqueryAccessControls.from_dict(

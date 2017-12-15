@@ -159,7 +159,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                 group_email=escape_and_globify(group_email),
                 role=escape_and_globify(role.upper()),
                 view='',
-                json=json.dumps(resource))
+                raw_json=json.dumps(resource))
 
             rule = Rule(rule_name=rule_def.get('name'),
                         rule_index=rule_index,

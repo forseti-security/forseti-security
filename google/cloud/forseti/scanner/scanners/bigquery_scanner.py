@@ -14,9 +14,9 @@
 
 """Scanner for the Big Query rules engine."""
 
-import json
+from google.cloud.forseti.common.gcp_type.bigquery_access_controls import (
+    BigqueryAccessControls)
 
-from google.cloud.forseti.common.gcp_type.bigquery_access_controls import BigqueryAccessControls
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.scanner.audit import bigquery_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -25,7 +25,6 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=bad-indentation
 class BigqueryScanner(base_scanner.BaseScanner):
     """Scanner for BigQuery acls."""
 
