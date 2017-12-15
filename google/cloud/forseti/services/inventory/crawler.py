@@ -246,8 +246,6 @@ def run_crawler(storage,
         'max_servicemanagement_api_calls_per_100_seconds': 200,
         'max_compute_api_calls_per_second': 20,
         'max_iam_api_calls_per_second': 20,
-        'replay_file': config.get_replay_file(),
-        'record_file': config.get_record_file(),
         }
 
     root_id = config.get_root_resource_id()
