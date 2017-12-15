@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for Big Query data sets"""
+"""Rules engine for Big Query data sets."""
 from collections import namedtuple
 import itertools
+import json
 import re
 
 # pylint: disable=line-too-long
@@ -150,12 +151,15 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                     'Faulty rule {}'.format(rule_def.get('name')))
 
             rule_def_resource = bq_acls.BigqueryAccessControls(
-                escape_and_globify(dataset_id),
-                escape_and_globify(special_group),
-                escape_and_globify(user_email),
-                escape_and_globify(domain),
-                escape_and_globify(group_email),
-                escape_and_globify(role.upper()))
+                project_id='',
+                dataset_id=escape_and_globify(dataset_id),
+                special_group=escape_and_globify(special_group),
+                user_email=escape_and_globify(user_email),
+                domain=escape_and_globify(domain),
+                group_email=escape_and_globify(group_email),
+                role=escape_and_globify(role.upper()),
+                view='',
+                json=json.dumps(resource))
 
             rule = Rule(rule_name=rule_def.get('name'),
                         rule_index=rule_index,
@@ -186,7 +190,7 @@ class Rule(object):
     rule_violation_attributes = ['resource_type', 'resource_id', 'rule_name',
                                  'rule_index', 'violation_type', 'dataset_id',
                                  'role', 'special_group', 'user_email',
-                                 'domain', 'group_email']
+                                 'domain', 'group_email', 'view']
     frozen_rule_attributes = frozenset(rule_violation_attributes)
     RuleViolation = namedtuple(
         'RuleViolation',
@@ -257,4 +261,6 @@ class Rule(object):
                 special_group=bigquery_acl.special_group,
                 user_email=bigquery_acl.user_email,
                 domain=bigquery_acl.domain,
-                group_email=bigquery_acl.group_email)
+                group_email=bigquery_acl.group_email,
+                view=bigquery_acl.view
+            )

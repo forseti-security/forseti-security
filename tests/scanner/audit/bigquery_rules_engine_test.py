@@ -16,6 +16,7 @@
 
 import copy
 import itertools
+import json
 import mock
 import unittest
 import yaml
@@ -36,13 +37,15 @@ def create_list_of_bq_objects_from_data():
     fake_bigquery_scanner_list = []
     for data in fake_bigquery_scanner_data.BIGQUERY_DATA:
         temp_test_bq_acl = bq_acls.BigqueryAccessControls(
+            project_id=data['project_id'],
             dataset_id=data['dataset_id'],
             special_group=data['access_special_group'],
             user_email=data['access_user_by_email'],
             domain=data['access_domain'],
             role=data['role'],
             group_email=data['access_group_by_email'],
-            project_id=data['project_id'])
+            view='',
+            json=json.dumps(data))
         fake_bigquery_scanner_list.append(temp_test_bq_acl)
     return fake_bigquery_scanner_list
 
