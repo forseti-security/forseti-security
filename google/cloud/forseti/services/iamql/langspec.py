@@ -113,7 +113,31 @@ class Metadata(object):
                   dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
                  )),
             ('transitivecontains',
+             [['member', 'user', 'serviceaccount']],
+             lambda dao, parent, child: (
+                 and_(
+                  dao.TBL_GROUP_IN_GROUP.parent == parent.table.name,
+                  dao.TBL_GROUP_IN_GROUP.member == dao.TBL_MEMBERSHIP.c.group_name,
+                  dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
+                 )),
+            ('transitivecontains',
+             ['group'],
+             lambda dao, parent, child: (
+                 and_(
+                  dao.TBL_GROUP_IN_GROUP.parent == parent.table.member,
+                  dao.TBL_GROUP_IN_GROUP.member == child.table.member),
+                 )),
+            ],
+        'member': [
+            ('contains',
              [['group', 'member', 'user', 'serviceaccount']],
+             lambda dao, parent, child: (
+                 and_(
+                  dao.TBL_MEMBERSHIP.c.group_name == parent.table.name,
+                  dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
+                 )),
+            ('transitivecontains',
+             [['member', 'user', 'serviceaccount']],
              lambda dao, parent, child: (
                  and_(
                   dao.TBL_GROUP_IN_GROUP.parent == parent.table.name,

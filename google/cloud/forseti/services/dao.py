@@ -166,6 +166,10 @@ def define_model(model_name, dbengine, model_seed):
 
     base = declarative_base()
 
+    membership_with_member = (
+        '{}_membership_with_member'.format(model_name))
+    denormed_group_in_group_with_member = (
+        '{}_group_in_group_with_member'.format(model_name))
     denormed_group_in_group = '{}_group_in_group'.format(model_name)
     bindings_tablename = '{}_bindings'.format(model_name)
     roles_tablename = '{}_roles'.format(model_name)
@@ -499,7 +503,8 @@ def define_model(model_name, dbengine, model_seed):
                     '`{}` as {}'.format(
                         GroupInGroup.__tablename__,
                         tbl3.name),
-                    '`{}`'.format(group_members.name)]
+                    '`{}`'.format(group_members.name),
+                    '`{}`'.format(Member.__tablename__)]
                 lock_stmts = ['{} WRITE'.format(tbl) for tbl in locked_tables]
                 query = 'LOCK TABLES {}'.format(', '.join(lock_stmts))
                 session.execute(query)
@@ -558,6 +563,35 @@ def define_model(model_name, dbengine, model_seed):
 
                     rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
+
+                print "inserting members"
+                import code
+                code.interact(local=locals())
+                # Insert (member, member) into GroupInGroup
+                stmt = (
+                    select([Member.name.label('parent'),
+                            Member.name.label('member')])
+                    .select_from(Member.__table__)
+                    .distinct()
+                    )
+
+                qry = (
+                    GroupInGroup.__table__.insert()
+                    .from_select(
+                        ['parent', 'member'],
+                        stmt)
+                    )
+                session.execute(qry)
+
+                print "inserting group members"
+
+                qry = (
+                    group_members.insert()
+                    .from_select(
+                        ['group_name', 'members_name'],
+                        stmt)
+                    )
+                session.execute(qry)
 
             except Exception:
                 session.rollback()
