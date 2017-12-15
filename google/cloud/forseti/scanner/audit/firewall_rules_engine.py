@@ -159,8 +159,6 @@ class RuleBook(bre.BaseRuleBook):
         self.rules_map = {}
         self.rule_groups_map = {}
         self.org_policy_rules_map = {}
-        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
-            global_configs)
         self.snapshot_timestamp = snapshot_timestamp or None
         self._repository_lock = threading.RLock()
         if rule_defs:

@@ -53,12 +53,12 @@ class BigqueryAccessControls(object):
         return cls(
             project_id=project_id,
             dataset_id=dataset_id,
-            domain=acl.get('domain'),
-            user_email=acl.get('userByEmail'),
-            special_group=acl.get('specialGroup'),
-            group_email=acl.get('groupByEmail'),
-            role=acl.get('role'),
-            view=acl.get('view'),
+            domain=acl.get('domain', ''),
+            user_email=acl.get('userByEmail', ''),
+            special_group=acl.get('specialGroup', ''),
+            group_email=acl.get('groupByEmail', ''),
+            role=acl.get('role', ''),
+            view=acl.get('view', {}),
             json=json.dumps(acl)
         )
 
@@ -68,7 +68,7 @@ class BigqueryAccessControls(object):
         acls = json.loads(acls)
         for acl in acls:
             yield BigqueryAccessControls.from_dict(
-                project_id, dataset_id, acl_dict)
+                project_id, dataset_id, acl)
 
     def __hash__(self):
         """Return hash of properties.
