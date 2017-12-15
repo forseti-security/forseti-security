@@ -142,8 +142,8 @@ def enforce_single_project(enforcer, project_id, policy_filename):
 
     if not isinstance(policy, list):
         raise InvalidParsedPolicyFileError(
-            'Invalid parsed policy file: found %s expected %s',
-            type(policy), list)
+            'Invalid parsed policy file: found %s expected list' %
+            type(policy))
 
     project_policies = [(project_id, policy)]
 

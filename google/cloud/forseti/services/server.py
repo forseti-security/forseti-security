@@ -154,8 +154,6 @@ class InventoryConfig(AbstractInventoryConfig):
                  root_resource_id,
                  gsuite_sa_path,
                  gsuite_admin_email,
-                 record_file=None,
-                 replay_file=None,
                  *args,
                  **kwargs):
 
@@ -164,8 +162,6 @@ class InventoryConfig(AbstractInventoryConfig):
         self.root_resource_id = root_resource_id
         self.gsuite_sa_path = gsuite_sa_path
         self.gsuite_admin_email = gsuite_admin_email
-        self.record_file = record_file
-        self.replay_file = replay_file
 
     def get_root_resource_id(self):
         """Return the configured root resource id.
@@ -211,24 +207,6 @@ class InventoryConfig(AbstractInventoryConfig):
         """
 
         self.service_config = service_config
-
-    def get_replay_file(self):
-        """Return the replay file which is None most of the time.
-
-        Returns:
-            str: File to replay GCP API calls from.
-        """
-
-        return self.replay_file
-
-    def get_record_file(self):
-        """Return the record file which is None most of the time.
-
-        Returns:
-            str: File to record GCP API calls to.
-        """
-
-        return self.record_file
 
 
 class ServiceConfig(AbstractServiceConfig):
