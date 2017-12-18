@@ -14,11 +14,10 @@
 
 """Scanner for the Big Query rules engine."""
 
-import itertools
+from google.cloud.forseti.common.gcp_type.bigquery_access_controls import (
+    BigqueryAccessControls)
 
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.data_access import bigquery_dao
-from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.scanner.audit import bigquery_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
@@ -72,6 +71,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
             violation_data['access_special_group'] = violation.special_group
             violation_data['access_group_by_email'] = violation.group_email
             violation_data['role'] = violation.role
+            violation_data['view'] = violation.view
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
@@ -99,49 +99,15 @@ class BigqueryScanner(base_scanner.BaseScanner):
         Returns:
             list: A list of BigQuery violations
         """
-        bigquery_data = itertools.chain(*bigquery_data)
-
         all_violations = []
         LOGGER.info('Finding BigQuery acl violations...')
 
-        for (bigquery, bigquery_acl) in bigquery_data:
-            LOGGER.debug('%s => %s', bigquery, bigquery_acl)
+        for bigquery_acl in bigquery_data:
             violations = self.rules_engine.find_policy_violations(
                 bigquery_acl)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
-
-    @staticmethod
-    def _get_resource_count(project_policies, bigquery_acls):
-        """Get resource count for org and project policies.
-
-        Args:
-            project_policies (list): project policies from inventory.
-            bigquery_acls (list): BigQuery acls from inventory.
-
-        Returns:
-            dict: Resource count map
-        """
-        resource_counts = {
-            ResourceType.PROJECT: len(project_policies),
-            ResourceType.BIGQUERY_ACL: len(bigquery_acls),
-        }
-
-        return resource_counts
-
-    def _get_bigquery_acls(self):
-        """Get Big Query acls from data source.
-
-        Returns:
-            list: List of Big Query acls.
-        """
-        bq_acls = {}
-        bq_acls = (bigquery_dao
-                   .BigqueryDao(self.global_configs)
-                   .get_bigquery_acls('bigquery_datasets',
-                                      self.snapshot_timestamp))
-        return bq_acls
 
     def _retrieve(self):
         """Retrieves the data for scanner.
@@ -149,13 +115,21 @@ class BigqueryScanner(base_scanner.BaseScanner):
         Returns:
             list: BigQuery ACL data
         """
-        bigquery_acls_data = []
-        project_policies = {}
-        bigquery_acls = self._get_bigquery_acls()
-        bigquery_acls_data.append(bigquery_acls.iteritems())
-        bigquery_acls_data.append(project_policies.iteritems())
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            bq_acls = []
 
-        return bigquery_acls_data
+            for policy in data_access.scanner_iter(session, 'dataset_policy'):
+                project_id = policy.parent.parent.name
+                dataset_id = policy.parent.name
+                bq_acls.extend(
+                    BigqueryAccessControls.from_json(
+                        project_id=project_id,
+                        dataset_id=dataset_id,
+                        acls=policy.data))
+
+        return bq_acls
 
     def run(self):
         """Runs the data collection."""

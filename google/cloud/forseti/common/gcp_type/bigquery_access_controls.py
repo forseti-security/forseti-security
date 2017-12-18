@@ -14,31 +14,80 @@
 
 """BigQuery ACL Resource."""
 
+import json
 
-# pylint: disable=too-few-public-methods
+
+# pylint: disable=too-many-instance-attributes
 class BigqueryAccessControls(object):
     """BigQuery ACL Resource."""
 
-    def __init__(self, dataset_id, special_group, user_email, domain,
-                 group_email, role, project_id=None):
+    def __init__(self, project_id, dataset_id, special_group, user_email,
+                 domain, group_email, role, view, raw_json):
         """Initialize.
 
         Args:
+            project_id (str): the project id
             dataset_id (str): BigQuery dataset_id
             special_group (str): BigQuery access_special_group
             user_email (str): BigQuery access_by_user_email
             domain (str): BigQuery access_domain
             group_email (str): BigQuery access_group_by_email
             role (str): GCP role
-            project_id (str): the project id
+            view (dict): The BigQuery view the acl applies to.
+            raw_json (str): The raw json string for the acl.
+
         """
+        self.project_id = project_id
         self.dataset_id = dataset_id
         self.special_group = special_group
         self.user_email = user_email
         self.domain = domain
         self.group_email = group_email
         self.role = role
-        self.project_id = project_id
+        self.view = view
+        self.json = raw_json
+
+    @classmethod
+    def from_dict(cls, project_id, dataset_id, acl):
+        """Returns a new BigqueryAccessControls object from dict.
+
+        Args:
+            project_id (str): the project id
+            dataset_id (str): BigQuery dataset_id
+            acl (dict): The Bigquery Dataset Access ACL.
+
+        Returns:
+            BigqueryAccessControls: A new BigqueryAccessControls object.
+        """
+        return cls(
+            project_id=project_id,
+            dataset_id=dataset_id,
+            domain=acl.get('domain', ''),
+            user_email=acl.get('userByEmail', ''),
+            special_group=acl.get('specialGroup', ''),
+            group_email=acl.get('groupByEmail', ''),
+            role=acl.get('role', ''),
+            view=acl.get('view', {}),
+            raw_json=json.dumps(acl)
+        )
+
+    @staticmethod
+    def from_json(project_id, dataset_id, acls):
+        """Yields a new BigqueryAccessControls object from for each acl.
+
+        Args:
+            project_id (str): the project id
+            dataset_id (str): BigQuery dataset_id
+            acls (str): The json dataset access list.
+
+        Yields:
+            BigqueryAccessControls: A new BigqueryAccessControls object for
+                each acl in acls.
+        """
+        acls = json.loads(acls)
+        for acl in acls:
+            yield BigqueryAccessControls.from_dict(
+                project_id, dataset_id, acl)
 
     def __hash__(self):
         """Return hash of properties.
@@ -46,6 +95,4 @@ class BigqueryAccessControls(object):
         Returns:
             hash: The hash of the class properties.
         """
-        return hash((self.dataset_id, self.special_group, self.user_email,
-                     self.domain, self.group_email, self.role,
-                     self.project_id))
+        return hash(self.json)

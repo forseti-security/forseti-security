@@ -116,7 +116,7 @@ scanner:
 
     scanners:
         - name: bigquery
-          enabled: false
+          enabled: true
         - name: bucket_acl
           enabled: false
         - name: cloudsql_acl
