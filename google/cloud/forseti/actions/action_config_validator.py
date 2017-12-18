@@ -144,7 +144,7 @@ def _check_trigger(action):
         # TODO: once the rules classes and the action classes are set up,
         # this should be changed handle any valid type instead of straight
         # replacement.
-        parts[0] = 'google.cloud.security.auditor.rules'
+        parts[0] = 'google.cloud.forseti.auditor.rules'
         try:
             module = importlib.import_module('.'.join(parts[:-1]))
             _ = getattr(module, parts[-1])
