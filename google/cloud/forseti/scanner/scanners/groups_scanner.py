@@ -14,8 +14,6 @@
 
 """Scanner for Google Groups."""
 
-from Queue import Queue
-
 import anytree
 import yaml
 
@@ -27,30 +25,8 @@ LOGGER = log_util.get_logger(__name__)
 MY_CUSTOMER = 'my_customer'
 
 
-# pylint: disable=bad-indentation
 class GroupsScanner(base_scanner.BaseScanner):
-    """Scanner for IAM data."""
-
-    def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules_file):
-        """Initialization.
-
-        Args:
-            global_configs (dict): Global configurations.
-            scanner_configs (dict): Scanner configurations.
-            service_config (ServiceConfig): Forseti 2.0 service configs
-            model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            rules_file (str): Fully-qualified path and filename of the rules
-                file.
-        """
-        super(GroupsScanner, self).__init__(
-            global_configs,
-            scanner_configs,
-            service_config,
-            model_name,
-            snapshot_timestamp,
-            rules_file)
+    """Scanner for group members data."""
 
     @staticmethod
     def _flatten_violations(violations):
@@ -234,11 +210,8 @@ class GroupsScanner(base_scanner.BaseScanner):
                            'ACTIVE',
                            starting_node)
 
-    def _build_group_tree(self, timestamp):
+    def _build_group_tree(self):
         """Build a tree of all the groups in the organization.
-
-        Args:
-            timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
             node: The tree structure of all the groups in the organization.
@@ -271,7 +244,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         Returns:
             node: The tree structure of all the groups in the organization.
         """
-        root = self._build_group_tree(self.snapshot_timestamp)
+        root = self._build_group_tree()
         return root
 
     def run(self):
