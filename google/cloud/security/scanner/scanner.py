@@ -24,6 +24,7 @@ import gflags as flags
 
 from google.apputils import app
 from google.cloud.security.common.data_access import dao
+from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
@@ -54,6 +55,49 @@ LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
+
+def _get_previous_timestamp(global_configs):
+    """Get previous snapshot timestamp.
+
+    Args:
+        global_configs (dict): Global configurations.
+
+    Returns:
+        str: The latest snapshot timestamp.
+    """
+    previous_timestamp = None
+    try:
+        previous_timestamp = (
+            dao.Dao(global_configs).get_previous_snapshot_timestamp())
+    except db_errors.MySQLError as err:
+        LOGGER.error('Error getting latest snapshot timestamp: %s', err)
+
+    return previous_timestamp
+
+def _get_last_violations(global_configs):
+    """Get last violations from previous timestamp.
+
+    Args:
+        global_configs (dict): Global configurations.
+
+    Returns:
+        old_violations (list):  A list of violations from previous timestamp
+    """
+    old_violations = []
+
+    previous_timestamp = _get_previous_timestamp(global_configs)
+
+    if not previous_timestamp:
+        LOGGER.warn('No previous timestamp found.')
+        return old_violations
+
+    try:
+        old_violations = violation_dao.ViolationDao(
+                global_configs).get_all_violations(previous_timestamp)
+    except db_errors.MySQLError as e:
+        LOGGER.error('Error getting Violations: %s', e)
+
+    return old_violations
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
@@ -104,10 +148,13 @@ def main(_):
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, snapshot_timestamp).build()
 
+    # get last violations for previous run
+    last_violations = _get_last_violations(global_configs)
+
     # pylint: disable=bare-except
     for scanner in runnable_scanners:
         try:
-            scanner.run()
+            scanner.run(last_violations)
         except:
             LOGGER.error('Error running scanner: %s',
                          scanner.__class__.__name__, exc_info=True)

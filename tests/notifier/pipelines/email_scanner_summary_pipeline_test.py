@@ -44,6 +44,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
                 resource_id='abc111',
                 rule_name='Abc 111',
                 rule_index=0,
+                new_violation=1,
                 violation_type=audit_rules.VIOLATION_TYPE['whitelist'],
                 role='role1',
                 members=tuple(members)),
@@ -52,6 +53,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
                 resource_id='def222',
                 rule_name='Def 123',
                 rule_index=1,
+                new_violation=0,
                 violation_type=audit_rules.VIOLATION_TYPE['blacklist'],
                 role='role2',
                 members=tuple(members)),
@@ -72,14 +74,20 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
                 'pluralized_resource_type': 'Organizations',
                 'total': 1,
                 'violations': {
-                    'abc111': len(members)
+                    'abc111': {
+                        'total': len(members),
+                        'new': len(members)
+                    }
                 }
             },
             resource.ResourceType.PROJECT: {
                 'pluralized_resource_type': 'Projects',
                 'total': 1,
                 'violations': {
-                    'def222': len(members)
+                    'def222': {
+                        'total': len(members),
+                        'new': 0
+                    }
                 }
             },
         }

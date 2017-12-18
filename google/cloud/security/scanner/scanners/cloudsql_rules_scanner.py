@@ -80,7 +80,6 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of violations.
         """
-        all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
     def _find_violations(self, cloudsql_data):
@@ -150,8 +149,11 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
 
         return cloudsql_acls_data
 
-    def run(self):
+    def run(self, last_violations):
         """Runs the data collection."""
         cloudsql_acls_data = self._retrieve()
         all_violations = self._find_violations(cloudsql_acls_data)
+        all_violations = list(self._flatten_violations(all_violations))
+        all_violations = (
+            self._check_new_violations(last_violations, all_violations))
         self._output_results(all_violations)

@@ -170,6 +170,95 @@ class DaoTest(ForsetiTestCase):
         with self.assertRaises(errors.MySQLError):
             self.dao.get_latest_snapshot_timestamp('asdfasdf')
 
+    def test_get_previous_snapshot_timestamp(self):
+        """Test create_snapshot_table.
+
+        Setup:
+            Create magic mocks for:
+              * conn
+              * cursor
+              * fetch
+
+        Expect:
+            * cursor() is called.
+            * cursor.execute() is called.
+            * cursor.fetchone() is called.
+        """
+        conn_mock = mock.MagicMock()
+        cursor_mock = mock.MagicMock()
+        fetch_mock = mock.MagicMock()
+
+        expected_db_row = ['123456']
+
+        self.dao.conn = conn_mock
+        self.dao.conn.cursor.return_value = cursor_mock
+        cursor_mock.fetchone = fetch_mock
+        fetch_mock.return_value = ['123456']
+
+        actual = self.dao.get_previous_snapshot_timestamp()
+
+        conn_mock.cursor.assert_called_once_with()
+        fetch_mock.assert_called_once_with()
+        cursor_mock.execute.assert_called_once_with(
+            select_data.PREVIOUS_SNAPSHOT_TIMESTAMP)
+        self.assertEqual(expected_db_row[0], actual)
+
+    def test_get_previous_snapshot_timestamp_invalid_data_ok(self):
+        """Test create_snapshot_table.
+
+        Setup:
+            Create magic mocks for:
+              * conn
+              * cursor
+              * fetch
+
+        Expect:
+            * cursor() is called.
+            * cursor.execute() is called.
+            * cursor.fetchone() is called.
+        """
+        conn_mock = mock.MagicMock()
+        cursor_mock = mock.MagicMock()
+        fetch_mock = mock.MagicMock()
+
+        expected_db_row = ['123456']
+
+        self.dao.conn = conn_mock
+        self.dao.conn.cursor.return_value = cursor_mock
+        cursor_mock.fetchone = fetch_mock
+        fetch_mock.return_value = ['123456']
+
+        actual = self.dao.get_previous_snapshot_timestamp()
+
+        conn_mock.cursor.assert_called_once_with()
+        fetch_mock.assert_called_once_with()
+        cursor_mock.execute.assert_called_once_with(
+            select_data.PREVIOUS_SNAPSHOT_TIMESTAMP)
+        self.assertEqual(expected_db_row[0], actual)
+
+    def test_get_previous_snapshot_timestamp_raises_error_no_results(self):
+        """Test create_snapshot_table() raises error on no results.
+
+        Setup:
+            Create magic mocks for:
+              * conn
+              * cursor
+
+        Expect:
+            Raise MySQLError for no results.
+        """
+        conn_mock = mock.MagicMock()
+        cursor_mock = mock.MagicMock()
+        exec_mock = mock.MagicMock()
+
+        self.dao.conn = conn_mock
+        self.dao.conn.cursor.return_value = cursor_mock
+        cursor_mock.execute = exec_mock
+        exec_mock.side_effect = errors.NoResultsError
+
+        with self.assertRaises(errors.MySQLError):
+            self.dao.get_previous_snapshot_timestamp()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -530,6 +530,7 @@ CREATE_VIOLATIONS_TABLE = """
         `resource_id` varchar(255) NOT NULL,
         `rule_name` varchar(255) DEFAULT NULL,
         `rule_index` int DEFAULT NULL,
+        `new_violation` bool NOT NULL DEFAULT 1,
         `violation_type` enum('UNSPECIFIED',
                               'ADDED','REMOVED',
                               'BIGQUERY_VIOLATION',

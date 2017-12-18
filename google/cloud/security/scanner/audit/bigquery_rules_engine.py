@@ -184,8 +184,8 @@ class Rule(object):
     """
 
     rule_violation_attributes = ['resource_type', 'resource_id', 'rule_name',
-                                 'rule_index', 'violation_type', 'dataset_id',
-                                 'role', 'special_group', 'user_email',
+                                 'rule_index','new_violation', 'violation_type',
+                                 'dataset_id', 'role', 'special_group', 'user_email',
                                  'domain', 'group_email']
     frozen_rule_attributes = frozenset(rule_violation_attributes)
     RuleViolation = namedtuple(
@@ -254,6 +254,7 @@ class Rule(object):
                 violation_type='BIGQUERY_VIOLATION',
                 dataset_id=bigquery_acl.dataset_id,
                 role=bigquery_acl.role,
+                new_violation=1,
                 special_group=bigquery_acl.special_group,
                 user_email=bigquery_acl.user_email,
                 domain=bigquery_acl.domain,

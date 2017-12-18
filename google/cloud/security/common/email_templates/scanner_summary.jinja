@@ -50,7 +50,15 @@ td {
 <body style="background-color: #eee;">
 <div style="background-color: #fff; margin-top: 40px; padding: 20px; margin-left: 20%; margin-right: 20%;">
   <div style="margin: 10px 10px 15px 10px; font-size: 14px;">
-    Forseti Security found some scanner rule violations on {{ scan_date }}.
+    Forseti Security found {% if total_violations %} some {% else %} no {% endif %} scanner rule violations on {{ scan_date }}.
+  </div>
+  <div style="margin: 10px 10px 15px 10px; font-size: 14px;">
+    <div>
+      <span style="font-weight: bold;">New Violations:</span> {{ total_new_violations }}
+    </div>
+    <div>
+      <span style="font-weight: bold;">Total Violations:</span> {{ total_violations }}
+    </div>
   </div>
   <div style="margin: 10px 10px;">
     <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px;">
@@ -70,9 +78,11 @@ td {
           <strong>Errors:</strong> {{ violation_errors|length }}
       </div>
     </div>
+    {% if total_violations %}
     <div style="font-style: italic; font-size: 14px; margin-bottom: 5px;">
       See attached CSV for full violation details.
     </div>
+     {% endif %}
   </div>
 
   <br/>
@@ -86,13 +96,17 @@ td {
             {{ resource_type.title() }}
           </th>
           <th style="border-bottom: 1px solid #ddd; width: 40%;">
-            # Violations
+            # Total
+          </th>
+          <th style="border-bottom: 1px solid #ddd; width: 40%;">
+            # New
           </th>
         </tr>
-        {% for resource_id, count in summary['violations'].iteritems() %}
+        {% for resource_id, counts in summary['violations'].iteritems() %}
         <tr>
-          <td style="padding: 4px;">{{ resource_id}}</td>
-          <td style="padding: 4px;">{{ count }}</td>
+          <td style="padding: 4px;">{{ resource_id }}</td>
+          <td style="padding: 4px;">{{ counts['total'] }}</td>
+          <td style="padding: 4px;">{{ counts['new'] }}</td>
         </tr>
         {% endfor %}
       </table>

@@ -71,6 +71,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
+                'new_violation': violation.new_violation,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data
@@ -82,7 +83,6 @@ class BigqueryScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of BigQuery violations.
         """
-        all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
     def _find_violations(self, bigquery_data):
@@ -152,8 +152,11 @@ class BigqueryScanner(base_scanner.BaseScanner):
 
         return bigquery_acls_data
 
-    def run(self):
+    def run(self, last_violations):
         """Runs the data collection."""
         bigquery_acls_data = self._retrieve()
         all_violations = self._find_violations(bigquery_acls_data)
+        all_violations = list(self._flatten_violations(all_violations))
+        all_violations = (
+            self._check_new_violations(last_violations, all_violations))
         self._output_results(all_violations)

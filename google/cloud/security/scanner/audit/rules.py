@@ -151,12 +151,13 @@ class RuleMode(object):
 # resource_id: string
 # rule_name: string
 # rule_index: int
+# new_violation: boolean
 # violation_type: VIOLATION_TYPE
 # role: string
 # members: tuple of IamPolicyBindings
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'rule_name',
-                            'rule_index', 'violation_type', 'role', 'members'])
+                            'rule_index', 'new_violation', 'violation_type', 'role', 'members'])
 
 # Rule violation types.
 VIOLATION_TYPE = {

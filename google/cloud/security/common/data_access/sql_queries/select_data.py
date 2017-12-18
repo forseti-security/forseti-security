@@ -22,6 +22,12 @@ LATEST_SNAPSHOT_TIMESTAMP = """
     SELECT max(cycle_timestamp) FROM snapshot_cycles
 """
 
+PREVIOUS_SNAPSHOT_TIMESTAMP = """
+    SELECT max(cycle_timestamp) FROM snapshot_cycles where
+    cycle_timestamp < ( SELECT MAX( cycle_timestamp )
+        FROM snapshot_cycles )
+"""
+
 PROJECT_NUMBERS = """
     SELECT project_number FROM projects_{0};
 """
@@ -100,7 +106,7 @@ FIREWALL_RULES = """
     firewall_rule_priority, firewall_rule_direction,
     firewall_rule_source_ranges, firewall_rule_destination_ranges,
     firewall_rule_source_tags, firewall_rule_target_tags,
-    firewall_rule_source_service_accounts, 
+    firewall_rule_source_service_accounts,
     firewall_rule_target_service_accounts, firewall_rule_allowed,
     firewall_rule_denied
     FROM firewall_rules_{0}

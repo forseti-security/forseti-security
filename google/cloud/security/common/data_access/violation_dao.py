@@ -36,7 +36,7 @@ class ViolationDao(dao.Dao):
     """Data access object (DAO) for rule violations."""
 
     violation_attribute_list = ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type',
+                                'new_violation', 'rule_index', 'violation_type',
                                 'violation_data']
     frozen_violation_attribute_list = frozenset(violation_attribute_list)
     Violation = namedtuple('Violation', frozen_violation_attribute_list)
@@ -90,6 +90,7 @@ class ViolationDao(dao.Dao):
                 resource_id=violation['resource_id'],
                 rule_name=violation['rule_name'],
                 rule_index=violation['rule_index'],
+                new_violation=violation['new_violation'],
                 violation_type=violation['violation_type'],
                 violation_data=violation['violation_data'])
             for formatted_violation in _format_violation(violation,

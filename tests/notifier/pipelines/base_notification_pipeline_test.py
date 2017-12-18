@@ -44,7 +44,7 @@ class BaseNotificationPipelineTest(ForsetiTestCase):
             'db_user': 'z',
         }
         fake_pipeline_conf = {
-            'gcs_path': 'gs://blah'
+            'gcs_path': 'gs://blah',
         }
 
         self.fake_pipeline = FakePipeline(
@@ -77,7 +77,6 @@ class BaseNotificationPipelineTest(ForsetiTestCase):
         }
         actual = self.fake_pipeline._get_violations(fake_timestamp)
         self.assertEquals(expected, actual)
-
 
 if __name__ == '__main__':
     unittest.main()

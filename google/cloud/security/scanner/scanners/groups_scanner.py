@@ -86,7 +86,6 @@ class GroupsScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of nodes that are in violation.
         """
-        all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
     # pylint: disable=too-many-branches
@@ -279,7 +278,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         root = self._build_group_tree(self.snapshot_timestamp)
         return root
 
-    def run(self):
+    def run(self, last_violations):
         """Runs the groups scanner."""
 
         root = self._retrieve()
@@ -290,7 +289,9 @@ class GroupsScanner(base_scanner.BaseScanner):
         root = self._apply_all_rules(root, group_rules)
 
         all_violations = self._find_violations(root)
-
+        all_violations = list(self._flatten_violations(all_violations))
+        all_violations = (
+            self._check_new_violations(last_violations, all_violations))
         self._output_results(all_violations)
 
 

@@ -373,6 +373,7 @@ VIOLATION_FIELDNAMES = [
     'resource_type',
     'rule_index',
     'rule_name',
+    'new_violation',
     'violation_type',
     'violation_data'
 ]

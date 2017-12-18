@@ -479,6 +479,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'No 0.0.0.0/0 policy allowed',
+                  'new_violation': 1,
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0'],
                   'recommended_actions': {
@@ -526,6 +527,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
+                  'new_violation': 1,
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0'],
                   'recommended_actions': {
@@ -538,6 +540,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p2',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
+                  'new_violation': 1,
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0 2'],
                   'recommended_actions': {
@@ -608,6 +611,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Only Allow 443 to tagged instances',
+                  'new_violation': 1,
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 443 on https-server'],
                   'recommended_actions': {
@@ -663,6 +667,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_id': 'p1',
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
+                  'new_violation': 1,
                   'policy_names': ['Any to 443 on https-server'],
                   'recommended_actions': {
                       'DELETE_FIREWALL_RULES': [
@@ -674,6 +679,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p3',
                   'rule_id': 'Only Allow 443 to tagged instances',
+                  'new_violation': 1,
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 80/443 to https-server and tag3'],
                   'recommended_actions': {
@@ -764,6 +770,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Allow SSH to tag from 1.1.1.1',
+                  'new_violation': 1,
                   'violation_type': 'FIREWALL_REQUIRED_VIOLATION',
                   'policy_names': ['Any to 443', 'Allow 22 from 1.1.1.1'],
                   'recommended_actions': {
@@ -898,6 +905,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Golden Policy',
+                  'new_violation': 1,
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
                   'policy_names': [
                       'SSH from 1.1.1.1', '443 from 10.0.0.0/8',
@@ -966,6 +974,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Golden Policy',
+                  'new_violation': 1,
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
                   'policy_names': ['SSH from 1.1.1.1', '80 from 10.0.0.0/8'],
                   'recommended_actions': {
@@ -1426,6 +1435,7 @@ class RuleBookTest(ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule1',
+                new_violation=1,
                 violation_type='FIREWALL_BLACKLIST_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']}
@@ -1436,6 +1446,7 @@ class RuleBookTest(ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule2',
+                new_violation=1,
                 violation_type='FIREWALL_WHITELIST_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']}
@@ -1446,6 +1457,7 @@ class RuleBookTest(ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule3',
+                new_violation=1,
                 violation_type='FIREWALL_REQUIRED_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'INSERT_FIREWALL_RULES': ['rule3: rule 0']}
@@ -1456,6 +1468,7 @@ class RuleBookTest(ForsetiTestCase):
                 resource_type='firewall_rule',
                 resource_id=None,
                 rule_id='rule4',
+                new_violation=1,
                 violation_type='FIREWALL_MATCHES_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={
@@ -1545,6 +1558,7 @@ class RuleEngineTest(ForsetiTestCase):
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'no_rdp_to_linux',
+                    'new_violation': 1,
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {
@@ -1568,6 +1582,7 @@ class RuleEngineTest(ForsetiTestCase):
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
                     'rule_id': 'test_instances_rule',
+                    'new_violation': 1,
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {

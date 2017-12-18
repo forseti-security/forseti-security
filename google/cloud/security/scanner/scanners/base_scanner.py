@@ -17,6 +17,7 @@
 import abc
 import os
 import shutil
+import json
 
 from google.cloud.security.common.data_access import errors as db_errors
 from google.cloud.security.common.data_access import violation_dao
@@ -54,6 +55,42 @@ class BaseScanner(object):
         """Runs the pipeline."""
         pass
 
+    def _check_violation_matches(self, old, new):
+        """Eq
+
+        Args:
+            old (dict): old violation
+            new (dict): new violation
+
+        Return:
+            bool: True if is equal
+        """
+        return (old['rule_name'] == new['rule_name'] and
+                old['resource_type'] == new['resource_type'] and
+                old['rule_name'] == new['rule_name'] and
+                json.loads(old['violation_data']) == new['violation_data'] and
+                old['violation_type'] == new['violation_type'])
+
+    def _check_new_violations(self, old_violations, violations):
+        """Adds new flag to violations in the policies.
+
+        Args:
+            policies (list): The list of (resource, policy) tuples to
+                find violations in.
+
+        Returns:
+            list: A list of all violations
+        """
+        if not old_violations:
+            return violations
+
+        for old_violation in old_violations:
+            for violation in violations:
+                if self._check_violation_matches(old_violation, violation):
+                    violation['new_violation'] = 0
+
+        return violations
+
     def _output_results_to_db(self, violations):
         """Output scanner results to DB.
 
@@ -64,6 +101,7 @@ class BaseScanner(object):
             list: Violations that encountered an error during insert.
         """
         (inserted_row_count, violation_errors) = (0, [])
+
         try:
             vdao = violation_dao.ViolationDao(self.global_configs)
             (inserted_row_count, violation_errors) = vdao.insert_violations(

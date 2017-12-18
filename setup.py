@@ -60,6 +60,7 @@ SETUP_REQUIRES = [
 ]
 
 TEST_REQUIRES = [
+    'pylint==1.7.4',
     'mock==2.0.0',
     'SQLAlchemy==1.1.9',
     'parameterized==0.6.1',

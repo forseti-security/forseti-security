@@ -234,6 +234,7 @@ class Rule(object):
                 resource_id=bucket_acl.project_number,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
+                new_violation=1,
                 violation_type='BUCKET_VIOLATION',
                 role=bucket_acl.role,
                 entity=bucket_acl.entity,
@@ -254,5 +255,5 @@ class Rule(object):
     # bucket: string
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type', 'role',
-                                'entity', 'email', 'domain', 'bucket'])
+                                'rule_index', 'new_violation', 'violation_type',
+                                'role', 'entity', 'email', 'domain', 'bucket'])

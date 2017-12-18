@@ -26,7 +26,7 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
 
     def test_can_compose_slack_message(self):
         """Test that the slack message is built correctly."""
-        violation_data = """        
+        violation_data = """
             {
                 "role": "READER",
                 "email": "",
@@ -40,6 +40,7 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
                      'resource_id': '123',
                      'rule_name': 'Public buckets (allUsers)',
                      'rule_index': 0L,
+                     'new_violation': 1L,
                      'violation_type': 'BUCKET_VIOLATION',
                      'id': 1L, 'resource_type': 'bucket'}
 
@@ -51,6 +52,39 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
             expected_output = "*type*:\t`buckets_acl_violations`\n*details*:\n\t*bucket*:\t\t`test-bucket-world-readable-123`\n\t*domain*:\t\t`n/a`\n\t*role*:\t\t`READER`\n\t*email*:\t\t`n/a`\n\t*entity*:\t\t`allUsers`"
 
             self.assertEqual(expected_output.strip(), actual_output.strip())
+
+
+    def test_no_new_notification_no_run_pipeline(self):
+        """Test that no new notification for Slack Pipeline will skip running."""
+        violation_data = """
+            {
+                "role": "READER",
+                "email": "",
+                "bucket": "test-bucket-world-readable-123",
+                "domain": "",
+                "entity": "allUsers"
+            }
+        """
+
+        violation = {'violation_data': json.loads(violation_data),
+                     'resource_id': '123',
+                     'rule_name': 'Public buckets (allUsers)',
+                     'rule_index': 0L,
+                     'new_violation': 1L,
+                     'violation_type': 'BUCKET_VIOLATION',
+                     'id': 1L, 'resource_type': 'bucket'}
+
+        with mock.patch.object(slack_webhook_pipeline.SlackWebhookPipeline, '__init__', lambda x: None):
+            slack_pipeline = slack_webhook_pipeline.SlackWebhookPipeline()
+            slack_pipeline.pipeline_config = {
+                'url': 'test-endpoint',
+                'only_send_new': True
+            }
+            slack_pipeline._compose = mock.MagicMock()
+            slack_pipeline.run()
+
+            slack_pipeline._compose.assert_not_called()
+
 
     def test_no_url_no_run_pipeline(self):
         """Test that no url for Slack pipeline will skip running."""

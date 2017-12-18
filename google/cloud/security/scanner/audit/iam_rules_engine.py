@@ -610,6 +610,7 @@ class ResourceRules(object):
                     resource_id=resource.id,
                     rule_name=rule.rule_name,
                     rule_index=rule.rule_index,
+                    new_violation=1,
                     violation_type=violation_type,
                     role=role_name,
                     members=tuple(members))
@@ -646,6 +647,7 @@ class ResourceRules(object):
                         rule_name=rule.rule_name,
                         rule_index=rule.rule_index,
                         violation_type=violation_type,
+                        new_violation=1,
                         role=policy_binding.role_name,
                         members=tuple(violating_members))
 

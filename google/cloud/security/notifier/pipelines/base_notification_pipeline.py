@@ -108,6 +108,42 @@ class BaseNotificationPipeline(object):
 
         return violations
 
+    def _check_send_only_new(self, **kwargs):
+        """Checks to send only new violations.
+
+         Args:
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            boolean: whether true or not
+        """
+        violation = kwargs.get('violation')
+
+        if self.pipeline_config.get('send_only_new', False):
+            return violation.get('new_violation')
+
+        return True
+
+    def _filter_only_new(self, violations):
+        """Filters only new violations (if applicable).
+
+        Args:
+            violations (list): List of violations
+
+        Returns:
+            violations (list): filtered violations
+        """
+        filtered_violations = []
+
+        if self.pipeline_config.get('send_only_new', False):
+            for violation in violations:
+                if violation.get('new_violation'):
+                    filtered_violations.append(violation)
+
+            return filtered_violations
+
+        return violations
+
     @abc.abstractmethod
     def run(self):
         """Runs the pipeline."""

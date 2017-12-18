@@ -80,7 +80,8 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         output_file_name = self._get_output_filename()
         output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
         with open(output_file_path, 'w+') as f:
-            f.write(parser.json_stringify(self.violations))
+            f.write(parser.json_stringify(
+                        self._filter_only_new(self.violations)))
         return output_file_name
 
     def _make_attachment(self):

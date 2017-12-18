@@ -47,9 +47,12 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
                 snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
-    def run(self):
+    def run(self, last_violations):
         forwarding_rules = self._retrieve()
         all_violations = self._find_violations(forwarding_rules)
+        all_violations = list(self._flatten_violations(all_violations))
+        all_violations = (
+            self._check_new_violations(last_violations, all_violations))
         self._output_results(all_violations)
 
     @staticmethod
@@ -77,6 +80,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.violation_type,
+                'new_violation': violation.new_violation,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
             }
@@ -87,7 +91,6 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): All violations
         """
-        all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
     def _retrieve(self):

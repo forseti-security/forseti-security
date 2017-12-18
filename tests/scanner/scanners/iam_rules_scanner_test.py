@@ -154,7 +154,6 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._output_results(None, '88888')
 
-        self.assertEquals(1, mock_flatten_violations.call_count)
         self.assertEquals(1, mock_output_results_to_db.call_count)
         self.assertEquals(1, mock_write_csv.call_count)
         mock_upload_csv.assert_called_once_with(
@@ -205,7 +204,6 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._output_results(None, '88888')
 
-        self.assertEquals(1, mock_flatten_violations.call_count)
         self.assertEquals(1, mock_output_results_to_db.call_count)
         self.assertEquals(1, mock_write_csv.call_count)
         mock_upload_csv.assert_called_once_with(

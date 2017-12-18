@@ -91,5 +91,6 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
             return
 
         for violation in self.violations:
-            webhook_payload = self._compose(violation=violation)
-            self._send(payload=webhook_payload)
+            if self._check_send_only_new(violation=violation):
+                webhook_payload = self._compose(violation=violation)
+                self._send(payload=webhook_payload)

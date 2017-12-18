@@ -472,6 +472,7 @@ class Rule(object):
                 resource_name=resource.name,
                 resource_id=resource.resource_id,
                 rule_name=self.rule_name,
+                new_violation=1,
                 rule_index=self.rule_index,
                 violation_type='IAP_VIOLATION',
                 alternate_services_violations=alternate_services_violations,
@@ -543,5 +544,5 @@ RuleViolation = namedtuple(
     'RuleViolation',
     ['resource_type', 'resource_id', 'resource_name', 'rule_name',
      'rule_index', 'violation_type',
-     'alternate_services_violations',
+     'new_violation', 'alternate_services_violations',
      'iap_enabled_violation', 'direct_access_sources_violations'])

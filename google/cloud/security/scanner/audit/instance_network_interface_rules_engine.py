@@ -241,6 +241,7 @@ class Rule(object):
                     rule_index=self.rule_index,
                     violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
                     project=project,
+                    new_violation=1,
                     network=network,
                     ip=ips,
                     raw_data=instance_network_interface.as_json())
@@ -255,5 +256,5 @@ class Rule(object):
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'rule_name',
-                                'rule_index', 'violation_type', 'project',
-                                'network', 'ip', 'raw_data'])
+                                'rule_index', 'new_violation', 'violation_type',
+                                'project', 'network', 'ip', 'raw_data'])
