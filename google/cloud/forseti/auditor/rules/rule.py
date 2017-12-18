@@ -170,5 +170,3 @@ RuleResult = namedtuple('RuleResult',
                          'snapshot_id',
                          'resource_owners',
                          'info'])
-
-
