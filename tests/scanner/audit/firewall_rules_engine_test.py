@@ -1416,7 +1416,6 @@ class RuleBookTest(ForsetiTestCase):
             exception: [folder3, org],
         }
         rule_book = fre.RuleBook(
-            {},
             rule_defs=rule_defs,
             group_defs=group_defs,
             org_policy=org_def

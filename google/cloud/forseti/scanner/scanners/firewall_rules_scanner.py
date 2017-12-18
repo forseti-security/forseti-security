@@ -17,7 +17,6 @@ from datetime import datetime
 import itertools
 import json
 import os
-import sys
 
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier import notifier
@@ -44,7 +43,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
-            service_config (ServiceConfig): Forseti 2.0 service configs
+            service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
@@ -182,7 +181,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             int: The resource count.
         """
 
-        model_manager = self.service_config[0].model_manager
+        model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
             firewall_policies = []
@@ -200,7 +199,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
         if not firewall_policies:
             LOGGER.warn('No firewall policies found. Exiting.')
-            sys.exit(1)
+            return None, 0
 
         resource_counts = {
             resource_type.ResourceType.FIREWALL_RULE: len(firewall_policies),

@@ -125,7 +125,7 @@ class ApiTest(ForsetiTestCase):
 
             while True:
                 # Give background running time to complete.
-                time.sleep(2)
+                time.sleep(5)
                 if [x for x in client.inventory.list()]:
                     break
 

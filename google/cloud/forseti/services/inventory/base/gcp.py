@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" GCP API client fassade."""
+"""GCP API client fassade."""
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc
@@ -23,9 +23,11 @@ from google.cloud.forseti.common.gcp_api import admin_directory
 from google.cloud.forseti.common.gcp_api import appengine
 from google.cloud.forseti.common.gcp_api import bigquery
 from google.cloud.forseti.common.gcp_api import cloud_resource_manager
+from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
 from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import iam
+from google.cloud.forseti.common.gcp_api import servicemanagement
 from google.cloud.forseti.common.gcp_api import storage
 
 
@@ -133,9 +135,11 @@ class ApiClientImpl(ApiClient):
         self.appengine = None
         self.bigquery = None
         self.crm = None
+        self.cloudbilling = None
         self.cloudsql = None
         self.compute = None
         self.iam = None
+        self.servicemanagement = None
         self.storage = None
 
         self.config = config
@@ -170,6 +174,13 @@ class ApiClientImpl(ApiClient):
         """
         return cloud_resource_manager.CloudResourceManagerClient(self.config)
 
+    def _create_cloudbilling(self):
+        """Create cloud billing API client
+        Returns:
+            object: Client
+        """
+        return cloudbilling.CloudBillingClient(self.config)
+
     def _create_cloudsql(self):
         """Create cloud sql API client
         Returns:
@@ -190,6 +201,13 @@ class ApiClientImpl(ApiClient):
             object: Client
         """
         return iam.IAMClient(self.config)
+
+    def _create_servicemanagement(self):
+        """Create servicemanagement API client
+        Returns:
+            object: Client
+        """
+        return servicemanagement.ServiceManagementClient(self.config)
 
     def _create_storage(self):
         """Create storage API client
@@ -427,6 +445,16 @@ class ApiClientImpl(ApiClient):
             yield forwardingrule
 
     @create_lazy('compute', _create_compute)
+    def iter_images(self, projectid):
+        """Image Iterator from gcp API call
+
+        Yields:
+            dict: Generator of image resources
+        """
+        for image in self.compute.get_images(projectid):
+            yield image
+
+    @create_lazy('compute', _create_compute)
     def iter_ig_managers(self, projectid):
         """Instance Group Manager Iterator from gcp API call
 
@@ -583,3 +611,21 @@ class ApiClientImpl(ApiClient):
             dict: Dataset Policy
         """
         return self.bigquery.get_dataset_access(projectid, datasetid)
+
+    @create_lazy('cloudbilling', _create_cloudbilling)
+    def get_project_billing_info(self, projectid):
+        """Project Billing Info from gcp API call
+
+        Returns:
+            dict: Project Billing Info resource.
+        """
+        return self.cloudbilling.get_billing_info(projectid)
+
+    @create_lazy('servicemanagement', _create_servicemanagement)
+    def get_enabled_apis(self, projectid):
+        """Project enabled API services from gcp API call
+
+        Returns:
+            list: A list of ManagedService resource dicts.
+        """
+        return self.servicemanagement.get_enabled_apis(projectid)

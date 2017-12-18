@@ -35,13 +35,13 @@ class ScannerBuilder(object):
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
-            service_config (ServiceConfig): Forseti 2.0 service configs
+            service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model
             snapshot_timestamp (str): The snapshot timestamp
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
-        self.service_config = service_config,
+        self.service_config = service_config
         self.model_name = model_name
         self.snapshot_timestamp = snapshot_timestamp
 

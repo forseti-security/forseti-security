@@ -20,8 +20,6 @@ Usage:
   $ forseti_scanner --forseti_config <config_path>
 """
 
-import sys
-
 import gflags as flags
 
 from google.apputils import app
@@ -94,14 +92,14 @@ def run(forseti_config, model_name=None, service_config=None):
 
     if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
-        sys.exit()
+        return 1
 
     try:
         configs = file_loader.read_and_parse_file(forseti_config)
     except IOError:
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try again.')
-        sys.exit()
+        return 1
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')
 
@@ -109,10 +107,10 @@ def run(forseti_config, model_name=None, service_config=None):
 
     # TODO: Figure out if we still need to get the latest model here,
     # or should it be set in the server context before calling the scanner.
-    snapshot_timestamp = _get_timestamp(global_configs)
-    if not snapshot_timestamp:
-        LOGGER.warn('No snapshot timestamp found. Exiting.')
-        sys.exit()
+    #snapshot_timestamp = _get_timestamp(global_configs)
+    #if not snapshot_timestamp:
+    #    LOGGER.warn('No snapshot timestamp found. Exiting.')
+    #    sys.exit()
 
     violation_access = scanner_dao.define_violation(
         model_name, service_config.engine)
@@ -120,7 +118,7 @@ def run(forseti_config, model_name=None, service_config=None):
 
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, service_config, model_name,
-        snapshot_timestamp).build()
+        None).build()
 
     # pylint: disable=bare-except
     for scanner in runnable_scanners:

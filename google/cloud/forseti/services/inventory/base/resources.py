@@ -21,6 +21,7 @@
 # pylint: disable=useless-suppression,cell-var-from-loop,protected-access,too-many-instance-attributes
 
 import ctypes
+from functools import partial
 import json
 
 
@@ -74,12 +75,9 @@ class Resource(object):
         self._data = data
         self._root = root
         self._stack = None
-        self._leaf = contains is None
         self._contains = [] if contains is None else contains
         self._warning = []
-
-    def is_leaf(self):
-        return self._leaf
+        self._enabled_service_names = None
 
     def __getitem__(self, key):
         try:
@@ -113,6 +111,21 @@ class Resource(object):
     def get_warning(self):
         return '\n'.join(self._warning)
 
+    def try_accept(self, visitor, stack=None):
+        """Handle exceptions on the call the accept.
+
+        Args:
+            visitor (object): The class implementing the visitor pattern.
+            stack (list): The resource stack from the root to immediate parent
+                of this resource.
+        """
+        try:
+            self.accept(visitor, stack)
+        except Exception as e:
+            self.parent().add_warning(e)
+            visitor.update(self.parent())
+            visitor.on_child_error(e)
+
     def accept(self, visitor, stack=None):
         stack = [] if not stack else stack
         self._stack = stack
@@ -120,22 +133,17 @@ class Resource(object):
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
-            try:
-                for resource in yielder.iter():
-                    res = resource
+            for resource in yielder.iter():
+                res = resource
+                new_stack = stack + [self]
 
-                    def call_accept():
-                        res.accept(visitor, stack + [self])
+                # Parallelization for resource subtrees.
+                if res.should_dispatch():
+                    callback = partial(res.try_accept, visitor, new_stack)
+                    visitor.dispatch(callback)
+                else:
+                    res.try_accept(visitor, new_stack)
 
-                    if res.is_leaf():
-                        call_accept()
-
-                    # Potential parallelization for non-leaf resources
-                    else:
-                        visitor.dispatch(call_accept)
-            except Exception as e:
-                self.add_warning(e)
-                visitor.on_child_error(e)
         if self._warning:
             visitor.update(self)
 
@@ -159,6 +167,14 @@ class Resource(object):
     def getGroupMembers(self, client=None):
         return None
 
+    @cached('billing_info')
+    def getBillingInfo(self, client=None):
+        return None
+
+    @cached('enabled_apis')
+    def getEnabledAPIs(self, client=None):
+        return None
+
     def stack(self):
         if self._stack is None:
             raise Exception('Stack not initialized yet')
@@ -168,6 +184,9 @@ class Resource(object):
         if self._visitor is None:
             raise Exception('Visitor not initialized yet')
         return self._visitor
+
+    def should_dispatch(self):
+        return False
 
     def __repr__(self):
         return '{}<data="{}", parent_type="{}", parent_key="{}">'.format(
@@ -221,17 +240,64 @@ class Project(Resource):
 
     @cached('iam_policy')
     def getIamPolicy(self, client=None):
-        return client.get_project_iam_policy(self['projectId'])
+        if self.enumerable():
+            return client.get_project_iam_policy(self['projectId'])
+        return {}
+
+    @cached('billing_info')
+    def getBillingInfo(self, client=None):
+        if self.enumerable():
+            return client.get_project_billing_info(self['projectId'])
+        return {}
+
+    @cached('enabled_apis')
+    def getEnabledAPIs(self, client=None):
+        enabled_apis = []
+        if self.enumerable():
+            enabled_apis = client.get_enabled_apis(self['projectId'])
+
+        self._enabled_service_names = frozenset(
+            (api.get('serviceName') for api in enabled_apis))
+        return enabled_apis
 
     def key(self):
         return self['projectId']
 
-    def enumerable(self):
-        return self['lifecycleState'] not in ['DELETE_REQUESTED']
+    def should_dispatch(self):
+        """Project resources should run in parallel threads."""
+        return True
 
-    @cached('compute_api_enabled')
-    def compute_api_enabled(self, client=None):
-        return client.is_compute_api_enabled(projectid=self['projectId'])
+    def enumerable(self):
+        return self['lifecycleState'] == 'ACTIVE'
+
+    def billing_enabled(self):
+        return self.getBillingInfo().get('billingEnabled', False)
+
+    def is_api_enabled(self, service_name):
+        """Returns True if the API service is enabled on the project.
+
+        Args:
+            service_name (str): The API service name to check.
+        """
+        return service_name in self._enabled_service_names
+
+    def bigquery_api_enabled(self):
+        # Bigquery API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('bigquery-json.googleapis.com'))
+
+    def cloudsql_api_enabled(self):
+        # CloudSQL Admin API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('sql-component.googleapis.com'))
+
+    def compute_api_enabled(self):
+        # Compute API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('compute.googleapis.com'))
+
+    def storage_api_enabled(self):
+        return self.is_api_enabled('storage-component.googleapis.com')
 
     def type(self):
         return 'project'
@@ -350,6 +416,14 @@ class Firewall(Resource):
         return 'firewall'
 
 
+class Image(Resource):
+    def key(self):
+        return self['id']
+
+    def type(self):
+        return 'image'
+
+
 class InstanceGroup(Resource):
     def key(self):
         return self['id']
@@ -404,6 +478,18 @@ class ForwardingRule(Resource):
 
     def type(self):
         return 'forwardingrule'
+
+
+class CuratedRole(Resource):
+    def key(self):
+        return self['name']
+
+    def type(self):
+        return 'role'
+
+    def parent(self):
+        # Curated roles have no parent.
+        return None
 
 
 class Role(Resource):
@@ -520,7 +606,7 @@ class FolderProjectIterator(ResourceIterator):
 class BucketIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if self.resource.storage_api_enabled():
             for data in gcp.iter_buckets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['bucket'].create_new(data)
@@ -536,7 +622,7 @@ class ObjectIterator(ResourceIterator):
 class DataSetIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if self.resource.bigquery_api_enabled():
             for data in gcp.iter_datasets(
                     projectid=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
@@ -580,7 +666,7 @@ class AppEngineInstanceIterator(ResourceIterator):
 class ComputeIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if self.resource.compute_api_enabled():
             data = gcp.fetch_compute_project(
                 projectid=self.resource['projectId'])
             yield FACTORIES['compute'].create_new(data)
@@ -589,8 +675,7 @@ class ComputeIterator(ResourceIterator):
 class InstanceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_computeinstances(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instance'].create_new(data)
@@ -599,18 +684,25 @@ class InstanceIterator(ResourceIterator):
 class FirewallIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_computefirewalls(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['firewall'].create_new(data)
 
 
+class ImageIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.compute_api_enabled():
+            for data in gcp.iter_images(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['image'].create_new(data)
+
+
 class InstanceGroupIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_computeinstancegroups(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroup'].create_new(data)
@@ -619,8 +711,7 @@ class InstanceGroupIterator(ResourceIterator):
 class InstanceGroupManagerIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_ig_managers(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancegroupmanager'].create_new(data)
@@ -629,8 +720,7 @@ class InstanceGroupManagerIterator(ResourceIterator):
 class InstanceTemplateIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_instancetemplates(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancetemplate'].create_new(data)
@@ -639,8 +729,7 @@ class InstanceTemplateIterator(ResourceIterator):
 class NetworkIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_networks(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['network'].create_new(data)
@@ -649,8 +738,7 @@ class NetworkIterator(ResourceIterator):
 class SubnetworkIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_subnetworks(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['subnetwork'].create_new(data)
@@ -659,8 +747,7 @@ class SubnetworkIterator(ResourceIterator):
 class BackendServiceIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_backendservices(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['backendservice'].create_new(data)
@@ -669,8 +756,7 @@ class BackendServiceIterator(ResourceIterator):
 class ForwardingRuleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if (self.resource.enumerable() and
-                self.resource.compute_api_enabled(gcp)):
+        if self.resource.compute_api_enabled():
             for data in gcp.iter_forwardingrules(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['forwardingrule'].create_new(data)
@@ -679,7 +765,7 @@ class ForwardingRuleIterator(ResourceIterator):
 class CloudSqlIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
-        if self.resource.enumerable():
+        if self.resource.cloudsql_api_enabled():
             for data in gcp.iter_cloudsqlinstances(
                     projectid=self.resource['projectId']):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)
@@ -723,7 +809,7 @@ class OrganizationCuratedRoleIterator(ResourceIterator):
     def iter(self):
         gcp = self.client
         for data in gcp.iter_curated_roles():
-            yield FACTORIES['role'].create_new(data)
+            yield FACTORIES['curated_role'].create_new(data)
 
 
 class GsuiteGroupIterator(ResourceIterator):
@@ -784,6 +870,7 @@ FACTORIES = {
             ServiceAccountIterator,
             AppEngineAppIterator,
             ComputeIterator,
+            ImageIterator,
             InstanceIterator,
             FirewallIterator,
             InstanceGroupIterator,
@@ -860,6 +947,12 @@ FACTORIES = {
         'contains': [
             ]}),
 
+    'image': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Image,
+        'contains': [
+            ]}),
+
     'instancegroup': ResourceFactory({
         'dependsOn': ['project'],
         'cls': InstanceGroup,
@@ -924,6 +1017,12 @@ FACTORIES = {
     'role': ResourceFactory({
         'dependsOn': ['organization', 'project'],
         'cls': Role,
+        'contains': [
+            ]}),
+
+    'curated_role': ResourceFactory({
+        'dependsOn': [],
+        'cls': CuratedRole,
         'contains': [
             ]}),
 

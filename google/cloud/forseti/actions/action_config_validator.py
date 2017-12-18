@@ -138,6 +138,8 @@ def _check_trigger(action):
     if not action_triggers:
         return [EmptyActionTrigger(action_id)]
     for trigger in action_triggers:
+        if trigger == '*':
+            continue
         parts = trigger.split('.')
         if not parts[0] == 'rules':
             errors.append(TriggerDoesntExist(trigger))

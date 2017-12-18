@@ -25,7 +25,7 @@ global:
     db_name: forseti_security
 
     # gsuite
-    groups_service_account_key_file: {GROUPS_SERVICE_ACCOUNT_KEY_FILE}
+    groups_service_account_key_file: /home/ubuntu/gsuite_key.json
     domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
 
     # notification
@@ -122,7 +122,7 @@ scanner:
 
     scanners:
         - name: bigquery
-          enabled: false
+          enabled: true
         - name: bucket_acl
           enabled: false
         - name: cloudsql_acl

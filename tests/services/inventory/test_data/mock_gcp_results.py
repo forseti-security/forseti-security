@@ -42,6 +42,7 @@ INSTANCE_TEMPLATE_ID_PREFIX = "113"
 NETWORK_ID_PREFIX = "114"
 SUBNETWORK_ID_PREFIX = "115"
 SERVICEACCOUNT_KEY_ID_PREFIX = "116"
+GCE_IMAGE_ID_PREFIX = "117"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -954,6 +955,71 @@ GCE_GET_FIREWALLS = {
                 id=2, project="project2", network="default")),
 }
 
+# Fields: id, project
+GCE_IMAGES_TEMPLATE = """
+[
+{{
+ "kind": "compute#image",
+ "id": "117{id}1",
+ "creationTimestamp": "2017-11-15T21:59:58.627-08:00",
+ "name": "centos-6-custom-v20171116",
+ "description": "Custom CentOS 6 built on 20171116",
+ "sourceType": "RAW",
+ "deprecated": {{
+  "state": "DEPRECATED",
+  "replacement": "https://www.googleapis.com/compute/v1/projects/{project}/global/images/centos-6-custom-v20171208"
+ }},
+ "status": "READY",
+ "archiveSizeBytes": "688350464",
+ "diskSizeGb": "10",
+ "sourceDisk": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-b/disks/disk-install-centos-6-custom-dz0wt",
+ "sourceDiskId": "2345",
+ "licenses": [
+  "https://www.googleapis.com/compute/v1/projects/centos-cloud/global/licenses/centos-6"
+ ],
+ "family": "centos-6-custom",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/global/images/centos-6-custom-v20171116",
+ "labelFingerprint": "42WmSpB8rSM=",
+ "guestOsFeatures": [
+  {{
+   "type": "VIRTIO_SCSI_MULTIQUEUE"
+  }}
+ ]
+}},
+{{
+ "kind": "compute#image",
+ "id": "117{id}2",
+ "creationTimestamp": "2017-12-07T16:19:13.482-08:00",
+ "name": "centos-6-custom-v20171208",
+ "description": "Custom CentOS 6 built on 20171208",
+ "sourceType": "RAW",
+ "status": "READY",
+ "archiveSizeBytes": "788880064",
+ "diskSizeGb": "10",
+ "sourceDisk": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-b/disks/disk-install-centos-6-custom-62bzs",
+ "sourceDiskId": "5678",
+ "licenses": [
+  "https://www.googleapis.com/compute/v1/projects/centos-cloud/global/licenses/centos-6"
+ ],
+ "family": "centos-6-custom",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/global/images/centos-6-custom-v20171208",
+ "labelFingerprint": "42WmSpB8rSM=",
+ "guestOsFeatures": [
+  {{
+   "type": "VIRTIO_SCSI_MULTIQUEUE"
+  }}
+ ]
+}}
+]
+"""
+
+GCE_GET_IMAGES = {
+    "project2":
+        json.loads(
+            GCE_IMAGES_TEMPLATE.format(
+                id=1, project="project2")),
+}
+
 # Fields: id, name, project, network, instance1, instance2, instance3
 GCE_INSTANCE_GROUPS_TEMPLATE = """
 {{
@@ -1599,3 +1665,91 @@ IAM_GET_CURATED_ROLES = [{
     "etag":
         "AA=="
 }]
+
+# Fields: project
+BILLING_ENABLED_TEMPLATE = """
+{{
+ "name": "projects/{project}/billingInfo",
+ "projectId": "{project}",
+ "billingAccountName": "billingAccounts/000000-111111-222222",
+ "billingEnabled": true
+}}
+"""
+
+# Fields: project
+BILLING_DISABLED_TEMPLATE = """
+{{
+ "name": "projects/{project}/billingInfo",
+ "projectId": "{project}"
+}}
+"""
+
+BILLING_GET_INFO = {
+    "project1":
+        json.loads(
+            BILLING_ENABLED_TEMPLATE.format(project="project1")),
+    "project2":
+        json.loads(
+            BILLING_ENABLED_TEMPLATE.format(project="project2")),
+    "project3":
+        json.loads(
+            BILLING_ENABLED_TEMPLATE.format(project="project3")),
+    "project4":
+        json.loads(
+            BILLING_DISABLED_TEMPLATE.format(project="project4")),
+}
+
+APPENGINE_API_ENABLED = """
+{
+ "serviceName": "appengine.googleapis.com",
+ "producerProjectId": "google.com:elegant-theorem-93918"
+}
+"""
+
+BIGQUERY_API_ENABLED = """
+{
+ "serviceName": "bigquery-json.googleapis.com",
+ "producerProjectId": "google.com:ultra-current-88221"
+}
+"""
+
+CLOUDSQL_API_ENABLED = """
+{
+ "serviceName": "sql-component.googleapis.com",
+ "producerProjectId": "google.com:prod-default-producer-project"
+}
+"""
+
+COMPUTE_API_ENABLED = """
+{
+ "serviceName": "compute.googleapis.com",
+ "producerProjectId": "google.com:api-project-539346026206"
+}
+"""
+
+STORAGE_API_ENABLED = """
+{
+ "serviceName": "storage-component.googleapis.com",
+ "producerProjectId": "google.com:prod-default-producer-project"
+}
+"""
+
+SERVICEMANAGEMENT_ENABLED_APIS = {
+    "project1": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(COMPUTE_API_ENABLED),
+    ],
+    "project2": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(COMPUTE_API_ENABLED),
+        json.loads(CLOUDSQL_API_ENABLED),
+    ],
+    "project3": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(BIGQUERY_API_ENABLED),
+    ],
+    "project4": [
+        json.loads(STORAGE_API_ENABLED),
+        json.loads(APPENGINE_API_ENABLED),
+    ],
+}

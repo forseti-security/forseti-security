@@ -18,9 +18,9 @@ from itertools import izip
 import json
 import unittest
 
+from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.utils.db import create_test_engine
-from tests.unittest_utils import ForsetiTestCase
 
 
 FAKE_VIOLATIONS = [

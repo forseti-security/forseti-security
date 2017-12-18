@@ -24,9 +24,9 @@ import urllib2
 
 import jinja2
 
-from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
+from retrying import retry
 
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import log_util
@@ -178,10 +178,10 @@ class EmailUtil(object):
         content = base64.b64encode(file_content)
 
         attachment = mail.Attachment()
-        attachment.set_content(content)
-        attachment.set_type(content_type)
-        attachment.set_filename(filename)
-        attachment.set_disposition(disposition)
-        attachment.set_content_id(content_id)
+        attachment.content = content
+        attachment.type = content_type
+        attachment.filename = filename
+        attachment.disposition = disposition
+        attachment.content_id = content_id
 
         return attachment
