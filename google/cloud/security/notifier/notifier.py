@@ -56,7 +56,7 @@ flags.DEFINE_string('config', None, 'Config file to use', short_name='c')
 try:
     flags.DEFINE_string(
         'forseti_config',
-        'gs://nordforseti-data-111359/justin_config/forseti_conf.yaml',
+        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
         'Fully qualified path and filename of the Forseti config file.')
 except flags.DuplicateFlagError:
     pass

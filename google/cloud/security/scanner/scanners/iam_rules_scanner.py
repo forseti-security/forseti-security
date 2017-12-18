@@ -257,8 +257,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         policy_data, resource_counts = self._retrieve()
         all_violations = self._find_violations(policy_data)
         all_violations = list(self._flatten_violations(all_violations))
-
         all_violations = (
             self._check_new_violations(last_violations, all_violations))
-
         self._output_results(all_violations, resource_counts)
