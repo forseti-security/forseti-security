@@ -78,6 +78,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
                 'rule_name': violation.rule_id,
+                'new_violation': violation.new_violation,
                 'rule_index': rule_indices.get(violation.rule_id, 0),
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data
@@ -142,9 +143,6 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                         'status': 'scanner_done',
                         'payload': payload
                     }
-
-                    print('firewall rule violations - NOTIFY')
-                    print(len(all_violations))
                     notifier.process(message)
 
     def _find_violations(self, policies):

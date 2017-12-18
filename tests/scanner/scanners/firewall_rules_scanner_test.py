@@ -181,14 +181,8 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 },
             } for i, v in enumerate(violations)]
 
-        self.scanner._output_results(violations, '88888')
+        self.scanner._output_results(flattened_violations, '88888')
 
-        mock_output_results_to_db.assert_called_once_with(
-            self.scanner, flattened_violations)
-        mock_write_csv.assert_called_once_with(
-            resource_name='violations',
-            data=flattened_violations,
-            write_header=True)
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
@@ -257,7 +251,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         }
         self.scanner.rules_engine.rule_book.rule_indices.get.side_effect = (
             lambda x, y: rule_indices.get(x, -1))
-        self.scanner._output_results(violations, '88888')
+
         flattened_violations = [
             {
                 'resource_id': v.resource_id,
@@ -272,12 +266,8 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 },
             } for i, v in enumerate(violations)]
 
-        mock_output_results_to_db.assert_called_once_with(
-            self.scanner, flattened_violations)
-        mock_write_csv.assert_called_once_with(
-            resource_name='violations',
-            data=flattened_violations,
-            write_header=True)
+        self.scanner._output_results(flattened_violations, '88888')
+
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),

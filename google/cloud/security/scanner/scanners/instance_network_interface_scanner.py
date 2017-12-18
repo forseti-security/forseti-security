@@ -175,18 +175,10 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
 
     def run(self, last_violations):
         """Runs the data collection."""
-        print("RUNNING INSTANCE NETWORK")
         instance_network_interface_data = self._retrieve()
         all_violations = (
             self._find_violations(instance_network_interface_data))
-
-        print("OMEGA - FIRST INSTANCE NETWORK")
-        print(len(all_violations))
-
         all_violations = list(self._flatten_violations(all_violations))
         all_violations = (
             self._check_new_violations(last_violations, all_violations))
-
-        print("OMEGA - FIRST INSTANCE NETWORK - OUTPUT")
-        print(len(all_violations))
         self._output_results(all_violations)

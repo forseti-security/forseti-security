@@ -1,3 +1,0 @@
-resource_id,resource_type,rule_index,rule_name,new_violation,violation_type,violation_data
-test-nonprod-188800,project,1,test-nonprod-188800 should only have justin.plute@nordstrom.com,0,ADDED,{'member': u'user:RPlute@gmail.com'\, 'role': u'roles/owner'}
-test-nonprod,project,0,test-nonprod should only have justin.plute@nordstrom.com,0,ADDED,{'member': u'user:RPlute@gmail.com'\, 'role': u'roles/owner'}

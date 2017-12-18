@@ -494,8 +494,6 @@ def write_csv(resource_name, data, write_header=False):
             writer.writeheader()
 
         for i in data:
-            print('write row')
-            print(i)
             writer.writerow(i)
 
         # This must be closed before returned for loading.

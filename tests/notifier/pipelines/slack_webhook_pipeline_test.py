@@ -77,8 +77,8 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
         with mock.patch.object(slack_webhook_pipeline.SlackWebhookPipeline, '__init__', lambda x: None):
             slack_pipeline = slack_webhook_pipeline.SlackWebhookPipeline()
             slack_pipeline.pipeline_config = {
-                url: 'test-endpoint',
-                only_send_new: True
+                'url': 'test-endpoint',
+                'only_send_new': True
             }
             slack_pipeline._compose = mock.MagicMock()
             slack_pipeline.run()
