@@ -126,7 +126,7 @@ scanner:
         - name: forwarding_rule
           enabled: false
         - name: group
-          enabled: false
+          enabled: true
         - name: iam_policy
           enabled: false
         - name: iap
