@@ -1006,6 +1006,14 @@ def define_model(model_name, dbengine, model_seed):
                 Member.member_name.startswith(member_name_prefix)).all()]
 
         @classmethod
+        def iter_groups(cls, session):
+            """Returns iterator of all groups in model."""
+
+            qry = session.query(Member).filter(Member.type == 'group')
+            for group in qry.yield_per(1024):
+                yield group
+
+        @classmethod
         def iter_resources_by_prefix(cls,
                                      session,
                                      full_resource_name_prefix=None,
