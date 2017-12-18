@@ -209,6 +209,33 @@ class DaoTest(ForsetiTestCase):
     for check in checks:
       self.assertTrue(check in all_member_names)
 
+  def test_iter_groups(self):
+    """Test fetching all groups in model."""
+    session_maker, data_access = session_creator('test')
+    session = session_maker()
+    client = ModelCreatorClient(session, data_access)
+    _ = ModelCreator(test_models.MEMBER_TESTING_2, client)
+
+    group_members = data_access.iter_groups(session)
+    group_member_names = set((g.name for g in group_members))
+
+    all_member_names = {
+        u'group/g1', u'group/g2', u'group/g3', u'user/u1', u'user/u2',
+        u'group/g3g2', u'group/g3g2g1'
+    }
+    group_checks = set((c for c in all_member_names if c.startswith('group/')))
+    user_checks = set((c for c in all_member_names if c.startswith('user/')))
+
+    for group in group_checks:
+      self.assertTrue(group in group_member_names,
+                      'Members: %s should contain %s' % (
+                          group_member_names, group))
+
+    for user in user_checks:
+      self.assertFalse(user in group_member_names,
+                       'Members: %s, should not contain %s' % (
+                           group_member_names, user))
+
   def test_list_resources_by_prefix(self):
     """Test listing of resources."""
     session_maker, data_access = session_creator('test')
