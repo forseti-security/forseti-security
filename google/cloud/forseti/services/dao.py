@@ -566,9 +566,6 @@ def define_model(model_name, dbengine, model_seed):
                     rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
 
-                print "inserting members"
-                import code
-                code.interact(local=locals())
                 # Insert (member, member) into GroupInGroup
                 stmt = (
                     select([Member.name.label('parent'),
@@ -585,8 +582,7 @@ def define_model(model_name, dbengine, model_seed):
                     )
                 session.execute(qry)
 
-                print "inserting group members"
-
+                # Insert (member, member) into group_members
                 qry = (
                     group_members.insert()
                     .from_select(
