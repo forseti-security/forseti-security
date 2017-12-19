@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" IAMQL grammar & compiler implementation. """
+"""IAMQL data model translations"""
 
 from sqlalchemy import and_
 

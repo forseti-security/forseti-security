@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" IAMQL gRPC service. """
+"""IAMQL gRPC service"""
 
-from google.protobuf import any_pb2
 from google.cloud.forseti.services.iamql import iamql_pb2
 from google.cloud.forseti.services.iamql import iamql_pb2_grpc
 from google.cloud.forseti.services.iamql import iamql
