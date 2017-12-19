@@ -15,10 +15,10 @@
 """ IAMQL gRPC service. """
 
 from google.protobuf import any_pb2
-from google.cloud.security.iam.iamql import iamql_pb2
-from google.cloud.security.iam.iamql import iamql_pb2_grpc
-from google.cloud.security.iam.iamql import iamql
-from google.cloud.security.iam.utils import autoclose_stream
+from google.cloud.forseti.services.iamql import iamql_pb2
+from google.cloud.forseti.services.iamql import iamql_pb2_grpc
+from google.cloud.forseti.services.iamql import iamql
+from google.cloud.forseti.services.utils import autoclose_stream
 
 import numbers
 

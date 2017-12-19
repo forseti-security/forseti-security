@@ -51,7 +51,7 @@ from google.cloud.forseti.services.utils import mutual_exclusive
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
-from google.cloud.forseti.services.iamql import langspec as iamql
+from google.cloud.forseti.services.iamql import compiler as iamql
 
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -877,8 +877,7 @@ def define_model(model_name, dbengine, model_seed):
                                  qry.yield_per(PER_YIELD)])
                 expansion = cls.expand_members_map(session,
                                                    to_expand,
-                                                   show_group_members=False,
-                                                   member_contain_self=True)
+                                                   show_group_members=False)
 
             cur_resource = None
             cur_role = None
@@ -1489,15 +1488,12 @@ def define_model(model_name, dbengine, model_seed):
         def expand_members_map(cls,
                                session,
                                member_names,
-                               show_group_members=True,
-                               member_contain_self=True):
+                               show_group_members=True):
             """Expand group membership keyed by member.
 
             Args:
                 member_names (set): Member names to expand
                 show_group_members (bool): Whether to include subgroups
-                member_contain_self (bool): Whether to include a parent
-                                            as its own member
             Returns:
                 dict: <Member, set(Children).
             """
@@ -1562,10 +1558,6 @@ def define_model(model_name, dbengine, model_seed):
             for parent in other_names:
                 result[parent] = set()
 
-            # Add each parent as its own member
-            if member_contain_self:
-                for name in member_names:
-                    result[name].add(name)
             return result
 
         @classmethod
