@@ -126,7 +126,7 @@ class CompilationContext(object):
         table = aliased(table_class_func(self.data_access),
                         name=ident)
         if constraint_func is not None:
-            self.conditions.append(constraint_func(table))
+            self.conditions.append(constraint_func(table, self.data_access))
         self.variables[ident] = Variable({'identifier': ident,
                                           'entity': entity,
                                           'table': table})
