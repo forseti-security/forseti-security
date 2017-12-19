@@ -17,7 +17,7 @@
 from sqlalchemy.orm import aliased
 from sqlalchemy import and_, not_, or_
 
-from google.cloud.forseti.services.iamql.ast import *
+from google.cloud.forseti.services.iamql import ast
 from google.cloud.forseti.services.iamql.relations import Metadata
 from google.cloud.forseti.services.iamql.grammar import BNF
 
@@ -167,10 +167,10 @@ class CompilationContext(object):
         return getattr(variable['table'], attribute_ref.name)
 
     def on_leave_comparison(self, comparison, artefacts):
-        if isinstance(comparison.right, Attribute):
+        if isinstance(comparison.right, ast.Attribute):
             attribute = artefacts[1]
             literal = artefacts[0]
-        elif isinstance(comparison.left, Attribute):
+        elif isinstance(comparison.left, ast.Attribute):
             attribute = artefacts[0]
             literal = artefacts[1]
         else:
@@ -218,26 +218,26 @@ class CompilationContext(object):
 
     def enter(self, node):
         handlers = {
-                SafeJoin: self.on_enter_join,
-                Projection: self.on_enter_projection,
-                EntityDefinition: self.on_enter_entity_definition,
+                ast.SafeJoin: self.on_enter_join,
+                ast.Projection: self.on_enter_projection,
+                ast.EntityDefinition: self.on_enter_entity_definition,
             }
         self._exec_matching_handler(handlers, node)
 
     def leave(self, node, artefacts):
         handlers = {
-                UnsafeJoin: self.on_leave_unsafe_join,
-                UnsafeJoinTarget: self.on_leave_unsafe_jointarget,
-                Query: self.on_leave_query,
-                Comparison: self.on_leave_comparison,
-                Attribute: self.on_leave_attribute,
-                Scalar: self.on_leave_scalar,
-                EntityFilter: self.on_leave_entityfilter,
-                Not: self.on_leave_not,
-                And: self.on_leave_and,
-                Or: self.on_leave_or,
-                LikeOperator: self.on_leave_like,
-                InOperator: self.on_leave_in,
+                ast.UnsafeJoin: self.on_leave_unsafe_join,
+                ast.UnsafeJoinTarget: self.on_leave_unsafe_jointarget,
+                ast.Query: self.on_leave_query,
+                ast.Comparison: self.on_leave_comparison,
+                ast.Attribute: self.on_leave_attribute,
+                ast.Scalar: self.on_leave_scalar,
+                ast.EntityFilter: self.on_leave_entityfilter,
+                ast.Not: self.on_leave_not,
+                ast.And: self.on_leave_and,
+                ast.Or: self.on_leave_or,
+                ast.LikeOperator: self.on_leave_like,
+                ast.InOperator: self.on_leave_in,
             }
         return self._exec_matching_handler(handlers, node, artefacts)
 

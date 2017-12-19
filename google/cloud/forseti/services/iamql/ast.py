@@ -15,7 +15,6 @@
 """IAMQL AST nodes"""
 
 from pyparsing import Group
-
 from google.cloud.forseti.services.iamql.relations import Metadata
 
 
