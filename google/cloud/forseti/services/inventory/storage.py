@@ -315,6 +315,15 @@ class Inventory(BASE):
 
         return self.type
 
+    def get_type_class(self):
+        """Get the row's resource type class.
+
+        Returns:
+            str: resource type class.
+        """
+
+        return self.type_class
+
     def get_parent_key(self):
         """Get the row's parent key.
 
@@ -764,7 +773,6 @@ class Storage(BaseStorage):
                         Inventory.parent_key == p_key,
                         Inventory.parent_type == p_type,
                         parent_inventory.index == self.index.id)))
-
         else:
             base_query = self.session.query(Inventory)
 

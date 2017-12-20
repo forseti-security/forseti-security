@@ -87,7 +87,8 @@ class ImporterTest(ForsetiTestCase):
         print model
         self.assertIn(model.state,
                       [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS],
-                      'Model state should be success or partial success')
+                      'Model state should be success or partial success: %s' %
+                      model.message)
 
 
 if __name__ == '__main__':

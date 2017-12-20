@@ -175,6 +175,12 @@ class InventoryImporter(object):
                 self._store_resource(None, last_res_type)
                 self.session.flush()
 
+                for policy in inventory.iter(gcp_type_list,
+                                             fetch_dataset_policy=True):
+                    item_counter += 1
+                    self._convert_dataset_policy(policy)
+                self.session.flush()
+
                 for resource in inventory.iter(gsuite_type_list):
                     self._store_gsuite_principal(resource)
                 self.session.flush()
@@ -542,18 +548,37 @@ class InventoryImporter(object):
         Args:
             dataset (object): Dataset to store.
         """
-        data = dataset.get_data()
         parent, full_res_name, type_name = self._full_resource_name(
             dataset)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=dataset.get_key(),
+            type=dataset.get_type(),
+            data=dataset.get_data_raw(),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(dataset, resource)
+
+    def _convert_dataset_policy(self, dataset_policy):
+        """Convert a dataset policy to a database object.
+
+        Args:
+            dataset_policy (object): Dataset policy to store.
+        """
+        # TODO: Dataset policies should be integrated in the model, not stored
+        # as a resource.
+        policy_type_name = to_type_name(dataset_policy.get_type_class(),
+                                        dataset_policy.get_key())
+        parent, full_res_name = self._get_parent(dataset_policy)
+        policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=dataset.get_key(),
-                type=dataset.get_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=dataset.get_data_raw(),
+                full_name=policy_res_name,
+                type_name=policy_type_name,
+                name=dataset_policy.get_key(),
+                type=dataset_policy.get_type_class(),
+                data=dataset_policy.get_data_raw(),
                 parent=parent))
 
     def _convert_computeproject(self, computeproject):
