@@ -81,9 +81,10 @@ message RuleResult {
   repeated string resource_owners = 10;
   // The status of the RuleResult.
   enum Status {
-    ACTIVE = 0;
-    RESOLVED = 1;
-    IGNORED = 2;
+    UNSPECIFIED = 0;
+    ACTIVE = 1;
+    RESOLVED = 2;
+    IGNORED = 3;
   }
   Status status = 11;
   // The recommended actions to take on this RuleResult.

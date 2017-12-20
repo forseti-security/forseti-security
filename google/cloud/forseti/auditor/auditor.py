@@ -89,12 +89,14 @@ class AuditorRunner(object):
         return all_results
 
 
-def main(_):
+def run(config_path, model_name):
+    config_path = config_path or FLAGS.forseti_config
+
     if not config.FORSETI_CONFIG:
-        if not FLAGS.forseti_config:
+        if not config_path:
             LOGGER.error('Provide a --forseti-config file to run the Auditor.')
-            sys.exit(1)
-        config.FORSETI_CONFIG = config.from_file(FLAGS.forseti_config)
+            return 1
+        config.FORSETI_CONFIG = config.from_file(config_path)
 
     # If user specifies a rules_config, use that instead of what's in
     # the Forseti config. (e.g. could be for testing purposes)
@@ -107,6 +109,12 @@ def main(_):
 
     runner = AuditorRunner()
     runner.run()
+
+    return 0
+
+
+def main(_):
+    return run()
 
 
 if __name__ == '__main__':

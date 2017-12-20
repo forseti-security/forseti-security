@@ -48,13 +48,14 @@ message AuditIndex {
   int32 id = 1;
   // The start time of the audit.
   google.protobuf.Timestamp start_time = 2;
-  // The completion time of the audit.
-  google.protobuf.Timestamp complete_time = 3;
+  // The end time of the audit.
+  google.protobuf.Timestamp end_time = 3;
   // The status of the audit.
   enum Status {
-    RUNNING = 0;
-    ERROR = 1;
-    SUCCESS = 2;
+    UNSPECIFIED = 0;
+    RUNNING = 1;
+    ERROR = 2;
+    SUCCESS = 3;
   }
   Status status = 4;
   // The model data (json) associated with the model

@@ -37,8 +37,8 @@ def audit_pb_from_object(audit_index):
         id=audit_index.id,
         start_time=timestamp.Timestamp().FromDateTime(
             audit_index.start_time),
-        complete_time=timestamp.Timestamp().FromDateTime(
-            audit_index.complete_time),
+        end_time=timestamp.Timestamp().FromDateTime(
+            audit_index.end_time),
         status=audit_index.status,
         model=audit_index.model,
         messages=audit_index.messages)
