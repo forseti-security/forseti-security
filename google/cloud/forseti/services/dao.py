@@ -574,21 +574,39 @@ def define_model(model_name, dbengine, model_seed):
                 # Remove all existing rows in the denormalization
                 session.execute(GroupInGroup.__table__.delete())
 
-                # Select member relation into GroupInGroup
+                # Remove all group members point to themselves
+                # We will recreate them again immediately after
+                # to account for changes in the Member table.
+                session.execute(
+                    group_members
+                    .delete()
+                    .where(
+                        (group_members.c.group_name ==
+                         group_members.c.members_name)))
+
+                # Select (member.name, member.name) from member
+                stmt = (
+                    select([Member.name.label('parent'),
+                            Member.name.label('member')])
+                    .select_from(Member.__table__)
+                    .distinct()
+                    )
+
+                # Insert (member, member) into group_members
+                qry = (
+                    group_members.insert()
+                    .from_select(
+                        ['group_name', 'members_name'],
+                        stmt)
+                    )
+                session.execute(qry)
+
                 qry = (
                     GroupInGroup.__table__.insert()
                     .from_select(
                         ['parent', 'member'],
-                        group_members.select()
-                        .where(
-                            group_members.c.group_name.startswith('group/')
-                            )
-                        .where(
-                            group_members.c.members_name.startswith('group/')
-                            )
-                        )
+                        group_members.select())
                     )
-
                 session.execute(qry)
 
                 iterations = 0
@@ -623,31 +641,6 @@ def define_model(model_name, dbengine, model_seed):
 
                     rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
-
-                # Insert (member, member) into GroupInGroup
-                stmt = (
-                    select([Member.name.label('parent'),
-                            Member.name.label('member')])
-                    .select_from(Member.__table__)
-                    .distinct()
-                    )
-
-                qry = (
-                    GroupInGroup.__table__.insert()
-                    .from_select(
-                        ['parent', 'member'],
-                        stmt)
-                    )
-                session.execute(qry)
-
-                # Insert (member, member) into group_members
-                qry = (
-                    group_members.insert()
-                    .from_select(
-                        ['group_name', 'members_name'],
-                        stmt)
-                    )
-                session.execute(qry)
 
             except Exception:
                 session.rollback()

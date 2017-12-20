@@ -488,6 +488,13 @@ class DaoTest(ForsetiTestCase):
         (u'group/g7', u'group/g6'),
     ]
 
+    # Build up self relation
+    self_rel = []
+    for x1, x2 in expected:
+        self_rel.append((x1, x1))
+        self_rel.append((x2, x2))
+    expected += list(set(self_rel))
+
     def transitive_closure(expected):
       relation = set()
       for item in expected:
