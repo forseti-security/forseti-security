@@ -43,6 +43,7 @@ class Action(object):
         self.config = config
         self.action_id = action_id
         self.type = action_type
+        self.triggers = []
 
     def __str__(self):
         """String representation.
