@@ -49,6 +49,7 @@ INSTALL_REQUIRES = [
     'SQLAlchemy>=1.1.9',
     'pygraph>=0.2.1',
     'unicodecsv>=0.14.1',
+    'pyparsing>=2.2.0',
 ]
 
 SETUP_REQUIRES = [
@@ -64,6 +65,7 @@ TEST_REQUIRES = [
     'SQLAlchemy>=1.1.9',
     'parameterized>=0.6.1',
     'simple-crypt>=4.1.7',
+    'pyparsing>=2.2.0',
 ]
 
 if sys.version_info < (2, 7):

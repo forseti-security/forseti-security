@@ -14,7 +14,6 @@
 
 """Forseti Server program."""
 
-# pylint: disable=missing-type-doc,missing-param-doc
 # pylint: disable=line-too-long,useless-suppression
 
 import argparse
@@ -159,11 +158,9 @@ class InventoryConfig(AbstractInventoryConfig):
                  gsuite_sa_path,
                  gsuite_admin_email,
                  record_file=None,
-                 replay_file=None,
-                 *args,
-                 **kwargs):
+                 replay_file=None):
 
-        super(InventoryConfig, self).__init__(*args, **kwargs)
+        super(InventoryConfig, self).__init__()
         self.service_config = None
         self.root_resource_id = root_resource_id
         self.gsuite_sa_path = gsuite_sa_path

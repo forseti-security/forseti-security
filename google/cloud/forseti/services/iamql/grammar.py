@@ -28,6 +28,9 @@ from pyparsing import Keyword
 
 import google.cloud.forseti.services.iamql.ast as ast
 
+# pylint: disable=expression-not-assigned,invalid-name
+# pylint: disable=too-many-locals,too-many-statements
+
 
 def BNF():
     """Get the BNF for IAMQL
@@ -140,7 +143,7 @@ def BNF():
              ast.UnsafeJoinTarget.build(ident + DOT + attribute_ref)
              + Suppress(EQ) +
              ast.UnsafeJoinTarget.build(ident + DOT + attribute_ref))
-         ) +
+        ) +
         SEMICOLON +
         Optional(join)
         )

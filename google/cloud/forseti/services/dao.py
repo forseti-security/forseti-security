@@ -14,7 +14,7 @@
 
 """Database abstraction objects for Forseti Server."""
 
-# pylint: disable=too-many-lines,singleton-comparison
+# pylint: disable=too-many-lines,singleton-comparison,no-value-for-parameter
 
 import datetime
 import os
@@ -167,10 +167,6 @@ def define_model(model_name, dbengine, model_seed):
 
     base = declarative_base()
 
-    membership_with_member = (
-        '{}_membership_with_member'.format(model_name))
-    denormed_group_in_group_with_member = (
-        '{}_group_in_group_with_member'.format(model_name))
     denormed_group_in_group = '{}_group_in_group'.format(model_name)
     bindings_tablename = '{}_bindings'.format(model_name)
     roles_tablename = '{}_roles'.format(model_name)
@@ -245,6 +241,10 @@ def define_model(model_name, dbengine, model_seed):
                 self.full_name, self.name, self.type)
 
         def _column_decls(self):
+            """Get column name/type
+            Returns:
+                dict: name to attribute/type mapping
+            """
             return {
                 'name': (self.name, unicode),
                 'type': (self.type, unicode),
@@ -255,9 +255,17 @@ def define_model(model_name, dbengine, model_seed):
                 }
 
         def get_columns(self):
+            """Get name/attribute mapping
+            Returns:
+                dict: name/attribute mapping
+            """
             return {k: v[0] for k, v in self._column_decls().iteritems()}
 
         def get_column_type(self, column):
+            """Get column type
+            Returns:
+                object: Type of the column
+            """
             return self._column_decls()[column][1]
 
     Resource.children = relationship(
@@ -302,6 +310,10 @@ def define_model(model_name, dbengine, model_seed):
                 self.name, self.type)
 
         def _column_decls(self):
+            """Get column name/type
+            Returns:
+                dict: name to attribute/type mapping
+            """
             return {
                 'name': (self.name, unicode),
                 'type': (self.type, unicode),
@@ -309,9 +321,17 @@ def define_model(model_name, dbengine, model_seed):
                 }
 
         def get_columns(self):
+            """Get column attribute/type mapping
+            Returns:
+                dict: attribute/type mapping
+            """
             return {k: v[0] for k, v in self._column_decls().iteritems()}
 
         def get_column_type(self, column):
+            """Get column type
+            Returns:
+                object: Type of the column
+            """
             return self._column_decls()[column][1]
 
     class GroupInGroup(base):
@@ -355,15 +375,27 @@ def define_model(model_name, dbengine, model_seed):
                 self.members)
 
         def _column_decls(self):
+            """Get column name/type
+            Returns:
+                dict: name to attribute/type mapping
+            """
             return {
                 'resource': (self.resource_type_name, unicode),
                 'role': (self.role_name, unicode),
                 }
 
         def get_columns(self):
+            """Get column attribute/type mapping
+            Returns:
+                dict: attribute/type mapping
+            """
             return {k: v[0] for k, v in self._column_decls().iteritems()}
 
         def get_column_type(self, column):
+            """Get column type
+            Returns:
+                object: Type of the column
+            """
             return self._column_decls()[column][1]
 
     class Role(base):
@@ -383,6 +415,10 @@ def define_model(model_name, dbengine, model_seed):
             return "<Role(name='%s')>" % (self.name)
 
         def _column_decls(self):
+            """Get column name/type
+            Returns:
+                dict: name to attribute/type mapping
+            """
             return {
                 'name': (self.name, unicode),
                 'title': (self.title, unicode),
@@ -391,9 +427,17 @@ def define_model(model_name, dbengine, model_seed):
                 }
 
         def get_columns(self):
+            """Get column attribute/type mapping
+            Returns:
+                dict: attribute/type mapping
+            """
             return {k: v[0] for k, v in self._column_decls().iteritems()}
 
         def get_column_type(self, column):
+            """Get column type
+            Returns:
+                object: Type of the column
+            """
             return self._column_decls()[column][1]
 
     class Permission(base):
@@ -409,14 +453,26 @@ def define_model(model_name, dbengine, model_seed):
             return "<Permission(name='%s')>" % (self.name)
 
         def _column_decls(self):
+            """Get column name/type
+            Returns:
+                dict: name to attribute/type mapping
+            """
             return {
                 'name': (self.name, unicode),
                 }
 
         def get_columns(self):
+            """Get column attribute/type mapping
+            Returns:
+                dict: attribute/type mapping
+            """
             return {k: v[0] for k, v in self._column_decls().iteritems()}
 
         def get_column_type(self, column):
+            """Get column type
+            Returns:
+                object: Type of the column
+            """
             return self._column_decls()[column][1]
 
     # pylint: disable=too-many-public-methods
@@ -475,7 +531,9 @@ def define_model(model_name, dbengine, model_seed):
                 for index, item in enumerate(row):
                     converted_row[index] = column_desc[index]['name']
                     converted_row[converted_row[index]] = (
-                        {name: value for name, value in item.get_columns().iteritems()})
+                        {name: value
+                         for name, value
+                         in item.get_columns().iteritems()})
                 yield converted_row
 
         @classmethod
