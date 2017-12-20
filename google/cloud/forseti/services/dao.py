@@ -894,60 +894,87 @@ def define_model(model_name, dbengine, model_seed):
                 ValueError: If neither role nor permission is set.
             """
 
+            expanded_member = aliased(Member)
+            direct_member = aliased(Member)
+            resource = aliased(Resource)
+            descendant = aliased(Resource)
+            role = aliased(Role)
+            perm = aliased(Permission)
+            binding = aliased(Binding)
+            ging = aliased(GroupInGroup)
+
+            entities = [
+                role.name,
+                descendant.type_name if expand_resources else resource.type_name,
+                expanded_member.name if expand_groups else direct_member.name,
+                ]
+
+            qry = session.query(*entities)
             if role_name:
-                role_names = [role_name]
+                qry = (
+                    qry
+                    .filter(role.name == role_name)
+                    )
             elif permission_name:
-                role_names = [p.name for p in
-                              cls.get_roles_by_permission_names(
-                                  session,
-                                  [permission_name])]
+                qry = (
+                    qry
+                    .filter(perm.name == permission_name)
+                    .filter(role_permissions.c.roles_name ==
+                            role.name)
+                    .filter(role_permissions.c.permissions_name ==
+                            perm.name)
+                    )
             else:
                 raise ValueError('Either role or permission must be set')
 
-            if expand_resources:
-                expanded_resources = aliased(Resource)
-                qry = (
-                    session.query(expanded_resources, Binding, Member)
-                    .filter(binding_members.c.bindings_id == Binding.id)
-                    .filter(binding_members.c.members_name == Member.name)
-                    .filter(expanded_resources.full_name.startswith(
-                        Resource.full_name))
-                    .filter(Resource.type_name == Binding.resource_type_name)
-                    .filter(Binding.role_name.in_(role_names)))
-            else:
-                qry = (
-                    session.query(Resource, Binding, Member)
-                    .filter(binding_members.c.bindings_id == Binding.id)
-                    .filter(binding_members.c.members_name == Member.name)
-                    .filter(Resource.type_name == Binding.resource_type_name)
-                    .filter(Binding.role_name.in_(role_names)))
-
-            qry = qry.order_by(Resource.name.asc(), Binding.role_name.asc())
+            qry = (
+                qry
+                .filter(binding_members.c.bindings_id == binding.id)
+                .filter(binding_members.c.members_name == direct_member.name)
+                .filter(resource.type_name == binding.resource_type_name)
+                )
 
             if expand_groups:
-                to_expand = set([m.name for _, _, m in
-                                 qry.yield_per(PER_YIELD)])
-                expansion = cls.expand_members_map(session,
-                                                   to_expand,
-                                                   show_group_members=False)
+                pass
+            else:
+                pass
 
-            cur_resource = None
-            cur_role = None
-            cur_members = set()
-            for resource, binding, member in qry.yield_per(PER_YIELD):
-                if cur_resource != resource.type_name:
-                    if cur_resource is not None:
-                        yield cur_role, cur_resource, cur_members
-                    cur_resource = resource.type_name
-                    cur_role = binding.role_name
-                    cur_members = set()
-                if expand_groups:
-                    for member_name in expansion[member.name]:
-                        cur_members.add(member_name)
+            if expand_resources:
+                qry = (
+                    qry
+                    .filter(
+                        descendant.full_name.startswith(resource.full_name))
+                    )
+
+            if expand_groups:
+                qry = (
+                    qry
+                    .filter(
+                        ging.parent == direct_member.name,
+                        ging.member == group_members.group_name,
+                        group_members.members_name == expanded_member.name,
+                        )
+                    )
+
+            qry = (
+                qry
+                .order_by(entities[1].asc(), binding.role_name.asc())
+                .distinct()
+                )
+
+            cur_role_name = None
+            cur_res_name = None
+            cur_members = []
+            for role_name, res_name, member_name in qry.yield_per(PER_YIELD):
+                if role_name == cur_role_name and cur_res_name == cur_res_name:
+                    cur_members.append(member_name)
                 else:
-                    cur_members.add(member.name)
-            if cur_resource is not None:
-                yield cur_role, cur_resource, cur_members
+                    yield cur_role_name, cur_res_name, cur_members
+                    cur_role_name = role_name
+                    cur_res_name = res_name
+                    cur_members = [member_name]
+            if cur_role_name:
+                yield cur_role_name, cur_res_name, cur_members
 
         @classmethod
         def query_access_by_resource(cls, session, resource_type_name,
