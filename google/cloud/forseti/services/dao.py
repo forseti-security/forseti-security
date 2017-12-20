@@ -630,7 +630,8 @@ def define_model(model_name, dbengine, model_seed):
                     stmt = (
                         select([tbl1.c.parent, tbl2.c.member])
                         .select_from(expansion)
-                        .where(tbl3.c.parent == None))
+                        .where(tbl3.c.parent == None)
+                        .distinct())
 
                     # Execute the query and insert into the table
                     qry = (
@@ -1032,19 +1033,7 @@ def define_model(model_name, dbengine, model_seed):
                 .filter(child.full_name.startswith(parent.full_name))
 
                 # Connect the binding with the member
-                .filter(or_(
-
-                    # expanded_member is directly in a group member
-                    and_(
-                        # group_member is the direct policy member
-                        Binding.id == binding_members.c.bindings_id,
-                        group_member.name == binding_members.c.members_name,
-                        group_member.type == Member.TYPE_GROUP,
-
-                        # expanded_member is directly in the group_member group
-                        group_member.name == group_members.c.group_name,
-                        expanded_member.name == group_members.c.members_name),
-
+                .filter(
                     # expanded_member is transitively in a group member
                     and_(
                         # group_member is the direct policy member
@@ -1059,12 +1048,8 @@ def define_model(model_name, dbengine, model_seed):
                         # expanded_member is a direct member of group_in_group
                         group_in_group.name == group_members.c.group_name,
                         expanded_member.name == group_members.c.members_name),
-
-                    # expanded_member is a direct policy member
-                    and_(
-                        Binding.id == binding_members.c.bindings_id,
-                        expanded_member.name == binding_members.c.members_name)
-                    )))
+                    )
+                   )
 
             return iter(qry.yield_per(PER_YIELD))
 
