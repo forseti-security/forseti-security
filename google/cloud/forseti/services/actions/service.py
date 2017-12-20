@@ -20,8 +20,8 @@ from google.cloud.forseti.services.actions import action_engine
 
 
 ACTION_TYPE_MAPPING = {
-    'SampleAction': action_engine_pb2.ActionType.SampleAction,
-    'BaseAction': action_engine_pb2.ActionType.BaseAction,
+    'SampleAction': action_engine_pb2.Action.SampleAction,
+    'BaseAction': action_engine_pb2.Action.BaseAction,
 }
 
 
@@ -85,7 +85,6 @@ class GrpcActionEngine(action_engine_pb2_grpc.ActionEngineServicer):
         super(GrpcActionEngine, self).__init__()
         self.action_engine = action_engine_api
 
-    # pylint: disable=invalid-name,no-self-use
     def Ping(self, request, _):
         """Ping implemented to check service availability.
 
@@ -98,9 +97,7 @@ class GrpcActionEngine(action_engine_pb2_grpc.ActionEngineServicer):
         """
 
         return action_engine_pb2.PingReply(data=request.data)
-    # pylint: enable=invalid-name,no-self-use
 
-    # pylint: disable=invalid-name
     def List(self, _0, _1):
         """Lists configured actions.
 
@@ -113,9 +110,7 @@ class GrpcActionEngine(action_engine_pb2_grpc.ActionEngineServicer):
         """
         return action_engine_pb2.ListResponse(actions=[
             action_pb_from_object(a) for a in self.action_engine.actions])
-    # pylint: enable=invalid-name
 
-    # pylint: disable=invalid-name
     def ProcessResults(self, request, _):
         """Processes RuleResults.
 
@@ -130,13 +125,12 @@ class GrpcActionEngine(action_engine_pb2_grpc.ActionEngineServicer):
         processed_results = []
         for rule_result, action_results in results.items():
             a_results = action_results_pb_from_objects(action_results)
-            processed_result = action_engine_pb2.ProcessResult(
+            processed_result = action_engine_pb2.ProcessedResult(
                 result=rule_result,
                 action_results=a_results)
             processed_results.append(processed_result)
         return action_engine_pb2.ProcessResultsResponse(
             processed_results=processed_results)
-    # pylint: enable=invalid-name
 
 class GrpcActionEngineFactory(object):
     """Factory class for Action Engine service gRPC interface."""
