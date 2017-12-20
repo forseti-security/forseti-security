@@ -98,7 +98,7 @@ def _read_file_from_gcs(file_path, storage_client=None):
 
 
 def _read_file_from_local(file_path):
-    """Load rules file from local path.
+    """Load file from local path.
 
     Args:
       file_path (str): The path to the file.
@@ -106,9 +106,9 @@ def _read_file_from_local(file_path):
     Returns:
         dict: The parsed dict from the loaded file.
     """
-    with open(os.path.abspath(file_path), 'r') as rules_file:
+    with open(os.path.abspath(file_path), 'r') as fp:
         parser = _get_filetype_parser(file_path, 'file')
-        return parser(rules_file)
+        return parser(fp)
 
 
 def _parse_json_string(data):

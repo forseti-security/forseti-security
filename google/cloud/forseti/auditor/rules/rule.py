@@ -18,11 +18,10 @@ This is a generic class that handles a basic rule, as defined in
 schema/rules.json.
 """
 
-import importlib
-
 from collections import namedtuple
 
 from google.cloud.forseti.auditor import condition_parser
+from google.cloud.forseti.common.util import class_loader_util
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -83,17 +82,8 @@ class Rule(object):
 
         Return:
             object: An instance of Rule.
-
-        Raises:
-            InvalidRuleTypeError: If the rule type is does not exist.
         """
-        parts = rule_definition.get('type').split('.')
-        module = importlib.import_module('.'.join(parts[:-1]))
-        try:
-            rule_class = getattr(module, parts[-1])
-        except AttributeError:
-            raise InvalidRuleTypeError(rule_definition.get('type'))
-        new_rule = rule_class()
+        new_rule = class_loader_util.load_class(rule_definition.get('type'))()
 
         # Set properties
         new_rule.rule_id = rule_definition.get('id')
@@ -141,11 +131,16 @@ class Rule(object):
             for (var_name, res_prop) in resource_vars.iteritems()
         }
         cond_parser = condition_parser.ConditionParser(config_var_params)
+        current_state = resource
+        expected_state = resource
         return RuleResult(
-            self.rule_id,
-            resource,
-            cond_parser.eval_filter(self.condition),
-            {})
+            rule_id=self.rule_id,
+            result=cond_parser.eval_filter(self.condition),
+            current_state=current_state,
+            expected_state=expected_state,
+            snapshot_id=None, # TODO: make the result snapshot-aware
+            resource_owners=[],
+            info=None)
 
     @property
     def type(self):
@@ -161,26 +156,17 @@ class Rule(object):
 #
 # Properties::
 #   rule_id (str): The rule id.
-#   resource (Resource): The GCP Resource.
 #   result (boolean): True if the rule condition is met, otherwise False.
-#   metadata (dict): Additional data related to the Resource and
-#       rule evaluation.
+#   current_state (dict): The GCP Resource in json/dict format.
+#   expected_state (dict): The GCP Resource in json/dict format.
+#   snapshot_id (str): The snapshot id.
+#   resource_owners (list): A list of the owners (IAM members as a string).
+#   info (str): Additional information about the rule.
 RuleResult = namedtuple('RuleResult',
-                        ['rule_id', 'resource', 'result', 'metadata'])
-
-
-class Error(Exception):
-    """Base Error class."""
-
-
-class InvalidRuleTypeError(Error):
-    """InvalidRuleTypeError."""
-
-    def __init__(self, rule_type):
-        """Init.
-
-        Args:
-            rule_type (str): The rule type.
-        """
-        super(InvalidRuleTypeError, self).__init__(
-            'Invalid rule type: {}'.format(rule_type))
+                        ['rule_id',
+                         'result',
+                         'current_state',
+                         'expected_state',
+                         'snapshot_id',
+                         'resource_owners',
+                         'info'])

@@ -107,6 +107,20 @@ class ProjectDao(dao.Dao):
             return self.map_row_to_object(rows[0])
         return None
 
+    def get_all(self, timestamp=None):
+        """Get projects from a particular snapshot. Generic method name.
+
+        Args:
+            timestamp (str): The snapshot timestamp.
+
+        Returns:
+            list: A list of Projects.
+        """
+        if not timestamp:
+            timestamp = self.get_latest_snapshot_timestamp(
+                ('SUCCESS', 'PARTIAL_SUCCESS'))
+        return self.get_projects(timestamp)
+
     def get_projects(self, timestamp):
         """Get projects from a particular snapshot.
 

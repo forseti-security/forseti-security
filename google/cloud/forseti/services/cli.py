@@ -466,6 +466,30 @@ def define_explainer_parser(parent):
         help='Expand groups to their members')
 
 
+def define_auditor_parser(parent):
+    """Define the auditor service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+
+    service_parser = parent.add_parser('auditor', help='auditor service')
+
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    create_auditor_parser = action_subparser.add_parser(
+        'run',
+        help='Run the auditor')
+
+    create_auditor_parser.add_argument(
+        'config_file',
+        help='Auditor config file')
+
+    # TODO: add the other services and flags
+
+
 def read_env(var_key, default):
     """Read an environment variable with a default value.
 
@@ -524,6 +548,7 @@ def create_parser(parser_cls, config_env):
     define_config_parser(service_subparsers)
     define_model_parser(service_subparsers)
     define_scanner_parser(service_subparsers)
+    define_auditor_parser(service_subparsers)
     return main_parser
 
 
@@ -898,6 +923,29 @@ def run_playground(client, config, output, _):
 
     actions[config.action]()
 
+def run_auditor(client, config, output, _):
+    """Run auditor commands.
+
+    Args:
+        client (iam_client.ClientComposition): client to use for requests.
+        config (object): argparser namespace to use.
+        output (Output): output writer to use.
+        _ (object): Configuration environment.
+    """
+
+    client = client.auditor
+
+    def do_run():
+        """Run auditor."""
+        result = client.run(config.config_file)
+        output.write(result)
+
+    actions = {
+        'run': do_run
+    }
+
+    actions[config.action]()
+
 
 OUTPUTS = {
     'text': TextOutput,
@@ -911,6 +959,7 @@ SERVICES = {
     'config': run_config,
     'model': run_model,
     'scanner': run_scanner,
+    'auditor': run_auditor,
     }
 
 

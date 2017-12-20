@@ -28,6 +28,7 @@ import grpc
 from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.dao import ModelManager, create_engine
+from google.cloud.forseti.services.auditor.service import GrpcAuditorFactory
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
@@ -42,6 +43,7 @@ STATIC_SERVICE_MAPPING = {
     'inventory': GrpcInventoryFactory,
     'scanner': GrpcScannerFactory,
     'model': GrpcModellerFactory,
+    'auditor': GrpcAuditorFactory,
 }
 
 
@@ -173,10 +175,10 @@ class InventoryConfig(AbstractInventoryConfig):
         return self.root_resource_id
 
     def get_gsuite_sa_path(self):
-        """Return the gsuite service account path.
+        """Return the gsuite service account private key path.
 
         Returns:
-            str: Gsuite service account path.
+            str: Gsuite service account private key path.
         """
 
         return self.gsuite_sa_path
