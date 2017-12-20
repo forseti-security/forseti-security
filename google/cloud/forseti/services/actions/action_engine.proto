@@ -16,6 +16,8 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
+package google.cloud.forseti.services.actions;
+
 service ActionEngine {
   rpc Ping(PingRequest) returns (PingReply) {
   }
@@ -69,6 +71,27 @@ message RuleResult {
   google.protobuf.Timestamp timestamp = 5;
   // A human readable string output of what this result says.
   string info = 6;
+  // The audit associated with this RuleResult.
+  int32 audit_id = 7;
+  // The hash of the rule data.
+  string rule_hash = 8;
+  // The model handle.
+  string model_handle = 9;
+  // The owners of the resource.
+  repeated string resource_owners = 10;
+  // The status of the RuleResult.
+  enum Status {
+    ACTIVE = 0;
+    RESOLVED = 1;
+    IGNORED = 2;
+  }
+  Status status = 11;
+  // The recommended actions to take on this RuleResult.
+  string recommended_actions = 12;
+  // The timestamp for when the RuleResult was created.
+  google.protobuf.Timestamp create_time = 13;
+  // The timestamp for when the RuleResult was modified.
+  google.protobuf.Timestamp modified_time = 14;
 }
 
 message ProcessResultsRequest {

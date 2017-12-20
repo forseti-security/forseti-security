@@ -28,6 +28,8 @@ from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2_grpc
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
+from google.cloud.forseti.services.auditor import auditor_pb2
+from google.cloud.forseti.services.auditor import auditor_pb2_grpc
 
 from google.cloud.forseti.services.utils import oneof
 
@@ -77,7 +79,7 @@ class ScannerClient(ForsetiClient):
         self.stub = scanner_pb2_grpc.ScannerStub(config['channel'])
 
     def is_available(self):
-        """Checks if the 'Inventory' service is available by performing a ping.
+        """Checks if the 'Scanner' service is available by performing a ping.
         """
 
         data = binascii.hexlify(os.urandom(16))
@@ -465,6 +467,46 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
 
+class AuditorClient(ForsetiClient):
+    """Auditor service allows the client to audit a model."""
+
+    def __init__(self, config):
+        super(AuditorClient, self).__init__(config)
+        self.stub = auditor_pb2_grpc.AuditorStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Auditor' service is available by performing a ping.
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(auditor_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    @require_model
+    def run(self, config_path):
+        """Runs the auditor"""
+
+        request = auditor_pb2.RunRequest(
+            config_path=config_path)
+        return self.stub.Run(request,
+                             metadata=self.metadata())
+
+    def list(self):
+        """List the audits."""
+        return self.stub.List(request,
+                             metadata=self.metadata())
+
+    def get_results(self):
+        """Get the audit results."""
+        return self.stub.GetResults(request,
+                                    metadata=self.metadata())
+
+    def delete(self):
+        """Delete the audit."""
+        return self.stub.Delete(request,
+                                metadata=self.metadata())
+
+
 class ClientComposition(object):
     """Client composition class.
 
@@ -483,12 +525,14 @@ class ClientComposition(object):
         self.inventory = InventoryClient(self.config)
         self.scanner = ScannerClient(self.config)
         self.model = ModelClient(self.config)
+        self.auditor = AuditorClient(self.config)
 
         self.clients = [self.explain,
                         self.playground,
                         self.inventory,
                         self.scanner,
-                        self.model]
+                        self.model,
+                        self.auditor]
 
         if ping:
             if not all([c.is_available() for c in self.clients]):
