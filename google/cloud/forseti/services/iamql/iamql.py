@@ -17,8 +17,7 @@
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc,invalid-name
+# pylint: disable=missing-param-doc,invalid-name
 
 
 class IamQL(object):
@@ -26,11 +25,6 @@ class IamQL(object):
 
     def __init__(self, config):
         self.config = config
-
-    def Query(self, model_name, query):
-        """Implement the general query functionality."""
-
-        raise NotImplementedError()
 
     def QueryString(self, model_name, query):
         """Implement the general query functionality."""

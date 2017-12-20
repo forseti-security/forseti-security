@@ -14,18 +14,17 @@
 
 """IAMQL gRPC service"""
 
+import numbers
+
 from google.cloud.forseti.services.iamql import iamql_pb2
 from google.cloud.forseti.services.iamql import iamql_pb2_grpc
 from google.cloud.forseti.services.iamql import iamql
 from google.cloud.forseti.services.utils import autoclose_stream
 
-import numbers
-
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc
-# pylint: disable=no-self-use
+# pylint: disable=missing-yield-type-doc,consider-merging-isinstance
 
 
 class GrpcIamQL(iamql_pb2_grpc.IamqlServicer):
@@ -52,20 +51,30 @@ class GrpcIamQL(iamql_pb2_grpc.IamqlServicer):
         return iamql_pb2.PingReply(data=request.data)
 
     @autoclose_stream
-    def Query(self, request, context):
-        """Executes a query data structure."""
-        print "Query"
-        raise NotImplementedError()
-
-    @autoclose_stream
     def QueryString(self, request, context):
-        """Executes a query string."""
+        """Executes a query string"""
 
         def iter_pb_columns(row, index):
+            """Create proto column from response row/column
+            Args:
+                row (list): List of columns
+                index (int): Column index to transform
+            Yields:
+                object: Proto column
+            """
             alias = row[index]
             obj = row[alias]
 
             def pack_type(name, value):
+                """Convert query response type to proto type.
+                Args:
+                    name (str): Name of the column
+                    value (object): The column itself
+                Returns:
+                    object: Column proto
+                Raises:
+                    TypeError: If no type matches the translation
+                """
                 if isinstance(value, numbers.Number):
                     return iamql_pb2.Column(name=name, n=value, type=2)
                 elif isinstance(value, str) or isinstance(value, unicode):

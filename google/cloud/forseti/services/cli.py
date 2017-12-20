@@ -14,7 +14,7 @@
 
 """Forseti CLI."""
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals,too-many-lines,compare-to-zero
 
 from argparse import ArgumentParser
 import json
@@ -750,12 +750,12 @@ def run_inventory(client, config, output, _):
     actions[config.action]()
 
 
-def run_iamql(client, config, output, _):
+def run_iamql(client, config, *_):
     """Run IAMQL commands.
         Args:
             client (iam_client.ClientComposition): client to use for requests.
             config (object): argparser namespace to use.
-            output (Output): output writer to use.
+            _ (list): Unused arguments
     """
 
     client = client.iamql
@@ -764,7 +764,7 @@ def run_iamql(client, config, output, _):
         """Perform query operations."""
 
         for row in client.query(config.query_string):
-            d = dict()
+            unpacked = dict()
             for column in row.columns:
                 if column.type == 0:
                     value = column.s
@@ -772,8 +772,8 @@ def run_iamql(client, config, output, _):
                     value = column.b
                 else:
                     value = column.n
-                d[column.name] = value
-            print json.dumps(d)
+                unpacked[column.name] = value
+            print json.dumps(unpacked)
 
     actions = {
         'query': do_query}

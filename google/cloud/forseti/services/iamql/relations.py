@@ -18,9 +18,14 @@ from sqlalchemy import and_
 
 
 class Metadata(object):
-    """Data model metadata used to query and join between entities."""
+    """Data model metadata used to query and join between entities.
 
-    """Description of attributes and types for each entity."""
+    Attributes:
+        entity_attributes: Description of attributes and types for each entity
+        allowed_joins: Relation definitions between entities
+        type_mapping: Name->Table mapping for entities
+    """
+
     entity_attributes = {
         'resource': {
             'path': {
@@ -90,32 +95,30 @@ class Metadata(object):
         'binding': {},
         }
 
-    """Relation definitions between entities.
-    Relations are in the form var.$relation(var, ...)"""
     allowed_joins = {
         'group': [
             ('contains',
              [['group', 'member', 'user', 'serviceaccount']],
              lambda dao, parent, child: (
                  and_(
-                  dao.TBL_MEMBERSHIP.c.group_name == parent.table.name,
-                  dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
+                     dao.TBL_MEMBERSHIP.c.group_name == parent.table.name,
+                     dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
                  )),
             ('transitivecontains',
              [['member', 'user', 'serviceaccount']],
              lambda dao, parent, child: (
                  and_(
-                  dao.TBL_GROUP_IN_GROUP.parent == parent.table.name,
-                  (dao.TBL_GROUP_IN_GROUP.member ==
-                   dao.TBL_MEMBERSHIP.c.group_name),
-                  dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
+                     dao.TBL_GROUP_IN_GROUP.parent == parent.table.name,
+                     (dao.TBL_GROUP_IN_GROUP.member ==
+                      dao.TBL_MEMBERSHIP.c.group_name),
+                     dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
                  )),
             ('transitivecontains',
              ['group'],
              lambda dao, parent, child: (
                  and_(
-                  dao.TBL_GROUP_IN_GROUP.parent == parent.table.member,
-                  dao.TBL_GROUP_IN_GROUP.member == child.table.member),
+                     dao.TBL_GROUP_IN_GROUP.parent == parent.table.member,
+                     dao.TBL_GROUP_IN_GROUP.member == child.table.member),
                  )),
             ],
         'member': [
@@ -123,24 +126,24 @@ class Metadata(object):
              [['group', 'member', 'user', 'serviceaccount']],
              lambda dao, parent, child: (
                  and_(
-                  dao.TBL_MEMBERSHIP.c.group_name == parent.table.name,
-                  dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
+                     dao.TBL_MEMBERSHIP.c.group_name == parent.table.name,
+                     dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
                  )),
             ('transitivecontains',
              [['member', 'user', 'serviceaccount']],
              lambda dao, parent, child: (
                  and_(
-                  dao.TBL_GROUP_IN_GROUP.parent == parent.table.name,
-                  (dao.TBL_GROUP_IN_GROUP.member ==
-                   dao.TBL_MEMBERSHIP.c.group_name),
-                  dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
+                     dao.TBL_GROUP_IN_GROUP.parent == parent.table.name,
+                     (dao.TBL_GROUP_IN_GROUP.member ==
+                      dao.TBL_MEMBERSHIP.c.group_name),
+                     dao.TBL_MEMBERSHIP.c.members_name == child.table.name)
                  )),
             ('transitivecontains',
              ['group'],
              lambda dao, parent, child: (
                  and_(
-                  dao.TBL_GROUP_IN_GROUP.parent == parent.table.member,
-                  dao.TBL_GROUP_IN_GROUP.member == child.table.member),
+                     dao.TBL_GROUP_IN_GROUP.parent == parent.table.member,
+                     dao.TBL_GROUP_IN_GROUP.member == child.table.member),
                  )),
             ],
         'role': [
@@ -148,8 +151,9 @@ class Metadata(object):
              ['permission'],
              lambda dao, r, p: (
                  and_(
-                    dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
-                    dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
+                     dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
+                     (dao.TBL_ROLE_PERMISSION.c.permissions_name ==
+                      p.table.name))
                  )),
             ],
         'binding': [
@@ -160,10 +164,12 @@ class Metadata(object):
                                    'serviceaccount']],
              lambda dao, binding, resource, role, member: (
                  and_(
-                  binding.table.resource_type_name == resource.table.type_name,
-                  binding.table.role_name == role.table.name,
-                  dao.TBL_BINDING_MEMBERS.c.members_name == member.table.name,
-                  dao.TBL_BINDING_MEMBERS.c.bindings_id == binding.table.id)
+                     (binding.table.resource_type_name ==
+                      resource.table.type_name),
+                     binding.table.role_name == role.table.name,
+                     (dao.TBL_BINDING_MEMBERS.c.members_name ==
+                      member.table.name),
+                     dao.TBL_BINDING_MEMBERS.c.bindings_id == binding.table.id)
                  )),
             ],
         'permission': [
@@ -171,8 +177,9 @@ class Metadata(object):
              ['role'],
              lambda dao, p, r: (
                  and_(
-                    dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
-                    dao.TBL_ROLE_PERMISSION.c.permissions_name == p.table.name)
+                     dao.TBL_ROLE_PERMISSION.c.roles_name == r.table.name,
+                     (dao.TBL_ROLE_PERMISSION.c.permissions_name ==
+                      p.table.name))
                  )),
             ],
         'resource': [
@@ -211,7 +218,6 @@ class Metadata(object):
             ],
         }
 
-    """Name->Table mapping for entities."""
     type_mapping = {
         'resource': (
             lambda dao: dao.TBL_RESOURCE,
@@ -237,4 +243,4 @@ class Metadata(object):
         'serviceaccount': (
             lambda dao: dao.TBL_MEMBER,
             lambda t, dao: t.type == 'serviceAccount')
-            }
+        }
