@@ -656,6 +656,7 @@ def define_model(model_name, dbengine, model_seed):
         def explain_granted(cls, session, member_name, resource_type_name,
                             role, permission):
             """Provide info about how the member has access to the resource."""
+
             members, member_graph = cls.reverse_expand_members(
                 session, [member_name], request_graph=True)
             member_names = [m.name for m in members]
@@ -932,12 +933,8 @@ def define_model(model_name, dbengine, model_seed):
                 .filter(binding_members.c.bindings_id == binding.id)
                 .filter(binding_members.c.members_name == direct_member.name)
                 .filter(resource.type_name == binding.resource_type_name)
+                .filter(binding.role_name == role.name)
                 )
-
-            if expand_groups:
-                pass
-            else:
-                pass
 
             if expand_resources:
                 qry = (
@@ -951,8 +948,8 @@ def define_model(model_name, dbengine, model_seed):
                     qry
                     .filter(
                         ging.parent == direct_member.name,
-                        ging.member == group_members.group_name,
-                        group_members.members_name == expanded_member.name,
+                        ging.member == group_members.c.group_name,
+                        group_members.c.members_name == expanded_member.name,
                         )
                     )
 
@@ -964,15 +961,16 @@ def define_model(model_name, dbengine, model_seed):
 
             cur_role_name = None
             cur_res_name = None
-            cur_members = []
+            cur_members = set()
             for role_name, res_name, member_name in qry.yield_per(PER_YIELD):
-                if role_name == cur_role_name and cur_res_name == cur_res_name:
-                    cur_members.append(member_name)
+                if role_name == cur_role_name and cur_res_name == res_name:
+                    cur_members.add(member_name)
                 else:
-                    yield cur_role_name, cur_res_name, cur_members
+                    if cur_role_name:
+                        yield cur_role_name, cur_res_name, cur_members
                     cur_role_name = role_name
                     cur_res_name = res_name
-                    cur_members = [member_name]
+                    cur_members = set([member_name])
             if cur_role_name:
                 yield cur_role_name, cur_res_name, cur_members
 
@@ -1065,11 +1063,9 @@ def define_model(model_name, dbengine, model_seed):
                     and_(
                         # group_member is the direct policy member
                         Binding.id == binding_members.c.bindings_id,
-                        group_member.name == binding_members.c.members_name,
-                        group_member.type == Member.TYPE_GROUP,
 
-                        # there is a group_in_group that is in group_member
-                        group_member.name == GroupInGroup.parent,
+                        # there is a group_in_group that is a binding member
+                        binding_members.c.members_name == GroupInGroup.parent,
                         group_in_group.name == GroupInGroup.member,
 
                         # expanded_member is a direct member of group_in_group
@@ -1244,7 +1240,7 @@ def define_model(model_name, dbengine, model_seed):
                              session,
                              member_type_name,
                              parent_type_names,
-                             denorm=False):
+                             denorm=True):
             """Add member, optionally with parent relationship."""
 
             cls.add_member(session,
@@ -1255,7 +1251,7 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def del_group_member(cls, session, member_type_name, parent_type_name,
-                             only_delete_relationship, denorm=False):
+                             only_delete_relationship, denorm=True):
             """Delete member."""
 
             if only_delete_relationship:
@@ -1517,35 +1513,44 @@ def define_model(model_name, dbengine, model_seed):
                                    request_graph=False):
             """Expand members to their groups."""
 
-            members = session.query(Member).filter(
-                Member.name.in_(member_names)).all()
-            membership_graph = collections.defaultdict(set)
+            child = aliased(Member)
+            parent = aliased(Member)
+            reverse_expanded = aliased(Member)
+            ging = aliased(GroupInGroup)
+            group_member2 = aliased(group_members)
+
+            qry = (
+                session.query(parent)
+                .filter(child.name.in_(member_names))
+                .filter(ging.parent == parent.name)
+                .filter(ging.member == group_members.c.group_name)
+                .filter(group_members.c.members_name == child.name)
+                .distinct()
+                )
+
             member_set = set()
-            new_member_set = set()
-
-            def add_to_sets(members, child):
-                """Adds the members & children to the sets."""
-
-                for member in members:
-                    if request_graph and child:
-                        membership_graph[child.name].add(member.name)
-                    if request_graph and not child:
-                        if member.name not in membership_graph:
-                            membership_graph[member.name] = set()
-                    if member not in member_set:
-                        new_member_set.add(member)
-                        member_set.add(member)
-
-            add_to_sets(members, None)
-            while new_member_set:
-                members_to_walk = new_member_set
-                new_member_set = set()
-                for member in members_to_walk:
-                    add_to_sets(member.parents, member)
+            for item in qry.yield_per(PER_YIELD):
+                member_set.add(item)
 
             if request_graph:
+                qry = (
+                    session.query(parent, reverse_expanded)
+                    .filter(child.name.in_(member_names))
+                    .filter(ging.parent == reverse_expanded.name)
+                    .filter(ging.member == group_members.c.group_name)
+                    .filter(child.name == group_members.c.members_name)
+                    .filter(parent.name == group_member2.c.group_name)
+                    .filter(reverse_expanded.name == group_member2.c.members_name)
+                    .filter(parent.name != reverse_expanded.name)
+                    .distinct()
+                    )
+
+                membership_graph = collections.defaultdict(set)
+                for parent, child in qry.yield_per(PER_YIELD):
+                    membership_graph[child.name].add(parent.name)
                 return member_set, membership_graph
-            return member_set
+            else:
+                return member_set
 
         @classmethod
         def expand_members_map(cls,

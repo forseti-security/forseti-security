@@ -142,6 +142,7 @@ class DaoTest(ForsetiTestCase):
 
     for member, parents in memberships.iteritems():
       data_access.add_group_member(session, member, parents)
+    data_access.denorm_group_in_group(session)
 
     for member, groups in checks.iteritems():
       res = data_access.reverse_expand_members(session, [member])
@@ -383,15 +384,6 @@ class DaoTest(ForsetiTestCase):
         'ancestors': ['r/res4', 'r/res3', 'r/res1']
     }
 
-    check_3 = {
-        'parameters': ('user/u1', 'r/res1', 'admin', None),
-        'bindings': [('r/res1', 'admin', 'user/u1'),],
-        'member_graph': {
-            'user/u1': set([]),
-        },
-        'ancestors': ['r/res1',]
-    }
-
     def test_scenario(checks):
       """Test a declarative explanation scenario."""
       user, resource, role, permission = checks['parameters']
@@ -411,9 +403,8 @@ class DaoTest(ForsetiTestCase):
         self.assertEqual(value, graph[key])
       self.assertEqual(check_ancestors, ancestors)
 
-    test_scenario(check_1)
-    test_scenario(check_2)
-    test_scenario(check_3)
+      test_scenario(check_1)
+      test_scenario(check_2)
 
   def test_explain_denied(self):
     """Test explain_denied."""
@@ -593,16 +584,22 @@ class DaoTest(ForsetiTestCase):
                                                  expand_resources=True))]
       for item in result:
         _, acc_res, acc_members = item
-        if not (acc_res, acc_members) in access:
-            print '{}, {}'.format((acc_res, acc_members), access)
-        self.assertIn((acc_res, acc_members), access,
-                      'Should find access in expected')
+        for acc_member in acc_members:
+            acc_member = set([acc_member])
+            if not (acc_res, acc_member) in access:
+                print '{}, {}'.format((acc_res, acc_member), access)
+            self.assertIn((acc_res, acc_member), access,
+                          'Should find access in expected')
 
     # Test the group expansion
     expected_by_permission = {
         'delete': [
             (u'r/res1', set([u'user/u1'])),
-            (u'r/res4', set([u'user/u3', u'user/u4', u'group/g2'])),
+            (u'r/res4', set([u'user/u3',
+                             u'user/u4',
+                             u'group/g2',
+                             u'group/g3',
+                             u'group/g3g1'])),
         ],
     }
 
@@ -616,6 +613,8 @@ class DaoTest(ForsetiTestCase):
 
       for item in result:
         _, acc_res, acc_members = item
+        if not (acc_res, acc_member) in access:
+            print '{}, {}'.format((acc_res, acc_member), access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
