@@ -1197,28 +1197,41 @@ def define_model(model_name, dbengine, model_seed):
                              member_name):
             """Check access according to the resource IAM policy."""
 
-            member_names = [m.name for m in
-                            cls.reverse_expand_members(
-                                session,
-                                [member_name])]
-            resource_type_names = [r.type_name for r in cls.find_resource_path(
-                session,
-                resource_type_name)]
+            child = aliased(Resource)
+            parent = aliased(Resource)
+            binding = aliased(Binding)
+            expanded = aliased(Member)
+            direct = aliased(Member)
+            ging = aliased(GroupInGroup)
+            role = aliased(Role)
 
-            if not member_names:
-                raise Exception('Member not found: {}'.
-                                format(member_name))
-            if not resource_type_names:
-                raise Exception('Resource not found: {}'.
-                                format(resource_type_name))
+            qry = (
+                session.query(Permission.name)
 
-            return (
-                session.query(Permission)
+                # Search for the triple
                 .filter(Permission.name == permission_name)
-                .join(role_permissions).join(Role).join(Binding)
-                .filter(Binding.resource_type_name.in_(resource_type_names))
-                .join(binding_members).join(Member)
-                .filter(Member.name.in_(member_names)).first() is not None)
+                .filter(child.type_name == resource_type_name)
+                .filter(expanded.name == member_name)
+
+                # Connect role, binding & resource
+                .filter(child.full_name.startswith(parent.full_name))
+                .filter(binding.resource_type_name == parent.type_name)
+                .filter(binding.role_name == role.name)
+
+                # Connect role and permission
+                .filter(role.name == role_permissions.c.roles_name)
+                .filter(Permission.name == role_permissions.c.permissions_name)
+
+                # Lookup resource hierarchy
+
+                .filter(binding.id == binding_members.c.bindings_id)
+                .filter(direct.name == binding_members.c.members_name)
+                .filter(ging.parent == direct.name)
+                .filter(ging.member == group_members.c.group_name)
+                .filter(expanded.name == group_members.c.members_name)
+                )
+
+            return qry.first() is not None
 
         @classmethod
         def list_roles_by_prefix(cls, session, role_prefix):
