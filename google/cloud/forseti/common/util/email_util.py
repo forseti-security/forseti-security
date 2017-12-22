@@ -24,9 +24,10 @@ import urllib2
 
 import jinja2
 
-from retrying import retry
 import sendgrid
 from sendgrid.helpers import mail
+
+from retrying import retry
 
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import log_util
