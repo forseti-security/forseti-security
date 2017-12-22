@@ -303,32 +303,6 @@ class DaoTest(ForsetiTestCase):
     self.assertEqual(set([
         u'group/g1']), members)
 
-  def test_expand_members(self):
-    """Test expand_members."""
-    session_maker, data_access = session_creator('test')
-    session = session_maker()
-    client = ModelCreatorClient(session, data_access)
-    _ = ModelCreator(test_models.MEMBER_TESTING_2, client)
-
-    members = data_access.expand_members(session, ['group/g1', 'group/g3'])
-    members = set([m.name for m in members])
-
-    self.assertEqual(set([
-        u'group/g1',
-        u'group/g3',
-        u'group/g3g2',
-        u'group/g3g2g1'
-        ]), members)
-
-    members = data_access.expand_members(session, ['group/g1', 'group/g2'])
-    members = set([m.name for m in members])
-
-    self.assertEqual(set([
-        u'group/g1',
-        u'group/g2',
-        u'group/g3g2g1'
-        ]), members)
-
   def test_explain_granted(self):
     """Test explain_granted."""
     session_maker, data_access = session_creator('test')

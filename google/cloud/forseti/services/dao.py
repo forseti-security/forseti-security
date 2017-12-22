@@ -1250,7 +1250,6 @@ def define_model(model_name, dbengine, model_seed):
                 .filter(Permission.name == role_permissions.c.permissions_name)
 
                 # Lookup resource hierarchy
-
                 .filter(binding.id == binding_members.c.bindings_id)
                 .filter(direct.name == binding_members.c.members_name)
                 .filter(ging.parent == direct.name)
@@ -1607,55 +1606,6 @@ def define_model(model_name, dbengine, model_seed):
                     membership_graph[child.name].add(parent.name)
                 return member_set, membership_graph
             return member_set
-
-        @classmethod
-        def expand_members(cls, session, member_names):
-            """Expand group membership towards the members."""
-
-            expanded_member = aliased(Member)
-            group_member = aliased(Member)
-            group_in_group = aliased(Member)
-
-            qry_direct = (
-                session.query(expanded_member)
-
-                # Find directly mentioned non-groups and groups
-                .filter(expanded_member.name.in_(member_names))
-                )
-
-            qry_member = (
-                session.query(expanded_member)
-
-                # Find directly mentioned groups and resolve to members
-                .filter(group_member.name.in_(member_names))
-                .filter(group_member.type == Member.TYPE_GROUP)
-                .filter(group_member.name == group_members.c.group_name)
-                .filter(expanded_member.name == group_members.c.members_name)
-                )
-
-            qry_indirect_member = (
-                session.query(expanded_member)
-
-                # Find the groups in member_names
-                .filter(group_member.name.in_(member_names))
-                .filter(group_member.type == Member.TYPE_GROUP)
-
-                # there is a group_in_group that is in group_member
-                .filter(group_member.name == GroupInGroup.parent)
-                .filter(group_in_group.name == GroupInGroup.member)
-
-                # expanded_member is a direct member of group_in_group
-                .filter(group_in_group.name == group_members.c.group_name)
-                .filter(expanded_member.name == group_members.c.members_name)
-                )
-
-            qry = (
-                qry_direct
-                .union(qry_member)
-                .union(qry_indirect_member)
-                )
-
-            return set(qry.all())
 
         @classmethod
         def resource_ancestors(cls, session, resource_type_names):
