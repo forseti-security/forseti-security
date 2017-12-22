@@ -37,14 +37,12 @@ from sqlalchemy import Table
 from sqlalchemy import DateTime
 from sqlalchemy import or_
 from sqlalchemy import and_
-from sqlalchemy import not_
 from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import reconstructor
 from sqlalchemy.sql import select
-from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.forseti.services.utils import mutual_exclusive
@@ -981,29 +979,58 @@ def define_model(model_name, dbengine, model_seed):
                                      permission_names, expand_groups=False):
             """Return members who have access to the given resource."""
 
-            roles = cls.get_roles_by_permission_names(
-                session, permission_names)
-            resources = cls.find_resource_path(session, resource_type_name)
+            member = aliased(Member)
+            role = aliased(Role)
+            binding = aliased(Binding)
+            parent = aliased(Resource)
+            child = aliased(Resource)
+            direct_member = aliased(Member)
+            ging = aliased(GroupInGroup)
 
-            res = (session.query(Binding, Member)
-                   .filter(
-                       Binding.role_name.in_([r.name for r in roles]),
-                       Binding.resource_type_name.in_(
-                           [r.type_name for r in resources]))
-                   .join(binding_members).join(Member))
+            role_names = [
+                r.name
+                for r in
+                cls.get_roles_by_permission_names(session, permission_names)]
 
-            role_member_mapping = collections.defaultdict(set)
-            for binding, member in res:
-                role_member_mapping[binding.role_name].add(member.name)
+            qry = (
+                session.query(role.name, member.name)
+
+                # Find the resource requested access for
+                .filter(child.type_name == resource_type_name)
+
+                # Map all the ancestors to the corresponding bindings
+                .filter(child.full_name.startswith(parent.full_name))
+                .filter(binding.resource_type_name == parent.type_name)
+
+                # Map role and bindings together
+                .filter(binding.role_name == role.name)
+
+                # Map permission_names to roles covering the permissions
+                .filter(role.name.in_(role_names))
+                )
 
             if expand_groups:
-                for role in role_member_mapping:
-                    role_member_mapping[role] = (
-                        [m.name for m in cls.expand_members(
-                            session,
-                            role_member_mapping[role])])
+                qry = (
+                    qry
+                    .filter(binding.id == binding_members.c.bindings_id)
+                    .filter(direct_member.name ==
+                            binding_members.c.members_name)
+                    .filter(direct_member.name == ging.parent)
+                    .filter(ging.member == group_members.c.group_name)
+                    .filter(member.name == group_members.c.members_name)
+                    )
+            else:
+                qry = (
+                    qry
+                    .filter(binding.id == binding_members.c.bindings_id)
+                    .filter(member.name == binding_members.c.members_name)
+                    )
 
-            return role_member_mapping
+            qry = qry.distinct()
+            role_members = collections.defaultdict(set)
+            for role_name, member_name in qry.yield_per(PER_YIELD):
+                role_members[role_name].add(member_name)
+            return role_members
 
         @classmethod
         def query_permissions_by_roles(cls, session, role_names, role_prefixes,
@@ -1542,82 +1569,6 @@ def define_model(model_name, dbengine, model_seed):
             return member_set
 
         @classmethod
-        def expand_members_map(cls,
-                               session,
-                               member_names,
-                               show_group_members=True):
-            """Expand group membership keyed by member.
-
-            Args:
-                member_names (set): Member names to expand
-                show_group_members (bool): Whether to include subgroups
-            Returns:
-                dict: <Member, set(Children).
-            """
-
-            def separate_groups(member_names):
-                """Separate groups and other members in two lists."""
-                groups = []
-                others = []
-                for name in member_names:
-                    if name.startswith('group/'):
-                        groups.append(name)
-                    else:
-                        others.append(name)
-                return groups, others
-
-            selectables = []
-            group_names, other_names = separate_groups(member_names)
-
-            t_ging = GroupInGroup.__table__
-            t_members = group_members
-
-            transitive_membership = (
-                # This resolves groups to its transitive non-group members
-                select([t_ging.c.parent, t_members.c.members_name])
-                .select_from(
-                    t_ging.join(t_members,
-                                t_ging.c.member == t_members.c.group_name))
-                ).where(t_ging.c.parent.in_(group_names))
-            if not show_group_members:
-                transitive_membership = transitive_membership.where(
-                    not_(t_members.c.members_name.startswith('group/')))
-
-            selectables.append(
-                transitive_membership.alias('transitive_membership'))
-
-            direct_membership = (
-                select([t_members.c.group_name, t_members.c.members_name])
-                .where(t_members.c.group_name.in_(group_names)))
-            if not show_group_members:
-                direct_membership = direct_membership.where(
-                    not_(t_members.c.members_name.startswith('group/')))
-
-            selectables.append(
-                direct_membership.alias('direct_membership'))
-
-            if show_group_members:
-                # Show groups as members of other groups
-                group_in_groups = (
-                    select([t_ging.c.parent, t_ging.c.member])
-                    .where(t_ging.c.parent.in_(group_names))
-                    )
-                selectables.append(
-                    group_in_groups.alias('group_in_groups'))
-
-            # Union all the queries
-            qry = union(*selectables)
-
-            # Build the result dict
-            result = collections.defaultdict(set)
-            for parent, child in session.execute(qry):
-                result[parent].add(child)
-            for parent in other_names:
-                result[parent] = set()
-
-            return result
-
-        @classmethod
         def expand_members(cls, session, member_names):
             """Expand group membership towards the members."""
 
@@ -1668,7 +1619,14 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def resource_ancestors(cls, session, resource_type_names):
-            """Resolve the transitive ancestors by type/name format."""
+            """Resolve the transitive ancestors by type/name format.
+
+            Algorithm:
+            1. Find resources specified in input
+            2. Fina all ancestors including 1. themselves
+            3. For all of 2., find their direct parent if any
+            4. Build map<Parent, set<Child>>
+            """
 
             child = aliased(Resource)
             parent = aliased(Resource)

@@ -329,23 +329,6 @@ class DaoTest(ForsetiTestCase):
         u'group/g3g2g1'
         ]), members)
 
-  def test_expand_members_map(self):
-    """Test expand_members_map."""
-    session_maker, data_access = session_creator('test')
-    session = session_maker()
-    client = ModelCreatorClient(session, data_access)
-    _ = ModelCreator(test_models.MEMBER_TESTING_3, client)
-
-    members_map = data_access.expand_members_map(session, ['group/g1'])
-    self.assertEqual(
-        set([
-            u'group/g1',
-            u'group/g1g1',
-            u'user/g1g1u1',
-            u'user/g1g1u2',
-            u'user/g1g1u3',
-        ]), members_map[u'group/g1'])
-
   def test_explain_granted(self):
     """Test explain_granted."""
     session_maker, data_access = session_creator('test')
