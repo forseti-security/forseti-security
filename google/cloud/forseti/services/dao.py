@@ -57,7 +57,7 @@ from google.cloud.forseti.services.iamql import compiler as iamql
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-raises-doc
-# pylint: disable=missing-yield-type-doc,too-many-branches
+# pylint: disable=missing-yield-type-doc
 
 POOL_RECYCLE_SECONDS = 300
 PER_YIELD = 1024
@@ -906,7 +906,9 @@ def define_model(model_name, dbengine, model_seed):
 
             entities = [
                 role.name,
-                descendant.type_name if expand_resources else resource.type_name,
+                (descendant.type_name
+                 if expand_resources
+                 else resource.type_name),
                 expanded_member.name if expand_groups else direct_member.name,
                 ]
 
@@ -962,13 +964,13 @@ def define_model(model_name, dbengine, model_seed):
             cur_role_name = None
             cur_res_name = None
             cur_members = set()
-            for role_name, res_name, member_name in qry.yield_per(PER_YIELD):
-                if role_name == cur_role_name and cur_res_name == res_name:
+            for r_name, res_name, member_name in qry.yield_per(PER_YIELD):
+                if r_name == cur_role_name and cur_res_name == res_name:
                     cur_members.add(member_name)
                 else:
                     if cur_role_name:
                         yield cur_role_name, cur_res_name, cur_members
-                    cur_role_name = role_name
+                    cur_role_name = r_name
                     cur_res_name = res_name
                     cur_members = set([member_name])
             if cur_role_name:
@@ -1034,7 +1036,6 @@ def define_model(model_name, dbengine, model_seed):
             child = aliased(Resource)
             parent = aliased(Resource)
             expanded_member = aliased(Member)
-            group_member = aliased(Member)
             group_in_group = aliased(Member)
             perm = aliased(Permission)
             role = aliased(Role)
@@ -1070,9 +1071,7 @@ def define_model(model_name, dbengine, model_seed):
 
                         # expanded_member is a direct member of group_in_group
                         group_in_group.name == group_members.c.group_name,
-                        expanded_member.name == group_members.c.members_name),
-                    )
-                   )
+                        expanded_member.name == group_members.c.members_name)))
 
             return iter(qry.yield_per(PER_YIELD))
 
@@ -1470,13 +1469,15 @@ def define_model(model_name, dbengine, model_seed):
         def expand_resources_by_names(cls, session, res_type_names):
             """Expand resources by type/name format."""
 
+            child = aliased(Resource)
+            parent = aliased(Resource)
             qry = (
-                session.query(Resource)
-                .filter(Resource.type_name.in_(res_type_names))
+                session.query(child)
+                .filter(parent.type_name.in_(res_type_names))
+                .filter(child.full_name.startswith(parent.full_name))
                 )
 
-            full_resource_names = [r.full_name for r in qry.all()]
-            return cls.expand_resources(session, full_resource_names)
+            return [res.full_name for res in qry.yield_per(PER_YIELD)]
 
         @classmethod
         def expand_resources(cls, session, full_resource_names):
@@ -1486,27 +1487,15 @@ def define_model(model_name, dbengine, model_seed):
                     not isinstance(full_resource_names, set)):
                 raise TypeError('full_resource_names must be list or set')
 
-            resources = session.query(Resource).filter(
-                Resource.full_name.in_(full_resource_names)).all()
+            child = aliased(Resource)
+            parent = aliased(Resource)
+            qry = (
+                session.query(child)
+                .filter(parent.full_name.in_(full_resource_names))
+                .filter(child.full_name.startswith(parent.full_name))
+                )
 
-            new_resource_set = set(resources)
-            resource_set = set(resources)
-
-            def add_to_sets(resources):
-                """Adds resources to the sets."""
-
-                for resource in resources:
-                    if resource not in resource_set:
-                        new_resource_set.add(resource)
-                        resource_set.add(resource)
-
-            while new_resource_set:
-                resources_to_walk = new_resource_set
-                new_resource_set = set()
-                for resource in resources_to_walk:
-                    add_to_sets(resource.children)
-
-            return [r.full_name for r in resource_set]
+            return [res.full_name for res in qry.yield_per(PER_YIELD)]
 
         @classmethod
         def reverse_expand_members(cls, session, member_names,
@@ -1540,7 +1529,8 @@ def define_model(model_name, dbengine, model_seed):
                     .filter(ging.member == group_members.c.group_name)
                     .filter(child.name == group_members.c.members_name)
                     .filter(parent.name == group_member2.c.group_name)
-                    .filter(reverse_expanded.name == group_member2.c.members_name)
+                    .filter(reverse_expanded.name ==
+                            group_member2.c.members_name)
                     .filter(parent.name != reverse_expanded.name)
                     .distinct()
                     )
@@ -1549,8 +1539,7 @@ def define_model(model_name, dbengine, model_seed):
                 for parent, child in qry.yield_per(PER_YIELD):
                     membership_graph[child.name].add(parent.name)
                 return member_set, membership_graph
-            else:
-                return member_set
+            return member_set
 
         @classmethod
         def expand_members_map(cls,

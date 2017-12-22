@@ -27,7 +27,8 @@ import inspect
 import sys
 import gflags as flags
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,inconsistent-return-statements
+
 from google.apputils import app
 from google.cloud.forseti.common.data_access import dao
 from google.cloud.forseti.common.data_access import errors as db_errors
@@ -37,7 +38,6 @@ from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
-# pylint: enable=line-too-long
 
 
 # Setup flags
@@ -64,6 +64,7 @@ except flags.DuplicateFlagError:
 LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
+
 def find_pipelines(pipeline_name):
     """Get the first class in the given sub module
 
@@ -86,7 +87,7 @@ def find_pipelines(pipeline_name):
                 return obj
     except ImportError, e:
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
-        return None
+
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.

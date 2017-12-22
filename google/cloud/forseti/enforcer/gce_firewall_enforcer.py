@@ -563,7 +563,8 @@ class FirewallRules(object):
         """
         if not isinstance(rule, dict):
             raise InvalidFirewallRuleError(
-                'Invalid rule type. Found %s expected %s', type(rule), dict)
+                'Invalid rule type. Found {} expected {}'.format(
+                    type(rule), dict))
 
         new_rule = self._order_lists_in_rule(rule)
 
