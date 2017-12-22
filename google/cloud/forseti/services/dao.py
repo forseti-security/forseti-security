@@ -1670,36 +1670,20 @@ def define_model(model_name, dbengine, model_seed):
         def resource_ancestors(cls, session, resource_type_names):
             """Resolve the transitive ancestors by type/name format."""
 
-            resource_names = resource_type_names
-            resource_graph = collections.defaultdict(set)
+            child = aliased(Resource)
+            parent = aliased(Resource)
+            ancestor = aliased(Resource)
+            qry = (
+                session.query(parent.type_name, ancestor.type_name)
+                .filter(child.type_name.in_(resource_type_names))
+                .filter(child.full_name.startswith(ancestor.full_name))
+                .filter(parent.type_name == ancestor.parent_type_name)
+                )
 
-            res_childs = aliased(Resource, name='res_childs')
-            res_anc = aliased(Resource, name='resource_parent')
-
-            resources_set = set(resource_names)
-            resources_new = set(resource_names)
-
-            for resource in resources_new:
-                resource_graph[resource] = set()
-
-            while resources_new:
-                resources_new = set()
-                for parent, child in (
-                        session.query(res_anc, res_childs)
-                        .filter(res_childs.type_name.in_(resources_set))
-                        .filter(res_childs.parent_type_name ==
-                                res_anc.type_name)
-                        .all()):
-
-                    if parent.type_name not in resources_set:
-                        resources_new.add(parent.type_name)
-
-                    resources_set.add(parent.type_name)
-                    resources_set.add(child.type_name)
-
-                    resource_graph[parent.type_name].add(child.type_name)
-
-            return resource_graph
+            result = collections.defaultdict(set)
+            for parent, child in qry.yield_per(PER_YIELD):
+                result[parent].add(child)
+            return result
 
         @classmethod
         def find_resource_path(cls, session, resource_type_name):

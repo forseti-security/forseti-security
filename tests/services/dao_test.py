@@ -964,6 +964,7 @@ class DaoTest(ForsetiTestCase):
     # parent, set(child) relation
     test_resources = [chain[-1] for chain in tests]
     graph = data_access.resource_ancestors(session, test_resources)
+
     for chain in tests:
       for i in range(0, len(chain)-1):
         parent = chain[i]
