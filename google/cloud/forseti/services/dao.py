@@ -653,8 +653,53 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def explain_granted(cls, session, member_name, resource_type_name,
-                            role, permission):
+                            role_name, permission_name):
             """Provide info about how the member has access to the resource."""
+
+            resource_ancestor = aliased(Resource)
+            resource_child = aliased(Resource)
+            member_ancestor = aliased(Member)
+            member_child = aliased(Member)
+            group_in_group = aliased(GroupInGroup)
+            binding = aliased(Binding)
+
+            qry = session.query(binding, member_child)
+            qry = (
+                qry
+                .filter(
+                    resource_child.type_name == resource_type_name,
+                    resource_child.full_name.startswith(
+                        resource_ancestor.full_name)
+                    )
+                .filter(
+                    member_child.name == member_name,
+                    group_in_group.parent == member_ancestor.name,
+                    group_in_group.member == group_members.c.group_name,
+                    group_members.c.members_name == member_child.name
+                    )
+                .filter(
+                    binding_members.c.bindings_id == binding.id,
+                    binding_members.c.members_name == member_ancestor.name,
+                    binding.resource_type_name == resource_ancestor.type_name
+                    )
+                )
+
+            if role_name:
+                qry = (
+                    qry
+                    .filter(
+                        binding.role_name == role_name
+                        )
+                    )
+            elif permission_name:
+                qry = (
+                    qry.filter(
+                        role_permissions.c.roles_name == binding.role_name,
+                        role_permissions.c.permissions_name == permission_name
+                        )
+                    )
+
+            result = qry.all()
 
             members, member_graph = cls.reverse_expand_members(
                 session, [member_name], request_graph=True)
@@ -663,24 +708,6 @@ def define_model(model_name, dbengine, model_seed):
                                    cls.find_resource_path(session,
                                                           resource_type_name)]
 
-            if role:
-                roles = set([role])
-                qry = session.query(Binding, Member).join(
-                    binding_members).join(Member)
-            else:
-                roles = [r.name for r in
-                         cls.get_roles_by_permission_names(
-                             session,
-                             [permission])]
-                qry = session.query(Binding, Member)
-                qry = qry.join(binding_members).join(Member)
-                qry = qry.join(Role).join(role_permissions).join(Permission)
-
-            qry = qry.filter(Binding.role_name.in_(roles))
-            qry = qry.filter(Member.name.in_(member_names))
-            qry = qry.filter(
-                Binding.resource_type_name.in_(resource_type_names))
-            result = qry.all()
             if not result:
                 raise Exception(
                     'Grant not found: ({},{},{})'.format(
