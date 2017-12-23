@@ -15,6 +15,7 @@
 """Database abstraction objects for Forseti Server."""
 
 # pylint: disable=too-many-lines,singleton-comparison,no-value-for-parameter
+# pyling: disable=missing-yield-doc
 
 import datetime
 import os
@@ -207,11 +208,11 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
-        full_name = Column(String(1024), nullable=False)
+        full_name = Column(String(1024), nullable=False, index=True)
         type_name = Column(String(256), primary_key=True)
-        name = Column(String(128), nullable=False)
-        type = Column(String(64), nullable=False)
-        policy_update_counter = Column(Integer, default=0)
+        name = Column(String(128), nullable=False, index=True)
+        type = Column(String(64), nullable=False, index=True)
+        policy_update_counter = Column(Integer, default=0, index=True)
         display_name = Column(String(256), default='')
         email = Column(String(256), default='')
         data = Column(Text)
@@ -276,8 +277,8 @@ def define_model(model_name, dbengine, model_seed):
 
         __tablename__ = members_tablename
         name = Column(String(256), primary_key=True)
-        type = Column(String(64))
-        member_name = Column(String(128))
+        type = Column(String(64), index=True)
+        member_name = Column(String(128), index=True)
 
         CORE_TYPES = [
             'group',
@@ -789,86 +790,79 @@ def define_model(model_name, dbengine, model_seed):
                                    reverse_expand_members=True):
             """Return the set of resources the member has access to."""
 
-            expanded = aliased(Resource)
-            resource = aliased(Resource)
-            role = aliased(Role)
-            group_in_group = aliased(GroupInGroup)
-            expanded_member = aliased(Member)
-            direct_member = aliased(Member)
-            group = aliased(Member)
-            b_members = binding_members
+            child = aliased(Resource)
+            parent = aliased(Resource)
+            ging = aliased(GroupInGroup)
 
-            if expand_resources:
+            # First, we query the roles directly
+            if permission_names:
                 qry = (
-                    session.query(role, expanded)
-                    .filter(expanded.full_name.startswith(resource.full_name))
+                    session.query(Role.name)
+                    .filter(role_permissions.c.roles_name == Role.name)
+                    .filter(role_permissions.c.permissions_name.in_(
+                        permission_names))
                     )
             else:
                 qry = (
-                    session.query(role, resource)
+                    session.query(Role.name)
+                    )
+            role_names = [r.name for r in qry.yield_per(PER_YIELD)]
+
+            # Upon resource expansion, query the child
+            # instead of the resource directly assigned
+            # to the policy
+            if expand_resources:
+                qry = (
+                    session.query(Binding.role_name,
+                                  child.type_name)
+                    # Expand the child resources
+                    .filter(child.full_name.startswith(parent.full_name))
+                    )
+            else:
+                qry = (
+                    session.query(Binding.role_name,
+                                  parent.type_name)
                     )
 
             qry = (
                 qry
-
-                # Reduce to mentioned permissions
-                .filter(Permission.name.in_(permission_names))
-
-                # Associate roles to selected permissions
-                .filter(role.name == role_permissions.c.roles_name)
-                .filter(Permission.name == role_permissions.c.permissions_name)
-
-                # Associate role <-> binding <-> resource
-                .filter(resource.type_name == Binding.resource_type_name)
-                .filter(role.name == Binding.role_name)
-
+                # Connect the Role with the binding
+                .filter(Binding.role_name.in_(role_names))
+                # Connect the Resource with the binding
+                .filter(Binding.resource_type_name == parent.type_name)
                 )
 
             if reverse_expand_members:
-                qry = (qry.filter(or_(
-
-                    # Directly mentioned in policy
-                    and_(
-                        b_members.c.bindings_id == Binding.id,
-                        b_members.c.members_name == member_name,
-                        ),
-
-                    # Transitive group membership
-                    and_(
-                        b_members.c.bindings_id == Binding.id,
-                        b_members.c.members_name == direct_member.name,
-                        direct_member.type == Member.TYPE_GROUP,
-                        group_in_group.parent == direct_member.name,
-                        group_in_group.member == group.name,
-                        group.name == group_members.c.group_name,
-                        expanded_member.name == group_members.c.members_name,
-                        expanded_member.name == member_name,
-                        ),
-
-                    # Expanded member is direct member of group in policy
-                    and_(
-                        b_members.c.bindings_id == Binding.id,
-                        b_members.c.members_name == group_members.c.group_name,
-                        expanded_member.name == group_members.c.members_name,
-                        expanded_member.name == member_name,
-                        )
-                    )))
-
+                qry = (
+                    qry
+                    # Connect the binding with the member
+                    .filter(Binding.id == binding_members.c.bindings_id)
+                    # there is a group_in_group that is a binding member
+                    .filter(binding_members.c.members_name == ging.parent)
+                    # expanded_member is a direct member of group_in_group
+                    .filter(ging.member == group_members.c.group_name)
+                    .filter(member_name == group_members.c.members_name))
             else:
                 qry = (
                     qry
-                    .filter(b_members.c.bindings_id == Binding.id)
-                    .filter(b_members.c.members_name == member_name)
-                    )
+                    .filter(Binding.id == binding_members.c.bindings_id)
+                    .filter(binding_members.c.members_name == member_name))
 
-            qry = qry.order_by(role.name.asc())
+            qry = qry.order_by(Binding.role_name.asc())
+            qry = qry.distinct()
 
-            result = collections.defaultdict(list)
-
-            for role, resource in qry.yield_per(PER_YIELD):
-                result[role.name].append(resource.type_name)
-
-            return result.iteritems()
+            cur_role_name = None
+            resources = []
+            for role_name, res_type_name in qry.yield_per(PER_YIELD):
+                if role_name == cur_role_name:
+                    resources.append(res_type_name)
+                else:
+                    if cur_role_name is not None:
+                        yield cur_role_name, resources
+                    cur_role_name = role_name
+                    resources = [res_type_name]
+            if cur_role_name is not None:
+                yield cur_role_name, resources
 
         @classmethod
         def query_access_by_permission(cls,
