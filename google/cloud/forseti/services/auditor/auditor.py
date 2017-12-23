@@ -14,36 +14,16 @@
 
 """Forseti Auditor."""
 
-import gflags as flags
-
 from google.apputils import app
 
 from google.cloud.forseti import config
 from google.cloud.forseti.auditor import rules_engine as rules_eng
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.services.auditor import dao
 
 
 LOGGER = log_util.get_logger(__name__)
-
-# Setup flags
-FLAGS = flags.FLAGS
-
-# Hack to make the test pass due to duplicate flag error.
-# TODO: Find a way to remove this try/except, possibly dividing the tests
-# into different test suites.
-try:
-    flags.DEFINE_string(
-        'forseti_config',
-        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
-        'Fully qualified path and filename of the Forseti config file.')
-
-    flags.DEFINE_string(
-        'rules_config',
-        '',
-        'Fully qualified path to the rules file.')
-except flags.DuplicateFlagError:
-    pass
 
 
 class AuditorRunner(object):
@@ -85,30 +65,35 @@ class AuditorRunner(object):
                     if result.result])
 
             LOGGER.info('%s rules evaluated to True', len(all_results))
-        print all_results
         return all_results
 
 
-def run(config_path, model_name):
-    config_path = config_path or FLAGS.forseti_config
-
+def Run(config_path, model_name):
     if not config.FORSETI_CONFIG:
         if not config_path:
-            LOGGER.error('Provide a --forseti-config file to run the Auditor.')
+            LOGGER.error('Provide a --config to run the Auditor.')
             return 1
         config.FORSETI_CONFIG = config.from_file(config_path)
-
-    # If user specifies a rules_config, use that instead of what's in
-    # the Forseti config. (e.g. could be for testing purposes)
-    if FLAGS.rules_config:
-        config.FORSETI_CONFIG.root_config.auditor.rules_path = (
-            FLAGS.rules_config)
 
     log_util.set_logger_level_from_config(
         config.FORSETI_CONFIG.root_config.auditor.get('loglevel'))
 
     runner = AuditorRunner()
     runner.run()
+
+    return 0
+
+def List(config_path, model_name):
+    if not config.FORSETI_CONFIG:
+        if not config_path:
+            LOGGER.error('Provide a --forseti-config file to run the Auditor.')
+            return 1
+        config.FORSETI_CONFIG = config.from_file(config_path)
+
+    log_util.set_logger_level_from_config(
+        config.FORSETI_CONFIG.root_config.auditor.get('loglevel'))
+
+    audits = dao.list_audits()
 
     return 0
 

@@ -493,16 +493,24 @@ class AuditorClient(ForsetiClient):
 
     def list(self):
         """List the audits."""
-        return self.stub.List(request,
-                             metadata=self.metadata())
 
-    def get_results(self):
+        request = auditor_pb2.ListRequest()
+        return self.stub.List(request,
+                              metadata=self.metadata())
+
+    def get_results(self, audit_id):
         """Get the audit results."""
+
+        request = auditor_pb2.GetResultsRequest(
+            id=audit_id)
         return self.stub.GetResults(request,
                                     metadata=self.metadata())
 
-    def delete(self):
+    def delete(self, audit_id):
         """Delete the audit."""
+
+        request = auditor_pb2.DeleteRequest(
+            id=audit_id)
         return self.stub.Delete(request,
                                 metadata=self.metadata())
 

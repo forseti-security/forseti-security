@@ -22,7 +22,7 @@ package google.cloud.forseti.services.auditor;
 service Auditor {
   rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc List(ListRequest) returns (stream AuditIndex) {}
+  rpc List(ListRequest) returns (stream Audit) {}
 
   rpc Run(RunRequest) returns (RunReply) {}
 
@@ -43,7 +43,7 @@ message PingReply {
 message ListRequest {
 }
 
-message AuditIndex {
+message Audit {
   // The audit id.
   int32 id = 1;
   // The start time of the audit.
@@ -63,6 +63,8 @@ message AuditIndex {
   string model = 5;
   // Stores messages from the audit.
   string messages = 6;
+  // The schema version.
+  int32 schema_version = 7;
 }
 
 message AuditRule {
@@ -94,5 +96,5 @@ message DeleteRequest {
 }
 
 message DeleteReply {
-  AuditIndex audit = 1;
+  Audit audit = 1;
 }

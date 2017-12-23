@@ -479,15 +479,38 @@ def define_auditor_parser(parent):
         title='action',
         dest='action')
 
-    create_auditor_parser = action_subparser.add_parser(
+    _ = action_subparser.add_parser(
+        'list',
+        help='List the existing audits')
+
+    run_auditor_parser = action_subparser.add_parser(
         'run',
         help='Run the auditor')
 
-    create_auditor_parser.add_argument(
-        'config_file',
+    run_auditor_parser.add_argument(
+        '--config_file',
         help='Auditor config file')
 
-    # TODO: add the other services and flags
+    getresults_audit_parser = action_subparser.add_parser(
+        'get-results',
+        help='Get audit results')
+
+    getresults_audit_parser.add_argument(
+        '--audit-id',
+        help='The audit id to get results')
+
+    delete_audit_parser = action_subparser.add_parser(
+        'delete',
+        help='Delete an audit')
+
+    delete_audit_parser.add_argument(
+        '--audit-id',
+        help='The id of the audit to delete')
+
+    delete_audit_parser.add_argument(
+        '--results-only',
+        action='store_true',
+        help='The id of the audit to delete')
 
 
 def read_env(var_key, default):
@@ -935,13 +958,30 @@ def run_auditor(client, config, output, _):
 
     client = client.auditor
 
+    def do_list():
+        """List audits."""
+        output.write(client.list())
+
     def do_run():
         """Run auditor."""
         result = client.run(config.config_file)
         output.write(result)
 
+    def do_get_results():
+        """Get audit results."""
+        result = client.get_results(config.audit_id)
+        output.write(result)
+
+    def do_delete():
+        """Get audit results."""
+        result = client.delete(config.audit_id)
+        output.write(result)
+
     actions = {
-        'run': do_run
+        'list', do_list,
+        'run': do_run,
+        'get-results': do_get_results,
+        'delete': do_delete
     }
 
     actions[config.action]()

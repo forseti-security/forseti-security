@@ -33,7 +33,7 @@ LOGGER = log_util.get_logger(__name__)
 def audit_pb_from_object(audit_index):
     """Audit data to proto."""
 
-    return auditor_pb2.AuditIndex(
+    return auditor_pb2.Audit(
         id=audit_index.id,
         start_time=timestamp.Timestamp().FromDateTime(
             audit_index.start_time),
@@ -66,7 +66,7 @@ def ruleresult_pb_from_object(rule_result):
 class GrpcAuditor(auditor_pb2_grpc.AuditorServicer):
     """Forseti Auditor gRPC implementation."""
 
-    HANDLE_KEY = "handle"
+    HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
         """Return the handle associated with the gRPC call."""
