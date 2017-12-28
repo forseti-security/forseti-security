@@ -49,7 +49,7 @@ class RulesConfigValidator(object):
         Rule configuration validation:
 
         1. Rule configuration should validate against a json schema.
-        2. Rule ids should be unique.
+        2. Rule names should be unique.
         3. Configuration variables should all matched to each
            resource's variables.
         4. Configuration condition statement should parse without error.
@@ -72,9 +72,9 @@ class RulesConfigValidator(object):
         config, schema_errors = RulesConfigValidator._validate_schema(
             rules_config_path)
 
-        # All the rule ids found in the config
-        #   rule_id => # of rule_ids found in config
-        rule_ids = defaultdict(int)
+        # All the rule names found in the config
+        #   rule_name => # of rule_names found in config
+        rule_names = defaultdict(int)
 
         # UnmatchedVariablesError for each unmatched variable
         unmatched_vars_errs = []
@@ -83,8 +83,8 @@ class RulesConfigValidator(object):
         invalid_condition_errs = []
 
         for rule in config.get('rules', []):
-            # Keep track rule id occurrences.
-            rule_ids[rule['id']] += 1
+            # Keep track rule name occurrences.
+            rule_names[rule['name']] += 1
 
             rule_config = rule.get('configuration')
             if not rule_config:
@@ -95,11 +95,11 @@ class RulesConfigValidator(object):
 
             unmatched_vars_errs = (
                 RulesConfigValidator._check_unmatched_config_vars(
-                    rule['id'], config_vars, config_resources))
+                    rule['name'], config_vars, config_resources))
 
             try:
                 RulesConfigValidator._check_invalid_condition(
-                    rule['id'], config_vars, rule_config.get('condition', ''))
+                    rule['name'], config_vars, rule_config.get('condition', ''))
             except ConditionParseError as cpe:
                 invalid_condition_errs.append(cpe)
 
@@ -107,10 +107,10 @@ class RulesConfigValidator(object):
             # Schema errors
             schema_errors,
 
-            # Errors for dupliate rule ids
-            [DuplicateRuleIdError(rule_id)
-             for rule_id in rule_ids
-             if rule_ids[rule_id] > 1],
+            # Errors for dupliate rule names
+            [DuplicateRuleNameError(rule_name)
+             for rule_name in rule_names
+             if rule_names[rule_name] > 1],
 
             # Unmatched configuration variables
             unmatched_vars_errs,
@@ -151,14 +151,14 @@ class RulesConfigValidator(object):
 
     @staticmethod
     def _check_unmatched_config_vars(
-            rule_id, config_vars, config_resources):
+            rule_name, config_vars, config_resources):
         """Check that configuration variables are found in resource variables.
 
         Check that all configuration['variables'] are present in
         configuration['resources'] variables.
 
         Args:
-            rule_id (str): The rule id.
+            rule_name (str): The rule name.
             config_vars (set): The set of rule configuration variables.
             config_resources (list): The rule configuration resources.
 
@@ -181,18 +181,18 @@ class RulesConfigValidator(object):
             if unmatched_config_vars or unmatched_resource_vars:
                 unmatched_vars_errs.append(
                     UnmatchedVariablesError(
-                        rule_id,
+                        rule_name,
                         resource.get('type'),
                         unmatched_config_vars,
                         unmatched_resource_vars))
         return unmatched_vars_errs
 
     @staticmethod
-    def _check_invalid_condition(rule_id, config_vars, config_condition):
+    def _check_invalid_condition(rule_name, config_vars, config_condition):
         """Check that conditional statement parses.
 
         Args:
-            rule_id (str): The rule id.
+            rule_name (str): The rule name.
             config_vars (set): The configuration variables.
             config_condition (str): The rule configuration condition.
 
@@ -206,7 +206,7 @@ class RulesConfigValidator(object):
         try:
             cond_parser.eval_filter(config_condition)
         except pyparsing.ParseException as parse_err:
-            raise ConditionParseError(rule_id, config_condition, parse_err)
+            raise ConditionParseError(rule_name, config_condition, parse_err)
 
 
 class Error(Exception):
@@ -230,46 +230,46 @@ class InvalidRulesConfigError(Error):
             self.CUSTOM_ERROR_MSG.format('\n--------------\n'.join(errors)))
 
 
-class DuplicateRuleIdError(Error):
-    """DuplicateRuleIdError."""
+class DuplicateRuleNameError(Error):
+    """DuplicateRuleNameError."""
 
-    CUSTOM_ERROR_MSG = 'Found duplicate rule id: {0}'
+    CUSTOM_ERROR_MSG = 'Found duplicate rule name: {0}'
 
-    def __init__(self, rule_id):
+    def __init__(self, rule_name):
         """Init.
 
         Args:
-            rule_id (str): The rule id.
+            rule_name (str): The rule name.
         """
-        super(DuplicateRuleIdError, self).__init__(
-            self.CUSTOM_ERROR_MSG.format(rule_id))
-        self.rule_id = rule_id
+        super(DuplicateRuleNameError, self).__init__(
+            self.CUSTOM_ERROR_MSG.format(rule_name))
+        self.rule_name = rule_name
 
 
 class UnmatchedVariablesError(Error):
     """UnmatchedVariablesError."""
 
     CUSTOM_ERROR_MSG = ('Unmatched config variables: '
-                        'rule_id={0}, resource_type={1}\n'
+                        'rule_name={0}, resource_type={1}\n'
                         'Unmatched config_vars={2}\n'
                         'Unmatched resource_vars={3}')
 
     def __init__(self,
-                 rule_id,
+                 rule_name,
                  resource_type,
                  unmatched_config_vars,
                  unmatched_resource_vars):
         """Init.
 
         Args:
-            rule_id (str): The rule id.
+            rule_name (str): The rule name.
             resource_type (str): The resource type in the configuration.
             unmatched_config_vars (set): The unmatched config variables.
             unmatched_resource_vars (set): The unmatched resource variables.
         """
         super(UnmatchedVariablesError, self).__init__(
             self.CUSTOM_ERROR_MSG.format(
-                rule_id,
+                rule_name,
                 resource_type,
                 ','.join(unmatched_config_vars),
                 ','.join(unmatched_resource_vars)))
@@ -279,16 +279,16 @@ class ConditionParseError(Error):
     """ConditionParseError."""
 
     CUSTOM_ERROR_MSG = ('Rule condition parse error: '
-                        'rule_id={0}, condition={1}\n{2}')
+                        'rule_name={0}, condition={1}\n{2}')
 
-    def __init__(self, rule_id, config_condition, parse_error):
+    def __init__(self, rule_name, config_condition, parse_error):
         """Init.
 
         Args:
-            rule_id (str): The rule id.
+            rule_name (str): The rule name.
             config_condition (str): The condition with the parse error.
             parse_error (ParseException): The pyparsing.ParseException.
         """
         super(ConditionParseError, self).__init__(
             self.CUSTOM_ERROR_MSG.format(
-                rule_id, config_condition, parse_error))
+                rule_name, config_condition, parse_error))

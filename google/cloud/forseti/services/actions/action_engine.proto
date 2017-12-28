@@ -66,7 +66,7 @@ message RuleResult {
   string current_state = 3;
   // The expected state of the resource in json string format.
   string expected_state = 4;
-  // The timestamp that for when the resource was updated that triggered this
+  // The timestamp for when the resource was updated that triggered this
   // check.
   google.protobuf.Timestamp timestamp = 5;
   // A human readable string output of what this result says.

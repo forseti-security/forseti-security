@@ -12,12 +12,12 @@
     "rule": {
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "name": { "type": "string" },
         "type": { "type": "string" },
         "description": { "type": "string" },
         "configuration": { "$ref": "#/definitions/configuration" }
       },
-      "required": ["id", "type", "description"]
+      "required": ["name", "type", "description"]
     },
     "configuration": {
       "type": "object",

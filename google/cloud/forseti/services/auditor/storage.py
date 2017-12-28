@@ -14,23 +14,27 @@
 
 """Auditor storage implementation."""
 
-import datetime
 import enum
 import json
 
+from datetime import datetime
+
 from sqlalchemy import Column
-from sqlalchemy import Enum
 from sqlalchemy import DateTime
+from sqlalchemy import Enum
+from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy import Integer
 from sqlalchemy import JSON
+from sqlalchemy import MediumText
 from sqlalchemy import Text
 from sqlalchemy import and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
-# TODO: should this be moved to a commmon location?
-from google.cloud.forseti.services.inventory.base.storage import \
-    Storage as BaseStorage
+from google.cloud.forseti.services.inventory.storage (
+    import BufferedDbWriter)
+from google.cloud.forseti.services.inventory.base.storage (
+    import Storage as BaseStorage)
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -56,22 +60,12 @@ class Audit(BASE):
     __tablename__ = 'audit'
 
     id = Column(Integer(), primary_key=True, autoincrement=True)
-    start_time = Column(DateTime())
-    end_time = Column(DateTime())
+    start_time = Column(DateTime(), default=datetime.utcnow)
+    end_time = Column(DateTime(), onupdate=datetime.utcnow)
     status = Column(Enum(AuditStatus))
     model = Column(JSON())
     messages = Column(Text())
     schema_version = Column(Integer())
-
-    @classmethod
-    def _utcnow(cls):
-        """Return current time in utc.
-
-        Returns:
-            object: UTC now time object.
-        """
-
-        return datetime.datetime.utcnow()
 
     def __repr__(self):
         """Object string representation.
@@ -95,7 +89,6 @@ class Audit(BASE):
         """
 
         return Audit(
-            start_time=cls._utcnow(),
             status=AuditStatus.RUNNING,
             schema_version=CURRENT_SCHEMA,
             model=None)
@@ -107,309 +100,110 @@ class Audit(BASE):
             status (str): Final status.
         """
 
-        self.complete_time = Audit._utcnow()
         self.status = status
 
-    def add_warning(self, session, warning):
-        """Add a warning to the inventory.
+    def add_warning(self, session, messages):
+        """Add a warning to the audit.
 
         Args:
             session (object): session object to work on.
-            warning (str): Warning message
+            messages (str): Warning message
         """
 
-        warning_message = '{}\n'.format(warning)
-        if not self.warnings:
-            self.warnings = warning_message
+        warning_message = '{}\n'.format(messages)
+        if not self.messages:
+            self.messages = warning_message
         else:
-            self.warnings += warning_message
+            self.messages += warning_message
         session.add(self)
         session.flush()
 
-    def set_error(self, session, message):
+    def set_error(self, session, messages):
         """Indicate a broken import.
 
         Args:
             session (object): session object to work on.
-            message (str): Error message to set.
+            message (str): Messages to set.
         """
 
-        self.errors = message
+        self.messages = messages
         session.add(self)
         session.flush()
 
 
-class Inventory(BASE):
-    """Resource inventory table."""
+class Rule(BASE):
+    """Represent a Rule."""
 
-    __tablename__ = 'gcp_inventory'
+    __tablename__ = 'rule'
 
-    # Order is used to resemble the order of insert for a given inventory
-    order = Column(Integer, primary_key=True, autoincrement=True)
-    index = Column(Integer)
-    type_class = Column(Text)
-    key = Column(Text)
-    type = Column(Text)
-    data = Column(Text)
-    parent_key = Column(Text)
-    parent_type = Column(Text)
-    other = Column(Text)
-    error = Column(Text)
-
-    @classmethod
-    def from_resource(cls, index, resource):
-        """Creates a database row object from a crawled resource.
-
-        Args:
-            index (object): Audit to associate.
-            resource (object): Crawled resource.
-
-        Returns:
-            object: database row object.
-        """
-
-        parent = resource.parent()
-        iam_policy = resource.getIamPolicy()
-        gcs_policy = resource.getGCSPolicy()
-        dataset_policy = resource.getDatasetPolicy()
-        billing_info = resource.getBillingInfo()
-        enabled_apis = resource.getEnabledAPIs()
-
-        rows = []
-        rows.append(
-            Inventory(
-                index=index.id,
-                type_class=InventoryTypeClass.RESOURCE,
-                key=resource.key(),
-                type=resource.type(),
-                data=json.dumps(resource.data()),
-                parent_key=None if not parent else parent.key(),
-                parent_type=None if not parent else parent.type(),
-                other=None,
-                error=resource.get_warning()))
-
-        if iam_policy:
-            rows.append(
-                Inventory(
-                    index=index.id,
-                    type_class=InventoryTypeClass.IAM_POLICY,
-                    key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(iam_policy),
-                    parent_key=resource.key(),
-                    parent_type=resource.type(),
-                    other=None,
-                    error=None))
-
-        if gcs_policy:
-            rows.append(
-                Inventory(
-                    index=index.id,
-                    type_class=InventoryTypeClass.GCS_POLICY,
-                    key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(gcs_policy),
-                    parent_key=resource.key(),
-                    parent_type=resource.type(),
-                    other=None,
-                    error=None))
-
-        if dataset_policy:
-            rows.append(
-                Inventory(
-                    index=index.id,
-                    type_class=InventoryTypeClass.DATASET_POLICY,
-                    key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(dataset_policy),
-                    parent_key=resource.key(),
-                    parent_type=resource.type(),
-                    other=None,
-                    error=None))
-
-        if billing_info:
-            rows.append(
-                Inventory(
-                    index=index.id,
-                    type_class=InventoryTypeClass.BILLING_INFO,
-                    key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(billing_info),
-                    parent_key=resource.key(),
-                    parent_type=resource.type(),
-                    other=None,
-                    error=None))
-
-        if enabled_apis:
-            rows.append(
-                Inventory(
-                    index=index.id,
-                    type_class=InventoryTypeClass.ENABLED_APIS,
-                    key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(enabled_apis),
-                    parent_key=resource.key(),
-                    parent_type=resource.type(),
-                    other=None,
-                    error=None))
-        return rows
-
-    def copy_inplace(self, new_row):
-        """Update a database row object from a resource.
-
-        Args:
-            new_row (object): the Inventory row of the new resource
-
-        """
-
-        self.type_class = new_row.type_class
-        self.key = new_row.key
-        self.type = new_row.type
-        self.data = new_row.data
-        self.parent_key = new_row.parent_key
-        self.parent_type = new_row.parent_type
-        self.other = new_row.other
-        self.error = new_row.error
-
-    def __repr__(self):
-        """String representation of the database row object."""
-
-        return """<{}(index='{}', key='{}', type='{}')>""".format(
-            self.__class__.__name__,
-            self.index,
-            self.key,
-            self.type)
-
-    def get_key(self):
-        """Get the row's resource key.
-
-        Returns:
-            str: resource key.
-        """
-
-        return self.key
-
-    def get_type(self):
-        """Get the row's resource type.
-
-        Returns:
-            str: resource type.
-        """
-
-        return self.type
-
-    def get_type_class(self):
-        """Get the row's resource type class.
-
-        Returns:
-            str: resource type class.
-        """
-
-        return self.type_class
-
-    def get_parent_key(self):
-        """Get the row's parent key.
-
-        Returns:
-            str: parent key.
-        """
-
-        return self.parent_key
-
-    def get_parent_type(self):
-        """Get the row's parent type.
-
-        Returns:
-            str: parent type.
-        """
-
-        return self.parent_type
-
-    def get_data(self):
-        """Get the row's metadata.
-
-        Returns:
-            dict: row's metadata.
-        """
-
-        return json.loads(self.data)
-
-    def get_data_raw(self):
-        """Get the row's data json string.
-
-        Returns:
-            str: row's raw data.
-        """
-
-        return self.data
-
-    def get_other(self):
-        """Get the row's other data.
-
-        Returns:
-            dict: row's other data.
-        """
-
-        return json.loads(self.other)
-
-    def get_error(self):
-        """Get the row's error data.
-
-        Returns:
-            str: row's error data.
-        """
-
-        return self.error
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+    rule_name = Column(Text())
+    rule_hash = Column(Text())
+    properties = Column(JSON())
 
 
-class BufferedDbWriter(object):
-    """Buffered db writing."""
+class AuditRule(BASE):
+    """Represent an AuditRule."""
 
-    def __init__(self, session, max_size=1024):
-        self.session = session
-        self.buffer = []
-        self.max_size = max_size
+    __tablename__ = 'audit_rule'
+    __table_args__ = (ForeignKeyConstraint(['audit_id'], ['audit.id']),
+                      ForeignKeyConstraint(['rule_id'], ['rule.id']))
 
-    def add(self, obj):
-        """Add an object to the buffer to write to db.
+    audit_id = Column(Integer(), nullable=False)
+    rule_id = Column(Integer(), nullable=False)
 
-        Args:
-            obj (object): Object to write to db.
-        """
 
-        self.buffer.append(obj)
-        if self.buffer >= self.max_size:
-            self.flush()
+# TODO: don't know where this should be defined --
+# creating it here for now
+class RuleResultStatus(enum.Enum):
+    """RuleResult statuses."""
 
-    def flush(self):
-        """Flush all pending objects to the database."""
+    UNSPECIFIED = 0;
+    ACTIVE = 1;
+    RESOLVED = 2;
+    IGNORED = 3;
 
-        self.session.add_all(self.buffer)
-        self.session.flush()
-        self.buffer = []
+
+class RuleResult(BASE):
+    """Represent a RuleResult."""
+
+    __tablename__ = 'rule_result'
+    __table_args__ = (ForeignKeyConstraint(['audit_id'], ['audit.id']),
+                      ForeignKeyConstraint(['rule_id'], ['rule.id']))
+
+    audit_id = Column(Integer(), nullable=False)
+    rule_id = Column(Integer(), nullable=False)
+    resource_name = Column(Text(), nullable=False)
+    current_state = Column(JSON())
+    expected_state = Column(JSON())
+    model_handle = Column(Text(), nullable=False)
+    resource_owners = Column(JSON())
+    info = Column(Text())
+    status = Column(Enum(RuleResultStatus))
+    create_time = Column(DateTime(), default=datetime.utcnow)
+    modified_time = Column(DateTime(), onupdate=datetime.utcnow)
+    recommended_actions = Column(MediumText())
 
 
 class DataAccess(object):
-    """Access to inventory for services."""
+    """Access to audit for services."""
 
     @classmethod
-    def delete(cls, session, inventory_id):
-        """Delete an inventory index entry by id.
+    def delete(cls, session, audit_id):
+        """Delete an audit entry by id.
 
         Args:
             session (object): Database session.
-            inventory_id (int): Id specifying which inventory to delete.
+            audit_id (int): Id specifying which audit to delete.
 
         Raises:
             Exception: Reraises any exception.
         """
 
         try:
-            result = cls.get(session, inventory_id)
-            session.query(Inventory).filter(
-                Inventory.index == inventory_id).delete()
+            result = cls.get(session, audit_id)
             session.query(Audit).filter(
-                Audit.id == inventory_id).delete()
+                Audit.id == audit_id).delete()
             session.commit()
             return result
         except Exception:
@@ -418,7 +212,7 @@ class DataAccess(object):
 
     @classmethod
     def list(cls, session):
-        """List all inventory index entries.
+        """List all Audit entries.
 
         Args:
             session (object): Database session
@@ -432,12 +226,12 @@ class DataAccess(object):
             yield row
 
     @classmethod
-    def get(cls, session, inventory_id):
-        """Get an inventory index entry by id.
+    def get(cls, session, audit_id):
+        """Get an audit entry by id.
 
         Args:
             session (object): Database session
-            inventory_id (int): Inventory id
+            audit_id (int): Audit id
 
         Returns:
             Audit: Entry corresponding the id
@@ -445,7 +239,7 @@ class DataAccess(object):
 
         result = (
             session.query(Audit)
-            .filter(Audit.id == inventory_id)
+            .filter(Audit.id == audit_id)
             .one())
         session.expunge(result)
         return result
@@ -494,7 +288,7 @@ class Storage(BaseStorage):
         """
 
         try:
-            index = Audit.create()
+            index = InventoryIndex.create()
             self.session.add(index)
         except Exception:
             self.session.rollback()
@@ -510,10 +304,10 @@ class Storage(BaseStorage):
         """
 
         return (
-            self.session.query(Audit)
-            .filter(Audit.id == existing_id)
-            .filter(Audit.status.in_(
-                [AuditStatus.SUCCESS]))
+            self.session.query(InventoryIndex)
+            .filter(InventoryIndex.id == existing_id)
+            .filter(InventoryIndex.status.in_(
+                [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS]))
             .one())
 
     def _get_resource_rows(self, key):
@@ -580,7 +374,7 @@ class Storage(BaseStorage):
         try:
             self.buffer.flush()
             self.session.rollback()
-            self.index.complete(status=AuditStatus.ERROR)
+            self.index.complete(status=InventoryState.FAILURE)
             self.session.commit()
         finally:
             self.session_completed = True

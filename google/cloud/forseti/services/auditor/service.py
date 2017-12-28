@@ -30,18 +30,18 @@ LOGGER = log_util.get_logger(__name__)
 # pylint: disable=missing-param-doc
 
 
-def audit_pb_from_object(audit_index):
+def audit_pb_from_object(audit):
     """Audit data to proto."""
 
     return auditor_pb2.Audit(
-        id=audit_index.id,
+        id=audit.id,
         start_time=timestamp.Timestamp().FromDateTime(
-            audit_index.start_time),
+            audit.start_time),
         end_time=timestamp.Timestamp().FromDateTime(
-            audit_index.end_time),
-        status=audit_index.status,
-        model=audit_index.model,
-        messages=audit_index.messages)
+            audit.end_time),
+        status=audit.status,
+        model=audit.model,
+        messages=audit.messages)
 
 def ruleresult_pb_from_object(rule_result):
     """RuleResult to proto."""
@@ -103,8 +103,8 @@ class GrpcAuditor(auditor_pb2_grpc.AuditorServicer):
     def List(self, request, _):
       """List the existing audits."""
 
-      for audit_index in self.auditor.List():
-          yield audit_pb_from_object(audit_index)
+      for audit in self.auditor.List():
+          yield audit_pb_from_object(audit)
 
     @autoclose_stream
     def GetResults(self, request, _):
@@ -116,9 +116,9 @@ class GrpcAuditor(auditor_pb2_grpc.AuditorServicer):
     def Delete(self, request, _):
         """Delete an audit."""
 
-        audit_index = self.auditor.Delete(request.id)
+        audit = self.auditor.Delete(request.id)
         return auditor_pb2.DeleteReply(
-            audit=audit_pb_from_object(audit_index))
+            audit=audit_pb_from_object(audit))
 
 
 class GrpcAuditorFactory(object):

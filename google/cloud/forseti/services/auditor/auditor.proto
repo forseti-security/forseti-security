@@ -67,17 +67,6 @@ message Audit {
   int32 schema_version = 7;
 }
 
-message AuditRule {
-  // The audit id.
-  int32 id = 1;
-  // The rule id from the rules file.
-  string rule_id = 2;
-  // The hash of the rule properties.
-  string rule_hash = 3;
-  // The properties of the rule.
-  string properties = 4;
-}
-
 message RunRequest {
 	string config_path = 1;
   string model_handle = 2;
