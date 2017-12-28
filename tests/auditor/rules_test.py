@@ -19,6 +19,7 @@ import unittest
 
 from google.cloud.forseti.auditor import condition_parser
 from google.cloud.forseti.auditor.rules import rule
+from google.cloud.forseti.services.actions import action_engine_pb2
 from google.cloud.forseti.common.gcp_type import project as project_resource
 from tests.auditor.test_data import test_auditor_data
 from tests.unittest_utils import ForsetiTestCase
@@ -42,7 +43,7 @@ class RulesTest(ForsetiTestCase):
             test_auditor_data.FAKE_RULES_CONFIG1['rules'][0])
         mock_cond_parser.eval_filter.return_value = True
         actual_result = test_rule.audit(fake_project)
-        expected_result = rule.RuleResult(
+        expected_result = action_engine_pb2.RuleResult(
             rule_id=test_rule.rule_id,
             result=True,
             current_state=fake_project,

@@ -18,7 +18,7 @@
 rules:
   - type: google.cloud.forseti.auditor.rules.rule.Rule
     description: Test invalid rule
-    id: rules.invalid_rule.1
+    name: rules.invalid_rule.1
     configuration:
       variables:
         - myvar1
@@ -31,7 +31,7 @@ rules:
 
   - type: google.cloud.forseti.auditor.rules.rule.Rule
     description: Test invalid rule
-    id: rules.invalid_rule.1
+    name: rules.invalid_rule.1
     configuration:
       variables:
         - authorized_networks
@@ -48,7 +48,7 @@ rules:
 
   - type: google.cloud.forseti.auditor.rules.rule.Rule
     description: Test invalid rule 2
-    id: rules.invalid_rule.2
+    name: rules.invalid_rule.2
     configuration:
       variables:
         - authorized_networks

@@ -42,7 +42,7 @@ class RulesConfigValidatorTest(ForsetiTestCase):
         config_resources = rule_config.get('resources', {})
 
         actual_unmatched = self.validator._check_unmatched_config_vars(
-            rule['id'], config_vars, config_resources)
+            rule['name'], config_vars, config_resources)
 
         self.assertFalse(actual_unmatched)
 
@@ -54,7 +54,7 @@ class RulesConfigValidatorTest(ForsetiTestCase):
         condition = rule_config.get('condition')
 
         invalid_condition = self.validator._check_invalid_condition(
-            rule['id'], config_vars, condition)
+            rule['name'], config_vars, condition)
 
         self.assertFalse(invalid_condition)
 
@@ -62,8 +62,8 @@ class RulesConfigValidatorTest(ForsetiTestCase):
         """Test validate() works for well formed generic configurations."""
         pass
 
-    @mock.patch('google.cloud.forseti.auditor.rules_config_validator.DuplicateRuleIdError', autospec=True)
-    def test_duplicate_rule_ids_error(self, mock_dup_id_error):
+    @mock.patch('google.cloud.forseti.auditor.rules_config_validator.DuplicateRuleNameError', autospec=True)
+    def test_duplicate_rule_names_error(self, mock_dup_id_error):
         """Test that validate() fails when finding duplicate ids."""
         self.validator._validate_schema = mock.MagicMock(
             return_value=[self.invalid_rules1, []])

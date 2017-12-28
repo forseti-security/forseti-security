@@ -18,7 +18,7 @@
 rules:
   - type: google.cloud.forseti.auditor.rules.rule.Rule
     description: Test valid rule
-    id: rules.valid_rule.1
+    name: rules.valid_rule.1
     configuration:
       variables:
         - myvar1
@@ -30,7 +30,7 @@ rules:
 
   - type: google.cloud.forseti.auditor.rules.rule.Rule
     description: Another test rule
-    id: rules.valid_rule.2
+    name: rules.valid_rule.2
     configuration:
       variables:
         - created_date

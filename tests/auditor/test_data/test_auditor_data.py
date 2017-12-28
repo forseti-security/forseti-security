@@ -31,15 +31,15 @@ VALID_RULES1 = _load_yaml('test_valid_rules1.yaml')
 
 INVALID_RULES1 = _load_yaml('test_invalid_rules1.yaml')
 INVALID_RULES1_DUP_IDS = [
-    rule_id
-    for rule_id, count in collections.Counter(
-        [r['id'] for r in INVALID_RULES1['rules']]).items() if count > 1]
+    rule_name
+    for rule_name, count in collections.Counter(
+        [r['name'] for r in INVALID_RULES1['rules']]).items() if count > 1]
 
 FAKE_RULES_CONFIG1 = {
     'rules': [
         {
             'type': 'google.cloud.forseti.auditor.rules.rule.Rule',
-            'id': 'rules.fake.1',
+            'name': 'rules.fake.1',
             'description': 'Fake rule',
             'configuration': {
                 'variables': [
@@ -56,7 +56,7 @@ FAKE_RULES_CONFIG1 = {
         },
         {
             'type': 'google.cloud.forseti.auditor.rules.rule.Rule',
-            'id': 'rules.fake.2',
+            'name': 'rules.fake.2',
             'description': 'Fake rule 2',
             'configuration': {
                 'variables': [
@@ -78,7 +78,7 @@ FAKE_INVALID_RULES_CONFIG1 = {
     'rules': [
         {
             'type': 'google.cloud.forseti.auditor.rules.rule.NonexistentRule',
-            'id': 'rules.fake.1',
+            'name': 'rules.fake.1',
             'description': 'Fake rule',
             'configuration': {
                 'variables': [
