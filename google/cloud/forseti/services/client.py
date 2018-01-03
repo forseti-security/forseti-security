@@ -483,11 +483,12 @@ class AuditorClient(ForsetiClient):
         return echo == data
 
     @require_model
-    def run(self, config_path):
+    def run(self, config_path=None, model_handle=None):
         """Runs the auditor"""
 
         request = auditor_pb2.RunRequest(
-            config_path=config_path)
+            config_path=config_path,
+            model_handle=model_handle)
         return self.stub.Run(request,
                              metadata=self.metadata())
 

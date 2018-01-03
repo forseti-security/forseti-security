@@ -16,7 +16,7 @@
 
 import google.protobuf.timestamp_pb2 as timestamp
 
-from google.cloud.forseti.auditor import auditor
+from google.cloud.forseti.services.auditor import auditor
 from google.cloud.forseti.services.actions import action_engine_pb2
 from google.cloud.forseti.services.auditor import auditor_pb2
 from google.cloud.forseti.services.auditor import auditor_pb2_grpc
@@ -90,10 +90,13 @@ class GrpcAuditor(auditor_pb2_grpc.AuditorServicer):
     def Run(self, request, context):
         """Run auditor."""
 
-        model_name = self._get_handle(context)
+        if request.model_handle:
+            model_name = request.model_handle
+        else:
+            model_name = self._get_handle(context)
         LOGGER.info('Run auditor service with model: %s', model_name)
-        result = self.auditor.run(request.config_path, model_name,
-                                  self.service_config)
+        config_path = request.config_path
+        result = self.auditor.Run(config_path, model_name)
 
         reply = auditor_pb2.RunReply()
         reply.status = result
@@ -129,7 +132,8 @@ class GrpcAuditorFactory(object):
 
     def create_and_register_service(self, server):
         """Create and register the Forseti Auditor service."""
-        service = GrpcAuditor(auditor_api=auditor,
-                              service_config=self.config)
+        service = GrpcAuditor(
+            auditor_api=auditor.Auditor(self.config),
+            service_config=self.config)
         auditor_pb2_grpc.add_AuditorServicer_to_server(service, server)
         return service

@@ -16,90 +16,98 @@
 
 from google.apputils import app
 
-from google.cloud.forseti import config
 from google.cloud.forseti.auditor import rules_engine as rules_eng
 from google.cloud.forseti.common.gcp_type import resource_util
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.services.auditor import dao
+from google.cloud.forseti.services.auditor import storage
 
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class AuditorRunner(object):
-    """AuditorRunner."""
+class Auditor(object):
+    """Auditor."""
 
-    def __init__(self, config_props=None):
-        self.config = config_props or config.FORSETI_CONFIG.root_config.auditor
+    def __init__(self, config):
+        self.config = config
 
-    def run(self):
-        rules_engine = rules_eng.RulesEngine(self.config.rules_path)
+    def _check_config(self):
+        """Check configuration."""
+
+        # TODO: fix this
+        if not self.config.FORSETI_CONFIG:
+            if not config_path:
+                LOGGER.error('Provide a --config to run Auditor services.')
+                return 1
+            config.FORSETI_CONFIG = config.from_file(config_path)
+
+        log_util.set_logger_level_from_config(
+            config.FORSETI_CONFIG.root_config.auditor.get('loglevel'))
+
+    def Run(self, config_path, model_name):
+        """Run the auditor.
+
+        Args:
+            config_path (str): Path to the config.
+            model_name (str): The name of the model.
+        """
+
+        try:
+            config_file = file_loader.read_and_parse_file(config_path)
+        except IOError:
+            LOGGER.error('Unable to open Forseti Security config file. '
+                         'Please check your path and filename and try again.')
+
+        rules_path = config_file.get('auditor').get('rules_path')
+
+        LOGGER.info('Rules path: %s' % rules_path)
+        rules_engine = rules_eng.RulesEngine(rules_path)
         rules_engine.setup()
+
+        # Get the resource types to audit, as defined in the
+        # rule definitions.
         resource_types = [
             res_conf['type'] 
             for r in rules_engine.rules
             for res_conf in r.resource_config]
 
-        LOGGER.info('Resource types found: %s', resource_types)
+        LOGGER.info('Resource types found in rules.yaml: %s', resource_types)
 
-        # For each resource type, load all the resources from the database.
-        # TODO: Create a mapping between the gcp_type and the dao
-        # and call each dao's get_all() method.
-        all_results = []
-        for resource_type in resource_types:
-            loaded_resources = None
-            try:
-                loaded_resources = resource_util.load_all(resource_type)
-            except Exception as err:
-                LOGGER.warn(
-                    'Unable to load resources for %s due to %s',
-                    resource_type, err)
+        # For each resource type, load resources from storage and
+        # run the rules associated with that resource type.
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
 
-            if not loaded_resources:
-                continue
+        with scoped_session as session:
+            all_results = []
+            for resource_type in resource_types:
+                loaded_resources = data_access.list_resources_by_prefix(
+                    session, type_prefix=resource_type)
 
-            for resource in loaded_resources:
-                all_results.extend([
-                    result
-                    for result in rules_engine.evaluate_rules(resource)
-                    if result.result])
+                for resource in loaded_resources:
+                    all_results.extend([
+                        result
+                        for result in rules_engine.evaluate_rules(resource)
+                        if result.result])
 
-            LOGGER.info('%s rules evaluated to True', len(all_results))
-        return all_results
+                LOGGER.info('%s rules evaluated to True', len(all_results))
 
+            # TODO: store all_results in results table instead of in a list
+            print all_results
 
-def Run(config_path, model_name):
-    if not config.FORSETI_CONFIG:
-        if not config_path:
-            LOGGER.error('Provide a --config to run the Auditor.')
-            return 1
-        config.FORSETI_CONFIG = config.from_file(config_path)
+        return 0
 
-    log_util.set_logger_level_from_config(
-        config.FORSETI_CONFIG.root_config.auditor.get('loglevel'))
+    def List(self):
+        """List the Audits."""
 
-    runner = AuditorRunner()
-    runner.run()
-
-    return 0
-
-def List(config_path, model_name):
-    if not config.FORSETI_CONFIG:
-        if not config_path:
-            LOGGER.error('Provide a --forseti-config file to run the Auditor.')
-            return 1
-        config.FORSETI_CONFIG = config.from_file(config_path)
-
-    log_util.set_logger_level_from_config(
-        config.FORSETI_CONFIG.root_config.auditor.get('loglevel'))
-
-    audits = dao.list_audits()
-
-    return 0
+        with self.config.scoped_session() as session:
+            for item in DataAccess.list(session):
+                yield item
 
 
 def main(_):
-    return run()
+    return Auditor().run()
 
 
 if __name__ == '__main__':

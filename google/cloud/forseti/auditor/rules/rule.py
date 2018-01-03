@@ -100,7 +100,7 @@ class Rule(object):
         """Audit the rule definition + resource.
 
         Args:
-            resource (GcpResource): The GcpResource to audit with current Rule.
+            resource (object): The GCP Resource to audit with current Rule.
 
         Returns:
             RuleResult: The result of the audit, or None if Rule does not
@@ -150,3 +150,20 @@ class Rule(object):
             str: The type name, comprising module and class name.
         """
         return '%s.%s' % (self.__module__, self.__class__.__name__)
+
+
+class Error(Exception):
+    """Base Error class."""
+
+
+class InvalidRuleTypeError(Error):
+    """InvalidRuleTypeError."""
+
+    def __init__(self, rule_type):
+        """Init.
+
+        Args:
+            rule_type (str): The rule type.
+        """
+        super(InvalidRuleTypeError, self).__init__(
+            'Invalid rule type: {}'.format(rule_type))

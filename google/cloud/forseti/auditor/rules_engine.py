@@ -45,7 +45,7 @@ class RulesEngine(object):
                 self.rules.append(generic_rule.Rule.create_rule(rule_def))
             except generic_rule.InvalidRuleTypeError as err:
                 LOGGER.error('Error trying to create rule %s due to %s',
-                             rule_def.get('id'), err)
+                             rule_def.get('name'), err)
 
     def validate_config(self):
         """Validate the rules config.
@@ -60,7 +60,7 @@ class RulesEngine(object):
         """Evaluate rules for this resource.
 
         Args:
-            resource (GcpResource): A GcpResource.
+            resource (object): A GCP Resource.
 
         Returns:
             list: A list of RuleResults.

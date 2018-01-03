@@ -488,8 +488,12 @@ def define_auditor_parser(parent):
         help='Run the auditor')
 
     run_auditor_parser.add_argument(
-        '--config_file',
+        '--config',
         help='Auditor config file')
+
+    run_auditor_parser.add_argument(
+        '--model',
+        help='Which model handle to run audit on')
 
     getresults_audit_parser = action_subparser.add_parser(
         'get-results',
@@ -505,11 +509,6 @@ def define_auditor_parser(parent):
 
     delete_audit_parser.add_argument(
         '--audit-id',
-        help='The id of the audit to delete')
-
-    delete_audit_parser.add_argument(
-        '--results-only',
-        action='store_true',
         help='The id of the audit to delete')
 
 
@@ -964,7 +963,9 @@ def run_auditor(client, config, output, _):
 
     def do_run():
         """Run auditor."""
-        result = client.run(config.config_file)
+        result = client.run(
+            config_path=config.config,
+            model_handle=config.model)
         output.write(result)
 
     def do_get_results():
@@ -978,7 +979,7 @@ def run_auditor(client, config, output, _):
         output.write(result)
 
     actions = {
-        'list', do_list,
+        'list': do_list,
         'run': do_run,
         'get-results': do_get_results,
         'delete': do_delete

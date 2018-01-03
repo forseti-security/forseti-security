@@ -25,6 +25,7 @@ import time
 from concurrent import futures
 import grpc
 
+from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.dao import ModelManager, create_engine
@@ -35,6 +36,9 @@ from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.inventory.storage import Storage
+
+
+LOGGER = log_util.get_logger(__name__)
 
 
 STATIC_SERVICE_MAPPING = {
@@ -316,6 +320,9 @@ def serve(endpoint, services,
 
     server.add_insecure_port(endpoint)
     server.start()
+
+    LOGGER.info('Forseti server started successfully.')
+
     while True:
         try:
             time.sleep(1)

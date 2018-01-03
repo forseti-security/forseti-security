@@ -25,16 +25,14 @@ from sqlalchemy import Enum
 from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy import Integer
 from sqlalchemy import JSON
-from sqlalchemy import MediumText
 from sqlalchemy import Text
 from sqlalchemy import and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
-from google.cloud.forseti.services.inventory.storage (
-    import BufferedDbWriter)
-from google.cloud.forseti.services.inventory.base.storage (
-    import Storage as BaseStorage)
+from google.cloud.forseti.services.inventory.storage import BufferedDbWriter
+from google.cloud.forseti.services.inventory.base.storage \
+    import Storage as BaseStorage
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -149,6 +147,7 @@ class AuditRule(BASE):
     __table_args__ = (ForeignKeyConstraint(['audit_id'], ['audit.id']),
                       ForeignKeyConstraint(['rule_id'], ['rule.id']))
 
+    id = Column(Integer(), primary_key=True, autoincrement=True)
     audit_id = Column(Integer(), nullable=False)
     rule_id = Column(Integer(), nullable=False)
 
@@ -171,6 +170,7 @@ class RuleResult(BASE):
     __table_args__ = (ForeignKeyConstraint(['audit_id'], ['audit.id']),
                       ForeignKeyConstraint(['rule_id'], ['rule.id']))
 
+    id = Column(Integer(), primary_key=True, autoincrement=True)
     audit_id = Column(Integer(), nullable=False)
     rule_id = Column(Integer(), nullable=False)
     resource_name = Column(Text(), nullable=False)
@@ -182,7 +182,7 @@ class RuleResult(BASE):
     status = Column(Enum(RuleResultStatus))
     create_time = Column(DateTime(), default=datetime.utcnow)
     modified_time = Column(DateTime(), onupdate=datetime.utcnow)
-    recommended_actions = Column(MediumText())
+    recommended_actions = Column(Text())
 
 
 class DataAccess(object):
