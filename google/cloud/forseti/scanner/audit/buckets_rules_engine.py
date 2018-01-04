@@ -139,7 +139,7 @@ class BucketsRuleBook(bre.BaseRuleBook):
             role = rule_def.get('role')
 
             if ((bucket is None) or (entity is None) or (email is None) or
-                (domain is None) or (role is None)):
+                    (domain is None) or (role is None)):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_def.get('name')))
 
