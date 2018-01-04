@@ -77,7 +77,7 @@ class CloudSqlAccessControl(object):
         instance = json.loads(instance_data)
         return CloudSqlAccessControl.from_dict(
             project_id, instance['name'],
-            instance.get('ipConfiguration', {}))
+            instance['settings'].get('ipConfiguration', {}))
 
     def __hash__(self):
         """Return hash of properties.
