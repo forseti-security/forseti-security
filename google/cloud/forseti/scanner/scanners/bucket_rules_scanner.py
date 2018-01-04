@@ -14,11 +14,11 @@
 
 """Scanner for the Bucket acls rules engine."""
 
-import itertools
+import json
 
+from google.cloud.forseti.common.gcp_type.bucket_access_controls import (
+    BucketAccessControls)
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.data_access import bucket_dao
-from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.scanner.audit import buckets_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
@@ -26,8 +26,10 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 LOGGER = log_util.get_logger(__name__)
 
 
+# pylint: disable=bad-indentation
 class BucketsAclScanner(base_scanner.BaseScanner):
-    """Pipeline to Bucket acls data from DAO"""
+    """Pipeline to Bucket acls data from DAO."""
+
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
         """Initialization.
@@ -87,72 +89,47 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
-    def _find_violations(self, bucket_data):
+    def _find_violations(self, bucket_acls):
         """Find violations in the policies.
 
         Args:
-            bucket_data (list): Buckets to find violations in
+            bucket_acls (list): Bucket ACLs to search for violations in.
 
         Returns:
             list: All violations.
         """
-        bucket_data = itertools.chain(*bucket_data)
         all_violations = []
         LOGGER.info('Finding bucket acl violations...')
 
-        for (bucket, bucket_acl) in bucket_data:
-            LOGGER.debug('%s => %s', bucket, bucket_acl)
+        for bucket_acl in bucket_acls:
             violations = self.rules_engine.find_policy_violations(
                 bucket_acl)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
 
-    @staticmethod
-    def _get_resource_count(project_policies, buckets_acls):
-        """Get resource count for org and project policies.
-
-        Args:
-            project_policies (list): project policies from inventory.
-            buckets_acls (list): buclet acls from inventory.
-        Returns:
-            dict: Resource count map
-        """
-        resource_counts = {
-            ResourceType.PROJECT: len(project_policies),
-            ResourceType.BUCKETS_ACL: len(buckets_acls),
-        }
-
-        return resource_counts
-
-    def _get_bucket_acls(self):
-        """Get bucket acls from data source.
-
-        Returns:
-            list: List of bucket acls.
-        """
-        buckets_acls = {}
-        buckets_acls = (bucket_dao
-                        .BucketDao(self.global_configs)
-                        .get_buckets_acls('buckets_acl',
-                                          self.snapshot_timestamp))
-        return buckets_acls
-
     def _retrieve(self):
-        """Runs the data collection.
+        """Retrieves the data for scanner.
 
         Returns:
-            list: Bucket ACL data.
+            list: BigQuery ACL data
         """
-        buckets_acls_data = []
-        project_policies = {}
-        buckets_acls = self._get_bucket_acls()
-        buckets_acls_data.append(buckets_acls.iteritems())
-        buckets_acls_data.append(project_policies.iteritems())
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            bucket_acls = []
 
-        return buckets_acls_data
+            for bucket in data_access.scanner_iter(session, 'bucket'):
+                project_id = bucket.parent.name
+                bucket_data = json.loads(bucket.data)
+                bucket_acls.extend(
+                    BucketAccessControls.from_list(
+                        project_id=project_id,
+                        acls=bucket_data.get('acl', [])))
+
+        return bucket_acls
 
     def run(self):
-        buckets_acls_data = self._retrieve()
-        all_violations = self._find_violations(buckets_acls_data)
+        buckets_acls = self._retrieve()
+        all_violations = self._find_violations(buckets_acls)
         self._output_results(all_violations)

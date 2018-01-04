@@ -14,22 +14,21 @@
 
 """Tests the BucketsRulesEngine."""
 
-import copy
-import itertools
-import mock
+import json
 import unittest
+import mock
+from tests.unittest_utils import ForsetiTestCase
+from tests.unittest_utils import get_datafile_path
 import yaml
 
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import bucket_access_controls
 from google.cloud.forseti.common.util import file_loader
-from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import buckets_rules_engine as bre
-from google.cloud.forseti.scanner.audit import rules as scanner_rules
-from tests.unittest_utils import get_datafile_path
+from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 
 
+# pylint: disable=bad-indentation
 # TODO: Define more tests
 class BucketsRulesEngineTest(ForsetiTestCase):
     """Tests for the BucketsRulesEngine."""
@@ -43,7 +42,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__,
-            'buckets_test_rules_1.yaml')
+                                             'buckets_test_rules_1.yaml')
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
@@ -82,7 +81,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
     def test_build_rule_book_no_resource_type_fails(self):
         """Test that a rule without a resource cannot be created."""
         rules_local_path = get_datafile_path(__file__,
-            'buckets_test_rules_2.yaml')
+                                             'buckets_test_rules_2.yaml')
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
@@ -90,43 +89,52 @@ class BucketsRulesEngineTest(ForsetiTestCase):
     def test_find_violation_for_publicly_exposed_acls(self):
 
         rules_local_path = get_datafile_path(__file__,
-            'buckets_test_rules_1.yaml')
+                                             'buckets_test_rules_1.yaml')
         rules_engine = bre.BucketsRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         rules_map = rules_engine.rule_book.resource_rules_map
-        allUsers_rule = rules_map[0]
-        allAuthenticatedUsers_rule = rules_map[1]
+        all_users_rule = rules_map[0]
+        all_authenticated_users_rule = rules_map[1]
 
         # Everything is allowed.
-        acl = bucket_access_controls.BucketAccessControls(
-            '*', '*', '*', '*', '*', '111111')
-        violation = allUsers_rule.find_policy_violations(acl)
+        acl_dict = json.loads(
+            BUCKET_ACL_TEMPLATE.format(entity='project-owners-123456'))
+        acl = bucket_access_controls.BucketAccessControls.from_dict(
+            'test-project', acl_dict)
+        violation = all_users_rule.find_policy_violations(acl)
         self.assertEquals(0, len(list(violation)))
 
         # Exposed to everyone in the world.
-        acl = bucket_access_controls.BucketAccessControls(
-            '*', 'allUsers', '*', '*', '*', '111111')
-        violation = allUsers_rule.find_policy_violations(acl)
-        self.assertEquals(1, len(list(violation)))
-
-        # Test case sensitivity.
-        acl = bucket_access_controls.BucketAccessControls(
-            '*', 'AllUsers', '*', '*', '*', '111111')
-        violation = allUsers_rule.find_policy_violations(acl)
+        acl_dict = json.loads(
+            BUCKET_ACL_TEMPLATE.format(entity='allUsers'))
+        acl = bucket_access_controls.BucketAccessControls.from_dict(
+            'test-project', acl_dict)
+        violation = all_users_rule.find_policy_violations(acl)
         self.assertEquals(1, len(list(violation)))
 
         # Exposed to all google-authenticated users in the world.
-        acl = bucket_access_controls.BucketAccessControls(
-            '*', 'allAuthenticatedUsers', '*', '*', '*', '111111')
-        violation = allAuthenticatedUsers_rule.find_policy_violations(acl)
+        acl_dict = json.loads(
+            BUCKET_ACL_TEMPLATE.format(entity='allAuthenticatedUsers'))
+        acl = bucket_access_controls.BucketAccessControls.from_dict(
+            'test-project', acl_dict)
+        violation = all_authenticated_users_rule.find_policy_violations(acl)
         self.assertEquals(1, len(list(violation)))
 
-        # Test case sensitivity.
-        acl = bucket_access_controls.BucketAccessControls(
-            '*', 'AllAuthenticatedUsers', '*', '*', '*', '111111')
-        violation = allAuthenticatedUsers_rule.find_policy_violations(acl)
-        self.assertEquals(1, len(list(violation)))
-
+BUCKET_ACL_TEMPLATE = """
+{{
+ "kind": "storage#bucketAccessControl",
+ "id": "test-bucket/{entity}",
+ "selfLink": "https://www.googleapis.com/storage/v1/b/test-bucket/acl/{entity}",
+ "bucket": "test-bucket",
+ "entity": "{entity}",
+ "role": "OWNER",
+ "projectTeam": {{
+  "projectNumber": "123456",
+  "team": "owners"
+ }},
+ "etag": "CAE="
+}}
+"""
 
 if __name__ == '__main__':
     unittest.main()
