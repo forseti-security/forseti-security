@@ -52,11 +52,13 @@ class CloudSqlAccessControl(object):
         Returns:
             CloudSqlAccessControl: A new CloudSqlAccessControl object.
         """
+        networks = [network['value']
+                    for network in acl.get('authorizedNetworks', [])]
         return cls(
             project_id=project_id,
             instance_name=instance_name,
             ipv4_enabled=acl.get('ipv4Enabled', False),
-            authorized_networks=acl.get('authorizedNetworks', []),
+            authorized_networks=networks,
             require_ssl=acl.get('requireSsl', False),
             raw_json=json.dumps(acl)
         )
