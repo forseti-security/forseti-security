@@ -132,7 +132,7 @@ scanner:
         - name: iap
           enabled: false
         - name: instance_network_interface
-          enabled: false
+          enabled: true
 
 ##############################################################################
 

@@ -15,9 +15,11 @@
 """Scanner for the Networks Enforcer acls rules engine."""
 
 # pylint: disable=line-too-long
-from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.data_access import instance_dao
+import json
+
 from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_type.instance import InstanceNetworkInterface
+from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.audit import instance_network_interface_rules_engine
@@ -89,32 +91,6 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
-    # pylint: disable=invalid-name
-    def get_instance_networks_interfaces(self):
-        """Get network info from a particular snapshot.
-
-           Returns:
-               list: A list of networks from a particular project
-
-           Raises:
-               MySQLError if a MySQL error occurs.
-        """
-        instances = instance_dao.InstanceDao(self.global_configs).get_instances(
-            self.snapshot_timestamp)
-        return [instance.create_network_interfaces() for instance in instances]
-
-    @staticmethod
-    def parse_instance_network_instance(instance_object):
-        """Create a list of network interface obj.
-
-        Args:
-            instance_object (instance_object): an instance object
-
-        Returns:
-            list: a list of network interface objects
-        """
-        return instance_object.create_network_interfaces()
-
     def _get_project_policies(self):
         """Get projects from data source.
 
@@ -150,12 +126,36 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         return resource_counts
 
     def _retrieve(self):
-        """Run the data collection.
+        """Retrieve the network interfaces for vm instances.
 
         Return:
-           list: instance_networks_interfaces
+           list: A list that contains nested lists of per-instance
+               InstanceNetworksInterface objects.
         """
-        return self.get_instance_networks_interfaces()
+
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            network_interfaces = []
+
+            for instance in data_access.scanner_iter(session, "instance"):
+                # Not casting to Instance type, which also would require
+                # changes that would impact the IAP scanner.
+                instance_data = json.loads(instance.data)
+
+                instance_network_interfaces = []
+                for network_interface in instance_data.get(
+                        'networkInterfaces', []):
+                    instance_network_interfaces.append(
+                        InstanceNetworkInterface(**network_interface))
+
+                network_interfaces.append(instance_network_interfaces)
+
+        if not network_interfaces:
+            LOGGER.warn('No VM network interfaces found. Exiting.')
+            return None, 0
+
+        return network_interfaces
 
     def _find_violations(self, enforced_networks_data):
         """Find violations in the policies.
@@ -178,8 +178,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         return all_violations
 
     def run(self):
-        """Runs the data collection."""
-        instance_network_interface_data = self._retrieve()
-        all_violations = (
-            self._find_violations(instance_network_interface_data))
+        """Runs the instance network interface scanner."""
+        network_interfaces = self._retrieve()
+        all_violations = self._find_violations(network_interfaces)
         self._output_results(all_violations)
