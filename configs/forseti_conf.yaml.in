@@ -124,7 +124,7 @@ scanner:
         - name: bigquery
           enabled: true
         - name: bucket_acl
-          enabled: false
+          enabled: true
         - name: cloudsql_acl
           enabled: false
         - name: firewall_rule
