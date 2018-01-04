@@ -116,7 +116,7 @@ scanner:
 
     scanners:
         - name: bigquery
-          enabled: false
+          enabled: true
         - name: bucket_acl
           enabled: false
         - name: cloudsql_acl
@@ -126,7 +126,7 @@ scanner:
         - name: forwarding_rule
           enabled: false
         - name: group
-          enabled: false
+          enabled: true
         - name: iam_policy
           enabled: false
         - name: iap

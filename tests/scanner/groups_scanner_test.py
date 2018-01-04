@@ -57,7 +57,7 @@ class GroupsScannerTest(ForsetiTestCase):
         Args:
             starting_node: The starting node to render the ascii.
 
-        Returns:rm 
+        Returns:
             attr: String of the attribute to render.
         """
         return anytree.RenderTree(
