@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for CloudSQL acls"""
+"""Rules engine for CloudSQL acls."""
 from collections import namedtuple
 import itertools
+import json
 import re
 
-# pylint: disable=line-too-long
-from google.cloud.forseti.common.gcp_type import cloudsql_access_controls as csql_acls
-# pylint: enable=line-too-long
+from google.cloud.forseti.common.gcp_type.cloudsql_access_controls import (
+    CloudSqlAccessControl)
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.common.util.regex_util import escape_and_globify
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
@@ -30,7 +30,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class CloudSqlRulesEngine(bre.BaseRulesEngine):
-    """Rules engine for CloudSQL acls"""
+    """Rules engine for CloudSQL acls."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -73,9 +73,9 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         resource_rules = self.rule_book.get_resource_rules()
 
         for rule in resource_rules:
-            violations = itertools.chain(violations,
-                                         rule.\
-                                         find_policy_violations(cloudsql_acls))
+            violations = itertools.chain(
+                violations,
+                rule.find_policy_violations(cloudsql_acls))
         return violations
 
     def add_rules(self, rules):
@@ -106,7 +106,7 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
 
     def add_rules(self, rule_defs):
-        """Add rules to the rule book
+        """Add rules to the rule book.
 
         Args:
             rule_defs (dict): rule definitions dictionary
@@ -134,17 +134,20 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
 
             instance_name = rule_def.get('instance_name')
             authorized_networks = rule_def.get('authorized_networks')
-            ssl_enabled = rule_def.get('ssl_enabled')
+            require_ssl = rule_def.get('ssl_enabled', '').lower() == 'true'
 
-            if (instance_name is None) or (authorized_networks is None) or\
-             (ssl_enabled is None):
+            if instance_name is None or authorized_networks is None:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_def.get('name')))
 
-            rule_def_resource = csql_acls.CloudSqlAccessControl(
-                escape_and_globify(instance_name),
-                escape_and_globify(authorized_networks),
-                ssl_enabled)
+            rule_def_resource = CloudSqlAccessControl(
+                project_id='',
+                instance_name=escape_and_globify(instance_name),
+                ipv4_enabled=True,
+                authorized_networks=escape_and_globify(authorized_networks),
+                require_ssl=require_ssl,
+                raw_json=json.dumps(rule_def)
+            )
 
             rule = Rule(rule_name=rule_def.get('name'),
                         rule_index=rule_index,
@@ -171,6 +174,7 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
 
 class Rule(object):
     """Rule properties from the rule definition file.
+
        Also finds violations.
     """
 
@@ -196,31 +200,33 @@ class Rule(object):
         Yields:
             namedtuple: Returns RuleViolation named tuple
         """
-        filter_list = []
+        if not cloudsql_acl.ipv4_enabled:
+            return
+
         is_instance_name_violated = True
         is_authorized_networks_violated = True
-        is_ssl_enabled_violated = True
+        is_require_ssl_violated = True
 
         is_instance_name_violated = re.match(self.rules.instance_name,
                                              cloudsql_acl.instance_name)
 
         authorized_networks_regex = re.compile(self.rules.authorized_networks)
-        filter_list = [
-            net for net in cloudsql_acl.authorized_networks if\
-            authorized_networks_regex.match(net)
-        ]
+        is_authorized_networks_violated = any(
+            net for net in cloudsql_acl.authorized_networks
+            if authorized_networks_regex.match(net))
 
-        is_authorized_networks_violated = bool(filter_list)
-
-        is_ssl_enabled_violated = (self.rules.ssl_enabled ==\
-                                   cloudsql_acl.ssl_enabled)
+        if self.rules.require_ssl is None:
+            is_require_ssl_violated = None
+        else:
+            is_require_ssl_violated = (
+                self.rules.require_ssl == cloudsql_acl.require_ssl)
 
         should_raise_violation = (
             (is_instance_name_violated is not None and
              is_instance_name_violated) and
             (is_authorized_networks_violated is not None and
              is_authorized_networks_violated) and
-            (is_ssl_enabled_violated is not None and is_ssl_enabled_violated))
+            (is_require_ssl_violated is not None and is_require_ssl_violated))
 
         if should_raise_violation:
             yield self.RuleViolation(
@@ -231,7 +237,7 @@ class Rule(object):
                 violation_type='CLOUD_SQL_VIOLATION',
                 instance_name=cloudsql_acl.instance_name,
                 authorized_networks=cloudsql_acl.authorized_networks,
-                ssl_enabled=cloudsql_acl.ssl_enabled)
+                require_ssl=cloudsql_acl.require_ssl)
 
     # Rule violation.
     # resource_type: string
@@ -246,4 +252,4 @@ class Rule(object):
                                ['resource_type', 'resource_id', 'rule_name',
                                 'rule_index', 'violation_type',
                                 'instance_name', 'authorized_networks',
-                                'ssl_enabled'])
+                                'require_ssl'])
