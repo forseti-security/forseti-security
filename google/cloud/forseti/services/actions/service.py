@@ -19,10 +19,12 @@ from google.cloud.forseti.services.actions import action_engine_pb2_grpc
 from google.cloud.forseti.services.actions import action_engine
 
 
+# pylint: disable=no-member
 ACTION_TYPE_MAPPING = {
     'SampleAction': action_engine_pb2.Action.SampleAction,
     'BaseAction': action_engine_pb2.Action.BaseAction,
 }
+# pylint: enable=no-member
 
 
 def action_pb_from_object(action):
@@ -98,16 +100,17 @@ class GrpcActionEngine(action_engine_pb2_grpc.ActionEngineServicer):
 
         return action_engine_pb2.PingReply(data=request.data)
 
-    def List(self, _0, _1):
+    def List(self, request, _):
         """Lists configured actions.
 
         Args:
-            _0 (object): Unused.
-            _1 (object): Unused.
+            request (object): Unused.
+            _ (object): Unused.
 
         Returns:
             object: Each action object.
         """
+        del request
         return action_engine_pb2.ListResponse(actions=[
             action_pb_from_object(a) for a in self.action_engine.actions])
 
