@@ -18,9 +18,8 @@ import itertools
 import json
 import re
 
-# pylint: disable=line-too-long
-from google.cloud.forseti.common.gcp_type import bucket_access_controls as bkt_acls
-# pylint: enable=line-too-long
+from google.cloud.forseti.common.gcp_type.bucket_access_controls import (
+    BucketAccessControls)
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.common.util.regex_util import escape_and_globify
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
@@ -144,7 +143,7 @@ class BucketsRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_def.get('name')))
 
-            rule_def_resource = bkt_acls.BucketAccessControls(
+            rule_def_resource = BucketAccessControls(
                 project_id='',
                 bucket=escape_and_globify(bucket),
                 entity=escape_and_globify(entity),

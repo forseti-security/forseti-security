@@ -28,7 +28,6 @@ from google.cloud.forseti.scanner.audit import buckets_rules_engine as bre
 from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 
 
-# pylint: disable=bad-indentation
 # TODO: Define more tests
 class BucketsRulesEngineTest(ForsetiTestCase):
     """Tests for the BucketsRulesEngine."""

@@ -26,7 +26,6 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=bad-indentation
 class BucketsAclScanner(base_scanner.BaseScanner):
     """Pipeline to Bucket acls data from DAO."""
 
