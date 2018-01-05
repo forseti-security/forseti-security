@@ -164,5 +164,6 @@ class ForwardingRuleScannerTest(ForsetiTestCase):
         violations = scanner._find_violations(gcp_forwarding_rules_resource_objs)
         self.assertEqual(4, len(violations))
 
+
 if __name__ == '__main__':
     unittest.main()

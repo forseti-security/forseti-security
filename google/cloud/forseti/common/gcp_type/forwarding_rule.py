@@ -21,33 +21,57 @@ import json
 
 from google.cloud.forseti.common.util import parser
 
+
+# pylint: disable=too-many-arguments
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-locals
 class ForwardingRule(object):
     """Represents ForwardRule resource."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, project_id, resource_id, creation_timestamp, name,
+                 description, region, ip_address, ip_protocol, port_range,
+                 ports, target, self_link, load_balancing_scheme,
+                 subnetwork, network, backend_service, raw_json):
         """Forwarding rule resource.
 
         Args:
-            **kwargs (dict): The object's attributes.
+            project_id (str): The project containing the forwarding rule.
+            resource_id (str): The id of the forwarding rule.
+            creation_timestamp (str): Timestampe when the forwarding rule was
+                created.
+            name (str): The name of the forwarding rule.
+            description (str): Description of the forwarding rule.
+            region (str): The region where this forwarding rule resides.
+            ip_address (str): The IP address to match.
+            ip_protocol (strin): The IP protocol to match.
+            port_range (str): Port range, ranging from low to high,
+                for which this forwarding rule matches.
+            ports (list): List of ports for which this forwarding rule matches.
+            target (str): The target for which this forwarding rule matches.
+            self_link (str): self link
+            load_balancing_scheme (str): load balancing scheme
+            subnetwork (str): subnetwork
+            network (str): network
+            backend_service (str): backend service
+            raw_json (str): The raw json string for the forwarding rule.
         """
-        self.project_id = kwargs.get('project_id')
-        self.resource_id = kwargs.get('resource_id')
-        self.creation_timestamp = kwargs.get('creation_timestamp')
-        self.name = kwargs.get('name')
-        self.description = kwargs.get('description')
-        self.region = kwargs.get('region')
-        self.ip_address = kwargs.get('ip_address')
-        self.ip_protocol = kwargs.get('ip_protocol')
-        self.port_range = kwargs.get('port_range')
-        self.ports = parser.json_unstringify(kwargs.get('ports'))
-        self.target = kwargs.get('target')
-        self.self_link = kwargs.get('self_link')
-        self.load_balancing_scheme = kwargs.get('load_balancing_scheme')
-        self.subnetwork = kwargs.get('subnetwork')
-        self.network = kwargs.get('network')
-        self.backend_service = kwargs.get('backend_service')
-        self.json = kwargs.get('raw_json')
+        self.project_id = project_id
+        self.resource_id = resource_id
+        self.creation_timestamp = creation_timestamp
+        self.name = name
+        self.description = description
+        self.region = region
+        self.ip_address = ip_address
+        self.ip_protocol = ip_protocol
+        self.port_range = port_range
+        self.ports = parser.json_unstringify(ports)
+        self.target = target
+        self.self_link = self_link
+        self.load_balancing_scheme = load_balancing_scheme
+        self.subnetwork = subnetwork
+        self.network = network
+        self.backend_service = backend_service
+        self.json = raw_json
 
 
     @classmethod
