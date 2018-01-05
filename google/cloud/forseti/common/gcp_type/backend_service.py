@@ -110,6 +110,48 @@ class BackendService(resource.Resource):
         backend_service = json.loads(json_string)
         return BackendService.from_dict(backend_service, project_id)
 
+    def _create_json_str(self):
+        """Creates a json string based on the object attributes.
+
+        Returns:
+            str: json str.
+        """
+        resource_dict = {
+            'id': self.id,
+            'creationTimestamp': self.creation_timestamp,
+            'name': self.name,
+            'description': self.description,
+            'affinityCookieTtlSec': self.affinity_cookie_ttl_sec,
+            'backends': self.backends,
+            'cdnPolicy': self.cdn_policy,
+            'connectionDraining': self.connection_draining,
+            'enableCDN': self.enable_cdn,
+            'healthChecks': self.health_checks,
+            'iap': self.iap,
+            'loadBalancingScheme': self.load_balancing_scheme,
+            'port': self.port,
+            'portName': self.port_name,
+            'protocol': self.protocol,
+            'region': self.region,
+            'sessionAffinity': self.session_affinity,
+            'timeoutSec': self.timeout_sec}
+
+        # Strip out empty values
+        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
+        return json.dumps(resource_dict)
+
+    @property
+    def json(self):
+        """Returns the json string representation of the resource.
+
+        Returns:
+            str: json str.
+        """
+        if not self._json:
+            self._json = self._create_json_str()
+
+        return self._json
+
     @property
     def key(self):
         """Returns a Key identifying the object.

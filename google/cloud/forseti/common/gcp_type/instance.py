@@ -33,6 +33,7 @@ class Instance(object):
         Args:
             **kwargs (dict): The object's attributes.
         """
+        self.id = kwargs.get('id')
         self.can_ip_forward = kwargs.get('can_ip_forward')
         self.cpu_platform = kwargs.get('cpu_platform')
         self.creation_timestamp = kwargs.get('creation_timestamp')
@@ -96,6 +97,46 @@ class Instance(object):
         """
         instance = json.loads(json_string)
         return Instance.from_dict(instance, project_id)
+
+    def _create_json_str(self):
+        """Creates a json string based on the object attributes.
+
+        Returns:
+            str: json str.
+        """
+        resource_dict = {
+            'id': self.id,
+            'creationTimestamp': self.creation_timestamp,
+            'name': self.name,
+            'description': self.description,
+            'canIpForward': self.can_ip_forward,
+            'cpuPlatform': self.cpu_platform,
+            'disks': self.disks,
+            'machineType': self.machine_type,
+            'metadata': self.metadata,
+            'networkInterfaces': self.network_interfaces,
+            'scheduling': self.scheduling,
+            'serviceAccounts': self.service_accounts,
+            'status': self.status,
+            'statusMessage': self.status_message,
+            'tags': self.tags,
+            'zone': self.zone}
+
+        # Strip out empty values
+        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
+        return json.dumps(resource_dict)
+
+    @property
+    def json(self):
+        """Returns the json string representation of the resource.
+
+        Returns:
+            str: json str.
+        """
+        if not self._json:
+            self._json = self._create_json_str()
+
+        return self._json
 
     @property
     def key(self):

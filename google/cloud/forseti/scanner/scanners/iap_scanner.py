@@ -608,31 +608,33 @@ class IapScanner(base_scanner.BaseScanner):
                 engine
             dict: A dict of resource counts for the project.
         """
+        projects = []
         with self.scoped_session as session:
             for project in self.data_access.scanner_iter(session, 'project'):
-                parent = project.full_name
+                projects.append(project.full_name)
 
-                backend_services = self._get_backend_services(parent)
-                firewall_rules = self._get_firewall_rules(parent)
-                instances = self._get_instances(parent)
-                instance_groups = self._get_instance_groups(parent)
-                instance_group_managers = self._get_instance_group_managers(
-                    parent)
-                instance_templates = self._get_instance_templates(parent)
+        for parent in projects:
+            backend_services = self._get_backend_services(parent)
+            firewall_rules = self._get_firewall_rules(parent)
+            instances = self._get_instances(parent)
+            instance_groups = self._get_instance_groups(parent)
+            instance_group_managers = self._get_instance_group_managers(
+                parent)
+            instance_templates = self._get_instance_templates(parent)
 
-                run_data = _RunData(
-                    backend_services=backend_services,
-                    firewall_rules=firewall_rules,
-                    instances=instances,
-                    instance_groups=instance_groups,
-                    instance_group_managers=instance_group_managers,
-                    instance_templates=instance_templates)
+            run_data = _RunData(
+                backend_services=backend_services,
+                firewall_rules=firewall_rules,
+                instances=instances,
+                instance_groups=instance_groups,
+                instance_group_managers=instance_group_managers,
+                instance_templates=instance_templates)
 
-                iap_resources = []
-                for backend in backend_services:
-                    iap_resources.append(
-                        run_data.make_iap_resource(backend, parent))
-                yield iap_resources, run_data.resource_counts
+            iap_resources = []
+            for backend in backend_services:
+                iap_resources.append(
+                    run_data.make_iap_resource(backend, parent))
+            yield iap_resources, run_data.resource_counts
 
     def _find_violations(self, iap_data):
         """Find IAP violations.

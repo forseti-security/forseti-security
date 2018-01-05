@@ -35,9 +35,8 @@ class InstanceTemplate(object):
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
         self.name = kwargs.get('name')
-        self.project_id = kwargs.get('project_id')
         self.properties = kwargs.get('properties')
-        self.resource_id = kwargs.get('id')
+        self.id = kwargs.get('id')
         self.project_id = kwargs.get('project_id')
         self._json = kwargs.get('raw_instance_template')
 
@@ -76,6 +75,35 @@ class InstanceTemplate(object):
         """
         instance_template = json.loads(json_string)
         return InstanceTemplate.from_dict(instance_template, project_id)
+
+    def _create_json_str(self):
+        """Creates a json string based on the object attributes.
+
+        Returns:
+            str: json str.
+        """
+        resource_dict = {
+            'id': self.id,
+            'creationTimestamp': self.creation_timestamp,
+            'name': self.name,
+            'description': self.description,
+            'properties': self.properties}
+
+        # Strip out empty values
+        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
+        return json.dumps(resource_dict)
+
+    @property
+    def json(self):
+        """Returns the json string representation of the resource.
+
+        Returns:
+            str: json str.
+        """
+        if not self._json:
+            self._json = self._create_json_str()
+
+        return self._json
 
     @property
     def key(self):
