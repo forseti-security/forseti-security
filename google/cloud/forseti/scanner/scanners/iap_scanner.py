@@ -483,11 +483,11 @@ class IapScanner(base_scanner.BaseScanner):
                     }
                     notifier.process(message)
 
-    def _get_backend_services(self, parent):
+    def _get_backend_services(self, parent_type_name):
         """Retrieves backend services.
 
         Args:
-            parent (str): The parent resource prefix to pull.
+            parent_type_name (str): The parent resource type and name to pull.
 
         Returns:
             list: BackendService
@@ -496,18 +496,18 @@ class IapScanner(base_scanner.BaseScanner):
         with self.scoped_session as session:
             for backend_service in self.data_access.scanner_iter(
                     session, 'backendservice',
-                    full_resource_name_prefix=parent):
+                    parent_type_name=parent_type_name):
                 backend_services.append(
                     backend_service_type.BackendService.from_json(
                         project_id=backend_service.parent.name,
                         json_string=backend_service.data))
         return backend_services
 
-    def _get_firewall_rules(self, parent):
+    def _get_firewall_rules(self, parent_type_name):
         """Retrieves firewall rules.
 
         Args:
-            parent (str): The parent resource prefix to pull.
+            parent_type_name (str): The parent resource type and name to pull.
 
         Returns:
             list: FirewallRule
@@ -515,18 +515,18 @@ class IapScanner(base_scanner.BaseScanner):
         firewall_rules = []
         with self.scoped_session as session:
             for firewall_rule in self.data_access.scanner_iter(
-                    session, 'firewall', full_resource_name_prefix=parent):
+                    session, 'firewall', parent_type_name=parent_type_name):
                 firewall_rules.append(
                     firewall_rule_type.FirewallRule.from_json(
                         project_id=firewall_rule.parent.name,
                         json_string=firewall_rule.data))
         return firewall_rules
 
-    def _get_instances(self, parent):
+    def _get_instances(self, parent_type_name):
         """Retrieves instances.
 
         Args:
-            parent (str): The parent resource prefix to pull.
+            parent_type_name (str): The parent resource type and name to pull.
 
         Returns:
             list: Instance
@@ -534,18 +534,18 @@ class IapScanner(base_scanner.BaseScanner):
         instances = []
         with self.scoped_session as session:
             for instance in self.data_access.scanner_iter(
-                    session, 'instance', full_resource_name_prefix=parent):
+                    session, 'instance', parent_type_name=parent_type_name):
                 instances.append(
                     instance_type.Instance.from_json(
                         project_id=instance.parent.name,
                         json_string=instance.data))
         return instances
 
-    def _get_instance_groups(self, parent):
+    def _get_instance_groups(self, parent_type_name):
         """Retrieves instance groups.
 
         Args:
-            parent (str): The parent resource prefix to pull.
+            parent_type_name (str): The parent resource type and name to pull.
 
         Returns:
             list: InstanceGroup
@@ -553,18 +553,18 @@ class IapScanner(base_scanner.BaseScanner):
         instance_groups = []
         with self.scoped_session as session:
             for instance_group in self.data_access.scanner_iter(
-                    session, 'instancegroup', full_resource_name_prefix=parent):
+                    session, 'instancegroup', parent_type_name=parent_type_name):
                 instance_groups.append(
                     instance_group_type.InstanceGroup.from_json(
                         project_id=instance_group.parent.name,
                         json_string=instance_group.data))
         return instance_groups
 
-    def _get_instance_group_managers(self, parent):
+    def _get_instance_group_managers(self, parent_type_name):
         """Retrieves instance group managers.
 
         Args:
-            parent (str): The parent resource prefix to pull.
+            parent_type_name (str): The parent resource type and name to pull.
 
         Returns:
             list: InstanceGroupManager
@@ -573,18 +573,18 @@ class IapScanner(base_scanner.BaseScanner):
         with self.scoped_session as session:
             for instance_group_manager in self.data_access.scanner_iter(
                     session, 'instancegroupmanager',
-                    full_resource_name_prefix=parent):
+                    parent_type_name=parent_type_name):
                 instance_group_managers.append(
                     instance_group_manager_type.InstanceGroupManager.from_json(
                         project_id=instance_group_manager.parent.name,
                         json_string=instance_group_manager.data))
         return instance_group_managers
 
-    def _get_instance_templates(self, parent):
+    def _get_instance_templates(self, parent_type_name):
         """Retrieves instance templates.
 
         Args:
-            parent (str): The parent resource prefix to pull.
+            parent_type_name (str): The parent resource type and name to pull.
 
         Returns:
             list: InstanceTemplate
@@ -593,7 +593,7 @@ class IapScanner(base_scanner.BaseScanner):
         with self.scoped_session as session:
             for instance_template in self.data_access.scanner_iter(
                     session, 'instancetemplate',
-                    full_resource_name_prefix=parent):
+                    parent_type_name=parent_type_name):
                 instance_templates.append(
                     instance_template_type.InstanceTemplate.from_json(
                         project_id=instance_template.parent.name,
@@ -611,16 +611,16 @@ class IapScanner(base_scanner.BaseScanner):
         projects = []
         with self.scoped_session as session:
             for project in self.data_access.scanner_iter(session, 'project'):
-                projects.append(project.full_name)
+                projects.append(project)
 
         for parent in projects:
-            backend_services = self._get_backend_services(parent)
-            firewall_rules = self._get_firewall_rules(parent)
-            instances = self._get_instances(parent)
-            instance_groups = self._get_instance_groups(parent)
+            backend_services = self._get_backend_services(parent.type_name)
+            firewall_rules = self._get_firewall_rules(parent.type_name)
+            instances = self._get_instances(parent.type_name)
+            instance_groups = self._get_instance_groups(parent.type_name)
             instance_group_managers = self._get_instance_group_managers(
-                parent)
-            instance_templates = self._get_instance_templates(parent)
+                parent.type_name)
+            instance_templates = self._get_instance_templates(parent.type_name)
 
             run_data = _RunData(
                 backend_services=backend_services,
@@ -633,7 +633,7 @@ class IapScanner(base_scanner.BaseScanner):
             iap_resources = []
             for backend in backend_services:
                 iap_resources.append(
-                    run_data.make_iap_resource(backend, parent))
+                    run_data.make_iap_resource(backend, parent.full_name))
             yield iap_resources, run_data.resource_counts
 
     def _find_violations(self, iap_data):
