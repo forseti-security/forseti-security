@@ -500,12 +500,16 @@ def define_model(model_name, dbengine, model_seed):
                 return bindings, member_graph, resource_type_names
 
         @classmethod
-        def scanner_iter(cls, session, resource_type):
+        def scanner_iter(cls, session, resource_type,
+                         parent_type_name=None):
             """Iterate over all resources with the specified type."""
 
             qry = (
                 session.query(Resource)
                 .filter(Resource.type == resource_type))
+
+            if parent_type_name:
+                qry = qry.filter(Resource.parent_type_name == parent_type_name)
 
             for resource in qry.yield_per(PER_YIELD):
                 yield resource
