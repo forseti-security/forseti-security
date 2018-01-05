@@ -19,8 +19,6 @@ See: https://cloud.google.com/compute/docs/reference/latest/forwardingRules
 
 import json
 
-from google.cloud.forseti.common.util import parser
-
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-instance-attributes
@@ -64,7 +62,7 @@ class ForwardingRule(object):
         self.ip_address = ip_address
         self.ip_protocol = ip_protocol
         self.port_range = port_range
-        self.ports = parser.json_unstringify(ports)
+        self.ports = ports
         self.target = target
         self.self_link = self_link
         self.load_balancing_scheme = load_balancing_scheme
@@ -95,7 +93,7 @@ class ForwardingRule(object):
             ip_address=forwarding_rule.get('IPAddress', ''),
             ip_protocol=forwarding_rule.get('IPProtocol', ''),
             port_range=forwarding_rule.get('portRange', ''),
-            ports=forwarding_rule.get('ports', '[]'),
+            ports=forwarding_rule.get('ports', []),
             target=forwarding_rule.get('target', ''),
             self_link=forwarding_rule.get('selfLink', ''),
             load_balancing_scheme=forwarding_rule.get(
