@@ -553,7 +553,8 @@ class IapScanner(base_scanner.BaseScanner):
         instance_groups = []
         with self.scoped_session as session:
             for instance_group in self.data_access.scanner_iter(
-                    session, 'instancegroup', parent_type_name=parent_type_name):
+                    session, 'instancegroup',
+                    parent_type_name=parent_type_name):
                 instance_groups.append(
                     instance_group_type.InstanceGroup.from_json(
                         project_id=instance_group.parent.name,
