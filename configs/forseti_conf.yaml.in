@@ -130,7 +130,7 @@ scanner:
         - name: firewall_rule
           enabled: true
         - name: forwarding_rule
-          enabled: false
+          enabled: true
         - name: group
           enabled: true
         - name: iam_policy
