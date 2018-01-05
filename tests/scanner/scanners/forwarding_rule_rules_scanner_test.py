@@ -33,66 +33,64 @@ class ForwardingRuleScannerTest(ForsetiTestCase):
         scanner = forwarding_rule_scanner.ForwardingRuleScanner(
             {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
+        project_id = "abc-123"
+
         gcp_forwarding_rules_resource_data = [
             {
-                "project_id": "abc-123",
-                "resource_id": "46",
-                "creation_timestamp": "2017-06-01 04:19:37",
+                "id": "46",
+                "creationTimestamp": "2017-06-01 04:19:37",
                 "name": "abc-123",
                 "description": "",
                 "region": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1",
-                "ip_address": "198.51.100.99",
-                "ip_protocol": "UDP",
-                "port_range": "4500-4500",
+                "IPAddress": "198.51.100.99",
+                "IPProtocol": "UDP",
+                "portRange": "4500-4500",
                 "ports": "[]",
                 "target": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1/abc-123/abc-123",
-                "load_balancing_scheme": "EXTERNAL",
+                "loadBalancingScheme": "EXTERNAL",
             },
             {
-                "project_id": "abc-123",
-                "resource_id": "23",
-                "creation_timestamp": "2017-06-01 04:19:37",
+                "id": "23",
+                "creationTimestamp": "2017-06-01 04:19:37",
                 "name": "abc-123",
                 "description": "",
                 "region": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1",
-                "ip_address": "198.51.100.23",
-                "ip_protocol": "TCP",
+                "IPAddress": "198.51.100.23",
+                "IPProtocol": "TCP",
                 "ports": "[8080]",
                 "target": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1/abc-123/abc-123",
-                "load_balancing_scheme": "INTERNAL",
+                "loadBalancingScheme": "INTERNAL",
             },
             {
-                "project_id": "abc-123",
-                "resource_id": "46",
-                "creation_timestamp": "2017-06-01 04:19:37",
+                "id": "46",
+                "creationTimestamp": "2017-06-01 04:19:37",
                 "name": "abc-123",
                 "description": "",
                 "region": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1",
-                "ip_address": "198.51.100.46",
-                "ip_protocol":  "ESP",
+                "IPAddress": "198.51.100.46",
+                "IPProtocol":  "ESP",
                 "ports": "[]",
                 "target": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1/abc-123/abc-123",
-                "load_balancing_scheme":  "EXTERNAL",
+                "loadBalancingScheme":  "EXTERNAL",
             },
             {
-                "project_id": "abc-123",
-                "resource_id": "46",
-                "creation_timestamp": "2017-06-01 04:19:37",
+                "id": "46",
+                "creationTimestamp": "2017-06-01 04:19:37",
                 "name": "abc-123",
                 "description": "",
                 "region": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1",
-                "ip_address": "198.51.100.35",
-                "ip_protocol":  "TCP",
-                "port_range": "4500-4500",
+                "IPAddress": "198.51.100.35",
+                "IPProtocol":  "TCP",
+                "portRange": "4500-4500",
                 "target": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1/abc-123/abc-123",
-                "load_balancing_scheme":  "EXTERNAL",
+                "loadBalancingScheme":  "EXTERNAL",
             }
         ]
         gcp_forwarding_rules_resource_objs = []
         for gcp_forwarding_rule_resource_data in gcp_forwarding_rules_resource_data:
             gcp_forwarding_rules_resource_objs.append(
-                    fr.ForwardingRule(**gcp_forwarding_rule_resource_data)
-                )
+                fr.ForwardingRule.from_dict(
+                    project_id, gcp_forwarding_rule_resource_data))
 
         violations = scanner._find_violations(gcp_forwarding_rules_resource_objs)
         self.assertEqual(0, len(violations))
@@ -103,65 +101,64 @@ class ForwardingRuleScannerTest(ForsetiTestCase):
         scanner = forwarding_rule_scanner.ForwardingRuleScanner(
             {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
+        project_id = "abc-123"
+        
         gcp_forwarding_rules_resource_data = [
             {
-                "project_id": "abc-123",
-                "resource_id": "46",
-                "creation_timestamp": "2017-06-01 04:19:37",
+                "id": "46",
+                "creationTimestamp": "2017-06-01 04:19:37",
                 "name": "abc-123",
                 "description": "",
                 "region": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1",
-                "ip_address": "198.51.100.99",
-                "ip_protocol": "TCP",
-                "port_range": "4500-4500",
+                "IPAddress": "198.51.100.99",
+                "IPProtocol": "TCP",
+                "portRange": "4500-4500",
                 "ports": "[]",
                 "target": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1/abc-123/abc-123",
-                "load_balancing_scheme": "EXTERNAL",
+                "loadBalancingScheme": "EXTERNAL",
             },
             {
-                "project_id": "abc-123",
-                "resource_id": "23",
-                "creation_timestamp": "2017-06-01 04:19:37",
+                "id": "23",
+                "creationTimestamp": "2017-06-01 04:19:37",
                 "name": "abc-123",
                 "description": "",
                 "region": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1",
-                "ip_address": "198.51.100.23",
-                "ip_protocol": "TCP",
+                "IPAddress": "198.51.100.23",
+                "IPProtocol": "TCP",
                 "ports": "[8081]",
                 "target": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1/abc-123/abc-123",
-                "load_balancing_scheme": "INTERNAL",
+                "loadBalancingScheme": "INTERNAL",
             },
             {
-                "project_id": "abc-123",
-                "resource_id": "46",
-                "creation_timestamp": "2017-06-01 04:19:37",
+                "id": "46",
+                "creationTimestamp": "2017-06-01 04:19:37",
                 "name": "abc-123",
                 "description": "",
                 "region": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1",
-                "ip_address": "198.51.101.46",
-                "ip_protocol":  "ESP",
+                "IPAddress": "198.51.101.46",
+                "IPProtocol":  "ESP",
                 "ports": "[]",
                 "target": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1/abc-123/abc-123",
-                "load_balancing_scheme":  "EXTERNAL",
+                "loadBalancingScheme":  "EXTERNAL",
             },
             {
-                "project_id": "abc-123",
-                "resource_id": "46",
-                "creation_timestamp": "2017-06-01 04:19:37",
+                "id": "46",
+                "creationTimestamp": "2017-06-01 04:19:37",
                 "name": "abc-123",
                 "description": "",
                 "region": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1",
-                "ip_address": "198.51.100.35",
-                "ip_protocol":  "TCP",
-                "port_range": "4400-4500",
+                "IPAddress": "198.51.100.35",
+                "IPProtocol":  "TCP",
+                "portRange": "4400-4500",
                 "target": "https://www.googleapis.com/compute/v1/projects/abc-123/regions/asia-east1/abc-123/abc-123",
-                "load_balancing_scheme":  "EXTERNAL",
+                "loadBalancingScheme":  "EXTERNAL",
             }
         ]
         gcp_forwarding_rules_resource_objs = []
         for gcp_forwarding_rule_resource_data in gcp_forwarding_rules_resource_data:
             gcp_forwarding_rules_resource_objs.append(
-                    fr.ForwardingRule(**gcp_forwarding_rule_resource_data)
+                fr.ForwardingRule.from_dict(
+                    project_id, gcp_forwarding_rule_resource_data)
                 )
 
         violations = scanner._find_violations(gcp_forwarding_rules_resource_objs)

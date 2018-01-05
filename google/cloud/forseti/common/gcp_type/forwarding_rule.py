@@ -63,7 +63,7 @@ class ForwardingRule(object):
         """
         return cls(
             project_id=project_id,
-            resource_id=forwarding_rule.get('id', ''),
+            resource_id=forwarding_rule.get('id'),
             creation_timestamp=forwarding_rule.get('creationTimestamp', ''),
             name=forwarding_rule.get('name', ''),
             description=forwarding_rule.get('description', ''),
