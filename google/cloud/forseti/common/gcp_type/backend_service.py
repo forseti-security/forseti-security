@@ -17,11 +17,11 @@
 See: https://cloud.google.com/compute/docs/reference/latest/backendServices
 """
 
+import json
 import os
 
 from google.cloud.forseti.common.gcp_type import key
 from google.cloud.forseti.common.gcp_type import resource
-from google.cloud.forseti.common.util import parser
 
 
 # pylint: disable=too-many-instance-attributes
@@ -40,16 +40,14 @@ class BackendService(resource.Resource):
             name=kwargs.get('name'),
             display_name=kwargs.get('name'))
         self.affinity_cookie_ttl_sec = kwargs.get('affinity_cookie_ttl_sec')
-        self.backends = parser.json_unstringify(kwargs.get('backends'))
-        self.cdn_policy = parser.json_unstringify(kwargs.get('cdn_policy'))
-        self.connection_draining = parser.json_unstringify(
-            kwargs.get('connection_draining'))
+        self.backends = kwargs.get('backends')
+        self.cdn_policy = kwargs.get('cdn_policy')
+        self.connection_draining = kwargs.get('connection_draining')
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
         self.enable_cdn = kwargs.get('enable_cdn')
-        self.health_checks = parser.json_unstringify(
-            kwargs.get('health_checks'))
-        self.iap = parser.json_unstringify(kwargs.get('iap'))
+        self.health_checks = kwargs.get('health_checks')
+        self.iap = kwargs.get('iap')
         self.load_balancing_scheme = kwargs.get('load_balancing_scheme')
         self.port = kwargs.get('port')
         self.port_name = kwargs.get('port_name')
@@ -59,6 +57,58 @@ class BackendService(resource.Resource):
         self.resource_id = kwargs.get('id')
         self.session_affinity = kwargs.get('session_affinity')
         self.timeout_sec = kwargs.get('timeout_sec')
+        self._json = kwargs.get('raw_backend_service')
+
+    @classmethod
+    def from_dict(cls, backend_service, project_id=None):
+        """Creates a BackendService from dict.
+
+        Args:
+            backend_service (dict): A backend service resource dict.
+            project_id (str): A project id for the resource.
+
+        Returns:
+            BackendService: A new BackendService object.
+        """
+        kwargs = {'project_id': project_id,
+                  'id': backend_service.get('id'),
+                  'creation_timestamp': backend_service.get(
+                      'creationTimestamp'),
+                  'name': backend_service.get('name'),
+                  'description': backend_service.get('description'),
+                  'affinity_cookie_ttl_sec': backend_service.get(
+                      'affinityCookieTtlSec'),
+                  'backends': backend_service.get('backends', []),
+                  'cdn_policy': backend_service.get('cdnPolicy', {}),
+                  'connection_draining': backend_service.get(
+                      'connectionDraining', {}),
+                  'enable_cdn': backend_service.get('enableCDN'),
+                  'health_checks': backend_service.get('healthChecks', []),
+                  'iap': backend_service.get('iap', {}),
+                  'load_balancing_scheme': backend_service.get(
+                      'loadBalancingScheme'),
+                  'port': backend_service.get('port'),
+                  'port_name': backend_service.get('portName'),
+                  'protocol': backend_service.get('protocol'),
+                  'region': backend_service.get('region'),
+                  'session_affinity': backend_service.get('sessionAffinity'),
+                  'timeout_sec': backend_service.get('timeoutSec'),
+                  'raw_backend_service': json.dumps(backend_service)}
+        return cls(**kwargs)
+
+    @staticmethod
+    def from_json(json_string, project_id=None):
+        """Creates a BackendService from a backend service JSON string.
+
+        Args:
+            json_string (str): A json string representing the backend service.
+            project_id (str): A project id for the resource.
+
+        Returns:
+            BackendService: A new BackendService object.
+        """
+        backend_service = json.loads(json_string)
+        return BackendService.from_dict(backend_service, project_id)
 
     @property
     def key(self):
@@ -121,7 +171,7 @@ class Key(key.Key):
 
     @property
     def project_id(self):
-        """Object property: project_id
+        """Object property: project_id.
 
         Returns:
             str: project_id
@@ -130,7 +180,7 @@ class Key(key.Key):
 
     @property
     def name(self):
-        """Object property: name
+        """Object property: name.
 
         Returns:
             str: name

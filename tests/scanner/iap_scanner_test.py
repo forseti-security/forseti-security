@@ -11,39 +11,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""IAP scanner test"""
+"""IAP scanner test."""
 
 from datetime import datetime
 import json
+import unittest
 import mock
 
-import unittest
-import yaml
-
-from google.cloud.forseti.common.gcp_type import backend_service as backend_service_type
-from google.cloud.forseti.common.gcp_type import firewall_rule as firewall_rule_type
-from google.cloud.forseti.common.gcp_type import instance_group as instance_group_type
-from google.cloud.forseti.common.gcp_type import instance_group_manager as instance_group_manager_type
-from google.cloud.forseti.common.gcp_type import instance as instance_type
-from google.cloud.forseti.common.gcp_type import instance_template as instance_template_type
-from google.cloud.forseti.common.gcp_type import project as project_type
-from google.cloud.forseti.common.gcp_type import network as network_type
-from google.cloud.forseti.scanner.scanners import iap_scanner
+from sqlalchemy.pool import NullPool
 from tests.unittest_utils import ForsetiTestCase
 from tests.unittest_utils import get_datafile_path
+from tests.services.utils.db import create_test_engine
+from google.cloud.forseti.common.gcp_type import backend_service as backend_service_type
+from google.cloud.forseti.common.gcp_type import firewall_rule as firewall_rule_type
+from google.cloud.forseti.common.gcp_type import instance as instance_type
+from google.cloud.forseti.common.gcp_type import instance_group as instance_group_type
+from google.cloud.forseti.common.gcp_type import instance_group_manager as instance_group_manager_type
+from google.cloud.forseti.common.gcp_type import instance_template as instance_template_type
+from google.cloud.forseti.common.gcp_type import network as network_type
+from google.cloud.forseti.scanner.scanners import iap_scanner
+from google.cloud.forseti.services.dao import create_engine
+from google.cloud.forseti.services.dao import ModelManager
 
 
-class FakeProjectDao(object):
+# pylint: disable=bad-indentation
+class FakeServiceConfig(object):
 
-    def get_project(self, project_id, snapshot_timestamp=0):
-        return project_type.Project(project_id=project_id)
-
-
-class FakeOrgDao(object):
-
-    def find_ancestors(self, resource_id, snapshot_timestamp=0):
-        return []
+    def __init__(self):
+        engine = create_test_engine()
+        self.model_manager = ModelManager(engine)
 
 
 class IapScannerTest(ForsetiTestCase):
@@ -54,54 +50,54 @@ class IapScannerTest(ForsetiTestCase):
                                                name=network),
             port=port_number)
 
-    def tearDown(self):
-        self.org_patcher.stop()
-        self.project_patcher.stop()
+    @classmethod
+    def setUpClass(cls):
+        cls.service_config = FakeServiceConfig()
+        cls.model_name = cls.service_config.model_manager.create(
+            name='iap-scanner-test')
+
+        scoped_session, data_access = (
+            cls.service_config.model_manager.get(cls.model_name))
+
+        # Add organization and project to model.
+        with scoped_session as session:
+            organization = data_access.add_resource_by_name(
+                session, 'organization/12345', '', True)
+            data_access.add_resource(session, 'project/foo', organization)
+            # TODO: Add all mock resources to model and don't use lamba.
+            session.commit()
 
     def setUp(self):
         self.fake_utcnow = datetime(
             year=1900, month=1, day=1, hour=0, minute=0, second=0,
             microsecond=0)
 
-        # patch the daos
-        self.org_patcher = mock.patch(
-            'google.cloud.forseti.common.data_access.'
-            'org_resource_rel_dao.OrgResourceRelDao')
-        self.mock_org_rel_dao = self.org_patcher.start()
-        self.mock_org_rel_dao.return_value = FakeOrgDao()
-
-        self.project_patcher = mock.patch(
-            'google.cloud.forseti.common.data_access.'
-            'project_dao.ProjectDao')
-        self.mock_project_dao = self.project_patcher.start()
-        self.mock_project_dao.return_value = FakeProjectDao()
-
         self.fake_scanner_configs = {'output_path': 'gs://fake/output/path'}
+
         self.scanner = iap_scanner.IapScanner(
-            {}, {}, mock.MagicMock(), '', '',
-            get_datafile_path(__file__, 'iap_scanner_test_data.yaml'))
-        self.scanner.scanner_configs = self.fake_scanner_configs
-        self.scanner._get_backend_services = lambda: self.backend_services.values()
-        self.scanner._get_firewall_rules = lambda: self.firewall_rules.values()
-        self.scanner._get_instances = lambda: self.instances.values()
-        self.scanner._get_instance_groups = lambda: self.instance_groups.values()
-        self.scanner._get_instance_group_managers = lambda: self.instance_group_managers.values()
-        self.scanner._get_instance_templates = lambda: self.instance_templates.values()
+            {}, self.fake_scanner_configs, self.service_config, self.model_name,
+            '', get_datafile_path(__file__, 'iap_scanner_test_data.yaml'))
+
+        self.scanner._get_backend_services = lambda _: self.backend_services.values()
+        self.scanner._get_firewall_rules = lambda _: self.firewall_rules.values()
+        self.scanner._get_instances = lambda _: self.instances.values()
+        self.scanner._get_instance_groups = lambda _: self.instance_groups.values()
+        self.scanner._get_instance_group_managers = lambda _: self.instance_group_managers.values()
+        self.scanner._get_instance_templates = lambda _: self.instance_templates.values()
 
         self.backend_services = {
             # The main backend service.
             'bs1': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1',
-                backends=json.dumps(
-                    [{'group': ('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/regions/wl-redqueen1/'
-                                'instanceGroups/ig_managed')},
-                     {'group': ('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/regions/wl-redqueen1/'
-                                'instanceGroups/ig_unmanaged')},
-                    ]),
-                iap=json.dumps({'enabled': True}),
+                backends=[
+                    {'group': ('https://www.googleapis.com/compute/v1/'
+                               'projects/foo/regions/wl-redqueen1/'
+                               'instanceGroups/ig_managed')},
+                    {'group': ('https://www.googleapis.com/compute/v1/'
+                               'projects/foo/regions/wl-redqueen1/'
+                               'instanceGroups/ig_unmanaged')}],
+                iap={'enabled': True},
                 port=80,
                 port_name='http',
                 ),
@@ -109,53 +105,48 @@ class IapScannerTest(ForsetiTestCase):
             'bs1_same_backend': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_same_backend',
-                backends=json.dumps(
-                    [{'group': ('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/regions/wl-redqueen1/'
-                                'instanceGroups/ig_managed')},
-                    ]),
+                backends=[
+                    {'group': ('https://www.googleapis.com/compute/v1/'
+                               'projects/foo/regions/wl-redqueen1/'
+                               'instanceGroups/ig_managed')}],
                 port=80,
                 ),
             # A backend service with a different port (so, not an alternate).
             'bs1_different_port': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_different_port',
-                backends=json.dumps(
-                    [{'group': ('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/regions/wl-redqueen1/'
-                                'instanceGroups/ig_managed')},
-                    ]),
+                backends=[
+                    {'group': ('https://www.googleapis.com/compute/v1/'
+                               'projects/foo/regions/wl-redqueen1/'
+                               'instanceGroups/ig_managed')}],
                 port=81,
                 ),
             # Various backend services that should or shouldn't be alts.
             'bs1_same_instance': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_same_instance',
-                backends=json.dumps(
-                    [{'group': ('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/regions/wl-redqueen1/'
-                                'instanceGroups/ig_same_instance')},
-                    ]),
+                backends=[
+                    {'group': ('https://www.googleapis.com/compute/v1/'
+                               'projects/foo/regions/wl-redqueen1/'
+                               'instanceGroups/ig_same_instance')}],
                 port=80,
                 ),
             'bs1_different_network': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_different_network',
-                backends=json.dumps(
-                    [{'group': ('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/regions/wl-redqueen1/'
-                                'instanceGroups/ig_different_network')},
-                    ]),
+                backends=[
+                    {'group': ('https://www.googleapis.com/compute/v1/'
+                               'projects/foo/regions/wl-redqueen1/'
+                               'instanceGroups/ig_different_network')}],
                 port=80,
                 ),
             'bs1_different_instance': backend_service_type.BackendService(
                 project_id='foo',
                 name='bs1_different_instance',
-                backends=json.dumps(
-                    [{'group': ('https://www.googleapis.com/compute/v1/'
-                                'projects/foo/regions/wl-redqueen1/'
-                                'instanceGroups/ig_different_instance')},
-                    ]),
+                backends=[
+                    {'group': ('https://www.googleapis.com/compute/v1/'
+                               'projects/foo/regions/wl-redqueen1/'
+                               'instanceGroups/ig_different_instance')}],
                 port=80,
                 ),
         }
@@ -283,13 +274,13 @@ class IapScannerTest(ForsetiTestCase):
             'i1': instance_type.Instance(
                 project_id='foo',
                 name='i1',
-                tags=json.dumps({'items': ['tag_i1']}),
+                tags={'items': ['tag_i1']},
                 zone='wl-redqueen1-a',
             ),
             'i2': instance_type.Instance(
                 project_id='foo',
                 name='i2',
-                tags=json.dumps([]),
+                tags=[],
                 zone='wl-redqueen1-a',
             ),
         }
@@ -300,9 +291,9 @@ class IapScannerTest(ForsetiTestCase):
                 name='ig_managed',
                 network='global/networks/default',
                 region='wl-redqueen1',
-                instance_urls=json.dumps(
-                    [('https://www.googleapis.com/compute/v1/'
-                      'projects/foo/zones/wl-redqueen1-a/instances/i1')]),
+                instance_urls=[
+                    ('https://www.googleapis.com/compute/v1/'
+                     'projects/foo/zones/wl-redqueen1-a/instances/i1')],
             ),
             # Unmanaged; overrides port mapping
             'ig_unmanaged': instance_group_type.InstanceGroup(
@@ -310,10 +301,10 @@ class IapScannerTest(ForsetiTestCase):
                 name='ig_unmanaged',
                 network='global/networks/default',
                 region='wl-redqueen1',
-                instance_urls=json.dumps([]),
-                named_ports=json.dumps(
-                    [{'name': 'foo', 'port': 80},
-                     {'name': 'http', 'port': 8080}]),
+                instance_urls=[],
+                named_ports=[
+                    {'name': 'foo', 'port': 80},
+                    {'name': 'http', 'port': 8080}],
             ),
             # Unmanaged; same instance as ig_managed
             'ig_same_instance': instance_group_type.InstanceGroup(
@@ -321,9 +312,9 @@ class IapScannerTest(ForsetiTestCase):
                 name='ig_same_instance',
                 network='global/networks/default',
                 region='wl-redqueen1',
-                instance_urls=json.dumps(
-                    [('https://www.googleapis.com/compute/v1/'
-                      'projects/foo/zones/wl-redqueen1-a/instances/i1')]),
+                instance_urls=[
+                    ('https://www.googleapis.com/compute/v1/'
+                     'projects/foo/zones/wl-redqueen1-a/instances/i1')],
             ),
             # Unmanaged; different network than ig_managed
             'ig_different_network': instance_group_type.InstanceGroup(
@@ -331,9 +322,9 @@ class IapScannerTest(ForsetiTestCase):
                 name='ig_different_network',
                 network='global/networks/nondefault',
                 region='wl-redqueen1',
-                instance_urls=json.dumps(
-                    [('https://www.googleapis.com/compute/v1/'
-                      'projects/foo/zones/wl-redqueen1-a/instances/i1')]),
+                instance_urls=[
+                    ('https://www.googleapis.com/compute/v1/'
+                     'projects/foo/zones/wl-redqueen1-a/instances/i1')],
             ),
             # Unmanaged; different instance than ig_managed
             'ig_different_instance': instance_group_type.InstanceGroup(
@@ -341,9 +332,9 @@ class IapScannerTest(ForsetiTestCase):
                 name='ig5',
                 network='global/networks/default',
                 region='wl-redqueen1',
-                instance_urls=json.dumps(
-                    [('https://www.googleapis.com/compute/v1/'
-                      'projects/foo/zones/wl-redqueen1-a/instances/i2')]),
+                instance_urls=[
+                    ('https://www.googleapis.com/compute/v1/'
+                     'projects/foo/zones/wl-redqueen1-a/instances/i2')],
             ),
         }
         self.instance_group_managers = {
@@ -361,9 +352,7 @@ class IapScannerTest(ForsetiTestCase):
             'it1': instance_template_type.InstanceTemplate(
                 project_id='foo',
                 name='it1',
-                properties=json.dumps({
-                    'tags': {'items': ['tag_it1']},
-                }),
+                properties={'tags': {'items': ['tag_it1']}},
             ),
         }
         self.data = iap_scanner._RunData(self.backend_services.values(),
@@ -443,13 +432,18 @@ class IapScannerTest(ForsetiTestCase):
             self.data.tags_for_instance_group(self.instance_groups['ig_unmanaged']))
 
     def test_retrieve_resources(self):
-        iap_resources = dict((resource.backend_service.key, resource)
-                             for resource in self.scanner._retrieve()[0])
+        iap_resources = {}
+        for (resources, _) in self.scanner._retrieve():
+            iap_resources.update(
+                dict((resource.backend_service.key, resource)
+                     for resource in resources))
+
         self.maxDiff = None
         self.assertEquals(set([bs.key for bs in self.backend_services.values()]),
                           set(iap_resources.keys()))
         self.assertEquals(
             iap_scanner.IapResource(
+                project_full_name='organization/12345/project/foo/',
                 backend_service=self.backend_services['bs1'],
                 alternate_services=set([
                     backend_service_type.Key.from_args(

@@ -21,7 +21,6 @@ import json
 import os
 
 from google.cloud.forseti.common.gcp_type import key
-from google.cloud.forseti.common.util import parser
 
 
 # pylint: disable=too-many-instance-attributes
@@ -38,21 +37,65 @@ class Instance(object):
         self.cpu_platform = kwargs.get('cpu_platform')
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
-        self.disks = parser.json_unstringify(kwargs.get('disks'))
+        self.disks = kwargs.get('disks')
         self.machine_type = kwargs.get('machine_type')
-        self.metadata = parser.json_unstringify(kwargs.get('metadata'))
+        self.metadata = kwargs.get('metadata')
         self.name = kwargs.get('name')
-        self.network_interfaces = parser.json_unstringify(
-            kwargs.get('network_interfaces'))
+        self.network_interfaces = kwargs.get('network_interfaces')
         self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
-        self.scheduling = parser.json_unstringify(kwargs.get('scheduling'))
-        self.service_accounts = parser.json_unstringify(
-            kwargs.get('service_accounts'))
+        self.scheduling = kwargs.get('scheduling')
+        self.service_accounts = kwargs.get('service_accounts')
         self.status = kwargs.get('status')
         self.status_message = kwargs.get('status_message')
-        self.tags = parser.json_unstringify(kwargs.get('tags'))
+        self.tags = kwargs.get('tags')
         self.zone = kwargs.get('zone')
+        self._json = kwargs.get('raw_instance')
+
+    @classmethod
+    def from_dict(cls, instance, project_id=None):
+        """Creates an Instance from an instance dict.
+
+        Args:
+            instance (dict): An instance resource dict.
+            project_id (str): A project id for the resource.
+
+        Returns:
+            Instance: A new Instance object.
+        """
+        kwargs = {'project_id': project_id,
+                  'id': instance.get('id'),
+                  'creation_timestamp': instance.get('creationTimestamp'),
+                  'name': instance.get('name'),
+                  'description': instance.get('description'),
+                  'can_ip_forward': instance.get('canIpForward'),
+                  'cpu_platform': instance.get('cpuPlatform'),
+                  'disks': instance.get('disks', []),
+                  'machine_type': instance.get('machineType'),
+                  'metadata': instance.get('metadata', {}),
+                  'network_interfaces': instance.get('networkInterfaces', []),
+                  'scheduling': instance.get('scheduling', {}),
+                  'service_accounts': instance.get('serviceAccounts', []),
+                  'status': instance.get('status'),
+                  'status_message': instance.get('statusMessage'),
+                  'tags': instance.get('tags'),
+                  'zone': instance.get('zone'),
+                  'raw_instance': json.dumps(instance)}
+        return cls(**kwargs)
+
+    @staticmethod
+    def from_json(json_string, project_id=None):
+        """Creates an Instance from an instance JSON string.
+
+        Args:
+            json_string (str): A json string representing the instance.
+            project_id (str): A project id for the resource.
+
+        Returns:
+            Instance: A new Instance object.
+        """
+        instance = json.loads(json_string)
+        return Instance.from_dict(instance, project_id)
 
     @property
     def key(self):

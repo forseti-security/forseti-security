@@ -17,29 +17,30 @@ import collections
 from datetime import datetime
 import os
 
-# pylint: disable=line-too-long
-from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.data_access import backend_service_dao
 from google.cloud.forseti.common.data_access import csv_writer
-from google.cloud.forseti.common.data_access import firewall_rule_dao
-from google.cloud.forseti.common.data_access import instance_dao
-from google.cloud.forseti.common.data_access import instance_group_dao
-from google.cloud.forseti.common.data_access import instance_group_manager_dao
-from google.cloud.forseti.common.data_access import instance_template_dao
-from google.cloud.forseti.common.gcp_type import instance_group as instance_group_type
+from google.cloud.forseti.common.gcp_type import (
+    backend_service as backend_service_type)
+from google.cloud.forseti.common.gcp_type import (
+    firewall_rule as firewall_rule_type)
 from google.cloud.forseti.common.gcp_type import instance as instance_type
-from google.cloud.forseti.common.gcp_type import instance_template as instance_template_type
+from google.cloud.forseti.common.gcp_type import (
+    instance_group as instance_group_type)
+from google.cloud.forseti.common.gcp_type import (
+    instance_group_manager as instance_group_manager_type)
+from google.cloud.forseti.common.gcp_type import (
+    instance_template as instance_template_type)
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
+from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iap_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
-# pylint: enable=line-too-long
 
 LOGGER = log_util.get_logger(__name__)
 IapResource = collections.namedtuple(
     'IapResource',
-    ['backend_service',
+    ['project_full_name',
+     'backend_service',
      'alternate_services',
      'direct_access_sources',
      'iap_enabled',
@@ -261,11 +262,13 @@ class _RunData(object):
 
         return tags
 
-    def make_iap_resource(self, backend_service):
+    def make_iap_resource(self, backend_service, project_full_name):
         """Get an IapResource for a service.
 
         Args:
             backend_service (BackendService): service to create a resource for
+            project_full_name (str): The full path to the parent project
+                including all ancestors.
 
         Returns:
             IapResource: the corresponding resource
@@ -305,6 +308,7 @@ class _RunData(object):
                 alternate_services.add(backend_service2.key)
 
         return IapResource(
+            project_full_name=project_full_name,
             backend_service=backend_service,
             alternate_services=alternate_services,
             direct_access_sources=direct_access_sources,
@@ -349,7 +353,7 @@ class _RunData(object):
 
 
 class IapScanner(base_scanner.BaseScanner):
-    """Pipeline to IAP-related data from DAO"""
+    """Pipeline to IAP-related data from DAO."""
 
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iap.{}.csv'
 
@@ -372,6 +376,8 @@ class IapScanner(base_scanner.BaseScanner):
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
+        self.scoped_session, self.data_access = (
+            service_config.model_manager.get(model_name))
 
     @staticmethod
     def _flatten_violations(violations):
@@ -477,88 +483,163 @@ class IapScanner(base_scanner.BaseScanner):
                     }
                     notifier.process(message)
 
-    def _get_backend_services(self):
+    def _get_backend_services(self, parent):
         """Retrieves backend services.
+
+        Args:
+            parent (str): The parent resource prefix to pull.
 
         Returns:
             list: BackendService
         """
-        return backend_service_dao.BackendServiceDao(self.global_configs).\
-                        get_backend_services(self.snapshot_timestamp)
+        backend_services = []
+        with self.scoped_session as session:
+            for backend_service in self.data_access.scanner_iter(
+                    session, 'backendservice',
+                    full_resource_name_prefix=parent):
+                backend_services.append(
+                    backend_service_type.BackendService.from_json(
+                        project_id=backend_service.parent.name,
+                        json_string=backend_service.data))
+        return backend_services
 
-    def _get_firewall_rules(self):
+    def _get_firewall_rules(self, parent):
         """Retrieves firewall rules.
+
+        Args:
+            parent (str): The parent resource prefix to pull.
 
         Returns:
             list: FirewallRule
         """
-        return firewall_rule_dao.FirewallRuleDao(self.global_configs).\
-                        get_firewall_rules(self.snapshot_timestamp)
+        firewall_rules = []
+        with self.scoped_session as session:
+            for firewall_rule in self.data_access.scanner_iter(
+                    session, 'firewall', full_resource_name_prefix=parent):
+                firewall_rules.append(
+                    firewall_rule_type.FirewallRule.from_json(
+                        project_id=firewall_rule.parent.name,
+                        json_string=firewall_rule.data))
+        return firewall_rules
 
-    def _get_instances(self):
+    def _get_instances(self, parent):
         """Retrieves instances.
+
+        Args:
+            parent (str): The parent resource prefix to pull.
 
         Returns:
             list: Instance
         """
-        return instance_dao.InstanceDao(self.global_configs).\
-                        get_instances(self.snapshot_timestamp)
+        instances = []
+        with self.scoped_session as session:
+            for instance in self.data_access.scanner_iter(
+                    session, 'instance', full_resource_name_prefix=parent):
+                instances.append(
+                    instance_type.Instance.from_json(
+                        project_id=instance.parent.name,
+                        json_string=instance.data))
+        return instances
 
-    def _get_instance_groups(self):
+    def _get_instance_groups(self, parent):
         """Retrieves instance groups.
+
+        Args:
+            parent (str): The parent resource prefix to pull.
 
         Returns:
             list: InstanceGroup
         """
-        return instance_group_dao.InstanceGroupDao(self.global_configs).\
-                        get_instance_groups(self.snapshot_timestamp)
+        instance_groups = []
+        with self.scoped_session as session:
+            for instance_group in self.data_access.scanner_iter(
+                    session, 'instancegroup', full_resource_name_prefix=parent):
+                instance_groups.append(
+                    instance_group_type.InstanceGroup.from_json(
+                        project_id=instance_group.parent.name,
+                        json_string=instance_group.data))
+        return instance_groups
 
-    def _get_instance_group_managers(self):
+    def _get_instance_group_managers(self, parent):
         """Retrieves instance group managers.
+
+        Args:
+            parent (str): The parent resource prefix to pull.
 
         Returns:
             list: InstanceGroupManager
         """
-        return instance_group_manager_dao.InstanceGroupManagerDao(
-            self.global_configs).get_instance_group_managers(
-                self.snapshot_timestamp)
+        instance_group_managers = []
+        with self.scoped_session as session:
+            for instance_group_manager in self.data_access.scanner_iter(
+                    session, 'instancegroupmanager',
+                    full_resource_name_prefix=parent):
+                instance_group_managers.append(
+                    instance_group_manager_type.InstanceGroupManager.from_json(
+                        project_id=instance_group_manager.parent.name,
+                        json_string=instance_group_manager.data))
+        return instance_group_managers
 
-    def _get_instance_templates(self):
+    def _get_instance_templates(self, parent):
         """Retrieves instance templates.
+
+        Args:
+            parent (str): The parent resource prefix to pull.
 
         Returns:
             list: InstanceTemplate
         """
-        return instance_template_dao.InstanceTemplateDao(self.global_configs).\
-                        get_instance_templates(self.snapshot_timestamp)
+        instance_templates = []
+        with self.scoped_session as session:
+            for instance_template in self.data_access.scanner_iter(
+                    session, 'instancetemplate',
+                    full_resource_name_prefix=parent):
+                instance_templates.append(
+                    instance_template_type.InstanceTemplate.from_json(
+                        project_id=instance_template.parent.name,
+                        json_string=instance_template.data))
+        return instance_templates
 
     def _retrieve(self):
         """Retrieves the data for the scanner.
 
-        Returns:
-            list: List of data to pass to the rules engine
-            dict: A dict of resource counts.
+        Yields:
+            list: A list of IAP Resources for a project, to pass to the rules
+                engine
+            dict: A dict of resource counts for the project.
         """
-        run_data = _RunData(
-            backend_services=self._get_backend_services(),
-            firewall_rules=self._get_firewall_rules(),
-            instances=self._get_instances(),
-            instance_groups=self._get_instance_groups(),
-            instance_group_managers=self._get_instance_group_managers(),
-            instance_templates=self._get_instance_templates(),
-            )
+        with self.scoped_session as session:
+            for project in self.data_access.scanner_iter(session, 'project'):
+                parent = project.full_name
 
-        iap_resources = []
-        for backend_service in run_data.backend_services:
-            iap_resources.append(run_data.make_iap_resource(backend_service))
+                backend_services = self._get_backend_services(parent)
+                firewall_rules = self._get_firewall_rules(parent)
+                instances = self._get_instances(parent)
+                instance_groups = self._get_instance_groups(parent)
+                instance_group_managers = self._get_instance_group_managers(
+                    parent)
+                instance_templates = self._get_instance_templates(parent)
 
-        return iap_resources, run_data.resource_counts
+                run_data = _RunData(
+                    backend_services=backend_services,
+                    firewall_rules=firewall_rules,
+                    instances=instances,
+                    instance_groups=instance_groups,
+                    instance_group_managers=instance_group_managers,
+                    instance_templates=instance_templates)
 
-    def _find_violations(self, iap_resources):
+                iap_resources = []
+                for backend in backend_services:
+                    iap_resources.append(
+                        run_data.make_iap_resource(backend, parent))
+                yield iap_resources, run_data.resource_counts
+
+    def _find_violations(self, iap_data):
         """Find IAP violations.
 
         Args:
-            iap_resources (list): IapResource to find violations in
+            iap_data (iter): Generator of IAP resources and resource counts
+                per project in the inventory.
 
         Returns:
             list: RuleViolation
@@ -566,15 +647,21 @@ class IapScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding IAP violations with %r...',
                     self.rules_engine)
         ret = []
-        for iap_resource in iap_resources:
-            ret.extend(self.rules_engine.find_violations(iap_resource))
+        resource_counts = collections.defaultdict(int)
+        for (iap_resources, project_resource_counts) in iap_data:
+            for iap_resource in iap_resources:
+                ret.extend(self.rules_engine.find_violations(iap_resource))
+
+            for key, value in project_resource_counts.items():
+                resource_counts[key] += value
+
         LOGGER.debug('find_violations returning %r', ret)
-        return ret
+        return ret, dict(resource_counts)
 
     def run(self):
         """Runs the data collection."""
 
         LOGGER.debug('In run')
-        iap_data, resource_counts = self._retrieve()
-        all_violations = self._find_violations(iap_data)
+        iap_data = self._retrieve()
+        all_violations, resource_counts = self._find_violations(iap_data)
         self._output_results(all_violations, resource_counts)
