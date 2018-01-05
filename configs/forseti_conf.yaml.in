@@ -126,7 +126,7 @@ scanner:
         - name: bucket_acl
           enabled: true
         - name: cloudsql_acl
-          enabled: false
+          enabled: true
         - name: firewall_rule
           enabled: true
         - name: forwarding_rule
@@ -136,7 +136,7 @@ scanner:
         - name: iam_policy
           enabled: false
         - name: iap
-          enabled: false
+          enabled: true
         - name: instance_network_interface
           enabled: false
 

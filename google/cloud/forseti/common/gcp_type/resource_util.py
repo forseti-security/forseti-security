@@ -19,6 +19,7 @@ from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.common.gcp_type import organization as org
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.services import utils
 
 
 _RESOURCE_TYPE_MAP = {
@@ -64,6 +65,22 @@ def create_resource(resource_id, resource_type, **kwargs):
 
     return resource_type.get('class')(
         resource_id, **kwargs)
+
+def get_ancestors_from_full_name(full_name):
+    """Creates a Resource for each resource in the full ancestory path.
+
+    Args:
+        full_name (str): The full resource name from the model, includes all
+            parent resources in the hierarchy to the root organization.
+
+    Returns:
+        list: A list of Resource objects, from parent to base ancestor.
+    """
+    resource_ancestors = []
+    for (resource_type, resource_id) in utils.get_resources_from_full_name(
+            full_name):
+        resource_ancestors.append(create_resource(resource_id, resource_type))
+    return resource_ancestors
 
 def pluralize(resource_type):
     """Determine the pluralized form of the resource type.
