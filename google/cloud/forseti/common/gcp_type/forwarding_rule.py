@@ -71,7 +71,7 @@ class ForwardingRule(object):
         self.subnetwork = subnetwork
         self.network = network
         self.backend_service = backend_service
-        self.json = raw_json
+        self._json = raw_json
 
 
     @classmethod
@@ -127,4 +127,4 @@ class ForwardingRule(object):
         Returns:
             hash: The hash of the class properties.
         """
-        return hash(self.json)
+        return hash(self._json)
