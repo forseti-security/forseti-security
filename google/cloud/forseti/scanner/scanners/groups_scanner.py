@@ -14,13 +14,10 @@
 
 """Scanner for Google Groups."""
 
-from Queue import Queue
-
 import anytree
 import yaml
 
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.data_access import group_dao
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
@@ -29,29 +26,7 @@ MY_CUSTOMER = 'my_customer'
 
 
 class GroupsScanner(base_scanner.BaseScanner):
-    """Scanner for IAM data."""
-
-    def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules_file):
-        """Initialization.
-
-        Args:
-            global_configs (dict): Global configurations.
-            scanner_configs (dict): Scanner configurations.
-            service_config (ServiceConfig): Forseti 2.0 service configs
-            model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            rules_file (str): Fully-qualified path and filename of the rules
-                file.
-        """
-        super(GroupsScanner, self).__init__(
-            global_configs,
-            scanner_configs,
-            service_config,
-            model_name,
-            snapshot_timestamp,
-            rules_file)
-        self.dao = group_dao.GroupDao(global_configs)
+    """Scanner for group members data."""
 
     @staticmethod
     def _flatten_violations(violations):
@@ -216,55 +191,44 @@ class GroupsScanner(base_scanner.BaseScanner):
 
         return starting_node
 
-    def _get_recursive_members(self, starting_node, timestamp):
+    def _get_recursive_members(self, starting_node):
         """Get all the recursive members of a group.
 
         Args:
             starting_node (node): Member node from which to start getting
                 the recursive members.
-            timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
-
-        Returns:
-            node: Member node with all its recursive members.
         """
-        queue = Queue()
-        queue.put(starting_node)
-
-        while not queue.empty():
-            queued_node = queue.get()
-            members = self.dao.get_group_members('group_members',
-                                                 queued_node.member_id,
-                                                 timestamp)
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            members = data_access.expand_members(session,
+                                                 [starting_node.member_id])
             for member in members:
-                member_node = MemberNode(member.get('member_id'),
-                                         member.get('member_email'),
-                                         member.get('member_type'),
-                                         member.get('member_status'),
-                                         queued_node)
-                if member_node.member_type == 'GROUP':
-                    queue.put(member_node)
+                MemberNode(member.name,
+                           member.member_name,
+                           member.type,
+                           'ACTIVE',
+                           starting_node)
 
-        return starting_node
-
-    def _build_group_tree(self, timestamp):
+    def _build_group_tree(self):
         """Build a tree of all the groups in the organization.
-
-        Args:
-            timestamp (str): Snapshot timestamp, formatted as YYYYMMDDTHHMMSSZ.
 
         Returns:
             node: The tree structure of all the groups in the organization.
         """
         root = MemberNode(MY_CUSTOMER, MY_CUSTOMER)
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            all_groups = data_access.iter_groups(session)
 
-        all_groups = self.dao.get_all_groups('groups', timestamp)
-        for group in all_groups:
-            group_node = MemberNode(group.get('group_id'),
-                                    group.get('group_email'),
-                                    'group',
-                                    'ACTIVE',
-                                    root)
-            group_node = self._get_recursive_members(group_node, timestamp)
+            for group in all_groups:
+                group_node = MemberNode(group.name,
+                                        group.member_name,
+                                        group.type,
+                                        'ACTIVE',
+                                        root)
+                self._get_recursive_members(group_node)
 
         LOGGER.debug(anytree.RenderTree(
             root, style=anytree.AsciiStyle()).by_attr('member_email'))
@@ -280,7 +244,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         Returns:
             node: The tree structure of all the groups in the organization.
         """
-        root = self._build_group_tree(self.snapshot_timestamp)
+        root = self._build_group_tree()
         return root
 
     def run(self):
@@ -303,7 +267,7 @@ class MemberNode(anytree.node.NodeMixin):
 
     def __init__(self, member_id, member_email,
                  member_type=None, member_status=None, parent=None):
-        """Initialization
+        """Initialization.
 
         Args:
             member_id (str): id of the member

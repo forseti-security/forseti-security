@@ -13,28 +13,86 @@
 # limitations under the License.
 """A Bucket ACL Resource."""
 
+import json
+
 
 class BucketAccessControls(object):
     """Bucket ACL Resource.
     """
-    def __init__(self, bucket, entity, email, domain, role,
-                 project_number=None):
+    def __init__(self, project_id, bucket, entity, email, domain, role,
+                 raw_json):
         """Initialize
 
         Args:
-            bucket (str): GCS bucket
-            entity (str): GCS entity
-            email (str): email
-            domain (str): domain
-            role (str): GCS role
-            project_number (int): the project number
+            project_id (str): The project id.
+            bucket (str): GCS bucket name.
+            entity (str): GCS entity.
+            email (str): email.
+            domain (str): domain.
+            role (str): GCS role.
+            raw_json (str): The raw json string for the acl.
         """
+        self.project_id = project_id
         self.bucket = bucket
         self.entity = entity
         self.email = email
         self.domain = domain
         self.role = role
-        self.project_number = project_number
+        self.json = raw_json
+
+    @classmethod
+    def from_dict(cls, project_id, acl):
+        """Returns a new BucketAccessControls object from dict.
+
+        Args:
+            project_id (str): The project id.
+            acl (dict): The Bucket ACL.
+
+        Returns:
+            BucketAccessControls: A new BucketAccessControls object.
+        """
+        return cls(
+            project_id=project_id,
+            bucket=acl.get('bucket', ''),
+            entity=acl.get('entity', ''),
+            email=acl.get('email', ''),
+            domain=acl.get('domain', ''),
+            role=acl.get('role', ''),
+            raw_json=json.dumps(acl)
+        )
+
+    @staticmethod
+    def from_json(project_id, acls):
+        """Yields a new BucketAccessControls object from for each acl.
+
+        Args:
+            project_id (str): the project id.
+            acls (str): The json bucket acl list.
+
+        Yields:
+            BucketAccessControls: A new BucketAccessControls object for
+                each acl in acls.
+        """
+        acls = json.loads(acls)
+        for acl in acls:
+            yield BucketAccessControls.from_dict(
+                project_id, acl)
+
+    @staticmethod
+    def from_list(project_id, acls):
+        """Yields a new BucketAccessControls object from for each acl.
+
+        Args:
+            project_id (str): the project id.
+            acls (list): The bucket acl list.
+
+        Yields:
+            BucketAccessControls: A new BucketAccessControls object for
+                each acl in acls.
+        """
+        for acl in acls:
+            yield BucketAccessControls.from_dict(
+                project_id, acl)
 
     def __hash__(self):
         """Return hash of properties.
@@ -42,5 +100,4 @@ class BucketAccessControls(object):
         Returns:
             hash: The hash of the class properties.
         """
-        return hash((self.bucket, self.entity, self.email, self.domain,
-                     self.role, self.project_number))
+        return hash(self.json)

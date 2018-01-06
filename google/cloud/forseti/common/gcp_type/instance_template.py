@@ -18,8 +18,9 @@ See:
  https://cloud.google.com/compute/docs/reference/latest/instanceTemplates
 """
 
+import json
+
 from google.cloud.forseti.common.gcp_type import key
-from google.cloud.forseti.common.util import parser
 
 
 class InstanceTemplate(object):
@@ -34,10 +35,75 @@ class InstanceTemplate(object):
         self.creation_timestamp = kwargs.get('creation_timestamp')
         self.description = kwargs.get('description')
         self.name = kwargs.get('name')
+        self.properties = kwargs.get('properties')
+        self.id = kwargs.get('id')
         self.project_id = kwargs.get('project_id')
-        self.properties = parser.json_unstringify(kwargs.get('properties'))
-        self.resource_id = kwargs.get('id')
-        self.project_id = kwargs.get('project_id')
+        self._json = kwargs.get('raw_instance_template')
+
+    @classmethod
+    def from_dict(cls, instance_template, project_id=None):
+        """Creates an InstanceTemplate from an instance template dict.
+
+        Args:
+            instance_template (dict): An instance template resource dict.
+            project_id (str): A project id for the resource.
+
+        Returns:
+            InstanceTemplate: A new InstanceTemplate object.
+        """
+        kwargs = {'project_id': project_id,
+                  'id': instance_template.get('id'),
+                  'creation_timestamp': instance_template.get(
+                      'creationTimestamp'),
+                  'name': instance_template.get('name'),
+                  'description': instance_template.get('description'),
+                  'properties': instance_template.get('properties', {}),
+                  'raw_instance_template': json.dumps(instance_template)}
+
+        return cls(**kwargs)
+
+    @staticmethod
+    def from_json(json_string, project_id=None):
+        """Creates an InstanceTemplate from an instance template JSON string.
+
+        Args:
+            json_string (str): A json string representing the instance template.
+            project_id (str): A project id for the resource.
+
+        Returns:
+            InstanceTemplate: A new InstanceTemplate object.
+        """
+        instance_template = json.loads(json_string)
+        return InstanceTemplate.from_dict(instance_template, project_id)
+
+    def _create_json_str(self):
+        """Creates a json string based on the object attributes.
+
+        Returns:
+            str: json str.
+        """
+        resource_dict = {
+            'id': self.id,
+            'creationTimestamp': self.creation_timestamp,
+            'name': self.name,
+            'description': self.description,
+            'properties': self.properties}
+
+        # Strip out empty values
+        resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
+        return json.dumps(resource_dict)
+
+    @property
+    def json(self):
+        """Returns the json string representation of the resource.
+
+        Returns:
+            str: json str.
+        """
+        if not self._json:
+            self._json = self._create_json_str()
+
+        return self._json
 
     @property
     def key(self):
