@@ -48,7 +48,11 @@ class Rule(object):
         self.json = None
 
     def __repr__(self):
-        """Repr."""
+        """Repr.
+
+        Returns:
+            str: The repr.
+        """
         return 'Rule: <name=%s>' % self.rule_name
 
     def __eq__(self, other):

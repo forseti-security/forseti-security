@@ -35,7 +35,7 @@ def audit_pb_from_object(audit):
     """Audit data to proto."""
 
     end_time = timestamp.Timestamp().FromDatetime(
-            audit.end_time) if audit.end_time else None
+        audit.end_time) if audit.end_time else None
 
     return auditor_pb2.Audit(
         id=audit.id,

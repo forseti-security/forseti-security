@@ -14,7 +14,6 @@
 
 """Util for generic operations for Resources."""
 
-from google.cloud.forseti import config
 from google.cloud.forseti.common.gcp_type import backend_service
 from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.common.gcp_type import organization as org
