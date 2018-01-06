@@ -16,6 +16,7 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 import "google/cloud/forseti/services/actions/action_engine.proto";
+import "google/cloud/forseti/services/inventory/inventory.proto";
 
 package google.cloud.forseti.services.auditor;
 
@@ -24,7 +25,8 @@ service Auditor {
 
   rpc List(ListRequest) returns (stream Audit) {}
 
-  rpc Run(RunRequest) returns (RunReply) {}
+  rpc Run(RunRequest) returns
+      (stream google.cloud.forseti.services.inventory.Progress) {}
 
   rpc GetResults(GetResultsRequest) returns
     (stream google.cloud.forseti.services.actions.RuleResult) {}
@@ -70,10 +72,6 @@ message Audit {
 message RunRequest {
 	string config_path = 1;
   string model_handle = 2;
-}
-
-message RunReply {
-	int32 status = 1;
 }
 
 message GetResultsRequest {

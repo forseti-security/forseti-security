@@ -61,7 +61,7 @@ message RuleResult {
   // The id of the rule, must be unique
   string rule_id = 1;
   // The resource that this rule affects.
-  string resource = 2;
+  string resource_type_name = 2;
   // The current state of the resource in json string format.
   string current_state = 3;
   // The expected state of the resource in json string format.
@@ -73,12 +73,12 @@ message RuleResult {
   string info = 6;
   // The audit associated with this RuleResult.
   int32 audit_id = 7;
-  // The hash of the rule data.
-  string rule_hash = 8;
+  // The hash of the result data.
+  string result_hash = 8;
   // The model handle.
   string model_handle = 9;
   // The owners of the resource.
-  repeated string resource_owners = 10;
+  repeated ResourceOwner resource_owners = 10;
   // The status of the RuleResult.
   enum Status {
     UNSPECIFIED = 0;
@@ -93,6 +93,13 @@ message RuleResult {
   google.protobuf.Timestamp create_time = 13;
   // The timestamp for when the RuleResult was modified.
   google.protobuf.Timestamp modified_time = 14;
+}
+
+message ResourceOwner {
+  // The type of resource owner (e.g. user, group, serviceAccount)
+  string type = 1;
+  // Usually an email address or domain
+  string name = 2;
 }
 
 message ProcessResultsRequest {

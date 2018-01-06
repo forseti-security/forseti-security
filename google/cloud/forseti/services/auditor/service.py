@@ -20,6 +20,7 @@ from google.cloud.forseti.services.auditor import auditor
 from google.cloud.forseti.services.actions import action_engine_pb2
 from google.cloud.forseti.services.auditor import auditor_pb2
 from google.cloud.forseti.services.auditor import auditor_pb2_grpc
+from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.common.util import log_util
 
@@ -48,11 +49,12 @@ def ruleresult_pb_from_object(rule_result):
 
     return action_engine_pb2.RuleResult(
         rule_id=rule_result.rule_id,
-        resource=rule_result.resource,
+        audit_id=rule_result.audit_id,
+        resource_type_name=rule_result.resource_type_name,
         current_state=rule_result.current_state,
         expected_state=rule_result.expected_state,
         info=rule_result.info,
-        rule_hash=rule_result.rule_hash,
+        result_hash=rule_result.result_hash,
         model_handle=rule_result.model_handle,
         resource_owners=rule_result.resource_owners,
         status=rule_result.status,
@@ -77,18 +79,26 @@ class GrpcAuditor(auditor_pb2_grpc.AuditorServicer):
             metadata_dict[key] = value
         return metadata_dict[self.HANDLE_KEY]
 
-    def __init__(self, auditor_api, service_config):
+    def __init__(self, auditor_api):
         super(GrpcAuditor, self).__init__()
         self.auditor = auditor_api
-        self.service_config = service_config
 
     def Ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return auditor_pb2.PingReply(data=request.data)
 
+    @autoclose_stream
     def Run(self, request, context):
-        """Run auditor."""
+        """Run auditor.
+
+        Args:
+            request (object): gRPC request object.
+            context (object): Server context.
+
+        Yields:
+            object: Audit progress updates.
+        """
 
         if request.model_handle:
             model_name = request.model_handle
@@ -96,22 +106,42 @@ class GrpcAuditor(auditor_pb2_grpc.AuditorServicer):
             model_name = self._get_handle(context)
         LOGGER.info('Run auditor service with model: %s', model_name)
         config_path = request.config_path
-        result = self.auditor.Run(config_path, model_name)
-
-        reply = auditor_pb2.RunReply()
-        reply.status = result
-        return reply
+        for progress in self.auditor.Run(config_path, model_name):
+            yield inventory_pb2.Progress(
+                id=progress.entity_id,
+                final_message=progress.final_message,
+                step=progress.step,
+                warnings=progress.warnings,
+                errors=progress.errors,
+                last_warning=repr(progress.last_warning),
+                last_error=repr(progress.last_error))
 
     @autoclose_stream
     def List(self, request, _):
-      """List the existing audits."""
+        """List the existing audits.
 
-      for audit in self.auditor.List():
-          yield audit_pb_from_object(audit)
+        Args:
+            request (object): gRPC request object.
+            _ (object): unused
+
+        Yields:
+            object: Audit
+        """
+
+        for audit in self.auditor.List():
+            yield audit_pb_from_object(audit)
 
     @autoclose_stream
     def GetResults(self, request, _):
-        """Get audit results."""
+        """Get audit results.
+
+        Args:
+            request (object): gRPC request object.
+            _ (object): unused
+
+        Yields:
+            object: RuleResult
+        """
 
         for result in self.auditor.GetResults(request.id):
             yield ruleresult_pb_from_object(result)
@@ -133,7 +163,6 @@ class GrpcAuditorFactory(object):
     def create_and_register_service(self, server):
         """Create and register the Forseti Auditor service."""
         service = GrpcAuditor(
-            auditor_api=auditor.Auditor(self.config),
-            service_config=self.config)
+            auditor_api=auditor.Auditor(self.config))
         auditor_pb2_grpc.add_AuditorServicer_to_server(service, server)
         return service

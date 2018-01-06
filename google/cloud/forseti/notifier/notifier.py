@@ -64,7 +64,6 @@ except flags.DuplicateFlagError:
 LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
-# pylint: disable=inconsistent-return-statements
 def find_pipelines(pipeline_name):
     """Get the first class in the given sub module
 
@@ -87,7 +86,6 @@ def find_pipelines(pipeline_name):
                 return obj
     except ImportError, e:
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
-# pylint: enable=inconsistent-return-statements
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.

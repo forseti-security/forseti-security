@@ -21,93 +21,10 @@
 
 from Queue import Queue
 
+from google.cloud.forseti.services.progresser import FirstMessageQueueProgresser, QueueProgresser
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize as init_storage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
-
-
-class Progress(object):
-    """Progress state."""
-
-    def __init__(self, final_message=False, step="", inventory_id=-1):
-        self.inventory_id = inventory_id
-        self.final_message = final_message
-        self.step = step
-        self.warnings = 0
-        self.errors = 0
-        self.last_warning = ""
-        self.last_error = ""
-
-
-class QueueProgresser(Progress):
-    """Queue based progresser."""
-
-    def __init__(self, queue):
-        super(QueueProgresser, self).__init__()
-        self.queue = queue
-
-    def _notify(self):
-        """Notify status update into queue."""
-
-        self.queue.put_nowait(self)
-
-    def _notify_eof(self):
-        """Notify end of status updates into queue."""
-
-        self.queue.put(None)
-
-    def on_new_object(self, resource):
-        """Update the status with the new resource."""
-
-        self.step = resource.key()
-        self._notify()
-
-    def on_warning(self, warning):
-        """Stores the warning and updates the counter."""
-
-        self.last_warning = warning
-        self.warnings += 1
-        self._notify()
-
-    def on_error(self, error):
-        """Stores the error and updates the counter."""
-
-        self.last_error = error
-        self.errors += 1
-        self._notify()
-
-    def get_summary(self):
-        """Indicate end of updates, and return self as last state.
-
-        Returns:
-            object: Progresser in its last state.
-        """
-
-        self.final_message = True
-        self._notify()
-        self._notify_eof()
-        return self
-
-
-class FirstMessageQueueProgresser(QueueProgresser):
-    """Queue base progresser only delivers first message.
-    Then throws away all subsequent messages. This is used
-    to make sure that we're not creating an internal buffer of
-    infinite size as we're crawling in background without a queue consumer."""
-
-    def __init__(self, *args, **kwargs):
-        super(FirstMessageQueueProgresser, self).__init__(*args, **kwargs)
-        self.first_message_sent = False
-
-    def _notify(self):
-        if not self.first_message_sent:
-            self.first_message_sent = True
-            QueueProgresser._notify(self)
-
-    def _notify_eof(self):
-        if not self.first_message_sent:
-            self.first_message_sent = True
-        QueueProgresser._notify_eof(self)
 
 
 def run_inventory(service_config,
@@ -133,7 +50,7 @@ def run_inventory(service_config,
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
-            progresser.inventory_id = storage.index.id
+            progresser.entity_id = storage.index.id
             progresser.final_message = True if background else False
             queue.put(progresser)
             result = run_crawler(storage,

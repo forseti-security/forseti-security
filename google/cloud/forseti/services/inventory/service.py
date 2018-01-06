@@ -23,7 +23,7 @@ from google.cloud.forseti.services.utils import autoclose_stream
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,no-member
+# pylint: disable=missing-param-doc
 
 
 def inventory_pb_from_object(inventory_index):
@@ -77,7 +77,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         for progress in self.inventory.Create(request.background,
                                               request.model_name):
             yield inventory_pb2.Progress(
-                id=progress.inventory_id,
+                id=progress.entity_id,
                 final_message=progress.final_message,
                 step=progress.step,
                 warnings=progress.warnings,

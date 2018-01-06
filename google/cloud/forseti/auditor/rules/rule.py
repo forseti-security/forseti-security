@@ -18,9 +18,11 @@ This is a generic class that handles a basic rule, as defined in
 schema/rules.json.
 """
 
-from collections import namedtuple
+import hashlib
+import json
 
 from google.cloud.forseti.auditor import condition_parser
+from google.cloud.forseti.services.auditor import storage
 from google.cloud.forseti.services.actions import action_engine_pb2
 from google.cloud.forseti.common.util import class_loader_util
 from google.cloud.forseti.common.util import log_util
@@ -40,9 +42,10 @@ class Rule(object):
         """
         self.rule_name = rule_name
         self.description = description
-        self.config_variables = {}
+        self.config_variables = []
         self.resource_config = []
         self.condition = None
+        self.json = None
 
     def __eq__(self, other):
         """Test equality.
@@ -71,6 +74,14 @@ class Rule(object):
         """
         return not self == other
 
+    def calculate_hash(self):
+        """Calculate the hash of this rule.
+
+        Returns:
+            str: The hex digest of the rule's json after it gets hashed.
+        """
+        return hashlib.sha1(json.dumps(self.json, sort_keys=True)).hexdigest()
+
     @staticmethod
     def create_rule(rule_definition):
         """Instantiate a rule based on its definition.
@@ -91,9 +102,10 @@ class Rule(object):
         new_rule.description = rule_definition.get('description')
 
         config = rule_definition.get('configuration', {})
-        new_rule.config_variables = config.get('variables', {})
+        new_rule.config_variables = config.get('variables', [])
         new_rule.resource_config = config.get('resources', [])
         new_rule.condition = config.get('condition')
+        new_rule.json = rule_definition
         return new_rule
 
     def audit(self, resource):
@@ -103,19 +115,25 @@ class Rule(object):
             resource (object): The GCP Resource to audit with current Rule.
 
         Returns:
-            RuleResult: The result of the audit, or None if Rule does not
-                apply to resource.
+            RuleResult: The result of the audit if it evaluates to True,
+                otherwise None.
+
+        Raises:
+            ResourceDataError: When there's an error loading the resource data.
         """
-        resource_type = '%s.%s' % (
-            resource.__module__, resource.__class__.__name__)
 
         LOGGER.debug('... checking if %s applies to %s',
-                     self.rule_name, resource_type)
+                     self.rule_name, resource.type)
+
+        try:
+            resource_data = json.loads(resource.data)
+        except ValueError:
+            raise ResourceDataError(resource.data)
 
         resource_cfg = None
         # Check if this Rule applies to this resource.
         for res_cfg in self.resource_config:
-            if resource_type == res_cfg['type']:
+            if resource.type == res_cfg['type']:
                 resource_cfg = res_cfg
                 break
 
@@ -128,19 +146,19 @@ class Rule(object):
         resource_vars = resource_cfg.get('variables', {})
         LOGGER.debug(resource_vars)
         config_var_params = {
-            var_name: getattr(resource, res_prop)
+            var_name: resource_data.get(res_prop)
             for (var_name, res_prop) in resource_vars.iteritems()
         }
         cond_parser = condition_parser.ConditionParser(config_var_params)
-        current_state = resource
-        expected_state = resource
-        # TODO: update this
-        return action_engine_pb2.RuleResult(
-            rule_id=self.rule_name,
-            result=cond_parser.eval_filter(self.condition),
-            resource=resource.name,
-            current_state=current_state,
-            expected_state=expected_state)
+        result = cond_parser.eval_filter(self.condition)
+        if result:
+            # TODO: should we be using a proto here?
+            return action_engine_pb2.RuleResult(
+                rule_id=self.rule_name,
+                resource_type_name=resource.type_name,
+                current_state=None,
+                expected_state=None,
+                status=storage.RuleResultStatus.ACTIVE)
 
     @property
     def type(self):
@@ -155,8 +173,11 @@ class Rule(object):
 class Error(Exception):
     """Base Error class."""
 
+class AuditError(Error):
+    """AuditError."""
 
-class InvalidRuleTypeError(Error):
+
+class InvalidRuleTypeError(AuditError):
     """InvalidRuleTypeError."""
 
     def __init__(self, rule_type):
@@ -167,3 +188,16 @@ class InvalidRuleTypeError(Error):
         """
         super(InvalidRuleTypeError, self).__init__(
             'Invalid rule type: {}'.format(rule_type))
+
+
+class ResourceDataError(AuditError):
+    """ResourceDataError."""
+
+    def __init__(self, resource_data):
+        """Init.
+
+        Args:
+            resource_data (str): The resource data.
+        """
+        super(ResourceDataError, self).__init__(
+            'Resource data could not be audited: {}'.format(resource_data))

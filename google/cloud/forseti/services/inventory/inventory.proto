@@ -16,7 +16,7 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-package inventory;
+package google.cloud.forseti.services.inventory;
 
 service Inventory {
   rpc Ping(PingRequest) returns (PingReply) {}

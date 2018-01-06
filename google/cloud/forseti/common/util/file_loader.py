@@ -106,9 +106,9 @@ def _read_file_from_local(file_path):
     Returns:
         dict: The parsed dict from the loaded file.
     """
-    with open(os.path.abspath(file_path), 'r') as fp:
+    with open(os.path.abspath(file_path), 'r') as filep:
         parser = _get_filetype_parser(file_path, 'file')
-        return parser(fp)
+        return parser(filep)
 
 
 def _parse_json_string(data):

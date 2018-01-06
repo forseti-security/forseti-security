@@ -220,12 +220,12 @@ class ServiceConfig(AbstractServiceConfig):
 
     def __init__(self,
                  inventory_config,
-                 explain_connect_string,
+                 db_connect_string,
                  endpoint):
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
-        self.engine = create_engine(explain_connect_string, pool_recycle=3600)
+        self.engine = create_engine(db_connect_string, pool_recycle=3600)
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
@@ -289,7 +289,7 @@ class ServiceConfig(AbstractServiceConfig):
 
 
 def serve(endpoint, services,
-          explain_connect_string,
+          db_connect_string,
           gsuite_sa_path, gsuite_admin_email,
           root_resource_id, max_workers=32, wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
@@ -298,6 +298,7 @@ def serve(endpoint, services,
         Exception: No services to start
     """
 
+    LOGGER.info('Starting Forseti server...')
     factories = []
     for service in services:
         factories.append(STATIC_SERVICE_MAPPING[service])
@@ -310,7 +311,7 @@ def serve(endpoint, services,
                                        gsuite_sa_path,
                                        gsuite_admin_email)
     config = ServiceConfig(inventory_config,
-                           explain_connect_string,
+                           db_connect_string,
                            endpoint)
     inventory_config.set_service_config(config)
 

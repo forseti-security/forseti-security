@@ -14,14 +14,15 @@
 
 """Forseti Auditor."""
 
-from google.apputils import app
+from Queue import Queue
 
+from google.cloud.forseti.services.progresser import QueueProgresser
 from google.cloud.forseti.auditor import rules_engine as rules_eng
-from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.services.auditor import storage
 
+# pylint: disable=invalid-name,too-many-locals,broad-except
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -30,20 +31,13 @@ class Auditor(object):
     """Auditor."""
 
     def __init__(self, config):
+        """Initialize.
+
+        Args:
+            config (object): The service config.
+        """
         self.config = config
-
-    def _check_config(self):
-        """Check configuration."""
-
-        # TODO: fix this
-        if not self.config.FORSETI_CONFIG:
-            if not config_path:
-                LOGGER.error('Provide a --config to run Auditor services.')
-                return 1
-            config.FORSETI_CONFIG = config.from_file(config_path)
-
-        log_util.set_logger_level_from_config(
-            config.FORSETI_CONFIG.root_config.auditor.get('loglevel'))
+        storage.initialize(self.config.get_engine())
 
     def Run(self, config_path, model_name):
         """Run the auditor.
@@ -51,6 +45,9 @@ class Auditor(object):
         Args:
             config_path (str): Path to the config.
             model_name (str): The name of the model.
+
+        Yields:
+            object: Progress objects.
         """
 
         try:
@@ -61,54 +58,115 @@ class Auditor(object):
 
         rules_path = config_file.get('auditor').get('rules_path')
 
-        LOGGER.info('Rules path: %s' % rules_path)
-        rules_engine = rules_eng.RulesEngine(rules_path)
-        rules_engine.setup()
+        LOGGER.info('Rules path: %s', rules_path)
 
-        # Get the resource types to audit, as defined in the
-        # rule definitions.
-        resource_types = [
-            res_conf['type'] 
-            for r in rules_engine.rules
-            for res_conf in r.resource_config]
+        progress_queue = Queue()
+        progresser = QueueProgresser(progress_queue)
 
-        LOGGER.info('Resource types found in rules.yaml: %s', resource_types)
+        def do_audit():
+            """Do the audit.
 
-        # For each resource type, load resources from storage and
-        # run the rules associated with that resource type.
-        model_manager = self.config.model_manager
-        scoped_session, data_access = model_manager.get(model_name)
+            Returns:
+                object: The progresser summary of run_audit().
+            """
 
-        with scoped_session as session:
-            all_results = []
-            for resource_type in resource_types:
-                loaded_resources = data_access.list_resources_by_prefix(
-                    session, type_prefix=resource_type)
+            # For each resource type, load resources from storage and
+            # run the rules associated with that resource type.
+            model_manager = self.config.model_manager
+            scoped_session, model_data_access = model_manager.get(model_name)
 
-                for resource in loaded_resources:
-                    all_results.extend([
-                        result
-                        for result in rules_engine.evaluate_rules(resource)
-                        if result.result])
+            with scoped_session as session:
+                return run_audit(progress_queue,
+                                 session,
+                                 progresser,
+                                 rules_path,
+                                 model_data_access,
+                                 model_name)
 
-                LOGGER.info('%s rules evaluated to True', len(all_results))
-
-            # TODO: store all_results in results table instead of in a list
-            print all_results
-
-        return 0
+        self.config.run_in_background(do_audit)
+        for progress in iter(progress_queue.get, None):
+            yield progress
 
     def List(self):
-        """List the Audits."""
+        """List the Audits.
+
+        Yields:
+            object: The audits found in the system.
+        """
 
         with self.config.scoped_session() as session:
-            for item in DataAccess.list(session):
+            auditor_data_access = storage.DataAccess(session)
+            for item in auditor_data_access.list_audits():
                 yield item
 
 
-def main(_):
-    return Auditor().run()
+def run_audit(progress_queue,
+              session,
+              progresser,
+              rules_path,
+              model_data_access,
+              model_handle,
+              background=False):
+    """Runs the audit given the environment configuration.
 
+    Args:
+        progress_queue (object): Queue to push status updates into.
+        session (object): Database session.
+        progresser (object): Progresser implementation to use.
+        rules_path (str): The path to the rules file.
+        model_data_access (object): The data access object for the model.
+        model_handle (str): The model handle.
+        background (bool): True if should run in background, otherwise False.
 
-if __name__ == '__main__':
-    app.run()
+    Returns:
+        object: Returns the progresser summary of the audit.
+
+    Raises:
+        Exception: Reraises any exception.
+    """
+
+    rules_engine = rules_eng.RulesEngine(rules_path)
+    rules_engine.setup()
+
+    # Get the resource types to audit, as defined in the
+    # rule definitions.
+    resource_types = [
+        res_conf['type']
+        for r in rules_engine.rules
+        for res_conf in r.resource_config]
+
+    LOGGER.info('Resource types found in rules.yaml: %s', resource_types)
+    auditor_data_access = storage.DataAccess(session)
+
+    try:
+        # Create the audit entry
+        new_audit = auditor_data_access.create_audit(model_handle)
+        # Snapshot the rules
+        rule_hash_ids = auditor_data_access.create_rule_snapshot(
+            new_audit, rules_engine.rules)
+
+        progresser.entity_id = new_audit.id
+        progresser.final_message = True if background else False
+        progress_queue.put(progresser)
+
+        for resource_type in resource_types:
+            inventory_resources = model_data_access.list_resources_by_prefix(
+                session, type_prefix=resource_type)
+
+            for inv_resource in inventory_resources:
+                (audit_rule, _) = rules_engine.evaluate_rules(inv_resource)
+                try:
+                    stored_result = auditor_data_access.create_result(
+                        audit_id=new_audit.id,
+                        rule_id=rule_hash_ids.get(audit_rule.calculate_hash()),
+                        resource_type_name=inv_resource.type_name,
+                        current_state={},
+                        expected_state={},
+                        model_handle=model_handle)
+                    progresser.on_new_object(stored_result.id)
+                except Exception as err:
+                    progresser.on_error(err)
+                    new_audit.add_warning(session, err.message)
+    except Exception as err:
+        progresser.on_error(err)
+    return progresser.get_summary()

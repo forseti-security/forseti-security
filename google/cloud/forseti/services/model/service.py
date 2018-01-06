@@ -21,7 +21,7 @@ from google.cloud.forseti.services.model import modeller
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,no-member
+# pylint: disable=missing-param-doc
 
 
 class GrpcModeller(model_pb2_grpc.ModellerServicer):

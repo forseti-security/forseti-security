@@ -60,16 +60,18 @@ class RulesEngine(object):
         """Evaluate rules for this resource.
 
         Args:
-            resource (object): A GCP Resource.
+            resource (object): GCP Resource data.
 
-        Returns:
-            list: A list of RuleResults.
+        Yields:
+            Rule: The rule that got audited.
+            RuleResult: The result of the rule evaluation.
         """
-        results = []
-        for rule in self.rules:
-            result = rule.audit(resource)
-            if not result:
-                continue
-            results.append(result)
 
-        return results
+        for rule in self.rules:
+            try:
+                result = rule.audit(resource)
+                if not result:
+                    continue
+                yield (rule, result)
+            except generic_rule.AuditError as aerr:
+                LOGGER.error('Audit error: %s', aerr)

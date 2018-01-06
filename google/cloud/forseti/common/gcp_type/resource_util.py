@@ -14,6 +14,8 @@
 
 """Util for generic operations for Resources."""
 
+# pylint: disable=broad-except
+
 from google.cloud.forseti import config
 from google.cloud.forseti.common.gcp_type import backend_service
 from google.cloud.forseti.common.gcp_type import folder
@@ -120,6 +122,8 @@ def type_from_name(resource_name):
 def load_all(resource_class_name):
     """Load all the resources found in the database for a resource type.
 
+    Deprecated.
+
     The gcp_type class contains a property that points to its dao class,
     and the dao class has a get_all() method that retrieves all the data
     and returns the results. This is a temporary method that will go away
@@ -147,5 +151,5 @@ def load_all(resource_class_name):
         LOGGER.error(
             'Error getting all resources for %s due to %s',
             resource_class_name, err)
-
-    return resource_dao.get_all()
+    else:
+        return resources
