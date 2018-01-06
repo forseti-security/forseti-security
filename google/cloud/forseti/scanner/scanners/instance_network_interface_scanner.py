@@ -15,10 +15,8 @@
 """Scanner for the Networks Enforcer acls rules engine."""
 
 # pylint: disable=line-too-long
-import json
-
 from google.cloud.forseti.common.data_access import project_dao
-from google.cloud.forseti.common.gcp_type.instance import InstanceNetworkInterface
+from google.cloud.forseti.common.gcp_type.instance import Instance
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -138,18 +136,12 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         with scoped_session as session:
             network_interfaces = []
 
-            for instance in data_access.scanner_iter(session, "instance"):
-                # Not casting to Instance type, which also would require
-                # changes that would impact the IAP scanner.
-                instance_data = json.loads(instance.data)
-
-                instance_network_interfaces = []
-                for network_interface in instance_data.get(
-                        'networkInterfaces', []):
-                    instance_network_interfaces.append(
-                        InstanceNetworkInterface(**network_interface))
-
-                network_interfaces.append(instance_network_interfaces)
+            for instance_from_data_model in data_access.scanner_iter(
+                    session, "instance"):
+                instance = Instance.from_json(
+                    instance_from_data_model.data,
+                    instance_from_data_model.parent.name)
+                network_interfaces.append(instance.create_network_interfaces())
 
         if not network_interfaces:
             LOGGER.warn('No VM network interfaces found. Exiting.')
