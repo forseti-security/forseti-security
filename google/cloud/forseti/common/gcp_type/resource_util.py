@@ -14,20 +14,14 @@
 
 """Util for generic operations for Resources."""
 
-# pylint: disable=broad-except
-
 from google.cloud.forseti import config
 from google.cloud.forseti.common.gcp_type import backend_service
 from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.common.gcp_type import organization as org
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
-from google.cloud.forseti.common.util import class_loader_util
-from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.services import utils
 
-
-LOGGER = log_util.get_logger(__name__)
 
 _RESOURCE_TYPE_MAP = {
     resource.ResourceType.ORGANIZATION: {
@@ -51,18 +45,6 @@ _RESOURCE_TYPE_MAP = {
         'can_create_resource': False,
     },
 }
-
-# Temporary map of GCP types to dao, this will go away in the near future.
-# pylint: disable=line-too-long
-_TYPES_TO_DAO = {
-    'google.cloud.forseti.common.gcp_type.project.Project': {
-        'dao': 'google.cloud.forseti.common.data_access.project_dao.ProjectDao'
-    },
-    'google.cloud.forseti.common.gcp_type.instance.Instance': {
-        'dao': 'google.cloud.forseti.common.data_access.instance_dao.InstanceDao'
-    },
-}
-# pylint: enable=line-too-long
 
 
 def create_resource(resource_id, resource_type, **kwargs):
@@ -135,39 +117,3 @@ def type_from_name(resource_name):
             return resource_type
 
     return None
-
-
-def load_all(resource_class_name):
-    """Load all the resources found in the database for a resource type.
-
-    Deprecated.
-
-    The gcp_type class contains a property that points to its dao class,
-    and the dao class has a get_all() method that retrieves all the data
-    and returns the results. This is a temporary method that will go away
-    with the new data access layer.
-
-    Args:
-        resource_class_name (str): The resource class name, including the
-            module name (i.e. google.cloud.forseti.gcp_type.<module>.<Class>)
-
-    Returns:
-        list: The results from the database.
-    """
-    if not resource_class_name in _TYPES_TO_DAO:
-        LOGGER.warn('No dao class associated to %s', resource_class_name)
-        return None
-
-    try:
-        dao_class_name = _TYPES_TO_DAO[resource_class_name]['dao']
-        LOGGER.info('Loading %s', dao_class_name)
-        resource_dao = class_loader_util.load_class(dao_class_name)(
-            config.FORSETI_CONFIG.root_config.common)
-        LOGGER.info('Loaded %s', resource_dao)
-        resources = resource_dao.get_all()
-    except Exception as err:
-        LOGGER.error(
-            'Error getting all resources for %s due to %s',
-            resource_class_name, err)
-    else:
-        return resources

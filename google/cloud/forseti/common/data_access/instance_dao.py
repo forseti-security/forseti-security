@@ -27,20 +27,6 @@ LOGGER = log_util.get_logger(__name__)
 class InstanceDao(dao.Dao):
     """Instance DAO."""
 
-    def get_all(self, timestamp=None):
-        """Get instances from a particular snapshot. Generic method name.
-
-        Args:
-            timestamp (str): The snapshot timestamp.
-
-        Returns:
-            list: The list of instances.
-        """
-        if not timestamp:
-            timestamp = self.get_latest_snapshot_timestamp(
-                ('SUCCESS', 'PARTIAL_SUCCESS'))
-        return self.get_instances(timestamp)
-
     def get_instances(self, timestamp):
         """Get instances from a particular snapshot.
 
