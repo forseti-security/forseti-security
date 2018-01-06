@@ -98,6 +98,7 @@ def make_proto():
                     "-I%s" % root_dir,
                     "--python_out=.",
                     "--grpc_python_out=.",
+                    "--include_imports",
                     protofile,
                 ],
                 cwd=protodir)
