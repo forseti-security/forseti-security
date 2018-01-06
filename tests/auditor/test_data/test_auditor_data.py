@@ -47,7 +47,7 @@ FAKE_RULES_CONFIG1 = {
                 ],
                 'resources': [
                     {
-                        'type': 'google.cloud.forseti.common.gcp_type.project.Project',
+                        'type': 'project',
                         'variables': {'xyz': 'id'}
                     }
                 ],
@@ -64,7 +64,7 @@ FAKE_RULES_CONFIG1 = {
                 ],
                 'resources': [
                     {
-                        'type': 'google.cloud.forseti.common.gcp_type.organization.Organization',
+                        'type': 'organization',
                         'variables': {'abc': 'organization_id'}
                     }
                 ],
@@ -86,7 +86,7 @@ FAKE_INVALID_RULES_CONFIG1 = {
                 ],
                 'resources': [
                     {
-                        'type': 'google.cloud.forseti.common.gcp_type.project.Project',
+                        'type': 'project',
                         'variables': {'xyz': 'id'}
                     }
                 ],

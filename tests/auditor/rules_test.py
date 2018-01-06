@@ -14,13 +14,14 @@
 
 """Rules tests."""
 
+import json
 import mock
 import unittest
 
 from google.cloud.forseti.auditor import condition_parser
 from google.cloud.forseti.auditor.rules import rule
 from google.cloud.forseti.services.actions import action_engine_pb2
-from google.cloud.forseti.common.gcp_type import project as project_resource
+from google.cloud.forseti.services.auditor import storage
 from tests.auditor.test_data import test_auditor_data
 from tests.unittest_utils import ForsetiTestCase
 
@@ -38,19 +39,24 @@ class RulesTest(ForsetiTestCase):
     def test_audit(self, mock_condition_parser_class):
         """Test audit()."""
         mock_cond_parser = mock_condition_parser_class.return_value
-        fake_project = project_resource.Project('proj1', 1111)
+        proj_data = {"name": "project-test",
+                     "parent": {"type": "organization", "id": "123456789012"},
+                     "projectId": "project-test",
+                     "projectNumber": "111111111111",
+                     "lifecycleState": "ACTIVE",
+                     "createTime": "2018-01-01T00:00:00.000Z"}
+        fake_project = mock.MagicMock(
+            data=json.dumps(proj_data),
+            type='project',
+            type_name='project/%s' % proj_data['projectId'])
         test_rule = rule.Rule.create_rule(
             test_auditor_data.FAKE_RULES_CONFIG1['rules'][0])
         mock_cond_parser.eval_filter.return_value = True
         actual_result = test_rule.audit(fake_project)
         expected_result = action_engine_pb2.RuleResult(
-            rule_id=test_rule.rule_id,
-            result=True,
-            current_state=fake_project,
-            expected_state=fake_project,
-            snapshot_id=None,
-            resource_owners=[],
-            info=None)
+            rule_id=test_rule.rule_name,
+            resource_type_name=fake_project.type_name,
+            status=storage.RuleResultStatus.ACTIVE.value)
         mock_cond_parser.eval_filter.assert_called_with(test_rule.condition)
         self.assertEquals(expected_result, actual_result)
 

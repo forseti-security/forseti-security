@@ -14,6 +14,7 @@
 
 """Rules Engine tests."""
 
+import json
 import mock
 import unittest
 
@@ -22,7 +23,7 @@ from google.cloud.forseti.auditor import rules_engine
 from google.cloud.forseti.auditor import rules_config_validator
 from google.cloud.forseti.auditor.rules import rule
 from google.cloud.forseti.services.actions import action_engine_pb2
-from google.cloud.forseti.common.gcp_type import project as project_resource
+from google.cloud.forseti.services.auditor import storage
 from tests.auditor.test_data import test_auditor_data
 from tests.unittest_utils import ForsetiTestCase
 
@@ -59,21 +60,29 @@ class RulesEngineTest(ForsetiTestCase):
             rule.Rule.create_rule(r)
             for r in test_auditor_data.FAKE_RULES_CONFIG1['rules']]
 
-        fake_project = project_resource.Project('proj1', 1111)
+        proj_data = {"name": "project-test",
+                     "parent": {"type": "organization", "id": "123456789012"},
+                     "projectId": "project-test",
+                     "projectNumber": "111111111111",
+                     "lifecycleState": "ACTIVE",
+                     "createTime": "2018-01-01T00:00:00.000Z"}
+
+        fake_project = mock.MagicMock(
+            data=json.dumps(proj_data),
+            type='project',
+            type_name='project/%s' % proj_data['projectId'])
         fake_result = action_engine_pb2.RuleResult(
             rule_id=rules_eng.rules[0].rule_name,
-            result=True,
-            current_state=fake_project,
-            expected_state=fake_project,
-            snapshot_id=None,
-            resource_owners=[],
-            info='')
-        expected_results = [fake_result]
+            resource_type_name=fake_project.type_name,
+            status=storage.RuleResultStatus.ACTIVE.value)
+        expected_results = [(rules_eng.rules[0], fake_result),
+                            (rules_eng.rules[1], None),
+                            ]
         mock_rule_audit.side_effect = [
             fake_result,
             None
         ]
-        actual_results = rules_eng.evaluate_rules(fake_project)
+        actual_results = list(rules_eng.evaluate_rules(fake_project))
         self.assertEquals(expected_results, actual_results)
 
 
