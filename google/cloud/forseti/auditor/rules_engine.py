@@ -70,8 +70,6 @@ class RulesEngine(object):
         for rule in self.rules:
             try:
                 result = rule.audit(resource)
-                if not result:
-                    continue
                 yield (rule, result)
             except generic_rule.AuditError as aerr:
                 LOGGER.error('Audit error: %s', aerr)

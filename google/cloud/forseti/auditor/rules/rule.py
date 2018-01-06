@@ -47,6 +47,10 @@ class Rule(object):
         self.condition = None
         self.json = None
 
+    def __repr__(self):
+        """Repr."""
+        return 'Rule: <name=%s>' % self.rule_name
+
     def __eq__(self, other):
         """Test equality.
 
@@ -158,7 +162,7 @@ class Rule(object):
                 resource_type_name=resource.type_name,
                 current_state=None,
                 expected_state=None,
-                status=storage.RuleResultStatus.ACTIVE)
+                status=storage.RuleResultStatus.ACTIVE.value)
 
     @property
     def type(self):

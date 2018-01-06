@@ -489,6 +489,7 @@ def define_auditor_parser(parent):
 
     run_auditor_parser.add_argument(
         '--config',
+        required=True,
         help='Auditor config file')
 
     run_auditor_parser.add_argument(
@@ -957,16 +958,16 @@ def run_auditor(client, config, output, _):
 
     client = client.auditor
 
-    def do_list():
+    def do_list_audits():
         """List audits."""
-        output.write(client.list())
+        for audit in client.list():
+            output.write(audit)
 
     def do_run():
         """Run auditor."""
-        result = client.run(
-            config_path=config.config,
-            model_handle=config.model)
-        output.write(result)
+        for progress in client.run(config_path=config.config,
+                                   model_handle=config.model):
+            output.write(progress)
 
     def do_get_results():
         """Get audit results."""
@@ -979,7 +980,7 @@ def run_auditor(client, config, output, _):
         output.write(result)
 
     actions = {
-        'list': do_list,
+        'list': do_list_audits,
         'run': do_run,
         'get-results': do_get_results,
         'delete': do_delete

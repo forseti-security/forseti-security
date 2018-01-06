@@ -35,6 +35,7 @@ from sqlalchemy.orm import relationship
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,invalid-name
 
+
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
@@ -122,7 +123,7 @@ class Audit(BASE):
         else:
             self.messages += warning_message
         session.add(self)
-        session.flush()
+        session.commit()
 
     def set_error(self, session, messages):
         """Indicate a broken audit.
@@ -133,8 +134,9 @@ class Audit(BASE):
         """
 
         self.messages = messages
+        self.status = AuditStatus.ERROR
         session.add(self)
-        session.flush()
+        session.commit()
 
 
 class Rule(BASE):
@@ -198,6 +200,7 @@ class DataAccess(object):
         """Create a new audit."""
 
         try:
+            # TODO: change this to model data, not just the handle
             audit = Audit.create(model_handle)
             self.session.add(audit)
             self.session.commit()
@@ -251,8 +254,9 @@ class DataAccess(object):
         result = (
             self.session.query(Audit)
             .filter(Audit.id == audit_id)
-            .one())
-        self.session.expunge(result)
+            .first())
+        if result:
+            self.session.expunge(result)
         return result
 
     def create_rule_snapshot(self, audit, rules):
@@ -296,8 +300,9 @@ class DataAccess(object):
         result = (
             self.session.query(Rule)
             .filter(Rule.rule_hash == rule_hash)
-            .one())
-        self.session.expunge(result)
+            .first())
+        if result:
+            self.session.expunge(result)
         return result
 
     def create_result(
@@ -329,6 +334,7 @@ class DataAccess(object):
             if not db_result:
                 self.session.add(result)
                 self.session.commit()
+                db_result = result
         except:
             self.session.rollback()
             raise
@@ -340,9 +346,10 @@ class DataAccess(object):
 
         db_result = (
             self.session.query(RuleResult)
-            .filter(RuleResult.result_hash == result.calculate_hash())
-            .one())
-        self.session.expunge(db_result)
+            .filter(RuleResult.result_hash == result.result_hash)
+            .first())
+        if db_result:
+            self.session.expunge(db_result)
         return db_result
 
 

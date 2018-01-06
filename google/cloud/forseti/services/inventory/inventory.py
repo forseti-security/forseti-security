@@ -21,10 +21,13 @@
 
 from Queue import Queue
 
+from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.services.progresser import FirstMessageQueueProgresser, QueueProgresser
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize as init_storage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
+
+LOGGER = log_util.get_logger(__name__)
 
 
 def run_inventory(service_config,
@@ -148,6 +151,8 @@ class Inventory(object):
         Yields:
             object: Inventory metadata
         """
+
+        LOGGER.info('List inventory')
 
         with self.config.scoped_session() as session:
             for item in DataAccess.list(session):

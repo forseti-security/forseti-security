@@ -34,13 +34,15 @@ LOGGER = log_util.get_logger(__name__)
 def audit_pb_from_object(audit):
     """Audit data to proto."""
 
+    end_time = timestamp.Timestamp().FromDatetime(
+            audit.end_time) if audit.end_time else None
+
     return auditor_pb2.Audit(
         id=audit.id,
-        start_time=timestamp.Timestamp().FromDateTime(
+        start_time=timestamp.Timestamp().FromDatetime(
             audit.start_time),
-        end_time=timestamp.Timestamp().FromDateTime(
-            audit.end_time),
-        status=audit.status,
+        end_time=end_time,
+        status=audit.status.value,
         model=audit.model,
         messages=audit.messages)
 

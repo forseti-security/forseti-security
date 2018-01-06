@@ -94,6 +94,8 @@ class Auditor(object):
             object: The audits found in the system.
         """
 
+        LOGGER.info('List audits')
+
         with self.config.scoped_session() as session:
             auditor_data_access = storage.DataAccess(session)
             for item in auditor_data_access.list_audits():
@@ -141,9 +143,16 @@ def run_audit(progress_queue,
     try:
         # Create the audit entry
         new_audit = auditor_data_access.create_audit(model_handle)
+
         # Snapshot the rules
-        rule_hash_ids = auditor_data_access.create_rule_snapshot(
-            new_audit, rules_engine.rules)
+        try:
+            rule_hash_ids = auditor_data_access.create_rule_snapshot(
+                new_audit, rules_engine.rules)
+            LOGGER.info('rule hash ids: %s', rule_hash_ids)
+        except Exception as err:
+            new_audit.set_error(session, err.message)
+            LOGGER.error('%s', err, exc_info=1)
+            raise
 
         progresser.entity_id = new_audit.id
         progresser.final_message = True if background else False
@@ -154,19 +163,27 @@ def run_audit(progress_queue,
                 session, type_prefix=resource_type)
 
             for inv_resource in inventory_resources:
-                (audit_rule, _) = rules_engine.evaluate_rules(inv_resource)
-                try:
-                    stored_result = auditor_data_access.create_result(
-                        audit_id=new_audit.id,
-                        rule_id=rule_hash_ids.get(audit_rule.calculate_hash()),
-                        resource_type_name=inv_resource.type_name,
-                        current_state={},
-                        expected_state={},
-                        model_handle=model_handle)
-                    progresser.on_new_object(stored_result.id)
-                except Exception as err:
-                    progresser.on_error(err)
-                    new_audit.add_warning(session, err.message)
+                for (audit_rule, result) in (
+                        rules_engine.evaluate_rules(inv_resource)):
+                    if not result:
+                        continue
+                    try:
+                        stored_result = auditor_data_access.create_result(
+                            audit_id=new_audit.id,
+                            rule_id=rule_hash_ids.get(
+                                audit_rule.calculate_hash()),
+                            resource_type_name=inv_resource.type_name,
+                            current_state={},
+                            expected_state={},
+                            model_handle=model_handle)
+                        progresser.on_new_object(str(stored_result.id))
+                    except Exception as err:
+                        LOGGER.error(err)
+                        progresser.on_error(err)
+                        new_audit.add_warning(session, err.message)
+
+        new_audit.complete()
     except Exception as err:
+        LOGGER.error(err)
         progresser.on_error(err)
     return progresser.get_summary()
