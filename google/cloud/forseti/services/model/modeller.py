@@ -29,14 +29,14 @@ class Modeller(object):
     def __init__(self, config):
         self.config = config
 
-    def CreateModel(self, source, name, inventory_id, background):
+    def create_model(self, source, name, inventory_id, background):
         """Creates a model from the import source."""
 
         model_manager = self.config.model_manager
         model_handle = model_manager.create(name=name)
         scoped_session, data_access = model_manager.get(model_handle)
 
-        def doImport():
+        def do_import():
             """Import runnable."""
             with scoped_session as session:
                 importer_cls = importer.by_source(source)
@@ -49,18 +49,18 @@ class Modeller(object):
                 import_runner.run()
 
         if background:
-            self.config.run_in_background(doImport)
+            self.config.run_in_background(do_import)
         else:
-            doImport()
+            do_import()
         return model_manager.model(model_handle, expunge=True)
 
-    def ListModel(self):
+    def list_model(self):
         """Lists all models."""
 
         model_manager = self.config.model_manager
         return model_manager.models()
 
-    def DeleteModel(self, model_name):
+    def delete_model(self, model_name):
         """Deletes a model."""
 
         model_manager = self.config.model_manager

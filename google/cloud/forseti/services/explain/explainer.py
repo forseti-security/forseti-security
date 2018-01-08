@@ -27,7 +27,7 @@ class Explainer(object):
     def __init__(self, config):
         self.config = config
 
-    def ExplainDenied(self, model_name, member, resources, permissions, roles):
+    def explain_denied(self, model_name, member, resources, permissions, roles):
         """Provides information on granting a member access to a resource."""
 
         model_manager = self.config.model_manager
@@ -40,7 +40,7 @@ class Explainer(object):
                                                 roles)
             return result
 
-    def ExplainGranted(self, model_name, member, resource, role, permission):
+    def explain_granted(self, model_name, member, resource, role, permission):
         """Provides information on why a member has access to a resource."""
 
         model_manager = self.config.model_manager
@@ -53,7 +53,7 @@ class Explainer(object):
                                                  permission)
             return result
 
-    def GetAccessByResources(self, model_name, resource_name, permission_names,
+    def get_access_by_resources(self, model_name, resource_name, permission_names,
                              expand_groups):
         """Returns members who have access to the given resource."""
 
@@ -66,7 +66,7 @@ class Explainer(object):
                                                            expand_groups)
             return mapping
 
-    def GetAccessByPermissions(self, model_name, role_name, permission_name,
+    def get_access_by_permissions(self, model_name, role_name, permission_name,
                                expand_groups, expand_resources):
         """Returns access tuples satisfying the permission or role.
 
@@ -92,7 +92,7 @@ class Explainer(object):
                                                            expand_resources)):
                 yield role, resource, members
 
-    def GetAccessByMembers(self, model_name, member_name, permission_names,
+    def get_access_by_members(self, model_name, member_name, permission_names,
                            expand_resources):
         """Returns access to resources for the provided member."""
 
@@ -103,7 +103,7 @@ class Explainer(object):
                     session, member_name, permission_names, expand_resources):
                 yield role, resources
 
-    def GetPermissionsByRoles(self, model_name, role_names, role_prefixes):
+    def get_permissions_by_roles(self, model_name, role_names, role_prefixes):
         """Returns the permissions associated with the specified roles."""
 
         model_manager = self.config.model_manager
@@ -113,7 +113,7 @@ class Explainer(object):
                     session, role_names, role_prefixes):
                 yield result
 
-    def Denormalize(self, model_name):
+    def denormalize(self, model_name):
         """Denormalizes a model."""
 
         model_manager = self.config.model_manager

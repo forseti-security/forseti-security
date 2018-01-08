@@ -51,7 +51,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
 
         return scanner_pb2.PingReply(data=request.data)
 
-    def Run(self, request, context):
+    def run(self, request, context):
         """Run scanner."""
 
         model_name = self._get_handle(context)
