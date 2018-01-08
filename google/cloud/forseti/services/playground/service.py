@@ -92,10 +92,10 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         """Checks access according to policy to a specified resource."""
 
         handle = self._get_handle(context)
-        authorized = self.playgrounder.check_iam_policy(handle,
-                                                        request.resource,
-                                                        request.permission,
-                                                        request.identity)
+        authorized = self.playgrounder.CheckIamPolicy(handle,
+                                                      request.resource,
+                                                      request.permission,
+                                                      request.identity)
         reply = playground_pb2.CheckIamPolicyReply()
         reply.result = authorized
         return reply
